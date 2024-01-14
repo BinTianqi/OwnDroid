@@ -2,7 +2,6 @@ package com.binbin.androidowner
 
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
-import android.content.pm.PackageManager
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -12,7 +11,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.binbin.androidowner.ui.theme.AndroidOwnerTheme
 
 @Composable
 fun ApplicationManage(myDpm:DevicePolicyManager, myComponent:ComponentName){

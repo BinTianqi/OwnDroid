@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">Android Owner</string>
+    <string name="bluetooth">蓝牙</string>
+    <string name="airplane_mode">飞行模式（需安卓9）</string>
+    <string name="config_wifi">配置Wi-Fi</string>
+    <string name="debug_features">调试功能</string>
+    <string name="config_location">配置位置信息（需安卓9）</string>
+    <string name="config_mobile_network">配置移动数据</string>
+    <string name="create_windows">创建窗口</string>
+    <string name="allow">允许</string>
+    <string name="disallow">禁止</string>
+    <string name="is_disallow">是否禁止：</string>
 </resources>

@@ -4,11 +4,8 @@ import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.os.Bundle
-import android.os.UserManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
@@ -18,9 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -63,7 +58,7 @@ fun MyScaffold(mainDpm:DevicePolicyManager, mainComponent:ComponentName){
             composable(route = "Permissions", content = { DpmPermissions(mainDpm,mainComponent)})
             composable(route = "UIControl", content = { UIControl(mainDpm,mainComponent)})
             composable(route = "ApplicationManage", content = { ApplicationManage(mainDpm,mainComponent)})
-            composable(route = "UserRestriction", content = { UserRestrict(mainDpm,mainComponent)})
+            composable(route = "UserRestriction", content = { UserRestriction(mainDpm,mainComponent)})
         }
     }
 }
