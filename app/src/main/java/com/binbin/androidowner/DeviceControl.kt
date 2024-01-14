@@ -21,9 +21,18 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName){
         wifimac = myDpm.getWifiMacAddress(myComponent).toString()
     }
     Column {
-        Text("WiFi MAC: $wifimac")
-        Button(onClick = {myDpm.addUserRestriction(myComponent, UserManager.DISALLOW_BLUETOOTH)}) {
-            Text("禁用蓝牙（未测试）")
+        Text("WiFi MAC: $wifimac （需要DeviceOwner）")
+        Button(onClick = {myDpm.setCameraDisabled(myComponent, true)}) {
+            Text("禁用相机")
+        }
+        Button(onClick = {myDpm.setCameraDisabled(myComponent, false)}) {
+            Text("启用相机")
+        }
+        Button(onClick = {myDpm.setScreenCaptureDisabled(myComponent,true)}) {
+            Text("禁止截屏")
+        }
+        Button(onClick = {myDpm.setScreenCaptureDisabled(myComponent,false)}) {
+            Text("允许截屏")
         }
         Button(onClick = {myDpm.reboot(myComponent)}) {
             Text("重启")

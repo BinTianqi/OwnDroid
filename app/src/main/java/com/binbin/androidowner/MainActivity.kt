@@ -63,6 +63,7 @@ fun MyScaffold(mainDpm:DevicePolicyManager, mainComponent:ComponentName){
             composable(route = "Permissions", content = { DpmPermissions(mainDpm,mainComponent)})
             composable(route = "UIControl", content = { UIControl(mainDpm,mainComponent)})
             composable(route = "ApplicationManage", content = { ApplicationManage(mainDpm,mainComponent)})
+            composable(route = "UserRestriction", content = { UserRestrict(mainDpm,mainComponent)})
         }
     }
 }
@@ -81,6 +82,9 @@ fun HomePage(navCtrl:NavHostController){
         }
         Button(onClick = {navCtrl.navigate("ApplicationManage")}) {
             Text("应用管理")
+        }
+        Button(onClick = {navCtrl.navigate("UserRestriction")}) {
+            Text("用户限制")
         }
     }
 }
