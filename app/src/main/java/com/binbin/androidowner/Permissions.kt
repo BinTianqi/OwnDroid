@@ -2,21 +2,33 @@ package com.binbin.androidowner
 
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
+import android.content.Context
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import com.binbin.androidowner.ui.theme.AndroidOwnerTheme
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+
 
 @Composable
-fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName){
+fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myContext:Context){
     //da:DeviceAdmin do:DeviceOwner
     val isda = myDpm.isAdminActive(myComponent)
     val isdo = myDpm.isDeviceOwnerApp("com.binbin.androidowner")
-
-    Column {
+    Column(
+        modifier = Modifier.padding(8.dp)
+    ) {
         Text("Device Admin: $isda")
         Text("Device Owner: $isdo")
+        SelectionContainer {
+            Column {
+                Text("设置DeviceAdmin命令：dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver")
+                Text("设置DeviceOwner命令：dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver")
+            }
+        }
         Button(onClick = {Runtime.getRuntime().exec("su -c \"dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver\"")}) {
             Text("获取DeviceAdmin（需root，未测试）")
         }

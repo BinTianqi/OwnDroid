@@ -10,4 +10,22 @@
     <string name="allow">允许</string>
     <string name="disallow">禁止</string>
     <string name="is_disallow">是否禁止：</string>
+    <string name="adjust_volume">调整音量</string>
+    <string name="config_brightness">调整亮度（需安卓9）</string>
+    <string name="install_apps">安装应用</string>
+    <string name="sms">短信</string>
+    <string name="apps_ctrl">控制应用</string>
+    <string name="apps_ctrl_description">包括清空存储空间、清空缓存</string>
+    <string name="create_windows_description">包括Toast和浮动通知</string>
+    <string name="permission">权限</string>
+    <string name="device_ctrl">设备控制</string>
+    <string name="ui_ctrl">UI控制</string>
+    <string name="app_manage">应用管理</string>
+    <string name="user_restrict">用户限制</string>
+    <string name="place_holder" />
+    <string name="permission_desc">授权与取消授权DeviceAdmin或DeviceOwner</string>
+    <string name="device_ctrl_desc">控制一些软件、硬件</string>
+    <string name="ui_ctrl_desc">目前没啥功能</string>
+    <string name="app_manage_desc">非DeviceOwner勿入</string>
+    <string name="user_restrict_desc">限制一些功能</string>
 </resources>
