@@ -21,5 +21,6 @@ fun UIControl(myDpm: DevicePolicyManager, myComponent: ComponentName){
         Button(onClick = {myDpm.setStatusBarDisabled(myComponent,false)}) {
             Text("显示状态栏")
         }
+        Text("也许只能控制状态栏上的通知图标")
     }
 }

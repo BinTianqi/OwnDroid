@@ -1,17 +1,17 @@
 <resources>
     <string name="app_name">Android Owner</string>
     <string name="bluetooth">蓝牙</string>
-    <string name="airplane_mode">飞行模式（需安卓9）</string>
+    <string name="airplane_mode">飞行模式</string>
     <string name="config_wifi">配置Wi-Fi</string>
     <string name="debug_features">调试功能</string>
-    <string name="config_location">配置位置信息（需安卓9）</string>
+    <string name="config_location">配置位置信息</string>
     <string name="config_mobile_network">配置移动数据</string>
     <string name="create_windows">创建窗口</string>
     <string name="allow">允许</string>
     <string name="disallow">禁止</string>
     <string name="is_disallow">是否禁止：</string>
     <string name="adjust_volume">调整音量</string>
-    <string name="config_brightness">调整亮度（需安卓9）</string>
+    <string name="config_brightness">调整亮度</string>
     <string name="install_apps">安装应用</string>
     <string name="sms">短信</string>
     <string name="apps_ctrl">控制应用</string>
@@ -28,4 +28,7 @@
     <string name="ui_ctrl_desc">目前没啥功能</string>
     <string name="app_manage_desc">非DeviceOwner勿入</string>
     <string name="user_restrict_desc">限制一些功能</string>
+    <string name="autofill">自动填充服务</string>
+    <string name="camera_toggle">切换相机</string>
+    <string name="bt_share">蓝牙分享</string>
 </resources>

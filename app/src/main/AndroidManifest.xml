@@ -12,7 +12,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AndroidOwner"
         android:enableOnBackInvokedCallback="true"
-        android:testOnly="true"
         tools:targetApi="34">
         <activity
             android:name=".MainActivity"
