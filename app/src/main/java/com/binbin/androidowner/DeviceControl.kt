@@ -3,19 +3,33 @@ package com.binbin.androidowner
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.os.Build
+import android.os.Build.VERSION
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -25,41 +39,31 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName){
     }catch(e:SecurityException){
         "没有权限"
     }
-    Column {
-        Text("WiFi MAC: $wifimac")
-        var isCameraDisabled by remember{ mutableStateOf(myDpm.getCameraDisabled(null)) }
-        Button(onClick = {myDpm.setCameraDisabled(myComponent, true);isCameraDisabled = myDpm.getCameraDisabled(null)}) {
-            Text("禁用相机")
+    Column(
+        modifier = Modifier
+            .verticalScroll(rememberScrollState())
+            .padding(bottom = 20.dp)
+    ) {
+        DeviceCtrlItem(R.string.disable_cam,R.string.place_holder, myDpm,{myDpm.getCameraDisabled(null)},{b -> myDpm.setCameraDisabled(myComponent,b)})
+        DeviceCtrlItem(R.string.disable_scrcap,R.string.aosp_scrrec_also_work,myDpm,{myDpm.getScreenCaptureDisabled(null)},{b -> myDpm.setScreenCaptureDisabled(myComponent,b) })
+        if(VERSION.SDK_INT>=34){
+            DeviceCtrlItem(R.string.hide_status_bar,R.string.may_hide_notifi_icon_only,myDpm,{myDpm.isStatusBarDisabled},{b -> myDpm.setStatusBarDisabled(myComponent,b) })
         }
-        Button(onClick = {myDpm.setCameraDisabled(myComponent, false);isCameraDisabled = myDpm.getCameraDisabled(null)}) {
-            Text("启用相机")
+        if(VERSION.SDK_INT>=30){
+            DeviceCtrlItem(R.string.auto_time,R.string.place_holder,myDpm,{myDpm.getAutoTimeEnabled(myComponent)},{b -> myDpm.setAutoTimeEnabled(myComponent,b) })
+            DeviceCtrlItem(R.string.auto_timezone,R.string.place_holder,myDpm,{myDpm.getAutoTimeZoneEnabled(myComponent)},{b -> myDpm.setAutoTimeZoneEnabled(myComponent,b) })
         }
-        Text("AVD上没有相机，未测试")
-        Text("相机被禁用：$isCameraDisabled")
-        var isScrCapDisabled by remember{ mutableStateOf(myDpm.getScreenCaptureDisabled(null)) }
-        Button(onClick = {myDpm.setScreenCaptureDisabled(myComponent,true);isScrCapDisabled = myDpm.getScreenCaptureDisabled(null)}) {
-            Text("禁止截屏")
-        }
-        Button(onClick = {myDpm.setScreenCaptureDisabled(myComponent,false);isScrCapDisabled = myDpm.getScreenCaptureDisabled(null)}) {
-            Text("允许截屏")
-        }
-        Text("对AOSP的录屏也起作用")
-        Text("禁止截屏：$isScrCapDisabled")
+        DeviceCtrlItem(R.string.master_mute,R.string.place_holder,myDpm,{myDpm.isMasterVolumeMuted(myComponent)},{b -> myDpm.setMasterVolumeMuted(myComponent,b) })
+        DeviceCtrlItem(R.string.backup_service,R.string.place_holder,myDpm,{myDpm.isBackupServiceEnabled(myComponent)},{b -> myDpm.setBackupServiceEnabled(myComponent,b) })
+        Text("隐藏状态栏需要API34")
+        Text("自动设置时间和自动设置时区需要API30")
         Button(onClick = {myDpm.reboot(myComponent)}) {
             Text("重启")
         }
         Button(onClick = {myDpm.lockNow()}) {
             Text("锁屏")
         }
-        var isMasterMuted by remember{ mutableStateOf(false) }
-        isMasterMuted = try{ myDpm.isMasterVolumeMuted(myComponent) }catch(e:SecurityException){ false }
-        Button(onClick = {myDpm.setMasterVolumeMuted(myComponent,true);isMasterMuted=myDpm.isMasterVolumeMuted(myComponent)}) {
-            Text("全部静音")
-        }
-        Button(onClick = {myDpm.setMasterVolumeMuted(myComponent,false);isMasterMuted=myDpm.isMasterVolumeMuted(myComponent)}) {
-            Text("取消静音")
-        }
-        Text("静音：$isMasterMuted")
+        Text("WiFi MAC: $wifimac")
         Text("以下功能需要长按按钮，作者并未测试")
         Button(
             onClick = {},
@@ -72,7 +76,7 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName){
         ) {
             Text("WipeData")
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        if (VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             Button(
                 modifier = Modifier
                     .combinedClickable(onClick = {}, onLongClick = {myDpm.wipeDevice(0)}),
@@ -84,6 +88,47 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName){
             ) {
                 Text("WipeDevice(API34)")
             }
+        }
+    }
+}
+
+@Composable
+fun DeviceCtrlItem(
+    itemName:Int,
+    itemDesc:Int,
+    myDpm: DevicePolicyManager,
+    getMethod:()->Boolean,
+    setMethod:(b:Boolean)->Unit
+){
+    var isEnabled by remember{ mutableStateOf(false) }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(5.dp)
+            .clip(RoundedCornerShape(15))
+            .background(color = MaterialTheme.colorScheme.primaryContainer)
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(
+                text = stringResource(itemName),
+                style = MaterialTheme.typography.titleLarge
+            )
+            if(itemDesc!=R.string.place_holder){
+                Text(stringResource(itemDesc))
+            }
+        }
+        if(myDpm.isDeviceOwnerApp("com.binbin.androidowner")){
+            isEnabled = getMethod()
+            Switch(
+                checked = isEnabled,
+                onCheckedChange = {
+                    setMethod(!isEnabled)
+                    isEnabled=getMethod()
+                }
+            )
         }
     }
 }

@@ -33,7 +33,11 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun UserRestriction(myDpm: DevicePolicyManager, myComponent: ComponentName){
     val verticalScrolling = rememberScrollState()
-    Column(modifier = Modifier.verticalScroll(verticalScrolling)) {
+    Column(
+        modifier = Modifier
+            .verticalScroll(verticalScrolling)
+            .padding(bottom = 20.dp)
+    ) {
         UserRestrictionItem(UserManager.DISALLOW_CONFIG_MOBILE_NETWORKS,R.string.config_mobile_network,"",myComponent, myDpm)
         UserRestrictionItem(UserManager.DISALLOW_CONFIG_WIFI,R.string.config_wifi,"",myComponent, myDpm)
         UserRestrictionItem(UserManager.DISALLOW_BLUETOOTH,R.string.bluetooth,"",myComponent, myDpm)
@@ -96,19 +100,19 @@ private fun UserRestrictionItem(restriction:String, itemName:Int, restrictionDes
         }
         if(isdo){
             strictState = myDpm.getUserRestrictions(myComponent).getBoolean(restriction)
-            Switch(
-                checked = strictState,
-                onCheckedChange = {
-                    strictState=it
-                    if(strictState){
-                        myDpm.addUserRestriction(myComponent,restriction)
-                    }else{
-                        myDpm.clearUserRestriction(myComponent,restriction)
-                    }
-                    strictState = myDpm.getUserRestrictions(myComponent).getBoolean(restriction)
-                },
-                enabled = isdo
-            )
         }
+        Switch(
+            checked = strictState,
+            onCheckedChange = {
+                strictState=it
+                if(strictState){
+                    myDpm.addUserRestriction(myComponent,restriction)
+                }else{
+                    myDpm.clearUserRestriction(myComponent,restriction)
+                }
+                strictState = myDpm.getUserRestrictions(myComponent).getBoolean(restriction)
+            },
+            enabled = isdo
+        )
     }
 }
