@@ -93,7 +93,7 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName){
 }
 
 @Composable
-fun DeviceCtrlItem(
+private fun DeviceCtrlItem(
     itemName:Int,
     itemDesc:Int,
     myDpm: DevicePolicyManager,
@@ -122,13 +122,14 @@ fun DeviceCtrlItem(
         }
         if(myDpm.isDeviceOwnerApp("com.binbin.androidowner")){
             isEnabled = getMethod()
-            Switch(
-                checked = isEnabled,
-                onCheckedChange = {
-                    setMethod(!isEnabled)
-                    isEnabled=getMethod()
-                }
-            )
         }
+        Switch(
+            checked = isEnabled,
+            onCheckedChange = {
+                setMethod(!isEnabled)
+                isEnabled=getMethod()
+            },
+            enabled = myDpm.isDeviceOwnerApp("com.binbin.androidowner")
+        )
     }
 }

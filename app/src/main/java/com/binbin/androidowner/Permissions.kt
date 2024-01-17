@@ -4,7 +4,8 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.widget.Toast
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.provider.Settings.Global
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,11 +30,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.core.content.ContextCompat.startActivity
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 
 
 @Composable
-fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myContext:Context){
+fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myContext:Context,navCtrl:NavHostController){
     //da:DeviceAdmin do:DeviceOwner
     val isda = myDpm.isAdminActive(myComponent)
     val isdo = myDpm.isDeviceOwnerApp("com.binbin.androidowner")
@@ -58,7 +62,16 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
                 Text(if(isda){"已激活"}else{"未激活"})
             }
             if(isda){
-                Button(onClick = {myDpm.removeActiveAdmin(myComponent)}) {
+                Button(
+                    onClick = {
+                        myDpm.removeActiveAdmin(myComponent)
+                        navCtrl.navigate("HomePage") {
+                            popUpTo(
+                                navCtrl.graph.findStartDestination().id
+                            ) { saveState = true }
+                        }
+                    }
+                ) {
                     Text("撤销")
                 }
             }else{
@@ -79,47 +92,64 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
         ) {
             Column {
                 Text(text = "Device Owner", style = MaterialTheme.typography.titleLarge)
-                Text(if(isda){"已激活"}else{"未激活"})
+                Text(if(isdo){"已激活"}else{"未激活"})
             }
             if(isdo){
-                Button(onClick = {myDpm.clearDeviceOwnerApp("com.binbin.androidowner")}) {
+                Button(
+                    onClick = {
+                        myDpm.clearDeviceOwnerApp("com.binbin.androidowner")
+                        navCtrl.navigate("HomePage") {
+                            popUpTo(
+                                navCtrl.graph.findStartDestination().id
+                            ) { saveState = true }
+                        }
+                    }
+                ) {
                     Text("撤销")
                 }
             }
         }
-        if(isdo||isda){Text("注意！在这里撤销权限不会清除配置。比如：被停用的应用会保持停用状态")}
-        Spacer(Modifier.padding(5.dp))
-        if(!isda){
-            SelectionContainer {
-                Text("dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver")
-            }
-        }
-        if(!isdo){
-            SelectionContainer {
-                Text("dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver")
-            }
-        }
-        if(isdo){
-            var lockScrInfo by remember { mutableStateOf("") }
-            TextField(value = lockScrInfo, onValueChange = { lockScrInfo= it}, label = { Text("锁屏信息") })
+        Column(
+            horizontalAlignment = Alignment.Start
+        ) {
+            if(isdo||isda){Text("注意！在这里撤销权限不会清除配置。比如：被停用的应用会保持停用状态")}
             Spacer(Modifier.padding(5.dp))
-            Button(onClick = {myDpm.setDeviceOwnerLockScreenInfo(myComponent,lockScrInfo)}) {
-                Text("设置锁屏DeviceOwner信息")
+            if(!isda){
+                Text("你可以在adb shell中使用以下命令激活Device Admin")
+                SelectionContainer {
+                    Text("dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver")
+                }
+                Text("或者进入设置 -> 安全 -> 更多安全设置 -> 设备管理应用 -> Android Owner")
+            }
+            if(!isdo){
+                Text("你可以在adb shell中使用以下命令激活Device Owner")
+                SelectionContainer {
+                    Text("dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver")
+                }
+                if(!isda){
+                    Text("使用此命令也会激活Device Admin")
+                }
+            }
+            if(isdo){
+                var lockScrInfo by remember { mutableStateOf("") }
+                TextField(value = lockScrInfo, onValueChange = { lockScrInfo= it}, label = { Text("锁屏信息") })
+                Spacer(Modifier.padding(5.dp))
+                Button(onClick = {myDpm.setDeviceOwnerLockScreenInfo(myComponent,lockScrInfo)}) {
+                    Text("设置锁屏DeviceOwner信息")
+                }
             }
         }
+
     }
 }
 
 fun ActivateDeviceAdmin(myDpm: DevicePolicyManager,myComponent: ComponentName,myContext: Context){
-    if (!myDpm.isAdminActive(myComponent)) {
-        val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
-        intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, myComponent)
-        intent.putExtra(
-            DevicePolicyManager.EXTRA_ADD_EXPLANATION,
-            "在这里激活Android Owner"
-        )
-        startActivity(myContext,intent,null)
-    } else {
-        Toast.makeText(myContext, "已经激活", Toast.LENGTH_SHORT).show()
-    }
+    val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+    intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, myComponent)
+    intent.putExtra(
+        DevicePolicyManager.EXTRA_ADD_EXPLANATION,
+        "在这里激活Android Owner"
+    )
+    intent.setFlags(FLAG_ACTIVITY_NEW_TASK)
+    startActivity(myContext,intent,null)
 }

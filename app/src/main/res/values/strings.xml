@@ -40,4 +40,11 @@
     <string name="auto_time">自动设置时间</string>
     <string name="auto_timezone">自动设置时区</string>
     <string name="backup_service">备份服务</string>
+    <string name="hide">隐藏</string>
+    <string name="suspend">停用</string>
+    <string name="block_unins">防卸载</string>
+    <string name="isapphidden_desc">如果隐藏，有可能是没安装</string>
+    <string name="sometimes_not_avaliable">有时候不能用</string>
+    <string name="user_ctrl_disabled">禁止用户控制</string>
+    <string name="user_ctrl_disabled_desc">阻止清除应用数据和缓存</string>>
 </resources>

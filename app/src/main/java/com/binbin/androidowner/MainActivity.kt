@@ -129,8 +129,8 @@ fun MyScaffold(mainDpm:DevicePolicyManager, mainComponent:ComponentName, mainCon
         ){
             composable(route = "HomePage", content = { HomePage(navCtrl,mainDpm,mainComponent)})
             composable(route = "DeviceControl", content = { DeviceControl(mainDpm,mainComponent)})
-            composable(route = "Permissions", content = { DpmPermissions(mainDpm,mainComponent,mainContext)})
-            composable(route = "ApplicationManage", content = { ApplicationManage(mainDpm,mainComponent)})
+            composable(route = "Permissions", content = { DpmPermissions(mainDpm,mainComponent,mainContext,navCtrl)})
+            composable(route = "ApplicationManage", content = { ApplicationManage(mainDpm,mainComponent,mainContext)})
             composable(route = "UserRestriction", content = { UserRestriction(mainDpm,mainComponent)})
         }
     }
@@ -140,7 +140,7 @@ fun MyScaffold(mainDpm:DevicePolicyManager, mainComponent:ComponentName, mainCon
 fun HomePage(navCtrl:NavHostController,myDpm:DevicePolicyManager,myComponent:ComponentName){
     val isda = myDpm.isAdminActive(myComponent)
     val isdo = myDpm.isDeviceOwnerApp("com.binbin.androidowner")
-    val activated = if(isdo){"Device Owner 已激活"}else if(isda){"Device Admin已激活"}else{""} + "未激活"
+    val activated = if(isdo){"Device Owner 已激活"}else if(isda){"Device Admin已激活"}else{"未激活"}
     Column {
         Row(
             modifier = Modifier
