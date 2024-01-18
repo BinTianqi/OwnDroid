@@ -74,7 +74,7 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
                     Text("撤销")
                 }
             }else{
-                Button(onClick = { ActivateDeviceAdmin(myDpm, myComponent, myContext) }) {
+                Button(onClick = { ActivateDeviceAdmin(myComponent, myContext) }) {
                     Text("激活")
                 }
             }
@@ -141,7 +141,7 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
     }
 }
 
-fun ActivateDeviceAdmin(myDpm: DevicePolicyManager,myComponent: ComponentName,myContext: Context){
+fun ActivateDeviceAdmin(myComponent: ComponentName,myContext: Context){
     val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
     intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, myComponent)
     intent.putExtra(

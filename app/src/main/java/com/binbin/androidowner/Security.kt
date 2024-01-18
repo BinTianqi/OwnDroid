@@ -7,15 +7,24 @@ import android.content.Context
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Build.VERSION
 import android.widget.Toast
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -27,40 +36,52 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 
 @Composable
-fun Security(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Context){
+fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Context){
     var newPwd by remember{ mutableStateOf("") }
     var confirmed by remember{ mutableStateOf(false) }
+    val focusMgr = LocalFocusManager.current
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
     ) {
         val myByteArray by remember{ mutableStateOf(byteArrayOf(1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0)) }
+        Text(
+            text = "以下操作可能会造成不可挽回的损失，请先备份好数据。执行操作时一定要谨慎！！！",
+            color = MaterialTheme.colorScheme.onErrorContainer,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+                .clip(RoundedCornerShape(15))
+                .background(color = MaterialTheme.colorScheme.errorContainer)
+                .padding(8.dp)
+        )
         if(VERSION.SDK_INT>=26){
             Column(
                 horizontalAlignment = Alignment.Start,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp)
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
                     .clip(RoundedCornerShape(10))
                     .background(color = MaterialTheme.colorScheme.primaryContainer)
                     .padding(8.dp)
             ) {
-                Text(
-                    text = "密码重置令牌",
-                    style = MaterialTheme.typography.titleLarge
-                )
+                Text(text = "密码重置令牌", style = MaterialTheme.typography.titleLarge)
                 Row {
                     Button(
                         onClick = {
-                            if(myDpm.clearResetPasswordToken(myComponent)){
-                                Toast.makeText(myContext, "清除成功", Toast.LENGTH_SHORT).show()
-                            }else{
-                                Toast.makeText(myContext, "清除失败", Toast.LENGTH_SHORT).show()
-                            }
+                            if(myDpm.clearResetPasswordToken(myComponent)){ Toast.makeText(myContext, "清除成功", Toast.LENGTH_SHORT).show()
+                            }else{ Toast.makeText(myContext, "清除失败", Toast.LENGTH_SHORT).show() }
                         },
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
@@ -68,11 +89,8 @@ fun Security(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
                     }
                     Button(
                         onClick = {
-                            if(myDpm.setResetPasswordToken(myComponent, myByteArray)){
-                                Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show()
-                            }else{
-                                Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show()
-                            }
+                            if(myDpm.setResetPasswordToken(myComponent, myByteArray)){ Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show()
+                            }else{ Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show() }
                         },
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
@@ -81,14 +99,9 @@ fun Security(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
                     Button(
                         onClick = {
                             if(!myDpm.isResetPasswordTokenActive(myComponent)){
-                                try{
-                                    activateToken(myContext)
-                                }catch(e:NullPointerException){
-                                    Toast.makeText(myContext, "请先设置令牌", Toast.LENGTH_SHORT).show()
-                                }
-                            }else{
-                                Toast.makeText(myContext, "已经激活", Toast.LENGTH_SHORT).show()
-                            }
+                                try{ activateToken(myContext)
+                                }catch(e:NullPointerException){ Toast.makeText(myContext, "请先设置令牌", Toast.LENGTH_SHORT).show() }
+                            }else{ Toast.makeText(myContext, "已经激活", Toast.LENGTH_SHORT).show() }
                         }
                     ) {
                         Text("激活")
@@ -97,83 +110,144 @@ fun Security(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
                 Text("没有密码时会自动激活令牌")
             }
         }
-        TextField(
-            value = newPwd,
-            onValueChange = {newPwd=it},
-            enabled = !confirmed,
-            label = { Text("密码")}
-        )
-        Text(
-            text = "（留空可以清除密码）",
-            modifier = Modifier.padding(vertical = 5.dp)
-        )
-        Row {
-            Button(
-                onClick = {
-                    if(newPwd.length>=4||newPwd.isEmpty()){
-                        confirmed=!confirmed
-                    }else{
-                        Toast.makeText(myContext, "需要4位数字或字母", Toast.LENGTH_SHORT).show()
-                    }
-                },
-                modifier = Modifier.padding(end = 10.dp)
-            ) {
-                Text("确认密码")
-            }
-            if(VERSION.SDK_INT>=26){
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+                .clip(RoundedCornerShape(10))
+                .background(color = MaterialTheme.colorScheme.primaryContainer)
+                .padding(10.dp)
+        ) {
+            TextField(
+                value = newPwd,
+                onValueChange = {newPwd=it},
+                enabled = !confirmed,
+                label = { Text("密码")},
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
+            )
+            Text(text = stringResource(R.string.reset_pwd_desc), modifier = Modifier.padding(vertical = 5.dp))
+            Row {
                 Button(
                     onClick = {
-                        val resetSuccess = myDpm.resetPasswordWithToken(myComponent,newPwd,myByteArray,0)
-                        if(resetSuccess){
-                            Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show()
-                        }else{
-                            Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show()
-                        }
-                        confirmed=false
+                        if(newPwd.length>=4||newPwd.isEmpty()){ confirmed=!confirmed
+                        }else{ Toast.makeText(myContext, "需要4位数字或字母", Toast.LENGTH_SHORT).show() }
                     },
-                    enabled = confirmed,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
-                    )
+                    modifier = Modifier.padding(end = 10.dp)
                 ) {
-                    Text("设置密码")
+                    Text("确认密码")
                 }
-            }else{
-                Button(
-                    onClick = {
-                        val resetSuccess = myDpm.resetPassword(newPwd,0)
-                        if(resetSuccess){
-                            Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show()
-                        }else{
-                            Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show()
-                        }
-                        confirmed=false
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
-                    )
-                ) {
-                    Text("设置密码")
+                if(VERSION.SDK_INT>=26){
+                    Button(
+                        onClick = {
+                            val resetSuccess = myDpm.resetPasswordWithToken(myComponent,newPwd,myByteArray,0)
+                            if(resetSuccess){ Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show()
+                            }else{ Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show() }
+                            confirmed=false
+                        },
+                        enabled = confirmed,
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error, contentColor = MaterialTheme.colorScheme.onError)
+                    ) {
+                        Text("设置密码")
+                    }
+                }else{
+                    Button(
+                        onClick = {
+                            val resetSuccess = myDpm.resetPassword(newPwd,0)
+                            if(resetSuccess){ Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show()
+                            }else{ Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show() }
+                            confirmed=false
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error, contentColor = MaterialTheme.colorScheme.onError)
+                    ) {
+                        Text("设置密码")
+                    }
                 }
             }
         }
-        Text(
-            text = "该操作可能会造成不可挽回的损失，请先备份好数据。设置密码的时候一定要谨慎！！！",
-            color = MaterialTheme.colorScheme.onErrorContainer,
+        PasswordItem(R.string.max_pwd_fail,R.string.max_pwd_fail_desc,R.string.max_pwd_fail_textfield, focusMgr,false,
+            {myDpm.getMaximumFailedPasswordsForWipe(null).toString()},{ic -> myDpm.setMaximumFailedPasswordsForWipe(myComponent, ic.toInt()) })
+        PasswordItem(R.string.pwd_timeout,R.string.pwd_timeout_desc,R.string.pwd_timeout_textfield, focusMgr,true,
+            {myDpm.getPasswordExpirationTimeout(null).toString()},{ic -> myDpm.setPasswordExpirationTimeout(myComponent, ic.toLong()) })
+        PasswordItem(R.string.pwd_history,R.string.pwd_history_desc,R.string.pwd_history_textfield, focusMgr,true,
+            {myDpm.getPasswordHistoryLength(null).toString()},{ic -> myDpm.setPasswordHistoryLength(myComponent, ic.toInt()) })
+
+    }
+}
+
+@Composable
+fun PasswordItem(
+    itemName:Int,
+    itemDesc:Int,
+    textFieldLabel:Int,
+    focusMgr:FocusManager,
+    allowZero:Boolean,
+    getMethod:()->String,
+    setMethod:(ic:String)->Unit
+){
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .clip(RoundedCornerShape(10))
+            .background(color = MaterialTheme.colorScheme.primaryContainer)
+            .padding(10.dp)
+    ) {
+        var inputContent by remember{ mutableStateOf(getMethod()) }
+        var inputContentEdited by remember{ mutableStateOf(false) }
+        var ableToApply by remember{ mutableStateOf(true) }
+        Text(text = stringResource(itemName), style = MaterialTheme.typography.titleLarge)
+        Text(text= stringResource(itemDesc),modifier=Modifier.padding(vertical = 2.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp)
-                .clip(RoundedCornerShape(15))
-                .background(color = MaterialTheme.colorScheme.errorContainer)
-                .padding(8.dp)
-        )
+                .padding(end = 8.dp)
+        ){
+            TextField(
+                value = inputContent,
+                label = { Text(stringResource(textFieldLabel))},
+                onValueChange = {
+                    inputContent = it
+                    if(inputContent!=""&&((inputContent=="0"&&allowZero)||inputContent!="0")){
+                        inputContentEdited = inputContent!=getMethod()
+                        ableToApply = true
+                    }else{
+                        ableToApply = false
+                    }
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
+            )
+            if(ableToApply){
+                Icon(
+                    imageVector = Icons.Outlined.Check,
+                    contentDescription = null,
+                    tint = if(inputContentEdited){MaterialTheme.colorScheme.onError}else{MaterialTheme.colorScheme.onPrimary},
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20))
+                        .background(
+                            color = if (inputContentEdited) {
+                                MaterialTheme.colorScheme.error
+                            } else {
+                                MaterialTheme.colorScheme.primary
+                            }
+                        )
+                        .clickable(onClick = {
+                            focusMgr.clearFocus()
+                            setMethod(inputContent)
+                            inputContentEdited = inputContent != getMethod()
+                        })
+                        .padding(8.dp)
+                )
+            }
+        }
     }
 }
 
 fun activateToken(myContext: Context){
-    val ACTIVATE_TOKEN_PROMPT = "Use your credentials to enable remote password reset"
+    val ACTIVATE_TOKEN_PROMPT = "在这里激活密码重置令牌"
     val keyguardManager = myContext.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
     val confirmIntent = keyguardManager.createConfirmDeviceCredentialIntent(null, ACTIVATE_TOKEN_PROMPT)
     confirmIntent.setFlags(FLAG_ACTIVITY_NEW_TASK)
