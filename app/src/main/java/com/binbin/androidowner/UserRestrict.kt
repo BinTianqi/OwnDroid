@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
@@ -40,30 +41,30 @@ fun UserRestriction(myDpm: DevicePolicyManager, myComponent: ComponentName){
             .padding(bottom = 20.dp)
     ) {
         Text("打开开关后会禁用对应的功能")
-        UserRestrictionItem(UserManager.DISALLOW_CONFIG_MOBILE_NETWORKS,R.string.config_mobile_network,"",myComponent, myDpm)
-        UserRestrictionItem(UserManager.DISALLOW_CONFIG_WIFI,R.string.config_wifi,"",myComponent, myDpm)
+        UserRestrictionItem(UserManager.DISALLOW_CONFIG_MOBILE_NETWORKS,R.string.config_mobile_network,"",R.drawable.signal_cellular_alt_fill0,myComponent, myDpm)
+        UserRestrictionItem(UserManager.DISALLOW_CONFIG_WIFI,R.string.config_wifi,"",R.drawable.wifi_fill0,myComponent, myDpm)
         if(VERSION.SDK_INT>=26){
-            UserRestrictionItem(UserManager.DISALLOW_BLUETOOTH,R.string.bluetooth,"",myComponent, myDpm)
-            UserRestrictionItem(UserManager.DISALLOW_BLUETOOTH_SHARING,R.string.bt_share,"",myComponent, myDpm)
+            UserRestrictionItem(UserManager.DISALLOW_BLUETOOTH,R.string.bluetooth,"",R.drawable.bluetooth_fill0,myComponent, myDpm)
+            UserRestrictionItem(UserManager.DISALLOW_BLUETOOTH_SHARING,R.string.bt_share,"",R.drawable.bluetooth_searching_fill0,myComponent, myDpm)
         }
         if(VERSION.SDK_INT>=28){
-            UserRestrictionItem(UserManager.DISALLOW_AIRPLANE_MODE,R.string.airplane_mode,"",myComponent, myDpm)
-            UserRestrictionItem(UserManager.DISALLOW_CONFIG_LOCATION,R.string.config_location,"",myComponent, myDpm)
-            UserRestrictionItem(UserManager.DISALLOW_CONFIG_BRIGHTNESS,R.string.config_brightness,"",myComponent, myDpm)
+            UserRestrictionItem(UserManager.DISALLOW_AIRPLANE_MODE,R.string.airplane_mode,"",R.drawable.airplanemode_active_fill0,myComponent, myDpm)
+            UserRestrictionItem(UserManager.DISALLOW_CONFIG_LOCATION,R.string.config_location,"",R.drawable.location_on_fill0,myComponent, myDpm)
+            UserRestrictionItem(UserManager.DISALLOW_CONFIG_BRIGHTNESS,R.string.config_brightness,"",R.drawable.brightness_5_fill0,myComponent, myDpm)
         }
-        UserRestrictionItem(UserManager.DISALLOW_DEBUGGING_FEATURES,R.string.debug_features,"",myComponent, myDpm)
-        UserRestrictionItem(UserManager.DISALLOW_CREATE_WINDOWS,R.string.create_windows, stringResource(R.string.create_windows_description),myComponent, myDpm)
-        UserRestrictionItem(UserManager.DISALLOW_ADJUST_VOLUME,R.string.adjust_volume,"",myComponent, myDpm)
-        UserRestrictionItem(UserManager.DISALLOW_INSTALL_APPS,R.string.install_apps,"",myComponent, myDpm)
+        UserRestrictionItem(UserManager.DISALLOW_DEBUGGING_FEATURES,R.string.debug_features,"",R.drawable.adb_fill0,myComponent, myDpm)
+        UserRestrictionItem(UserManager.DISALLOW_CREATE_WINDOWS,R.string.create_windows, stringResource(R.string.create_windows_description),R.drawable.web_asset,myComponent, myDpm)
+        UserRestrictionItem(UserManager.DISALLOW_ADJUST_VOLUME,R.string.adjust_volume,"",R.drawable.volume_up_fill0,myComponent, myDpm)
+        UserRestrictionItem(UserManager.DISALLOW_INSTALL_APPS,R.string.install_apps,"",R.drawable.android_fill0,myComponent, myDpm)
         if(VERSION.SDK_INT>=31){
-            UserRestrictionItem(UserManager.DISALLOW_CAMERA_TOGGLE,R.string.camera_toggle,"",myComponent, myDpm)
+            UserRestrictionItem(UserManager.DISALLOW_CAMERA_TOGGLE,R.string.camera_toggle,"",R.drawable.cameraswitch_fill0,myComponent, myDpm)
         }
-        UserRestrictionItem(UserManager.DISALLOW_SMS,R.string.sms,"",myComponent, myDpm)
-        UserRestrictionItem(UserManager.DISALLOW_APPS_CONTROL,R.string.apps_ctrl, stringResource(R.string.apps_ctrl_description),myComponent, myDpm)
+        UserRestrictionItem(UserManager.DISALLOW_SMS,R.string.sms,"",R.drawable.sms_fill0,myComponent, myDpm)
+        UserRestrictionItem(UserManager.DISALLOW_APPS_CONTROL,R.string.apps_ctrl, stringResource(R.string.apps_ctrl_description),R.drawable.apps_fill0,myComponent, myDpm)
         if(VERSION.SDK_INT>=26){
-            UserRestrictionItem(UserManager.DISALLOW_AUTOFILL,R.string.autofill, "",myComponent, myDpm)
+            UserRestrictionItem(UserManager.DISALLOW_AUTOFILL,R.string.autofill, "",R.drawable.password_fill0,myComponent, myDpm)
         }
-        UserRestrictionItem(UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES,R.string.inst_unknown_src,"",myComponent, myDpm)
+        UserRestrictionItem(UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES,R.string.inst_unknown_src,"",R.drawable.android_fill0,myComponent, myDpm)
         if(VERSION.SDK_INT<26){
             Text("以下功能需要安卓8或以上：蓝牙、自动填充服务")
         }
@@ -77,7 +78,7 @@ fun UserRestriction(myDpm: DevicePolicyManager, myComponent: ComponentName){
 }
 
 @Composable
-private fun UserRestrictionItem(restriction:String, itemName:Int, restrictionDescription:String, myComponent: ComponentName, myDpm: DevicePolicyManager){
+private fun UserRestrictionItem(restriction:String, itemName:Int, restrictionDescription:String, leadIcon:Int,myComponent: ComponentName, myDpm: DevicePolicyManager){
     val isdo = myDpm.isDeviceOwnerApp("com.binbin.androidowner")
     var strictState by remember{ mutableStateOf(false) }
     Row(
@@ -94,9 +95,10 @@ private fun UserRestrictionItem(restriction:String, itemName:Int, restrictionDes
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Outlined.Info,
+                painter = painterResource(leadIcon),
                 contentDescription = null,
-                modifier = Modifier.padding(horizontal = 8.dp)
+                modifier = Modifier.padding(horizontal = 8.dp),
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
             )
             Column(
                 modifier = Modifier.align(Alignment.CenterVertically)

@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -28,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
@@ -39,18 +41,18 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName){
             .verticalScroll(rememberScrollState())
             .padding(bottom = 20.dp)
     ) {
-        DeviceCtrlItem(R.string.disable_cam,R.string.place_holder, myDpm,{myDpm.getCameraDisabled(null)},{b -> myDpm.setCameraDisabled(myComponent,b)})
-        DeviceCtrlItem(R.string.disable_scrcap,R.string.aosp_scrrec_also_work,myDpm,{myDpm.getScreenCaptureDisabled(null)},{b -> myDpm.setScreenCaptureDisabled(myComponent,b) })
+        DeviceCtrlItem(R.string.disable_cam,R.string.place_holder, R.drawable.photo_camera_fill0,myDpm,{myDpm.getCameraDisabled(null)},{b -> myDpm.setCameraDisabled(myComponent,b)})
+        DeviceCtrlItem(R.string.disable_scrcap,R.string.aosp_scrrec_also_work,R.drawable.screenshot_fill0,myDpm,{myDpm.getScreenCaptureDisabled(null)},{b -> myDpm.setScreenCaptureDisabled(myComponent,b) })
         if(VERSION.SDK_INT>=34){
-            DeviceCtrlItem(R.string.hide_status_bar,R.string.may_hide_notifi_icon_only,myDpm,{myDpm.isStatusBarDisabled},{b -> myDpm.setStatusBarDisabled(myComponent,b) })
+            DeviceCtrlItem(R.string.hide_status_bar,R.string.may_hide_notifi_icon_only,R.drawable.notifications_fill0,myDpm,{myDpm.isStatusBarDisabled},{b -> myDpm.setStatusBarDisabled(myComponent,b) })
         }
         if(VERSION.SDK_INT>=30){
-            DeviceCtrlItem(R.string.auto_time,R.string.place_holder,myDpm,{myDpm.getAutoTimeEnabled(myComponent)},{b -> myDpm.setAutoTimeEnabled(myComponent,b) })
-            DeviceCtrlItem(R.string.auto_timezone,R.string.place_holder,myDpm,{myDpm.getAutoTimeZoneEnabled(myComponent)},{b -> myDpm.setAutoTimeZoneEnabled(myComponent,b) })
+            DeviceCtrlItem(R.string.auto_time,R.string.place_holder,R.drawable.schedule_fill0,myDpm,{myDpm.getAutoTimeEnabled(myComponent)},{b -> myDpm.setAutoTimeEnabled(myComponent,b) })
+            DeviceCtrlItem(R.string.auto_timezone,R.string.place_holder,R.drawable.globe_fill0,myDpm,{myDpm.getAutoTimeZoneEnabled(myComponent)},{b -> myDpm.setAutoTimeZoneEnabled(myComponent,b) })
         }
-        DeviceCtrlItem(R.string.master_mute,R.string.place_holder,myDpm,{myDpm.isMasterVolumeMuted(myComponent)},{b -> myDpm.setMasterVolumeMuted(myComponent,b) })
+        DeviceCtrlItem(R.string.master_mute,R.string.place_holder,R.drawable.volume_up_fill0,myDpm,{myDpm.isMasterVolumeMuted(myComponent)},{b -> myDpm.setMasterVolumeMuted(myComponent,b) })
         if(VERSION.SDK_INT>=26){
-            DeviceCtrlItem(R.string.backup_service,R.string.place_holder,myDpm,{myDpm.isBackupServiceEnabled(myComponent)},{b -> myDpm.setBackupServiceEnabled(myComponent,b) })
+            DeviceCtrlItem(R.string.backup_service,R.string.place_holder,R.drawable.backup_fill0,myDpm,{myDpm.isBackupServiceEnabled(myComponent)},{b -> myDpm.setBackupServiceEnabled(myComponent,b) })
         }
         if(VERSION.SDK_INT>=24){
             Button(onClick = {myDpm.reboot(myComponent)}) {
@@ -110,6 +112,7 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName){
 private fun DeviceCtrlItem(
     itemName:Int,
     itemDesc:Int,
+    leadIcon:Int,
     myDpm: DevicePolicyManager,
     getMethod:()->Boolean,
     setMethod:(b:Boolean)->Unit
@@ -125,13 +128,23 @@ private fun DeviceCtrlItem(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column {
-            Text(
-                text = stringResource(itemName),
-                style = MaterialTheme.typography.titleLarge
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Icon(
+                painter = painterResource(leadIcon),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.padding(start = 5.dp, end = 9.dp)
             )
-            if(itemDesc!=R.string.place_holder){
-                Text(stringResource(itemDesc))
+            Column {
+                Text(
+                    text = stringResource(itemName),
+                    style = MaterialTheme.typography.titleLarge
+                )
+                if(itemDesc!=R.string.place_holder){
+                    Text(stringResource(itemDesc))
+                }
             }
         }
         if(myDpm.isDeviceOwnerApp("com.binbin.androidowner")){
