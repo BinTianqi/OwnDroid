@@ -85,7 +85,8 @@ fun MyScaffold(mainDpm:DevicePolicyManager, mainComponent:ComponentName, mainCon
         "Permissions" to R.string.permission,
         "UIControl" to R.string.ui_ctrl,
         "ApplicationManage" to R.string.app_manage,
-        "UserRestriction" to R.string.user_restrict
+        "UserRestriction" to R.string.user_restrict,
+        "Security" to R.string.security
     )
     val topBarName = topBarNameMap[backStackEntry?.destination?.route]?: R.string.app_name
     Scaffold(
@@ -125,13 +126,16 @@ fun MyScaffold(mainDpm:DevicePolicyManager, mainComponent:ComponentName, mainCon
         NavHost(
             navController = navCtrl,
             startDestination = "HomePage",
-            modifier = Modifier.padding(top = it.calculateTopPadding()).navigationBarsPadding()
+            modifier = Modifier
+                .padding(top = it.calculateTopPadding())
+                .navigationBarsPadding()
         ){
             composable(route = "HomePage", content = { HomePage(navCtrl,mainDpm,mainComponent)})
             composable(route = "DeviceControl", content = { DeviceControl(mainDpm,mainComponent)})
             composable(route = "Permissions", content = { DpmPermissions(mainDpm,mainComponent,mainContext,navCtrl)})
             composable(route = "ApplicationManage", content = { ApplicationManage(mainDpm,mainComponent,mainContext)})
             composable(route = "UserRestriction", content = { UserRestriction(mainDpm,mainComponent)})
+            composable(route = "Security", content = { Security(mainDpm,mainComponent,mainContext)})
         }
     }
 }
@@ -174,10 +178,10 @@ fun HomePage(navCtrl:NavHostController,myDpm:DevicePolicyManager,myComponent:Com
                 )
             }
         }
-        //HomePageItem(R.string.permission, R.drawable.security_fill0, R.string.permission_desc, "Permissions", navCtrl)
         HomePageItem(R.string.device_ctrl, R.drawable.mobile_phone_fill0, R.string.device_ctrl_desc, "DeviceControl", navCtrl)
         HomePageItem(R.string.app_manage, R.drawable.apps_fill0, R.string.apps_ctrl_description, "ApplicationManage", navCtrl)
         HomePageItem(R.string.user_restrict, R.drawable.manage_accounts_fill0, R.string.user_restrict_desc, "UserRestriction", navCtrl)
+        HomePageItem(R.string.security, R.drawable.security_fill0,R.string.security_desc, "Security",navCtrl)
     }
 }
 

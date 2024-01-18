@@ -5,7 +5,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-import android.provider.Settings.Global
+import android.os.Build.VERSION
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -130,16 +129,15 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
                     Text("使用此命令也会激活Device Admin")
                 }
             }
-            if(isdo){
-                var lockScrInfo by remember { mutableStateOf("") }
-                TextField(value = lockScrInfo, onValueChange = { lockScrInfo= it}, label = { Text("锁屏信息") })
-                Spacer(Modifier.padding(5.dp))
-                Button(onClick = {myDpm.setDeviceOwnerLockScreenInfo(myComponent,lockScrInfo)}) {
-                    Text("设置锁屏DeviceOwner信息")
-                }
+        }
+        if(isdo&&VERSION.SDK_INT>=24){
+            var lockScrInfo by remember { mutableStateOf("") }
+            TextField(value = lockScrInfo, onValueChange = { lockScrInfo= it}, label = { Text("锁屏信息") })
+            Spacer(Modifier.padding(5.dp))
+            Button(onClick = {myDpm.setDeviceOwnerLockScreenInfo(myComponent,lockScrInfo)}) {
+                Text("设置锁屏DeviceOwner信息")
             }
         }
-
     }
 }
 

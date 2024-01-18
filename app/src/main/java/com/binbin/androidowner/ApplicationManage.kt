@@ -3,8 +3,11 @@ package com.binbin.androidowner
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager.NameNotFoundException
+import android.net.Uri
 import android.os.Build.VERSION
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.startActivity
 
 
 @Composable
@@ -47,32 +51,46 @@ fun ApplicationManage(myDpm:DevicePolicyManager, myComponent:ComponentName,myCon
             },
             label = { Text("包名") }
         )
-        val isSuspended = {
-            try{
-                myDpm.isPackageSuspended(myComponent,pkgName)
-            }catch(e:NameNotFoundException){
-                false
+        if(VERSION.SDK_INT>=24){
+            val isSuspended = {
+                try{
+                    myDpm.isPackageSuspended(myComponent,pkgName)
+                }catch(e:NameNotFoundException){
+                    false
+                }
             }
+            AppManageItem(R.string.suspend,R.string.place_holder,myDpm, isSuspended,
+                {b -> myDpm.setPackagesSuspended(myComponent, arrayOf(pkgName) ,b)})
         }
         AppManageItem(R.string.hide,R.string.isapphidden_desc,myDpm, {myDpm.isApplicationHidden(myComponent,pkgName)},
             {b -> myDpm.setApplicationHidden(myComponent,pkgName,b)})
-        AppManageItem(R.string.suspend,R.string.place_holder,myDpm, isSuspended,
-            {b -> myDpm.setPackagesSuspended(myComponent, arrayOf(pkgName) ,b)})
-        /*AppManageItem(R.string.block_unins,R.string.sometimes_not_avaliable,myDpm, {myDpm.isUninstallBlocked(myComponent,pkgName)},
+        if(VERSION.SDK_INT>=30){
+            AppManageItem(R.string.user_ctrl_disabled,R.string.user_ctrl_disabled_desc,myDpm, {pkgName in myDpm.getUserControlDisabledPackages(myComponent)},
+                {b->myDpm.setUserControlDisabledPackages(myComponent, mutableListOf(if(b){pkgName}else{null}))})
+        }
+        /*AppManageItem(R.string.block_unins,R.string.sometimes_not_available,myDpm, {myDpm.isUninstallBlocked(myComponent,pkgName)},
             {b -> myDpm.setUninstallBlocked(myComponent,pkgName,b)})*/
-        Text("因为无法获取某个应用是否防卸载，无法使用开关控制防卸载")
-        Row {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp)
+                .clip(RoundedCornerShape(15))
+                .background(color = MaterialTheme.colorScheme.primaryContainer)
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
             Button(onClick = {myDpm.setUninstallBlocked(myComponent,pkgName,false)}) {
                 Text("取消防卸载")
             }
-            Spacer(Modifier.padding(horizontal = 2.dp))
             Button(onClick = {myDpm.setUninstallBlocked(myComponent,pkgName,true)}) {
                 Text("防卸载")
             }
         }
-        if(VERSION.SDK_INT>=30){
-            AppManageItem(R.string.user_ctrl_disabled,R.string.user_ctrl_disabled_desc,myDpm, {pkgName in myDpm.getUserControlDisabledPackages(myComponent)},
-                {b->myDpm.setUserControlDisabledPackages(myComponent, mutableListOf(if(b){pkgName}else{null}))})
+        Button(
+            onClick = {
+                uninstallApp(myContext,pkgName)
+            }) {
+            Text("卸载")
         }
         Spacer(Modifier.padding(5.dp))
     }
@@ -118,4 +136,23 @@ private fun AppManageItem(
             enabled = myDpm.isDeviceOwnerApp("com.binbin.androidowner")
         )
     }
+}
+
+fun uninstallPkg(pkgName:String,myContext:Context){
+    val packageManager = myContext.packageManager
+    try {
+        val packageInfo = packageManager.getPackageInfo(pkgName, 0)
+        val intent = Intent(Intent.ACTION_DELETE)
+        intent.setData(Uri.parse("package:" + packageInfo.packageName))
+        startActivity(myContext,intent,null)
+    } catch (e: NameNotFoundException) {
+        Toast.makeText(myContext, "应用未安装", Toast.LENGTH_SHORT).show()
+    }
+}
+
+private fun uninstallApp(context: Context, packageName: String) {
+    val packageUri = Uri.parse("package:$packageName")
+    val uninstallIntent = Intent(Intent.ACTION_DELETE, packageUri)
+    uninstallIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    context.startActivity(uninstallIntent)
 }

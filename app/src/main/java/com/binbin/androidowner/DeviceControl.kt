@@ -34,11 +34,6 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName){
-    val wifimac = try {
-        myDpm.getWifiMacAddress(myComponent).toString()
-    }catch(e:SecurityException){
-        "没有权限"
-    }
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
@@ -54,16 +49,35 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName){
             DeviceCtrlItem(R.string.auto_timezone,R.string.place_holder,myDpm,{myDpm.getAutoTimeZoneEnabled(myComponent)},{b -> myDpm.setAutoTimeZoneEnabled(myComponent,b) })
         }
         DeviceCtrlItem(R.string.master_mute,R.string.place_holder,myDpm,{myDpm.isMasterVolumeMuted(myComponent)},{b -> myDpm.setMasterVolumeMuted(myComponent,b) })
-        DeviceCtrlItem(R.string.backup_service,R.string.place_holder,myDpm,{myDpm.isBackupServiceEnabled(myComponent)},{b -> myDpm.setBackupServiceEnabled(myComponent,b) })
-        Text("隐藏状态栏需要API34")
-        Text("自动设置时间和自动设置时区需要API30")
-        Button(onClick = {myDpm.reboot(myComponent)}) {
-            Text("重启")
+        if(VERSION.SDK_INT>=26){
+            DeviceCtrlItem(R.string.backup_service,R.string.place_holder,myDpm,{myDpm.isBackupServiceEnabled(myComponent)},{b -> myDpm.setBackupServiceEnabled(myComponent,b) })
+        }
+        if(VERSION.SDK_INT>=24){
+            Button(onClick = {myDpm.reboot(myComponent)}) {
+                Text("重启")
+            }
+            val wifimac = try {
+                myDpm.getWifiMacAddress(myComponent).toString()
+            }catch(e:SecurityException){
+                "没有权限"
+            }
+            Text("WiFi MAC: $wifimac")
+        }
+        if(VERSION.SDK_INT<24){
+            Text("重启和WiFi Mac需要API24")
+        }
+        if(VERSION.SDK_INT<26){
+            Text("备份服务需要API26")
+        }
+        if(VERSION.SDK_INT<30){
+            Text("自动设置时间和自动设置时区需要API30")
+        }
+        if(VERSION.SDK_INT<34){
+            Text("隐藏状态栏需要API34")
         }
         Button(onClick = {myDpm.lockNow()}) {
             Text("锁屏")
         }
-        Text("WiFi MAC: $wifimac")
         Text("以下功能需要长按按钮，作者并未测试")
         Button(
             onClick = {},
@@ -76,7 +90,7 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName){
         ) {
             Text("WipeData")
         }
-        if (VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        if (VERSION.SDK_INT >= 34) {
             Button(
                 modifier = Modifier
                     .combinedClickable(onClick = {}, onLongClick = {myDpm.wipeDevice(0)}),

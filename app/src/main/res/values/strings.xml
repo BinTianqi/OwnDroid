@@ -44,7 +44,10 @@
     <string name="suspend">停用</string>
     <string name="block_unins">防卸载</string>
     <string name="isapphidden_desc">如果隐藏，有可能是没安装</string>
-    <string name="sometimes_not_avaliable">有时候不能用</string>
+    <string name="sometimes_not_available">有时候不能用</string>
     <string name="user_ctrl_disabled">禁止用户控制</string>
-    <string name="user_ctrl_disabled_desc">阻止清除应用数据和缓存</string>>
+    <string name="user_ctrl_disabled_desc">阻止清除应用数据和缓存</string>
+    <string name="security">安全</string>
+    <string name="inst_unknown_src">安装未知来源应用</string>
+    <string name="security_desc">修改或清除锁屏密码</string>>
 </resources>
