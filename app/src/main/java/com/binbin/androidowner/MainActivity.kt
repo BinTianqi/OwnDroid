@@ -5,7 +5,6 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.os.Bundle
-import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -14,7 +13,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -49,24 +47,18 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        window.decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
-        window.decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
-        //getWindow().setStatusBarColor(Color.White)
         super.onCreate(savedInstanceState)
         val context = applicationContext
         val dpm = context.getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
         val adminComponent = ComponentName(context,MyDeviceAdminReceiver::class.java)
         setContent {
             val sysUiCtrl = rememberSystemUiController()
-            val sf = MaterialTheme.colorScheme.surface
             val useDarkIcon = !isSystemInDarkTheme()
-            SideEffect {
-                sysUiCtrl.run {
-                    setNavigationBarColor(sf,useDarkIcon)
-                    setStatusBarColor(Color.White.copy(alpha = 0F),useDarkIcon)
-                }
-            }
             AndroidOwnerTheme {
+                SideEffect {
+                    sysUiCtrl.setNavigationBarColor(Color.Transparent,useDarkIcon)
+                    sysUiCtrl.setStatusBarColor(Color.Transparent,useDarkIcon)
+                }
                 MyScaffold(dpm,adminComponent,context)
             }
         }
@@ -128,7 +120,6 @@ fun MyScaffold(mainDpm:DevicePolicyManager, mainComponent:ComponentName, mainCon
             startDestination = "HomePage",
             modifier = Modifier
                 .padding(top = it.calculateTopPadding())
-                .navigationBarsPadding()
         ){
             composable(route = "HomePage", content = { HomePage(navCtrl,mainDpm,mainComponent)})
             composable(route = "DeviceControl", content = { DeviceControl(mainDpm,mainComponent)})
@@ -144,7 +135,8 @@ fun MyScaffold(mainDpm:DevicePolicyManager, mainComponent:ComponentName, mainCon
 fun HomePage(navCtrl:NavHostController,myDpm:DevicePolicyManager,myComponent:ComponentName){
     val isda = myDpm.isAdminActive(myComponent)
     val isdo = myDpm.isDeviceOwnerApp("com.binbin.androidowner")
-    val activated = if(isdo){"Device Owner 已激活"}else if(isda){"Device Admin已激活"}else{"未激活"}
+    val activateType = if(isdo){"Device Owner"}else if(isda){"Device Admin"}else{""}
+    val isActivated = if(isdo||isda){"已激活"}else{"未激活"}
     Column {
         Row(
             modifier = Modifier
@@ -153,7 +145,7 @@ fun HomePage(navCtrl:NavHostController,myDpm:DevicePolicyManager,myComponent:Com
                 .clip(RoundedCornerShape(15))
                 .background(color = MaterialTheme.colorScheme.tertiaryContainer)
                 .clickable(onClick = { navCtrl.navigate("Permissions") })
-                .padding(horizontal = 5.dp, vertical = 12.dp),
+                .padding(horizontal = 5.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -168,14 +160,16 @@ fun HomePage(navCtrl:NavHostController,myDpm:DevicePolicyManager,myComponent:Com
             )
             Column {
                 Text(
-                    text = stringResource(R.string.permission),
+                    text = isActivated,
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
-                Text(
-                    text = activated,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                )
+                if(activateType!=""){
+                    Text(
+                        text = activateType,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                }
             }
         }
         HomePageItem(R.string.device_ctrl, R.drawable.mobile_phone_fill0, R.string.device_ctrl_desc, "DeviceControl", navCtrl)

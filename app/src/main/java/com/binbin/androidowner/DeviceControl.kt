@@ -121,7 +121,7 @@ private fun DeviceCtrlItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(5.dp)
+            .padding(horizontal = 6.dp, vertical = 4.dp)
             .clip(RoundedCornerShape(15))
             .background(color = MaterialTheme.colorScheme.primaryContainer)
             .padding(8.dp),

@@ -50,7 +50,7 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 10.dp)
-                .clip(RoundedCornerShape(8))
+                .clip(RoundedCornerShape(15))
                 .background(color = MaterialTheme.colorScheme.primaryContainer)
                 .padding(10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -83,7 +83,7 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 10.dp)
-                .clip(RoundedCornerShape(8))
+                .clip(RoundedCornerShape(15))
                 .background(color = MaterialTheme.colorScheme.primaryContainer)
                 .padding(10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,

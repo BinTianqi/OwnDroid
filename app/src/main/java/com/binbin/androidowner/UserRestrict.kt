@@ -18,6 +18,7 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -84,8 +85,8 @@ private fun UserRestrictionItem(restriction:String, itemName:Int, restrictionDes
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 5.dp, horizontal = 8.dp)
-            .clip(RoundedCornerShape(10))
+            .padding(vertical = 4.dp, horizontal = 8.dp)
+            .clip(RoundedCornerShape(20))
             .background(color = MaterialTheme.colorScheme.secondaryContainer)
             .padding(5.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -98,7 +99,7 @@ private fun UserRestrictionItem(restriction:String, itemName:Int, restrictionDes
                 painter = painterResource(leadIcon),
                 contentDescription = null,
                 modifier = Modifier.padding(horizontal = 8.dp),
-                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                tint = MaterialTheme.colorScheme.secondary
             )
             Column(
                 modifier = Modifier.align(Alignment.CenterVertically)
@@ -107,7 +108,7 @@ private fun UserRestrictionItem(restriction:String, itemName:Int, restrictionDes
                     text = stringResource(itemName),
                     style = MaterialTheme.typography.titleLarge
                 )
-                if(restrictionDescription!=""){Text(restrictionDescription)}
+                if(restrictionDescription!=""){Text(text = restrictionDescription, color = MaterialTheme.colorScheme.onSecondaryContainer)}
             }
         }
         if(isdo&&VERSION.SDK_INT>=24){
@@ -124,12 +125,9 @@ private fun UserRestrictionItem(restriction:String, itemName:Int, restrictionDes
                         myDpm.clearUserRestriction(myComponent,restriction)
                     }
                     strictState = myDpm.getUserRestrictions(myComponent).getBoolean(restriction)
-
                 },
                 enabled = isdo
             )
-        }else{
-
         }
     }
 }
