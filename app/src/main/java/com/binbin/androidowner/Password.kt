@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -54,6 +55,7 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
         modifier = Modifier
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
+            .navigationBarsPadding()
     ) {
         val myByteArray by remember{ mutableStateOf(byteArrayOf(1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0)) }
         Text(
@@ -66,6 +68,27 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
                 .background(color = MaterialTheme.colorScheme.errorContainer)
                 .padding(8.dp)
         )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+                .clip(RoundedCornerShape(15))
+                .background(color = MaterialTheme.colorScheme.primaryContainer)
+                .padding(8.dp)
+        ) {
+            if(myDpm.isDeviceOwnerApp("com.binbin.androidowner")){
+                if(VERSION.SDK_INT>=29){
+                    val pwdComplex = myDpm.passwordComplexity
+                    Text(text = "密码复杂度：$pwdComplex")
+                }
+                val pwdFailedAttempts = myDpm.currentFailedPasswordAttempts
+                Text(text = "密码已错误次数：$pwdFailedAttempts")
+                if(VERSION.SDK_INT>=28&&(myDpm.isManagedProfile(myComponent)||myDpm.isProfileOwnerApp("com.binbin.androidowner"))){
+                    val unifiedPwd = myDpm.isUsingUnifiedPassword(myComponent)
+                    Text("个人与工作应用密码一致：$unifiedPwd")
+                }
+            }
+        }
         if(VERSION.SDK_INT>=26){
             Column(
                 horizontalAlignment = Alignment.Start,
@@ -168,7 +191,7 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
         PasswordItem(R.string.max_pwd_fail,R.string.max_pwd_fail_desc,R.string.max_pwd_fail_textfield, focusMgr,false,
             {myDpm.getMaximumFailedPasswordsForWipe(null).toString()},{ic -> myDpm.setMaximumFailedPasswordsForWipe(myComponent, ic.toInt()) })
         PasswordItem(R.string.pwd_timeout,R.string.pwd_timeout_desc,R.string.pwd_timeout_textfield, focusMgr,true,
-            {myDpm.getPasswordExpirationTimeout(null).toString()},{ic -> myDpm.setPasswordExpirationTimeout(myComponent, ic.toLong()) })
+            {myDpm.getPasswordExpiration(null).toString()},{ic -> myDpm.setPasswordExpirationTimeout(myComponent, ic.toLong()) })
         PasswordItem(R.string.pwd_history,R.string.pwd_history_desc,R.string.pwd_history_textfield, focusMgr,true,
             {myDpm.getPasswordHistoryLength(null).toString()},{ic -> myDpm.setPasswordHistoryLength(myComponent, ic.toInt()) })
 

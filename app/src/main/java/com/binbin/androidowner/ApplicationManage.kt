@@ -49,7 +49,8 @@ fun ApplicationManage(myDpm:DevicePolicyManager, myComponent:ComponentName,myCon
             onValueChange = {
                 pkgName = it
             },
-            label = { Text("包名") }
+            label = { Text("包名") },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
         )
         if(VERSION.SDK_INT>=24){
             val isSuspended = {

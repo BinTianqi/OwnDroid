@@ -113,4 +113,5 @@
     <string name="pwd_history">密码历史记录长度</string>
     <string name="pwd_history_desc">用户输入的密码不能与历史记录中的任何密码相同，0为无限制</string>
     <string name="pwd_history_textfield">历史记录长度</string>
+    <string name="usb_signal">USB信号</string>
 </resources>

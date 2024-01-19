@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,6 +41,7 @@ fun UserRestriction(myDpm: DevicePolicyManager, myComponent: ComponentName){
         modifier = Modifier
             .verticalScroll(verticalScrolling)
             .padding(bottom = 20.dp)
+            .navigationBarsPadding()
     ) {
         Text("打开开关后会禁用对应的功能")
 
@@ -217,7 +219,8 @@ private fun UserRestrictionItem(restriction:String, itemName:Int, restrictionDes
             ) {
                 Text(
                     text = stringResource(itemName),
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
                 if(restrictionDescription!=""){Text(text = restrictionDescription, color = MaterialTheme.colorScheme.onSecondaryContainer)}
             }

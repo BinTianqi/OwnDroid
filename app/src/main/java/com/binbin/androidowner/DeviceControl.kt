@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,6 +41,7 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName){
         modifier = Modifier
             .verticalScroll(rememberScrollState())
             .padding(bottom = 20.dp)
+            .navigationBarsPadding()
     ) {
         DeviceCtrlItem(R.string.disable_cam,R.string.place_holder, R.drawable.photo_camera_fill0,myDpm,{myDpm.getCameraDisabled(null)},{b -> myDpm.setCameraDisabled(myComponent,b)})
         DeviceCtrlItem(R.string.disable_scrcap,R.string.aosp_scrrec_also_work,R.drawable.screenshot_fill0,myDpm,{myDpm.getScreenCaptureDisabled(null)},{b -> myDpm.setScreenCaptureDisabled(myComponent,b) })
@@ -53,6 +55,13 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName){
         DeviceCtrlItem(R.string.master_mute,R.string.place_holder,R.drawable.volume_up_fill0,myDpm,{myDpm.isMasterVolumeMuted(myComponent)},{b -> myDpm.setMasterVolumeMuted(myComponent,b) })
         if(VERSION.SDK_INT>=26){
             DeviceCtrlItem(R.string.backup_service,R.string.place_holder,R.drawable.backup_fill0,myDpm,{myDpm.isBackupServiceEnabled(myComponent)},{b -> myDpm.setBackupServiceEnabled(myComponent,b) })
+        }
+        if(VERSION.SDK_INT>=31){
+            if(myDpm.canUsbDataSignalingBeDisabled()){
+                DeviceCtrlItem(R.string.usb_signal,R.string.place_holder,R.drawable.usb_fill0,myDpm,{myDpm.isUsbDataSignalingEnabled},{b -> myDpm.isUsbDataSignalingEnabled = b })
+            }else{
+                Text("你的设备不支持关闭USB信号")
+            }
         }
         if(VERSION.SDK_INT>=24){
             Button(onClick = {myDpm.reboot(myComponent)}) {
@@ -74,6 +83,7 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName){
         if(VERSION.SDK_INT<30){
             Text("自动设置时间和自动设置时区需要API30")
         }
+        if(VERSION.SDK_INT<31){Text("关闭USB信号需API31")}
         if(VERSION.SDK_INT<34){
             Text("隐藏状态栏需要API34")
         }

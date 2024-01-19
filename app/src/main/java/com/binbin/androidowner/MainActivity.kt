@@ -13,6 +13,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -120,6 +121,7 @@ fun MyScaffold(mainDpm:DevicePolicyManager, mainComponent:ComponentName, mainCon
             startDestination = "HomePage",
             modifier = Modifier
                 .padding(top = it.calculateTopPadding())
+                .imePadding()
         ){
             composable(route = "HomePage", content = { HomePage(navCtrl,mainDpm,mainComponent)})
             composable(route = "DeviceControl", content = { DeviceControl(mainDpm,mainComponent)})
