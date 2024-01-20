@@ -2,14 +2,14 @@ package com.binbin.androidowner
 
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
-import android.os.Build
+import android.content.Context
 import android.os.Build.VERSION
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -20,10 +20,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,9 +36,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName){
+fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName,myContext: Context){
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
@@ -56,11 +57,29 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName){
         if(VERSION.SDK_INT>=26){
             DeviceCtrlItem(R.string.backup_service,R.string.place_holder,R.drawable.backup_fill0,myDpm,{myDpm.isBackupServiceEnabled(myComponent)},{b -> myDpm.setBackupServiceEnabled(myComponent,b) })
         }
+        DeviceCtrlItem(R.string.disable_bt_contact_share,R.string.place_holder,R.drawable.account_circle_fill0,myDpm,{myDpm.getBluetoothContactSharingDisabled(myComponent)},{b -> myDpm.setBluetoothContactSharingDisabled(myComponent,b)})
         if(VERSION.SDK_INT>=31){
             if(myDpm.canUsbDataSignalingBeDisabled()){
                 DeviceCtrlItem(R.string.usb_signal,R.string.place_holder,R.drawable.usb_fill0,myDpm,{myDpm.isUsbDataSignalingEnabled},{b -> myDpm.isUsbDataSignalingEnabled = b })
             }else{
                 Text("你的设备不支持关闭USB信号")
+            }
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 6.dp, vertical = 4.dp)
+                .clip(RoundedCornerShape(15))
+                .background(color = MaterialTheme.colorScheme.primaryContainer)
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(onClick = {myDpm.setKeyguardDisabled(myComponent,true)}) {
+                Text("禁用锁屏（需无密码）")
+            }
+            Spacer(Modifier.padding(horizontal = 5.dp))
+            Button(onClick = {myDpm.setKeyguardDisabled(myComponent,false)}) {
+                Text("启用锁屏")
             }
         }
         if(VERSION.SDK_INT>=24){
@@ -90,29 +109,60 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName){
         Button(onClick = {myDpm.lockNow()}) {
             Text("锁屏")
         }
-        Text("以下功能需要长按按钮，作者并未测试")
-        Button(
-            onClick = {},
-            modifier = Modifier
-                .combinedClickable(onClick = {}, onLongClick = {myDpm.wipeData(0)}),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.errorContainer,
-                contentColor = MaterialTheme.colorScheme.error
-            )
-        ) {
-            Text("WipeData")
+        Button(onClick = {myDpm.uninstallAllUserCaCerts(myComponent)}) {
+            Text(text = "清除用户Ca证书")
         }
-        if (VERSION.SDK_INT >= 34) {
+        SysUpdatePolicy(myDpm,myComponent,myContext)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 6.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(color = MaterialTheme.colorScheme.errorContainer)
+                .padding(8.dp)
+        ) {
+            var flag by remember{ mutableIntStateOf(0) }
+            var confirmed by remember{ mutableStateOf(false) }
+            Text(text = "清除数据",style = MaterialTheme.typography.titleLarge,modifier = Modifier.padding(6.dp))
+            RadioButtonItem("默认",{flag==0},{flag=0})
+            RadioButtonItem("WIPE_EXTERNAL_STORAGE",{flag==0x0001},{flag=0x0001})
+            RadioButtonItem("WIPE_RESET_PROTECTION_DATA",{flag==0x0002},{flag=0x0002})
+            RadioButtonItem("WIPE_EUICC",{flag==0x0004},{flag=0x0004})
+            RadioButtonItem("WIPE_SILENTLY",{flag==0x0008},{flag=0x0008})
+            Text("清空数据的不能是系统用户")
             Button(
-                modifier = Modifier
-                    .combinedClickable(onClick = {}, onLongClick = {myDpm.wipeDevice(0)}),
-                onClick = {},
+                onClick = {confirmed=!confirmed},
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                    contentColor = MaterialTheme.colorScheme.error
+                    containerColor = if(confirmed){MaterialTheme.colorScheme.primary}else{MaterialTheme.colorScheme.error},
+                    contentColor = if(confirmed){MaterialTheme.colorScheme.onPrimary}else{MaterialTheme.colorScheme.onError}
                 )
             ) {
-                Text("WipeDevice(API34)")
+                Text(text = if(confirmed){"取消"}else{"确定"})
+            }
+            Row {
+                Button(
+                    onClick = {myDpm.wipeData(flag)},
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    ),
+                    enabled = confirmed
+                ) {
+                    Text("WipeData")
+                }
+                Spacer(Modifier.padding(horizontal = 5.dp))
+                if (VERSION.SDK_INT >= 34) {
+                    Button(
+                        onClick = {myDpm.wipeDevice(flag)},
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        ),
+                        enabled = confirmed
+                    ) {
+                        Text("WipeDevice(API34)")
+                    }
+                }
             }
         }
     }

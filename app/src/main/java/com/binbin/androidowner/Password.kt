@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -68,15 +67,15 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
                 .background(color = MaterialTheme.colorScheme.errorContainer)
                 .padding(8.dp)
         )
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-                .clip(RoundedCornerShape(15))
-                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                .padding(8.dp)
-        ) {
-            if(myDpm.isDeviceOwnerApp("com.binbin.androidowner")){
+        if(myDpm.isDeviceOwnerApp("com.binbin.androidowner")){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                    .clip(RoundedCornerShape(15))
+                    .background(color = MaterialTheme.colorScheme.primaryContainer)
+                    .padding(8.dp)
+            ) {
                 if(VERSION.SDK_INT>=29){
                     val pwdComplex = myDpm.passwordComplexity
                     Text(text = "密码复杂度：$pwdComplex")

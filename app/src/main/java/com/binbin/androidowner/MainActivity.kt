@@ -2,6 +2,7 @@ package com.binbin.androidowner
 
 import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
+import android.app.admin.SystemUpdatePolicy
 import android.content.ComponentName
 import android.content.Context
 import android.os.Bundle
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -124,7 +126,7 @@ fun MyScaffold(mainDpm:DevicePolicyManager, mainComponent:ComponentName, mainCon
                 .imePadding()
         ){
             composable(route = "HomePage", content = { HomePage(navCtrl,mainDpm,mainComponent)})
-            composable(route = "DeviceControl", content = { DeviceControl(mainDpm,mainComponent)})
+            composable(route = "DeviceControl", content = { DeviceControl(mainDpm,mainComponent,mainContext)})
             composable(route = "Permissions", content = { DpmPermissions(mainDpm,mainComponent,mainContext,navCtrl)})
             composable(route = "ApplicationManage", content = { ApplicationManage(mainDpm,mainComponent,mainContext)})
             composable(route = "UserRestriction", content = { UserRestriction(mainDpm,mainComponent)})
@@ -210,5 +212,21 @@ fun HomePageItem(name:Int, imgVector:Int, description:Int, navTo:String, myNav:N
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
+    }
+}
+
+@Composable
+fun RadioButtonItem(
+    text:String,
+    selected:()->Boolean,
+    operation:()->Unit
+){
+    Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
+        .fillMaxWidth()
+        .clip(RoundedCornerShape(25))
+        .clickable(onClick = operation)
+    ) {
+        RadioButton(selected = selected(), onClick = operation)
+        Text(text)
     }
 }

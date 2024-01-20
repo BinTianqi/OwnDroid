@@ -30,7 +30,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -143,87 +145,74 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
             }
         }
         if(isdo&&VERSION.SDK_INT>=24){
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 10.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(color = MaterialTheme.colorScheme.primaryContainer)
-                    .padding(10.dp)
-            ) {
-                var lockScrInfo by remember { mutableStateOf(myDpm.deviceOwnerLockScreenInfo) }
-                Text(text = "锁屏DeviceOwner信息", style = MaterialTheme.typography.titleLarge)
-                TextField(
-                    value = if(lockScrInfo!=null){lockScrInfo.toString()}else{""},
-                    onValueChange = { lockScrInfo= it},
-                    label = { Text("锁屏信息") },
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
-                )
-                Row {
-                    Button(onClick = {
-                        myDpm.setDeviceOwnerLockScreenInfo(myComponent,lockScrInfo)
-                        lockScrInfo=myDpm.deviceOwnerLockScreenInfo
-                        focusManager.clearFocus()
-                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
-                    }) {
-                        Text("应用")
-                    }
-                    Spacer(Modifier.padding(horizontal = 4.dp))
-                    Button(onClick = {
-                        myDpm.setDeviceOwnerLockScreenInfo(myComponent,null)
-                        lockScrInfo=myDpm.deviceOwnerLockScreenInfo
-                        focusManager.clearFocus()
-                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
-                    }) {
-                        Text("默认")
-                    }
-                }
-            }
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 10.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(color = MaterialTheme.colorScheme.primaryContainer)
-                    .padding(10.dp)
-            ) {
-                Text(text = "提示消息", style = MaterialTheme.typography.titleLarge)
-                Text(text = "如果你禁用了某个功能，用户尝试使用这个功能时会看见这个消息（可多行）",modifier = Modifier.padding(vertical = 6.dp))
-                var supportMsg by remember{ mutableStateOf(myDpm.getShortSupportMessage(myComponent)) }
-                TextField(
-                    value = if(supportMsg!=null){ supportMsg.toString() }else{""},
-                    label = {Text("提示消息")},
-                    onValueChange = { supportMsg=it },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Row(
-                    modifier = Modifier.padding(vertical = 6.dp)
-                ) {
-                    Button(
-                        onClick = {
-                            myDpm.setShortSupportMessage(myComponent,supportMsg)
-                            supportMsg=if(myDpm.getShortSupportMessage(myComponent)!=null){ myDpm.getShortSupportMessage(myComponent).toString() }else{""}
-                            focusManager.clearFocus()
-                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
-                        }
-                    ) {
-                        Text(text = "应用")
-                    }
-                    Spacer(Modifier.padding(horizontal = 4.dp))
-                    Button(
-                        onClick = {
-                            myDpm.setShortSupportMessage(myComponent,null)
-                            supportMsg = myDpm.getShortSupportMessage(myComponent)
-                            focusManager.clearFocus()
-                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
-                        }
-                    ) {
-                        Text(text = "默认")
-                    }
-                }
+            DeviceOwnerInfo(R.string.owner_lockscr_info,R.string.place_holder,R.string.owner_lockscr_info,focusManager,myContext,
+                {myDpm.deviceOwnerLockScreenInfo},{content ->  myDpm.setDeviceOwnerLockScreenInfo(myComponent,content)})
+            DeviceOwnerInfo(R.string.support_msg,R.string.support_msg_desc,R.string.message,focusManager,myContext,
+                {myDpm.getShortSupportMessage(myComponent)},{content ->  myDpm.setShortSupportMessage(myComponent,content)})
+            DeviceOwnerInfo(R.string.long_support_msg,R.string.long_support_msg_desc,R.string.message,focusManager,myContext,
+                {myDpm.getLongSupportMessage(myComponent)},{content ->  myDpm.setLongSupportMessage(myComponent,content)})
+        }
+        DeviceOwnerInfo(R.string.profile_name,R.string.unknown_feature,R.string.profile_name,focusManager,myContext,
+            {null},{content ->  myDpm.setProfileName(myComponent,content)})
+        Spacer(Modifier.padding(vertical = 20.dp))
+    }
+}
 
+@Composable
+fun DeviceOwnerInfo(
+    name:Int,
+    desc:Int,
+    textfield:Int,
+    fm:FocusManager,
+    myContext:Context,
+    input:()->CharSequence?,
+    output:(content:String?)->Unit
+){
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 10.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(color = MaterialTheme.colorScheme.primaryContainer)
+            .padding(10.dp)
+    ) {
+        Text(text = stringResource(name), style = MaterialTheme.typography.titleLarge)
+        if(desc!=R.string.place_holder){Text(text = stringResource(desc),modifier = Modifier.padding(top = 6.dp))}
+        var inputContent by remember{ mutableStateOf(input()) }
+        TextField(
+            value = if(inputContent!=null){ inputContent.toString() }else{""},
+            label = {Text(stringResource(textfield))},
+            onValueChange = { inputContent=it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
+        )
+        Row(
+            modifier = Modifier.padding(vertical = 6.dp)
+        ) {
+            Button(
+                onClick = {
+                    output(inputContent.toString())
+                    inputContent= input()
+                    fm.clearFocus()
+                    Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                }
+            ) {
+                Text(text = "应用")
+            }
+            Spacer(Modifier.padding(horizontal = 4.dp))
+            Button(
+                onClick = {
+                    output(null)
+                    inputContent = input()
+                    fm.clearFocus()
+                    Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                }
+            ) {
+                Text(text = "重置")
             }
         }
+
     }
 }
 

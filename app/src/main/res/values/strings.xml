@@ -21,7 +21,7 @@
     <string name="allow">允许</string>
     <string name="disallow">禁止</string>
     <string name="is_disallow">是否禁止：</string>
-    <string name="apps_ctrl_description">包括清空存储空间、清空缓存</string>
+    <string name="apps_ctrl_description">可以隐藏、停用应用</string>
     <string name="create_windows_description">包括Toast和浮动通知</string>
     <string name="permission">权限</string>
     <string name="ui_ctrl">UI控制</string>
@@ -114,4 +114,16 @@
     <string name="pwd_history_desc">用户输入的密码不能与历史记录中的任何密码相同，0为无限制</string>
     <string name="pwd_history_textfield">历史记录长度</string>
     <string name="usb_signal">USB信号</string>
+
+    <string name="owner_lockscr_info">锁屏信息</string>
+    <string name="support_msg">提供支持的短消息</string>
+    <string name="support_msg_desc">如果你禁用了某个功能，用户尝试使用这个功能时会看见这个消息（可多行）</string>
+    <string name="message">消息</string>
+    <string name="profile_name">预设名</string>
+    <string name="long_support_msg">提供支持的长消息</string>
+    <string name="long_support_msg_desc">都是显示短消息，长消息不知道在哪里显示</string>
+    <string name="disable_bt_contact_share">禁止蓝牙分享通讯录</string>
+    <string name="sys_update_policy">系统更新策略</string>
+    <string name="sys_update_policy_desc">管理系统更新策略</string>
+    <string name="disable_keyguard">禁止锁屏（需无密码）</string>
 </resources>

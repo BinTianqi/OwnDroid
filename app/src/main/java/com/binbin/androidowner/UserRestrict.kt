@@ -45,7 +45,7 @@ fun UserRestriction(myDpm: DevicePolicyManager, myComponent: ComponentName){
     ) {
         Text("打开开关后会禁用对应的功能")
 
-        SectionTab("网络和互联网") { currentSection = if(currentSection==1){ 0 }else{ 1 } }
+        SectionTab("网络和互联网",{currentSection==1}) { currentSection = if(currentSection==1){ 0 }else{ 1 } }
         if(currentSection==1){
             UserRestrictionItem(UserManager.DISALLOW_CONFIG_MOBILE_NETWORKS,R.string.config_mobile_network,"",R.drawable.signal_cellular_alt_fill0,myComponent, myDpm)
             if(VERSION.SDK_INT>=24){UserRestrictionItem(UserManager.DISALLOW_DATA_ROAMING,R.string.data_roaming,"",R.drawable.network_cell_fill0,myComponent, myDpm)}
@@ -72,7 +72,7 @@ fun UserRestriction(myDpm: DevicePolicyManager, myComponent: ComponentName){
             UserRestrictionItem(UserManager.DISALLOW_OUTGOING_CALLS,R.string.outgoing_calls,"",R.drawable.phone_forwarded_fill0,myComponent, myDpm)
         }
 
-        SectionTab("其他连接") { currentSection = if(currentSection==6){ 0 }else{ 6 } }
+        SectionTab("其他连接",{currentSection==6}) { currentSection = if(currentSection==6){ 0 }else{ 6 } }
         if(currentSection==6){
             if(VERSION.SDK_INT>=26){
                 UserRestrictionItem(UserManager.DISALLOW_BLUETOOTH,R.string.bluetooth,"",R.drawable.bluetooth_fill0,myComponent, myDpm)
@@ -85,7 +85,7 @@ fun UserRestriction(myDpm: DevicePolicyManager, myComponent: ComponentName){
             UserRestrictionItem(UserManager.DISALLOW_MOUNT_PHYSICAL_MEDIA,R.string.mount_physical_media, stringResource(R.string.mount_phisical_media_desc),R.drawable.sd_card_fill0,myComponent, myDpm)
             if(VERSION.SDK_INT>=28){UserRestrictionItem(UserManager.DISALLOW_PRINTING,R.string.printing,"",R.drawable.print_fill0,myComponent, myDpm)}
         }
-        SectionTab("应用") { currentSection = if(currentSection==2){ 0 }else{ 2 } }
+        SectionTab("应用",{currentSection==2}) { currentSection = if(currentSection==2){ 0 }else{ 2 } }
         if(currentSection==2){
             UserRestrictionItem(UserManager.DISALLOW_INSTALL_APPS,R.string.install_apps,"",R.drawable.android_fill0,myComponent, myDpm)
             if(VERSION.SDK_INT>=29){UserRestrictionItem(UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY,R.string.install_unknown_src_globally,"",R.drawable.android_fill0,myComponent, myDpm)}
@@ -95,7 +95,7 @@ fun UserRestriction(myDpm: DevicePolicyManager, myComponent: ComponentName){
             if(VERSION.SDK_INT>=34){ UserRestrictionItem(UserManager.DISALLOW_CONFIG_DEFAULT_APPS,R.string.config_default_apps,"",R.drawable.apps_fill0,myComponent, myDpm) }
         }
 
-        SectionTab("显示与音量") { currentSection = if(currentSection==3){ 0 }else{ 3 } }
+        SectionTab("显示与音量",{currentSection==3}) { currentSection = if(currentSection==3){ 0 }else{ 3 } }
         if(currentSection==3){
             if(VERSION.SDK_INT>=28){
                 UserRestrictionItem(UserManager.DISALLOW_CONFIG_BRIGHTNESS,R.string.config_brightness,"",R.drawable.brightness_5_fill0,myComponent, myDpm)
@@ -110,7 +110,7 @@ fun UserRestriction(myDpm: DevicePolicyManager, myComponent: ComponentName){
             }
         }
 
-        SectionTab("用户与工作资料") { currentSection = if(currentSection==4){ 0 }else{ 4 } }
+        SectionTab("用户与工作资料",{currentSection==4}) { currentSection = if(currentSection==4){ 0 }else{ 4 } }
         if(currentSection==4){
             UserRestrictionItem(UserManager.DISALLOW_ADD_USER,R.string.add_user,"",R.drawable.account_circle_fill0,myComponent, myDpm)
             UserRestrictionItem(UserManager.DISALLOW_REMOVE_USER,R.string.remove_user,"",R.drawable.account_circle_fill0,myComponent, myDpm)
@@ -127,7 +127,7 @@ fun UserRestriction(myDpm: DevicePolicyManager, myComponent: ComponentName){
             }
         }
 
-        SectionTab("杂项") { currentSection = if(currentSection==5){ 0 }else{ 5 } }
+        SectionTab("杂项",{currentSection==5}) { currentSection = if(currentSection==5){ 0 }else{ 5 } }
         if(currentSection==5){
             if(VERSION.SDK_INT>=26){ UserRestrictionItem(UserManager.DISALLOW_AUTOFILL,R.string.autofill, "",R.drawable.password_fill0,myComponent, myDpm) }
             UserRestrictionItem(UserManager.DISALLOW_CONFIG_CREDENTIALS,R.string.config_credentials,"",R.drawable.android_fill0,myComponent, myDpm)
@@ -175,17 +175,17 @@ fun UserRestriction(myDpm: DevicePolicyManager, myComponent: ComponentName){
 }
 
 @Composable
-fun SectionTab(txt:String,setSection:()->Unit){
+fun SectionTab(txt:String,getSection:()->Boolean,setSection:()->Unit){
     Text(
         text = txt,
-        color = MaterialTheme.colorScheme.onTertiaryContainer,
+        color = if(getSection()){MaterialTheme.colorScheme.onTertiaryContainer}else{MaterialTheme.colorScheme.onPrimaryContainer},
         textAlign = TextAlign.Center,
         style = MaterialTheme.typography.headlineMedium,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 6.dp)
             .clip(RoundedCornerShape(15))
-            .background(color = MaterialTheme.colorScheme.tertiaryContainer)
+            .background(color = if(getSection()){MaterialTheme.colorScheme.tertiaryContainer}else{MaterialTheme.colorScheme.primaryContainer})
             .clickable(onClick = setSection)
             .padding(vertical = 8.dp)
     )
