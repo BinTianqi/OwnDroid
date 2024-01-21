@@ -1,9 +1,12 @@
 package com.binbin.androidowner
 
+import android.app.PendingIntent
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentSender
+import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager.NameNotFoundException
 import android.net.Uri
 import android.os.Build.VERSION
@@ -32,6 +35,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
+import java.io.IOException
+import java.io.InputStream
 
 
 @Composable
@@ -50,7 +55,9 @@ fun ApplicationManage(myDpm:DevicePolicyManager, myComponent:ComponentName,myCon
                 pkgName = it
             },
             label = { Text("包名") },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp)
         )
         if(VERSION.SDK_INT>=24){
             val isSuspended = {
@@ -80,20 +87,20 @@ fun ApplicationManage(myDpm:DevicePolicyManager, myComponent:ComponentName,myCon
                 .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceAround
         ) {
-            Button(onClick = {myDpm.setUninstallBlocked(myComponent,pkgName,false)}) {
+            Button(onClick = {myDpm.setUninstallBlocked(myComponent,pkgName,false)}, enabled = isDeviceOwner(myDpm)) {
                 Text("取消防卸载")
             }
-            Button(onClick = {myDpm.setUninstallBlocked(myComponent,pkgName,true)}) {
+            Button(onClick = {myDpm.setUninstallBlocked(myComponent,pkgName,true)}, enabled = isDeviceOwner(myDpm)) {
                 Text("防卸载")
             }
         }
-        Button(
+        /*Button(
             onClick = {
-                uninstallApp(myContext,pkgName)
+                uninstallPkg(pkgName,myContext)
             }) {
             Text("卸载")
-        }
-        Spacer(Modifier.padding(5.dp))
+        }*/
+        Spacer(Modifier.padding(20.dp))
     }
 }
 
@@ -156,4 +163,40 @@ private fun uninstallApp(context: Context, packageName: String) {
     val uninstallIntent = Intent(Intent.ACTION_DELETE, packageUri)
     uninstallIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     context.startActivity(uninstallIntent)
+}
+
+fun isAppInstalled(context: Context, packageName: String): Boolean {
+    return try {
+        context.packageManager.getApplicationInfo(packageName, 0)
+        true
+    } catch (e: NameNotFoundException) {
+        false
+    }
+}
+
+@Throws(IOException::class)
+fun installPackage(context: Context, inputStream: InputStream, packageName: String?): Boolean {
+    val packageInstaller = context.packageManager.packageInstaller
+    val params = PackageInstaller.SessionParams(
+        PackageInstaller.SessionParams.MODE_FULL_INSTALL
+    )
+    params.setAppPackageName(packageName)
+    val sessionId = packageInstaller.createSession(params)
+    val session = packageInstaller.openSession(sessionId)
+    val out = session.openWrite("COSU", 0, -1)
+    val buffer = ByteArray(65536)
+    var c: Int
+    while (inputStream.read(buffer).also { c = it } != -1) {
+        out.write(buffer, 0, c)
+    }
+    session.fsync(out)
+    inputStream.close()
+    out.close()
+    session.commit(createIntentSender(context, sessionId))
+    return true
+}
+
+private fun createIntentSender(context: Context, sessionId: Int): IntentSender {
+    val pendingIntent = PendingIntent.getBroadcast(context, sessionId, Intent(), PendingIntent.FLAG_IMMUTABLE)
+    return pendingIntent.intentSender
 }

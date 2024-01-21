@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -21,6 +22,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -35,7 +37,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun UserRestriction(myDpm: DevicePolicyManager, myComponent: ComponentName){
     val verticalScrolling = rememberScrollState()
-    var currentSection by remember{ mutableStateOf(0) }
+    var currentSection by remember{ mutableIntStateOf(0) }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -171,6 +173,7 @@ fun UserRestriction(myDpm: DevicePolicyManager, myComponent: ComponentName){
         if(VERSION.SDK_INT<34){
             Text("以下功能需要安卓14或以上：2G信号、启用设备管理器、超宽频段无线电")
         }
+        Spacer(Modifier.padding(vertical = 20.dp))
     }
 }
 

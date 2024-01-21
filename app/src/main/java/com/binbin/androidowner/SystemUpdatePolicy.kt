@@ -50,7 +50,7 @@ fun SysUpdatePolicy(myDpm:DevicePolicyManager,myComponent:ComponentName,myContex
                     .background(color = MaterialTheme.colorScheme.primaryContainer)
                     .padding(8.dp)
             ) {
-                val sysUpdateInfo = myDpm.getPendingSystemUpdate(myComponent)
+                val sysUpdateInfo = if(isDeviceOwner(myDpm)){myDpm.getPendingSystemUpdate(myComponent)}else{null}
                 if(sysUpdateInfo!=null){
                     Text("Update first available: ${Date(sysUpdateInfo.receivedTime)}")
                     Text("Hash code: ${sysUpdateInfo.hashCode()}")
@@ -115,7 +115,7 @@ fun SysUpdatePolicy(myDpm:DevicePolicyManager,myComponent:ComponentName,myContex
                 }
             Button(
                 onClick = {myDpm.setSystemUpdatePolicy(myComponent,policy);Toast.makeText(myContext, "成功！", Toast.LENGTH_SHORT).show()},
-                enabled = myDpm.isDeviceOwnerApp("com.binbin.androidowner")
+                enabled = isDeviceOwner(myDpm)
             ) {
                 Text("应用")
             }

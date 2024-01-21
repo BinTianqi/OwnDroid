@@ -4,6 +4,7 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.os.Build.VERSION
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -71,27 +73,60 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName,myConte
                 .padding(horizontal = 6.dp, vertical = 4.dp)
                 .clip(RoundedCornerShape(15))
                 .background(color = MaterialTheme.colorScheme.primaryContainer)
-                .padding(8.dp),
+                .padding(vertical = 5.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Button(onClick = {myDpm.setKeyguardDisabled(myComponent,true)}) {
+            Button(
+                onClick = {
+                    if(myDpm.setKeyguardDisabled(myComponent,true)){
+                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                    }else{
+                        Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                enabled = isDeviceOwner(myDpm)
+            ) {
                 Text("禁用锁屏（需无密码）")
             }
             Spacer(Modifier.padding(horizontal = 5.dp))
-            Button(onClick = {myDpm.setKeyguardDisabled(myComponent,false)}) {
+            Button(
+                onClick = {
+                    if(myDpm.setKeyguardDisabled(myComponent,false)){
+                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                    }else{
+                        Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                enabled = isDeviceOwner(myDpm)
+            ) {
                 Text("启用锁屏")
             }
         }
-        if(VERSION.SDK_INT>=24){
-            Button(onClick = {myDpm.reboot(myComponent)}) {
-                Text("重启")
+        Row(
+            horizontalArrangement = Arrangement.SpaceAround,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp, horizontal = 6.dp)
+                .clip(RoundedCornerShape(15))
+                .background(color = MaterialTheme.colorScheme.primaryContainer)
+                .padding(vertical = 4.dp),
+        ) {
+            if(VERSION.SDK_INT>=24){
+                Button(onClick = {myDpm.reboot(myComponent)}, enabled = isDeviceOwner(myDpm)) {
+                    Text("重启")
+                }
+                Button(onClick = {myDpm.lockNow()}, enabled = myDpm.isAdminActive(myComponent)) {
+                    Text("锁屏")
+                }
             }
+        }
+        if(VERSION.SDK_INT>=24){
             val wifimac = try {
                 myDpm.getWifiMacAddress(myComponent).toString()
             }catch(e:SecurityException){
                 "没有权限"
             }
-            Text("WiFi MAC: $wifimac")
+            Text(text = "WiFi MAC: $wifimac",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
         }
         if(VERSION.SDK_INT<24){
             Text("重启和WiFi Mac需要API24")
@@ -106,10 +141,7 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName,myConte
         if(VERSION.SDK_INT<34){
             Text("隐藏状态栏需要API34")
         }
-        Button(onClick = {myDpm.lockNow()}) {
-            Text("锁屏")
-        }
-        Button(onClick = {myDpm.uninstallAllUserCaCerts(myComponent)}) {
+        Button(onClick = {myDpm.uninstallAllUserCaCerts(myComponent)},modifier = Modifier.align(Alignment.CenterHorizontally), enabled = isDeviceOwner(myDpm)) {
             Text(text = "清除用户Ca证书")
         }
         SysUpdatePolicy(myDpm,myComponent,myContext)
@@ -135,7 +167,8 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName,myConte
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if(confirmed){MaterialTheme.colorScheme.primary}else{MaterialTheme.colorScheme.error},
                     contentColor = if(confirmed){MaterialTheme.colorScheme.onPrimary}else{MaterialTheme.colorScheme.onError}
-                )
+                ),
+                enabled = isDeviceOwner(myDpm)
             ) {
                 Text(text = if(confirmed){"取消"}else{"确定"})
             }
@@ -165,6 +198,7 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName,myConte
                 }
             }
         }
+        Spacer(Modifier.padding(vertical = 20.dp))
     }
 }
 
@@ -207,7 +241,7 @@ private fun DeviceCtrlItem(
                 }
             }
         }
-        if(myDpm.isDeviceOwnerApp("com.binbin.androidowner")){
+        if(isDeviceOwner(myDpm)){
             isEnabled = getMethod()
         }
         Switch(
@@ -216,7 +250,7 @@ private fun DeviceCtrlItem(
                 setMethod(!isEnabled)
                 isEnabled=getMethod()
             },
-            enabled = myDpm.isDeviceOwnerApp("com.binbin.androidowner")
+            enabled = isDeviceOwner(myDpm)
         )
     }
 }

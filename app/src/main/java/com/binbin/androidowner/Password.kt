@@ -12,9 +12,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -25,6 +27,8 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -37,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -105,7 +110,8 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
                             if(myDpm.clearResetPasswordToken(myComponent)){ Toast.makeText(myContext, "清除成功", Toast.LENGTH_SHORT).show()
                             }else{ Toast.makeText(myContext, "清除失败", Toast.LENGTH_SHORT).show() }
                         },
-                        modifier = Modifier.padding(end = 8.dp)
+                        modifier = Modifier.padding(end = 8.dp),
+                        enabled = isDeviceOwner(myDpm)
                     ) {
                         Text("清除")
                     }
@@ -114,7 +120,8 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
                             if(myDpm.setResetPasswordToken(myComponent, myByteArray)){ Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show()
                             }else{ Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show() }
                         },
-                        modifier = Modifier.padding(end = 8.dp)
+                        modifier = Modifier.padding(end = 8.dp),
+                        enabled = isDeviceOwner(myDpm)
                     ) {
                         Text("设置")
                     }
@@ -124,12 +131,14 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
                                 try{ activateToken(myContext)
                                 }catch(e:NullPointerException){ Toast.makeText(myContext, "请先设置令牌", Toast.LENGTH_SHORT).show() }
                             }else{ Toast.makeText(myContext, "已经激活", Toast.LENGTH_SHORT).show() }
-                        }
+                        },
+                        enabled = isDeviceOwner(myDpm)
                     ) {
                         Text("激活")
                     }
                 }
                 Text("没有密码时会自动激活令牌")
+                Text("有可能无法设置密码重置令牌，因机而异，AVD上能用")
             }
         }
         Column(
@@ -143,10 +152,10 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
             TextField(
                 value = newPwd,
                 onValueChange = {newPwd=it},
-                enabled = !confirmed,
+                enabled = !confirmed&& isDeviceOwner(myDpm),
                 label = { Text("密码")},
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
+                keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
             )
             Text(text = stringResource(R.string.reset_pwd_desc), modifier = Modifier.padding(vertical = 5.dp))
             Row {
@@ -155,7 +164,8 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
                         if(newPwd.length>=4||newPwd.isEmpty()){ confirmed=!confirmed
                         }else{ Toast.makeText(myContext, "需要4位数字或字母", Toast.LENGTH_SHORT).show() }
                     },
-                    modifier = Modifier.padding(end = 10.dp)
+                    modifier = Modifier.padding(end = 10.dp),
+                    enabled = isDeviceOwner(myDpm)
                 ) {
                     Text("确认密码")
                 }
@@ -187,13 +197,13 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
                 }
             }
         }
-        PasswordItem(R.string.max_pwd_fail,R.string.max_pwd_fail_desc,R.string.max_pwd_fail_textfield, focusMgr,false,
+        PasswordItem(R.string.max_pwd_fail,R.string.max_pwd_fail_desc,R.string.max_pwd_fail_textfield, myDpm,focusMgr,false,
             {myDpm.getMaximumFailedPasswordsForWipe(null).toString()},{ic -> myDpm.setMaximumFailedPasswordsForWipe(myComponent, ic.toInt()) })
-        PasswordItem(R.string.pwd_timeout,R.string.pwd_timeout_desc,R.string.pwd_timeout_textfield, focusMgr,true,
+        PasswordItem(R.string.pwd_timeout,R.string.pwd_timeout_desc,R.string.pwd_timeout_textfield, myDpm,focusMgr,true,
             {myDpm.getPasswordExpiration(null).toString()},{ic -> myDpm.setPasswordExpirationTimeout(myComponent, ic.toLong()) })
-        PasswordItem(R.string.pwd_history,R.string.pwd_history_desc,R.string.pwd_history_textfield, focusMgr,true,
+        PasswordItem(R.string.pwd_history,R.string.pwd_history_desc,R.string.pwd_history_textfield,myDpm, focusMgr,true,
             {myDpm.getPasswordHistoryLength(null).toString()},{ic -> myDpm.setPasswordHistoryLength(myComponent, ic.toInt()) })
-
+        Spacer(Modifier.padding(vertical = 20.dp))
     }
 }
 
@@ -202,6 +212,7 @@ fun PasswordItem(
     itemName:Int,
     itemDesc:Int,
     textFieldLabel:Int,
+    myDpm:DevicePolicyManager,
     focusMgr:FocusManager,
     allowZero:Boolean,
     getMethod:()->String,
@@ -215,7 +226,7 @@ fun PasswordItem(
             .background(color = MaterialTheme.colorScheme.primaryContainer)
             .padding(10.dp)
     ) {
-        var inputContent by remember{ mutableStateOf(getMethod()) }
+        var inputContent by remember{ mutableStateOf(if(isDeviceOwner(myDpm)){getMethod()}else{""}) }
         var inputContentEdited by remember{ mutableStateOf(false) }
         var ableToApply by remember{ mutableStateOf(true) }
         Text(text = stringResource(itemName), style = MaterialTheme.typography.titleLarge)
@@ -240,29 +251,20 @@ fun PasswordItem(
                     }
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
+                keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                enabled = isDeviceOwner(myDpm)
             )
-            if(ableToApply){
-                Icon(
-                    imageVector = Icons.Outlined.Check,
-                    contentDescription = null,
-                    tint = if(inputContentEdited){MaterialTheme.colorScheme.onError}else{MaterialTheme.colorScheme.onPrimary},
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(20))
-                        .background(
-                            color = if (inputContentEdited) {
-                                MaterialTheme.colorScheme.error
-                            } else {
-                                MaterialTheme.colorScheme.primary
-                            }
-                        )
-                        .clickable(onClick = {
-                            focusMgr.clearFocus()
-                            setMethod(inputContent)
-                            inputContentEdited = inputContent != getMethod()
-                        })
-                        .padding(8.dp)
+            IconButton(
+                onClick = { focusMgr.clearFocus() ; setMethod(inputContent) ; inputContentEdited=inputContent!=getMethod() },
+                enabled = isDeviceOwner(myDpm)&&ableToApply,
+                colors = IconButtonDefaults.iconButtonColors(
+                    contentColor = if(inputContentEdited){MaterialTheme.colorScheme.onError}else{MaterialTheme.colorScheme.onPrimary},
+                    containerColor = if(inputContentEdited){MaterialTheme.colorScheme.error}else{MaterialTheme.colorScheme.primary},
+                    disabledContentColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent
                 )
+            ) {
+                Icon(imageVector = Icons.Outlined.Check, contentDescription = null)
             }
         }
     }

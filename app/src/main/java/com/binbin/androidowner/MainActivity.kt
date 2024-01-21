@@ -2,7 +2,6 @@ package com.binbin.androidowner
 
 import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
-import android.app.admin.SystemUpdatePolicy
 import android.content.ComponentName
 import android.content.Context
 import android.os.Bundle
@@ -78,7 +77,7 @@ fun MyScaffold(mainDpm:DevicePolicyManager, mainComponent:ComponentName, mainCon
         "HomePage" to R.string.app_name,
         "DeviceControl" to R.string.device_ctrl,
         "Permissions" to R.string.permission,
-        "UIControl" to R.string.ui_ctrl,
+        "UserManage" to R.string.user_manage,
         "ApplicationManage" to R.string.app_manage,
         "UserRestriction" to R.string.user_restrict,
         "Password" to R.string.password
@@ -130,6 +129,7 @@ fun MyScaffold(mainDpm:DevicePolicyManager, mainComponent:ComponentName, mainCon
             composable(route = "Permissions", content = { DpmPermissions(mainDpm,mainComponent,mainContext,navCtrl)})
             composable(route = "ApplicationManage", content = { ApplicationManage(mainDpm,mainComponent,mainContext)})
             composable(route = "UserRestriction", content = { UserRestriction(mainDpm,mainComponent)})
+            composable(route = "UserManage", content = { UserManage(mainDpm,mainComponent,mainContext)})
             composable(route = "Password", content = { Password(mainDpm,mainComponent,mainContext)})
         }
     }
@@ -179,6 +179,7 @@ fun HomePage(navCtrl:NavHostController,myDpm:DevicePolicyManager,myComponent:Com
         HomePageItem(R.string.device_ctrl, R.drawable.mobile_phone_fill0, R.string.device_ctrl_desc, "DeviceControl", navCtrl)
         HomePageItem(R.string.app_manage, R.drawable.apps_fill0, R.string.apps_ctrl_description, "ApplicationManage", navCtrl)
         HomePageItem(R.string.user_restrict, R.drawable.manage_accounts_fill0, R.string.user_restrict_desc, "UserRestriction", navCtrl)
+        HomePageItem(R.string.user_manage,R.drawable.account_circle_fill0,R.string.user_manage_desc,"UserManage",navCtrl)
         HomePageItem(R.string.password, R.drawable.password_fill0,R.string.security_desc, "Password",navCtrl)
     }
 }
@@ -229,4 +230,8 @@ fun RadioButtonItem(
         RadioButton(selected = selected(), onClick = operation)
         Text(text)
     }
+}
+
+fun isDeviceOwner(dpm:DevicePolicyManager): Boolean {
+    return dpm.isDeviceOwnerApp("com.binbin.androidowner")
 }
