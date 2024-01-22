@@ -128,7 +128,7 @@ fun MyScaffold(mainDpm:DevicePolicyManager, mainComponent:ComponentName, mainCon
             composable(route = "DeviceControl", content = { DeviceControl(mainDpm,mainComponent,mainContext)})
             composable(route = "Permissions", content = { DpmPermissions(mainDpm,mainComponent,mainContext,navCtrl)})
             composable(route = "ApplicationManage", content = { ApplicationManage(mainDpm,mainComponent,mainContext)})
-            composable(route = "UserRestriction", content = { UserRestriction(mainDpm,mainComponent)})
+            composable(route = "UserRestriction", content = { UserRestriction(mainDpm,mainComponent,mainContext)})
             composable(route = "UserManage", content = { UserManage(mainDpm,mainComponent,mainContext)})
             composable(route = "Password", content = { Password(mainDpm,mainComponent,mainContext)})
         }
@@ -139,7 +139,7 @@ fun MyScaffold(mainDpm:DevicePolicyManager, mainComponent:ComponentName, mainCon
 fun HomePage(navCtrl:NavHostController,myDpm:DevicePolicyManager,myComponent:ComponentName){
     val isda = myDpm.isAdminActive(myComponent)
     val isdo = myDpm.isDeviceOwnerApp("com.binbin.androidowner")
-    val activateType = if(isdo){"Device Owner"}else if(isda){"Device Admin"}else{""}
+    val activateType = if(isDeviceOwner(myDpm)){"Device Owner"}else if(isProfileOwner(myDpm)){"Profile Owner"}else if(isda){"Device Admin"}else{""}
     val isActivated = if(isdo||isda){"已激活"}else{"未激活"}
     Column {
         Row(
@@ -234,4 +234,8 @@ fun RadioButtonItem(
 
 fun isDeviceOwner(dpm:DevicePolicyManager): Boolean {
     return dpm.isDeviceOwnerApp("com.binbin.androidowner")
+}
+
+fun isProfileOwner(dpm:DevicePolicyManager): Boolean {
+    return dpm.isProfileOwnerApp("com.binbin.androidowner")
 }

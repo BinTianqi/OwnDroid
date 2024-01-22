@@ -113,6 +113,58 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
+                Text(text = "Profile Owner", style = MaterialTheme.typography.titleLarge)
+                Text(if(isProfileOwner(myDpm)){"已激活"}else{"未激活"})
+            }
+            if(isProfileOwner(myDpm)&&VERSION.SDK_INT>=24){
+                Button(
+                    onClick = {
+                        myDpm.clearProfileOwner(myComponent)
+                        navCtrl.navigate("HomePage") {
+                            popUpTo(
+                                navCtrl.graph.findStartDestination().id
+                            ) { saveState = true }
+                        }
+                    }
+                ) {
+                    Text("撤销")
+                }
+            }
+        }
+        if(!isProfileOwner(myDpm)){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 5.dp)
+                    .clip(RoundedCornerShape(15.dp))
+                    .background(color = MaterialTheme.colorScheme.tertiaryContainer)
+                    .padding(10.dp),
+                horizontalAlignment = Alignment.Start
+            ) {
+                if(!isDeviceOwner(myDpm)){
+                    Text("你可以在adb shell中使用以下命令激活Profile Owner")
+                    SelectionContainer {
+                        Text("dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
+                            color = MaterialTheme.colorScheme.onTertiaryContainer)
+                    }
+                    Text("一个设备只能有一个Device owner，强烈建议激活Device owner")
+                }
+                if(isDeviceOwner(myDpm)){
+                    Text("Device owner创建其他用户后，这个应用会成为新用户的Profile owner")
+                }
+            }
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 5.dp)
+                .clip(RoundedCornerShape(15))
+                .background(color = MaterialTheme.colorScheme.primaryContainer)
+                .padding(10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
                 Text(text = "Device Owner", style = MaterialTheme.typography.titleLarge)
                 Text(if(isdo){"已激活"}else{"未激活"})
             }
@@ -131,7 +183,7 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
                 }
             }
         }
-        if(isdo||isda){
+        if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)||myDpm.isAdminActive(myComponent)){
             Text(
                 text = "注意！在这里撤销权限不会清除配置。比如：被停用的应用会保持停用状态",
                 color = MaterialTheme.colorScheme.onErrorContainer,
@@ -143,27 +195,7 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
                     .padding(6.dp)
             )
         }
-        if(isdo){
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 5.dp)
-                    .clip(RoundedCornerShape(15))
-                    .background(color = MaterialTheme.colorScheme.primaryContainer)
-                    .padding(8.dp)
-            ) {
-                Text(text = "设备信息", style = MaterialTheme.typography.titleLarge)
-                if(VERSION.SDK_INT>=30){
-                    val orgDevice = myDpm.isOrganizationOwnedDeviceWithManagedProfile
-                    Text("由组织拥有的工作资料设备：$orgDevice")
-                }
-                if(VERSION.SDK_INT>=34&&(myDpm.isProfileOwnerApp("com.binbin.androidowner")||myDpm.isManagedProfile(myComponent))){
-                    val financed = myDpm.isDeviceFinanced
-                    Text("Financed Device : $financed")
-                }
-            }
-        }
-        if(!isdo){
+        if(!isdo&&!isProfileOwner(myDpm)){
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -180,6 +212,25 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
                 }
                 if(!isda){
                     Text("使用此命令也会激活Device Admin")
+                }
+            }
+        }
+        if(VERSION.SDK_INT>=30){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 5.dp)
+                    .clip(RoundedCornerShape(15))
+                    .background(color = MaterialTheme.colorScheme.primaryContainer)
+                    .padding(8.dp)
+            ) {
+                Text(text = "设备信息", style = MaterialTheme.typography.titleLarge)
+                val orgDevice = myDpm.isOrganizationOwnedDeviceWithManagedProfile
+                Text("由组织拥有的受管理资料设备：$orgDevice")
+                Text("Managed profile: ${myDpm.isManagedProfile(myComponent)}")
+                if(VERSION.SDK_INT>=34&&(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))){
+                    val financed = myDpm.isDeviceFinanced
+                    Text("企业资产 : $financed")
                 }
             }
         }

@@ -145,19 +145,26 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp, vertical = 4.dp)
-                .clip(RoundedCornerShape(10))
+                .clip(RoundedCornerShape(16.dp))
                 .background(color = MaterialTheme.colorScheme.primaryContainer)
                 .padding(10.dp)
         ) {
             TextField(
                 value = newPwd,
                 onValueChange = {newPwd=it},
-                enabled = !confirmed&& isDeviceOwner(myDpm),
+                enabled = !confirmed&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm)),
                 label = { Text("密码")},
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
             )
             Text(text = stringResource(R.string.reset_pwd_desc), modifier = Modifier.padding(vertical = 5.dp))
+            var resetPwdFlag by remember{ mutableStateOf(0) }
+            RadioButtonItem("RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT",
+                {resetPwdFlag==DevicePolicyManager.RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT},
+                {resetPwdFlag=DevicePolicyManager.RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT})
+            RadioButtonItem("RESET_PASSWORD_REQUIRE_ENTRY",{resetPwdFlag==DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY},
+                {resetPwdFlag=DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY})
+            RadioButtonItem("无",{resetPwdFlag==0},{resetPwdFlag=0})
             Row {
                 Button(
                     onClick = {
@@ -165,14 +172,14 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
                         }else{ Toast.makeText(myContext, "需要4位数字或字母", Toast.LENGTH_SHORT).show() }
                     },
                     modifier = Modifier.padding(end = 10.dp),
-                    enabled = isDeviceOwner(myDpm)
+                    enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm)
                 ) {
                     Text("确认密码")
                 }
                 if(VERSION.SDK_INT>=26){
                     Button(
                         onClick = {
-                            val resetSuccess = myDpm.resetPasswordWithToken(myComponent,newPwd,myByteArray,0)
+                            val resetSuccess = myDpm.resetPasswordWithToken(myComponent,newPwd,myByteArray,resetPwdFlag)
                             if(resetSuccess){ Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show()
                             }else{ Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show() }
                             confirmed=false
@@ -185,7 +192,7 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
                 }else{
                     Button(
                         onClick = {
-                            val resetSuccess = myDpm.resetPassword(newPwd,0)
+                            val resetSuccess = myDpm.resetPassword(newPwd,resetPwdFlag)
                             if(resetSuccess){ Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show()
                             }else{ Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show() }
                             confirmed=false

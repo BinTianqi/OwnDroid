@@ -87,10 +87,10 @@ fun ApplicationManage(myDpm:DevicePolicyManager, myComponent:ComponentName,myCon
                 .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceAround
         ) {
-            Button(onClick = {myDpm.setUninstallBlocked(myComponent,pkgName,false)}, enabled = isDeviceOwner(myDpm)) {
+            Button(onClick = {myDpm.setUninstallBlocked(myComponent,pkgName,false)}, enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm)) {
                 Text("取消防卸载")
             }
-            Button(onClick = {myDpm.setUninstallBlocked(myComponent,pkgName,true)}, enabled = isDeviceOwner(myDpm)) {
+            Button(onClick = {myDpm.setUninstallBlocked(myComponent,pkgName,true)}, enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm)) {
                 Text("防卸载")
             }
         }
@@ -113,7 +113,7 @@ private fun AppManageItem(
     setMethod:(b:Boolean)->Unit
 ){
     var isEnabled by remember{ mutableStateOf(false) }
-    if(myDpm.isDeviceOwnerApp("com.binbin.androidowner")){
+    if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
         isEnabled = getMethod()
     }
     Row(
@@ -141,7 +141,7 @@ private fun AppManageItem(
                 setMethod(!isEnabled)
                 isEnabled = getMethod()
             },
-            enabled = myDpm.isDeviceOwnerApp("com.binbin.androidowner")
+            enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm)
         )
     }
 }

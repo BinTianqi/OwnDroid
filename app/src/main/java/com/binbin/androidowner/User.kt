@@ -1,5 +1,6 @@
 package com.binbin.androidowner
 
+import android.app.ActivityManager
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
@@ -43,7 +44,6 @@ fun UserManage(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext: Co
         //val myUM = myContext.getSystemService(Context.USER_SERVICE)
         val currentUser = android.os.Process.myUserHandle()
         val userList = Test.returnUsers(myContext)
-        Text("因为我的模拟器的多用户无法使用，部分功能并未测试")
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -60,16 +60,16 @@ fun UserManage(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext: Co
                 Text("支持多用户：${UserManager.supportsMultipleUsers()}")
             }
             if(VERSION.SDK_INT>=31){
-                Text("Headless system user: ${UserManager.isHeadlessSystemUserMode()}")
+                Text("系统用户: ${UserManager.isHeadlessSystemUserMode()}")
             }
             Spacer(Modifier.padding(vertical = 5.dp))
-            if (VERSION.SDK_INT >= 28&& isDeviceOwner(myDpm)) {
+            if (VERSION.SDK_INT >= 28) {
                 val logoutable = myDpm.isLogoutEnabled
                 Text(text = "用户可以退出 : $logoutable")
                 val ephemeralUser = myDpm.isEphemeralUser(myComponent)
                 Text(text = "临时用户： $ephemeralUser")
                 val affiliatedUser = myDpm.isAffiliatedUser
-                Text(text = "Affiliated User: $affiliatedUser")
+                Text(text = "次级用户: $affiliatedUser")
             }
             Spacer(Modifier.padding(5.dp))
             Text("切换用户后或设备重启后会删除临时用户")
@@ -88,7 +88,7 @@ fun UserManage(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext: Co
                 var resultForLogout by remember{ mutableIntStateOf(-1) }
                 var resultForStop by remember{ mutableIntStateOf(-1) }
                 Text("登出用户需要成为次级用户的Profile Owner")
-                Button(onClick = {resultForLogout = myDpm.logoutUser(myComponent)}, enabled = isDeviceOwner(myDpm)) {
+                Button(onClick = {resultForLogout = myDpm.logoutUser(myComponent)}, enabled = isProfileOwner(myDpm)) {
                     Text("登出用户")
                 }
                 if(resultForLogout!=-1){
@@ -99,6 +99,11 @@ fun UserManage(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext: Co
                 }
                 if(resultForStop!=-1){
                     Text(userOperationResultCode(resultForStop))
+                }
+                if(isProfileOwner(myDpm)){
+                    Button(onClick = {myDpm.setProfileEnabled(myComponent)}) {
+                        Text(text = "启用资料")
+                    }
                 }
             }
             Button(
@@ -169,10 +174,10 @@ fun UserManage(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext: Co
         }else{
             Text("创建用户需安卓7")
         }
-        UserSessionMessage("用户名","用户名",myDpm,myContext,{null},{msg ->  myDpm.setProfileName(myComponent, msg.toString())})
+        UserSessionMessage("用户名","用户名",true,myDpm,myContext,{null},{msg ->  myDpm.setProfileName(myComponent, msg.toString())})
         if(VERSION.SDK_INT>=28){
-            UserSessionMessage("用户会话开始消息","消息",myDpm,myContext,{myDpm.getStartUserSessionMessage(myComponent)},{msg ->  myDpm.setStartUserSessionMessage(myComponent,msg)})
-            UserSessionMessage("用户会话结束消息","消息",myDpm,myContext,{myDpm.getEndUserSessionMessage(myComponent)},{msg ->  myDpm.setEndUserSessionMessage(myComponent,msg)})
+            UserSessionMessage("用户会话开始消息","消息",false,myDpm,myContext,{myDpm.getStartUserSessionMessage(myComponent)},{msg ->  myDpm.setStartUserSessionMessage(myComponent,msg)})
+            UserSessionMessage("用户会话结束消息","消息",false,myDpm,myContext,{myDpm.getEndUserSessionMessage(myComponent)},{msg ->  myDpm.setEndUserSessionMessage(myComponent,msg)})
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
@@ -182,6 +187,7 @@ fun UserManage(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext: Co
 fun UserSessionMessage(
     text:String,
     textField:String,
+    profileOwner:Boolean,
     myDpm:DevicePolicyManager,
     myContext: Context,
     get:()->CharSequence?,
@@ -196,29 +202,26 @@ fun UserSessionMessage(
             .padding(10.dp)
     ) {
         val focusMgr = LocalFocusManager.current
-        var msg:CharSequence? by remember{ mutableStateOf(null) }
-        if(isDeviceOwner(myDpm)){
-            msg = if(get()==null){""}else{get()}
-        }
+        var msg by remember{ mutableStateOf(if(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner)){ if(get()==null){""}else{get().toString()} }else{""}) }
         Text(text = text, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
         TextField(
-            value = msg.toString(),
+            value = msg,
             onValueChange = {msg=it},
             label = {Text(textField)},
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
             modifier = Modifier.padding(vertical = 6.dp),
-            enabled = isDeviceOwner(myDpm)
+            enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner)
         )
         Row {
             Button(
                 onClick = {
                     focusMgr.clearFocus()
                     setMsg(msg)
-                    msg = if(get()==null){""}else{get()}
+                    msg = if(get()==null){""}else{get().toString()}
                     Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                 },
-                enabled = isDeviceOwner(myDpm)
+                enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner)
             ) {
                 Text("应用")
             }
@@ -227,10 +230,10 @@ fun UserSessionMessage(
                 onClick = {
                     focusMgr.clearFocus()
                     setMsg(null)
-                    msg = if(get()==null){""}else{get()}
+                    msg = if(get()==null){""}else{get().toString()}
                     Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                 },
-                enabled = isDeviceOwner(myDpm)
+                enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner)
             ) {
                 Text("使用默认")
             }

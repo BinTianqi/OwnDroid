@@ -4,9 +4,9 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.os.Build.VERSION
+import android.os.UserManager
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,7 +21,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,62 +45,73 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName,myConte
             .padding(bottom = 20.dp)
             .navigationBarsPadding()
     ) {
-        DeviceCtrlItem(R.string.disable_cam,R.string.place_holder, R.drawable.photo_camera_fill0,myDpm,{myDpm.getCameraDisabled(null)},{b -> myDpm.setCameraDisabled(myComponent,b)})
-        DeviceCtrlItem(R.string.disable_scrcap,R.string.aosp_scrrec_also_work,R.drawable.screenshot_fill0,myDpm,{myDpm.getScreenCaptureDisabled(null)},{b -> myDpm.setScreenCaptureDisabled(myComponent,b) })
-        if(VERSION.SDK_INT>=34){
+        if(isDeviceOwner(myDpm)){
+            DeviceCtrlItem(R.string.disable_cam,R.string.place_holder, R.drawable.photo_camera_fill0,myDpm,{myDpm.getCameraDisabled(null)},{b -> myDpm.setCameraDisabled(myComponent,b)})
+        }
+        if(isDeviceOwner(myDpm)){
+            DeviceCtrlItem(R.string.disable_scrcap,R.string.aosp_scrrec_also_work,R.drawable.screenshot_fill0,myDpm,{myDpm.getScreenCaptureDisabled(null)},{b -> myDpm.setScreenCaptureDisabled(myComponent,b) })
+        }
+        if(VERSION.SDK_INT>=34&&(isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser))){
             DeviceCtrlItem(R.string.hide_status_bar,R.string.may_hide_notifi_icon_only,R.drawable.notifications_fill0,myDpm,{myDpm.isStatusBarDisabled},{b -> myDpm.setStatusBarDisabled(myComponent,b) })
         }
-        if(VERSION.SDK_INT>=30){
+        if(VERSION.SDK_INT>=30&&isDeviceOwner(myDpm)){
             DeviceCtrlItem(R.string.auto_time,R.string.place_holder,R.drawable.schedule_fill0,myDpm,{myDpm.getAutoTimeEnabled(myComponent)},{b -> myDpm.setAutoTimeEnabled(myComponent,b) })
             DeviceCtrlItem(R.string.auto_timezone,R.string.place_holder,R.drawable.globe_fill0,myDpm,{myDpm.getAutoTimeZoneEnabled(myComponent)},{b -> myDpm.setAutoTimeZoneEnabled(myComponent,b) })
         }
-        DeviceCtrlItem(R.string.master_mute,R.string.place_holder,R.drawable.volume_up_fill0,myDpm,{myDpm.isMasterVolumeMuted(myComponent)},{b -> myDpm.setMasterVolumeMuted(myComponent,b) })
-        if(VERSION.SDK_INT>=26){
+        if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
+            DeviceCtrlItem(R.string.master_mute,R.string.place_holder,R.drawable.volume_up_fill0,myDpm,{myDpm.isMasterVolumeMuted(myComponent)},{b -> myDpm.setMasterVolumeMuted(myComponent,b) })
+        }
+        if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)|| isProfileOwner(myDpm))){
             DeviceCtrlItem(R.string.backup_service,R.string.place_holder,R.drawable.backup_fill0,myDpm,{myDpm.isBackupServiceEnabled(myComponent)},{b -> myDpm.setBackupServiceEnabled(myComponent,b) })
         }
-        DeviceCtrlItem(R.string.disable_bt_contact_share,R.string.place_holder,R.drawable.account_circle_fill0,myDpm,{myDpm.getBluetoothContactSharingDisabled(myComponent)},{b -> myDpm.setBluetoothContactSharingDisabled(myComponent,b)})
-        if(VERSION.SDK_INT>=31){
+        if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
+            DeviceCtrlItem(R.string.disable_bt_contact_share,R.string.place_holder,R.drawable.account_circle_fill0,myDpm,{myDpm.getBluetoothContactSharingDisabled(myComponent)},{b -> myDpm.setBluetoothContactSharingDisabled(myComponent,b)})
+        }
+        if(VERSION.SDK_INT>=31&&isDeviceOwner(myDpm)){
             if(myDpm.canUsbDataSignalingBeDisabled()){
                 DeviceCtrlItem(R.string.usb_signal,R.string.place_holder,R.drawable.usb_fill0,myDpm,{myDpm.isUsbDataSignalingEnabled},{b -> myDpm.isUsbDataSignalingEnabled = b })
             }else{
                 Text("你的设备不支持关闭USB信号")
             }
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 6.dp, vertical = 4.dp)
-                .clip(RoundedCornerShape(15))
-                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                .padding(vertical = 5.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Button(
-                onClick = {
-                    if(myDpm.setKeyguardDisabled(myComponent,true)){
-                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
-                    }else{
-                        Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
-                    }
-                },
-                enabled = isDeviceOwner(myDpm)
+        if(VERSION.SDK_INT>=28){
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 6.dp, vertical = 4.dp)
+                    .clip(RoundedCornerShape(15))
+                    .background(color = MaterialTheme.colorScheme.primaryContainer)
+                    .padding(vertical = 5.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Text("禁用锁屏（需无密码）")
-            }
-            Spacer(Modifier.padding(horizontal = 5.dp))
-            Button(
-                onClick = {
-                    if(myDpm.setKeyguardDisabled(myComponent,false)){
-                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
-                    }else{
-                        Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
-                    }
-                },
-                enabled = isDeviceOwner(myDpm)
-            ) {
-                Text("启用锁屏")
+                Button(
+                    onClick = {
+                        if(myDpm.setKeyguardDisabled(myComponent,true)){
+                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                        }else{
+                            Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    enabled = isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser)
+                ) {
+                    Text("禁用锁屏（需无密码）")
+                }
+                Spacer(Modifier.padding(horizontal = 5.dp))
+                Button(
+                    onClick = {
+                        if(myDpm.setKeyguardDisabled(myComponent,false)){
+                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                        }else{
+                            Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    enabled = isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser)
+                ) {
+                    Text("启用锁屏")
+                }
             }
         }
+
         Row(
             horizontalArrangement = Arrangement.SpaceAround,
             modifier = Modifier
@@ -141,10 +151,16 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName,myConte
         if(VERSION.SDK_INT<34){
             Text("隐藏状态栏需要API34")
         }
-        Button(onClick = {myDpm.uninstallAllUserCaCerts(myComponent)},modifier = Modifier.align(Alignment.CenterHorizontally), enabled = isDeviceOwner(myDpm)) {
+        Button(
+            onClick = {myDpm.uninstallAllUserCaCerts(myComponent)},
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm)
+        ) {
             Text(text = "清除用户Ca证书")
         }
-        SysUpdatePolicy(myDpm,myComponent,myContext)
+        if(isDeviceOwner(myDpm)){
+            SysUpdatePolicy(myDpm,myComponent,myContext)
+        }
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -168,7 +184,7 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName,myConte
                     containerColor = if(confirmed){MaterialTheme.colorScheme.primary}else{MaterialTheme.colorScheme.error},
                     contentColor = if(confirmed){MaterialTheme.colorScheme.onPrimary}else{MaterialTheme.colorScheme.onError}
                 ),
-                enabled = isDeviceOwner(myDpm)
+                enabled = myDpm.isAdminActive(myComponent)
             ) {
                 Text(text = if(confirmed){"取消"}else{"确定"})
             }
@@ -241,16 +257,13 @@ private fun DeviceCtrlItem(
                 }
             }
         }
-        if(isDeviceOwner(myDpm)){
-            isEnabled = getMethod()
-        }
+        isEnabled = getMethod()
         Switch(
             checked = isEnabled,
             onCheckedChange = {
                 setMethod(!isEnabled)
                 isEnabled=getMethod()
-            },
-            enabled = isDeviceOwner(myDpm)
+            }
         )
     }
 }
