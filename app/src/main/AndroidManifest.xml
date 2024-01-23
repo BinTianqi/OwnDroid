@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_WIPE_DATA"/>
     <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS"/>
     <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_RESET_PASSWORD"/>
+    <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_INPUT_METHODS"/>
+    <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_LOCK_CREDENTIALS"/>
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -21,11 +23,17 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize"
+            android:windowSoftInputMode="adjustResize|stateHidden"
             android:theme="@style/Theme.AndroidOwner">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
+                <action android:name="android.app.action.PROVISIONING_SUCCESSFUL" />
+                <action android:name="android.app.action.PROVISION_MANAGED_PROFILE"/>
+                <action android:name="android.app.action.MANAGED_PROFILE_PROVISIONED"/>
+                <action android:name="android.app.action.PROFILE_PROVISIONING_COMPLETE"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.INFO"/>
+                <category android:name="android.intent.category.HOME"/>
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -39,6 +47,10 @@
                 android:name="android.app.device_admin"
                 android:resource="@xml/device_admin"/>
             <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.app.action.PROVISIONING_SUCCESSFUL" />
+                <action android:name="android.app.action.PROFILE_PROVISIONING_COMPLETE"/>
+                <action android:name="android.app.action.PROVISION_MANAGED_PROFILE"/>
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED"/>
                 <action android:name="android.app.action.DEVICE_ADMIN_DISABLE_REQUESTED"/>
                 <action android:name="android.app.action.DEVICE_ADMIN_DISABLED"/>

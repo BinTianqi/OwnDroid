@@ -49,6 +49,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
+
         super.onCreate(savedInstanceState)
         val context = applicationContext
         val dpm = context.getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager

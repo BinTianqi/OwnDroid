@@ -8,7 +8,6 @@ import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -34,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -83,7 +82,10 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
             ) {
                 if(VERSION.SDK_INT>=29){
                     val pwdComplex = myDpm.passwordComplexity
-                    Text(text = "密码复杂度：$pwdComplex")
+                    Text(text = "当前密码复杂度：$pwdComplex")
+                }
+                if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
+                    Text("密码达到要求：${myDpm.isActivePasswordSufficient}")
                 }
                 val pwdFailedAttempts = myDpm.currentFailedPasswordAttempts
                 Text(text = "密码已错误次数：$pwdFailedAttempts")
@@ -204,12 +206,100 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
                 }
             }
         }
+
         PasswordItem(R.string.max_pwd_fail,R.string.max_pwd_fail_desc,R.string.max_pwd_fail_textfield, myDpm,focusMgr,false,
             {myDpm.getMaximumFailedPasswordsForWipe(null).toString()},{ic -> myDpm.setMaximumFailedPasswordsForWipe(myComponent, ic.toInt()) })
         PasswordItem(R.string.pwd_timeout,R.string.pwd_timeout_desc,R.string.pwd_timeout_textfield, myDpm,focusMgr,true,
             {myDpm.getPasswordExpiration(null).toString()},{ic -> myDpm.setPasswordExpirationTimeout(myComponent, ic.toLong()) })
         PasswordItem(R.string.pwd_history,R.string.pwd_history_desc,R.string.pwd_history_textfield,myDpm, focusMgr,true,
             {myDpm.getPasswordHistoryLength(null).toString()},{ic -> myDpm.setPasswordHistoryLength(myComponent, ic.toInt()) })
+
+        if(VERSION.SDK_INT>=31){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(color = MaterialTheme.colorScheme.primaryContainer)
+                    .padding(10.dp)
+            ) {
+                val passwordComplexity = mapOf(
+                    DevicePolicyManager.PASSWORD_COMPLEXITY_NONE to "无复杂度（允许不设密码）",
+                    DevicePolicyManager.PASSWORD_COMPLEXITY_LOW to "低复杂度（允许图案和连续性）",
+                    DevicePolicyManager.PASSWORD_COMPLEXITY_MEDIUM to "中复杂度（无连续性，至少4位）",
+                    DevicePolicyManager.PASSWORD_COMPLEXITY_HIGH to "高复杂度（无连续性，至少6位）"
+                ).toList()
+                var selectedItem by remember{ mutableIntStateOf(passwordComplexity[0].first) }
+                if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){
+                    selectedItem=myDpm.requiredPasswordComplexity
+                }
+                Text(text = "密码复杂度要求", style = MaterialTheme.typography.titleLarge)
+                Text(text = "不是实际密码复杂度")
+                Text(text = "设置密码复杂度将会取代密码质量")
+                RadioButtonItem(passwordComplexity[0].second,{selectedItem==passwordComplexity[0].first},{selectedItem=passwordComplexity[0].first})
+                RadioButtonItem(passwordComplexity[1].second,{selectedItem==passwordComplexity[1].first},{selectedItem=passwordComplexity[1].first})
+                RadioButtonItem(passwordComplexity[2].second,{selectedItem==passwordComplexity[2].first},{selectedItem=passwordComplexity[2].first})
+                RadioButtonItem(passwordComplexity[3].second,{selectedItem==passwordComplexity[3].first},{selectedItem=passwordComplexity[3].first})
+                Text(text = "连续性：密码重复（6666）或密码递增递减（4321、2468）", modifier = Modifier.padding(vertical = 3.dp))
+                Button(
+                    onClick = {
+                        myDpm.requiredPasswordComplexity = selectedItem
+                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                    },
+                    enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm)
+                ) {
+                    Text("应用")
+                }
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(color = MaterialTheme.colorScheme.primaryContainer)
+                .padding(10.dp)
+        ) {
+            val passwordQuality = mapOf(
+                DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED to "未指定",
+                DevicePolicyManager.PASSWORD_QUALITY_SOMETHING to "需要密码或图案，不管复杂度",
+                DevicePolicyManager.PASSWORD_QUALITY_ALPHABETIC to "至少1个字母",
+                DevicePolicyManager.PASSWORD_QUALITY_NUMERIC to "至少1个数字",
+                DevicePolicyManager.PASSWORD_QUALITY_ALPHANUMERIC to "数字字母各至少一个",
+                DevicePolicyManager.PASSWORD_QUALITY_BIOMETRIC_WEAK to "生物识别（弱）",
+                DevicePolicyManager.PASSWORD_QUALITY_NUMERIC_COMPLEX to "复杂数字（无连续性）",
+                DevicePolicyManager.PASSWORD_QUALITY_COMPLEX to "自定义",
+            ).toList()
+            var selectedItem by remember{ mutableIntStateOf(passwordQuality[0].first) }
+            if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){
+                selectedItem=myDpm.getPasswordQuality(myComponent)
+            }
+            Text(text = "密码质量要求", style = MaterialTheme.typography.titleLarge)
+            Text(text = "不是实际密码质量")
+            if(VERSION.SDK_INT>=31){
+                Text(text = "已弃用，请使用上面的”密码复杂度要求“", color = MaterialTheme.colorScheme.error)
+            }
+            RadioButtonItem(passwordQuality[0].second,{selectedItem==passwordQuality[0].first},{selectedItem=passwordQuality[0].first})
+            RadioButtonItem(passwordQuality[1].second,{selectedItem==passwordQuality[1].first},{selectedItem=passwordQuality[1].first})
+            RadioButtonItem(passwordQuality[2].second,{selectedItem==passwordQuality[2].first},{selectedItem=passwordQuality[2].first})
+            RadioButtonItem(passwordQuality[3].second,{selectedItem==passwordQuality[3].first},{selectedItem=passwordQuality[3].first})
+            RadioButtonItem(passwordQuality[4].second,{selectedItem==passwordQuality[4].first},{selectedItem=passwordQuality[4].first})
+            RadioButtonItem(passwordQuality[5].second,{selectedItem==passwordQuality[5].first},{selectedItem=passwordQuality[5].first})
+            RadioButtonItem(passwordQuality[6].second,{selectedItem==passwordQuality[6].first},{selectedItem=passwordQuality[6].first})
+            RadioButtonItem(passwordQuality[7].second,{selectedItem==passwordQuality[7].first},{selectedItem=passwordQuality[7].first})
+            Text(text = "连续性：密码重复（6666）或密码递增递减（4321、2468）", modifier = Modifier.padding(vertical = 3.dp))
+            Button(
+                onClick = {
+                    myDpm.setPasswordQuality(myComponent,selectedItem)
+                    Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                },
+                enabled = isDeviceOwner(myDpm) || isProfileOwner(myDpm)
+            ) {
+                Text("应用")
+            }
+        }
+
         Spacer(Modifier.padding(vertical = 20.dp))
     }
 }

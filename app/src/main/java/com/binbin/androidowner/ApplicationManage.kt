@@ -10,6 +10,7 @@ import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager.NameNotFoundException
 import android.net.Uri
 import android.os.Build.VERSION
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -48,13 +49,13 @@ fun ApplicationManage(myDpm:DevicePolicyManager, myComponent:ComponentName,myCon
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("以下功能都需要DeviceOwner权限")
         TextField(
             value = pkgName,
             onValueChange = {
                 pkgName = it
             },
             label = { Text("包名") },
+            enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp)
@@ -92,6 +93,41 @@ fun ApplicationManage(myDpm:DevicePolicyManager, myComponent:ComponentName,myCon
             }
             Button(onClick = {myDpm.setUninstallBlocked(myComponent,pkgName,true)}, enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm)) {
                 Text("防卸载")
+            }
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 5.dp, vertical = 4.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(color = MaterialTheme.colorScheme.primaryContainer)
+                .padding(10.dp)
+        ) {
+            Text(text = "许可的输入法", style = MaterialTheme.typography.titleLarge)
+            val imeList = myDpm.getPermittedInputMethods(myComponent)
+            var imeListText = ""
+            if (imeList != null) {
+                for(eachIme in imeList){
+                    imeListText += "$eachIme \n"
+                    //Log.e("",eachIme)
+                }
+            }
+            Text(imeListText)
+            Button(
+                onClick = {
+                    imeList?.plus(pkgName)
+                    myDpm.setPermittedInputMethods(myComponent, imeList)
+                }
+            ) {
+                Text("设为许可的输入法")
+            }
+            Button(
+                onClick = {
+                    imeList?.remove(pkgName)
+                    myDpm.setPermittedInputMethods(myComponent,imeList)
+                }
+            ) {
+                Text("从列表中移除")
             }
         }
         /*Button(

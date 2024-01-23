@@ -1,10 +1,13 @@
 package com.binbin.androidowner
 
-import android.app.ActivityManager
+import android.app.Activity
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
 import android.os.UserHandle
 import android.os.UserManager
 import android.widget.Toast
@@ -34,7 +37,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat.startActivityForResult
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.os.UserManagerCompat
+
 
 @Composable
 fun UserManage(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext: Context){
@@ -66,8 +72,10 @@ fun UserManage(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext: Co
             if (VERSION.SDK_INT >= 28) {
                 val logoutable = myDpm.isLogoutEnabled
                 Text(text = "用户可以退出 : $logoutable")
-                val ephemeralUser = myDpm.isEphemeralUser(myComponent)
-                Text(text = "临时用户： $ephemeralUser")
+                if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
+                    val ephemeralUser = myDpm.isEphemeralUser(myComponent)
+                    Text(text = "临时用户： $ephemeralUser")
+                }
                 val affiliatedUser = myDpm.isAffiliatedUser
                 Text(text = "次级用户: $affiliatedUser")
             }
@@ -94,16 +102,17 @@ fun UserManage(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext: Co
                 if(resultForLogout!=-1){
                     Text(userOperationResultCode(resultForLogout))
                 }
+                Button(onClick = {myDpm.switchUser(myComponent,currentUser)}, enabled = isDeviceOwner(myDpm)) {
+                    Text("切换用户")
+                }
                 Button(onClick = {resultForStop = myDpm.stopUser(myComponent,currentUser)}, enabled = isDeviceOwner(myDpm)) {
                     Text("停止用户")
                 }
                 if(resultForStop!=-1){
                     Text(userOperationResultCode(resultForStop))
                 }
-                if(isProfileOwner(myDpm)){
-                    Button(onClick = {myDpm.setProfileEnabled(myComponent)}) {
-                        Text(text = "启用资料")
-                    }
+                Button(onClick = {myDpm.setProfileEnabled(myComponent)}, enabled = isProfileOwner(myDpm)||isDeviceOwner(myDpm)) {
+                    Text(text = "启用资料")
                 }
             }
             Button(
@@ -119,6 +128,10 @@ fun UserManage(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext: Co
             ) {
                 Text("移除用户")
             }
+            Button(onClick = { createWorkProfile(myContext,myComponent) }) {
+                Text("创建工作资料")
+            }
+            Text("可能无法创建工作资料")
         }
 
         if(VERSION.SDK_INT>=24){
@@ -249,4 +262,22 @@ fun userOperationResultCode(result:Int): String {
         UserManager.USER_OPERATION_ERROR_CURRENT_USER->"USER_OPERATION_ERROR_CURRENT_USER"
         else->"Unknown"
     }
+}
+
+private fun createWorkProfile(myContext: Context,myComponent: ComponentName) {
+    val intent = Intent(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)
+    intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME, "com.binbin.androidowner")
+    intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME, myComponent)
+    if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+        intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_ALLOW_OFFLINE, true)
+    }
+    intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION,"hello")
+    /*
+    intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_SKIP_USER_CONSENT, false)
+    val adminExtras = PersistableBundle()
+    if (adminExtras.size() > 0) {
+        intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE, adminExtras)
+    }*/
+    intent.setFlags(FLAG_ACTIVITY_NEW_TASK)
+    startActivity(myContext,intent,null)
 }

@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -33,6 +35,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -79,9 +83,9 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
                     Text("撤销")
                 }
             }else{
-                /*Button(onClick = { activateDeviceAdmin(myContext,myComponent) }) {
+                Button(onClick = { activateDeviceAdmin(myContext,myComponent) }) {
                     Text("激活")
-                }*/
+                }
             }
         }
         if(!isda){
@@ -220,17 +224,95 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 5.dp)
-                    .clip(RoundedCornerShape(15))
+                    .clip(RoundedCornerShape(15.dp))
                     .background(color = MaterialTheme.colorScheme.primaryContainer)
                     .padding(8.dp)
             ) {
                 Text(text = "设备信息", style = MaterialTheme.typography.titleLarge)
                 val orgDevice = myDpm.isOrganizationOwnedDeviceWithManagedProfile
                 Text("由组织拥有的受管理资料设备：$orgDevice")
-                Text("Managed profile: ${myDpm.isManagedProfile(myComponent)}")
+                if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
+                    Text("Managed profile: ${myDpm.isManagedProfile(myComponent)}")
+                }
                 if(VERSION.SDK_INT>=34&&(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))){
                     val financed = myDpm.isDeviceFinanced
                     Text("企业资产 : $financed")
+                }
+                if(VERSION.SDK_INT>=33){
+                    Text("最小WiFi安全等级：${myDpm.minimumRequiredWifiSecurityLevel}")
+                    Text("设备策略管理器角色：${myDpm.devicePolicyManagementRoleHolderPackage}")
+                }
+            }
+        }
+        if(VERSION.SDK_INT>=31&&(isProfileOwner(myDpm)|| isDeviceOwner(myDpm))){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 5.dp)
+                    .clip(RoundedCornerShape(15.dp))
+                    .background(color = MaterialTheme.colorScheme.primaryContainer)
+                    .padding(8.dp)
+            ) {
+                val specificId = myDpm.enrollmentSpecificId
+                Text(text = "设备唯一标识码", style = MaterialTheme.typography.titleLarge)
+                Text("（恢复出厂设置不变）")
+                Text("（如果下面没有一长串数字字母组合，说明你的设备不支持）")
+                Text(specificId)
+                Button(onClick = {myDpm.setOrganizationId(specificId)}, enabled = specificId!="") {
+                    Text("设置为组织ID")
+                }
+            }
+        }
+        if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 5.dp)
+                    .clip(RoundedCornerShape(15.dp))
+                    .background(color = MaterialTheme.colorScheme.primaryContainer)
+                    .padding(8.dp)
+            ) {
+                Text(text = "不受控制的账号类型", style = MaterialTheme.typography.titleLarge)
+                Text("作用未知")
+                var noManageAccount = myDpm.accountTypesWithManagementDisabled?.toMutableList()
+                var accountlist by remember{ mutableStateOf("") }
+                val refreshList = {
+                    accountlist = ""
+                    if (noManageAccount != null) {
+                        for(eachAccount in noManageAccount!!){
+                            accountlist+="$eachAccount \n"
+                        }
+                    }
+
+                }
+                refreshList()
+                if(accountlist!=""){
+                    Text(accountlist)
+                }else{
+                    Text("列表为空 \n")
+                }
+                var inputText by remember{ mutableStateOf("") }
+                TextField(
+                    value = inputText,
+                    onValueChange = {inputText=it},
+                    label = {Text("账号类型")},
+                    modifier = Modifier.padding(bottom = 4.dp),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {focusManager.clearFocus()})
+                )
+                Button(onClick={focusManager.clearFocus()
+                    myDpm.setAccountManagementDisabled(myComponent,inputText,true)
+                    noManageAccount=myDpm.accountTypesWithManagementDisabled?.toMutableList()
+                    refreshList()
+                }){
+                    Text("添加至列表")
+                }
+                Button(onClick={focusManager.clearFocus()
+                    myDpm.setAccountManagementDisabled(myComponent,inputText,false)
+                    noManageAccount=myDpm.accountTypesWithManagementDisabled?.toMutableList()
+                    refreshList()
+                }){
+                    Text("从列表中移除")
                 }
             }
         }
