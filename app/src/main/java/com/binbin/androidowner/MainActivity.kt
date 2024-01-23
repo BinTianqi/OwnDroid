@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -72,6 +73,7 @@ class MainActivity : ComponentActivity() {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MyScaffold(mainDpm:DevicePolicyManager, mainComponent:ComponentName, mainContext:Context){
+    val focusMgr = LocalFocusManager.current
     val navCtrl = rememberNavController()
     val backStackEntry by navCtrl.currentBackStackEntryAsState()
     val topBarNameMap = mapOf(
@@ -110,6 +112,7 @@ fun MyScaffold(mainDpm:DevicePolicyManager, mainComponent:ComponentName, mainCon
                                             navCtrl.graph.findStartDestination().id
                                         ) { saveState = true }
                                     }
+                                    focusMgr.clearFocus()
                                 })
                                 .padding(5.dp)
                         )
@@ -239,4 +242,15 @@ fun isDeviceOwner(dpm:DevicePolicyManager): Boolean {
 
 fun isProfileOwner(dpm:DevicePolicyManager): Boolean {
     return dpm.isProfileOwnerApp("com.binbin.androidowner")
+}
+
+@SuppressLint("ModifierFactoryExtensionFunction")
+@Composable
+fun sections(bgColor:Color=MaterialTheme.colorScheme.primaryContainer):Modifier{
+    return Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 8.dp, vertical = 4.dp)
+        .clip(RoundedCornerShape(14.dp))
+        .background(color = bgColor)
+        .padding(vertical = 6.dp, horizontal = 10.dp)
 }

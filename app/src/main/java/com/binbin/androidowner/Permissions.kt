@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Build.VERSION
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -31,12 +29,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -50,18 +46,11 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
     val isdo = myDpm.isDeviceOwnerApp("com.binbin.androidowner")
     val focusManager = LocalFocusManager.current
     Column(
-        modifier = Modifier
-            .padding(horizontal = 8.dp)
-            .verticalScroll(rememberScrollState()),
+        modifier = Modifier.verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 5.dp)
-                .clip(RoundedCornerShape(15))
-                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                .padding(10.dp),
+            modifier = sections(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -90,12 +79,7 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
         }
         if(!isda){
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 5.dp)
-                    .clip(RoundedCornerShape(15.dp))
-                    .background(color = MaterialTheme.colorScheme.tertiaryContainer)
-                    .padding(10.dp),
+                modifier = sections(MaterialTheme.colorScheme.tertiaryContainer),
                 horizontalAlignment = Alignment.Start
             ) {
                 Text("你可以在adb shell中使用以下命令激活Device Admin")
@@ -107,12 +91,7 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
             }
         }
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 5.dp)
-                .clip(RoundedCornerShape(15))
-                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                .padding(10.dp),
+            modifier = sections(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -137,12 +116,7 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
         }
         if(!isProfileOwner(myDpm)){
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 5.dp)
-                    .clip(RoundedCornerShape(15.dp))
-                    .background(color = MaterialTheme.colorScheme.tertiaryContainer)
-                    .padding(10.dp),
+                modifier = sections(MaterialTheme.colorScheme.tertiaryContainer),
                 horizontalAlignment = Alignment.Start
             ) {
                 if(!isDeviceOwner(myDpm)){
@@ -159,12 +133,7 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
             }
         }
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 5.dp)
-                .clip(RoundedCornerShape(15))
-                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                .padding(10.dp),
+            modifier = sections(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -191,22 +160,12 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
             Text(
                 text = "注意！在这里撤销权限不会清除配置。比如：被停用的应用会保持停用状态",
                 color = MaterialTheme.colorScheme.onErrorContainer,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 5.dp)
-                    .clip(RoundedCornerShape(15))
-                    .background(color = MaterialTheme.colorScheme.errorContainer)
-                    .padding(6.dp)
+                modifier = sections(MaterialTheme.colorScheme.errorContainer)
             )
         }
         if(!isdo&&!isProfileOwner(myDpm)){
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 5.dp)
-                    .clip(RoundedCornerShape(15.dp))
-                    .background(color = MaterialTheme.colorScheme.tertiaryContainer)
-                    .padding(10.dp),
+                modifier = sections(MaterialTheme.colorScheme.tertiaryContainer),
                 horizontalAlignment = Alignment.Start
             ) {
                 Text("你可以在adb shell中使用以下命令激活Device Owner")
@@ -221,12 +180,7 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
         }
         if(VERSION.SDK_INT>=30){
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 5.dp)
-                    .clip(RoundedCornerShape(15.dp))
-                    .background(color = MaterialTheme.colorScheme.primaryContainer)
-                    .padding(8.dp)
+                modifier = sections()
             ) {
                 Text(text = "设备信息", style = MaterialTheme.typography.titleLarge)
                 val orgDevice = myDpm.isOrganizationOwnedDeviceWithManagedProfile
@@ -245,33 +199,22 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
             }
         }
         if(VERSION.SDK_INT>=31&&(isProfileOwner(myDpm)|| isDeviceOwner(myDpm))){
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 5.dp)
-                    .clip(RoundedCornerShape(15.dp))
-                    .background(color = MaterialTheme.colorScheme.primaryContainer)
-                    .padding(8.dp)
-            ) {
-                val specificId = myDpm.enrollmentSpecificId
+            Column(modifier = sections()) {
+                val specificId:String = myDpm.enrollmentSpecificId
                 Text(text = "设备唯一标识码", style = MaterialTheme.typography.titleLarge)
                 Text("（恢复出厂设置不变）")
-                Text("（如果下面没有一长串数字字母组合，说明你的设备不支持）")
-                Text(specificId)
-                Button(onClick = {myDpm.setOrganizationId(specificId)}, enabled = specificId!="") {
-                    Text("设置为组织ID")
+                if(specificId!=""){
+                    Text(specificId)
+                    Button(onClick = {myDpm.setOrganizationId(specificId)}, enabled = specificId!="") {
+                        Text("设置为组织ID")
+                    }
+                }else{
+                    Text("你的设备不支持")
                 }
             }
         }
         if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 5.dp)
-                    .clip(RoundedCornerShape(15.dp))
-                    .background(color = MaterialTheme.colorScheme.primaryContainer)
-                    .padding(8.dp)
-            ) {
+            Column(modifier = sections()) {
                 Text(text = "不受控制的账号类型", style = MaterialTheme.typography.titleLarge)
                 Text("作用未知")
                 var noManageAccount = myDpm.accountTypesWithManagementDisabled?.toMutableList()
@@ -283,7 +226,6 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
                             accountlist+="$eachAccount \n"
                         }
                     }
-
                 }
                 refreshList()
                 if(accountlist!=""){
@@ -339,14 +281,7 @@ fun DeviceOwnerInfo(
     input:()->CharSequence?,
     output:(content:String?)->Unit
 ){
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 5.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(color = MaterialTheme.colorScheme.primaryContainer)
-            .padding(10.dp)
-    ) {
+    Column(modifier = sections()) {
         Text(text = stringResource(name), style = MaterialTheme.typography.titleLarge)
         if(desc!=R.string.place_holder){Text(text = stringResource(desc),modifier = Modifier.padding(top = 6.dp))}
         var inputContent by remember{ mutableStateOf(input()) }

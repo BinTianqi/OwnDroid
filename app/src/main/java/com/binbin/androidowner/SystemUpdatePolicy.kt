@@ -7,14 +7,12 @@ import android.content.ComponentName
 import android.content.Context
 import android.os.Build.VERSION
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -28,7 +26,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -40,16 +37,8 @@ import java.util.Date
 fun SysUpdatePolicy(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext: Context){
     val focusMgr = LocalFocusManager.current
     Column {
-        Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT>=26){
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 6.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(color = MaterialTheme.colorScheme.primaryContainer)
-                    .padding(8.dp)
-            ) {
+            Column(modifier = sections()) {
                 val sysUpdateInfo = if(isDeviceOwner(myDpm)){myDpm.getPendingSystemUpdate(myComponent)}else{null}
                 if(sysUpdateInfo!=null){
                     Text("Update first available: ${Date(sysUpdateInfo.receivedTime)}")
@@ -65,15 +54,7 @@ fun SysUpdatePolicy(myDpm:DevicePolicyManager,myComponent:ComponentName,myContex
                 }
             }
         }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 6.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                .padding(8.dp)
-        ) {
+        Column(modifier = sections()) {
             var selectedPolicy by remember{ mutableStateOf(myDpm.systemUpdatePolicy?.policyType) }
             Text(text = "系统更新策略", style = MaterialTheme.typography.titleLarge)
             RadioButtonItem("准备好后立即更新",{selectedPolicy==SystemUpdatePolicy.TYPE_INSTALL_AUTOMATIC},{selectedPolicy=SystemUpdatePolicy.TYPE_INSTALL_AUTOMATIC})
@@ -143,6 +124,5 @@ fun SysUpdatePolicy(myDpm:DevicePolicyManager,myComponent:ComponentName,myContex
 
             }
         }*/
-        Spacer(Modifier.padding(vertical = 5.dp))
     }
 }

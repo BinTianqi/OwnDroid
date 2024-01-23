@@ -44,7 +44,6 @@ fun UserRestriction(myDpm: DevicePolicyManager, myComponent: ComponentName,myCon
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .verticalScroll(verticalScrolling)
-            .padding(bottom = 20.dp)
             .navigationBarsPadding()
     ) {
         Text("打开开关后会禁用对应的功能")
@@ -178,7 +177,7 @@ fun UserRestriction(myDpm: DevicePolicyManager, myComponent: ComponentName,myCon
         if(VERSION.SDK_INT<34){
             Text("以下功能需要安卓14或以上：2G信号、启用设备管理器、超宽频段无线电")
         }
-        Spacer(Modifier.padding(vertical = 20.dp))
+        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
@@ -193,7 +192,13 @@ fun SectionTab(txt:String,getSection:()->Boolean,setSection:()->Unit){
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 6.dp)
             .clip(RoundedCornerShape(15))
-            .background(color = if(getSection()){MaterialTheme.colorScheme.tertiaryContainer}else{MaterialTheme.colorScheme.primaryContainer})
+            .background(
+                color = if (getSection()) {
+                    MaterialTheme.colorScheme.tertiaryContainer
+                } else {
+                    MaterialTheme.colorScheme.primaryContainer
+                }
+            )
             .clickable(onClick = setSection)
             .padding(vertical = 8.dp)
     )
@@ -210,12 +215,7 @@ private fun UserRestrictionItem(
 ){
     var strictState by remember{ mutableStateOf(false) }
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp, horizontal = 8.dp)
-            .clip(RoundedCornerShape(20))
-            .background(color = MaterialTheme.colorScheme.secondaryContainer)
-            .padding(5.dp),
+        modifier = sections(MaterialTheme.colorScheme.secondaryContainer),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ){
@@ -260,7 +260,8 @@ private fun UserRestrictionItem(
                     }
                     strictState = myDpm.getUserRestrictions(myComponent).getBoolean(restriction)
                 },
-                enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm)
+                enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm),
+                modifier = Modifier.padding(end = 5.dp)
             )
         }
     }

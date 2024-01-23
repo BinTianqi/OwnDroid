@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Build.VERSION
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -38,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
@@ -64,21 +61,11 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
         Text(
             text = "以下操作可能会造成不可挽回的损失，请先备份好数据。执行操作时一定要谨慎！！！",
             color = MaterialTheme.colorScheme.onErrorContainer,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-                .clip(RoundedCornerShape(15))
-                .background(color = MaterialTheme.colorScheme.errorContainer)
-                .padding(8.dp)
+            modifier = sections(MaterialTheme.colorScheme.errorContainer)
         )
         if(myDpm.isDeviceOwnerApp("com.binbin.androidowner")){
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                    .clip(RoundedCornerShape(15))
-                    .background(color = MaterialTheme.colorScheme.primaryContainer)
-                    .padding(8.dp)
+                modifier = sections()
             ) {
                 if(VERSION.SDK_INT>=29){
                     val pwdComplex = myDpm.passwordComplexity
@@ -98,12 +85,7 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
         if(VERSION.SDK_INT>=26){
             Column(
                 horizontalAlignment = Alignment.Start,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                    .clip(RoundedCornerShape(10))
-                    .background(color = MaterialTheme.colorScheme.primaryContainer)
-                    .padding(8.dp)
+                modifier = sections()
             ) {
                 Text(text = "密码重置令牌", style = MaterialTheme.typography.titleLarge)
                 Row {
@@ -144,12 +126,7 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
             }
         }
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                .padding(10.dp)
+            modifier = sections()
         ) {
             TextField(
                 value = newPwd,
@@ -215,14 +192,7 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
             {myDpm.getPasswordHistoryLength(null).toString()},{ic -> myDpm.setPasswordHistoryLength(myComponent, ic.toInt()) })
 
         if(VERSION.SDK_INT>=31){
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(color = MaterialTheme.colorScheme.primaryContainer)
-                    .padding(10.dp)
-            ) {
+            Column(modifier = sections()) {
                 val passwordComplexity = mapOf(
                     DevicePolicyManager.PASSWORD_COMPLEXITY_NONE to "无复杂度（允许不设密码）",
                     DevicePolicyManager.PASSWORD_COMPLEXITY_LOW to "低复杂度（允许图案和连续性）",
@@ -254,12 +224,7 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
         }
 
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                .padding(10.dp)
+            modifier = sections()
         ) {
             val passwordQuality = mapOf(
                 DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED to "未指定",
@@ -300,7 +265,7 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
             }
         }
 
-        Spacer(Modifier.padding(vertical = 20.dp))
+        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
@@ -315,14 +280,7 @@ fun PasswordItem(
     getMethod:()->String,
     setMethod:(ic:String)->Unit
 ){
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-            .clip(RoundedCornerShape(10))
-            .background(color = MaterialTheme.colorScheme.primaryContainer)
-            .padding(10.dp)
-    ) {
+    Column(modifier = sections()) {
         var inputContent by remember{ mutableStateOf(if(isDeviceOwner(myDpm)){getMethod()}else{""}) }
         var inputContentEdited by remember{ mutableStateOf(false) }
         var ableToApply by remember{ mutableStateOf(true) }

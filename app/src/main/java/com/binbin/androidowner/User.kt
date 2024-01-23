@@ -1,6 +1,5 @@
 package com.binbin.androidowner
 
-import android.app.Activity
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
@@ -11,14 +10,11 @@ import android.os.Build.VERSION_CODES
 import android.os.UserHandle
 import android.os.UserManager
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -33,11 +29,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.core.content.ContextCompat.startActivity
 import androidx.core.os.UserManagerCompat
 
@@ -50,14 +44,7 @@ fun UserManage(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext: Co
         //val myUM = myContext.getSystemService(Context.USER_SERVICE)
         val currentUser = android.os.Process.myUserHandle()
         val userList = Test.returnUsers(myContext)
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                .padding(10.dp)
-        ) {
+        Column(modifier = sections()) {
             Text(text = "用户信息", style = MaterialTheme.typography.titleLarge)
             Text("用户个数：${userList.size}")
             Spacer(Modifier.padding(vertical = 5.dp))
@@ -83,14 +70,7 @@ fun UserManage(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext: Co
             Text("切换用户后或设备重启后会删除临时用户")
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-                .clip(RoundedCornerShape(14.dp))
-                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                .padding(10.dp)
-        ) {
+        Column(modifier = sections()) {
             Text(text = "用户操作", style = MaterialTheme.typography.titleLarge)
             if(VERSION.SDK_INT>28){
                 var resultForLogout by remember{ mutableIntStateOf(-1) }
@@ -135,14 +115,7 @@ fun UserManage(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext: Co
         }
 
         if(VERSION.SDK_INT>=24){
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(color = MaterialTheme.colorScheme.primaryContainer)
-                    .padding(10.dp)
-            ) {
+            Column(modifier = sections()) {
                 var userName by remember{ mutableStateOf("") }
                 Text(text = "创建用户", style = MaterialTheme.typography.titleLarge)
                 TextField(
@@ -207,12 +180,7 @@ fun UserSessionMessage(
     setMsg:(msg:CharSequence?)->Unit
 ){
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-            .clip(RoundedCornerShape(10))
-            .background(color = MaterialTheme.colorScheme.primaryContainer)
-            .padding(10.dp)
+        modifier = sections()
     ) {
         val focusMgr = LocalFocusManager.current
         var msg by remember{ mutableStateOf(if(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner)){ if(get()==null){""}else{get().toString()} }else{""}) }

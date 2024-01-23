@@ -4,9 +4,7 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.os.Build.VERSION
-import android.os.UserManager
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -31,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -42,7 +38,6 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName,myConte
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
-            .padding(bottom = 20.dp)
             .navigationBarsPadding()
     ) {
         if(isDeviceOwner(myDpm)){
@@ -76,12 +71,7 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName,myConte
         }
         if(VERSION.SDK_INT>=28){
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 6.dp, vertical = 4.dp)
-                    .clip(RoundedCornerShape(15))
-                    .background(color = MaterialTheme.colorScheme.primaryContainer)
-                    .padding(vertical = 5.dp),
+                modifier = sections(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 Button(
@@ -114,12 +104,7 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName,myConte
 
         Row(
             horizontalArrangement = Arrangement.SpaceAround,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp, horizontal = 6.dp)
-                .clip(RoundedCornerShape(15))
-                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                .padding(vertical = 4.dp),
+            modifier = sections(),
         ) {
             if(VERSION.SDK_INT>=24){
                 Button(onClick = {myDpm.reboot(myComponent)}, enabled = isDeviceOwner(myDpm)) {
@@ -161,14 +146,7 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName,myConte
         if(isDeviceOwner(myDpm)){
             SysUpdatePolicy(myDpm,myComponent,myContext)
         }
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 6.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(color = MaterialTheme.colorScheme.errorContainer)
-                .padding(8.dp)
-        ) {
+        Column(modifier = sections(MaterialTheme.colorScheme.errorContainer)) {
             var flag by remember{ mutableIntStateOf(0) }
             var confirmed by remember{ mutableStateOf(false) }
             Text(text = "清除数据",style = MaterialTheme.typography.titleLarge,modifier = Modifier.padding(6.dp))
@@ -214,7 +192,7 @@ fun DeviceControl(myDpm: DevicePolicyManager, myComponent: ComponentName,myConte
                 }
             }
         }
-        Spacer(Modifier.padding(vertical = 20.dp))
+        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
@@ -229,12 +207,7 @@ private fun DeviceCtrlItem(
 ){
     var isEnabled by remember{ mutableStateOf(false) }
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 6.dp, vertical = 4.dp)
-            .clip(RoundedCornerShape(15))
-            .background(color = MaterialTheme.colorScheme.primaryContainer)
-            .padding(8.dp),
+        modifier = sections(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -263,7 +236,8 @@ private fun DeviceCtrlItem(
             onCheckedChange = {
                 setMethod(!isEnabled)
                 isEnabled=getMethod()
-            }
+            },
+            modifier = Modifier.padding(end = 5.dp)
         )
     }
 }

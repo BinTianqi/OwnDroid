@@ -12,14 +12,15 @@ import android.net.Uri
 import android.os.Build.VERSION
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -32,7 +33,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
@@ -46,7 +46,8 @@ fun ApplicationManage(myDpm:DevicePolicyManager, myComponent:ComponentName,myCon
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .navigationBarsPadding()
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         TextField(
@@ -80,12 +81,7 @@ fun ApplicationManage(myDpm:DevicePolicyManager, myComponent:ComponentName,myCon
         /*AppManageItem(R.string.block_unins,R.string.sometimes_not_available,myDpm, {myDpm.isUninstallBlocked(myComponent,pkgName)},
             {b -> myDpm.setUninstallBlocked(myComponent,pkgName,b)})*/
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(5.dp)
-                .clip(RoundedCornerShape(15))
-                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                .padding(8.dp),
+            modifier = sections(),
             horizontalArrangement = Arrangement.SpaceAround
         ) {
             Button(onClick = {myDpm.setUninstallBlocked(myComponent,pkgName,false)}, enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm)) {
@@ -95,36 +91,38 @@ fun ApplicationManage(myDpm:DevicePolicyManager, myComponent:ComponentName,myCon
                 Text("防卸载")
             }
         }
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 5.dp, vertical = 4.dp)
-                .clip(RoundedCornerShape(14.dp))
-                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                .padding(10.dp)
-        ) {
+        Column(modifier = sections()) {
             Text(text = "许可的输入法", style = MaterialTheme.typography.titleLarge)
-            val imeList = myDpm.getPermittedInputMethods(myComponent)
-            var imeListText = ""
-            if (imeList != null) {
+            var imeList = mutableListOf<String>()
+            var imeListText by remember{ mutableStateOf("") }
+            val refreshList = {
+                if(isProfileOwner(myDpm) || isDeviceOwner(myDpm)){
+                    if(myDpm.getPermittedInputMethods(myComponent)!=null){
+                        imeList = myDpm.getPermittedInputMethods(myComponent)!!
+                    }
+                }
+                imeListText = ""
                 for(eachIme in imeList){
                     imeListText += "$eachIme \n"
-                    //Log.e("",eachIme)
+                    Log.e("",eachIme)
                 }
             }
+            refreshList()
             Text(imeListText)
             Button(
                 onClick = {
-                    imeList?.plus(pkgName)
+                    imeList.plus(pkgName)
                     myDpm.setPermittedInputMethods(myComponent, imeList)
+                    refreshList()
                 }
             ) {
                 Text("设为许可的输入法")
             }
             Button(
                 onClick = {
-                    imeList?.remove(pkgName)
+                    imeList.remove(pkgName)
                     myDpm.setPermittedInputMethods(myComponent,imeList)
+                    refreshList()
                 }
             ) {
                 Text("从列表中移除")
@@ -153,12 +151,7 @@ private fun AppManageItem(
         isEnabled = getMethod()
     }
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(5.dp)
-            .clip(RoundedCornerShape(15))
-            .background(color = MaterialTheme.colorScheme.primaryContainer)
-            .padding(8.dp),
+        modifier = sections(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
