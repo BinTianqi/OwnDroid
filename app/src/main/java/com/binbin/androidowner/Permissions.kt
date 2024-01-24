@@ -19,6 +19,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -35,6 +36,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -42,25 +44,34 @@ import androidx.navigation.NavHostController
 
 @Composable
 fun DpmPermissions(navCtrl:NavHostController){
-    //da:DeviceAdmin do:DeviceOwner
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val isda = myDpm.isAdminActive(myComponent)
     val focusManager = LocalFocusManager.current
+    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val isWear = sharedPref.getBoolean("isWear",false)
     Column(
         modifier = Modifier.verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        if(!myDpm.isAdminActive(myComponent)&&isWear){
+            Button(onClick = { activateDeviceAdmin(myContext,myComponent) },modifier = Modifier
+                .padding(horizontal = 3.dp)
+                .fillMaxWidth()) {
+                Text("激活Device admin")
+            }
+        }
         Row(
             modifier = sections(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(text = "Device Admin", style = MaterialTheme.typography.titleLarge)
+                Text(text = "Device Admin", fontSize = if(!isWear){22.sp}else{20.sp})
                 Text(if(isda){"已激活"}else{"未激活"})
             }
+            if(!isWear)
             if(isda){
                 Button(
                     onClick = {
@@ -85,12 +96,13 @@ fun DpmPermissions(navCtrl:NavHostController){
                 modifier = sections(MaterialTheme.colorScheme.tertiaryContainer),
                 horizontalAlignment = Alignment.Start
             ) {
-                Text("你可以在adb shell中使用以下命令激活Device Admin")
                 SelectionContainer {
-                    Text("dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
-                        color = MaterialTheme.colorScheme.onTertiaryContainer)
+                    Text("adb shell dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
                 }
-                Text("或者进入设置 -> 安全 -> 更多安全设置 -> 设备管理应用 -> Android Owner")
+                Text(text = "或者进入设置（原生安卓） -> 安全 -> 更多安全设置 -> 设备管理应用 -> Android Owner",
+                    style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
             }
         }
         Row(
@@ -99,10 +111,10 @@ fun DpmPermissions(navCtrl:NavHostController){
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(text = "Profile Owner", style = MaterialTheme.typography.titleLarge)
+                Text(text = "Profile Owner", fontSize = if(!isWear){22.sp}else{20.sp})
                 Text(if(isProfileOwner(myDpm)){"已激活"}else{"未激活"})
             }
-            if(isProfileOwner(myDpm)&&VERSION.SDK_INT>=24){
+            if(isProfileOwner(myDpm)&&VERSION.SDK_INT>=24&&!isWear){
                 Button(
                     onClick = {
                         myDpm.clearProfileOwner(myComponent)
@@ -123,15 +135,17 @@ fun DpmPermissions(navCtrl:NavHostController){
                 horizontalAlignment = Alignment.Start
             ) {
                 if(!isDeviceOwner(myDpm)){
-                    Text("你可以在adb shell中使用以下命令激活Profile Owner")
                     SelectionContainer {
-                        Text("dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
-                            color = MaterialTheme.colorScheme.onTertiaryContainer)
+                        Text("adb shell dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
                     }
-                    Text("一个设备只能有一个Device owner，强烈建议激活Device owner")
+                    Text(text = "Device owner和Profile owner不能同时存在，强烈建议激活Device owner",
+                        style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
                 }
                 if(isDeviceOwner(myDpm)){
-                    Text("Device owner创建其他用户后，这个应用会成为新用户的Profile owner")
+                    Text(text = "Device owner创建其他用户后，这个应用会成为新用户的Profile owner",
+                        style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
                 }
             }
         }
@@ -141,10 +155,10 @@ fun DpmPermissions(navCtrl:NavHostController){
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(text = "Device Owner", style = MaterialTheme.typography.titleLarge)
+                Text(text = "Device Owner", fontSize = if(!isWear){22.sp}else{20.sp})
                 Text(if(isDeviceOwner(myDpm)){"已激活"}else{"未激活"})
             }
-            if(isDeviceOwner(myDpm)){
+            if(isDeviceOwner(myDpm)&&!isWear){
                 Button(
                     onClick = {
                         myDpm.clearDeviceOwnerApp("com.binbin.androidowner")
@@ -164,13 +178,14 @@ fun DpmPermissions(navCtrl:NavHostController){
                 modifier = sections(MaterialTheme.colorScheme.tertiaryContainer),
                 horizontalAlignment = Alignment.Start
             ) {
-                Text("你可以在adb shell中使用以下命令激活Device Owner")
                 SelectionContainer {
-                    Text(text = "dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
-                    color = MaterialTheme.colorScheme.onTertiaryContainer)
+                    Text(text = "adb shell dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
+                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
                 }
                 if(!isda){
-                    Text("使用此命令也会激活Device Admin")
+                    Text(text = "使用此命令也会激活Device Admin",
+                        style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
                 }
             }
         }
@@ -178,7 +193,8 @@ fun DpmPermissions(navCtrl:NavHostController){
             Text(
                 text = "注意！在这里撤销权限不会清除配置。比如：被停用的应用会保持停用状态",
                 color = MaterialTheme.colorScheme.onErrorContainer,
-                modifier = sections(MaterialTheme.colorScheme.errorContainer)
+                modifier = sections(MaterialTheme.colorScheme.errorContainer),
+                style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium}
             )
         }
         if(VERSION.SDK_INT>=30){
@@ -270,6 +286,54 @@ fun DpmPermissions(navCtrl:NavHostController){
             DeviceOwnerInfo(R.string.long_support_msg,R.string.long_support_msg_desc,R.string.message,focusManager,myContext,
                 {myDpm.getLongSupportMessage(myComponent)},{content ->  myDpm.setLongSupportMessage(myComponent,content)})
         }
+        if(isWear&&(myDpm.isAdminActive(myComponent)||isProfileOwner(myDpm)||isDeviceOwner(myDpm))){
+            Column(modifier = sections(), horizontalAlignment = Alignment.CenterHorizontally) {
+                Button(
+                    onClick = {
+                        myDpm.removeActiveAdmin(myComponent)
+                        navCtrl.navigate("HomePage") {
+                            popUpTo(
+                                navCtrl.graph.findStartDestination().id
+                            ) { saveState = true }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(contentColor = MaterialTheme.colorScheme.onError, containerColor = MaterialTheme.colorScheme.error),
+                    enabled = myDpm.isAdminActive(myComponent)
+                ) {
+                    Text("撤销Device admin")
+                }
+                if(VERSION.SDK_INT>=24){
+                    Button(
+                        onClick = {
+                            myDpm.clearProfileOwner(myComponent)
+                            navCtrl.navigate("HomePage") {
+                                popUpTo(
+                                    navCtrl.graph.findStartDestination().id
+                                ) { saveState = true }
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(contentColor = MaterialTheme.colorScheme.onError, containerColor = MaterialTheme.colorScheme.error),
+                        enabled = isProfileOwner(myDpm)
+                    ) {
+                        Text("撤销Profile owner")
+                    }
+                }
+                Button(
+                    onClick = {
+                        myDpm.clearDeviceOwnerApp("com.binbin.androidowner")
+                        navCtrl.navigate("HomePage") {
+                            popUpTo(
+                                navCtrl.graph.findStartDestination().id
+                            ) { saveState = true }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(contentColor = MaterialTheme.colorScheme.onError, containerColor = MaterialTheme.colorScheme.error),
+                    enabled = isDeviceOwner(myDpm)
+                    ) {
+                    Text("撤销Device owner")
+                }
+            }
+        }
         Spacer(Modifier.padding(vertical = 20.dp))
     }
 }
@@ -285,8 +349,13 @@ fun DeviceOwnerInfo(
     output:(content:String?)->Unit
 ){
     Column(modifier = sections()) {
-        Text(text = stringResource(name), style = MaterialTheme.typography.titleLarge)
-        if(desc!=R.string.place_holder){Text(text = stringResource(desc),modifier = Modifier.padding(top = 6.dp))}
+        val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+        Text(text = stringResource(name), style = MaterialTheme.typography.titleLarge, softWrap = false)
+        if(desc!=R.string.place_holder){
+            Text(
+                text = stringResource(desc),modifier = Modifier.padding(top = 6.dp),
+                style = if(!sharedPref.getBoolean("isWear",false)){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
+        }
         var inputContent by remember{ mutableStateOf(input()) }
         TextField(
             value = if(inputContent!=null){ inputContent.toString() }else{""},

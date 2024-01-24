@@ -57,13 +57,21 @@ fun UserRestriction(){
     var mediaVisible by remember{ mutableStateOf(false) }
     var userVisible by remember{ mutableStateOf(false) }
     var otherVisible by remember{ mutableStateOf(false) }
+    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val isWear = sharedPref.getBoolean("isWear",false)
     LazyColumn(
         horizontalAlignment = Alignment.CenterHorizontally
     ){
         items(1){
-            Text("打开开关后会禁用对应的功能")
+            Text(text = "打开开关后会禁用对应的功能",modifier = Modifier.padding(3.dp),
+                style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
             if(isProfileOwner(myDpm)){
-                Text("Profile owner无法更改部分功能")
+                Text(text = "Profile owner无法更改部分功能",
+                    style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
+            }
+            if(isWear){
+                Text(text = "部分功能在手表上无效",
+                    style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
             }
         }
 
@@ -111,13 +119,20 @@ fun UserRestriction(){
 
         items(1){
             Spacer(Modifier.padding(vertical = 5.dp))
-            if(VERSION.SDK_INT<24){ Text("以下功能需要安卓7或以上：数据漫游、修改用户头像、更换壁纸") }
-            if(VERSION.SDK_INT<26){ Text("以下功能需要安卓8或以上：蓝牙、自动填充服务、添加/移除工作资料") }
-            if(VERSION.SDK_INT<28){ Text("以下功能需要安卓9或以上：飞行模式、位置信息、调整亮度、修改语言、修改日期时间、修改屏幕超时、打印、分享至工作应用、切换用户") }
-            if(VERSION.SDK_INT<29){ Text("以下功能需要安卓10或以上：配置私人DNS、内容捕获、内容建议") }
-            if(VERSION.SDK_INT<31){ Text("以下功能需要安卓12或以上：切换摄像头使用权限、切换麦克风使用权限") }
-            if(VERSION.SDK_INT<33){ Text("以下功能需要安卓13或以上：添加WiFi配置、分享设备管理器配置的WiFi、WiFi共享") }
-            if(VERSION.SDK_INT<34){ Text("以下功能需要安卓14或以上：2G信号、启用设备管理器、超宽频段无线电") }
+            if(VERSION.SDK_INT<24){ Text(text = "以下功能需要安卓7或以上：数据漫游、修改用户头像、更换壁纸",
+                style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium}) }
+            if(VERSION.SDK_INT<26){ Text(text = "以下功能需要安卓8或以上：蓝牙、自动填充服务、添加/移除工作资料",
+                style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium}) }
+            if(VERSION.SDK_INT<28){ Text(text = "以下功能需要安卓9或以上：飞行模式、位置信息、调整亮度、修改语言、修改日期时间、修改屏幕超时、打印、分享至工作应用、切换用户",
+                style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium}) }
+            if(VERSION.SDK_INT<29){ Text(text = "以下功能需要安卓10或以上：配置私人DNS、内容捕获、内容建议",
+                style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium}) }
+            if(VERSION.SDK_INT<31){ Text(text = "以下功能需要安卓12或以上：切换摄像头使用权限、切换麦克风使用权限",
+                style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium}) }
+            if(VERSION.SDK_INT<33){ Text(text = "以下功能需要安卓13或以上：添加WiFi配置、分享设备管理器配置的WiFi、WiFi共享",
+                style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium}) }
+            if(VERSION.SDK_INT<34){ Text(text = "以下功能需要安卓14或以上：2G信号、启用设备管理器、超宽频段无线电",
+                style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium}) }
             Spacer(Modifier.padding(vertical = 30.dp))
         }
     }
@@ -125,14 +140,16 @@ fun UserRestriction(){
 
 @Composable
 fun SectionTab(txt:String,getSection:()->Boolean,setSection:()->Unit){
+    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     Text(
         text = txt,
         color = if(getSection()){MaterialTheme.colorScheme.onTertiaryContainer}else{MaterialTheme.colorScheme.onPrimaryContainer},
         textAlign = TextAlign.Center,
-        style = MaterialTheme.typography.headlineMedium,
+        style = if(!sharedPref.getBoolean("isWear",false)){MaterialTheme.typography.headlineMedium}else{MaterialTheme.typography.titleLarge},
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 6.dp)
+            .padding(horizontal = if(!sharedPref.getBoolean("isWear",false)){8.dp}else{4.dp},
+                vertical = if(!sharedPref.getBoolean("isWear",false)){6.dp}else{3.dp})
             .clip(RoundedCornerShape(15.dp))
             .background(
                 color = if (getSection()) {
@@ -142,7 +159,7 @@ fun SectionTab(txt:String,getSection:()->Boolean,setSection:()->Unit){
                 }
             )
             .clickable(onClick = setSection)
-            .padding(vertical = 8.dp)
+            .padding(vertical = if(!sharedPref.getBoolean("isWear",false)){8.dp}else{3.dp})
     )
 }
 
@@ -156,6 +173,7 @@ private fun UserRestrictionItem(
     myDpm: DevicePolicyManager
 ){
     var strictState by remember{ mutableStateOf(false) }
+    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     Row(
         modifier = sections(MaterialTheme.colorScheme.secondaryContainer),
         verticalAlignment = Alignment.CenterVertically,
@@ -164,18 +182,19 @@ private fun UserRestrictionItem(
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
+            if(!sharedPref.getBoolean("isWear",false)){
             Icon(
                 painter = painterResource(leadIcon),
                 contentDescription = null,
                 modifier = Modifier.padding(start = 4.dp, end = 8.dp),
                 tint = MaterialTheme.colorScheme.secondary
-            )
+            )}
             Column(
                 modifier = Modifier.align(Alignment.CenterVertically)
             ) {
                 Text(
                     text = stringResource(itemName),
-                    style = MaterialTheme.typography.titleLarge,
+                    style = if(!sharedPref.getBoolean("isWear",false)){MaterialTheme.typography.titleLarge}else{MaterialTheme.typography.bodyLarge},
                     color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
                 if(restrictionDescription!=""){Text(text = restrictionDescription, color = MaterialTheme.colorScheme.onSecondaryContainer)}
@@ -203,7 +222,7 @@ private fun UserRestrictionItem(
                     strictState = myDpm.getUserRestrictions(myComponent).getBoolean(restriction)
                 },
                 enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm),
-                modifier = Modifier.padding(end = 5.dp)
+                modifier = Modifier.padding(end = if(!sharedPref.getBoolean("isWear",false)){5.dp}else{0.dp})
             )
         }
     }

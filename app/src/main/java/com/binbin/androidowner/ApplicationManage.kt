@@ -48,6 +48,7 @@ fun ApplicationManage(){
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     var pkgName by remember { mutableStateOf("") }
+    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -87,10 +88,10 @@ fun ApplicationManage(){
             {b -> myDpm.setUninstallBlocked(myComponent,pkgName,b)})*/
         Row(
             modifier = sections(),
-            horizontalArrangement = Arrangement.SpaceAround
+            horizontalArrangement = if(!sharedPref.getBoolean("isWear",false)){Arrangement.SpaceAround}else{Arrangement.SpaceBetween}
         ) {
             Button(onClick = {myDpm.setUninstallBlocked(myComponent,pkgName,false)}, enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm)) {
-                Text("取消防卸载")
+                Text("允许卸载")
             }
             Button(onClick = {myDpm.setUninstallBlocked(myComponent,pkgName,true)}, enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm)) {
                 Text("防卸载")
@@ -155,6 +156,8 @@ private fun AppManageItem(
     if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
         isEnabled = getMethod()
     }
+    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    if(!sharedPref.getBoolean("isWear",false)){
     Row(
         modifier = sections(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -177,6 +180,28 @@ private fun AppManageItem(
             },
             enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm)
         )
+    }}else{
+        Column(
+            modifier = sections()
+        ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(itemName)
+                )
+                Switch(
+                    checked = isEnabled,
+                    onCheckedChange = {
+                        setMethod(!isEnabled)
+                        isEnabled = getMethod()
+                    },
+                    enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm)
+                )
+            }
+            if(itemDesc!=R.string.place_holder){
+                Text(text = stringResource(itemDesc),
+                    style = if(!sharedPref.getBoolean("isWear",false)){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
+            }
+        }
     }
 }
 

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,28 +27,35 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 
 @Composable
-fun AppSetting(){
-    Column(
-        modifier = Modifier.verticalScroll(rememberScrollState())
-    ) {
+fun AppSetting(navCtrl:NavHostController){
+    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         val myContext = LocalContext.current
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-                .clip(RoundedCornerShape(14.dp))
-                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                .padding(vertical = 6.dp)
-        ) {
+        val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+        Column(modifier = sections()) {
+            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 3.dp),horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(text = "Wear", style = MaterialTheme.typography.titleLarge)
+                Switch(
+                    checked = sharedPref.getBoolean("isWear",false),
+                    onCheckedChange = {
+                        sharedPref.edit().putBoolean("isWear",!sharedPref.getBoolean("isWear",false)).apply()
+                        navCtrl.navigate("HomePage")
+                    }
+                )
+            }
+        }
+        Column(modifier = sections()) {
             Column(
                 modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 12.dp)
             ) {
                 Text(text = "Android owner", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
-                Text(text = "使用安卓的Device admin、Device owner 、Profile owner，全方位掌控你的设备")
+                Text(text = "使用安卓的Device admin、Device owner 、Profile owner，全方位掌控你的设备",
+                    style = if(!sharedPref.getBoolean("isWear",false)){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
                 Spacer(Modifier.padding(vertical = 4.dp))
-                Text("这个应用只在AOSP和LineageOS上测试过，不确保每个功能都在其它系统可用，尤其是国内的魔改系统。")
+                Text(text = "这个应用只在AOSP和LineageOS上测试过，不确保每个功能都在其它系统可用，尤其是国内的魔改系统。",
+                    style = if(!sharedPref.getBoolean("isWear",false)){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -63,11 +72,14 @@ fun AppSetting(){
                 )
                 Column {
                     Text(text = "源代码", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
-                    Text(text = "https://github.com/BinTianqi/AndroidOwner", color = MaterialTheme.colorScheme.onPrimaryContainer)
-                    Text(text = "欢迎提交issue、给小星星")
+                    if(!sharedPref.getBoolean("isWear",false)){
+                        Text(text = "https://github.com/BinTianqi/AndroidOwner", color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        Text(text = "欢迎提交issue、给小星星")
+                    }
                 }
             }
         }
+        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 

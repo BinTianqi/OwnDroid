@@ -9,9 +9,11 @@ import android.os.UserHandle
 import android.os.UserManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -187,6 +189,7 @@ fun UserSessionMessage(
     ) {
         val focusMgr = LocalFocusManager.current
         var msg by remember{ mutableStateOf(if(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner)){ if(get()==null){""}else{get().toString()} }else{""}) }
+        val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
         Text(text = text, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
         TextField(
             value = msg,
@@ -197,7 +200,7 @@ fun UserSessionMessage(
             modifier = Modifier.padding(vertical = 6.dp),
             enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner)
         )
-        Row {
+        Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = if(!sharedPref.getBoolean("isWear",false)){Arrangement.SpaceAround}else{Arrangement.SpaceBetween}) {
             Button(
                 onClick = {
                     focusMgr.clearFocus()
@@ -209,7 +212,7 @@ fun UserSessionMessage(
             ) {
                 Text("应用")
             }
-            Spacer(Modifier.padding(horizontal = 5.dp))
+            if(!sharedPref.getBoolean("isWear",false)){Spacer(Modifier.padding(horizontal = 5.dp))}
             Button(
                 onClick = {
                     focusMgr.clearFocus()
@@ -219,7 +222,7 @@ fun UserSessionMessage(
                 },
                 enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner)
             ) {
-                Text("使用默认")
+                Text("默认")
             }
         }
     }
