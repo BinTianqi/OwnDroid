@@ -4,12 +4,11 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Build.VERSION
-import android.os.Build.VERSION_CODES
 import android.os.UserHandle
 import android.os.UserManager
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -29,19 +28,23 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat.startActivity
 import androidx.core.os.UserManagerCompat
 
 
 @Composable
-fun UserManage(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext: Context){
+fun UserManage(){
     Column(
         modifier = Modifier.verticalScroll(rememberScrollState())
     ) {
         //val myUM = myContext.getSystemService(Context.USER_SERVICE)
+        val myContext = LocalContext.current
+        val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+        val focusMgr = LocalFocusManager.current
         val currentUser = android.os.Process.myUserHandle()
         val userList = Test.returnUsers(myContext)
         Column(modifier = sections()) {
@@ -108,7 +111,7 @@ fun UserManage(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext: Co
             ) {
                 Text("移除用户")
             }
-            Button(onClick = { createWorkProfile(myContext,myComponent) }) {
+            Button(onClick = { createWorkProfile(myContext)}) {
                 Text("创建工作资料")
             }
             Text("可能无法创建工作资料")
@@ -135,7 +138,7 @@ fun UserManage(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext: Co
                 var newUserHandle: UserHandle? by remember{ mutableStateOf(null) }
                 Row {
                     Button(
-                        onClick = {newUserHandle=myDpm.createAndManageUser(myComponent,userName,myComponent,null,selectedFlag)},
+                        onClick = {newUserHandle=myDpm.createAndManageUser(myComponent,userName,myComponent,null,selectedFlag);focusMgr.clearFocus()},
                         enabled = isDeviceOwner(myDpm)
                     ) {
                         Text("创建")
@@ -232,20 +235,17 @@ fun userOperationResultCode(result:Int): String {
     }
 }
 
-private fun createWorkProfile(myContext: Context,myComponent: ComponentName) {
+private fun createWorkProfile(myContext: Context) {
     val intent = Intent(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)
-    intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME, "com.binbin.androidowner")
-    intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME, myComponent)
-    if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
-        intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_ALLOW_OFFLINE, true)
-    }
+    intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME, ComponentName(myContext,MyDeviceAdminReceiver::class.java))
+    intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME, myContext.packageName)
+    if (VERSION.SDK_INT >= 33) { intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_ALLOW_OFFLINE,true) }
     intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION,"hello")
-    /*
-    intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_SKIP_USER_CONSENT, false)
-    val adminExtras = PersistableBundle()
-    if (adminExtras.size() > 0) {
-        intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE, adminExtras)
-    }*/
-    intent.setFlags(FLAG_ACTIVITY_NEW_TASK)
-    startActivity(myContext,intent,null)
+    myContext.startActivity(intent)
+}
+
+private fun createManagedDevice(myContext: Context) {
+    val intent = Intent(DevicePolicyManager.ACTION_PROVISION_MANAGED_DEVICE)
+    intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME, ComponentName(myContext,MyDeviceAdminReceiver::class.java))
+    myContext.startActivity(intent)
 }

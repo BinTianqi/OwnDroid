@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Build.VERSION
 import android.os.UserManager
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
@@ -31,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -45,7 +47,10 @@ private data class Restriction(
 
 
 @Composable
-fun UserRestriction(myDpm: DevicePolicyManager, myComponent: ComponentName,myContext: Context){
+fun UserRestriction(){
+    val myContext = LocalContext.current
+    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     var internetVisible by remember{ mutableStateOf(false) }
     var connectivityVisible by remember{ mutableStateOf(false) }
     var applicationVisible by remember{ mutableStateOf(false) }

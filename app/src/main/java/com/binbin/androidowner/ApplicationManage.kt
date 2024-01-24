@@ -12,6 +12,7 @@ import android.net.Uri
 import android.os.Build.VERSION
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
@@ -41,7 +43,10 @@ import java.io.InputStream
 
 
 @Composable
-fun ApplicationManage(myDpm:DevicePolicyManager, myComponent:ComponentName,myContext:Context){
+fun ApplicationManage(){
+    val myContext = LocalContext.current
+    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     var pkgName by remember { mutableStateOf("") }
     Column(
         modifier = Modifier

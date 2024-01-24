@@ -4,9 +4,9 @@ import android.app.KeyguardManager
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Build.VERSION
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -46,7 +47,10 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 
 @Composable
-fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Context){
+fun Password(){
+    val myContext = LocalContext.current
+    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     var newPwd by remember{ mutableStateOf("") }
     var confirmed by remember{ mutableStateOf(false) }
     val focusMgr = LocalFocusManager.current
@@ -151,7 +155,7 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
                         }else{ Toast.makeText(myContext, "需要4位数字或字母", Toast.LENGTH_SHORT).show() }
                     },
                     modifier = Modifier.padding(end = 10.dp),
-                    enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm)
+                    enabled = isDeviceOwner(myDpm) || isProfileOwner(myDpm) || myDpm.isAdminActive(myComponent)
                 ) {
                     Text("确认密码")
                 }
@@ -163,7 +167,6 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
                             }else{ Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show() }
                             confirmed=false
                         },
-                        enabled = confirmed,
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error, contentColor = MaterialTheme.colorScheme.onError)
                     ) {
                         Text("设置密码")
@@ -176,6 +179,7 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
                             }else{ Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show() }
                             confirmed=false
                         },
+                        enabled = confirmed,
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error, contentColor = MaterialTheme.colorScheme.onError)
                     ) {
                         Text("设置密码")
@@ -234,7 +238,7 @@ fun Password(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext:Conte
                 DevicePolicyManager.PASSWORD_QUALITY_ALPHANUMERIC to "数字字母各至少一个",
                 DevicePolicyManager.PASSWORD_QUALITY_BIOMETRIC_WEAK to "生物识别（弱）",
                 DevicePolicyManager.PASSWORD_QUALITY_NUMERIC_COMPLEX to "复杂数字（无连续性）",
-                DevicePolicyManager.PASSWORD_QUALITY_COMPLEX to "自定义",
+                DevicePolicyManager.PASSWORD_QUALITY_COMPLEX to "自定义（暂不支持）",
             ).toList()
             var selectedItem by remember{ mutableIntStateOf(passwordQuality[0].first) }
             if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){
@@ -329,7 +333,6 @@ fun activateToken(myContext: Context){
     val ACTIVATE_TOKEN_PROMPT = "在这里激活密码重置令牌"
     val keyguardManager = myContext.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
     val confirmIntent = keyguardManager.createConfirmDeviceCredentialIntent(null, ACTIVATE_TOKEN_PROMPT)
-    confirmIntent.setFlags(FLAG_ACTIVITY_NEW_TASK)
     if (confirmIntent != null) {
         startActivity(myContext,confirmIntent, null)
     } else {

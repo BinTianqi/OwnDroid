@@ -4,9 +4,9 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Build.VERSION
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -40,10 +41,12 @@ import androidx.navigation.NavHostController
 
 
 @Composable
-fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myContext:Context,navCtrl:NavHostController){
+fun DpmPermissions(navCtrl:NavHostController){
     //da:DeviceAdmin do:DeviceOwner
+    val myContext = LocalContext.current
+    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val isda = myDpm.isAdminActive(myComponent)
-    val isdo = myDpm.isDeviceOwnerApp("com.binbin.androidowner")
     val focusManager = LocalFocusManager.current
     Column(
         modifier = Modifier.verticalScroll(rememberScrollState()),
@@ -139,9 +142,9 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
         ) {
             Column {
                 Text(text = "Device Owner", style = MaterialTheme.typography.titleLarge)
-                Text(if(isdo){"已激活"}else{"未激活"})
+                Text(if(isDeviceOwner(myDpm)){"已激活"}else{"未激活"})
             }
-            if(isdo){
+            if(isDeviceOwner(myDpm)){
                 Button(
                     onClick = {
                         myDpm.clearDeviceOwnerApp("com.binbin.androidowner")
@@ -156,14 +159,7 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
                 }
             }
         }
-        if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)||myDpm.isAdminActive(myComponent)){
-            Text(
-                text = "注意！在这里撤销权限不会清除配置。比如：被停用的应用会保持停用状态",
-                color = MaterialTheme.colorScheme.onErrorContainer,
-                modifier = sections(MaterialTheme.colorScheme.errorContainer)
-            )
-        }
-        if(!isdo&&!isProfileOwner(myDpm)){
+        if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)){
             Column(
                 modifier = sections(MaterialTheme.colorScheme.tertiaryContainer),
                 horizontalAlignment = Alignment.Start
@@ -177,6 +173,13 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
                     Text("使用此命令也会激活Device Admin")
                 }
             }
+        }
+        if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)||myDpm.isAdminActive(myComponent)){
+            Text(
+                text = "注意！在这里撤销权限不会清除配置。比如：被停用的应用会保持停用状态",
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                modifier = sections(MaterialTheme.colorScheme.errorContainer)
+            )
         }
         if(VERSION.SDK_INT>=30){
             Column(
@@ -205,7 +208,7 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
                 Text("（恢复出厂设置不变）")
                 if(specificId!=""){
                     Text(specificId)
-                    Button(onClick = {myDpm.setOrganizationId(specificId)}, enabled = specificId!="") {
+                    Button(onClick = {myDpm.setOrganizationId(specificId)}) {
                         Text("设置为组织ID")
                     }
                 }else{
@@ -259,7 +262,7 @@ fun DpmPermissions(myDpm: DevicePolicyManager, myComponent: ComponentName, myCon
             }
         }
 
-        if(isdo&&VERSION.SDK_INT>=24){
+        if(isDeviceOwner(myDpm)&&VERSION.SDK_INT>=24){
             DeviceOwnerInfo(R.string.owner_lockscr_info,R.string.place_holder,R.string.owner_lockscr_info,focusManager,myContext,
                 {myDpm.deviceOwnerLockScreenInfo},{content ->  myDpm.setDeviceOwnerLockScreenInfo(myComponent,content)})
             DeviceOwnerInfo(R.string.support_msg,R.string.support_msg_desc,R.string.message,focusManager,myContext,
@@ -326,6 +329,5 @@ fun activateDeviceAdmin(inputContext:Context,inputComponent:ComponentName){
     val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
     intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, inputComponent)
     intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "在这里激活Android Owner")
-    intent.setFlags(FLAG_ACTIVITY_NEW_TASK)
     startActivity(inputContext,intent,null)
 }

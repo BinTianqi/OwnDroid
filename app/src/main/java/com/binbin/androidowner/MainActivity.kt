@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -47,14 +50,12 @@ import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.ui.theme.AndroidOwnerTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
+@ExperimentalMaterial3Api
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         super.onCreate(savedInstanceState)
-        val context = applicationContext
-        val dpm = context.getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        val adminComponent = ComponentName(context,MyDeviceAdminReceiver::class.java)
         setContent {
             val sysUiCtrl = rememberSystemUiController()
             val useDarkIcon = !isSystemInDarkTheme()
@@ -63,16 +64,15 @@ class MainActivity : ComponentActivity() {
                     sysUiCtrl.setNavigationBarColor(Color.Transparent,useDarkIcon)
                     sysUiCtrl.setStatusBarColor(Color.Transparent,useDarkIcon)
                 }
-                MyScaffold(dpm,adminComponent,context)
+                MyScaffold()
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@ExperimentalMaterial3Api
 @Composable
-fun MyScaffold(mainDpm:DevicePolicyManager, mainComponent:ComponentName, mainContext:Context){
+fun MyScaffold(){
     val focusMgr = LocalFocusManager.current
     val navCtrl = rememberNavController()
     val backStackEntry by navCtrl.currentBackStackEntryAsState()
@@ -83,7 +83,8 @@ fun MyScaffold(mainDpm:DevicePolicyManager, mainComponent:ComponentName, mainCon
         "UserManage" to R.string.user_manage,
         "ApplicationManage" to R.string.app_manage,
         "UserRestriction" to R.string.user_restrict,
-        "Password" to R.string.password
+        "Password" to R.string.password,
+        "AppSetting" to R.string.setting
     )
     val topBarName = topBarNameMap[backStackEntry?.destination?.route]?: R.string.app_name
     Scaffold(
@@ -128,24 +129,28 @@ fun MyScaffold(mainDpm:DevicePolicyManager, mainComponent:ComponentName, mainCon
                 .padding(top = it.calculateTopPadding())
                 .imePadding()
         ){
-            composable(route = "HomePage", content = { HomePage(navCtrl,mainDpm,mainComponent)})
-            composable(route = "DeviceControl", content = { DeviceControl(mainDpm,mainComponent,mainContext)})
-            composable(route = "Permissions", content = { DpmPermissions(mainDpm,mainComponent,mainContext,navCtrl)})
-            composable(route = "ApplicationManage", content = { ApplicationManage(mainDpm,mainComponent,mainContext)})
-            composable(route = "UserRestriction", content = { UserRestriction(mainDpm,mainComponent,mainContext)})
-            composable(route = "UserManage", content = { UserManage(mainDpm,mainComponent,mainContext)})
-            composable(route = "Password", content = { Password(mainDpm,mainComponent,mainContext)})
+            composable(route = "HomePage", content = { HomePage(navCtrl)})
+            composable(route = "DeviceControl", content = { DeviceControl()})
+            composable(route = "Permissions", content = { DpmPermissions(navCtrl)})
+            composable(route = "ApplicationManage", content = { ApplicationManage()})
+            composable(route = "UserRestriction", content = { UserRestriction()})
+            composable(route = "UserManage", content = { UserManage()})
+            composable(route = "Password", content = { Password()})
+            composable(route = "AppSetting", content = { AppSetting()})
         }
     }
 }
 
 @Composable
-fun HomePage(navCtrl:NavHostController,myDpm:DevicePolicyManager,myComponent:ComponentName){
+fun HomePage(navCtrl:NavHostController){
+    val myContext = LocalContext.current
+    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val isda = myDpm.isAdminActive(myComponent)
     val isdo = myDpm.isDeviceOwnerApp("com.binbin.androidowner")
     val activateType = if(isDeviceOwner(myDpm)){"Device Owner"}else if(isProfileOwner(myDpm)){"Profile Owner"}else if(isda){"Device Admin"}else{""}
     val isActivated = if(isdo||isda){"已激活"}else{"未激活"}
-    Column {
+    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -185,6 +190,7 @@ fun HomePage(navCtrl:NavHostController,myDpm:DevicePolicyManager,myComponent:Com
         HomePageItem(R.string.user_restrict, R.drawable.manage_accounts_fill0, R.string.user_restrict_desc, "UserRestriction", navCtrl)
         HomePageItem(R.string.user_manage,R.drawable.account_circle_fill0,R.string.user_manage_desc,"UserManage",navCtrl)
         HomePageItem(R.string.password, R.drawable.password_fill0,R.string.security_desc, "Password",navCtrl)
+        HomePageItem(R.string.setting, R.drawable.info_fill0, R.string.setting_desc, "AppSetting",navCtrl)
     }
 }
 

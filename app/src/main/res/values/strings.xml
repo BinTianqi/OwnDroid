@@ -128,4 +128,6 @@
     <string name="disable_keyguard">禁止锁屏（需无密码）</string>
     <string name="user_manage">用户管理</string>
     <string name="user_manage_desc">查看用户状态，添加用户</string>
+    <string name="setting">设置</string>
+    <string name="setting_desc">关于此应用</string>
 </resources>
