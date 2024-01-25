@@ -3,5 +3,6 @@
     <style name="Theme.AndroidOwner" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:navigationBarColor">#00FFFFFF</item>
         <item name="android:statusBarColor">#00FFFFFF</item>
+        <item name="android:windowSwipeToDismiss">true</item>
     </style>
 </resources>

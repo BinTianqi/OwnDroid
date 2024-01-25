@@ -27,9 +27,9 @@
     <string name="ui_ctrl">UI控制</string>
     <string name="place_holder" />
     <string name="permission_desc">授权与取消授权DeviceAdmin或DeviceOwner</string>
-    <string name="device_ctrl_desc">控制一些软件、硬件</string>
+    <string name="device_ctrl_desc">锁屏和重启等</string>
     <string name="app_manage_desc">非DeviceOwner勿入</string>
-    <string name="user_restrict_desc">限制一些功能</string>
+    <string name="user_restrict_desc">管理当前用户可用的功能</string>
     <string name="block_unins">防卸载</string>
     <string name="sometimes_not_available">有时候不能用</string>
 
@@ -102,7 +102,7 @@
     <string name="remove_managed_profile">移除工作资料</string>
 
     <string name="password">密码</string>
-    <string name="security_desc">锁屏密码相关操作</string>
+    <string name="security_desc">更改锁屏密码，设置密码复杂度</string>
     <string name="reset_pwd_desc">留空可以清除密码，纯数字将使用PIN码</string>
     <string name="max_pwd_fail">最大密码错误次数</string>
     <string name="max_pwd_fail_desc">达到该限制会恢复出厂设置</string>
@@ -122,7 +122,7 @@
     <string name="profile_name">用户名</string>
     <string name="long_support_msg">提供支持的长消息</string>
     <string name="long_support_msg_desc">都是显示短消息，长消息不知道在哪里显示</string>
-    <string name="disable_bt_contact_share">禁止蓝牙分享通讯录</string>
+    <string name="disable_bt_contact_share">禁止蓝牙分享联系人</string>
     <string name="sys_update_policy">系统更新策略</string>
     <string name="sys_update_policy_desc">管理系统更新策略</string>
     <string name="disable_keyguard">禁止锁屏（需无密码）</string>

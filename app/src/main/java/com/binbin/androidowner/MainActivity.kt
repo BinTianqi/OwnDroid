@@ -1,7 +1,6 @@
 package com.binbin.androidowner
 
 import android.annotation.SuppressLint
-import android.app.ActivityManager
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
@@ -180,7 +179,7 @@ fun HomePage(navCtrl:NavHostController){
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     Column(modifier = Modifier.verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
         if(sharedPref.getBoolean("isWear",false)){
-            Text(text = "Android owner", style = MaterialTheme.typography.titleLarge)
+            Spacer(Modifier.padding(vertical = 3.dp))
         }
         Row(
             modifier = Modifier
@@ -191,7 +190,7 @@ fun HomePage(navCtrl:NavHostController){
                 .clickable(onClick = { navCtrl.navigate("Permissions") })
                 .padding(
                     horizontal = 5.dp,
-                    vertical = if (!sharedPref.getBoolean("isWear", false)) { 14.dp } else { 1.dp }
+                    vertical = if (!sharedPref.getBoolean("isWear", false)) { 14.dp } else { 2.dp }
                 ),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -225,7 +224,7 @@ fun HomePage(navCtrl:NavHostController){
         HomePageItem(R.string.user_manage,R.drawable.account_circle_fill0,R.string.user_manage_desc,"UserManage",navCtrl)
         HomePageItem(R.string.password, R.drawable.password_fill0,R.string.security_desc, "Password",navCtrl)
         HomePageItem(R.string.setting, R.drawable.info_fill0, R.string.setting_desc, "AppSetting",navCtrl)
-        Spacer(Modifier.padding(vertical = 15.dp))
+        Spacer(Modifier.padding(vertical = 20.dp))
     }
 }
 
@@ -274,6 +273,7 @@ fun RadioButtonItem(
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
         .fillMaxWidth()
+        .padding(vertical = if(sharedPref.getBoolean("isWear",false)){3.dp}else{0.dp})
         .clip(RoundedCornerShape(25))
         .clickable(onClick = operation)
     ) {

@@ -13,6 +13,7 @@ import android.os.Build.VERSION
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -49,6 +50,7 @@ fun ApplicationManage(){
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     var pkgName by remember { mutableStateOf("") }
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val isWear = sharedPref.getBoolean("isWear",false)
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -87,13 +89,16 @@ fun ApplicationManage(){
         /*AppManageItem(R.string.block_unins,R.string.sometimes_not_available,myDpm, {myDpm.isUninstallBlocked(myComponent,pkgName)},
             {b -> myDpm.setUninstallBlocked(myComponent,pkgName,b)})*/
         Row(
-            modifier = sections(),
-            horizontalArrangement = if(!sharedPref.getBoolean("isWear",false)){Arrangement.SpaceAround}else{Arrangement.SpaceBetween}
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = if(isWear){sections().horizontalScroll(rememberScrollState())}else{ sections()}
         ) {
-            Button(onClick = {myDpm.setUninstallBlocked(myComponent,pkgName,false)}, enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm)) {
+            Button(onClick = {myDpm.setUninstallBlocked(myComponent,pkgName,false)}, enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm),
+                modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.48F)}) {
                 Text("允许卸载")
             }
-            Button(onClick = {myDpm.setUninstallBlocked(myComponent,pkgName,true)}, enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm)) {
+            if(isWear){Spacer(Modifier.padding(horizontal = 3.dp))}
+            Button(onClick = {myDpm.setUninstallBlocked(myComponent,pkgName,true)}, enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm),
+                modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.92F)}) {
                 Text("防卸载")
             }
         }

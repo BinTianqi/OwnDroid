@@ -96,7 +96,8 @@ fun SysUpdatePolicy(myDpm:DevicePolicyManager,myComponent:ComponentName,myContex
                 }
             Button(
                 onClick = {myDpm.setSystemUpdatePolicy(myComponent,policy);Toast.makeText(myContext, "成功！", Toast.LENGTH_SHORT).show()},
-                enabled = isDeviceOwner(myDpm)
+                enabled = isDeviceOwner(myDpm),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text("应用")
             }

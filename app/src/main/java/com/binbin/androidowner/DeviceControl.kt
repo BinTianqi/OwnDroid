@@ -19,6 +19,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -73,17 +74,35 @@ fun DeviceControl(){
             if(myDpm.canUsbDataSignalingBeDisabled()){
                 DeviceCtrlItem(R.string.usb_signal,R.string.place_holder,R.drawable.usb_fill0,myDpm,{myDpm.isUsbDataSignalingEnabled},{b -> myDpm.isUsbDataSignalingEnabled = b })
             }else{
-                Text(text = "你的设备不支持关闭USB信号",
-                    style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
+                Text(text = "你的设备不支持关闭USB信号",modifier = Modifier.fillMaxWidth(),
+                    style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium}, textAlign = TextAlign.Center)
             }
+        }
+        if(VERSION.SDK_INT<24){
+            Text(text = "重启和WiFi Mac需要API24",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
+                style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+        }
+        if(VERSION.SDK_INT<26){
+            Text(text = "备份服务需要API26",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
+                style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+        }
+        if(VERSION.SDK_INT<30){
+            Text(text = "自动设置时间和自动设置时区需要API30",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
+                style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+        }
+        if(VERSION.SDK_INT<31){Text(text = "关闭USB信号需API31",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
+            style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})}
+        if(VERSION.SDK_INT<34){
+            Text(text = "隐藏状态栏需要API34",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
+                style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
         }
         if(VERSION.SDK_INT>=28){
             Column(modifier = sections()) {
-                Text(text = "锁屏方式", style = MaterialTheme.typography.titleLarge)
-                Text(text = "禁用需要无密码")
+                Text(text = "锁屏方式", style = typography.titleLarge)
+                Text(text = "禁用需要无密码",style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = if(!isWear){Arrangement.SpaceEvenly}else{Arrangement.SpaceBetween}
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Button(
                     onClick = {
@@ -93,11 +112,11 @@ fun DeviceControl(){
                             Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
                         }
                     },
-                    enabled = isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser)
+                    enabled = isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser),
+                    modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.48F)}
                 ) {
                     Text("禁用")
                 }
-                if(!isWear){Spacer(Modifier.padding(horizontal = 5.dp))}
                 Button(
                     onClick = {
                         if(myDpm.setKeyguardDisabled(myComponent,false)){
@@ -106,7 +125,8 @@ fun DeviceControl(){
                             Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
                         }
                     },
-                    enabled = isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser)
+                    enabled = isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser),
+                    modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.92F)}
                 ) {
                     Text("启用")
                 }
@@ -114,14 +134,16 @@ fun DeviceControl(){
         }
 
         Row(
-            horizontalArrangement = if(!isWear){Arrangement.SpaceAround}else{Arrangement.SpaceBetween},
+            horizontalArrangement = Arrangement.SpaceBetween,
             modifier = sections(),
         ) {
             if(VERSION.SDK_INT>=24){
-                Button(onClick = {myDpm.reboot(myComponent)}, enabled = isDeviceOwner(myDpm)) {
+                Button(onClick = {myDpm.reboot(myComponent)}, enabled = isDeviceOwner(myDpm),
+                    modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.48F)}) {
                     Text("重启")
                 }
-                Button(onClick = {myDpm.lockNow()}, enabled = myDpm.isAdminActive(myComponent)) {
+                Button(onClick = {myDpm.lockNow()}, enabled = myDpm.isAdminActive(myComponent),
+                    modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.92F)}) {
                     Text("锁屏")
                 }
             }
@@ -132,25 +154,7 @@ fun DeviceControl(){
             }catch(e:SecurityException){
                 "没有权限"
             }
-            Text(text = "WiFi MAC: $wifimac",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
-        }
-        if(VERSION.SDK_INT<24){
-            Text(text = "重启和WiFi Mac需要API24",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
-                style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
-        }
-        if(VERSION.SDK_INT<26){
-            Text(text = "备份服务需要API26",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
-                style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
-        }
-        if(VERSION.SDK_INT<30){
-            Text(text = "自动设置时间和自动设置时区需要API30",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
-                style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
-        }
-        if(VERSION.SDK_INT<31){Text(text = "关闭USB信号需API31",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
-            style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})}
-        if(VERSION.SDK_INT<34){
-            Text(text = "隐藏状态栏需要API34",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
-                style = if(!isWear){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
+            Text(text = "WiFi MAC: $wifimac",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
         }
         Button(
             onClick = {myDpm.uninstallAllUserCaCerts(myComponent);Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()},
@@ -165,14 +169,14 @@ fun DeviceControl(){
         Column(modifier = sections(MaterialTheme.colorScheme.errorContainer)) {
             var flag by remember{ mutableIntStateOf(0) }
             var confirmed by remember{ mutableStateOf(false) }
-            Text(text = "清除数据",style = MaterialTheme.typography.titleLarge,modifier = Modifier.padding(6.dp))
+            Text(text = "清除数据",style = typography.titleLarge,modifier = Modifier.padding(6.dp))
             RadioButtonItem("默认",{flag==0},{flag=0})
             RadioButtonItem("WIPE_EXTERNAL_STORAGE",{flag==0x0001},{flag=0x0001})
             RadioButtonItem("WIPE_RESET_PROTECTION_DATA",{flag==0x0002},{flag=0x0002})
             RadioButtonItem("WIPE_EUICC",{flag==0x0004},{flag=0x0004})
             RadioButtonItem("WIPE_SILENTLY",{flag==0x0008},{flag=0x0008})
             Text(text = "清空数据的不能是系统用户",
-                style = if(!sharedPref.getBoolean("isWear",false)){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
+                style = if(!sharedPref.getBoolean("isWear",false)){typography.bodyLarge}else{typography.bodyMedium})
             Button(
                 onClick = {confirmed=!confirmed},
                 colors = ButtonDefaults.buttonColors(
@@ -183,7 +187,7 @@ fun DeviceControl(){
             ) {
                 Text(text = if(confirmed){"取消"}else{"确定"})
             }
-            Row {
+            Row(horizontalArrangement = Arrangement.SpaceBetween) {
                 Button(
                     onClick = {myDpm.wipeData(flag)},
                     colors = ButtonDefaults.buttonColors(
@@ -194,7 +198,6 @@ fun DeviceControl(){
                 ) {
                     Text("WipeData")
                 }
-                Spacer(Modifier.padding(horizontal = 5.dp))
                 if (VERSION.SDK_INT >= 34) {
                     Button(
                         onClick = {myDpm.wipeDevice(flag)},
@@ -224,13 +227,15 @@ private fun DeviceCtrlItem(
 ){
     var isEnabled by remember{ mutableStateOf(false) }
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val isWear = sharedPref.getBoolean("isWear",false)
     Row(
         modifier = sections(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = if(isWear){Modifier.fillMaxWidth(0.65F)}else{Modifier.fillMaxWidth(0.75F)}
         ){
             if(!sharedPref.getBoolean("isWear",false)){
             Icon(
@@ -242,7 +247,7 @@ private fun DeviceCtrlItem(
             Column {
                 Text(
                     text = stringResource(itemName),
-                    style = if(!sharedPref.getBoolean("isWear",false)){MaterialTheme.typography.titleLarge}else{MaterialTheme.typography.bodyLarge}
+                    style = if(!sharedPref.getBoolean("isWear",false)){typography.titleLarge}else{typography.bodyLarge}
                 )
                 if(itemDesc!=R.string.place_holder&&!sharedPref.getBoolean("isWear",false)){
                     Text(stringResource(itemDesc))

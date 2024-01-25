@@ -9,6 +9,7 @@ import android.os.UserHandle
 import android.os.UserManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -49,6 +50,8 @@ fun UserManage(){
         val focusMgr = LocalFocusManager.current
         val currentUser = android.os.Process.myUserHandle()
         val userList = Test.returnUsers(myContext)
+        val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+        val isWear = sharedPref.getBoolean("isWear",false)
         Column(modifier = sections()) {
             Text(text = "用户信息", style = MaterialTheme.typography.titleLarge)
             Text("用户个数：${userList.size}")
@@ -127,7 +130,9 @@ fun UserManage(){
                     value = userName,
                     onValueChange = {userName=it},
                     label = {Text("用户名")},
-                    modifier = Modifier.padding(vertical = 4.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
                     enabled = isDeviceOwner(myDpm)
                 )
                 var selectedFlag by remember{ mutableIntStateOf(0) }
@@ -138,10 +143,13 @@ fun UserManage(){
                     RadioButtonItem("启用所有系统应用",{selectedFlag==DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED},{selectedFlag=DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED})
                 }
                 var newUserHandle: UserHandle? by remember{ mutableStateOf(null) }
-                Row {
+                Row(modifier = if(isWear){Modifier.horizontalScroll(rememberScrollState())}else{Modifier}) {
                     Button(
                         onClick = {newUserHandle=myDpm.createAndManageUser(myComponent,userName,myComponent,null,selectedFlag);focusMgr.clearFocus()},
-                        enabled = isDeviceOwner(myDpm)
+                        enabled = isDeviceOwner(myDpm),
+                        modifier = if(!isWear){
+                            if(newUserHandle==null){Modifier.fillMaxWidth(1F)}else{Modifier.fillMaxWidth(0.48F)}
+                        }else{Modifier}
                     ) {
                         Text("创建")
                     }
@@ -154,7 +162,8 @@ fun UserManage(){
                                 } else{
                                     Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
                                 }
-                            }
+                            },
+                            modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.92F)}
                         ) {
                             Text("切换至新用户")
                         }
@@ -190,6 +199,7 @@ fun UserSessionMessage(
         val focusMgr = LocalFocusManager.current
         var msg by remember{ mutableStateOf(if(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner)){ if(get()==null){""}else{get().toString()} }else{""}) }
         val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+        val isWear = sharedPref.getBoolean("isWear",false)
         Text(text = text, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
         TextField(
             value = msg,
@@ -197,10 +207,12 @@ fun UserSessionMessage(
             label = {Text(textField)},
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-            modifier = Modifier.padding(vertical = 6.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 6.dp),
             enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner)
         )
-        Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = if(!sharedPref.getBoolean("isWear",false)){Arrangement.SpaceAround}else{Arrangement.SpaceBetween}) {
+        Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween) {
             Button(
                 onClick = {
                     focusMgr.clearFocus()
@@ -208,11 +220,11 @@ fun UserSessionMessage(
                     msg = if(get()==null){""}else{get().toString()}
                     Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                 },
-                enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner)
+                enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner),
+                modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.65F)}
             ) {
                 Text("应用")
             }
-            if(!sharedPref.getBoolean("isWear",false)){Spacer(Modifier.padding(horizontal = 5.dp))}
             Button(
                 onClick = {
                     focusMgr.clearFocus()
@@ -220,7 +232,8 @@ fun UserSessionMessage(
                     msg = if(get()==null){""}else{get().toString()}
                     Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                 },
-                enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner)
+                enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner),
+                modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.95F)}
             ) {
                 Text("默认")
             }
