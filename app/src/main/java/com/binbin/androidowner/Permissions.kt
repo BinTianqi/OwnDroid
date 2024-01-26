@@ -69,8 +69,8 @@ fun DpmPermissions(navCtrl:NavHostController){
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(text = "Device Admin", fontSize = if(!isWear){22.sp}else{20.sp})
-                Text(if(isda){"已激活"}else{"未激活"})
+                Text(text = "Device Admin", fontSize = if(!isWear){22.sp}else{20.sp},color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text(text = if(isda){"已激活"}else{"未激活"})
             }
             if(!isWear)
             if(isda){
@@ -112,7 +112,7 @@ fun DpmPermissions(navCtrl:NavHostController){
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(text = "Profile Owner", fontSize = if(!isWear){22.sp}else{20.sp})
+                Text(text = "Profile Owner", fontSize = if(!isWear){22.sp}else{20.sp},color = MaterialTheme.colorScheme.onPrimaryContainer)
                 Text(if(isProfileOwner(myDpm)){"已激活"}else{"未激活"})
             }
             if(isProfileOwner(myDpm)&&VERSION.SDK_INT>=24&&!isWear){
@@ -156,7 +156,7 @@ fun DpmPermissions(navCtrl:NavHostController){
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(text = "Device Owner", fontSize = if(!isWear){22.sp}else{20.sp})
+                Text(text = "Device Owner", fontSize = if(!isWear){22.sp}else{20.sp},color = MaterialTheme.colorScheme.onPrimaryContainer)
                 Text(if(isDeviceOwner(myDpm)){"已激活"}else{"未激活"})
             }
             if(isDeviceOwner(myDpm)&&!isWear){
@@ -202,7 +202,7 @@ fun DpmPermissions(navCtrl:NavHostController){
             Column(
                 modifier = sections()
             ) {
-                Text(text = "设备信息", style = typography.titleLarge)
+                Text(text = "设备信息", style = typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
                 val orgDevice = myDpm.isOrganizationOwnedDeviceWithManagedProfile
                 Text("由组织拥有的受管理资料设备：$orgDevice",style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
                 if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
@@ -233,7 +233,7 @@ fun DpmPermissions(navCtrl:NavHostController){
         if(VERSION.SDK_INT>=31&&(isProfileOwner(myDpm)|| isDeviceOwner(myDpm))){
             Column(modifier = sections()) {
                 val specificId:String = myDpm.enrollmentSpecificId
-                Text(text = "设备唯一标识码", style = typography.titleLarge)
+                Text(text = "设备唯一标识码", style = typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
                 Text("（恢复出厂设置不变）",style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
                 if(specificId!=""){
                     Text(specificId)
@@ -247,7 +247,7 @@ fun DpmPermissions(navCtrl:NavHostController){
         }
         if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){
             Column(modifier = sections()) {
-                Text(text = "不受控制的账号类型", style = typography.titleLarge)
+                Text(text = "不受控制的账号类型", style = typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
                 Text("作用未知",style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
                 var noManageAccount = myDpm.accountTypesWithManagementDisabled?.toMutableList()
                 var accountlist by remember{ mutableStateOf("") }

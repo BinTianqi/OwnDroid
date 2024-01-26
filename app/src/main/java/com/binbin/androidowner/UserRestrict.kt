@@ -66,6 +66,11 @@ fun UserRestriction(){
         items(1){
             Text(text = "打开开关后会禁用对应的功能",modifier = Modifier.padding(3.dp),
                 style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+            if(VERSION.SDK_INT<24){
+                Text(text = "所有的用户限制都需要API24，你的设备低于API24，无法使用。",
+                style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium},
+                    color = MaterialTheme.colorScheme.error)
+            }
             if(isProfileOwner(myDpm)){
                 Text(text = "Profile owner无法更改部分功能",
                     style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
@@ -183,7 +188,8 @@ private fun UserRestrictionItem(
         horizontalArrangement = Arrangement.SpaceBetween
     ){
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = if(sharedPref.getBoolean("isWear",false)){Modifier.fillMaxWidth(0.65F)}else{Modifier.fillMaxWidth(0.8F)}
         ) {
             if(!sharedPref.getBoolean("isWear",false)){
             Icon(
@@ -192,13 +198,11 @@ private fun UserRestrictionItem(
                 modifier = Modifier.padding(start = 4.dp, end = 8.dp),
                 tint = MaterialTheme.colorScheme.secondary
             )}
-            Column(
-                modifier = Modifier.align(Alignment.CenterVertically)
-            ) {
+            Column{
                 Text(
                     text = stringResource(itemName),
                     style = if(!sharedPref.getBoolean("isWear",false)){typography.titleLarge}else{typography.bodyLarge},
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
                 if(restrictionDescription!=""){Text(text = restrictionDescription, color = MaterialTheme.colorScheme.onSecondaryContainer)}
             }

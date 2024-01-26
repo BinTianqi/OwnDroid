@@ -53,37 +53,37 @@ fun UserManage(){
         val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
         val isWear = sharedPref.getBoolean("isWear",false)
         Column(modifier = sections()) {
-            Text(text = "用户信息", style = MaterialTheme.typography.titleLarge)
-            Text("用户个数：${userList.size}")
-            Spacer(Modifier.padding(vertical = 5.dp))
-            Text("用户已解锁：${UserManagerCompat.isUserUnlocked(myContext)}")
+            Text(text = "用户信息", style = MaterialTheme.typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
+            Text("用户个数：${userList.size}",style = if(isWear){MaterialTheme.typography.bodyMedium}else{MaterialTheme.typography.bodyLarge})
+            Spacer(Modifier.padding(vertical = if(isWear){2.dp}else{5.dp}))
+            Text("用户已解锁：${UserManagerCompat.isUserUnlocked(myContext)}",style = if(isWear){MaterialTheme.typography.bodyMedium}else{MaterialTheme.typography.bodyLarge})
             if(VERSION.SDK_INT>=24){
-                Text("支持多用户：${UserManager.supportsMultipleUsers()}")
+                Text("支持多用户：${UserManager.supportsMultipleUsers()}",style = if(isWear){MaterialTheme.typography.bodyMedium}else{MaterialTheme.typography.bodyLarge})
             }
             if(VERSION.SDK_INT>=31){
-                Text("系统用户: ${UserManager.isHeadlessSystemUserMode()}")
+                Text("系统用户: ${UserManager.isHeadlessSystemUserMode()}",style = if(isWear){MaterialTheme.typography.bodyMedium}else{MaterialTheme.typography.bodyLarge})
             }
-            Spacer(Modifier.padding(vertical = 5.dp))
+            Spacer(Modifier.padding(vertical = if(isWear){2.dp}else{5.dp}))
             if (VERSION.SDK_INT >= 28) {
                 val logoutable = myDpm.isLogoutEnabled
-                Text(text = "用户可以退出 : $logoutable")
+                Text(text = "用户可以退出 : $logoutable",style = if(isWear){MaterialTheme.typography.bodyMedium}else{MaterialTheme.typography.bodyLarge})
                 if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
                     val ephemeralUser = myDpm.isEphemeralUser(myComponent)
-                    Text(text = "临时用户： $ephemeralUser")
+                    Text(text = "临时用户： $ephemeralUser",style = if(isWear){MaterialTheme.typography.bodyMedium}else{MaterialTheme.typography.bodyLarge})
                 }
                 val affiliatedUser = myDpm.isAffiliatedUser
-                Text(text = "次级用户: $affiliatedUser")
+                Text(text = "次级用户: $affiliatedUser",style = if(isWear){MaterialTheme.typography.bodyMedium}else{MaterialTheme.typography.bodyLarge})
             }
-            Spacer(Modifier.padding(5.dp))
-            Text("切换用户后或设备重启后会删除临时用户")
+            Spacer(Modifier.padding(vertical = if(isWear){2.dp}else{5.dp}))
+            Text("切换用户后或设备重启后会删除临时用户",style = if(isWear){MaterialTheme.typography.bodyMedium}else{MaterialTheme.typography.bodyLarge})
         }
 
         Column(modifier = sections()) {
-            Text(text = "用户操作", style = MaterialTheme.typography.titleLarge)
+            Text(text = "用户操作", style = MaterialTheme.typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
             if(VERSION.SDK_INT>28){
                 var resultForLogout by remember{ mutableIntStateOf(-1) }
                 var resultForStop by remember{ mutableIntStateOf(-1) }
-                Text("登出用户需要成为次级用户的Profile Owner")
+                Text("登出用户需要成为次级用户的Profile Owner",style = if(isWear){MaterialTheme.typography.bodyMedium}else{MaterialTheme.typography.bodyLarge})
                 Button(onClick = {resultForLogout = myDpm.logoutUser(myComponent)}, enabled = isProfileOwner(myDpm)) {
                     Text("登出用户")
                 }
@@ -119,13 +119,13 @@ fun UserManage(){
             Button(onClick = { createWorkProfile(myContext)}) {
                 Text("创建工作资料")
             }
-            Text("可能无法创建工作资料")
+            Text("可能无法创建工作资料",style = if(isWear){MaterialTheme.typography.bodyMedium}else{MaterialTheme.typography.bodyLarge})
         }
 
         if(VERSION.SDK_INT>=24){
             Column(modifier = sections()) {
                 var userName by remember{ mutableStateOf("") }
-                Text(text = "创建用户", style = MaterialTheme.typography.titleLarge)
+                Text(text = "创建用户", style = MaterialTheme.typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
                 TextField(
                     value = userName,
                     onValueChange = {userName=it},

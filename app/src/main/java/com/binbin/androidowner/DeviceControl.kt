@@ -78,27 +78,27 @@ fun DeviceControl(){
                     style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium}, textAlign = TextAlign.Center)
             }
         }
-        if(VERSION.SDK_INT<24){
+        if(VERSION.SDK_INT<24&&isDeviceOwner(myDpm)){
             Text(text = "重启和WiFi Mac需要API24",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
                 style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
         }
-        if(VERSION.SDK_INT<26){
+        if(VERSION.SDK_INT<26&&isDeviceOwner(myDpm)){
             Text(text = "备份服务需要API26",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
                 style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
         }
-        if(VERSION.SDK_INT<30){
+        if(VERSION.SDK_INT<30&&isDeviceOwner(myDpm)){
             Text(text = "自动设置时间和自动设置时区需要API30",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
                 style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
         }
-        if(VERSION.SDK_INT<31){Text(text = "关闭USB信号需API31",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
+        if(VERSION.SDK_INT<31&&isDeviceOwner(myDpm)){Text(text = "关闭USB信号需API31",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
             style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})}
-        if(VERSION.SDK_INT<34){
+        if(VERSION.SDK_INT<34&&isDeviceOwner(myDpm)){
             Text(text = "隐藏状态栏需要API34",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
                 style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
         }
         if(VERSION.SDK_INT>=28){
             Column(modifier = sections()) {
-                Text(text = "锁屏方式", style = typography.titleLarge)
+                Text(text = "锁屏方式", style = typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
                 Text(text = "禁用需要无密码",style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -156,26 +156,26 @@ fun DeviceControl(){
             }
             Text(text = "WiFi MAC: $wifimac",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
         }
+        if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
         Button(
             onClick = {myDpm.uninstallAllUserCaCerts(myComponent);Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()},
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm)
+            modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             Text(text = "清除用户Ca证书")
-        }
+        }}
         if(isDeviceOwner(myDpm)){
             SysUpdatePolicy(myDpm,myComponent,myContext)
         }
         Column(modifier = sections(MaterialTheme.colorScheme.errorContainer)) {
             var flag by remember{ mutableIntStateOf(0) }
             var confirmed by remember{ mutableStateOf(false) }
-            Text(text = "清除数据",style = typography.titleLarge,modifier = Modifier.padding(6.dp))
-            RadioButtonItem("默认",{flag==0},{flag=0})
-            RadioButtonItem("WIPE_EXTERNAL_STORAGE",{flag==0x0001},{flag=0x0001})
-            RadioButtonItem("WIPE_RESET_PROTECTION_DATA",{flag==0x0002},{flag=0x0002})
-            RadioButtonItem("WIPE_EUICC",{flag==0x0004},{flag=0x0004})
-            RadioButtonItem("WIPE_SILENTLY",{flag==0x0008},{flag=0x0008})
-            Text(text = "清空数据的不能是系统用户",
+            Text(text = "清除数据",style = typography.titleLarge,modifier = Modifier.padding(6.dp),color = MaterialTheme.colorScheme.onErrorContainer)
+            RadioButtonItem("默认",{flag==0},{flag=0},MaterialTheme.colorScheme.onErrorContainer)
+            RadioButtonItem("WIPE_EXTERNAL_STORAGE",{flag==0x0001},{flag=0x0001},MaterialTheme.colorScheme.onErrorContainer)
+            RadioButtonItem("WIPE_RESET_PROTECTION_DATA",{flag==0x0002},{flag=0x0002},MaterialTheme.colorScheme.onErrorContainer)
+            RadioButtonItem("WIPE_EUICC",{flag==0x0004},{flag=0x0004},MaterialTheme.colorScheme.onErrorContainer)
+            RadioButtonItem("WIPE_SILENTLY",{flag==0x0008},{flag=0x0008},MaterialTheme.colorScheme.onErrorContainer)
+            Text(text = "清空数据的不能是系统用户",color = MaterialTheme.colorScheme.onErrorContainer,
                 style = if(!sharedPref.getBoolean("isWear",false)){typography.bodyLarge}else{typography.bodyMedium})
             Button(
                 onClick = {confirmed=!confirmed},
@@ -247,7 +247,8 @@ private fun DeviceCtrlItem(
             Column {
                 Text(
                     text = stringResource(itemName),
-                    style = if(!sharedPref.getBoolean("isWear",false)){typography.titleLarge}else{typography.bodyLarge}
+                    style = if(!sharedPref.getBoolean("isWear",false)){typography.titleLarge}else{typography.bodyLarge},
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 if(itemDesc!=R.string.place_holder&&!sharedPref.getBoolean("isWear",false)){
                     Text(stringResource(itemDesc))

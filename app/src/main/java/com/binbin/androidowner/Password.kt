@@ -110,14 +110,17 @@ fun Password(){
                 horizontalAlignment = Alignment.Start,
                 modifier = sections()
             ) {
-                Text(text = "密码重置令牌", style = typography.titleLarge)
-                Row(modifier = if(!isWear){Modifier}else{Modifier.horizontalScroll(rememberScrollState())}) {
+                Text(text = "密码重置令牌", style = typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Row(
+                    modifier = if(!isWear){Modifier.fillMaxWidth()}else{Modifier.horizontalScroll(rememberScrollState())},
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ){
                     Button(
                         onClick = {
                             if(myDpm.clearResetPasswordToken(myComponent)){ Toast.makeText(myContext, "清除成功", Toast.LENGTH_SHORT).show()
                             }else{ Toast.makeText(myContext, "清除失败", Toast.LENGTH_SHORT).show() }
                         },
-                        modifier = Modifier.padding(end = 8.dp),
+                        modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.32F)},
                         enabled = isDeviceOwner(myDpm)
                     ) {
                         Text("清除")
@@ -127,8 +130,8 @@ fun Password(){
                             if(myDpm.setResetPasswordToken(myComponent, myByteArray)){ Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show()
                             }else{ Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show() }
                         },
-                        modifier = Modifier.padding(end = 8.dp),
-                        enabled = isDeviceOwner(myDpm)
+                        enabled = isDeviceOwner(myDpm),
+                        modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.47F)}
                     ) {
                         Text("设置")
                     }
@@ -139,7 +142,8 @@ fun Password(){
                                 }catch(e:NullPointerException){ Toast.makeText(myContext, "请先设置令牌", Toast.LENGTH_SHORT).show() }
                             }else{ Toast.makeText(myContext, "已经激活", Toast.LENGTH_SHORT).show() }
                         },
-                        enabled = isDeviceOwner(myDpm)
+                        enabled = isDeviceOwner(myDpm),
+                        modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.88F)}
                     ) {
                         Text("激活")
                     }
@@ -155,16 +159,17 @@ fun Password(){
             modifier = sections()
         ) {
             var confirmed by remember{ mutableStateOf(false) }
+            Text(text = "修改密码",style = MaterialTheme.typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
             TextField(
                 value = newPwd,
                 onValueChange = {newPwd=it},
-                enabled = !confirmed&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm)),
+                enabled = !confirmed&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm)||myDpm.isAdminActive(myComponent)),
                 label = { Text("密码")},
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.padding(vertical = if(isWear){0.dp}else{5.dp}).fillMaxWidth()
             )
-            Text(text = stringResource(R.string.reset_pwd_desc), modifier = Modifier.padding(vertical = 5.dp),style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+            Text(text = stringResource(R.string.reset_pwd_desc), modifier = Modifier.padding(vertical = 3.dp),style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
             var resetPwdFlag by remember{ mutableIntStateOf(0) }
             RadioButtonItem("开机时不要求密码（如果有指纹等其他解锁方式）",
                 {resetPwdFlag==DevicePolicyManager.RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT},
@@ -172,14 +177,14 @@ fun Password(){
             RadioButtonItem("要求立即输入新密码",{resetPwdFlag==DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY},
                 {resetPwdFlag=DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY})
             RadioButtonItem("无",{resetPwdFlag==0},{resetPwdFlag=0})
-            Row(modifier = if(!isWear){Modifier}else{Modifier.horizontalScroll(rememberScrollState())}) {
+            Row(modifier = if(!isWear){Modifier.fillMaxWidth()}else{Modifier.horizontalScroll(rememberScrollState())},horizontalArrangement = Arrangement.SpaceBetween) {
                 Button(
                     onClick = {
                         if(newPwd.length>=4||newPwd.isEmpty()){ confirmed=!confirmed
                         }else{ Toast.makeText(myContext, "需要4位密码", Toast.LENGTH_SHORT).show() }
                     },
-                    modifier = Modifier.padding(end = 5.dp),
-                    enabled = isDeviceOwner(myDpm) || isProfileOwner(myDpm) || myDpm.isAdminActive(myComponent)
+                    enabled = isDeviceOwner(myDpm) || isProfileOwner(myDpm) || myDpm.isAdminActive(myComponent),
+                    modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.3F)}
                 ) {
                     Text(text = if(confirmed){"取消"}else{"确定"})
                 }
@@ -192,12 +197,12 @@ fun Password(){
                             confirmed=false
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error, contentColor = MaterialTheme.colorScheme.onError),
-                        enabled = confirmed&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))
+                        enabled = confirmed&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm)),
+                    modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.42F)}
                     ) {
                         Text("应用")
                     }
                 }
-                Spacer(Modifier.padding(horizontal = 2.dp))
                 Button(
                     onClick = {
                         val resetSuccess = myDpm.resetPassword(newPwd,resetPwdFlag)
@@ -206,9 +211,10 @@ fun Password(){
                         confirmed=false
                     },
                     enabled = confirmed,
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error, contentColor = MaterialTheme.colorScheme.onError)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error, contentColor = MaterialTheme.colorScheme.onError),
+                    modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.9F)}
                 ) {
-                    Text("应用（旧）")
+                    Text("应用(旧)")
                 }
             }
         }
@@ -232,7 +238,7 @@ fun Password(){
                 if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){
                     selectedItem=myDpm.requiredPasswordComplexity
                 }
-                Text(text = "密码复杂度要求", style = typography.titleLarge)
+                Text(text = "密码复杂度要求", style = typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
                 Text(text = "不是实际密码复杂度",
                     style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
                 Text(text = "设置密码复杂度将会取代密码质量",
@@ -240,20 +246,37 @@ fun Password(){
                 RadioButtonItem(passwordComplexity[0].second,{selectedItem==passwordComplexity[0].first},{selectedItem=passwordComplexity[0].first})
                 RadioButtonItem(passwordComplexity[1].second,{selectedItem==passwordComplexity[1].first},{selectedItem=passwordComplexity[1].first})
                 RadioButtonItem(passwordComplexity[2].second,{selectedItem==passwordComplexity[2].first},{selectedItem=passwordComplexity[2].first})
-                RadioButtonItem(passwordComplexity[3].second,{selectedItem==passwordComplexity[3].first},{selectedItem=passwordComplexity[3].first})
+                RadioButtonItem(passwordComplexity[3].second,{selectedItem==passwordComplexity[3].first},{selectedItem=passwordComplexity[3].first},
+                if(isWear){MaterialTheme.colorScheme.error}else{MaterialTheme.colorScheme.onBackground})
                 Text(text = "连续性：密码重复（6666）或密码递增递减（4321、2468）", modifier = Modifier.padding(vertical = 3.dp),
                     style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
-                Button(
-                    onClick = {
-                        myDpm.requiredPasswordComplexity = selectedItem
-                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
-                    },
-                    enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm)
-                ) {
-                    Text("应用")
+                Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
+                    Button(
+                        onClick = {
+                            myDpm.requiredPasswordComplexity = selectedItem
+                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                        },
+                        enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm),
+                        modifier = if(isWear){Modifier.fillMaxWidth()}else{Modifier.fillMaxWidth(0.4F)}
+                    ) {
+                        Text(text = "应用")
+                    }
+                    if(!isWear){
+                        Button(
+                            onClick = {myContext.startActivity(Intent(DevicePolicyManager.ACTION_SET_NEW_PASSWORD))},
+                            modifier = Modifier.fillMaxWidth(0.95F)
+                        ){
+                            Text("要求设置新密码")
+                        }
+                    }
                 }
-                Button(onClick = {myContext.startActivity(Intent(DevicePolicyManager.ACTION_SET_NEW_PASSWORD))}) {
-                    Text("要求设置新密码")
+                if(isWear){
+                    Button(
+                        onClick = {myContext.startActivity(Intent(DevicePolicyManager.ACTION_SET_NEW_PASSWORD))},
+                        modifier = Modifier.fillMaxWidth()
+                    ){
+                        Text("要求设置新密码")
+                    }
                 }
             }
         }
@@ -276,7 +299,7 @@ fun Password(){
             if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){
                 selectedItem=myDpm.getPasswordQuality(myComponent)
             }
-            Text(text = "密码质量要求", style = typography.titleLarge)
+            Text(text = "密码质量要求", style = typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
             if(expanded){
             Text(text = "不是实际密码质量",
                 style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})}
@@ -300,7 +323,8 @@ fun Password(){
                     myDpm.setPasswordQuality(myComponent,selectedItem)
                     Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                 },
-                enabled = isDeviceOwner(myDpm) || isProfileOwner(myDpm)
+                enabled = isDeviceOwner(myDpm) || isProfileOwner(myDpm),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text("应用")
             }
@@ -334,15 +358,14 @@ fun PasswordItem(
         var inputContentEdited by remember{ mutableStateOf(false) }
         var ableToApply by remember{ mutableStateOf(true) }
         val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-        Text(text = stringResource(itemName), style = typography.titleLarge)
+        Text(text = stringResource(itemName), style = typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
         Text(text= stringResource(itemDesc),modifier=Modifier.padding(vertical = 2.dp),
             style = if(!sharedPref.getBoolean("isWear",false)){typography.bodyLarge}else{typography.bodyMedium})
+        if(!sharedPref.getBoolean("isWear",false)){Spacer(Modifier.padding(vertical = 2.dp))}
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = if (!sharedPref.getBoolean("isWear", false)) { 8.dp } else { 0.dp })
+            modifier = Modifier.fillMaxWidth()
         ){
             TextField(
                 value = inputContent,
@@ -359,7 +382,7 @@ fun PasswordItem(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                 enabled = isDeviceOwner(myDpm),
-                modifier = if(sharedPref.getBoolean("isWear",false)){Modifier}else{Modifier.fillMaxWidth(0.8F)}
+                modifier = if(sharedPref.getBoolean("isWear",false)){Modifier.fillMaxWidth()}else{Modifier.fillMaxWidth(0.8F)}
             )
             if(!sharedPref.getBoolean("isWear",false)){
             IconButton(
@@ -375,9 +398,11 @@ fun PasswordItem(
                 Icon(imageVector = Icons.Outlined.Check, contentDescription = null)
             }}
         }
-        if(sharedPref.getBoolean("isWear",false)&&isDeviceOwner(myDpm)&&ableToApply){
+        if(sharedPref.getBoolean("isWear",false)){
             Button(
-                onClick = {focusMgr.clearFocus() ; setMethod(inputContent) ; inputContentEdited=inputContent!=getMethod()}
+                onClick = {focusMgr.clearFocus() ; setMethod(inputContent) ; inputContentEdited=inputContent!=getMethod()},
+                enabled = isDeviceOwner(myDpm)&&ableToApply,
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text("应用")
             }

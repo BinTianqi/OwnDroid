@@ -52,7 +52,7 @@ fun AppSetting(navCtrl:NavHostController){
             Column(
                 modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 12.dp)
             ) {
-                Text(text = "Android owner", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text(text = "Android owner", style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
                 Text(text = "使用安卓的Device admin、Device owner 、Profile owner，全方位掌控你的设备",
                     style = if(!sharedPref.getBoolean("isWear",false)){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
                 Spacer(Modifier.padding(vertical = 4.dp))
@@ -69,7 +69,7 @@ fun AppSetting(navCtrl:NavHostController){
                 Icon(
                     painter = painterResource(id = R.drawable.open_in_new),
                     contentDescription = null,
-                    modifier = Modifier.padding(start = 6.dp, end = 8.dp),
+                    modifier = Modifier.padding(start = 6.dp, end = 10.dp),
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Column {

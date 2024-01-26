@@ -67,7 +67,7 @@ fun ApplicationManage(){
             enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp)
+                .padding(horizontal = if(isWear){2.dp}else{12.dp},vertical = if(isWear){2.dp}else{6.dp})
         )
         if(VERSION.SDK_INT>=24){
             val isSuspended = {
@@ -103,7 +103,7 @@ fun ApplicationManage(){
             }
         }
         Column(modifier = sections()) {
-            Text(text = "许可的输入法", style = MaterialTheme.typography.titleLarge)
+            Text(text = "许可的输入法", style = MaterialTheme.typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
             var imeList = mutableListOf<String>()
             var imeListText by remember{ mutableStateOf("") }
             val refreshList = {
@@ -120,24 +120,30 @@ fun ApplicationManage(){
             }
             refreshList()
             Text(imeListText)
+            Row(modifier = if(!isWear){Modifier.fillMaxWidth()}else{Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())}
+            ,horizontalArrangement = Arrangement.SpaceBetween){
             Button(
                 onClick = {
                     imeList.plus(pkgName)
                     myDpm.setPermittedInputMethods(myComponent, imeList)
                     refreshList()
-                }
+                },
+                modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.48F)},
+                enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
             ) {
-                Text("设为许可的输入法")
+                Text("加入列表")
             }
             Button(
                 onClick = {
                     imeList.remove(pkgName)
                     myDpm.setPermittedInputMethods(myComponent,imeList)
                     refreshList()
-                }
+                },
+                modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.92F)},
+                enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
             ) {
                 Text("从列表中移除")
-            }
+            }}
         }
         /*Button(
             onClick = {
@@ -171,7 +177,8 @@ private fun AppManageItem(
         Column {
             Text(
                 text = stringResource(itemName),
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
             )
             if(itemDesc!=R.string.place_holder){
                 Text(stringResource(itemDesc))

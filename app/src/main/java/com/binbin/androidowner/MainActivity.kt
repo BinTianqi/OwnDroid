@@ -268,7 +268,8 @@ fun HomePageItem(name:Int, imgVector:Int, description:Int, navTo:String, myNav:N
 fun RadioButtonItem(
     text:String,
     selected:()->Boolean,
-    operation:()->Unit
+    operation:()->Unit,
+    textColor:Color = MaterialTheme.colorScheme.onBackground
 ){
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
@@ -278,7 +279,8 @@ fun RadioButtonItem(
         .clickable(onClick = operation)
     ) {
         RadioButton(selected = selected(), onClick = operation,modifier=if(sharedPref.getBoolean("isWear",false)){Modifier.size(28.dp)}else{Modifier})
-        Text(text = text, style = if(!sharedPref.getBoolean("isWear",false)){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
+        Text(text = text, style = if(!sharedPref.getBoolean("isWear",false)){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium},
+        color = textColor)
     }
 }
 
@@ -299,7 +301,7 @@ fun sections(bgColor:Color=MaterialTheme.colorScheme.primaryContainer):Modifier{
             .padding(horizontal = 8.dp, vertical = 4.dp)
             .clip(RoundedCornerShape(14.dp))
             .background(color = bgColor)
-            .padding(vertical = 6.dp, horizontal = 10.dp)
+            .padding(vertical = 10.dp, horizontal = 10.dp)
     }else{
         Modifier
             .fillMaxWidth()
