@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -166,7 +167,9 @@ fun DeviceControl(){
         if(isDeviceOwner(myDpm)){
             SysUpdatePolicy(myDpm,myComponent,myContext)
         }
-        Column(modifier = sections(MaterialTheme.colorScheme.errorContainer)) {
+        Column(modifier = sections(if(isSystemInDarkTheme())
+        {MaterialTheme.colorScheme.errorContainer}else{MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6F)})
+        ) {
             var flag by remember{ mutableIntStateOf(0) }
             var confirmed by remember{ mutableStateOf(false) }
             Text(text = "清除数据",style = typography.titleLarge,modifier = Modifier.padding(6.dp),color = MaterialTheme.colorScheme.onErrorContainer)
@@ -187,7 +190,7 @@ fun DeviceControl(){
             ) {
                 Text(text = if(confirmed){"取消"}else{"确定"})
             }
-            Row(horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween) {
                 Button(
                     onClick = {myDpm.wipeData(flag)},
                     colors = ButtonDefaults.buttonColors(

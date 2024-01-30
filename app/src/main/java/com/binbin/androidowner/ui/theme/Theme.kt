@@ -1,7 +1,9 @@
 package com.binbin.androidowner.ui.theme
 
 import android.app.Activity
+import android.content.Context
 import android.os.Build
+import android.os.Build.VERSION
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -82,13 +84,16 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun AndroidOwnerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+    val context = LocalContext.current
+    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    if(!sharedPref.contains("dynamicColor")&&VERSION.SDK_INT>=32){
+        sharedPref.edit().putBoolean("dynamicColor",true).apply()
+    }
+    val dynamicColor = sharedPref.getBoolean("dynamicColor",false)
     val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
+        dynamicColor && VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 

@@ -58,6 +58,7 @@ fun Password(){
     var newPwd by remember{ mutableStateOf("") }
     val focusMgr = LocalFocusManager.current
     val isWear = sharedPref.getBoolean("isWear",false)
+    val titleColor = MaterialTheme.colorScheme.onPrimaryContainer
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -110,7 +111,7 @@ fun Password(){
                 horizontalAlignment = Alignment.Start,
                 modifier = sections()
             ) {
-                Text(text = "密码重置令牌", style = typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text(text = "密码重置令牌", style = typography.titleLarge,color = titleColor)
                 Row(
                     modifier = if(!isWear){Modifier.fillMaxWidth()}else{Modifier.horizontalScroll(rememberScrollState())},
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -159,7 +160,7 @@ fun Password(){
             modifier = sections()
         ) {
             var confirmed by remember{ mutableStateOf(false) }
-            Text(text = "修改密码",style = MaterialTheme.typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
+            Text(text = "修改密码",style = MaterialTheme.typography.titleLarge,color = titleColor)
             TextField(
                 value = newPwd,
                 onValueChange = {newPwd=it},
@@ -238,7 +239,7 @@ fun Password(){
                 if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){
                     selectedItem=myDpm.requiredPasswordComplexity
                 }
-                Text(text = "密码复杂度要求", style = typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text(text = "密码复杂度要求", style = typography.titleLarge,color = titleColor)
                 Text(text = "不是实际密码复杂度",
                     style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
                 Text(text = "设置密码复杂度将会取代密码质量",
@@ -299,7 +300,7 @@ fun Password(){
             if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){
                 selectedItem=myDpm.getPasswordQuality(myComponent)
             }
-            Text(text = "密码质量要求", style = typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
+            Text(text = "密码质量要求", style = typography.titleLarge,color = titleColor)
             if(expanded){
             Text(text = "不是实际密码质量",
                 style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})}

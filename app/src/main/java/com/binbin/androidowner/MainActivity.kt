@@ -172,10 +172,7 @@ fun HomePage(navCtrl:NavHostController){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
-    val isda = myDpm.isAdminActive(myComponent)
-    val isdo = myDpm.isDeviceOwnerApp("com.binbin.androidowner")
-    val activateType = if(isDeviceOwner(myDpm)){"Device Owner"}else if(isProfileOwner(myDpm)){"Profile Owner"}else if(isda){"Device Admin"}else{""}
-    val isActivated = if(isdo||isda){"已激活"}else{"未激活"}
+    val activateType = if(isDeviceOwner(myDpm)){"Device Owner"}else if(isProfileOwner(myDpm)){"Profile Owner"}else if(myDpm.isAdminActive(myComponent)){"Device Admin"}else{""}
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     Column(modifier = Modifier.verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
         if(sharedPref.getBoolean("isWear",false)){
@@ -186,7 +183,7 @@ fun HomePage(navCtrl:NavHostController){
                 .fillMaxWidth()
                 .padding(vertical = if (!sharedPref.getBoolean("isWear", false)) { 5.dp } else { 2.dp }, horizontal = if (!sharedPref.getBoolean("isWear", false)) { 8.dp } else { 4.dp })
                 .clip(RoundedCornerShape(15))
-                .background(color = MaterialTheme.colorScheme.tertiaryContainer)
+                .background(color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.8F))
                 .clickable(onClick = { navCtrl.navigate("Permissions") })
                 .padding(
                     horizontal = 5.dp,
@@ -195,7 +192,7 @@ fun HomePage(navCtrl:NavHostController){
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                painter = if(isda){
+                painter = if(myDpm.isAdminActive(myComponent)){
                     painterResource(R.drawable.check_fill0)
                 }else{
                     painterResource(R.drawable.block_fill0)
@@ -206,14 +203,13 @@ fun HomePage(navCtrl:NavHostController){
             )
             Column {
                 Text(
-                    text = isActivated,
+                    text = if(isDeviceOwner(myDpm)||myDpm.isAdminActive(myComponent)||isProfileOwner(myDpm)){"已激活"}else{"未激活"},
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
                 if(activateType!=""){
                     Text(
-                        text = activateType,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                        text = activateType
                     )
                 }
             }
@@ -234,9 +230,9 @@ fun HomePageItem(name:Int, imgVector:Int, description:Int, navTo:String, myNav:N
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = if (!sharedPref.getBoolean("isWear", false)) { 5.dp } else { 2.dp }, horizontal = if (!sharedPref.getBoolean("isWear", false)) { 8.dp } else { 4.dp })
+            .padding(vertical = if (!sharedPref.getBoolean("isWear", false)) { 4.dp } else { 2.dp }, horizontal = if (!sharedPref.getBoolean("isWear", false)) { 7.dp } else { 4.dp })
             .clip(RoundedCornerShape(15))
-            .background(color = MaterialTheme.colorScheme.primaryContainer)
+            .background(color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8F))
             .clickable(onClick = { myNav.navigate(navTo) })
             .padding(6.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -256,8 +252,7 @@ fun HomePageItem(name:Int, imgVector:Int, description:Int, navTo:String, myNav:N
             )
             if(!sharedPref.getBoolean("isWear",false)){
                 Text(
-                    text = stringResource(description),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    text = stringResource(description)
                 )
             }
         }
@@ -295,19 +290,20 @@ fun isProfileOwner(dpm:DevicePolicyManager): Boolean {
 @SuppressLint("ModifierFactoryExtensionFunction")
 @Composable
 fun sections(bgColor:Color=MaterialTheme.colorScheme.primaryContainer):Modifier{
+    val backgroundColor = if(isSystemInDarkTheme()){bgColor.copy(0.4F)}else{bgColor.copy(0.6F)}
     return if(!LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE).getBoolean("isWear",false)){
         Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp)
             .clip(RoundedCornerShape(14.dp))
-            .background(color = bgColor)
+            .background(color = backgroundColor)
             .padding(vertical = 10.dp, horizontal = 10.dp)
     }else{
         Modifier
             .fillMaxWidth()
             .padding(horizontal = 3.dp, vertical = 3.dp)
             .clip(RoundedCornerShape(10.dp))
-            .background(color = bgColor)
+            .background(color = backgroundColor)
             .padding(vertical = 2.dp, horizontal = 3.dp)
     }
 }

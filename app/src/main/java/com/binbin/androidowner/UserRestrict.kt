@@ -76,8 +76,7 @@ fun UserRestriction(){
                     style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
             }
             if(isWear){
-                Text(text = "部分功能在手表上无效",
-                    style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+                Text(text = "部分功能在手表上无效", style = typography.bodyMedium)
             }
         }
 
@@ -157,13 +156,13 @@ fun SectionTab(txt:String,getSection:()->Boolean,setSection:()->Unit){
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = if(!sharedPref.getBoolean("isWear",false)){8.dp}else{4.dp},
-                vertical = if(!sharedPref.getBoolean("isWear",false)){6.dp}else{3.dp})
+                vertical = if(!sharedPref.getBoolean("isWear",false)){5.dp}else{2.dp})
             .clip(RoundedCornerShape(15.dp))
             .background(
                 color = if (getSection()) {
-                    MaterialTheme.colorScheme.tertiaryContainer
+                    MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.8F)
                 } else {
-                    MaterialTheme.colorScheme.primaryContainer
+                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8F)
                 }
             )
             .clickable(onClick = setSection)
@@ -338,7 +337,7 @@ private class restrictionData{
         }
         if(VERSION.SDK_INT>=28){list += Restriction(UserManager.DISALLOW_SYSTEM_ERROR_DIALOGS,R.string.sys_err_dialog,"",R.drawable.android_fill0)}
         list += Restriction(UserManager.DISALLOW_FACTORY_RESET,R.string.factory_reset,"",R.drawable.android_fill0)
-        list += Restriction(UserManager.DISALLOW_SAFE_BOOT,R.string.safe_boot,"",R.drawable.android_fill0)
+        list += Restriction(UserManager.DISALLOW_SAFE_BOOT,R.string.safe_boot,"",R.drawable.security_fill0)
         list += Restriction(UserManager.DISALLOW_DEBUGGING_FEATURES,R.string.debug_features,"",R.drawable.adb_fill0)
         return list
     }

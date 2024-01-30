@@ -3,6 +3,7 @@ package com.binbin.androidowner
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build.VERSION
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -46,6 +47,21 @@ fun AppSetting(navCtrl:NavHostController){
                         }
                     }
                 )
+            }
+            if(VERSION.SDK_INT>=32){
+                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 3.dp),horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "动态取色", style = MaterialTheme.typography.titleLarge)
+                    Switch(
+                        checked = sharedPref.getBoolean("dynamicColor",false),
+                        onCheckedChange = {
+                            sharedPref.edit().putBoolean("dynamicColor",!sharedPref.getBoolean("dynamicColor",false)).apply()
+                            navCtrl.navigate("HomePage") {
+                                popUpTo(navCtrl.graph.findStartDestination().id) { saveState = true }
+                            }
+                        }
+                    )
+                }
+                Text("打开或关闭动态取色需要重启应用")
             }
         }
         Column(modifier = sections()) {

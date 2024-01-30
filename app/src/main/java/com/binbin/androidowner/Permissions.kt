@@ -52,6 +52,7 @@ fun DpmPermissions(navCtrl:NavHostController){
     val focusManager = LocalFocusManager.current
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val isWear = sharedPref.getBoolean("isWear",false)
+    val titleColor = MaterialTheme.colorScheme.onPrimaryContainer
     Column(
         modifier = Modifier.verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -69,7 +70,7 @@ fun DpmPermissions(navCtrl:NavHostController){
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(text = "Device Admin", fontSize = if(!isWear){22.sp}else{20.sp},color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text(text = "Device Admin", fontSize = if(!isWear){22.sp}else{20.sp},color = titleColor)
                 Text(text = if(isda){"已激活"}else{"未激活"})
             }
             if(!isWear)
@@ -94,7 +95,7 @@ fun DpmPermissions(navCtrl:NavHostController){
         }
         if(!isda){
             Column(
-                modifier = sections(MaterialTheme.colorScheme.tertiaryContainer),
+                modifier = sections(MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.8F)),
                 horizontalAlignment = Alignment.Start
             ) {
                 SelectionContainer {
@@ -112,7 +113,7 @@ fun DpmPermissions(navCtrl:NavHostController){
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(text = "Profile Owner", fontSize = if(!isWear){22.sp}else{20.sp},color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text(text = "Profile Owner", fontSize = if(!isWear){22.sp}else{20.sp},color = titleColor)
                 Text(if(isProfileOwner(myDpm)){"已激活"}else{"未激活"})
             }
             if(isProfileOwner(myDpm)&&VERSION.SDK_INT>=24&&!isWear){
@@ -132,7 +133,7 @@ fun DpmPermissions(navCtrl:NavHostController){
         }
         if(!isProfileOwner(myDpm)){
             Column(
-                modifier = sections(MaterialTheme.colorScheme.tertiaryContainer),
+                modifier = sections(MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.8F)),
                 horizontalAlignment = Alignment.Start
             ) {
                 if(!isDeviceOwner(myDpm)){
@@ -156,7 +157,7 @@ fun DpmPermissions(navCtrl:NavHostController){
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(text = "Device Owner", fontSize = if(!isWear){22.sp}else{20.sp},color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text(text = "Device Owner", fontSize = if(!isWear){22.sp}else{20.sp},color = titleColor)
                 Text(if(isDeviceOwner(myDpm)){"已激活"}else{"未激活"})
             }
             if(isDeviceOwner(myDpm)&&!isWear){
@@ -176,7 +177,7 @@ fun DpmPermissions(navCtrl:NavHostController){
         }
         if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)){
             Column(
-                modifier = sections(MaterialTheme.colorScheme.tertiaryContainer),
+                modifier = sections(MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.8F)),
                 horizontalAlignment = Alignment.Start
             ) {
                 SelectionContainer {
@@ -194,7 +195,7 @@ fun DpmPermissions(navCtrl:NavHostController){
             Text(
                 text = "注意！在这里撤销权限不会清除配置。比如：被停用的应用会保持停用状态",
                 color = MaterialTheme.colorScheme.onErrorContainer,
-                modifier = sections(MaterialTheme.colorScheme.errorContainer),
+                modifier = sections(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.8F)),
                 style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium}
             )
         }
@@ -202,7 +203,7 @@ fun DpmPermissions(navCtrl:NavHostController){
             Column(
                 modifier = sections()
             ) {
-                Text(text = "设备信息", style = typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text(text = "设备信息", style = typography.titleLarge,color = titleColor)
                 val orgDevice = myDpm.isOrganizationOwnedDeviceWithManagedProfile
                 Text("由组织拥有的受管理资料设备：$orgDevice",style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
                 if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
@@ -233,7 +234,7 @@ fun DpmPermissions(navCtrl:NavHostController){
         if(VERSION.SDK_INT>=31&&(isProfileOwner(myDpm)|| isDeviceOwner(myDpm))){
             Column(modifier = sections()) {
                 val specificId:String = myDpm.enrollmentSpecificId
-                Text(text = "设备唯一标识码", style = typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text(text = "设备唯一标识码", style = typography.titleLarge,color = titleColor)
                 Text("（恢复出厂设置不变）",style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
                 if(specificId!=""){
                     Text(specificId)
@@ -247,7 +248,7 @@ fun DpmPermissions(navCtrl:NavHostController){
         }
         if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){
             Column(modifier = sections()) {
-                Text(text = "不受控制的账号类型", style = typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text(text = "不受控制的账号类型", style = typography.titleLarge,color = titleColor)
                 Text("作用未知",style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
                 var noManageAccount = myDpm.accountTypesWithManagementDisabled?.toMutableList()
                 var accountlist by remember{ mutableStateOf("") }
@@ -382,7 +383,7 @@ fun DeviceOwnerInfo(
     Column(modifier = sections()) {
         val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
         val isWear = sharedPref.getBoolean("isWear",false)
-        Text(text = stringResource(name), style = typography.titleLarge, softWrap = false)
+        Text(text = stringResource(name), style = typography.titleLarge, softWrap = false, color = MaterialTheme.colorScheme.onPrimaryContainer)
         if(desc!=R.string.place_holder){
             Text(
                 text = stringResource(desc),modifier = Modifier.padding(top = 6.dp),
