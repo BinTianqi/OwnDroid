@@ -47,3 +47,13 @@
 - Managed Profile，工作资料和多用户相关
 - 安装/卸载应用，清除应用的存储空间
 - 应用管理的包选择器（目前只能手动输入包名）
+
+### 许可证
+
+> Copyright (C)  2023  BinTianqi
+>
+> This program is free software: you can redistribute it and/or modifyit under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+>
+> This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+>
+> You should have received a copy of the GNU General Public Licensealong with this program.  If not, see <https://www.gnu.org/licenses/>.
