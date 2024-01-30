@@ -50,7 +50,7 @@
 
 ### 许可证
 
-> Copyright (C)  2023  BinTianqi
+> Copyright (C)  2024  BinTianqi
 >
 > This program is free software: you can redistribute it and/or modifyit under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 >

@@ -54,6 +54,7 @@ fun SysUpdatePolicy(myDpm:DevicePolicyManager,myComponent:ComponentName,myContex
                 }
             }
         }
+        if(VERSION.SDK_INT>=23){
         Column(modifier = sections()) {
             var selectedPolicy by remember{ mutableStateOf(myDpm.systemUpdatePolicy?.policyType) }
             Text(text = "系统更新策略", style = MaterialTheme.typography.titleLarge)
@@ -101,7 +102,7 @@ fun SysUpdatePolicy(myDpm:DevicePolicyManager,myComponent:ComponentName,myContex
             ) {
                 Text("应用")
             }
-        }
+        }}
         /*val policy = myDpm.systemUpdatePolicy
         if(VERSION.SDK_INT>=28&&policy!=null){
             Column {

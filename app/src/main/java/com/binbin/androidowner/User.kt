@@ -253,15 +253,11 @@ fun userOperationResultCode(result:Int): String {
 
 private fun createWorkProfile(myContext: Context) {
     val intent = Intent(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)
-    intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME, ComponentName(myContext,MyDeviceAdminReceiver::class.java))
+    if(VERSION.SDK_INT>=23){
+        intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME, ComponentName(myContext,MyDeviceAdminReceiver::class.java))
+    }
     intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME, myContext.packageName)
     if (VERSION.SDK_INT >= 33) { intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_ALLOW_OFFLINE,true) }
     intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION,"hello")
-    myContext.startActivity(intent)
-}
-
-private fun createManagedDevice(myContext: Context) {
-    val intent = Intent(DevicePolicyManager.ACTION_PROVISION_MANAGED_DEVICE)
-    intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME, ComponentName(myContext,MyDeviceAdminReceiver::class.java))
     myContext.startActivity(intent)
 }

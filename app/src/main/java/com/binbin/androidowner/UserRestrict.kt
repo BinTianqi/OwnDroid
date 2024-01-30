@@ -51,7 +51,6 @@ private data class Restriction(
 fun UserRestriction(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     var internetVisible by remember{ mutableStateOf(false) }
     var connectivityVisible by remember{ mutableStateOf(false) }
     var applicationVisible by remember{ mutableStateOf(false) }
@@ -83,42 +82,42 @@ fun UserRestriction(){
         items(1){ SectionTab("网络和互联网",{internetVisible}, { internetVisible=!internetVisible}) }
         items(restrictionData().internet()){data->
             if(internetVisible){
-                UserRestrictionItem(data.restriction,data.name,data.desc,data.ico,myContext,myComponent, myDpm)
+                UserRestrictionItem(data.restriction,data.name,data.desc,data.ico)
             }
         }
 
         items(1){ SectionTab("更多连接",{connectivityVisible}) { connectivityVisible=!connectivityVisible } }
         items(restrictionData().connectivity()){data->
             if(connectivityVisible){
-                UserRestrictionItem(data.restriction,data.name,data.desc,data.ico,myContext,myComponent, myDpm)
+                UserRestrictionItem(data.restriction,data.name,data.desc,data.ico)
             }
         }
 
         items(1){ SectionTab("应用",{applicationVisible}) { applicationVisible=!applicationVisible } }
         items(restrictionData().application()){data->
             if(applicationVisible){
-                UserRestrictionItem(data.restriction,data.name,data.desc,data.ico,myContext,myComponent, myDpm)
+                UserRestrictionItem(data.restriction,data.name,data.desc,data.ico)
             }
         }
 
         items(1){ SectionTab("用户",{userVisible}) { userVisible=!userVisible } }
         items(restrictionData().user()){data->
             if(userVisible){
-                UserRestrictionItem(data.restriction,data.name,data.desc,data.ico,myContext,myComponent, myDpm)
+                UserRestrictionItem(data.restriction,data.name,data.desc,data.ico)
             }
         }
 
         items(1){ SectionTab("媒体",{mediaVisible}) { mediaVisible=!mediaVisible } }
         items(restrictionData().media()){data->
             if(mediaVisible){
-                UserRestrictionItem(data.restriction,data.name,data.desc,data.ico,myContext,myComponent, myDpm)
+                UserRestrictionItem(data.restriction,data.name,data.desc,data.ico)
             }
         }
 
         items(1){ SectionTab("其他",{otherVisible}) { otherVisible=!otherVisible } }
         items(restrictionData().other()){data->
             if(otherVisible){
-                UserRestrictionItem(data.restriction,data.name,data.desc,data.ico,myContext,myComponent, myDpm)
+                UserRestrictionItem(data.restriction,data.name,data.desc,data.ico)
             }
         }
 
@@ -174,11 +173,11 @@ fun SectionTab(txt:String,getSection:()->Boolean,setSection:()->Unit){
 private fun UserRestrictionItem(
     restriction:String, itemName:Int,
     restrictionDescription:String,
-    leadIcon:Int,
-    myContext: Context,
-    myComponent: ComponentName,
-    myDpm: DevicePolicyManager
+    leadIcon:Int
 ){
+    val myContext = LocalContext.current
+    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     var strictState by remember{ mutableStateOf(false) }
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     Row(
@@ -252,7 +251,7 @@ private class restrictionData{
             list += Restriction(UserManager.DISALLOW_WIFI_TETHERING,R.string.wifi_tethering,"",R.drawable.wifi_tethering_fill0)
             list += Restriction(UserManager.DISALLOW_SHARING_ADMIN_CONFIGURED_WIFI,R.string.share_admin_wifi,"",R.drawable.share_fill0)
         }
-        list += Restriction(UserManager.DISALLOW_NETWORK_RESET,R.string.network_reset,"",R.drawable.reset_wrench_fill0)
+        if(VERSION.SDK_INT>=23){ list += Restriction(UserManager.DISALLOW_NETWORK_RESET,R.string.network_reset,"",R.drawable.reset_wrench_fill0) }
         list += Restriction(UserManager.DISALLOW_CONFIG_TETHERING,R.string.config_tethering,"",R.drawable.wifi_tethering_fill0)
         list += Restriction(UserManager.DISALLOW_CONFIG_VPN,R.string.config_vpn,"",R.drawable.vpn_key_fill0)
         if(VERSION.SDK_INT>=29){list += Restriction(UserManager.DISALLOW_CONFIG_PRIVATE_DNS,R.string.config_private_dns,"",R.drawable.dns_fill0)}
@@ -270,7 +269,7 @@ private class restrictionData{
         }
         list += Restriction(UserManager.DISALLOW_SHARE_LOCATION,R.string.share_location,"",R.drawable.location_on_fill0)
         if(VERSION.SDK_INT>=28){list += Restriction(UserManager.DISALLOW_CONFIG_LOCATION,R.string.config_location,"",R.drawable.location_on_fill0)}
-        list += Restriction(UserManager.DISALLOW_OUTGOING_BEAM,R.string.outgoing_beam,"",R.drawable.nfc_fill0)
+        if(VERSION.SDK_INT>=22){list += Restriction(UserManager.DISALLOW_OUTGOING_BEAM,R.string.outgoing_beam,"",R.drawable.nfc_fill0)}
         list += Restriction(UserManager.DISALLOW_USB_FILE_TRANSFER,R.string.usb_file_transfer,"",R.drawable.usb_fill0)
         list += Restriction(UserManager.DISALLOW_MOUNT_PHYSICAL_MEDIA,R.string.mount_physical_media, "包括TF卡和USB-OTG",R.drawable.sd_card_fill0)
         if(VERSION.SDK_INT>=28){list += Restriction(UserManager.DISALLOW_PRINTING,R.string.printing,"",R.drawable.print_fill0)}
@@ -329,7 +328,7 @@ private class restrictionData{
         list += Restriction(UserManager.DISALLOW_CREATE_WINDOWS,R.string.create_windows, "可能包括Toast和浮动通知",R.drawable.web_asset)
         if(VERSION.SDK_INT>=24){list += Restriction(UserManager.DISALLOW_SET_WALLPAPER,R.string.set_wallpaper,"",R.drawable.wallpaper_fill0)}
         if(VERSION.SDK_INT>=34){ list += Restriction(UserManager.DISALLOW_GRANT_ADMIN,R.string.grant_admin,"",R.drawable.android_fill0) }
-        list += Restriction(UserManager.DISALLOW_FUN,R.string.`fun`,"可能会影响谷歌商店的游戏",R.drawable.stadia_controller_fill0)
+        if(VERSION.SDK_INT>=23){ list += Restriction(UserManager.DISALLOW_FUN,R.string.`fun`,"可能会影响谷歌商店的游戏",R.drawable.stadia_controller_fill0) }
         list += Restriction(UserManager.DISALLOW_MODIFY_ACCOUNTS,R.string.modify_accounts,"",R.drawable.manage_accounts_fill0)
         if(VERSION.SDK_INT>=28){
             list += Restriction(UserManager.DISALLOW_CONFIG_LOCALE,R.string.config_locale,"",R.drawable.language_fill0)
@@ -337,7 +336,7 @@ private class restrictionData{
         }
         if(VERSION.SDK_INT>=28){list += Restriction(UserManager.DISALLOW_SYSTEM_ERROR_DIALOGS,R.string.sys_err_dialog,"",R.drawable.android_fill0)}
         list += Restriction(UserManager.DISALLOW_FACTORY_RESET,R.string.factory_reset,"",R.drawable.android_fill0)
-        list += Restriction(UserManager.DISALLOW_SAFE_BOOT,R.string.safe_boot,"",R.drawable.security_fill0)
+        if(VERSION.SDK_INT>=23){ list += Restriction(UserManager.DISALLOW_SAFE_BOOT,R.string.safe_boot,"",R.drawable.security_fill0) }
         list += Restriction(UserManager.DISALLOW_DEBUGGING_FEATURES,R.string.debug_features,"",R.drawable.adb_fill0)
         return list
     }

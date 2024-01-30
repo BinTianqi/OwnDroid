@@ -68,7 +68,7 @@ fun DeviceControl(){
         if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)|| isProfileOwner(myDpm))){
             DeviceCtrlItem(R.string.backup_service,R.string.place_holder,R.drawable.backup_fill0,myDpm,{myDpm.isBackupServiceEnabled(myComponent)},{b -> myDpm.setBackupServiceEnabled(myComponent,b) })
         }
-        if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
+        if(VERSION.SDK_INT>=23&&(isDeviceOwner(myDpm)|| isProfileOwner(myDpm))){
             DeviceCtrlItem(R.string.disable_bt_contact_share,R.string.place_holder,R.drawable.account_circle_fill0,myDpm,{myDpm.getBluetoothContactSharingDisabled(myComponent)},{b -> myDpm.setBluetoothContactSharingDisabled(myComponent,b)})
         }
         if(VERSION.SDK_INT>=31&&isDeviceOwner(myDpm)){

@@ -214,34 +214,35 @@ fun HomePage(navCtrl:NavHostController){
                 }
             }
         }
-        HomePageItem(R.string.device_ctrl, R.drawable.mobile_phone_fill0, R.string.device_ctrl_desc, "DeviceControl", navCtrl)
-        HomePageItem(R.string.app_manage, R.drawable.apps_fill0, R.string.apps_ctrl_description, "ApplicationManage", navCtrl)
-        HomePageItem(R.string.user_restrict, R.drawable.manage_accounts_fill0, R.string.user_restrict_desc, "UserRestriction", navCtrl)
-        HomePageItem(R.string.user_manage,R.drawable.account_circle_fill0,R.string.user_manage_desc,"UserManage",navCtrl)
-        HomePageItem(R.string.password, R.drawable.password_fill0,R.string.security_desc, "Password",navCtrl)
-        HomePageItem(R.string.setting, R.drawable.info_fill0, R.string.setting_desc, "AppSetting",navCtrl)
+        HomePageItem(R.string.device_ctrl, R.drawable.mobile_phone_fill0, "DeviceControl", navCtrl)
+        HomePageItem(R.string.app_manage, R.drawable.apps_fill0, "ApplicationManage", navCtrl)
+        HomePageItem(R.string.user_restrict, R.drawable.manage_accounts_fill0, "UserRestriction", navCtrl)
+        HomePageItem(R.string.user_manage,R.drawable.account_circle_fill0,"UserManage",navCtrl)
+        HomePageItem(R.string.password, R.drawable.password_fill0, "Password",navCtrl)
+        HomePageItem(R.string.setting, R.drawable.info_fill0, "AppSetting",navCtrl)
         Spacer(Modifier.padding(vertical = 20.dp))
     }
 }
 
 @Composable
-fun HomePageItem(name:Int, imgVector:Int, description:Int, navTo:String, myNav:NavHostController){
+fun HomePageItem(name:Int, imgVector:Int, navTo:String, myNav:NavHostController){
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val isWear = sharedPref.getBoolean("isWear", false)
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = if (!sharedPref.getBoolean("isWear", false)) { 4.dp } else { 2.dp }, horizontal = if (!sharedPref.getBoolean("isWear", false)) { 7.dp } else { 4.dp })
+            .padding(vertical = if (!isWear) { 4.dp } else { 2.dp }, horizontal = if (!isWear) { 7.dp } else { 4.dp })
             .clip(RoundedCornerShape(15))
             .background(color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8F))
             .clickable(onClick = { myNav.navigate(navTo) })
-            .padding(6.dp),
+            .padding(vertical = if(isWear){6.dp}else{10.dp}, horizontal = 6.dp),
         verticalAlignment = Alignment.CenterVertically
 
     ) {
         Icon(
             painter = painterResource(imgVector),
             contentDescription = null,
-            modifier = Modifier.padding(horizontal = if(!sharedPref.getBoolean("isWear",false)){10.dp}else{6.dp}),
+            modifier = Modifier.padding(horizontal = if(!sharedPref.getBoolean("isWear",false)){12.dp}else{6.dp}),
             tint = MaterialTheme.colorScheme.primary
         )
         Column {
@@ -250,11 +251,7 @@ fun HomePageItem(name:Int, imgVector:Int, description:Int, navTo:String, myNav:N
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
-            if(!sharedPref.getBoolean("isWear",false)){
-                Text(
-                    text = stringResource(description)
-                )
-            }
+            Spacer(Modifier.padding(top = 2.dp))
         }
     }
 }

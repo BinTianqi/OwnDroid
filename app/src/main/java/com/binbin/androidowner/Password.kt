@@ -160,7 +160,7 @@ fun Password(){
             modifier = sections()
         ) {
             var confirmed by remember{ mutableStateOf(false) }
-            Text(text = "修改密码",style = MaterialTheme.typography.titleLarge,color = titleColor)
+            Text(text = "修改密码",style = typography.titleLarge,color = titleColor)
             TextField(
                 value = newPwd,
                 onValueChange = {newPwd=it},
@@ -172,9 +172,11 @@ fun Password(){
             )
             Text(text = stringResource(R.string.reset_pwd_desc), modifier = Modifier.padding(vertical = 3.dp),style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
             var resetPwdFlag by remember{ mutableIntStateOf(0) }
-            RadioButtonItem("开机时不要求密码（如果有指纹等其他解锁方式）",
-                {resetPwdFlag==DevicePolicyManager.RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT},
-                {resetPwdFlag=DevicePolicyManager.RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT})
+            if(VERSION.SDK_INT>=23){
+                RadioButtonItem("开机时不要求密码（如果有指纹等其他解锁方式）",
+                    {resetPwdFlag==DevicePolicyManager.RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT},
+                    {resetPwdFlag=DevicePolicyManager.RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT})
+            }
             RadioButtonItem("要求立即输入新密码",{resetPwdFlag==DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY},
                 {resetPwdFlag=DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY})
             RadioButtonItem("无",{resetPwdFlag==0},{resetPwdFlag=0})

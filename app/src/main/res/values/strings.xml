@@ -18,20 +18,8 @@
     <string name="isapphidden_desc">如果隐藏，有可能是没安装</string>
     <string name="user_ctrl_disabled">禁止用户控制</string>
     <string name="user_ctrl_disabled_desc">阻止清除应用数据和缓存</string>
-    <string name="allow">允许</string>
-    <string name="disallow">禁止</string>
-    <string name="is_disallow">是否禁止：</string>
-    <string name="apps_ctrl_description">可以隐藏、停用应用</string>
-    <string name="create_windows_description">包括Toast和浮动通知</string>
     <string name="permission">权限</string>
-    <string name="ui_ctrl">UI控制</string>
     <string name="place_holder" />
-    <string name="permission_desc">授权与取消授权DeviceAdmin或DeviceOwner</string>
-    <string name="device_ctrl_desc">锁屏和重启等</string>
-    <string name="app_manage_desc">非DeviceOwner勿入</string>
-    <string name="user_restrict_desc">管理当前用户可用的功能</string>
-    <string name="block_unins">防卸载</string>
-    <string name="sometimes_not_available">有时候不能用</string>
 
     <string name="user_restrict">用户限制</string>
     <string name="config_mobile_network">配置移动数据</string>
@@ -67,17 +55,14 @@
     <string name="content_capture">内容捕获</string>
     <string name="content_suggestions">内容建议</string>
     <string name="cross_profile_copy">跨用户复制</string>
-    <string name="cross_profile_copy_desc">在不同用户和工作资料之间复制粘贴</string>
     <string name="data_roaming">数据漫游</string>
     <string name="factory_reset">恢复出厂设置</string>
     <string name="fun">娱乐</string>
-    <string name="unknown_feature">作用未知</string>
     <string name="grant_admin">启用设备管理器</string>
     <string name="install_unknown_src_globally">安装未知来源应用（全局）</string>
     <string name="microphone_toggle">切换麦克风使用权限</string>
     <string name="modify_accounts">修改账号设置</string>
     <string name="mount_physical_media">挂载物理媒体</string>
-    <string name="mount_phisical_media_desc">包括TF卡和USB-OTG</string>
     <string name="network_reset">重置网络</string>
     <string name="outgoing_beam">Beam发送</string>
     <string name="outgoing_calls">拨打电话</string>
@@ -102,7 +87,6 @@
     <string name="remove_managed_profile">移除工作资料</string>
 
     <string name="password">密码</string>
-    <string name="security_desc">更改锁屏密码，设置密码复杂度</string>
     <string name="reset_pwd_desc">留空可以清除密码，纯数字将使用PIN码</string>
     <string name="max_pwd_fail">最大密码错误次数</string>
     <string name="max_pwd_fail_desc">达到该限制会恢复出厂设置</string>
@@ -119,15 +103,9 @@
     <string name="support_msg">提供支持的短消息</string>
     <string name="support_msg_desc">如果你禁用了某个功能，用户尝试使用这个功能时会看见这个消息（可多行）</string>
     <string name="message">消息</string>
-    <string name="profile_name">用户名</string>
     <string name="long_support_msg">提供支持的长消息</string>
     <string name="long_support_msg_desc">都是显示短消息，长消息不知道在哪里显示</string>
     <string name="disable_bt_contact_share">禁止蓝牙分享联系人</string>
-    <string name="sys_update_policy">系统更新策略</string>
-    <string name="sys_update_policy_desc">管理系统更新策略</string>
-    <string name="disable_keyguard">禁止锁屏（需无密码）</string>
     <string name="user_manage">用户管理</string>
-    <string name="user_manage_desc">查看用户状态，添加用户</string>
     <string name="setting">设置</string>
-    <string name="setting_desc">关于此应用</string>
 </resources>
