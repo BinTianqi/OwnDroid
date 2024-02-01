@@ -11,10 +11,10 @@ class MyDeviceAdminReceiver : DeviceAdminReceiver() {
         super.onEnabled(context, intent)
         Toast.makeText(context, "已启用", Toast.LENGTH_SHORT).show()
     }
-    override fun onReceive(context: Context, intent: Intent) {
+    /*override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         Toast.makeText(context, "已接收", Toast.LENGTH_SHORT).show()
-    }
+    }*/
     override fun onDisableRequested(context: Context, intent: Intent): CharSequence {
         Toast.makeText(context, "撤销授权", Toast.LENGTH_SHORT).show()
         return "这是取消时的提示"

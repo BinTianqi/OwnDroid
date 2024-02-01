@@ -71,7 +71,7 @@ fun UserRestriction(){
                     color = MaterialTheme.colorScheme.error)
             }
             if(isProfileOwner(myDpm)){
-                Text(text = "Profile owner无法更改部分功能",
+                Text(text = "Profile owner无法使用部分功能",
                     style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
             }
             if(isWear){
@@ -221,7 +221,7 @@ private fun UserRestrictionItem(
                         }
                     }catch(e:SecurityException){
                         if(isProfileOwner(myDpm)){
-                            Toast.makeText(myContext, "Profile owner 无法更改", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(myContext, "需要DeviceOwner", Toast.LENGTH_SHORT).show()
                         }
                     }
                     strictState = myDpm.getUserRestrictions(myComponent).getBoolean(restriction)
