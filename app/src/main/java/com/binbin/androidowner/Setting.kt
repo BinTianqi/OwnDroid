@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,11 +34,12 @@ fun AppSetting(navCtrl:NavHostController){
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         val myContext = LocalContext.current
         val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+        val isWear = sharedPref.getBoolean("isWear",false)
         Column(modifier = sections()) {
             Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 3.dp),horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "Wear", style = MaterialTheme.typography.titleLarge)
                 Switch(
-                    checked = sharedPref.getBoolean("isWear",false),
+                    checked = isWear,
                     onCheckedChange = {
                         sharedPref.edit().putBoolean("isWear",!sharedPref.getBoolean("isWear",false)).apply()
                         navCtrl.navigate("HomePage") {
@@ -61,7 +63,7 @@ fun AppSetting(navCtrl:NavHostController){
                         }
                     )
                 }
-                Text("打开或关闭动态取色需要重启应用")
+                Text(text = "打开或关闭动态取色需要重启应用", style = if(isWear){typography.bodyMedium}else{typography.bodyLarge})
             }
         }
         Column(modifier = sections()) {

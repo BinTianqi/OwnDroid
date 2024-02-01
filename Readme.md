@@ -32,7 +32,7 @@
   - 用户和工作资料：禁止添加/切换/移除用户，禁止添加/移除工作资料
   - 杂项：禁止自动填充服务、禁止调试
 - 用户管理
-  - 添加用户并切换至新用户
+  - 添加、启动、切换、停止、移除用户
   - 修改当前用户的名称
   - 设置切换用户时的提示
 - 密码
@@ -51,13 +51,14 @@
 - Managed Profile，工作资料和多用户相关
 - 安装/卸载应用，清除应用的存储空间
 - 应用管理的包选择器（目前只能手动输入包名）
+- 用户选择器（目前只能手动输入序列号）
 
 ### 许可证
 
 > Copyright (C)  2024  BinTianqi
 >
-> This program is free software: you can redistribute it and/or modifyit under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+> This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 >
 > This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 >
-> You should have received a copy of the GNU General Public Licensealong with this program.  If not, see <https://www.gnu.org/licenses/>.
+> You should have received a copy of the GNU General Public License along with this program.  If not, see <https://www.gnu.org/licenses/>.

@@ -44,88 +44,67 @@ fun DeviceControl(){
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val isWear = sharedPref.getBoolean("isWear",false)
-    Column(
-        modifier = Modifier
-            .verticalScroll(rememberScrollState())
-            .navigationBarsPadding()
-    ) {
+    val bodyTextStyle = if(isWear){typography.bodyMedium}else{typography.bodyLarge}
+    Column(modifier = Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding()) {
         if(isDeviceOwner(myDpm)){
-            DeviceCtrlItem(R.string.disable_cam,R.string.place_holder, R.drawable.photo_camera_fill0,myDpm,{myDpm.getCameraDisabled(null)},{b -> myDpm.setCameraDisabled(myComponent,b)})
+            DeviceCtrlItem(R.string.disable_cam,R.string.place_holder, R.drawable.photo_camera_fill0,{myDpm.getCameraDisabled(null)},{b -> myDpm.setCameraDisabled(myComponent,b)})
         }
         if(isDeviceOwner(myDpm)){
-            DeviceCtrlItem(R.string.disable_scrcap,R.string.aosp_scrrec_also_work,R.drawable.screenshot_fill0,myDpm,{myDpm.getScreenCaptureDisabled(null)},{b -> myDpm.setScreenCaptureDisabled(myComponent,b) })
+            DeviceCtrlItem(R.string.disable_scrcap,R.string.aosp_scrrec_also_work,R.drawable.screenshot_fill0,{myDpm.getScreenCaptureDisabled(null)},{b -> myDpm.setScreenCaptureDisabled(myComponent,b) })
         }
         if(VERSION.SDK_INT>=34&&(isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser))){
-            DeviceCtrlItem(R.string.hide_status_bar,R.string.may_hide_notifi_icon_only,R.drawable.notifications_fill0,myDpm,{myDpm.isStatusBarDisabled},{b -> myDpm.setStatusBarDisabled(myComponent,b) })
+            DeviceCtrlItem(R.string.hide_status_bar,R.string.may_hide_notifi_icon_only,R.drawable.notifications_fill0,{myDpm.isStatusBarDisabled},{b -> myDpm.setStatusBarDisabled(myComponent,b) })
         }
         if(VERSION.SDK_INT>=30&&isDeviceOwner(myDpm)){
-            DeviceCtrlItem(R.string.auto_time,R.string.place_holder,R.drawable.schedule_fill0,myDpm,{myDpm.getAutoTimeEnabled(myComponent)},{b -> myDpm.setAutoTimeEnabled(myComponent,b) })
-            DeviceCtrlItem(R.string.auto_timezone,R.string.place_holder,R.drawable.globe_fill0,myDpm,{myDpm.getAutoTimeZoneEnabled(myComponent)},{b -> myDpm.setAutoTimeZoneEnabled(myComponent,b) })
+            DeviceCtrlItem(R.string.auto_time,R.string.place_holder,R.drawable.schedule_fill0,{myDpm.getAutoTimeEnabled(myComponent)},{b -> myDpm.setAutoTimeEnabled(myComponent,b) })
+            DeviceCtrlItem(R.string.auto_timezone,R.string.place_holder,R.drawable.globe_fill0,{myDpm.getAutoTimeZoneEnabled(myComponent)},{b -> myDpm.setAutoTimeZoneEnabled(myComponent,b) })
         }
         if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
-            DeviceCtrlItem(R.string.master_mute,R.string.place_holder,R.drawable.volume_up_fill0,myDpm,{myDpm.isMasterVolumeMuted(myComponent)},{b -> myDpm.setMasterVolumeMuted(myComponent,b) })
+            DeviceCtrlItem(R.string.master_mute,R.string.place_holder,R.drawable.volume_up_fill0,{myDpm.isMasterVolumeMuted(myComponent)},{b -> myDpm.setMasterVolumeMuted(myComponent,b) })
         }
         if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)|| isProfileOwner(myDpm))){
-            DeviceCtrlItem(R.string.backup_service,R.string.place_holder,R.drawable.backup_fill0,myDpm,{myDpm.isBackupServiceEnabled(myComponent)},{b -> myDpm.setBackupServiceEnabled(myComponent,b) })
+            DeviceCtrlItem(R.string.backup_service,R.string.place_holder,R.drawable.backup_fill0,{myDpm.isBackupServiceEnabled(myComponent)},{b -> myDpm.setBackupServiceEnabled(myComponent,b) })
         }
         if(VERSION.SDK_INT>=23&&(isDeviceOwner(myDpm)|| isProfileOwner(myDpm))){
-            DeviceCtrlItem(R.string.disable_bt_contact_share,R.string.place_holder,R.drawable.account_circle_fill0,myDpm,{myDpm.getBluetoothContactSharingDisabled(myComponent)},{b -> myDpm.setBluetoothContactSharingDisabled(myComponent,b)})
+            DeviceCtrlItem(R.string.disable_bt_contact_share,R.string.place_holder,R.drawable.account_circle_fill0,{myDpm.getBluetoothContactSharingDisabled(myComponent)},{b -> myDpm.setBluetoothContactSharingDisabled(myComponent,b)})
         }
         if(VERSION.SDK_INT>=31&&isDeviceOwner(myDpm)){
             if(myDpm.canUsbDataSignalingBeDisabled()){
-                DeviceCtrlItem(R.string.usb_signal,R.string.place_holder,R.drawable.usb_fill0,myDpm,{myDpm.isUsbDataSignalingEnabled},{b -> myDpm.isUsbDataSignalingEnabled = b })
+                DeviceCtrlItem(R.string.usb_signal,R.string.place_holder,R.drawable.usb_fill0,{myDpm.isUsbDataSignalingEnabled},{b -> myDpm.isUsbDataSignalingEnabled = b })
             }else{
-                Text(text = "你的设备不支持关闭USB信号",modifier = Modifier.fillMaxWidth(),
-                    style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium}, textAlign = TextAlign.Center)
+                Text(text = "你的设备不支持关闭USB信号",modifier = Modifier.fillMaxWidth(), style = bodyTextStyle, textAlign = TextAlign.Center)
             }
         }
         if(VERSION.SDK_INT<24&&isDeviceOwner(myDpm)){
-            Text(text = "重启和WiFi Mac需要API24",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
-                style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+            Text(text = "重启和WiFi Mac需要API24",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle)
         }
         if(VERSION.SDK_INT<26&&isDeviceOwner(myDpm)){
-            Text(text = "备份服务需要API26",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
-                style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+            Text(text = "备份服务需要API26",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle)
         }
         if(VERSION.SDK_INT<30&&isDeviceOwner(myDpm)){
-            Text(text = "自动设置时间和自动设置时区需要API30",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
-                style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+            Text(text = "自动设置时间和自动设置时区需要API30",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle)
         }
-        if(VERSION.SDK_INT<31&&isDeviceOwner(myDpm)){Text(text = "关闭USB信号需API31",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
-            style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})}
+        if(VERSION.SDK_INT<31&&isDeviceOwner(myDpm)){Text(text = "关闭USB信号需API31",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle)}
         if(VERSION.SDK_INT<34&&isDeviceOwner(myDpm)){
-            Text(text = "隐藏状态栏需要API34",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
-                style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+            Text(text = "隐藏状态栏需要API34",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle)
         }
         if(VERSION.SDK_INT>=28){
             Column(modifier = sections()) {
                 Text(text = "锁屏方式", style = typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
-                Text(text = "禁用需要无密码",style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+                Text(text = "禁用需要无密码",style=bodyTextStyle)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Button(
-                    onClick = {
-                        if(myDpm.setKeyguardDisabled(myComponent,true)){
-                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
-                        }else{
-                            Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
-                        }
-                    },
+                    onClick = { Toast.makeText(myContext, if(myDpm.setKeyguardDisabled(myComponent,true)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show() },
                     enabled = isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser),
                     modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.48F)}
                 ) {
                     Text("禁用")
                 }
                 Button(
-                    onClick = {
-                        if(myDpm.setKeyguardDisabled(myComponent,false)){
-                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
-                        }else{
-                            Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
-                        }
-                    },
+                    onClick = { Toast.makeText(myContext, if(myDpm.setKeyguardDisabled(myComponent,false)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show() },
                     enabled = isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser),
                     modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.92F)}
                 ) {
@@ -134,10 +113,7 @@ fun DeviceControl(){
             }}
         }
 
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = sections(),
-        ) {
+        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = sections()) {
             if(VERSION.SDK_INT>=24){
                 Button(onClick = {myDpm.reboot(myComponent)}, enabled = isDeviceOwner(myDpm),
                     modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.48F)}) {
@@ -150,12 +126,8 @@ fun DeviceControl(){
             }
         }
         if(VERSION.SDK_INT>=24){
-            val wifimac = try {
-                myDpm.getWifiMacAddress(myComponent).toString()
-            }catch(e:SecurityException){
-                "没有权限"
-            }
-            Text(text = "WiFi MAC: $wifimac",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+            val wifimac = try { myDpm.getWifiMacAddress(myComponent).toString() }catch(e:SecurityException){ "没有权限" }
+            Text(text = "WiFi MAC: $wifimac",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,style=bodyTextStyle)
         }
         if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
         Button(
@@ -167,9 +139,7 @@ fun DeviceControl(){
         if(isDeviceOwner(myDpm)){
             SysUpdatePolicy(myDpm,myComponent,myContext)
         }
-        Column(modifier = sections(if(isSystemInDarkTheme())
-        {MaterialTheme.colorScheme.errorContainer}else{MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6F)})
-        ) {
+        Column(modifier = sections(if(isSystemInDarkTheme()){MaterialTheme.colorScheme.errorContainer}else{MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6F)})) {
             var flag by remember{ mutableIntStateOf(0) }
             var confirmed by remember{ mutableStateOf(false) }
             Text(text = "清除数据",style = typography.titleLarge,modifier = Modifier.padding(6.dp),color = MaterialTheme.colorScheme.onErrorContainer)
@@ -224,7 +194,6 @@ private fun DeviceCtrlItem(
     itemName:Int,
     itemDesc:Int,
     leadIcon:Int,
-    myDpm: DevicePolicyManager,
     getMethod:()->Boolean,
     setMethod:(b:Boolean)->Unit
 ){
@@ -253,9 +222,7 @@ private fun DeviceCtrlItem(
                     style = if(!sharedPref.getBoolean("isWear",false)){typography.titleLarge}else{typography.bodyLarge},
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
-                if(itemDesc!=R.string.place_holder&&!sharedPref.getBoolean("isWear",false)){
-                    Text(stringResource(itemDesc))
-                }
+                if(itemDesc!=R.string.place_holder&&!sharedPref.getBoolean("isWear",false)){ Text(stringResource(itemDesc)) }
             }
         }
         isEnabled = getMethod()

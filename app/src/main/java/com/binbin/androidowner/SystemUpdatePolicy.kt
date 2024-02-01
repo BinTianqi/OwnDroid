@@ -32,7 +32,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import java.util.Date
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SysUpdatePolicy(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext: Context){
     val focusMgr = LocalFocusManager.current
@@ -103,28 +102,5 @@ fun SysUpdatePolicy(myDpm:DevicePolicyManager,myComponent:ComponentName,myContex
                 Text("应用")
             }
         }}
-        /*val policy = myDpm.systemUpdatePolicy
-        if(VERSION.SDK_INT>=28&&policy!=null){
-            Column {
-                var dateState = rememberDateRangePickerState()
-                DateRangePicker(state = dateState)
-                val frzPeriod = FreezePeriod(
-                    MonthDay.of(6, 1),
-                    MonthDay.of(7, 31))
-                policy.freezePeriods = listOf(frzPeriod)
-                Button(
-                    onClick = {
-                        try{
-                            myDpm.setSystemUpdatePolicy(myComponent, policy)
-                        }catch (e:SystemUpdatePolicy.ValidationFailedException){
-                            Toast.makeText(myContext, "正在冷却期", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                ) {
-                    Text("设置更新冻结期")
-                }
-
-            }
-        }*/
     }
 }

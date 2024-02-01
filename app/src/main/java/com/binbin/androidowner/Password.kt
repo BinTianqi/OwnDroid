@@ -59,19 +59,17 @@ fun Password(){
     val focusMgr = LocalFocusManager.current
     val isWear = sharedPref.getBoolean("isWear",false)
     val titleColor = MaterialTheme.colorScheme.onPrimaryContainer
+    val bodyTextStyle = if(isWear){typography.bodyMedium}else{typography.bodyLarge}
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .navigationBarsPadding()
+        modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding()
     ) {
         val myByteArray by remember{ mutableStateOf(byteArrayOf(1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0)) }
         Text(
             text = "以下操作可能会造成不可挽回的损失，请先备份好数据。执行操作时一定要谨慎！！！",
             color = MaterialTheme.colorScheme.onErrorContainer,
             modifier = sections(MaterialTheme.colorScheme.errorContainer),
-            style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium}
+            style=bodyTextStyle
         )
         if(isWear){
             Text(
@@ -93,24 +91,21 @@ fun Password(){
                         DevicePolicyManager.PASSWORD_COMPLEXITY_HIGH to "高（无连续性，至少6位）"
                     )
                     val pwdComplex = passwordComplexity[myDpm.passwordComplexity]
-                    Text(text = "当前密码复杂度：$pwdComplex",style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+                    Text(text = "当前密码复杂度：$pwdComplex",style=bodyTextStyle)
                 }
                 if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
-                    Text("密码达到要求：${myDpm.isActivePasswordSufficient}",style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+                    Text("密码达到要求：${myDpm.isActivePasswordSufficient}",style=bodyTextStyle)
                 }
                 val pwdFailedAttempts = myDpm.currentFailedPasswordAttempts
-                Text(text = "密码已错误次数：$pwdFailedAttempts",style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+                Text(text = "密码已错误次数：$pwdFailedAttempts",style=bodyTextStyle)
                 if(VERSION.SDK_INT>=28&&(myDpm.isManagedProfile(myComponent)||myDpm.isProfileOwnerApp("com.binbin.androidowner"))){
                     val unifiedPwd = myDpm.isUsingUnifiedPassword(myComponent)
-                    Text("个人与工作应用密码一致：$unifiedPwd",style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+                    Text("个人与工作应用密码一致：$unifiedPwd",style=bodyTextStyle)
                 }
             }
         }
         if(VERSION.SDK_INT>=26){
-            Column(
-                horizontalAlignment = Alignment.Start,
-                modifier = sections()
-            ) {
+            Column(horizontalAlignment = Alignment.Start, modifier = sections()) {
                 Text(text = "密码重置令牌", style = typography.titleLarge,color = titleColor)
                 Row(
                     modifier = if(!isWear){Modifier.fillMaxWidth()}else{Modifier.horizontalScroll(rememberScrollState())},
@@ -149,11 +144,9 @@ fun Password(){
                         Text("激活")
                     }
                 }
-                if(isWear){
-                    Text(text = "（可以水平滚动）",style=typography.bodyMedium)
-                }
-                Text("没有密码时会自动激活令牌",style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
-                Text("有可能无法设置密码重置令牌，因机而异",style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+                if(isWear){ Text(text = "（可以水平滚动）",style=typography.bodyMedium) }
+                Text("没有密码时会自动激活令牌",style=bodyTextStyle)
+                Text("有可能无法设置密码重置令牌，因机而异",style=bodyTextStyle)
             }
         }
         Column(
@@ -170,7 +163,7 @@ fun Password(){
                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                 modifier = Modifier.padding(vertical = if(isWear){0.dp}else{5.dp}).fillMaxWidth()
             )
-            Text(text = stringResource(R.string.reset_pwd_desc), modifier = Modifier.padding(vertical = 3.dp),style=if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+            Text(text = stringResource(R.string.reset_pwd_desc), modifier = Modifier.padding(vertical = 3.dp),style=bodyTextStyle)
             var resetPwdFlag by remember{ mutableIntStateOf(0) }
             if(VERSION.SDK_INT>=23){
                 RadioButtonItem("开机时不要求密码（如果有指纹等其他解锁方式）",
@@ -243,16 +236,15 @@ fun Password(){
                 }
                 Text(text = "密码复杂度要求", style = typography.titleLarge,color = titleColor)
                 Text(text = "不是实际密码复杂度",
-                    style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+                    style = bodyTextStyle)
                 Text(text = "设置密码复杂度将会取代密码质量",
-                    style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+                    style = bodyTextStyle)
                 RadioButtonItem(passwordComplexity[0].second,{selectedItem==passwordComplexity[0].first},{selectedItem=passwordComplexity[0].first})
                 RadioButtonItem(passwordComplexity[1].second,{selectedItem==passwordComplexity[1].first},{selectedItem=passwordComplexity[1].first})
                 RadioButtonItem(passwordComplexity[2].second,{selectedItem==passwordComplexity[2].first},{selectedItem=passwordComplexity[2].first})
                 RadioButtonItem(passwordComplexity[3].second,{selectedItem==passwordComplexity[3].first},{selectedItem=passwordComplexity[3].first},
                 if(isWear){MaterialTheme.colorScheme.error}else{MaterialTheme.colorScheme.onBackground})
-                Text(text = "连续性：密码重复（6666）或密码递增递减（4321、2468）", modifier = Modifier.padding(vertical = 3.dp),
-                    style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+                Text(text = "连续性：密码重复（6666）或密码递增递减（4321、2468）", modifier = Modifier.padding(vertical = 3.dp), style = bodyTextStyle)
                 Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
                         onClick = {
@@ -304,11 +296,9 @@ fun Password(){
             }
             Text(text = "密码质量要求", style = typography.titleLarge,color = titleColor)
             if(expanded){
-            Text(text = "不是实际密码质量",
-                style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})}
+            Text(text = "不是实际密码质量", style = bodyTextStyle)}
             if(VERSION.SDK_INT>=31){
-                Text(text = "已弃用，请使用上面的”密码复杂度要求“", color = MaterialTheme.colorScheme.error,
-                    style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+                Text(text = "已弃用，请使用上面的”密码复杂度要求“", color = MaterialTheme.colorScheme.error, style = bodyTextStyle)
             }
             if(expanded){
             RadioButtonItem(passwordQuality[0].second,{selectedItem==passwordQuality[0].first},{selectedItem=passwordQuality[0].first})
@@ -319,8 +309,7 @@ fun Password(){
             RadioButtonItem(passwordQuality[5].second,{selectedItem==passwordQuality[5].first},{selectedItem=passwordQuality[5].first})
             RadioButtonItem(passwordQuality[6].second,{selectedItem==passwordQuality[6].first},{selectedItem=passwordQuality[6].first})
             RadioButtonItem(passwordQuality[7].second,{selectedItem==passwordQuality[7].first},{selectedItem=passwordQuality[7].first})
-            Text(text = "连续性：密码重复（6666）或密码递增递减（4321、2468）", modifier = Modifier.padding(vertical = 3.dp),
-                style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+            Text(text = "连续性：密码重复（6666）或密码递增递减（4321、2468）", modifier = Modifier.padding(vertical = 3.dp), style = bodyTextStyle)
             Button(
                 onClick = {
                     myDpm.setPasswordQuality(myComponent,selectedItem)
