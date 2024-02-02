@@ -23,19 +23,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -257,7 +247,30 @@ fun RadioButtonItem(
     ) {
         RadioButton(selected = selected(), onClick = operation,modifier=if(sharedPref.getBoolean("isWear",false)){Modifier.size(28.dp)}else{Modifier})
         Text(text = text, style = if(!sharedPref.getBoolean("isWear",false)){typography.bodyLarge}else{typography.bodyMedium}, color = textColor,
-            modifier = Modifier.padding(bottom = 1.dp))
+            modifier = Modifier.padding(bottom = 2.dp))
+    }
+}
+@Composable
+fun CheckBoxItem(
+    text:String,
+    checked:()->Boolean,
+    operation:()->Unit,
+    textColor:Color = MaterialTheme.colorScheme.onBackground
+){
+    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
+        .fillMaxWidth()
+        .padding(vertical = if(sharedPref.getBoolean("isWear",false)){3.dp}else{0.dp})
+        .clip(RoundedCornerShape(25))
+        .clickable(onClick = operation)
+    ) {
+        Checkbox(
+            checked = checked(),
+            onCheckedChange = {b:Boolean->operation()},
+            modifier=if(sharedPref.getBoolean("isWear",false)){Modifier.size(28.dp)}else{Modifier}
+        )
+        Text(text = text, style = if(!sharedPref.getBoolean("isWear",false)){typography.bodyLarge}else{typography.bodyMedium}, color = textColor,
+             modifier = Modifier.padding(bottom = 2.dp))
     }
 }
 

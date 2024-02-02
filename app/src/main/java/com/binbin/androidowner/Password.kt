@@ -2,12 +2,14 @@ package com.binbin.androidowner
 
 import android.app.KeyguardManager
 import android.app.admin.DevicePolicyManager
+import android.app.admin.DevicePolicyManager.*
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,12 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
@@ -85,10 +82,10 @@ fun Password(){
             ) {
                 if(VERSION.SDK_INT>=29){
                     val passwordComplexity = mapOf(
-                        DevicePolicyManager.PASSWORD_COMPLEXITY_NONE to "无（允许不设密码）",
-                        DevicePolicyManager.PASSWORD_COMPLEXITY_LOW to "低（允许图案和连续性）",
-                        DevicePolicyManager.PASSWORD_COMPLEXITY_MEDIUM to "中（无连续性，至少4位）",
-                        DevicePolicyManager.PASSWORD_COMPLEXITY_HIGH to "高（无连续性，至少6位）"
+                        PASSWORD_COMPLEXITY_NONE to "无（允许不设密码）",
+                        PASSWORD_COMPLEXITY_LOW to "低（允许图案和连续性）",
+                        PASSWORD_COMPLEXITY_MEDIUM to "中（无连续性，至少4位）",
+                        PASSWORD_COMPLEXITY_HIGH to "高（无连续性，至少6位）"
                     )
                     val pwdComplex = passwordComplexity[myDpm.passwordComplexity]
                     Text(text = "当前密码复杂度：$pwdComplex",style=bodyTextStyle)
@@ -166,12 +163,9 @@ fun Password(){
             Text(text = stringResource(R.string.reset_pwd_desc), modifier = Modifier.padding(vertical = 3.dp),style=bodyTextStyle)
             var resetPwdFlag by remember{ mutableIntStateOf(0) }
             if(VERSION.SDK_INT>=23){
-                RadioButtonItem("开机时不要求密码（如果有指纹等其他解锁方式）",
-                    {resetPwdFlag==DevicePolicyManager.RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT},
-                    {resetPwdFlag=DevicePolicyManager.RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT})
+                RadioButtonItem("开机时不要求密码（如果有指纹等其他解锁方式）", {resetPwdFlag==RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT}, {resetPwdFlag=RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT})
             }
-            RadioButtonItem("要求立即输入新密码",{resetPwdFlag==DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY},
-                {resetPwdFlag=DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY})
+            RadioButtonItem("要求立即输入新密码",{resetPwdFlag==RESET_PASSWORD_REQUIRE_ENTRY}, {resetPwdFlag=RESET_PASSWORD_REQUIRE_ENTRY})
             RadioButtonItem("无",{resetPwdFlag==0},{resetPwdFlag=0})
             Row(modifier = if(!isWear){Modifier.fillMaxWidth()}else{Modifier.horizontalScroll(rememberScrollState())},horizontalArrangement = Arrangement.SpaceBetween) {
                 Button(
@@ -225,20 +219,17 @@ fun Password(){
         if(VERSION.SDK_INT>=31){
             Column(modifier = sections()) {
                 val passwordComplexity = mapOf(
-                    DevicePolicyManager.PASSWORD_COMPLEXITY_NONE to "无（允许不设密码）",
-                    DevicePolicyManager.PASSWORD_COMPLEXITY_LOW to "低（允许图案和连续性）",
-                    DevicePolicyManager.PASSWORD_COMPLEXITY_MEDIUM to "中（无连续性，至少4位）",
-                    DevicePolicyManager.PASSWORD_COMPLEXITY_HIGH to "高（无连续性，至少6位）"
+                    PASSWORD_COMPLEXITY_NONE to "无（允许不设密码）",
+                    PASSWORD_COMPLEXITY_LOW to "低（允许图案和连续性）",
+                    PASSWORD_COMPLEXITY_MEDIUM to "中（无连续性，至少4位）",
+                    PASSWORD_COMPLEXITY_HIGH to "高（无连续性，至少6位）"
                 ).toList()
                 var selectedItem by remember{ mutableIntStateOf(passwordComplexity[0].first) }
                 if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){
                     selectedItem=myDpm.requiredPasswordComplexity
                 }
                 Text(text = "密码复杂度要求", style = typography.titleLarge,color = titleColor)
-                Text(text = "不是实际密码复杂度",
-                    style = bodyTextStyle)
-                Text(text = "设置密码复杂度将会取代密码质量",
-                    style = bodyTextStyle)
+                Text(text = "不是实际密码复杂度", style = bodyTextStyle)
                 RadioButtonItem(passwordComplexity[0].second,{selectedItem==passwordComplexity[0].first},{selectedItem=passwordComplexity[0].first})
                 RadioButtonItem(passwordComplexity[1].second,{selectedItem==passwordComplexity[1].first},{selectedItem=passwordComplexity[1].first})
                 RadioButtonItem(passwordComplexity[2].second,{selectedItem==passwordComplexity[2].first},{selectedItem=passwordComplexity[2].first})
@@ -258,7 +249,7 @@ fun Password(){
                     }
                     if(!isWear){
                         Button(
-                            onClick = {myContext.startActivity(Intent(DevicePolicyManager.ACTION_SET_NEW_PASSWORD))},
+                            onClick = {myContext.startActivity(Intent(ACTION_SET_NEW_PASSWORD))},
                             modifier = Modifier.fillMaxWidth(0.95F)
                         ){
                             Text("要求设置新密码")
@@ -267,12 +258,100 @@ fun Password(){
                 }
                 if(isWear){
                     Button(
-                        onClick = {myContext.startActivity(Intent(DevicePolicyManager.ACTION_SET_NEW_PASSWORD))},
+                        onClick = {myContext.startActivity(Intent(ACTION_SET_NEW_PASSWORD))},
                         modifier = Modifier.fillMaxWidth()
                     ){
                         Text("要求设置新密码")
                     }
                 }
+            }
+        }
+        
+        Column(modifier = sections()){
+            var state by remember{mutableIntStateOf(-1)}
+            var shortcuts by remember{mutableStateOf(false)}
+            var biometrics by remember{mutableStateOf(false)}
+            var iris by remember{mutableStateOf(false)}
+            var face by remember{mutableStateOf(false)}
+            var remote by remember{mutableStateOf(false)}
+            var fingerprint by remember{mutableStateOf(false)}
+            var agents by remember{mutableStateOf(false)}
+            var unredacted by remember{mutableStateOf(false)}
+            var notification by remember{mutableStateOf(false)}
+            var camera by remember{mutableStateOf(false)}
+            var widgets by remember{mutableStateOf(false)}
+            val calculateCustomFeature = {
+                var calculate = myDpm.getKeyguardDisabledFeatures(myComponent)
+                if(calculate==0){state=0}
+                else{
+                    if(calculate-KEYGUARD_DISABLE_SHORTCUTS_ALL>=0 && VERSION.SDK_INT>=34){shortcuts=true;calculate-=KEYGUARD_DISABLE_SHORTCUTS_ALL}
+                    if(calculate-KEYGUARD_DISABLE_BIOMETRICS>=0&&VERSION.SDK_INT>=28){biometrics=true;calculate -= KEYGUARD_DISABLE_BIOMETRICS}
+                    if(calculate-KEYGUARD_DISABLE_IRIS>=0&&VERSION.SDK_INT>=28){iris=true;calculate -=KEYGUARD_DISABLE_IRIS }
+                    if(calculate-KEYGUARD_DISABLE_FACE>=0&&VERSION.SDK_INT>=28){face=true;calculate -= KEYGUARD_DISABLE_FACE}
+                    if(calculate-KEYGUARD_DISABLE_REMOTE_INPUT>=0&&VERSION.SDK_INT>=24){remote=true;calculate -= KEYGUARD_DISABLE_REMOTE_INPUT}
+                    if(calculate-KEYGUARD_DISABLE_FINGERPRINT>=0){fingerprint=true;calculate -= KEYGUARD_DISABLE_FINGERPRINT}
+                    if(calculate-KEYGUARD_DISABLE_TRUST_AGENTS>=0){agents=true;calculate -= KEYGUARD_DISABLE_TRUST_AGENTS}
+                    if(calculate-KEYGUARD_DISABLE_UNREDACTED_NOTIFICATIONS>=0){unredacted=true;calculate -= KEYGUARD_DISABLE_UNREDACTED_NOTIFICATIONS}
+                    if(calculate-KEYGUARD_DISABLE_SECURE_NOTIFICATIONS>=0){notification=true;calculate -= KEYGUARD_DISABLE_SECURE_NOTIFICATIONS}
+                    if(calculate-KEYGUARD_DISABLE_SECURE_CAMERA>=0){camera=true;calculate -= KEYGUARD_DISABLE_SECURE_CAMERA}
+                    if(calculate-KEYGUARD_DISABLE_WIDGETS_ALL>=0){widgets=true;calculate -= KEYGUARD_DISABLE_WIDGETS_ALL}
+                }
+            }
+            if(state==-1){
+                state = when(myDpm.getKeyguardDisabledFeatures(myComponent)){
+                    KEYGUARD_DISABLE_FEATURES_NONE->0
+                    KEYGUARD_DISABLE_FEATURES_ALL->1
+                    else->2
+                }
+                calculateCustomFeature()
+            }
+            Text(text = "锁屏功能", style = typography.titleLarge)
+            RadioButtonItem("允许全部",{state==0},{state=0})
+            RadioButtonItem("禁用全部",{state==1},{state=1})
+            RadioButtonItem("自定义",{state==2},{state=2})
+            AnimatedVisibility(state==2) {
+                Column {
+                    CheckBoxItem("禁用小工具(安卓5以下)",{widgets},{widgets=!widgets})
+                    CheckBoxItem("禁用相机",{camera},{camera=!camera})
+                    CheckBoxItem("禁用通知",{notification},{notification=!notification})
+                    CheckBoxItem("禁用未经编辑的通知",{unredacted},{unredacted=!unredacted})
+                    CheckBoxItem("禁用可信代理",{agents},{agents=!agents})
+                    CheckBoxItem("禁用指纹解锁",{fingerprint},{fingerprint=!fingerprint})
+                    if(VERSION.SDK_INT>=24){ CheckBoxItem("禁止在锁屏通知中输入(弃用)",{remote}, {remote=!remote}) }
+                    if(VERSION.SDK_INT>=28){
+                        CheckBoxItem("禁用人脸解锁",{face},{face=!face})
+                        CheckBoxItem("禁用虹膜解锁(?)",{iris},{iris=!iris})
+                        CheckBoxItem("禁用生物识别",{biometrics},{biometrics=!biometrics})
+                    }
+                    if(VERSION.SDK_INT>=34){ CheckBoxItem("禁用锁屏快捷方式",{shortcuts},{shortcuts=!shortcuts}) }
+                }
+            }
+            Button(
+                onClick = {
+                    var result = 0
+                    if(state==0){ result = 0 }
+                    else if(state==1){ result = KEYGUARD_DISABLE_FEATURES_ALL }
+                    else{
+                        if(shortcuts&&VERSION.SDK_INT>=34){result+=KEYGUARD_DISABLE_SHORTCUTS_ALL}
+                        if(biometrics&&VERSION.SDK_INT>=28){result+=KEYGUARD_DISABLE_BIOMETRICS}
+                        if(iris&&VERSION.SDK_INT>=28){result+=KEYGUARD_DISABLE_IRIS}
+                        if(face&&VERSION.SDK_INT>=28){result+=KEYGUARD_DISABLE_FACE}
+                        if(remote&&VERSION.SDK_INT>=24){result+=KEYGUARD_DISABLE_REMOTE_INPUT}
+                        if(fingerprint){result+=KEYGUARD_DISABLE_FINGERPRINT}
+                        if(agents){result+=KEYGUARD_DISABLE_TRUST_AGENTS}
+                        if(unredacted){result+=KEYGUARD_DISABLE_UNREDACTED_NOTIFICATIONS}
+                        if(notification){result+=KEYGUARD_DISABLE_SECURE_NOTIFICATIONS}
+                        if(camera){result+=KEYGUARD_DISABLE_SECURE_CAMERA}
+                        if(widgets){result+=KEYGUARD_DISABLE_WIDGETS_ALL}
+                    }
+                    myDpm.setKeyguardDisabledFeatures(myComponent,result)
+                    Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                    calculateCustomFeature()
+                },
+                enabled = myDpm.isAdminActive(myComponent),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "应用")
             }
         }
 
@@ -281,14 +360,14 @@ fun Password(){
         ) {
             var expanded by remember{ mutableStateOf(VERSION.SDK_INT < 31) }
             val passwordQuality = mapOf(
-                DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED to "未指定",
-                DevicePolicyManager.PASSWORD_QUALITY_SOMETHING to "需要密码或图案，不管复杂度",
-                DevicePolicyManager.PASSWORD_QUALITY_ALPHABETIC to "至少1个字母",
-                DevicePolicyManager.PASSWORD_QUALITY_NUMERIC to "至少1个数字",
-                DevicePolicyManager.PASSWORD_QUALITY_ALPHANUMERIC to "数字字母各至少一个",
-                DevicePolicyManager.PASSWORD_QUALITY_BIOMETRIC_WEAK to "生物识别（弱）",
-                DevicePolicyManager.PASSWORD_QUALITY_NUMERIC_COMPLEX to "复杂数字（无连续性）",
-                DevicePolicyManager.PASSWORD_QUALITY_COMPLEX to "自定义（暂不支持）",
+                PASSWORD_QUALITY_UNSPECIFIED to "未指定",
+                PASSWORD_QUALITY_SOMETHING to "需要密码或图案，不管复杂度",
+                PASSWORD_QUALITY_ALPHABETIC to "至少1个字母",
+                PASSWORD_QUALITY_NUMERIC to "至少1个数字",
+                PASSWORD_QUALITY_ALPHANUMERIC to "数字字母各至少一个",
+                PASSWORD_QUALITY_BIOMETRIC_WEAK to "生物识别（弱）",
+                PASSWORD_QUALITY_NUMERIC_COMPLEX to "复杂数字（无连续性）",
+                PASSWORD_QUALITY_COMPLEX to "自定义（暂不支持）",
             ).toList()
             var selectedItem by remember{ mutableIntStateOf(passwordQuality[0].first) }
             if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){
@@ -296,7 +375,9 @@ fun Password(){
             }
             Text(text = "密码质量要求", style = typography.titleLarge,color = titleColor)
             if(expanded){
-            Text(text = "不是实际密码质量", style = bodyTextStyle)}
+                Text(text = "不是实际密码质量", style = bodyTextStyle)
+                Text(text = "设置密码复杂度将会取代密码质量", style = bodyTextStyle)
+            }
             if(VERSION.SDK_INT>=31){
                 Text(text = "已弃用，请使用上面的”密码复杂度要求“", color = MaterialTheme.colorScheme.error, style = bodyTextStyle)
             }
@@ -321,7 +402,7 @@ fun Password(){
                 Text("应用")
             }
             if(VERSION.SDK_INT<31){
-            Button(onClick = {myContext.startActivity(Intent(DevicePolicyManager.ACTION_SET_NEW_PASSWORD))}){
+            Button(onClick = {myContext.startActivity(Intent(ACTION_SET_NEW_PASSWORD))}){
                 Text("要求设置新密码")
             }}
             }else{
@@ -403,9 +484,9 @@ fun PasswordItem(
 }
 
 fun activateToken(myContext: Context){
-    val ACTIVATE_TOKEN_PROMPT = "在这里激活密码重置令牌"
+    val desc = "在这里激活密码重置令牌"
     val keyguardManager = myContext.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
-    val confirmIntent = keyguardManager.createConfirmDeviceCredentialIntent(null, ACTIVATE_TOKEN_PROMPT)
+    val confirmIntent = keyguardManager.createConfirmDeviceCredentialIntent(null, desc)
     if (confirmIntent != null) {
         startActivity(myContext,confirmIntent, null)
     } else {

@@ -86,7 +86,7 @@
     <string name="add_managed_profile">添加工作资料</string>
     <string name="remove_managed_profile">移除工作资料</string>
 
-    <string name="password">密码</string>
+    <string name="password">密码与锁屏</string>
     <string name="reset_pwd_desc">留空可以清除密码，纯数字将使用PIN码</string>
     <string name="max_pwd_fail">最大密码错误次数</string>
     <string name="max_pwd_fail_desc">达到该限制会恢复出厂设置</string>
