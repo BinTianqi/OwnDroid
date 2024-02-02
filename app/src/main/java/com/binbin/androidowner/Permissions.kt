@@ -388,10 +388,7 @@ fun DeviceOwnerInfo(
             onValueChange = { inputContent=it },
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
         )
-        Row(
-            modifier = Modifier.padding(vertical = if(isWear){2.dp}else{6.dp}),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+        Row(modifier = Modifier.fillMaxWidth().padding(vertical = if(isWear){2.dp}else{6.dp}), horizontalArrangement = Arrangement.SpaceBetween) {
             Button(
                 onClick = {
                     output(inputContent.toString())
@@ -403,7 +400,6 @@ fun DeviceOwnerInfo(
             ) {
                 Text(text = "应用")
             }
-            Spacer(Modifier.padding(horizontal = 4.dp))
             Button(
                 onClick = {
                     output(null)
@@ -416,7 +412,6 @@ fun DeviceOwnerInfo(
                 Text(text = "重置")
             }
         }
-
     }
 }
 

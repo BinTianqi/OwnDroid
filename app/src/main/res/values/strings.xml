@@ -108,4 +108,6 @@
     <string name="disable_bt_contact_share">禁止蓝牙分享联系人</string>
     <string name="user_manage">用户管理</string>
     <string name="setting">设置</string>
+    <string name="always_on_vpn">VPN常开</string>
+    <string name="experimental_feature">实验性功能</string>
 </resources>
