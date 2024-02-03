@@ -4,28 +4,20 @@ import android.app.admin.DevicePolicyManager
 import android.app.admin.SystemUpdateInfo
 import android.app.admin.SystemUpdatePolicy
 import android.content.ComponentName
-import android.content.Context
 import android.os.Build.VERSION
 import android.widget.Toast
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -33,7 +25,10 @@ import androidx.compose.ui.unit.dp
 import java.util.Date
 
 @Composable
-fun SysUpdatePolicy(myDpm:DevicePolicyManager,myComponent:ComponentName,myContext: Context){
+fun SysUpdatePolicy(){
+    val myContext = LocalContext.current
+    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val focusMgr = LocalFocusManager.current
     Column {
         if(VERSION.SDK_INT>=26){
@@ -56,7 +51,7 @@ fun SysUpdatePolicy(myDpm:DevicePolicyManager,myComponent:ComponentName,myContex
         if(VERSION.SDK_INT>=23){
         Column(modifier = sections()) {
             var selectedPolicy by remember{ mutableStateOf(myDpm.systemUpdatePolicy?.policyType) }
-            Text(text = "系统更新策略", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
+            Text(text = "系统更新策略", style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
             RadioButtonItem("准备好后立即更新",{selectedPolicy==SystemUpdatePolicy.TYPE_INSTALL_AUTOMATIC},{selectedPolicy=SystemUpdatePolicy.TYPE_INSTALL_AUTOMATIC})
             RadioButtonItem("在某段时间里更新",{selectedPolicy==SystemUpdatePolicy.TYPE_INSTALL_WINDOWED},{selectedPolicy=SystemUpdatePolicy.TYPE_INSTALL_WINDOWED})
             RadioButtonItem("延迟30天",{selectedPolicy==SystemUpdatePolicy.TYPE_POSTPONE},{selectedPolicy=SystemUpdatePolicy.TYPE_POSTPONE})

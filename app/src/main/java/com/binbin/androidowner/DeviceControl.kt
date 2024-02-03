@@ -257,7 +257,7 @@ fun DeviceControl(){
         }
         
         if(isDeviceOwner(myDpm)){
-            SysUpdatePolicy(myDpm,myComponent,myContext)
+            SysUpdatePolicy()
         }
         Column(modifier = sections(if(isSystemInDarkTheme()){
             colorScheme.errorContainer}else{

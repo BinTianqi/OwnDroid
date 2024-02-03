@@ -7,19 +7,9 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Home
@@ -43,7 +33,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.ui.theme.AndroidOwnerTheme
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 
 @ExperimentalMaterial3Api
@@ -52,13 +41,7 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         setContent {
-            val sysUiCtrl = rememberSystemUiController()
-            val useDarkIcon = !isSystemInDarkTheme()
             AndroidOwnerTheme {
-                SideEffect {
-                    sysUiCtrl.setNavigationBarColor(Color.Transparent,useDarkIcon)
-                    sysUiCtrl.setStatusBarColor(Color.Transparent,useDarkIcon)
-                }
                 MyScaffold()
             }
         }
