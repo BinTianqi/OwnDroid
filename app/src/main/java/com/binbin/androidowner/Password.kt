@@ -104,6 +104,7 @@ fun Password(){
                     ) {
                         Text("清除")
                     }
+                    if(isWear){Spacer(Modifier.padding(horizontal = 2.dp))}
                     Button(
                         onClick = {
                             if(myDpm.setResetPasswordToken(myComponent, myByteArray)){ Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show()
@@ -114,6 +115,7 @@ fun Password(){
                     ) {
                         Text("设置")
                     }
+                    if(isWear){Spacer(Modifier.padding(horizontal = 2.dp))}
                     Button(
                         onClick = {
                             if(!myDpm.isResetPasswordTokenActive(myComponent)){
@@ -336,7 +338,7 @@ fun Password(){
                     Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                     calculateCustomFeature()
                 },
-                enabled = myDpm.isAdminActive(myComponent),
+                enabled = isProfileOwner(myDpm)||isDeviceOwner(myDpm),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = "应用")

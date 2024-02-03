@@ -342,7 +342,7 @@ private fun UserSessionMessage(
                     Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                 },
                 enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner),
-                modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.65F)}
+                modifier = if(isWear){Modifier.fillMaxWidth(0.48F)}else{Modifier.fillMaxWidth(0.65F)}
             ) {
                 Text("应用")
             }
@@ -354,7 +354,7 @@ private fun UserSessionMessage(
                     Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                 },
                 enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner),
-                modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.95F)}
+                modifier = Modifier.fillMaxWidth(0.92F)
             ) {
                 Text("默认")
             }

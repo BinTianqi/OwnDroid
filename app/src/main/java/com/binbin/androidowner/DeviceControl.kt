@@ -1,9 +1,7 @@
 package com.binbin.androidowner
 
 import android.app.admin.DevicePolicyManager
-import android.app.admin.DevicePolicyManager.MTE_DISABLED
-import android.app.admin.DevicePolicyManager.MTE_ENABLED
-import android.app.admin.DevicePolicyManager.MTE_NOT_CONTROLLED_BY_POLICY
+import android.app.admin.DevicePolicyManager.*
 import android.content.ComponentName
 import android.content.Context
 import android.os.Build.VERSION
@@ -149,6 +147,29 @@ fun DeviceControl(){
                     Text("应用")
                 }
             }
+        }
+        
+        if(VERSION.SDK_INT>=33){
+            Column(modifier = sections()){
+                var selectedWifiSecLevel by remember{mutableIntStateOf(myDpm.minimumRequiredWifiSecurityLevel)}
+                Text(text = "WiFi安全等级", style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
+                RadioButtonItem("开放", {selectedWifiSecLevel==WIFI_SECURITY_OPEN}, {selectedWifiSecLevel= WIFI_SECURITY_OPEN})
+                RadioButtonItem("WEP, WPA(2)-PSK", {selectedWifiSecLevel==WIFI_SECURITY_PERSONAL}, {selectedWifiSecLevel= WIFI_SECURITY_PERSONAL})
+                RadioButtonItem("WPA-EAP", {selectedWifiSecLevel==WIFI_SECURITY_ENTERPRISE_EAP}, {selectedWifiSecLevel= WIFI_SECURITY_ENTERPRISE_EAP})
+                RadioButtonItem("WPA3-192bit", {selectedWifiSecLevel==WIFI_SECURITY_ENTERPRISE_192}, {selectedWifiSecLevel= WIFI_SECURITY_ENTERPRISE_192})
+                Button(
+                    enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
+                    onClick = {
+                        myDpm.minimumRequiredWifiSecurityLevel=selectedWifiSecLevel
+                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ){
+                    Text("应用")
+                }
+            }
+        }else{
+            Text(text = "Wifi安全等级需API33", modifier = Modifier.padding(vertical = 3.dp))
         }
         
         if(isDeviceOwner(myDpm)){

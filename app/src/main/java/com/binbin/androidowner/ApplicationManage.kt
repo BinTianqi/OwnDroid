@@ -112,7 +112,7 @@ fun ApplicationManage(){
                     myDpm.setPermittedInputMethods(myComponent, imeList)
                     refreshList()
                 },
-                modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.48F)},
+                modifier = Modifier.fillMaxWidth(0.48F),
                 enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
             ) {
                 Text("加入列表")
@@ -125,7 +125,7 @@ fun ApplicationManage(){
                     myDpm.setPermittedInputMethods(myComponent,imeList)
                     refreshList()
                 },
-                modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.92F)},
+                modifier = Modifier.fillMaxWidth(0.92F),
                 enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
             ) {
                 Text("从列表中移除")

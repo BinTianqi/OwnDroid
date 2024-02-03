@@ -7,12 +7,8 @@ import android.content.Intent
 import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -20,15 +16,11 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
@@ -52,7 +44,7 @@ fun DpmPermissions(navCtrl:NavHostController){
     val focusManager = LocalFocusManager.current
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val isWear = sharedPref.getBoolean("isWear",false)
-    val titleColor = MaterialTheme.colorScheme.onPrimaryContainer
+    val titleColor = colorScheme.onPrimaryContainer
     val bodyTextStyle = if(isWear){typography.bodyMedium}else{typography.bodyLarge}
     Column(
         modifier = Modifier.verticalScroll(rememberScrollState()),
@@ -94,12 +86,12 @@ fun DpmPermissions(navCtrl:NavHostController){
         }
         if(!isda){
             Column(
-                modifier = sections(MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.8F)),
+                modifier = sections(colorScheme.tertiaryContainer.copy(alpha = 0.8F)),
                 horizontalAlignment = Alignment.Start
             ) {
                 SelectionContainer {
                     Text("adb shell dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
-                        color = MaterialTheme.colorScheme.onTertiaryContainer, style = bodyTextStyle)
+                        color = colorScheme.onTertiaryContainer, style = bodyTextStyle)
                 }
                 Text(text = "或者进入设置（原生安卓） -> 安全 -> 更多安全设置 -> 设备管理应用 -> Android Owner", style = bodyTextStyle)
             }
@@ -130,13 +122,13 @@ fun DpmPermissions(navCtrl:NavHostController){
         }
         if(!isProfileOwner(myDpm)){
             Column(
-                modifier = sections(MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.8F)),
+                modifier = sections(colorScheme.tertiaryContainer.copy(alpha = 0.8F)),
                 horizontalAlignment = Alignment.Start
             ) {
                 if(!isDeviceOwner(myDpm)){
                     SelectionContainer {
                         Text("adb shell dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
-                            color = MaterialTheme.colorScheme.onTertiaryContainer, style = bodyTextStyle)
+                            color = colorScheme.onTertiaryContainer, style = bodyTextStyle)
                     }
                     Text(text = "Device owner和Profile owner不能同时存在，强烈建议激活Device owner", style = bodyTextStyle)
                 }
@@ -171,12 +163,12 @@ fun DpmPermissions(navCtrl:NavHostController){
         }
         if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)){
             Column(
-                modifier = sections(MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.8F)),
+                modifier = sections(colorScheme.tertiaryContainer.copy(alpha = 0.8F)),
                 horizontalAlignment = Alignment.Start
             ) {
                 SelectionContainer {
                     Text(text = "adb shell dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
-                    color = MaterialTheme.colorScheme.onTertiaryContainer, style = bodyTextStyle)
+                    color = colorScheme.onTertiaryContainer, style = bodyTextStyle)
                 }
                 if(!isda){
                     Text(text = "使用此命令也会激活Device Admin", style = bodyTextStyle)
@@ -186,8 +178,8 @@ fun DpmPermissions(navCtrl:NavHostController){
         if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)||myDpm.isAdminActive(myComponent)){
             Text(
                 text = "注意！在这里撤销权限不会清除配置。比如：被停用的应用会保持停用状态",
-                color = MaterialTheme.colorScheme.onErrorContainer,
-                modifier = sections(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.8F)),
+                color = colorScheme.onErrorContainer,
+                modifier = sections(colorScheme.errorContainer.copy(alpha = 0.8F)),
                 style = bodyTextStyle
             )
         }
@@ -206,8 +198,15 @@ fun DpmPermissions(navCtrl:NavHostController){
                     Text("企业资产 : $financed",style=bodyTextStyle)
                 }
                 if(VERSION.SDK_INT>=33){
-                    Text("最小WiFi安全等级：${myDpm.minimumRequiredWifiSecurityLevel}",style=bodyTextStyle)
-                    Text("设备策略管理器角色：${myDpm.devicePolicyManagementRoleHolderPackage}",style=bodyTextStyle)
+                    val dpmRole = myDpm.devicePolicyManagementRoleHolderPackage
+                    Text("设备策略管理器角色：${if(dpmRole==null){"null"}else{""}}",style=bodyTextStyle)
+                    if(dpmRole!=null){
+                        Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())){
+                            SelectionContainer {
+                                Text(dpmRole)
+                            }
+                        }
+                    }
                 }
                 val encryptionStatus = mapOf(
                     DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE to "未使用",
@@ -218,8 +217,21 @@ fun DpmPermissions(navCtrl:NavHostController){
                     DevicePolicyManager.ENCRYPTION_STATUS_ACTIVATING to "未知"
                 )
                 Text("加密状态：${encryptionStatus[myDpm.storageEncryptionStatus]}",style=bodyTextStyle)
-                if(isDeviceOwner(myDpm)&&VERSION.SDK_INT>=34){
-                    Text("MTE策略：${myDpm.mtePolicy}",style=bodyTextStyle)
+                val adminList = myDpm.activeAdmins
+                if(adminList!=null){
+                    var adminListText = ""
+                    Text(text = "激活的Device admin: ${adminList.size}", style = bodyTextStyle)
+                    var count = adminList.size
+                    for(each in adminList){
+                        count -= 1
+                        adminListText += "$each"
+                        if(count>0){adminListText += "\n"}
+                    }
+                    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp).horizontalScroll(rememberScrollState())){
+                        SelectionContainer {
+                            Text(text = adminListText, style = bodyTextStyle, color = titleColor)
+                        }
+                    }
                 }
             }
         }
@@ -242,21 +254,24 @@ fun DpmPermissions(navCtrl:NavHostController){
             Column(modifier = sections()) {
                 Text(text = "不受控制的账号类型", style = typography.titleLarge,color = titleColor)
                 Text("作用未知",style=bodyTextStyle)
-                var noManageAccount = myDpm.accountTypesWithManagementDisabled?.toMutableList()
+                var noManageAccount = myDpm.accountTypesWithManagementDisabled
                 var accountlist by remember{ mutableStateOf("") }
                 val refreshList = {
                     accountlist = ""
                     if (noManageAccount != null) {
+                        var count = noManageAccount!!.size
                         for(eachAccount in noManageAccount!!){
-                            accountlist+="$eachAccount \n"
+                            count -= 1
+                            accountlist += eachAccount
+                            if(count>0){accountlist += "\n"}
                         }
                     }
                 }
                 refreshList()
                 if(accountlist!=""){
-                    Text(accountlist)
+                    Text(text = accountlist, color = titleColor)
                 }else{
-                    Text("列表为空 \n",style=bodyTextStyle)
+                    Text("无",style=bodyTextStyle)
                 }
                 var inputText by remember{ mutableStateOf("") }
                 TextField(
@@ -270,14 +285,14 @@ fun DpmPermissions(navCtrl:NavHostController){
                 if(isWear){
                 Button(onClick={focusManager.clearFocus()
                     myDpm.setAccountManagementDisabled(myComponent,inputText,true)
-                    noManageAccount=myDpm.accountTypesWithManagementDisabled?.toMutableList()
+                    noManageAccount=myDpm.accountTypesWithManagementDisabled
                     refreshList()
                 },modifier = Modifier.fillMaxWidth()){
                     Text("添加至列表")
                 }
                 Button(onClick={focusManager.clearFocus()
                     myDpm.setAccountManagementDisabled(myComponent,inputText,false)
-                    noManageAccount=myDpm.accountTypesWithManagementDisabled?.toMutableList()
+                    noManageAccount=myDpm.accountTypesWithManagementDisabled
                     refreshList()
                 },modifier = Modifier.fillMaxWidth()){
                     Text("从列表中移除")
@@ -285,14 +300,14 @@ fun DpmPermissions(navCtrl:NavHostController){
                     Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
                         Button(onClick={focusManager.clearFocus()
                             myDpm.setAccountManagementDisabled(myComponent,inputText,true)
-                            noManageAccount=myDpm.accountTypesWithManagementDisabled?.toMutableList()
+                            noManageAccount=myDpm.accountTypesWithManagementDisabled
                             refreshList()
                         },modifier = Modifier.fillMaxWidth(0.48f)){
                             Text("添加至列表")
                         }
                         Button(onClick={focusManager.clearFocus()
                             myDpm.setAccountManagementDisabled(myComponent,inputText,false)
-                            noManageAccount=myDpm.accountTypesWithManagementDisabled?.toMutableList()
+                            noManageAccount=myDpm.accountTypesWithManagementDisabled
                             refreshList()
                         },modifier = Modifier.fillMaxWidth(0.92F)){
                             Text("从列表中移除")
@@ -321,7 +336,7 @@ fun DpmPermissions(navCtrl:NavHostController){
                             ) { saveState = true }
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(contentColor = MaterialTheme.colorScheme.onError, containerColor = MaterialTheme.colorScheme.error),
+                    colors = ButtonDefaults.buttonColors(contentColor = colorScheme.onError, containerColor = colorScheme.error),
                     enabled = myDpm.isAdminActive(myComponent)
                 ) {
                     Text("撤销Device admin")
@@ -336,7 +351,7 @@ fun DpmPermissions(navCtrl:NavHostController){
                                 ) { saveState = true }
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(contentColor = MaterialTheme.colorScheme.onError, containerColor = MaterialTheme.colorScheme.error),
+                        colors = ButtonDefaults.buttonColors(contentColor = colorScheme.onError, containerColor = colorScheme.error),
                         enabled = isProfileOwner(myDpm)
                     ) {
                         Text("撤销Profile owner")
@@ -351,7 +366,7 @@ fun DpmPermissions(navCtrl:NavHostController){
                             ) { saveState = true }
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(contentColor = MaterialTheme.colorScheme.onError, containerColor = MaterialTheme.colorScheme.error),
+                    colors = ButtonDefaults.buttonColors(contentColor = colorScheme.onError, containerColor = colorScheme.error),
                     enabled = isDeviceOwner(myDpm)
                     ) {
                     Text("撤销Device owner")
@@ -375,7 +390,7 @@ fun DeviceOwnerInfo(
     Column(modifier = sections()) {
         val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
         val isWear = sharedPref.getBoolean("isWear",false)
-        Text(text = stringResource(name), style = typography.titleLarge, softWrap = false, color = MaterialTheme.colorScheme.onPrimaryContainer)
+        Text(text = stringResource(name), style = typography.titleLarge, softWrap = false, color = colorScheme.onPrimaryContainer)
         if(desc!=R.string.place_holder){
             Text(
                 text = stringResource(desc),modifier = Modifier.padding(top = 6.dp),
@@ -396,7 +411,7 @@ fun DeviceOwnerInfo(
                     fm.clearFocus()
                     Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                 },
-                modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.6F)}
+                modifier = if(isWear){Modifier.fillMaxWidth(0.48F)}else{Modifier.fillMaxWidth(0.6F)}
             ) {
                 Text(text = "应用")
             }
@@ -407,7 +422,7 @@ fun DeviceOwnerInfo(
                     fm.clearFocus()
                     Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                 },
-                modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.95F)}
+                modifier = Modifier.fillMaxWidth(0.95F)
             ) {
                 Text(text = "重置")
             }
