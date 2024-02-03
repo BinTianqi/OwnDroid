@@ -110,4 +110,6 @@
     <string name="setting">设置</string>
     <string name="always_on_vpn">VPN常开</string>
     <string name="experimental_feature">实验性功能</string>
+    <string name="network_logging">网络日志记录</string>
+    <string name="no_effect">没啥用</string>
 </resources>

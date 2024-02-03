@@ -10,6 +10,8 @@ import androidx.activity.ComponentActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -18,11 +20,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import java.lang.IllegalArgumentException
 
 @Composable
 fun DeviceControl(){
@@ -32,32 +37,56 @@ fun DeviceControl(){
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val isWear = sharedPref.getBoolean("isWear",false)
     val bodyTextStyle = if(isWear){typography.bodyMedium}else{typography.bodyLarge}
+    val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding()) {
         if(isDeviceOwner(myDpm)){
-            DeviceCtrlItem(R.string.disable_cam,R.string.place_holder, R.drawable.photo_camera_fill0,{myDpm.getCameraDisabled(null)},{b -> myDpm.setCameraDisabled(myComponent,b)})
+            DeviceCtrlItem(R.string.disable_cam,R.string.place_holder, R.drawable.photo_camera_fill0,
+                {myDpm.getCameraDisabled(null)},{b -> myDpm.setCameraDisabled(myComponent,b)}
+            )
         }
         if(isDeviceOwner(myDpm)){
-            DeviceCtrlItem(R.string.disable_scrcap,R.string.aosp_scrrec_also_work,R.drawable.screenshot_fill0,{myDpm.getScreenCaptureDisabled(null)},{b -> myDpm.setScreenCaptureDisabled(myComponent,b) })
+            DeviceCtrlItem(R.string.disable_scrcap,R.string.aosp_scrrec_also_work,R.drawable.screenshot_fill0,
+                {myDpm.getScreenCaptureDisabled(null)},{b -> myDpm.setScreenCaptureDisabled(myComponent,b) }
+            )
         }
         if(VERSION.SDK_INT>=34&&(isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser))){
-            DeviceCtrlItem(R.string.hide_status_bar,R.string.may_hide_notifi_icon_only,R.drawable.notifications_fill0,{myDpm.isStatusBarDisabled},{b -> myDpm.setStatusBarDisabled(myComponent,b) })
+            DeviceCtrlItem(R.string.hide_status_bar,R.string.may_hide_notifi_icon_only,R.drawable.notifications_fill0,
+                {myDpm.isStatusBarDisabled},{b -> myDpm.setStatusBarDisabled(myComponent,b) }
+            )
         }
         if(VERSION.SDK_INT>=30&&isDeviceOwner(myDpm)){
-            DeviceCtrlItem(R.string.auto_time,R.string.place_holder,R.drawable.schedule_fill0,{myDpm.getAutoTimeEnabled(myComponent)},{b -> myDpm.setAutoTimeEnabled(myComponent,b) })
-            DeviceCtrlItem(R.string.auto_timezone,R.string.place_holder,R.drawable.globe_fill0,{myDpm.getAutoTimeZoneEnabled(myComponent)},{b -> myDpm.setAutoTimeZoneEnabled(myComponent,b) })
+            DeviceCtrlItem(R.string.auto_time,R.string.place_holder,R.drawable.schedule_fill0,
+                {myDpm.getAutoTimeEnabled(myComponent)},{b -> myDpm.setAutoTimeEnabled(myComponent,b) }
+            )
+            DeviceCtrlItem(R.string.auto_timezone,R.string.place_holder,R.drawable.globe_fill0,
+                {myDpm.getAutoTimeZoneEnabled(myComponent)},{b -> myDpm.setAutoTimeZoneEnabled(myComponent,b) }
+            )
         }
         if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
-            DeviceCtrlItem(R.string.master_mute,R.string.place_holder,R.drawable.volume_up_fill0,{myDpm.isMasterVolumeMuted(myComponent)},{b -> myDpm.setMasterVolumeMuted(myComponent,b) })
+            DeviceCtrlItem(R.string.master_mute,R.string.place_holder,R.drawable.volume_up_fill0,
+                {myDpm.isMasterVolumeMuted(myComponent)},{b -> myDpm.setMasterVolumeMuted(myComponent,b) }
+            )
         }
         if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)|| isProfileOwner(myDpm))){
-            DeviceCtrlItem(R.string.backup_service,R.string.place_holder,R.drawable.backup_fill0,{myDpm.isBackupServiceEnabled(myComponent)},{b -> myDpm.setBackupServiceEnabled(myComponent,b) })
+            DeviceCtrlItem(R.string.backup_service,R.string.place_holder,R.drawable.backup_fill0,
+                {myDpm.isBackupServiceEnabled(myComponent)},{b -> myDpm.setBackupServiceEnabled(myComponent,b) }
+            )
         }
         if(VERSION.SDK_INT>=23&&(isDeviceOwner(myDpm)|| isProfileOwner(myDpm))){
-            DeviceCtrlItem(R.string.disable_bt_contact_share,R.string.place_holder,R.drawable.account_circle_fill0,{myDpm.getBluetoothContactSharingDisabled(myComponent)},{b -> myDpm.setBluetoothContactSharingDisabled(myComponent,b)})
+            DeviceCtrlItem(R.string.disable_bt_contact_share,R.string.place_holder,R.drawable.account_circle_fill0,
+                {myDpm.getBluetoothContactSharingDisabled(myComponent)},{b -> myDpm.setBluetoothContactSharingDisabled(myComponent,b)}
+            )
+        }
+        if(VERSION.SDK_INT>=26){
+            DeviceCtrlItem(R.string.network_logging,R.string.no_effect,R.drawable.wifi_fill0,
+                {myDpm.isNetworkLoggingEnabled(myComponent)},{b -> myDpm.setNetworkLoggingEnabled(myComponent,b) }
+            )
         }
         if(VERSION.SDK_INT>=31&&isDeviceOwner(myDpm)){
             if(myDpm.canUsbDataSignalingBeDisabled()){
-                DeviceCtrlItem(R.string.usb_signal,R.string.place_holder,R.drawable.usb_fill0,{myDpm.isUsbDataSignalingEnabled},{b -> myDpm.isUsbDataSignalingEnabled = b })
+                DeviceCtrlItem(R.string.usb_signal,R.string.place_holder,R.drawable.usb_fill0,
+                    {myDpm.isUsbDataSignalingEnabled},{b -> myDpm.isUsbDataSignalingEnabled = b }
+                )
             }else{
                 Text(text = "你的设备不支持关闭USB信号",modifier = Modifier.fillMaxWidth(), style = bodyTextStyle, textAlign = TextAlign.Center)
             }
@@ -66,7 +95,7 @@ fun DeviceControl(){
             Text(text = "重启和WiFi Mac需要API24",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle)
         }
         if(VERSION.SDK_INT<26&&isDeviceOwner(myDpm)){
-            Text(text = "备份服务需要API26",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle)
+            Text(text = "备份服务和网络日志需要API26",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle)
         }
         if(VERSION.SDK_INT<30&&isDeviceOwner(myDpm)){
             Text(text = "自动设置时间和自动设置时区需要API30",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle)
@@ -152,7 +181,7 @@ fun DeviceControl(){
         if(VERSION.SDK_INT>=33){
             Column(modifier = sections()){
                 var selectedWifiSecLevel by remember{mutableIntStateOf(myDpm.minimumRequiredWifiSecurityLevel)}
-                Text(text = "WiFi安全等级", style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
+                Text(text = "要求最小WiFi安全等级", style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
                 RadioButtonItem("开放", {selectedWifiSecLevel==WIFI_SECURITY_OPEN}, {selectedWifiSecLevel= WIFI_SECURITY_OPEN})
                 RadioButtonItem("WEP, WPA(2)-PSK", {selectedWifiSecLevel==WIFI_SECURITY_PERSONAL}, {selectedWifiSecLevel= WIFI_SECURITY_PERSONAL})
                 RadioButtonItem("WPA-EAP", {selectedWifiSecLevel==WIFI_SECURITY_ENTERPRISE_EAP}, {selectedWifiSecLevel= WIFI_SECURITY_ENTERPRISE_EAP})
@@ -170,6 +199,61 @@ fun DeviceControl(){
             }
         }else{
             Text(text = "Wifi安全等级需API33", modifier = Modifier.padding(vertical = 3.dp))
+        }
+        
+        if(VERSION.SDK_INT>=29&&isDeviceOwner(myDpm)){
+            Column(modifier = sections()){
+                Text(text = "私人DNS", style = typography.titleLarge)
+                val dnsStatus = mapOf(
+                    PRIVATE_DNS_MODE_UNKNOWN to "未知",
+                    PRIVATE_DNS_MODE_OFF to "关闭",
+                    PRIVATE_DNS_MODE_OPPORTUNISTIC to "自动",
+                    PRIVATE_DNS_MODE_PROVIDER_HOSTNAME to "指定主机名"
+                )
+                val operationResult = mapOf(
+                    PRIVATE_DNS_SET_NO_ERROR to "成功",
+                    PRIVATE_DNS_SET_ERROR_HOST_NOT_SERVING to "主机不支持DNS over TLS",
+                    PRIVATE_DNS_SET_ERROR_FAILURE_SETTING to "失败"
+                )
+                var status by remember{mutableStateOf(dnsStatus[myDpm.getGlobalPrivateDnsMode(myComponent)])}
+                Text(text = "状态：$status")
+                Button(
+                    onClick = {
+                        val result = myDpm.setGlobalPrivateDnsModeOpportunistic(myComponent)
+                        Toast.makeText(myContext, operationResult[result], Toast.LENGTH_SHORT).show()
+                        status = dnsStatus[myDpm.getGlobalPrivateDnsMode(myComponent)]
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("设为自动")
+                }
+                Spacer(Modifier.padding(vertical = 3.dp))
+                var inputHost by remember{mutableStateOf(myDpm.getGlobalPrivateDnsHost(myComponent) ?: "")}
+                TextField(
+                    value = inputHost,
+                    onValueChange = {inputHost=it},
+                    label = {Text("DNS主机名")},
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Button(
+                    onClick = {
+                        val result: Int
+                        try{
+                            result = myDpm.setGlobalPrivateDnsModeSpecifiedHost(myComponent,inputHost)
+                            Toast.makeText(myContext, operationResult[result], Toast.LENGTH_SHORT).show()
+                        }catch(e:IllegalArgumentException){
+                            Toast.makeText(myContext, "无效主机名", Toast.LENGTH_SHORT).show()
+                        }finally {
+                            status = dnsStatus[myDpm.getGlobalPrivateDnsMode(myComponent)]
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("设置DNS主机")
+                }
+            }
         }
         
         if(isDeviceOwner(myDpm)){
@@ -249,7 +333,7 @@ private fun DeviceCtrlItem(
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = if(isWear){Modifier.fillMaxWidth(0.65F)}else{Modifier.fillMaxWidth(0.75F)}
+            modifier = if(isWear){Modifier.fillMaxWidth(0.65F)}else{Modifier.fillMaxWidth(0.8F)}
         ){
             if(!isWear){
             Icon(
