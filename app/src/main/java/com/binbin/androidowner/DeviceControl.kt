@@ -1,39 +1,28 @@
 package com.binbin.androidowner
 
 import android.app.admin.DevicePolicyManager
+import android.app.admin.DevicePolicyManager.MTE_DISABLED
+import android.app.admin.DevicePolicyManager.MTE_ENABLED
+import android.app.admin.DevicePolicyManager.MTE_NOT_CONTROLLED_BY_POLICY
 import android.content.ComponentName
 import android.content.Context
 import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
@@ -90,7 +79,7 @@ fun DeviceControl(){
         }
         if(VERSION.SDK_INT>=28){
             Column(modifier = sections()) {
-                Text(text = "锁屏方式", style = typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text(text = "锁屏方式", style = typography.titleLarge,color = colorScheme.onPrimaryContainer)
                 Text(text = "禁用需要无密码",style=bodyTextStyle)
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -136,25 +125,57 @@ fun DeviceControl(){
         ) {
             Text(text = "清除用户Ca证书")
         }}
+        
+        if(VERSION.SDK_INT>=34&&isDeviceOwner(myDpm)){
+            Column(modifier = sections()){
+                Text(text = "MTE策略", style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
+                Text("MTE：内存标记拓展，安卓14和ARMv9的高端功能")
+                var selectedMtePolicy by remember{mutableIntStateOf(myDpm.mtePolicy)}
+                RadioButtonItem("由用户决定", {selectedMtePolicy==MTE_NOT_CONTROLLED_BY_POLICY}, {selectedMtePolicy= MTE_NOT_CONTROLLED_BY_POLICY})
+                RadioButtonItem("开启", {selectedMtePolicy==MTE_ENABLED}, {selectedMtePolicy=MTE_ENABLED})
+                RadioButtonItem("关闭", {selectedMtePolicy==MTE_DISABLED}, {selectedMtePolicy=MTE_DISABLED})
+                Button(
+                    onClick = {
+                        try {
+                            myDpm.mtePolicy = selectedMtePolicy
+                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                        }catch(e:java.lang.UnsupportedOperationException){
+                            Toast.makeText(myContext, "不支持", Toast.LENGTH_SHORT).show()
+                        }
+                        selectedMtePolicy = myDpm.mtePolicy
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("应用")
+                }
+            }
+        }
+        
         if(isDeviceOwner(myDpm)){
             SysUpdatePolicy(myDpm,myComponent,myContext)
         }
-        Column(modifier = sections(if(isSystemInDarkTheme()){MaterialTheme.colorScheme.errorContainer}else{MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6F)})) {
+        Column(modifier = sections(if(isSystemInDarkTheme()){
+            colorScheme.errorContainer}else{
+            colorScheme.errorContainer.copy(alpha = 0.6F)})) {
             var flag by remember{ mutableIntStateOf(0) }
             var confirmed by remember{ mutableStateOf(false) }
-            Text(text = "清除数据",style = typography.titleLarge,modifier = Modifier.padding(6.dp),color = MaterialTheme.colorScheme.onErrorContainer)
-            RadioButtonItem("默认",{flag==0},{flag=0},MaterialTheme.colorScheme.onErrorContainer)
-            RadioButtonItem("WIPE_EXTERNAL_STORAGE",{flag==0x0001},{flag=0x0001},MaterialTheme.colorScheme.onErrorContainer)
-            RadioButtonItem("WIPE_RESET_PROTECTION_DATA",{flag==0x0002},{flag=0x0002},MaterialTheme.colorScheme.onErrorContainer)
-            RadioButtonItem("WIPE_EUICC",{flag==0x0004},{flag=0x0004},MaterialTheme.colorScheme.onErrorContainer)
-            RadioButtonItem("WIPE_SILENTLY",{flag==0x0008},{flag=0x0008},MaterialTheme.colorScheme.onErrorContainer)
-            Text(text = "清空数据的不能是系统用户",color = MaterialTheme.colorScheme.onErrorContainer,
+            Text(text = "清除数据",style = typography.titleLarge,modifier = Modifier.padding(6.dp),color = colorScheme.onErrorContainer)
+            RadioButtonItem("默认",{flag==0},{flag=0}, colorScheme.onErrorContainer)
+            RadioButtonItem("WIPE_EXTERNAL_STORAGE",{flag==0x0001},{flag=0x0001}, colorScheme.onErrorContainer)
+            RadioButtonItem("WIPE_RESET_PROTECTION_DATA",{flag==0x0002},{flag=0x0002}, colorScheme.onErrorContainer)
+            RadioButtonItem("WIPE_EUICC",{flag==0x0004},{flag=0x0004}, colorScheme.onErrorContainer)
+            RadioButtonItem("WIPE_SILENTLY",{flag==0x0008},{flag=0x0008}, colorScheme.onErrorContainer)
+            Text(text = "清空数据的不能是系统用户",color = colorScheme.onErrorContainer,
                 style = if(!sharedPref.getBoolean("isWear",false)){typography.bodyLarge}else{typography.bodyMedium})
             Button(
                 onClick = {confirmed=!confirmed},
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if(confirmed){MaterialTheme.colorScheme.primary}else{MaterialTheme.colorScheme.error},
-                    contentColor = if(confirmed){MaterialTheme.colorScheme.onPrimary}else{MaterialTheme.colorScheme.onError}
+                    containerColor = if(confirmed){
+                        colorScheme.primary}else{
+                        colorScheme.error},
+                    contentColor = if(confirmed){
+                        colorScheme.onPrimary}else{
+                        colorScheme.onError}
                 ),
                 enabled = myDpm.isAdminActive(myComponent)
             ) {
@@ -164,8 +185,8 @@ fun DeviceControl(){
                 Button(
                     onClick = {myDpm.wipeData(flag)},
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
+                        containerColor = colorScheme.error,
+                        contentColor = colorScheme.onError
                     ),
                     enabled = confirmed
                 ) {
@@ -175,8 +196,8 @@ fun DeviceControl(){
                     Button(
                         onClick = {myDpm.wipeDevice(flag)},
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError
+                            containerColor = colorScheme.error,
+                            contentColor = colorScheme.onError
                         ),
                         enabled = confirmed
                     ) {
@@ -209,20 +230,21 @@ private fun DeviceCtrlItem(
             verticalAlignment = Alignment.CenterVertically,
             modifier = if(isWear){Modifier.fillMaxWidth(0.65F)}else{Modifier.fillMaxWidth(0.75F)}
         ){
-            if(!sharedPref.getBoolean("isWear",false)){
+            if(!isWear){
             Icon(
                 painter = painterResource(leadIcon),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                tint = colorScheme.onPrimaryContainer,
                 modifier = Modifier.padding(start = 5.dp, end = 9.dp)
             )}
             Column {
                 Text(
                     text = stringResource(itemName),
-                    style = if(!sharedPref.getBoolean("isWear",false)){typography.titleLarge}else{typography.bodyLarge},
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    style = if(!isWear){typography.titleLarge}else{typography.titleMedium},
+                    color = colorScheme.onPrimaryContainer,
+                    fontWeight = if(isWear){ FontWeight.SemiBold }else{ FontWeight.Medium }
                 )
-                if(itemDesc!=R.string.place_holder&&!sharedPref.getBoolean("isWear",false)){ Text(stringResource(itemDesc)) }
+                if(itemDesc!=R.string.place_holder){ Text(stringResource(itemDesc)) }
             }
         }
         isEnabled = getMethod()

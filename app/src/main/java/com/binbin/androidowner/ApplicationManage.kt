@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
@@ -178,7 +179,7 @@ fun ApplicationManage(){
                     }
                 },
                 enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp)
             ) {
                 Text("设为默认拨号应用")
             }
@@ -222,7 +223,7 @@ private fun AppManageItem(
             modifier = sections()
         ) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(text = stringResource(itemName))
+                Text(text = stringResource(itemName), fontWeight = FontWeight.SemiBold, style = typography.titleMedium)
                 Switch(
                     checked = isEnabled,
                     onCheckedChange = {

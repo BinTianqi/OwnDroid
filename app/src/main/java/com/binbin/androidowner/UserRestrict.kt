@@ -11,31 +11,23 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
@@ -64,7 +56,7 @@ fun UserRestriction(){
         items(1){
             Text(text = "打开开关后会禁用对应的功能",modifier = Modifier.padding(3.dp), style = bodyTextStyle)
             if(VERSION.SDK_INT<24){
-                Text(text = "所有的用户限制都需要API24，你的设备低于API24，无法使用。", style = bodyTextStyle, color = MaterialTheme.colorScheme.error)
+                Text(text = "所有的用户限制都需要API24，你的设备低于API24，无法使用。", style = bodyTextStyle, color = colorScheme.error)
             }
             if(isProfileOwner(myDpm)){
                 Text(text = "Profile owner无法使用部分功能", style = bodyTextStyle)
@@ -75,42 +67,42 @@ fun UserRestriction(){
         }
 
         items(1){ SectionTab("网络和互联网",{internetVisible}, { internetVisible=!internetVisible}) }
-        items(restrictionData().internet()){data->
+        items(RestrictionData().internet()){data->
             if(internetVisible){
                 UserRestrictionItem(data.restriction,data.name,data.desc,data.ico)
             }
         }
 
         items(1){ SectionTab("更多连接",{connectivityVisible}) { connectivityVisible=!connectivityVisible } }
-        items(restrictionData().connectivity()){data->
+        items(RestrictionData().connectivity()){data->
             if(connectivityVisible){
                 UserRestrictionItem(data.restriction,data.name,data.desc,data.ico)
             }
         }
 
         items(1){ SectionTab("应用",{applicationVisible}) { applicationVisible=!applicationVisible } }
-        items(restrictionData().application()){data->
+        items(RestrictionData().application()){data->
             if(applicationVisible){
                 UserRestrictionItem(data.restriction,data.name,data.desc,data.ico)
             }
         }
 
         items(1){ SectionTab("用户",{userVisible}) { userVisible=!userVisible } }
-        items(restrictionData().user()){data->
+        items(RestrictionData().user()){data->
             if(userVisible){
                 UserRestrictionItem(data.restriction,data.name,data.desc,data.ico)
             }
         }
 
         items(1){ SectionTab("媒体",{mediaVisible}) { mediaVisible=!mediaVisible } }
-        items(restrictionData().media()){data->
+        items(RestrictionData().media()){data->
             if(mediaVisible){
                 UserRestrictionItem(data.restriction,data.name,data.desc,data.ico)
             }
         }
 
         items(1){ SectionTab("其他",{otherVisible}) { otherVisible=!otherVisible } }
-        items(restrictionData().other()){data->
+        items(RestrictionData().other()){data->
             if(otherVisible){
                 UserRestrictionItem(data.restriction,data.name,data.desc,data.ico)
             }
@@ -137,7 +129,9 @@ fun SectionTab(txt:String,getSection:()->Boolean,setSection:()->Unit){
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     Text(
         text = txt,
-        color = if(getSection()){MaterialTheme.colorScheme.onTertiaryContainer}else{MaterialTheme.colorScheme.onPrimaryContainer},
+        color = if(getSection()){
+            colorScheme.onTertiaryContainer}else{
+            colorScheme.onPrimaryContainer},
         textAlign = TextAlign.Center,
         style = if(!sharedPref.getBoolean("isWear",false)){typography.headlineMedium}else{typography.titleLarge},
         modifier = Modifier
@@ -147,9 +141,9 @@ fun SectionTab(txt:String,getSection:()->Boolean,setSection:()->Unit){
             .clip(RoundedCornerShape(15.dp))
             .background(
                 color = if (getSection()) {
-                    MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.8F)
+                    colorScheme.tertiaryContainer.copy(alpha = 0.8F)
                 } else {
-                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8F)
+                    colorScheme.primaryContainer.copy(alpha = 0.8F)
                 }
             )
             .clickable(onClick = setSection)
@@ -170,7 +164,7 @@ private fun UserRestrictionItem(
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val isWear = sharedPref.getBoolean("isWear",false)
     Row(
-        modifier = sections(MaterialTheme.colorScheme.secondaryContainer),
+        modifier = sections(colorScheme.secondaryContainer),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ){
@@ -178,21 +172,22 @@ private fun UserRestrictionItem(
             verticalAlignment = Alignment.CenterVertically,
             modifier = if(isWear){Modifier.fillMaxWidth(0.65F)}else{Modifier.fillMaxWidth(0.8F)}
         ) {
-            if(!sharedPref.getBoolean("isWear",false)){
+            if(!isWear){
             Icon(
                 painter = painterResource(leadIcon),
                 contentDescription = null,
                 modifier = Modifier.padding(start = 4.dp, end = 8.dp),
-                tint = MaterialTheme.colorScheme.secondary
+                tint = colorScheme.secondary
             )}
             Column{
                 Text(
                     text = stringResource(itemName),
                     style = if(!isWear){typography.titleLarge}else{typography.titleMedium},
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                    color = colorScheme.onSecondaryContainer,
+                    fontWeight = if(isWear){ FontWeight.SemiBold }else{ FontWeight.Medium }
                 )
                 if(restrictionDescription!=""){
-                    Text(text = restrictionDescription, color = MaterialTheme.colorScheme.onSecondaryContainer, style = if(isWear){typography.bodyMedium}else{typography.bodyLarge})
+                    Text(text = restrictionDescription, color = colorScheme.onSecondaryContainer, style = if(isWear){typography.bodyMedium}else{typography.bodyLarge})
                 }
             }
         }
@@ -224,7 +219,7 @@ private fun UserRestrictionItem(
     }
 }
 
-private class restrictionData{
+private class RestrictionData{
     fun internet():List<Restriction>{
         val list:MutableList<Restriction> = mutableListOf()
         list += Restriction(UserManager.DISALLOW_CONFIG_MOBILE_NETWORKS,R.string.config_mobile_network,"",R.drawable.signal_cellular_alt_fill0)

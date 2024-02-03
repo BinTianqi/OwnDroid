@@ -11,28 +11,16 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,7 +43,7 @@ fun Password(){
     var newPwd by remember{ mutableStateOf("") }
     val focusMgr = LocalFocusManager.current
     val isWear = sharedPref.getBoolean("isWear",false)
-    val titleColor = MaterialTheme.colorScheme.onPrimaryContainer
+    val titleColor = colorScheme.onPrimaryContainer
     val bodyTextStyle = if(isWear){typography.bodyMedium}else{typography.bodyLarge}
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -64,22 +52,20 @@ fun Password(){
         val myByteArray by remember{ mutableStateOf(byteArrayOf(1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0)) }
         Text(
             text = "以下操作可能会造成不可挽回的损失，请先备份好数据。执行操作时一定要谨慎！！！",
-            color = MaterialTheme.colorScheme.onErrorContainer,
-            modifier = sections(MaterialTheme.colorScheme.errorContainer),
+            color = colorScheme.onErrorContainer,
+            modifier = sections(colorScheme.errorContainer),
             style=bodyTextStyle
         )
         if(isWear){
             Text(
                 text = "警告！手表不支持带字母的密码，也不支持超过4位的PIN码！如果你设置了这样的密码（或密码复杂度要求），你将无法解锁你的手表！",
-                color = MaterialTheme.colorScheme.onErrorContainer,
-                modifier = sections(MaterialTheme.colorScheme.errorContainer),
+                color = colorScheme.onErrorContainer,
+                modifier = sections(colorScheme.errorContainer),
                 style = typography.bodyMedium
             )
         }
         if(myDpm.isDeviceOwnerApp("com.binbin.androidowner")){
-            Column(
-                modifier = sections()
-            ) {
+            Column(modifier = sections()) {
                 if(VERSION.SDK_INT>=29){
                     val passwordComplexity = mapOf(
                         PASSWORD_COMPLEXITY_NONE to "无（允许不设密码）",
@@ -186,7 +172,7 @@ fun Password(){
                             }else{ Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show() }
                             confirmed=false
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error, contentColor = MaterialTheme.colorScheme.onError),
+                        colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
                         enabled = confirmed&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm)),
                     modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.42F)}
                     ) {
@@ -201,7 +187,7 @@ fun Password(){
                         confirmed=false
                     },
                     enabled = confirmed,
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error, contentColor = MaterialTheme.colorScheme.onError),
+                    colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
                     modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.9F)}
                 ) {
                     Text("应用(旧)")
@@ -234,7 +220,9 @@ fun Password(){
                 RadioButtonItem(passwordComplexity[1].second,{selectedItem==passwordComplexity[1].first},{selectedItem=passwordComplexity[1].first})
                 RadioButtonItem(passwordComplexity[2].second,{selectedItem==passwordComplexity[2].first},{selectedItem=passwordComplexity[2].first})
                 RadioButtonItem(passwordComplexity[3].second,{selectedItem==passwordComplexity[3].first},{selectedItem=passwordComplexity[3].first},
-                if(isWear){MaterialTheme.colorScheme.error}else{MaterialTheme.colorScheme.onBackground})
+                if(isWear){
+                    colorScheme.error}else{
+                    colorScheme.onBackground})
                 Text(text = "连续性：密码重复（6666）或密码递增递减（4321、2468）", modifier = Modifier.padding(vertical = 3.dp), style = bodyTextStyle)
                 Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
@@ -355,9 +343,7 @@ fun Password(){
             }
         }
 
-        Column(
-            modifier = sections()
-        ) {
+        Column(modifier = sections()) {
             var expanded by remember{ mutableStateOf(VERSION.SDK_INT < 31) }
             val passwordQuality = mapOf(
                 PASSWORD_QUALITY_UNSPECIFIED to "未指定",
@@ -379,7 +365,7 @@ fun Password(){
                 Text(text = "设置密码复杂度将会取代密码质量", style = bodyTextStyle)
             }
             if(VERSION.SDK_INT>=31){
-                Text(text = "已弃用，请使用上面的”密码复杂度要求“", color = MaterialTheme.colorScheme.error, style = bodyTextStyle)
+                Text(text = "已弃用，请使用上面的”密码复杂度要求“", color = colorScheme.error, style = bodyTextStyle)
             }
             if(expanded){
             RadioButtonItem(passwordQuality[0].second,{selectedItem==passwordQuality[0].first},{selectedItem=passwordQuality[0].first})
@@ -416,7 +402,7 @@ fun Password(){
 }
 
 @Composable
-fun PasswordItem(
+private fun PasswordItem(
     itemName:Int,
     itemDesc:Int,
     textFieldLabel:Int,
@@ -431,7 +417,7 @@ fun PasswordItem(
         var inputContentEdited by remember{ mutableStateOf(false) }
         var ableToApply by remember{ mutableStateOf(true) }
         val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-        Text(text = stringResource(itemName), style = typography.titleLarge,color = MaterialTheme.colorScheme.onPrimaryContainer)
+        Text(text = stringResource(itemName), style = typography.titleLarge,color = colorScheme.onPrimaryContainer)
         Text(text= stringResource(itemDesc),modifier=Modifier.padding(vertical = 2.dp),
             style = if(!sharedPref.getBoolean("isWear",false)){typography.bodyLarge}else{typography.bodyMedium})
         if(!sharedPref.getBoolean("isWear",false)){Spacer(Modifier.padding(vertical = 2.dp))}
@@ -462,8 +448,8 @@ fun PasswordItem(
                 onClick = { focusMgr.clearFocus() ; setMethod(inputContent) ; inputContentEdited=inputContent!=getMethod() },
                 enabled = isDeviceOwner(myDpm)&&ableToApply,
                 colors = IconButtonDefaults.iconButtonColors(
-                    contentColor = if(inputContentEdited){MaterialTheme.colorScheme.onError}else{MaterialTheme.colorScheme.onPrimary},
-                    containerColor = if(inputContentEdited){MaterialTheme.colorScheme.error}else{MaterialTheme.colorScheme.primary},
+                    contentColor = if(inputContentEdited){ colorScheme.onError}else{ colorScheme.onPrimary},
+                    containerColor = if(inputContentEdited){ colorScheme.error}else{ colorScheme.primary},
                     disabledContentColor = Color.Transparent,
                     disabledContainerColor = Color.Transparent
                 )

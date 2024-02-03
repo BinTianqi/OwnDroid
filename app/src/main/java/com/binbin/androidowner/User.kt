@@ -307,7 +307,7 @@ fun UserManage(navCtrl:NavHostController){
 }
 
 @Composable
-fun UserSessionMessage(
+private fun UserSessionMessage(
     text:String,
     textField:String,
     profileOwner:Boolean,
@@ -362,7 +362,7 @@ fun UserSessionMessage(
     }
 }
 
-fun userOperationResultCode(result:Int): String {
+private fun userOperationResultCode(result:Int): String {
     return when(result){
         UserManager.USER_OPERATION_SUCCESS->"成功"
         UserManager.USER_OPERATION_ERROR_UNKNOWN->"未知结果（失败）"

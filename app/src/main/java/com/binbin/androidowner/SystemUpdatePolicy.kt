@@ -56,7 +56,7 @@ fun SysUpdatePolicy(myDpm:DevicePolicyManager,myComponent:ComponentName,myContex
         if(VERSION.SDK_INT>=23){
         Column(modifier = sections()) {
             var selectedPolicy by remember{ mutableStateOf(myDpm.systemUpdatePolicy?.policyType) }
-            Text(text = "系统更新策略", style = MaterialTheme.typography.titleLarge)
+            Text(text = "系统更新策略", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
             RadioButtonItem("准备好后立即更新",{selectedPolicy==SystemUpdatePolicy.TYPE_INSTALL_AUTOMATIC},{selectedPolicy=SystemUpdatePolicy.TYPE_INSTALL_AUTOMATIC})
             RadioButtonItem("在某段时间里更新",{selectedPolicy==SystemUpdatePolicy.TYPE_INSTALL_WINDOWED},{selectedPolicy=SystemUpdatePolicy.TYPE_INSTALL_WINDOWED})
             RadioButtonItem("延迟30天",{selectedPolicy==SystemUpdatePolicy.TYPE_POSTPONE},{selectedPolicy=SystemUpdatePolicy.TYPE_POSTPONE})

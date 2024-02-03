@@ -266,7 +266,7 @@ fun CheckBoxItem(
     ) {
         Checkbox(
             checked = checked(),
-            onCheckedChange = {b:Boolean->operation()},
+            onCheckedChange = {operation()},
             modifier=if(sharedPref.getBoolean("isWear",false)){Modifier.size(28.dp)}else{Modifier}
         )
         Text(text = text, style = if(!sharedPref.getBoolean("isWear",false)){typography.bodyLarge}else{typography.bodyMedium}, color = textColor,
