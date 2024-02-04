@@ -4,9 +4,13 @@ import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,12 +38,21 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.ui.theme.AndroidOwnerTheme
 
+/*lateinit var getOtaPackage: ActivityResultLauncher<Intent>
+var installOta = false
+lateinit var otaUri:Uri*/
 
 @ExperimentalMaterial3Api
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
+        /*otaUri = Uri.EMPTY
+        getOtaPackage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            val data = it.data?.data
+            installOta = true
+            otaUri = data ?: Uri.EMPTY
+        }*/
         setContent {
             AndroidOwnerTheme {
                 MyScaffold()

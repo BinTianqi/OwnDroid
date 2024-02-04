@@ -1,9 +1,12 @@
 package com.binbin.androidowner
 
 import android.app.admin.DevicePolicyManager
+import android.app.admin.DevicePolicyManager.InstallSystemUpdateCallback
 import android.app.admin.SystemUpdateInfo
 import android.app.admin.SystemUpdatePolicy
 import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
 import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -23,6 +26,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import java.util.Date
+import java.util.concurrent.Executors
 
 @Composable
 fun SysUpdatePolicy(){
@@ -30,21 +34,24 @@ fun SysUpdatePolicy(){
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val focusMgr = LocalFocusManager.current
+    val sharedPref = myContext.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val isWear = sharedPref.getBoolean("isWear",false)
+    val bodyTextStyle = if(isWear){ typography.bodyMedium}else{typography.bodyLarge}
     Column {
-        if(VERSION.SDK_INT>=26){
+        if(VERSION.SDK_INT>=26&&isDeviceOwner(myDpm)){
+            val sysUpdateInfo = myDpm.getPendingSystemUpdate(myComponent)
             Column(modifier = sections()) {
-                val sysUpdateInfo = if(isDeviceOwner(myDpm)){myDpm.getPendingSystemUpdate(myComponent)}else{null}
                 if(sysUpdateInfo!=null){
-                    Text("Update first available: ${Date(sysUpdateInfo.receivedTime)}")
-                    Text("Hash code: ${sysUpdateInfo.hashCode()}")
+                    Text(text = "Update first available: ${Date(sysUpdateInfo.receivedTime)}", style = bodyTextStyle)
+                    Text(text = "Hash code: ${sysUpdateInfo.hashCode()}", style = bodyTextStyle)
                     val securityStateDesc = when(sysUpdateInfo.securityPatchState){
                         SystemUpdateInfo.SECURITY_PATCH_STATE_UNKNOWN->"SECURITY_PATCH_STATE_UNKNOWN"
                         SystemUpdateInfo.SECURITY_PATCH_STATE_TRUE->"SECURITY_PATCH_STATE_TRUE"
                         else->"SECURITY_PATCH_STATE_FALSE"
                     }
-                    Text("Security patch state: $securityStateDesc")
+                    Text(text = "Security patch state: $securityStateDesc", style = bodyTextStyle)
                 }else{
-                    Text("暂无更新信息")
+                    Text(text = "暂无系统更新", style = bodyTextStyle)
                 }
             }
         }
@@ -80,7 +87,7 @@ fun SysUpdatePolicy(){
                     )
                 }
                 Spacer(Modifier.padding(vertical = 3.dp))
-                Text("请输入一天中的分钟（0~1440）")
+                Text(text = "请输入一天中的分钟（0~1440）", style = bodyTextStyle)
             }
             val policy =
                 when(selectedPolicy){
@@ -97,5 +104,43 @@ fun SysUpdatePolicy(){
                 Text("应用")
             }
         }}
+        /*if(VERSION.SDK_INT>=29){
+            Column(modifier = sections()){
+                var resultUri by remember{mutableStateOf(otaUri)}
+                Text(text = "安装系统更新", style = typography.titleLarge)
+                Button(
+                    onClick = {
+                        val getUri = Intent(Intent.ACTION_GET_CONTENT)
+                        getUri.setType("application/zip")
+                        getUri.addCategory(Intent.CATEGORY_OPENABLE)
+                        getOtaPackage.launch(getUri)
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
+                ) {
+                    Text("选择OTA包")
+                }
+                Button(
+                    onClick = {resultUri = otaUri},
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
+                ) {
+                    Text("查看OTA包详情")
+                }
+                Text("URI: $resultUri")
+                if(installOta){
+                    Button(
+                        onClick = {
+                            val sysUpdateExecutor = Executors.newCachedThreadPool()
+                            val sysUpdateCallback:InstallSystemUpdateCallback = InstallSystemUpdateCallback
+                            myDpm.installSystemUpdate(myComponent,resultUri,sysUpdateExecutor,sysUpdateCallback)
+                        },
+                        enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
+                    ){
+                        Text("安装")
+                    }
+                }
+            }
+        }*/
     }
 }

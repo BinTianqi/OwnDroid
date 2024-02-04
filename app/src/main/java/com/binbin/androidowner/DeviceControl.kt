@@ -7,6 +7,7 @@ import android.content.Context
 import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -25,9 +26,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import java.lang.IllegalArgumentException
 
 @Composable
 fun DeviceControl(){
@@ -201,6 +202,126 @@ fun DeviceControl(){
             Text(text = "Wifi安全等级需API33", modifier = Modifier.padding(vertical = 3.dp))
         }
         
+        if(VERSION.SDK_INT>=28&&isDeviceOwner(myDpm)){
+            Column(modifier = sections()){
+                val lockTaskPolicyList = mutableListOf(
+                    LOCK_TASK_FEATURE_NONE,
+                    LOCK_TASK_FEATURE_SYSTEM_INFO,
+                    LOCK_TASK_FEATURE_NOTIFICATIONS,
+                    LOCK_TASK_FEATURE_HOME,
+                    LOCK_TASK_FEATURE_OVERVIEW,
+                    LOCK_TASK_FEATURE_GLOBAL_ACTIONS,
+                    LOCK_TASK_FEATURE_KEYGUARD
+                )
+                var sysInfo by remember{mutableStateOf(false)}
+                var notifications by remember{mutableStateOf(false)}
+                var home by remember{mutableStateOf(false)}
+                var overview by remember{mutableStateOf(false)}
+                var globalAction by remember{mutableStateOf(false)}
+                var keyGuard by remember{mutableStateOf(false)}
+                var blockAct by remember{mutableStateOf(false)}
+                if(VERSION.SDK_INT>=30){lockTaskPolicyList.add(LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK)}
+                val refreshFeature = {
+                    var calculate = myDpm.getLockTaskFeatures(myComponent)
+                    if(VERSION.SDK_INT>=30&&calculate-lockTaskPolicyList[7]>=0){blockAct=true;calculate-=lockTaskPolicyList[7]}
+                    if(calculate-lockTaskPolicyList[6]>=0){keyGuard=true;calculate-=lockTaskPolicyList[6]}
+                    if(calculate-lockTaskPolicyList[5]>=0){globalAction=true;calculate-=lockTaskPolicyList[5]}
+                    if(calculate-lockTaskPolicyList[4]>=0){overview=true;calculate-=lockTaskPolicyList[4]}
+                    if(calculate-lockTaskPolicyList[3]>=0){home=true;calculate-=lockTaskPolicyList[3]}
+                    if(calculate-lockTaskPolicyList[2]>=0){notifications=true;calculate-=lockTaskPolicyList[2]}
+                    if(calculate-lockTaskPolicyList[1]>=0){sysInfo=true;calculate-=lockTaskPolicyList[1]}
+                }
+                Text(text = "锁定任务模式", style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
+                var inited by remember{mutableStateOf(false)}
+                var custom by remember{mutableStateOf(false)}
+                if(!inited){ refreshFeature();custom=myDpm.getLockTaskFeatures(myComponent)!=0;inited=true }
+                Text(text = "在锁定任务模式下：", style = bodyTextStyle)
+                RadioButtonItem("禁用全部",{!custom},{custom=false})
+                RadioButtonItem("自定义",{custom},{custom=true})
+                AnimatedVisibility(custom) {
+                    Column {
+                        CheckBoxItem("允许状态栏信息",{sysInfo},{sysInfo=!sysInfo})
+                        CheckBoxItem("允许通知",{notifications},{notifications=!notifications})
+                        CheckBoxItem("允许返回主屏幕",{home},{home=!home})
+                        CheckBoxItem("允许打开后台应用概览",{overview},{overview=!overview})
+                        CheckBoxItem("允许全局行为(比如长按电源键对话框)",{globalAction},{globalAction=!globalAction})
+                        CheckBoxItem("允许锁屏(如果没有选择此项，即使有密码也不会锁屏)",{keyGuard},{keyGuard=!keyGuard})
+                        if(VERSION.SDK_INT>=30){ CheckBoxItem("阻止启动未允许的应用",{blockAct},{blockAct=!blockAct}) }
+                    }
+                }
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        var result = lockTaskPolicyList[0]
+                        if(custom){
+                            if(blockAct&&VERSION.SDK_INT>=30){result+=lockTaskPolicyList[7]}
+                            if(keyGuard){result+=lockTaskPolicyList[6]}
+                            if(globalAction){result+=lockTaskPolicyList[5]}
+                            if(overview){result+=lockTaskPolicyList[4]}
+                            if(home){result+=lockTaskPolicyList[3]}
+                            if(notifications){result+=lockTaskPolicyList[2]}
+                            if(sysInfo){result+=lockTaskPolicyList[1]}
+                        }
+                        myDpm.setLockTaskFeatures(myComponent,result)
+                        refreshFeature()
+                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                    }
+                ) {
+                    Text("应用")
+                }
+                Spacer(Modifier.padding(vertical = 4.dp))
+                val whitelist = myDpm.getLockTaskPackages(myComponent).toMutableList()
+                var listText by remember{mutableStateOf("")}
+                var inputPkg by remember{mutableStateOf("")}
+                val refreshWhitelist = {
+                    listText=""
+                    var currentItem = whitelist.size
+                    for(each in whitelist){
+                        currentItem-=1
+                        listText += each
+                        if(currentItem>0){listText += "\n"}
+                    }
+                }
+                refreshWhitelist()
+                Text(text = "白名单应用", style = typography.titleLarge)
+                if(listText!=""){ Text(listText) }else{ Text(("无")) }
+                TextField(
+                    value = inputPkg,
+                    onValueChange = {inputPkg=it},
+                    label = {Text("包名")},
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
+                )
+                Button(
+                    onClick = {
+                        whitelist.add(inputPkg)
+                        myDpm.setLockTaskPackages(myComponent,whitelist.toTypedArray())
+                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                        refreshWhitelist()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("加入白名单")
+                }
+                Button(
+                    onClick = {
+                        if(inputPkg in whitelist){
+                            whitelist.remove(inputPkg)
+                            myDpm.setLockTaskPackages(myComponent,whitelist.toTypedArray())
+                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                        }else{
+                            Toast.makeText(myContext, "不存在", Toast.LENGTH_SHORT).show()
+                        }
+                        refreshWhitelist()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("从白名单中移除")
+                }
+            }
+        }
+        
         if(VERSION.SDK_INT>=29&&isDeviceOwner(myDpm)){
             Column(modifier = sections()){
                 Text(text = "私人DNS", style = typography.titleLarge)
@@ -245,6 +366,8 @@ fun DeviceControl(){
                             Toast.makeText(myContext, operationResult[result], Toast.LENGTH_SHORT).show()
                         }catch(e:IllegalArgumentException){
                             Toast.makeText(myContext, "无效主机名", Toast.LENGTH_SHORT).show()
+                        }catch(e:SecurityException){
+                            Toast.makeText(myContext, "安全错误", Toast.LENGTH_SHORT).show()
                         }finally {
                             status = dnsStatus[myDpm.getGlobalPrivateDnsMode(myComponent)]
                         }
