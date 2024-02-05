@@ -35,31 +35,26 @@ fun AppSetting(navCtrl:NavHostController){
         val myContext = LocalContext.current
         val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
         val isWear = sharedPref.getBoolean("isWear",false)
+        val bodyTextStyle = if(isWear){typography.bodyMedium}else{typography.bodyLarge}
         Column(modifier = sections()) {
             Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 3.dp),horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Wear", style = MaterialTheme.typography.titleLarge)
+                Text(text = "Wear", style = typography.titleLarge)
                 Switch(
                     checked = isWear,
                     onCheckedChange = {
-                        sharedPref.edit().putBoolean("isWear",!sharedPref.getBoolean("isWear",false)).apply()
-                        navCtrl.navigate("HomePage") {
-                            popUpTo(
-                                navCtrl.graph.findStartDestination().id
-                            ) { saveState = true }
-                        }
+                        sharedPref.edit().putBoolean("isWear",!isWear).apply()
+                        navCtrl.navigateUp()
                     }
                 )
             }
             if(VERSION.SDK_INT>=32){
                 Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 3.dp),horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "动态取色", style = MaterialTheme.typography.titleLarge)
+                    Text(text = "动态取色", style = typography.titleLarge)
                     Switch(
                         checked = sharedPref.getBoolean("dynamicColor",false),
                         onCheckedChange = {
                             sharedPref.edit().putBoolean("dynamicColor",!sharedPref.getBoolean("dynamicColor",false)).apply()
-                            navCtrl.navigate("HomePage") {
-                                popUpTo(navCtrl.graph.findStartDestination().id) { saveState = true }
-                            }
+                            navCtrl.navigateUp()
                         }
                     )
                 }
@@ -70,12 +65,14 @@ fun AppSetting(navCtrl:NavHostController){
             Column(
                 modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 12.dp)
             ) {
-                Text(text = "Android owner", style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
-                Text(text = "使用安卓的Device admin、Device owner 、Profile owner，全方位掌控你的设备",
-                    style = if(!sharedPref.getBoolean("isWear",false)){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
+                Text(text = "关于", style = typography.headlineSmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text(text = "使用安卓的Device admin、Device owner 、Profile owner，全方位掌控你的设备", style = bodyTextStyle)
                 Spacer(Modifier.padding(vertical = 4.dp))
-                Text(text = "这个应用只在AOSP和LineageOS上测试过，不确保每个功能都在其它系统可用，尤其是国内的魔改系统。",
-                    style = if(!sharedPref.getBoolean("isWear",false)){MaterialTheme.typography.bodyLarge}else{MaterialTheme.typography.bodyMedium})
+                Text(text = "这个应用只在AOSP和LineageOS上测试过，不确保每个功能都在其它系统可用，尤其是国内的魔改系统。", style = bodyTextStyle)
+                Spacer(Modifier.padding(vertical = 4.dp))
+                Text(text = "大部分功能都要Device owner权限", style = bodyTextStyle)
+                Spacer(Modifier.padding(vertical = 2.dp))
+                Text(text = "安卓版本越高，支持的功能越多", style = bodyTextStyle)
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -92,7 +89,7 @@ fun AppSetting(navCtrl:NavHostController){
                 )
                 Column {
                     Text(text = "源代码", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
-                    if(!sharedPref.getBoolean("isWear",false)){
+                    if(!isWear){
                         Text(text = "https://github.com/BinTianqi/AndroidOwner", color = MaterialTheme.colorScheme.onPrimaryContainer)
                         Text(text = "欢迎提交issue、给小星星")
                     }

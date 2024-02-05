@@ -2,10 +2,8 @@ package com.binbin.androidowner
 
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.*
-import android.app.admin.WifiSsidPolicy
 import android.content.ComponentName
 import android.content.Context
-import android.net.wifi.WifiSsid
 import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -82,19 +80,9 @@ fun DeviceControl(){
                 {myDpm.getBluetoothContactSharingDisabled(myComponent)},{b -> myDpm.setBluetoothContactSharingDisabled(myComponent,b)}
             )
         }
-        if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
-            DeviceCtrlItem(R.string.network_logging,R.string.no_effect,R.drawable.wifi_fill0,
-                {myDpm.isNetworkLoggingEnabled(myComponent)},{b -> myDpm.setNetworkLoggingEnabled(myComponent,b) }
-            )
-        }
         if(VERSION.SDK_INT>=24&&isDeviceOwner(myDpm)){
             DeviceCtrlItem(R.string.secure_logging,R.string.no_effect,R.drawable.description_fill0,
                 {myDpm.isSecurityLoggingEnabled(myComponent)},{b -> myDpm.setSecurityLoggingEnabled(myComponent,b) }
-            )
-        }
-        if(VERSION.SDK_INT>=33&&isDeviceOwner(myDpm)){
-            DeviceCtrlItem(R.string.preferential_network_service,R.string.no_effect,R.drawable.globe_fill0,
-                {myDpm.isPreferentialNetworkServiceEnabled},{b ->  myDpm.isPreferentialNetworkServiceEnabled = b}
             )
         }
         if(VERSION.SDK_INT>=30&&isDeviceOwner(myDpm)){
@@ -156,11 +144,6 @@ fun DeviceControl(){
                 }
             }
         }
-        if(VERSION.SDK_INT<24){ Text(text = "重启和WiFi Mac需要API24",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle) }
-        if(VERSION.SDK_INT>=24){
-            val wifimac = try { myDpm.getWifiMacAddress(myComponent).toString() }catch(e:SecurityException){ "没有权限" }
-            Text(text = "WiFi MAC: $wifimac",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,style=bodyTextStyle)
-        }
         if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
         Button(
             onClick = {myDpm.uninstallAllUserCaCerts(myComponent);Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()},
@@ -173,7 +156,7 @@ fun DeviceControl(){
             Column(modifier = sections()){
                 Text(text = "修改时间", style = typography.titleLarge)
                 var inputTime by remember{mutableStateOf("")}
-                Text(text = "从epoch(1970/1/1 00:00:00 UTC)到现在(毫秒)")
+                Text(text = "从Epoch(1970/1/1 00:00:00 UTC)到你想设置的时间(毫秒)", style = bodyTextStyle)
                 TextField(
                     value = inputTime,
                     label = { Text("时间(ms)")},
@@ -234,29 +217,6 @@ fun DeviceControl(){
                     Text("应用")
                 }
             }
-        }
-        
-        if(VERSION.SDK_INT>=33){
-            Column(modifier = sections()){
-                var selectedWifiSecLevel by remember{mutableIntStateOf(myDpm.minimumRequiredWifiSecurityLevel)}
-                Text(text = "要求最小WiFi安全等级", style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
-                RadioButtonItem("开放", {selectedWifiSecLevel==WIFI_SECURITY_OPEN}, {selectedWifiSecLevel= WIFI_SECURITY_OPEN})
-                RadioButtonItem("WEP, WPA(2)-PSK", {selectedWifiSecLevel==WIFI_SECURITY_PERSONAL}, {selectedWifiSecLevel= WIFI_SECURITY_PERSONAL})
-                RadioButtonItem("WPA-EAP", {selectedWifiSecLevel==WIFI_SECURITY_ENTERPRISE_EAP}, {selectedWifiSecLevel= WIFI_SECURITY_ENTERPRISE_EAP})
-                RadioButtonItem("WPA3-192bit", {selectedWifiSecLevel==WIFI_SECURITY_ENTERPRISE_192}, {selectedWifiSecLevel= WIFI_SECURITY_ENTERPRISE_192})
-                Button(
-                    enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
-                    onClick = {
-                        myDpm.minimumRequiredWifiSecurityLevel=selectedWifiSecLevel
-                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ){
-                    Text("应用")
-                }
-            }
-        }else{
-            Text(text = "Wifi安全等级需API33", modifier = Modifier.padding(vertical = 3.dp))
         }
         
         if(VERSION.SDK_INT>=28&&isDeviceOwner(myDpm)){
@@ -335,6 +295,7 @@ fun DeviceControl(){
                 var listText by remember{mutableStateOf("")}
                 var inputPkg by remember{mutableStateOf("")}
                 val refreshWhitelist = {
+                    inputPkg=""
                     listText=""
                     var currentItem = whitelist.size
                     for(each in whitelist){
@@ -354,92 +315,35 @@ fun DeviceControl(){
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                     modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
                 )
-                Button(
-                    onClick = {
-                        focusMgr.clearFocus()
-                        whitelist.add(inputPkg)
-                        myDpm.setLockTaskPackages(myComponent,whitelist.toTypedArray())
-                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
-                        inputPkg=""
-                        refreshWhitelist()
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("加入白名单")
-                }
-                Button(
-                    onClick = {
-                        focusMgr.clearFocus()
-                        if(inputPkg in whitelist){
-                            whitelist.remove(inputPkg)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+                    Button(
+                        onClick = {
+                            focusMgr.clearFocus()
+                            whitelist.add(inputPkg)
                             myDpm.setLockTaskPackages(myComponent,whitelist.toTypedArray())
                             Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
-                        }else{
-                            Toast.makeText(myContext, "不存在", Toast.LENGTH_SHORT).show()
-                        }
-                        inputPkg=""
-                        refreshWhitelist()
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("从白名单中移除")
-                }
-            }
-        }
-        
-        if(VERSION.SDK_INT>=29&&isDeviceOwner(myDpm)){
-            Column(modifier = sections()){
-                Text(text = "私人DNS", style = typography.titleLarge)
-                val dnsStatus = mapOf(
-                    PRIVATE_DNS_MODE_UNKNOWN to "未知",
-                    PRIVATE_DNS_MODE_OFF to "关闭",
-                    PRIVATE_DNS_MODE_OPPORTUNISTIC to "自动",
-                    PRIVATE_DNS_MODE_PROVIDER_HOSTNAME to "指定主机名"
-                )
-                val operationResult = mapOf(
-                    PRIVATE_DNS_SET_NO_ERROR to "成功",
-                    PRIVATE_DNS_SET_ERROR_HOST_NOT_SERVING to "主机不支持DNS over TLS",
-                    PRIVATE_DNS_SET_ERROR_FAILURE_SETTING to "失败"
-                )
-                var status by remember{mutableStateOf(dnsStatus[myDpm.getGlobalPrivateDnsMode(myComponent)])}
-                Text(text = "状态：$status")
-                Button(
-                    onClick = {
-                        val result = myDpm.setGlobalPrivateDnsModeOpportunistic(myComponent)
-                        Toast.makeText(myContext, operationResult[result], Toast.LENGTH_SHORT).show()
-                        status = dnsStatus[myDpm.getGlobalPrivateDnsMode(myComponent)]
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("设为自动")
-                }
-                Spacer(Modifier.padding(vertical = 3.dp))
-                var inputHost by remember{mutableStateOf(myDpm.getGlobalPrivateDnsHost(myComponent) ?: "")}
-                TextField(
-                    value = inputHost,
-                    onValueChange = {inputHost=it},
-                    label = {Text("DNS主机名")},
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Button(
-                    onClick = {
-                        val result: Int
-                        try{
-                            result = myDpm.setGlobalPrivateDnsModeSpecifiedHost(myComponent,inputHost)
-                            Toast.makeText(myContext, operationResult[result], Toast.LENGTH_SHORT).show()
-                        }catch(e:IllegalArgumentException){
-                            Toast.makeText(myContext, "无效主机名", Toast.LENGTH_SHORT).show()
-                        }catch(e:SecurityException){
-                            Toast.makeText(myContext, "安全错误", Toast.LENGTH_SHORT).show()
-                        }finally {
-                            status = dnsStatus[myDpm.getGlobalPrivateDnsMode(myComponent)]
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("设置DNS主机")
+                            refreshWhitelist()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.49F)
+                    ) {
+                        Text("添加")
+                    }
+                    Button(
+                        onClick = {
+                            focusMgr.clearFocus()
+                            if(inputPkg in whitelist){
+                                whitelist.remove(inputPkg)
+                                myDpm.setLockTaskPackages(myComponent,whitelist.toTypedArray())
+                                Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                            }else{
+                                Toast.makeText(myContext, "不存在", Toast.LENGTH_SHORT).show()
+                            }
+                            refreshWhitelist()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.96F)
+                    ) {
+                        Text("移除")
+                    }
                 }
             }
         }
@@ -505,7 +409,7 @@ fun DeviceControl(){
 }
 
 @Composable
-private fun DeviceCtrlItem(
+fun DeviceCtrlItem(
     itemName:Int,
     itemDesc:Int,
     leadIcon:Int,

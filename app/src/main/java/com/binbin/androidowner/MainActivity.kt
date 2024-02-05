@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
+import android.os.Build.VERSION
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -67,6 +68,7 @@ fun MyScaffold(){
     val topBarNameMap = mapOf(
         "HomePage" to R.string.app_name,
         "DeviceControl" to R.string.device_ctrl,
+        "Network" to R.string.network,
         "Permissions" to R.string.permission,
         "UserManage" to R.string.user_manage,
         "ApplicationManage" to R.string.app_manage,
@@ -133,6 +135,7 @@ fun MyScaffold(){
             composable(route = "UserManage", content = { UserManage(navCtrl)})
             composable(route = "Password", content = { Password()})
             composable(route = "AppSetting", content = { AppSetting(navCtrl)})
+            composable(route = "Network", content = {Network()})
         }
     }
 }
@@ -176,6 +179,7 @@ fun HomePage(navCtrl:NavHostController){
             }
         }
         HomePageItem(R.string.device_ctrl, R.drawable.mobile_phone_fill0, "DeviceControl", navCtrl)
+        if(VERSION.SDK_INT>=26){HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network",navCtrl)}
         HomePageItem(R.string.app_manage, R.drawable.apps_fill0, "ApplicationManage", navCtrl)
         HomePageItem(R.string.user_restrict, R.drawable.manage_accounts_fill0, "UserRestriction", navCtrl)
         HomePageItem(R.string.user_manage,R.drawable.account_circle_fill0,"UserManage",navCtrl)
