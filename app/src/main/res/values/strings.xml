@@ -115,4 +115,8 @@
     <string name="max_time_to_lock">屏幕超时</string>
     <string name="max_time_to_lock_desc">超时后锁屏(毫秒)，0为由用户决定</string>
     <string name="max_time_to_lock_textfield">超时时间(ms)</string>
+    <string name="secure_logging">安全日志</string>
+    <string name="common_criteria_mode">通用标准模式</string>
+    <string name="common_criteria_mode_desc">Common Criteria</string>
+    <string name="preferential_network_service">优先网络服务</string>
 </resources>

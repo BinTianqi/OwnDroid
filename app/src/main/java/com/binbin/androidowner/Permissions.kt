@@ -378,7 +378,7 @@ fun DeviceOwnerInfo(
             onValueChange = { inputContent=it },
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
         )
-        Row(modifier = Modifier.fillMaxWidth().padding(vertical = if(isWear){2.dp}else{6.dp}), horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Button(
                 onClick = {
                     output(inputContent.toString())

@@ -1,12 +1,12 @@
 package com.binbin.androidowner
 
-import android.app.admin.DeviceAdminReceiver
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.*
+import android.app.admin.WifiSsidPolicy
 import android.content.ComponentName
 import android.content.Context
+import android.net.wifi.WifiSsid
 import android.os.Build.VERSION
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
@@ -28,6 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
@@ -63,6 +64,8 @@ fun DeviceControl(){
             DeviceCtrlItem(R.string.auto_timezone,R.string.place_holder,R.drawable.globe_fill0,
                 {myDpm.getAutoTimeZoneEnabled(myComponent)},{b -> myDpm.setAutoTimeZoneEnabled(myComponent,b) }
             )
+        }else{
+            DeviceCtrlItem(R.string.auto_time,R.string.place_holder,R.drawable.schedule_fill0,{myDpm.autoTimeRequired},{b -> myDpm.setAutoTimeRequired(myComponent,b)})
         }
         if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
             DeviceCtrlItem(R.string.master_mute,R.string.place_holder,R.drawable.volume_up_fill0,
@@ -79,9 +82,24 @@ fun DeviceControl(){
                 {myDpm.getBluetoothContactSharingDisabled(myComponent)},{b -> myDpm.setBluetoothContactSharingDisabled(myComponent,b)}
             )
         }
-        if(VERSION.SDK_INT>=26){
+        if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
             DeviceCtrlItem(R.string.network_logging,R.string.no_effect,R.drawable.wifi_fill0,
                 {myDpm.isNetworkLoggingEnabled(myComponent)},{b -> myDpm.setNetworkLoggingEnabled(myComponent,b) }
+            )
+        }
+        if(VERSION.SDK_INT>=24&&isDeviceOwner(myDpm)){
+            DeviceCtrlItem(R.string.secure_logging,R.string.no_effect,R.drawable.description_fill0,
+                {myDpm.isSecurityLoggingEnabled(myComponent)},{b -> myDpm.setSecurityLoggingEnabled(myComponent,b) }
+            )
+        }
+        if(VERSION.SDK_INT>=33&&isDeviceOwner(myDpm)){
+            DeviceCtrlItem(R.string.preferential_network_service,R.string.no_effect,R.drawable.globe_fill0,
+                {myDpm.isPreferentialNetworkServiceEnabled},{b ->  myDpm.isPreferentialNetworkServiceEnabled = b}
+            )
+        }
+        if(VERSION.SDK_INT>=30&&isDeviceOwner(myDpm)){
+            DeviceCtrlItem(R.string.common_criteria_mode,R.string.common_criteria_mode_desc,R.drawable.security_fill0,
+                {myDpm.isCommonCriteriaModeEnabled(myComponent)},{b ->  myDpm.setCommonCriteriaModeEnabled(myComponent,b)}
             )
         }
         if(VERSION.SDK_INT>=31&&isDeviceOwner(myDpm)){
@@ -93,18 +111,13 @@ fun DeviceControl(){
                 Text(text = "你的设备不支持关闭USB信号",modifier = Modifier.fillMaxWidth(), style = bodyTextStyle, textAlign = TextAlign.Center)
             }
         }
-        if(VERSION.SDK_INT<24&&isDeviceOwner(myDpm)){
-            Text(text = "重启和WiFi Mac需要API24",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle)
-        }
-        if(VERSION.SDK_INT<26&&isDeviceOwner(myDpm)){
-            Text(text = "备份服务和网络日志需要API26",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle)
-        }
-        if(VERSION.SDK_INT<30&&isDeviceOwner(myDpm)){
-            Text(text = "自动设置时间和自动设置时区需要API30",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle)
-        }
-        if(VERSION.SDK_INT<31&&isDeviceOwner(myDpm)){Text(text = "关闭USB信号需API31",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle)}
-        if(VERSION.SDK_INT<34&&isDeviceOwner(myDpm)){
-            Text(text = "隐藏状态栏需要API34",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle)
+        if(isDeviceOwner(myDpm)){
+            if(VERSION.SDK_INT<23){ Text(text = "禁止蓝牙分享联系人需API23") }
+            if(VERSION.SDK_INT<24){ Text(text = "安全日志API24",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle) }
+            if(VERSION.SDK_INT<26){ Text(text = "备份服务和网络日志需要API26",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle) }
+            if(VERSION.SDK_INT<30){ Text(text = "自动设置时区和通用标准模式需要API30",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle) }
+            if(VERSION.SDK_INT<31){ Text(text = "关闭USB信号需API31",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle) }
+            if(VERSION.SDK_INT<34){ Text(text = "隐藏状态栏需要API34",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle) }
         }
         if(VERSION.SDK_INT>=28){
             Column(modifier = sections()) {
@@ -143,6 +156,7 @@ fun DeviceControl(){
                 }
             }
         }
+        if(VERSION.SDK_INT<24){ Text(text = "重启和WiFi Mac需要API24",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle) }
         if(VERSION.SDK_INT>=24){
             val wifimac = try { myDpm.getWifiMacAddress(myComponent).toString() }catch(e:SecurityException){ "没有权限" }
             Text(text = "WiFi MAC: $wifimac",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,style=bodyTextStyle)
@@ -154,6 +168,48 @@ fun DeviceControl(){
         ) {
             Text(text = "清除用户Ca证书")
         }}
+        
+        if(VERSION.SDK_INT>=28){
+            Column(modifier = sections()){
+                Text(text = "修改时间", style = typography.titleLarge)
+                var inputTime by remember{mutableStateOf("")}
+                Text(text = "从epoch(1970/1/1 00:00:00 UTC)到现在(毫秒)")
+                TextField(
+                    value = inputTime,
+                    label = { Text("时间(ms)")},
+                    onValueChange = {inputTime = it},
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                    enabled = isDeviceOwner(myDpm),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
+                )
+                if(isWear){
+                    Button(
+                        onClick = {inputTime = System.currentTimeMillis().toString()},
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("获取当前时间")
+                    }
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+                    Button(
+                        onClick = {myDpm.setTime(myComponent,inputTime.toLong())},
+                        modifier = Modifier.fillMaxWidth(if(isWear){1F}else{0.35F}),
+                        enabled = inputTime!=""&&isDeviceOwner(myDpm)
+                    ) {
+                        Text("应用")
+                    }
+                    if(!isWear){
+                        Button(
+                            onClick = {inputTime = System.currentTimeMillis().toString()},
+                            modifier = Modifier.fillMaxWidth(0.98F)
+                        ) {
+                            Text("获取当前时间")
+                        }
+                    }
+                }
+            }
+        }
         
         if(VERSION.SDK_INT>=34&&isDeviceOwner(myDpm)){
             Column(modifier = sections()){

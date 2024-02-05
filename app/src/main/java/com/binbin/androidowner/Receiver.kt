@@ -16,7 +16,10 @@ class MyDeviceAdminReceiver : DeviceAdminReceiver() {
     @SuppressLint("UnsafeProtectedBroadcastReceiver")
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
-        if(VERSION.SDK_INT>=26){ DeviceAdminReceiver().onNetworkLogsAvailable(context,intent,1234567890,20) }
+        if(VERSION.SDK_INT>=26){
+            DeviceAdminReceiver().onNetworkLogsAvailable(context,intent,1234567890,20)
+            DeviceAdminReceiver().onSecurityLogsAvailable(context,intent)
+        }
     }
     override fun onDisableRequested(context: Context, intent: Intent): CharSequence {
         Toast.makeText(context, "撤销授权", Toast.LENGTH_SHORT).show()
