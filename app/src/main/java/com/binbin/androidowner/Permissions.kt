@@ -31,7 +31,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 
 
@@ -69,11 +68,7 @@ fun DpmPermissions(navCtrl:NavHostController){
                 Button(
                     onClick = {
                         myDpm.removeActiveAdmin(myComponent)
-                        navCtrl.navigate("HomePage") {
-                            popUpTo(
-                                navCtrl.graph.findStartDestination().id
-                            ) { saveState = true }
-                        }
+                        navCtrl.navigateUp()
                     }
                 ) {
                     Text("撤销")
@@ -109,11 +104,7 @@ fun DpmPermissions(navCtrl:NavHostController){
                 Button(
                     onClick = {
                         myDpm.clearProfileOwner(myComponent)
-                        navCtrl.navigate("HomePage") {
-                            popUpTo(
-                                navCtrl.graph.findStartDestination().id
-                            ) { saveState = true }
-                        }
+                        navCtrl.navigateUp()
                     }
                 ) {
                     Text("撤销")
@@ -150,11 +141,7 @@ fun DpmPermissions(navCtrl:NavHostController){
                 Button(
                     onClick = {
                         myDpm.clearDeviceOwnerApp("com.binbin.androidowner")
-                        navCtrl.navigate("HomePage") {
-                            popUpTo(
-                                navCtrl.graph.findStartDestination().id
-                            ) { saveState = true }
-                        }
+                        navCtrl.navigateUp()
                     }
                 ) {
                     Text("撤销")
@@ -330,11 +317,7 @@ fun DpmPermissions(navCtrl:NavHostController){
                 Button(
                     onClick = {
                         myDpm.removeActiveAdmin(myComponent)
-                        navCtrl.navigate("HomePage") {
-                            popUpTo(
-                                navCtrl.graph.findStartDestination().id
-                            ) { saveState = true }
-                        }
+                        navCtrl.navigateUp()
                     },
                     colors = ButtonDefaults.buttonColors(contentColor = colorScheme.onError, containerColor = colorScheme.error),
                     enabled = myDpm.isAdminActive(myComponent)
@@ -345,11 +328,7 @@ fun DpmPermissions(navCtrl:NavHostController){
                     Button(
                         onClick = {
                             myDpm.clearProfileOwner(myComponent)
-                            navCtrl.navigate("HomePage") {
-                                popUpTo(
-                                    navCtrl.graph.findStartDestination().id
-                                ) { saveState = true }
-                            }
+                            navCtrl.navigateUp()
                         },
                         colors = ButtonDefaults.buttonColors(contentColor = colorScheme.onError, containerColor = colorScheme.error),
                         enabled = isProfileOwner(myDpm)
@@ -360,11 +339,7 @@ fun DpmPermissions(navCtrl:NavHostController){
                 Button(
                     onClick = {
                         myDpm.clearDeviceOwnerApp("com.binbin.androidowner")
-                        navCtrl.navigate("HomePage") {
-                            popUpTo(
-                                navCtrl.graph.findStartDestination().id
-                            ) { saveState = true }
-                        }
+                        navCtrl.navigateUp()
                     },
                     colors = ButtonDefaults.buttonColors(contentColor = colorScheme.onError, containerColor = colorScheme.error),
                     enabled = isDeviceOwner(myDpm)

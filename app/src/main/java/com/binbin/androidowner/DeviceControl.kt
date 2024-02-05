@@ -1,10 +1,12 @@
 package com.binbin.androidowner
 
+import android.app.admin.DeviceAdminReceiver
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.*
 import android.content.ComponentName
 import android.content.Context
 import android.os.Build.VERSION
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
@@ -26,7 +28,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
@@ -221,19 +222,23 @@ fun DeviceControl(){
                 var keyGuard by remember{mutableStateOf(false)}
                 var blockAct by remember{mutableStateOf(false)}
                 if(VERSION.SDK_INT>=30){lockTaskPolicyList.add(LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK)}
-                val refreshFeature = {
-                    var calculate = myDpm.getLockTaskFeatures(myComponent)
-                    if(VERSION.SDK_INT>=30&&calculate-lockTaskPolicyList[7]>=0){blockAct=true;calculate-=lockTaskPolicyList[7]}
-                    if(calculate-lockTaskPolicyList[6]>=0){keyGuard=true;calculate-=lockTaskPolicyList[6]}
-                    if(calculate-lockTaskPolicyList[5]>=0){globalAction=true;calculate-=lockTaskPolicyList[5]}
-                    if(calculate-lockTaskPolicyList[4]>=0){overview=true;calculate-=lockTaskPolicyList[4]}
-                    if(calculate-lockTaskPolicyList[3]>=0){home=true;calculate-=lockTaskPolicyList[3]}
-                    if(calculate-lockTaskPolicyList[2]>=0){notifications=true;calculate-=lockTaskPolicyList[2]}
-                    if(calculate-lockTaskPolicyList[1]>=0){sysInfo=true;calculate-=lockTaskPolicyList[1]}
-                }
-                Text(text = "锁定任务模式", style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
                 var inited by remember{mutableStateOf(false)}
                 var custom by remember{mutableStateOf(false)}
+                val refreshFeature = {
+                    var calculate = myDpm.getLockTaskFeatures(myComponent)
+                    if(calculate!=0){
+                        if(VERSION.SDK_INT>=30&&calculate-lockTaskPolicyList[7]>=0){blockAct=true;calculate-=lockTaskPolicyList[7]}
+                        if(calculate-lockTaskPolicyList[6]>=0){keyGuard=true;calculate-=lockTaskPolicyList[6]}
+                        if(calculate-lockTaskPolicyList[5]>=0){globalAction=true;calculate-=lockTaskPolicyList[5]}
+                        if(calculate-lockTaskPolicyList[4]>=0){overview=true;calculate-=lockTaskPolicyList[4]}
+                        if(calculate-lockTaskPolicyList[3]>=0){home=true;calculate-=lockTaskPolicyList[3]}
+                        if(calculate-lockTaskPolicyList[2]>=0){notifications=true;calculate-=lockTaskPolicyList[2]}
+                        if(calculate-lockTaskPolicyList[1]>=0){sysInfo=true;calculate-=lockTaskPolicyList[1]}
+                    }else{
+                        custom = false
+                    }
+                }
+                Text(text = "锁定任务模式", style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
                 if(!inited){ refreshFeature();custom=myDpm.getLockTaskFeatures(myComponent)!=0;inited=true }
                 Text(text = "在锁定任务模式下：", style = bodyTextStyle)
                 RadioButtonItem("禁用全部",{!custom},{custom=false})
@@ -295,9 +300,11 @@ fun DeviceControl(){
                 )
                 Button(
                     onClick = {
+                        focusMgr.clearFocus()
                         whitelist.add(inputPkg)
                         myDpm.setLockTaskPackages(myComponent,whitelist.toTypedArray())
                         Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                        inputPkg=""
                         refreshWhitelist()
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -306,6 +313,7 @@ fun DeviceControl(){
                 }
                 Button(
                     onClick = {
+                        focusMgr.clearFocus()
                         if(inputPkg in whitelist){
                             whitelist.remove(inputPkg)
                             myDpm.setLockTaskPackages(myComponent,whitelist.toTypedArray())
@@ -313,6 +321,7 @@ fun DeviceControl(){
                         }else{
                             Toast.makeText(myContext, "不存在", Toast.LENGTH_SHORT).show()
                         }
+                        inputPkg=""
                         refreshWhitelist()
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -382,6 +391,7 @@ fun DeviceControl(){
         if(isDeviceOwner(myDpm)){
             SysUpdatePolicy()
         }
+        
         Column(modifier = sections(if(isSystemInDarkTheme()){
             colorScheme.errorContainer}else{
             colorScheme.errorContainer.copy(alpha = 0.6F)})) {

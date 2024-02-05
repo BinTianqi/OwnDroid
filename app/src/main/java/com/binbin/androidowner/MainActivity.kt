@@ -4,13 +4,10 @@ import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -95,14 +92,7 @@ fun MyScaffold(){
                             modifier = Modifier
                                 .padding(horizontal = 6.dp)
                                 .clip(RoundedCornerShape(50))
-                                .clickable(onClick = {
-                                    navCtrl.navigate("HomePage") {
-                                        popUpTo(
-                                            navCtrl.graph.findStartDestination().id
-                                        ) { saveState = true }
-                                    }
-                                    focusMgr.clearFocus()
-                                })
+                                .clickable{ navCtrl.navigateUp(); focusMgr.clearFocus() }
                                 .padding(5.dp)
                         )
                     }
@@ -235,14 +225,15 @@ fun RadioButtonItem(
     textColor:Color = MaterialTheme.colorScheme.onBackground
 ){
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val isWear = sharedPref.getBoolean("isWear",false)
     Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
         .fillMaxWidth()
-        .padding(vertical = if(sharedPref.getBoolean("isWear",false)){3.dp}else{0.dp})
+        .padding(vertical = if(isWear){3.dp}else{0.dp})
         .clip(RoundedCornerShape(25))
         .clickable(onClick = operation)
     ) {
-        RadioButton(selected = selected(), onClick = operation,modifier=if(sharedPref.getBoolean("isWear",false)){Modifier.size(28.dp)}else{Modifier})
-        Text(text = text, style = if(!sharedPref.getBoolean("isWear",false)){typography.bodyLarge}else{typography.bodyMedium}, color = textColor,
+        RadioButton(selected = selected(), onClick = operation,modifier=if(isWear){Modifier.size(28.dp)}else{Modifier})
+        Text(text = text, style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium}, color = textColor,
             modifier = Modifier.padding(bottom = 2.dp))
     }
 }
@@ -254,19 +245,19 @@ fun CheckBoxItem(
     textColor:Color = MaterialTheme.colorScheme.onBackground
 ){
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val isWear = sharedPref.getBoolean("isWear",false)
     Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
         .fillMaxWidth()
-        .padding(vertical = if(sharedPref.getBoolean("isWear",false)){3.dp}else{0.dp})
+        .padding(vertical = if(isWear){3.dp}else{0.dp})
         .clip(RoundedCornerShape(25))
         .clickable(onClick = operation)
     ) {
         Checkbox(
             checked = checked(),
             onCheckedChange = {operation()},
-            modifier=if(sharedPref.getBoolean("isWear",false)){Modifier.size(28.dp)}else{Modifier}
+            modifier=if(isWear){Modifier.size(28.dp)}else{Modifier}
         )
-        Text(text = text, style = if(!sharedPref.getBoolean("isWear",false)){typography.bodyLarge}else{typography.bodyMedium}, color = textColor,
-             modifier = Modifier.padding(bottom = 2.dp))
+        Text(text = text, style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium}, color = textColor, modifier = Modifier.padding(bottom = 2.dp))
     }
 }
 

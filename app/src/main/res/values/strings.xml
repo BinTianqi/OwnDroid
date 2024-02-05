@@ -93,7 +93,7 @@
     <string name="max_pwd_fail_textfield">错误次数</string>
     <string name="pwd_timeout">密码失效超时时间</string>
     <string name="pwd_timeout_desc">超时后用户需重新设置密码（毫秒），0为无限制</string>
-    <string name="pwd_timeout_textfield">超时时间</string>
+    <string name="pwd_timeout_textfield">超时时间(ms)</string>
     <string name="pwd_history">密码历史记录长度</string>
     <string name="pwd_history_desc">用户输入的密码不能与历史记录中的任何密码相同，0为无限制</string>
     <string name="pwd_history_textfield">历史记录长度</string>
@@ -112,4 +112,7 @@
     <string name="experimental_feature">实验性功能</string>
     <string name="network_logging">网络日志记录</string>
     <string name="no_effect">没啥用</string>
+    <string name="max_time_to_lock">屏幕超时</string>
+    <string name="max_time_to_lock_desc">超时后锁屏(毫秒)，0为由用户决定</string>
+    <string name="max_time_to_lock_textfield">超时时间(ms)</string>
 </resources>

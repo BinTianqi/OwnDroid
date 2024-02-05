@@ -24,7 +24,6 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -197,12 +196,14 @@ fun Password(){
             }
         }
 
-        PasswordItem(R.string.max_pwd_fail,R.string.max_pwd_fail_desc,R.string.max_pwd_fail_textfield, myDpm,focusMgr,false,
+        PasswordItem(R.string.max_pwd_fail,R.string.max_pwd_fail_desc,R.string.max_pwd_fail_textfield, false,
             {myDpm.getMaximumFailedPasswordsForWipe(null).toString()},{ic -> myDpm.setMaximumFailedPasswordsForWipe(myComponent, ic.toInt()) })
-        PasswordItem(R.string.pwd_timeout,R.string.pwd_timeout_desc,R.string.pwd_timeout_textfield, myDpm,focusMgr,true,
+        PasswordItem(R.string.pwd_timeout,R.string.pwd_timeout_desc,R.string.pwd_timeout_textfield,true,
             {myDpm.getPasswordExpiration(null).toString()},{ic -> myDpm.setPasswordExpirationTimeout(myComponent, ic.toLong()) })
-        PasswordItem(R.string.pwd_history,R.string.pwd_history_desc,R.string.pwd_history_textfield,myDpm, focusMgr,true,
+        PasswordItem(R.string.pwd_history,R.string.pwd_history_desc,R.string.pwd_history_textfield,true,
             {myDpm.getPasswordHistoryLength(null).toString()},{ic -> myDpm.setPasswordHistoryLength(myComponent, ic.toInt()) })
+        PasswordItem(R.string.max_time_to_lock,R.string.max_time_to_lock_desc,R.string.max_time_to_lock_textfield,true,
+            {myDpm.getMaximumTimeToLock(myComponent).toString()},{ic -> myDpm.setMaximumTimeToLock(myComponent,ic.toLong())})
 
         if(VERSION.SDK_INT>=31){
             Column(modifier = sections()) {
@@ -408,21 +409,21 @@ private fun PasswordItem(
     itemName:Int,
     itemDesc:Int,
     textFieldLabel:Int,
-    myDpm:DevicePolicyManager,
-    focusMgr:FocusManager,
     allowZero:Boolean,
     getMethod:()->String,
     setMethod:(ic:String)->Unit
 ){
+    val myContext = LocalContext.current
+    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val isWear = sharedPref.getBoolean("isWear",false)
+    val focusMgr = LocalFocusManager.current
     Column(modifier = sections()) {
         var inputContent by remember{ mutableStateOf(if(isDeviceOwner(myDpm)){getMethod()}else{""}) }
-        var inputContentEdited by remember{ mutableStateOf(false) }
-        var ableToApply by remember{ mutableStateOf(true) }
-        val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+        var ableToApply by remember{ mutableStateOf(inputContent!=""&&((inputContent=="0"&&allowZero)||inputContent!="0")) }
         Text(text = stringResource(itemName), style = typography.titleLarge,color = colorScheme.onPrimaryContainer)
-        Text(text= stringResource(itemDesc),modifier=Modifier.padding(vertical = 2.dp),
-            style = if(!sharedPref.getBoolean("isWear",false)){typography.bodyLarge}else{typography.bodyMedium})
-        if(!sharedPref.getBoolean("isWear",false)){Spacer(Modifier.padding(vertical = 2.dp))}
+        Text(text= stringResource(itemDesc),modifier=Modifier.padding(vertical = 2.dp), style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
+        if(!isWear){Spacer(Modifier.padding(vertical = 2.dp))}
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -433,25 +434,20 @@ private fun PasswordItem(
                 label = { Text(stringResource(textFieldLabel))},
                 onValueChange = {
                     inputContent = it
-                    if(inputContent!=""&&((inputContent=="0"&&allowZero)||inputContent!="0")){
-                        inputContentEdited = inputContent!=getMethod()
-                        ableToApply = true
-                    }else{
-                        ableToApply = false
-                    }
+                    ableToApply = inputContent!=""&&((inputContent=="0"&&allowZero)||inputContent!="0")
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                 enabled = isDeviceOwner(myDpm),
-                modifier = if(sharedPref.getBoolean("isWear",false)){Modifier.fillMaxWidth()}else{Modifier.fillMaxWidth(0.8F)}
+                modifier = if(isWear){Modifier.fillMaxWidth()}else{Modifier.fillMaxWidth(0.8F)}
             )
-            if(!sharedPref.getBoolean("isWear",false)){
+            if(!isWear){
             IconButton(
-                onClick = { focusMgr.clearFocus() ; setMethod(inputContent) ; inputContentEdited=inputContent!=getMethod() },
+                onClick = { focusMgr.clearFocus() ; setMethod(inputContent) },
                 enabled = isDeviceOwner(myDpm)&&ableToApply,
                 colors = IconButtonDefaults.iconButtonColors(
-                    contentColor = if(inputContentEdited){ colorScheme.onError}else{ colorScheme.onPrimary},
-                    containerColor = if(inputContentEdited){ colorScheme.error}else{ colorScheme.primary},
+                    contentColor = colorScheme.onPrimary,
+                    containerColor = colorScheme.primary,
                     disabledContentColor = Color.Transparent,
                     disabledContainerColor = Color.Transparent
                 )
@@ -459,9 +455,9 @@ private fun PasswordItem(
                 Icon(imageVector = Icons.Outlined.Check, contentDescription = null)
             }}
         }
-        if(sharedPref.getBoolean("isWear",false)){
+        if(isWear){
             Button(
-                onClick = {focusMgr.clearFocus() ; setMethod(inputContent) ; inputContentEdited=inputContent!=getMethod()},
+                onClick = {focusMgr.clearFocus() ; setMethod(inputContent)},
                 enabled = isDeviceOwner(myDpm)&&ableToApply,
                 modifier = Modifier.fillMaxWidth()
             ) {
