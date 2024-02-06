@@ -4,11 +4,14 @@ import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.os.Build.VERSION
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.*
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,7 +20,8 @@ import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,22 +39,32 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.ui.theme.AndroidOwnerTheme
+import java.io.FileNotFoundException
+import java.io.IOException
 
-/*lateinit var getOtaPackage: ActivityResultLauncher<Intent>
-var installOta = false
-lateinit var otaUri:Uri*/
+lateinit var getCaCert: ActivityResultLauncher<Intent>
+var caCert = byteArrayOf()
 
 @ExperimentalMaterial3Api
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
-        /*otaUri = Uri.EMPTY
-        getOtaPackage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            val data = it.data?.data
-            installOta = true
-            otaUri = data ?: Uri.EMPTY
-        }*/
+        getCaCert = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            val uri = it.data?.data
+            if(uri!=null){
+                try{
+                    val stream = contentResolver.openInputStream(uri)
+                    if(stream!=null) {
+                        caCert = stream.readBytes()
+                        if(caCert.size>50000){ Toast.makeText(applicationContext, "太大了", Toast.LENGTH_SHORT).show(); caCert = byteArrayOf() }
+                    }else{ Toast.makeText(applicationContext, "空的流", Toast.LENGTH_SHORT).show() }
+                    stream?.close()
+                }
+                catch(e:FileNotFoundException){ Toast.makeText(applicationContext, "文件不存在", Toast.LENGTH_SHORT).show() }
+                catch(e:IOException){ Toast.makeText(applicationContext, "IO异常", Toast.LENGTH_SHORT).show() }
+            }else{ Toast.makeText(applicationContext, "空URI", Toast.LENGTH_SHORT).show() }
+        }
         setContent {
             AndroidOwnerTheme {
                 MyScaffold()
@@ -148,6 +162,7 @@ fun HomePage(navCtrl:NavHostController){
     val activateType = if(isDeviceOwner(myDpm)){"Device Owner"}else if(isProfileOwner(myDpm)){"Profile Owner"}else if(myDpm.isAdminActive(myComponent)){"Device Admin"}else{""}
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val isWear = sharedPref.getBoolean("isWear",false)
+    caCert = byteArrayOf()
     Column(modifier = Modifier.verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
         if(isWear){ Spacer(Modifier.padding(vertical = 3.dp)) }
         Row(
@@ -273,7 +288,7 @@ fun isProfileOwner(dpm:DevicePolicyManager): Boolean {
     return dpm.isProfileOwnerApp("com.binbin.androidowner")
 }
 
-@SuppressLint("ModifierFactoryExtensionFunction")
+@SuppressLint("ModifierFactoryExtensionFunction", "ComposableModifierFactory")
 @Composable
 fun sections(bgColor:Color=MaterialTheme.colorScheme.primaryContainer):Modifier{
     val backgroundColor = if(isSystemInDarkTheme()){bgColor.copy(0.4F)}else{bgColor.copy(0.6F)}

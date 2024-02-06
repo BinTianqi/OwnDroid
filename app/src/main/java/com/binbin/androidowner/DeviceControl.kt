@@ -4,7 +4,9 @@ import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.*
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.os.Build.VERSION
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
@@ -29,6 +31,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun DeviceControl(){
@@ -144,13 +148,6 @@ fun DeviceControl(){
                 }
             }
         }
-        if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
-        Button(
-            onClick = {myDpm.uninstallAllUserCaCerts(myComponent);Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()},
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        ) {
-            Text(text = "清除用户Ca证书")
-        }}
         
         if(VERSION.SDK_INT>=28){
             Column(modifier = sections()){
@@ -368,6 +365,64 @@ fun DeviceControl(){
             }
         }
         
+        if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
+            var exist by remember{mutableStateOf(false)}
+            var isEmpty by remember{mutableStateOf(false)}
+            val refresh = {
+                isEmpty = caCert.isEmpty()
+                exist = if(!isEmpty){ myDpm.hasCaCertInstalled(myComponent, caCert) }else{ false }
+            }
+            LaunchedEffect(exist){ launch{isCaCertSelected(600){refresh()}} }
+            Column(modifier = sections()){
+                Text(text = "Ca证书", style = typography.titleLarge)
+                if(isEmpty){ Text(text = "请选择Ca证书(.0)") }else{ Text(text = "证书已安装：$exist") }
+                Button(
+                    onClick = {
+                        val caCertIntent = Intent(Intent.ACTION_GET_CONTENT)
+                        caCertIntent.setType("*/*")
+                        caCertIntent.addCategory(Intent.CATEGORY_OPENABLE)
+                        getCaCert.launch(caCertIntent)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("选择证书...")
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+                    Button(
+                        onClick = {
+                            val result = myDpm.installCaCert(myComponent, caCert)
+                            Toast.makeText(myContext, if(result){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                            refresh()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.49F)
+                    ) {
+                        Text("安装")
+                    }
+                    Button(
+                        onClick = {
+                            if(exist){
+                                myDpm.uninstallCaCert(myComponent, caCert)
+                                exist = myDpm.hasCaCertInstalled(myComponent, caCert)
+                                Toast.makeText(myContext, if(exist){"失败"}else{"成功"}, Toast.LENGTH_SHORT).show()
+                            }else{ Toast.makeText(myContext, "不存在", Toast.LENGTH_SHORT).show() }
+                        },
+                        modifier = Modifier.fillMaxWidth(0.96F)
+                    ) {
+                        Text("卸载")
+                    }
+                }
+                Button(
+                    onClick = {
+                        myDpm.uninstallAllUserCaCerts(myComponent)
+                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ){
+                    Text("清除用户Ca证书")
+                }
+            }
+        }
+        
         if(isDeviceOwner(myDpm)){
             SysUpdatePolicy()
         }
@@ -468,5 +523,12 @@ fun DeviceCtrlItem(
             },
             modifier = Modifier.padding(end = 5.dp)
         )
+    }
+}
+
+suspend fun isCaCertSelected(delay:Long,operation:()->Unit){
+    while(true){
+        delay(delay)
+        operation()
     }
 }
