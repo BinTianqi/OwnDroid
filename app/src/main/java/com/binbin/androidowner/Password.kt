@@ -106,8 +106,15 @@ fun Password(){
                     if(isWear){Spacer(Modifier.padding(horizontal = 2.dp))}
                     Button(
                         onClick = {
-                            if(myDpm.setResetPasswordToken(myComponent, myByteArray)){ Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show()
-                            }else{ Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show() }
+                            try {
+                                if(myDpm.setResetPasswordToken(myComponent, myByteArray)){
+                                    Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                                }else{
+                                    Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
+                                }
+                            }catch(e:SecurityException){
+                                Toast.makeText(myContext, "失败（安全异常）", Toast.LENGTH_SHORT).show()
+                            }
                         },
                         enabled = isDeviceOwner(myDpm),
                         modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.47F)}

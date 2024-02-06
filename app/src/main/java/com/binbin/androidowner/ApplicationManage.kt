@@ -1,9 +1,13 @@
 package com.binbin.androidowner
 
 import android.app.admin.DevicePolicyManager
+import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT
+import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED
+import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.PackageManager.NameNotFoundException
 import android.net.Uri
 import android.os.Build.VERSION
@@ -17,12 +21,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
+import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,6 +32,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import java.util.concurrent.Executors
@@ -89,6 +91,61 @@ fun ApplicationManage(){
                 Text("防卸载")
             }
         }
+        
+        if(VERSION.SDK_INT>=23&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
+            val grantState = mapOf(
+                PERMISSION_GRANT_STATE_DEFAULT to "由用户决定",
+                PERMISSION_GRANT_STATE_GRANTED to "允许",
+                PERMISSION_GRANT_STATE_DENIED to "拒绝"
+            )
+            Column(modifier = sections()){
+                var inputPermission by remember{mutableStateOf("android.permission.")}
+                var currentState by remember{mutableStateOf(grantState[myDpm.getPermissionGrantState(myComponent,pkgName,inputPermission)])}
+                Text(text = "权限管理", style = typography.titleLarge)
+                Text(text = "查看系统支持的权限：adb shell pm list permissions", style = bodyTextStyle)
+                OutlinedTextField(
+                    value = inputPermission,
+                    label = { Text("权限")},
+                    onValueChange = {inputPermission = it},
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                    enabled = isDeviceOwner(myDpm),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
+                )
+                Text("当前状态：$currentState", style = bodyTextStyle)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+                    Button(
+                        onClick = {
+                            myDpm.setPermissionGrantState(myComponent,pkgName,inputPermission, PERMISSION_GRANT_STATE_GRANTED)
+                            currentState = grantState[myDpm.getPermissionGrantState(myComponent,pkgName,inputPermission)]
+                        },
+                        modifier = Modifier.fillMaxWidth(0.49F)
+                    ) {
+                        Text("允许")
+                    }
+                    Button(
+                        onClick = {
+                            myDpm.setPermissionGrantState(myComponent,pkgName,inputPermission, PERMISSION_GRANT_STATE_DENIED)
+                            currentState = grantState[myDpm.getPermissionGrantState(myComponent,pkgName,inputPermission)]
+                        },
+                        Modifier.fillMaxWidth(0.96F)
+                    ) {
+                        Text("拒绝")
+                    }
+                }
+                Button(
+                    onClick = {
+                        myDpm.setPermissionGrantState(myComponent,pkgName,inputPermission, PERMISSION_GRANT_STATE_DEFAULT)
+                        currentState = grantState[myDpm.getPermissionGrantState(myComponent,pkgName,inputPermission)]
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("由用户决定")
+                }
+                Text(text ="设为允许或拒绝后，用户不能改变状态", style = bodyTextStyle)
+            }
+        }
+        
         Column(modifier = sections()) {
             Text(text = "许可的输入法", style = typography.titleLarge,color = colorScheme.onPrimaryContainer)
             var imeList = mutableListOf<String>()

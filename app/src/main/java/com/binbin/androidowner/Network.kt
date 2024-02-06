@@ -2,6 +2,8 @@ package com.binbin.androidowner
 
 import android.app.admin.DevicePolicyManager
 import android.app.admin.WifiSsidPolicy
+import android.app.admin.WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_ALLOWLIST
+import android.app.admin.WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_DENYLIST
 import android.content.ComponentName
 import android.content.Context
 import android.net.wifi.WifiSsid
@@ -103,8 +105,8 @@ fun Network(){
                 var inited by remember{mutableStateOf(false)}
                 if(!inited){refreshList(); inited=true}
                 Text(text = "WiFi SSID策略", style = typography.titleLarge)
-                RadioButtonItem("白名单",{selectedPolicyType==WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_ALLOWLIST},{selectedPolicyType= WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_ALLOWLIST})
-                RadioButtonItem("黑名单",{selectedPolicyType==WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_DENYLIST},{selectedPolicyType= WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_DENYLIST})
+                RadioButtonItem("白名单",{selectedPolicyType==WIFI_SSID_POLICY_TYPE_ALLOWLIST},{selectedPolicyType=WIFI_SSID_POLICY_TYPE_ALLOWLIST})
+                RadioButtonItem("黑名单",{selectedPolicyType==WIFI_SSID_POLICY_TYPE_DENYLIST},{selectedPolicyType=WIFI_SSID_POLICY_TYPE_DENYLIST})
                 Text("SSID列表：")
                 Text(text = if(ssidList!=""){ssidList}else{"无"}, style = bodyTextStyle)
                 TextField(

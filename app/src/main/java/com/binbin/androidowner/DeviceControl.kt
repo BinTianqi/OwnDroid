@@ -194,6 +194,26 @@ fun DeviceControl(){
             }
         }
         
+        if(VERSION.SDK_INT>=23&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
+            Column(modifier = sections()){
+                var selectedPolicy by remember{mutableIntStateOf(myDpm.getPermissionPolicy(myComponent))}
+                Text(text = "权限策略", style = typography.titleLarge)
+                RadioButtonItem("默认", {selectedPolicy==PERMISSION_POLICY_PROMPT}, {selectedPolicy= PERMISSION_POLICY_PROMPT})
+                RadioButtonItem("自动允许", {selectedPolicy==PERMISSION_POLICY_AUTO_GRANT}, {selectedPolicy= PERMISSION_POLICY_AUTO_GRANT})
+                RadioButtonItem("自动拒绝", {selectedPolicy==PERMISSION_POLICY_AUTO_DENY}, {selectedPolicy= PERMISSION_POLICY_AUTO_DENY})
+                Button(
+                    onClick = {
+                        myDpm.setPermissionPolicy(myComponent,selectedPolicy)
+                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("应用")
+                }
+                
+            }
+        }
+        
         if(VERSION.SDK_INT>=34&&isDeviceOwner(myDpm)){
             Column(modifier = sections()){
                 Text(text = "MTE策略", style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
@@ -352,9 +372,7 @@ fun DeviceControl(){
             SysUpdatePolicy()
         }
         
-        Column(modifier = sections(if(isSystemInDarkTheme()){
-            colorScheme.errorContainer}else{
-            colorScheme.errorContainer.copy(alpha = 0.6F)})) {
+        Column(modifier = sections(if(isSystemInDarkTheme()){ colorScheme.errorContainer }else{ colorScheme.errorContainer.copy(alpha = 0.6F) })) {
             var flag by remember{ mutableIntStateOf(0) }
             var confirmed by remember{ mutableStateOf(false) }
             Text(text = "清除数据",style = typography.titleLarge,modifier = Modifier.padding(6.dp),color = colorScheme.onErrorContainer)
@@ -368,12 +386,8 @@ fun DeviceControl(){
             Button(
                 onClick = {confirmed=!confirmed},
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if(confirmed){
-                        colorScheme.primary}else{
-                        colorScheme.error},
-                    contentColor = if(confirmed){
-                        colorScheme.onPrimary}else{
-                        colorScheme.onError}
+                    containerColor = if(confirmed){ colorScheme.primary }else{ colorScheme.error },
+                    contentColor = if(confirmed){ colorScheme.onPrimary }else{ colorScheme.onError }
                 ),
                 enabled = myDpm.isAdminActive(myComponent)
             ) {
