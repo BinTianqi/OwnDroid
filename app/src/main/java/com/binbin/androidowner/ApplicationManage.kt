@@ -7,7 +7,6 @@ import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.pm.PackageManager.NameNotFoundException
 import android.net.Uri
 import android.os.Build.VERSION
@@ -15,16 +14,15 @@ import android.os.Looper
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -37,36 +35,45 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import java.util.concurrent.Executors
 
-
 @Composable
 fun ApplicationManage(){
     val myContext = LocalContext.current
     val focusMgr = LocalFocusManager.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
-    var pkgName by remember { mutableStateOf("") }
+    var pkgName by rememberSaveable{ mutableStateOf("") }
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val isWear = sharedPref.getBoolean("isWear",false)
     val bodyTextStyle = if(isWear){ typography.bodyMedium }else{ typography.bodyLarge }
+    Column{
+        if(!isWear){
+            TextField(
+                value = pkgName,
+                onValueChange = { pkgName = it },
+                label = { Text("包名") },
+                enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
+            )
+        }
     Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
+        if(isWear){
         TextField(
             value = pkgName,
             onValueChange = { pkgName = it },
             label = { Text("包名") },
             enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = if(isWear){2.dp}else{12.dp},vertical = if(isWear){2.dp}else{6.dp}),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp,vertical = 2.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
         )
+        }
         if(VERSION.SDK_INT>=24){
             val isSuspended = { try{ myDpm.isPackageSuspended(myComponent,pkgName) }catch(e:NameNotFoundException){ false } }
             AppManageItem(R.string.suspend,R.string.place_holder, isSuspended) { b -> myDpm.setPackagesSuspended(myComponent, arrayOf(pkgName), b) }
         }
         AppManageItem(R.string.hide,R.string.isapphidden_desc, {myDpm.isApplicationHidden(myComponent,pkgName)}, {b -> myDpm.setApplicationHidden(myComponent,pkgName,b)})
-        if(VERSION.SDK_INT>=30){
-            AppManageItem(R.string.user_ctrl_disabled,R.string.user_ctrl_disabled_desc,{pkgName in myDpm.getUserControlDisabledPackages(myComponent)},
-                {b->myDpm.setUserControlDisabledPackages(myComponent, mutableListOf(if(b){pkgName}else{null}))})
-        }
         if(VERSION.SDK_INT>=24){
             AppManageItem(
                 R.string.always_on_vpn,R.string.experimental_feature,{pkgName == myDpm.getAlwaysOnVpnPackage(myComponent)},
@@ -77,18 +84,98 @@ fun ApplicationManage(){
                 }
             )
         }
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = if(isWear){sections().horizontalScroll(rememberScrollState())}else{sections()}
-        ) {
-            Button(onClick = {focusMgr.clearFocus();myDpm.setUninstallBlocked(myComponent,pkgName,false)}, enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm),
-                modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.48F)}) {
-                Text("允许卸载")
+        
+        if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
+            Column(modifier = sections()){
+                var state by remember{mutableStateOf(myDpm.isUninstallBlocked(myComponent,pkgName))}
+                Text(text = "防卸载", style = typography.titleLarge)
+                Text("当前状态：${if(state){"打开"}else{"关闭"}}")
+                Text("有时候无法正确获取防卸载状态")
+                Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                    Button(
+                        onClick = {
+                            focusMgr.clearFocus()
+                            myDpm.setUninstallBlocked(myComponent,pkgName,true)
+                            state = myDpm.isUninstallBlocked(myComponent,pkgName)
+                        },
+                        modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.49F)}
+                    ) {
+                        Text("打开")
+                    }
+                    Button(
+                        onClick = {
+                            focusMgr.clearFocus()
+                            myDpm.setUninstallBlocked(myComponent,pkgName,false)
+                            state = myDpm.isUninstallBlocked(myComponent,pkgName)
+                        },
+                        modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.96F)}){
+                        Text("关闭")
+                    }
+                }
             }
-            if(isWear){Spacer(Modifier.padding(horizontal = 3.dp))}
-            Button(onClick = {focusMgr.clearFocus();myDpm.setUninstallBlocked(myComponent,pkgName,true)}, enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm),
-                modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.92F)}) {
-                Text("防卸载")
+        }
+        
+        if(VERSION.SDK_INT>=30&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
+            Column(modifier = sections()){
+                var pkgList = myDpm.getUserControlDisabledPackages(myComponent)
+                var listText by remember{mutableStateOf("")}
+                val refresh = {
+                    pkgList = myDpm.getUserControlDisabledPackages(myComponent)
+                    listText = ""
+                    var count = pkgList.size
+                    for(pkg in pkgList){
+                        count-=1
+                        listText+=pkg
+                        if(count>0){listText+="\n"}
+                    }
+                }
+                var inited by remember{mutableStateOf(false)}
+                if(!inited){refresh();inited=true}
+                Text(text = "禁止用户控制", style = typography.titleLarge)
+                Text(text = "用户将无法清除应用的存储空间和缓存", style = bodyTextStyle)
+                Text(text = "应用列表：")
+                if(listText!=""){
+                    Text(text = listText, style = bodyTextStyle)
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+                    Button(
+                        onClick = {
+                            if(pkgName!=""){
+                                pkgList.add(pkgName)
+                                myDpm.setUserControlDisabledPackages(myComponent,pkgList)
+                                refresh()
+                            }else{
+                                Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(0.49F)
+                    ){
+                        Text("添加")
+                    }
+                    Button(
+                        onClick = {
+                            val result = if(pkgName!=""){pkgList.remove(pkgName)}else{false}
+                            if(result){
+                                myDpm.setUserControlDisabledPackages(myComponent,pkgList)
+                                refresh()
+                            }else{
+                                Toast.makeText(myContext, "不存在", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(0.96F)
+                    ){
+                        Text("移除")
+                    }
+                }
+                Button(
+                    onClick = {
+                        myDpm.setUserControlDisabledPackages(myComponent, listOf())
+                        refresh()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ){
+                    Text("清空列表")
+                }
             }
         }
         
@@ -109,7 +196,6 @@ fun ApplicationManage(){
                     onValueChange = {inputPermission = it},
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                    enabled = isDeviceOwner(myDpm),
                     modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
                 )
                 Text("当前状态：$currentState", style = bodyTextStyle)
@@ -169,10 +255,10 @@ fun ApplicationManage(){
                     myDpm.setPermittedInputMethods(myComponent, imeList)
                     refreshList()
                 },
-                modifier = Modifier.fillMaxWidth(0.48F),
+                modifier = Modifier.fillMaxWidth(0.49F),
                 enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
             ) {
-                Text("加入列表")
+                Text("添加")
             }
             if(isWear){Spacer(Modifier.padding(horizontal = 2.dp))}
             Button(
@@ -182,10 +268,10 @@ fun ApplicationManage(){
                     myDpm.setPermittedInputMethods(myComponent,imeList)
                     refreshList()
                 },
-                modifier = Modifier.fillMaxWidth(0.92F),
+                modifier = Modifier.fillMaxWidth(0.96F),
                 enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
             ) {
-                Text("从列表中移除")
+                Text("移除")
             }}
         }
         Column(modifier = sections()){
@@ -206,7 +292,7 @@ fun ApplicationManage(){
                         }
                     },
                     enabled = (isDeviceOwner(myDpm)||isProfileOwner(myDpm))&&VERSION.SDK_INT>=28,
-                    modifier = Modifier.fillMaxWidth(0.48F)
+                    modifier = Modifier.fillMaxWidth(0.49F)
                 ) {
                     Text("清除")
                 }
@@ -216,7 +302,7 @@ fun ApplicationManage(){
                         intent.setData(Uri.parse("package:$pkgName"))
                         startActivity(myContext,intent,null)
                     },
-                    modifier = Modifier.fillMaxWidth(0.92F)
+                    modifier = Modifier.fillMaxWidth(0.96F)
                 ){
                     Text("详情")
                 }
@@ -242,6 +328,7 @@ fun ApplicationManage(){
             }
         }
         Spacer(Modifier.padding(30.dp))
+    }
     }
 }
 
