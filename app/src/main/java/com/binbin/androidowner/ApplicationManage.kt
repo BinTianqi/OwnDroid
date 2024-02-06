@@ -232,6 +232,50 @@ fun ApplicationManage(){
             }
         }
         
+        if(isProfileOwner(myDpm)||isDeviceOwner(myDpm)){
+            Column(modifier = sections()) {
+                Text(text = "许可的无障碍应用", style = typography.titleLarge,color = colorScheme.onPrimaryContainer)
+                var list = mutableListOf("")
+                var listText by remember{ mutableStateOf("") }
+                val refreshList = {
+                    list = myDpm.getPermittedAccessibilityServices(myComponent) ?: mutableListOf("")
+                    listText = ""
+                    var count = list.size
+                    for(eachAccessibility in list) {
+                        count -= 1
+                        listText += eachAccessibility
+                        if(count>0) { listText += "\n" }
+                    }
+                }
+                refreshList()
+                Text(text = listText, style = bodyTextStyle)
+                Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
+                    Button(
+                        onClick = {
+                            focusMgr.clearFocus()
+                            list.plus(pkgName)
+                            Toast.makeText(myContext, if(myDpm.setPermittedAccessibilityServices(myComponent,list)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                            refreshList()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.49F)
+                    ) {
+                        Text("添加")
+                    }
+                    Button(
+                        onClick = {
+                            focusMgr.clearFocus()
+                            list.remove(pkgName)
+                            Toast.makeText(myContext, if(myDpm.setPermittedAccessibilityServices(myComponent,list)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                            refreshList()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.96F)
+                    ) {
+                        Text("移除")
+                    }
+                }
+            }
+        }
+        
         Column(modifier = sections()) {
             Text(text = "许可的输入法", style = typography.titleLarge,color = colorScheme.onPrimaryContainer)
             var imeList = mutableListOf<String>()
@@ -246,34 +290,35 @@ fun ApplicationManage(){
                 for(eachIme in imeList){ imeListText += "$eachIme \n" }
             }
             refreshList()
-            Text(imeListText)
-            Row(modifier = if(!isWear){Modifier.fillMaxWidth()}else{Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())},horizontalArrangement = Arrangement.SpaceBetween){
-            Button(
-                onClick = {
-                    imeList.plus(pkgName)
-                    focusMgr.clearFocus()
-                    myDpm.setPermittedInputMethods(myComponent, imeList)
-                    refreshList()
-                },
-                modifier = Modifier.fillMaxWidth(0.49F),
-                enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
-            ) {
-                Text("添加")
+            Text(text = imeListText, style = bodyTextStyle)
+            Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
+                Button(
+                    onClick = {
+                        imeList.plus(pkgName)
+                        focusMgr.clearFocus()
+                        Toast.makeText(myContext, if(myDpm.setPermittedInputMethods(myComponent, imeList)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                        refreshList()
+                    },
+                    modifier = Modifier.fillMaxWidth(0.49F),
+                    enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
+                ) {
+                    Text("添加")
+                }
+                Button(
+                    onClick = {
+                        imeList.remove(pkgName)
+                        focusMgr.clearFocus()
+                        Toast.makeText(myContext, if(myDpm.setPermittedInputMethods(myComponent, imeList)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                        refreshList()
+                    },
+                    modifier = Modifier.fillMaxWidth(0.96F),
+                    enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
+                ) {
+                    Text("移除")
+                }
             }
-            if(isWear){Spacer(Modifier.padding(horizontal = 2.dp))}
-            Button(
-                onClick = {
-                    imeList.remove(pkgName)
-                    focusMgr.clearFocus()
-                    myDpm.setPermittedInputMethods(myComponent,imeList)
-                    refreshList()
-                },
-                modifier = Modifier.fillMaxWidth(0.96F),
-                enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
-            ) {
-                Text("移除")
-            }}
         }
+        
         Column(modifier = sections()){
             Text(text = "清除应用存储", style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){

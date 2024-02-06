@@ -6,7 +6,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build.VERSION
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
@@ -228,6 +227,42 @@ fun DeviceControl(){
                             Toast.makeText(myContext, "不支持", Toast.LENGTH_SHORT).show()
                         }
                         selectedMtePolicy = myDpm.mtePolicy
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("应用")
+                }
+            }
+        }
+        
+        if(VERSION.SDK_INT>=31&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
+            Column(modifier = sections()){
+                var appPolicy by remember{mutableIntStateOf(myDpm.nearbyAppStreamingPolicy)}
+                Text(text = "附近App共享", style = typography.titleLarge)
+                RadioButtonItem("由用户决定",{appPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY},{appPolicy = NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY})
+                RadioButtonItem("启用",{appPolicy == NEARBY_STREAMING_ENABLED},{appPolicy = NEARBY_STREAMING_ENABLED})
+                RadioButtonItem("禁用",{appPolicy == NEARBY_STREAMING_DISABLED},{appPolicy = NEARBY_STREAMING_DISABLED})
+                RadioButtonItem("如果足够安全(默认)",{appPolicy == NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY},{appPolicy = NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY})
+                Button(
+                    onClick = {
+                        myDpm.nearbyAppStreamingPolicy = appPolicy
+                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("应用")
+                }
+                Spacer(Modifier.padding(vertical = 3.dp))
+                var notificationPolicy by remember{mutableIntStateOf(myDpm.nearbyNotificationStreamingPolicy)}
+                Text(text = "附近通知共享", style = typography.titleLarge)
+                RadioButtonItem("由用户决定",{notificationPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY},{notificationPolicy = NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY})
+                RadioButtonItem("启用",{notificationPolicy == NEARBY_STREAMING_ENABLED},{notificationPolicy = NEARBY_STREAMING_ENABLED})
+                RadioButtonItem("禁用",{notificationPolicy == NEARBY_STREAMING_DISABLED},{notificationPolicy = NEARBY_STREAMING_DISABLED})
+                RadioButtonItem("如果足够安全(默认)",{notificationPolicy == NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY},{notificationPolicy = NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY})
+                Button(
+                    onClick = {
+                        myDpm.nearbyNotificationStreamingPolicy = notificationPolicy
+                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
