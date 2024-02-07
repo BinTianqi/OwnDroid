@@ -121,29 +121,50 @@ fun DeviceControl(){
                 Button(
                     onClick = { Toast.makeText(myContext, if(myDpm.setKeyguardDisabled(myComponent,true)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show() },
                     enabled = isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser),
-                    modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.48F)}
+                    modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.49F)}
                 ) {
                     Text("禁用")
                 }
                 Button(
                     onClick = { Toast.makeText(myContext, if(myDpm.setKeyguardDisabled(myComponent,false)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show() },
                     enabled = isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser),
-                    modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.92F)}
+                    modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.96F)}
                 ) {
                     Text("启用")
                 }
             }}
         }
-
-        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = sections()) {
-            if(VERSION.SDK_INT>=24){
-                Button(onClick = {myDpm.reboot(myComponent)}, enabled = isDeviceOwner(myDpm),
-                    modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.48F)}) {
-                    Text("重启")
+        
+        Column(modifier = sections()){
+            Text(text = "锁屏", style = typography.titleLarge)
+            var flag by remember{mutableIntStateOf(0)}
+            if(VERSION.SDK_INT>=26){ CheckBoxItem("需要重新输入密码",{flag==FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY},{flag = if(flag==0){1}else{0} }) }
+            Button(
+                onClick = {myDpm.lockNow()},
+                enabled = myDpm.isAdminActive(myComponent),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("立即锁屏")
+            }
+        }
+        
+        if(VERSION.SDK_INT>=24){
+            Column(modifier = sections()){
+                Button(
+                    onClick = {
+                        val result = myDpm.requestBugreport(myComponent)
+                        Toast.makeText(myContext, if(result){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                    ) {
+                    Text("请求错误报告")
                 }
-                Button(onClick = {myDpm.lockNow()}, enabled = myDpm.isAdminActive(myComponent),
-                    modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.92F)}) {
-                    Text("锁屏")
+                Button(
+                    onClick = {myDpm.reboot(myComponent)},
+                    enabled = isDeviceOwner(myDpm),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("重启")
                 }
             }
         }

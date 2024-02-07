@@ -1,12 +1,10 @@
 package com.binbin.androidowner
 
 import android.app.admin.DevicePolicyManager
-import android.app.admin.DevicePolicyManager.InstallSystemUpdateCallback
 import android.app.admin.SystemUpdateInfo
 import android.app.admin.SystemUpdatePolicy
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -26,7 +24,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import java.util.Date
-import java.util.concurrent.Executors
 
 @Composable
 fun SysUpdatePolicy(){

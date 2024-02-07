@@ -10,7 +10,6 @@ import android.net.wifi.WifiSsid
 import android.os.Build.VERSION
 import android.telephony.TelephonyManager
 import android.telephony.TelephonyManager.UNKNOWN_CARRIER_ID
-import android.telephony.data.ApnSetting
 import android.telephony.data.ApnSetting.*
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -316,7 +315,7 @@ fun Network(){
                     var persistent by remember{mutableStateOf(false)}
                     var protocol by remember{mutableIntStateOf(-1)}
                     var roamingProtocol by remember{mutableIntStateOf(-1)}
-                    var id by remember{mutableStateOf(0)}
+                    var id by remember{mutableIntStateOf(0)}
                     
                     if(inputNum!="0"){
                         val current = setting[inputNum.toInt()-1]

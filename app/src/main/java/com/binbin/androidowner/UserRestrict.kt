@@ -9,12 +9,13 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -38,7 +39,6 @@ private data class Restriction(
     @DrawableRes val ico:Int
 )
 
-
 @Composable
 fun UserRestriction(){
     val myContext = LocalContext.current
@@ -52,75 +52,66 @@ fun UserRestriction(){
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val isWear = sharedPref.getBoolean("isWear",false)
     val bodyTextStyle = if(isWear){typography.bodyMedium}else{typography.bodyLarge}
-    LazyColumn(horizontalAlignment = Alignment.CenterHorizontally){
-        items(1){
-            Text(text = "打开开关后会禁用对应的功能",modifier = Modifier.padding(3.dp), style = bodyTextStyle)
-            if(VERSION.SDK_INT<24){
-                Text(text = "所有的用户限制都需要API24，你的设备低于API24，无法使用。", style = bodyTextStyle, color = colorScheme.error)
-            }
-            if(isProfileOwner(myDpm)){
-                Text(text = "Profile owner无法使用部分功能", style = bodyTextStyle)
-            }
-            if(isWear){
-                Text(text = "部分功能在手表上无效", style = typography.bodyMedium)
+    Column(modifier = Modifier.verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally){
+        Text(text = "打开开关后会禁用对应的功能",modifier = Modifier.padding(3.dp), style = bodyTextStyle)
+        if(VERSION.SDK_INT<24){
+            Text(text = "所有的用户限制都需要API24，你的设备低于API24，无法使用。", style = bodyTextStyle, color = colorScheme.error)
+        }
+        if(isProfileOwner(myDpm)){
+            Text(text = "Profile owner无法使用部分功能", style = bodyTextStyle)
+        }
+        if(isWear){
+            Text(text = "部分功能在手表上无效", style = typography.bodyMedium)
+        }
+        SectionTab("网络和互联网",{internetVisible}, { internetVisible=!internetVisible})
+        AnimatedVisibility(internetVisible) {
+            Column {
+                for(internetItem in RestrictionData().internet()){
+                    UserRestrictionItem(internetItem.restriction,internetItem.name,internetItem.desc,internetItem.ico)
+                }
             }
         }
-
-        items(1){ SectionTab("网络和互联网",{internetVisible}, { internetVisible=!internetVisible}) }
-        items(RestrictionData().internet()){data->
-            if(internetVisible){
-                UserRestrictionItem(data.restriction,data.name,data.desc,data.ico)
+        SectionTab("更多连接",{connectivityVisible}) { connectivityVisible=!connectivityVisible }
+        AnimatedVisibility(connectivityVisible) {
+            Column {
+                for(connectivityItem in RestrictionData().connectivity()){
+                    UserRestrictionItem(connectivityItem.restriction,connectivityItem.name,connectivityItem.desc,connectivityItem.ico)
+                }
             }
         }
-
-        items(1){ SectionTab("更多连接",{connectivityVisible}) { connectivityVisible=!connectivityVisible } }
-        items(RestrictionData().connectivity()){data->
-            if(connectivityVisible){
-                UserRestrictionItem(data.restriction,data.name,data.desc,data.ico)
+        SectionTab("应用",{applicationVisible}) { applicationVisible=!applicationVisible }
+        AnimatedVisibility(applicationVisible) {
+            Column {
+                for(applicationItem in RestrictionData().application()){
+                    UserRestrictionItem(applicationItem.restriction,applicationItem.name,applicationItem.desc,applicationItem.ico)
+                }
             }
         }
-
-        items(1){ SectionTab("应用",{applicationVisible}) { applicationVisible=!applicationVisible } }
-        items(RestrictionData().application()){data->
-            if(applicationVisible){
-                UserRestrictionItem(data.restriction,data.name,data.desc,data.ico)
+        SectionTab("用户",{userVisible}) { userVisible=!userVisible }
+        AnimatedVisibility(userVisible) {
+            Column {
+                for(userItem in RestrictionData().user()){
+                    UserRestrictionItem(userItem.restriction,userItem.name,userItem.desc,userItem.ico)
+                }
             }
         }
-
-        items(1){ SectionTab("用户",{userVisible}) { userVisible=!userVisible } }
-        items(RestrictionData().user()){data->
-            if(userVisible){
-                UserRestrictionItem(data.restriction,data.name,data.desc,data.ico)
+        SectionTab("媒体",{mediaVisible}) { mediaVisible=!mediaVisible }
+        AnimatedVisibility(mediaVisible) {
+            Column {
+                for(mediaItem in RestrictionData().media()){
+                    UserRestrictionItem(mediaItem.restriction,mediaItem.name,mediaItem.desc,mediaItem.ico)
+                }
             }
         }
-
-        items(1){ SectionTab("媒体",{mediaVisible}) { mediaVisible=!mediaVisible } }
-        items(RestrictionData().media()){data->
-            if(mediaVisible){
-                UserRestrictionItem(data.restriction,data.name,data.desc,data.ico)
+        SectionTab("其他",{otherVisible}) { otherVisible=!otherVisible }
+        AnimatedVisibility(otherVisible) {
+            Column {
+                for(otherItem in RestrictionData().other()){
+                    UserRestrictionItem(otherItem.restriction,otherItem.name,otherItem.desc,otherItem.ico)
+                }
             }
         }
-
-        items(1){ SectionTab("其他",{otherVisible}) { otherVisible=!otherVisible } }
-        items(RestrictionData().other()){data->
-            if(otherVisible){
-                UserRestrictionItem(data.restriction,data.name,data.desc,data.ico)
-            }
-        }
-
-        items(1){
-            Spacer(Modifier.padding(vertical = 5.dp))
-            Column(modifier = Modifier.padding(horizontal = if(!isWear){10.dp}else{3.dp})) {
-                if(VERSION.SDK_INT<24){ Text(text = "以下功能需要安卓7或以上：数据漫游、修改用户头像、更换壁纸", style = bodyTextStyle) }
-                if(VERSION.SDK_INT<26){ Text(text = "以下功能需要安卓8或以上：蓝牙、自动填充服务、添加/移除工作资料", style = bodyTextStyle) }
-                if(VERSION.SDK_INT<28){ Text(text = "以下功能需要安卓9或以上：飞行模式、位置信息、调整亮度、修改语言、修改日期时间、修改屏幕超时、打印、分享至工作应用、切换用户", style = bodyTextStyle) }
-                if(VERSION.SDK_INT<29){ Text(text = "以下功能需要安卓10或以上：配置私人DNS、内容捕获、内容建议", style = bodyTextStyle) }
-                if(VERSION.SDK_INT<31){ Text(text = "以下功能需要安卓12或以上：切换摄像头使用权限、切换麦克风使用权限", style = bodyTextStyle) }
-                if(VERSION.SDK_INT<33){ Text(text = "以下功能需要安卓13或以上：添加WiFi配置、分享设备管理器配置的WiFi、WiFi共享", style = bodyTextStyle) }
-                if(VERSION.SDK_INT<34){ Text(text = "以下功能需要安卓14或以上：2G信号、启用设备管理器、超宽频段无线电", style = bodyTextStyle) }
-            }
-            Spacer(Modifier.padding(vertical = 30.dp))
-        }
+        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
@@ -129,9 +120,7 @@ fun SectionTab(txt:String,getSection:()->Boolean,setSection:()->Unit){
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     Text(
         text = txt,
-        color = if(getSection()){
-            colorScheme.onTertiaryContainer}else{
-            colorScheme.onPrimaryContainer},
+        color = if(getSection()){ colorScheme.onTertiaryContainer }else{ colorScheme.onPrimaryContainer },
         textAlign = TextAlign.Center,
         style = if(!sharedPref.getBoolean("isWear",false)){typography.headlineMedium}else{typography.titleLarge},
         modifier = Modifier
@@ -139,13 +128,7 @@ fun SectionTab(txt:String,getSection:()->Boolean,setSection:()->Unit){
             .padding(horizontal = if(!sharedPref.getBoolean("isWear",false)){8.dp}else{4.dp},
                 vertical = if(!sharedPref.getBoolean("isWear",false)){5.dp}else{2.dp})
             .clip(RoundedCornerShape(15.dp))
-            .background(
-                color = if (getSection()) {
-                    colorScheme.tertiaryContainer.copy(alpha = 0.8F)
-                } else {
-                    colorScheme.primaryContainer.copy(alpha = 0.8F)
-                }
-            )
+            .background(color = if (getSection()){ colorScheme.tertiaryContainer }else{ colorScheme.primaryContainer }.copy(0.8F))
             .clickable(onClick = setSection)
             .padding(vertical = if(!sharedPref.getBoolean("isWear",false)){8.dp}else{3.dp})
     )

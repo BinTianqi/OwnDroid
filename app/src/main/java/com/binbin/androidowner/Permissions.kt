@@ -269,36 +269,23 @@ fun DpmPermissions(navCtrl:NavHostController){
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusManager.clearFocus()})
                 )
-                if(isWear){
-                Button(onClick={focusManager.clearFocus()
-                    myDpm.setAccountManagementDisabled(myComponent,inputText,true)
-                    noManageAccount=myDpm.accountTypesWithManagementDisabled
-                    refreshList()
-                },modifier = Modifier.fillMaxWidth()){
-                    Text("添加至列表")
-                }
-                Button(onClick={focusManager.clearFocus()
-                    myDpm.setAccountManagementDisabled(myComponent,inputText,false)
-                    noManageAccount=myDpm.accountTypesWithManagementDisabled
-                    refreshList()
-                },modifier = Modifier.fillMaxWidth()){
-                    Text("从列表中移除")
-                }}else{
-                    Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
-                        Button(onClick={focusManager.clearFocus()
-                            myDpm.setAccountManagementDisabled(myComponent,inputText,true)
-                            noManageAccount=myDpm.accountTypesWithManagementDisabled
-                            refreshList()
-                        },modifier = Modifier.fillMaxWidth(0.48f)){
-                            Text("添加至列表")
-                        }
-                        Button(onClick={focusManager.clearFocus()
+                Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
+                    Button(onClick={focusManager.clearFocus()
+                        myDpm.setAccountManagementDisabled(myComponent,inputText,true)
+                        noManageAccount=myDpm.accountTypesWithManagementDisabled
+                        refreshList()
+                    },modifier = Modifier.fillMaxWidth(0.49f)){
+                        Text("列表")
+                    }
+                    Button(
+                        onClick={focusManager.clearFocus()
                             myDpm.setAccountManagementDisabled(myComponent,inputText,false)
                             noManageAccount=myDpm.accountTypesWithManagementDisabled
                             refreshList()
-                        },modifier = Modifier.fillMaxWidth(0.92F)){
-                            Text("从列表中移除")
-                        }
+                        },
+                        modifier = Modifier.fillMaxWidth(0.96F)
+                    ){
+                        Text("从列表中移除")
                     }
                 }
             }

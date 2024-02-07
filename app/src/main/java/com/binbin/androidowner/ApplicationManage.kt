@@ -330,8 +330,9 @@ fun ApplicationManage(){
                         if(count>0) { listText += "\n" }
                     }
                 }
-                refreshList()
-                Text(text = listText, style = bodyTextStyle)
+                var inited by remember{mutableStateOf(false)}
+                if(!inited){refreshList(); inited=true}
+                Text(text = if(listText!=""){listText}else{"无"}, style = bodyTextStyle)
                 Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
                         onClick = {
@@ -372,8 +373,9 @@ fun ApplicationManage(){
                 imeListText = ""
                 for(eachIme in imeList){ imeListText += "$eachIme \n" }
             }
-            refreshList()
-            Text(text = imeListText, style = bodyTextStyle)
+            var inited by remember{mutableStateOf(false)}
+            if(!inited){refreshList();inited=true}
+            Text(text = if(imeListText!=""){imeListText}else{"无"}, style = bodyTextStyle)
             Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
                 Button(
                     onClick = {

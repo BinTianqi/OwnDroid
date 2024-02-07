@@ -10,13 +10,7 @@ import android.os.UserManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -28,12 +22,7 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -144,7 +133,7 @@ fun UserManage(navCtrl:NavHostController){
                         }
                     },
                     enabled = isDeviceOwner(myDpm)&&VERSION.SDK_INT>=28,
-                    modifier = Modifier.fillMaxWidth(0.48F)
+                    modifier = Modifier.fillMaxWidth(0.49F)
                 ){
                     Text(if(isWear){"启动"}else{"在后台启动"})
                 }
@@ -159,7 +148,7 @@ fun UserManage(navCtrl:NavHostController){
                         }
                     },
                     enabled = isDeviceOwner(myDpm),
-                    modifier = Modifier.fillMaxWidth(0.92F)
+                    modifier = Modifier.fillMaxWidth(0.96F)
                 ) {
                     Text("切换")
                 }
@@ -178,7 +167,7 @@ fun UserManage(navCtrl:NavHostController){
                         }
                     },
                     enabled = isDeviceOwner(myDpm)&&VERSION.SDK_INT>=28,
-                    modifier = Modifier.fillMaxWidth(0.48F)
+                    modifier = Modifier.fillMaxWidth(0.49F)
                 ) {
                     Text("停止")
                 }
@@ -193,7 +182,7 @@ fun UserManage(navCtrl:NavHostController){
                         }
                     },
                     enabled = isDeviceOwner(myDpm),
-                    modifier = Modifier.fillMaxWidth(0.92F)
+                    modifier = Modifier.fillMaxWidth(0.96F)
                 ) {
                     Text("移除")
                 }
@@ -205,13 +194,10 @@ fun UserManage(navCtrl:NavHostController){
 
         Column(modifier = sections()) {
             Text(text = "工作资料", style = typography.titleLarge)
-            Row(
-                modifier = if(isWear){ Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())}else{Modifier.fillMaxWidth()},
-                horizontalArrangement = Arrangement.SpaceBetween
-            ){
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                 Button(
                     onClick = { createWorkProfile(myContext)},
-                    modifier = Modifier.fillMaxWidth(0.48F)
+                    modifier = Modifier.fillMaxWidth(0.49F)
                 ) {
                     Text("创建")
                 }
@@ -224,7 +210,7 @@ fun UserManage(navCtrl:NavHostController){
                         }
                     },
                     enabled = isProfileOwner(myDpm)||isDeviceOwner(myDpm),
-                    modifier = Modifier.fillMaxWidth(0.95F)
+                    modifier = Modifier.fillMaxWidth(0.96F)
                 ) {
                     Text(text = "启用")
                 }
@@ -253,49 +239,29 @@ fun UserManage(navCtrl:NavHostController){
                     RadioButtonItem("启用所有系统应用",{selectedFlag==DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED},{selectedFlag=DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED})
                 }
                 var newUserHandle: UserHandle? by remember{ mutableStateOf(null) }
-                Row(
-                    modifier = if(isWear){ if(newUserHandle==null){Modifier.fillMaxWidth()}else{
-                        Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState())} }else{Modifier.fillMaxWidth()},
-                    horizontalArrangement = Arrangement.SpaceBetween
+                Button(
+                    onClick = {
+                        newUserHandle=myDpm.createAndManageUser(myComponent,userName,myComponent,null,selectedFlag)
+                        focusMgr.clearFocus()
+                        Toast.makeText(myContext, if(newUserHandle!=null){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                    },
+                    enabled = isDeviceOwner(myDpm),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Button(
-                        onClick = {
-                            newUserHandle=myDpm.createAndManageUser(myComponent,userName,myComponent,null,selectedFlag)
-                            focusMgr.clearFocus()
-                            Toast.makeText(myContext, if(newUserHandle!=null){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
-                        },
-                        enabled = isDeviceOwner(myDpm),
-                        modifier = if(isWear){
-                            if(newUserHandle==null){Modifier.fillMaxWidth()}else{Modifier}
-                        }else{
-                            if(newUserHandle==null){Modifier.fillMaxWidth()}else{Modifier.fillMaxWidth(0.4F)}
-                        }
-                    ) {
-                        Text("创建")
-                    }
-                    if(newUserHandle!=null){
-                        Spacer(Modifier.padding(horizontal = 4.dp))
-                        Button(
-                            onClick = {
-                                if(myDpm.switchUser(myComponent,newUserHandle)){
-                                    Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
-                                    navCtrl.navigate("HomePage")
-                                } else{
-                                    Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.97F)}
-                        ) {
-                            Text("切换至新用户")
-                        }
-                    }
+                    Text("创建(Owner)")
                 }
+                Button(
+                    onClick = {
+                        val intent = UserManager.createUserCreationIntent(userName,null,null,null)
+                        createUser.launch(intent)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("创建(Intent)")
+                }
+                Text(text = "尽量用Device owner模式创建，Intent模式可能没有效果", style = bodyTextStyle)
                 if(newUserHandle!=null){ Text(text = "新用户的序列号：${userManager.getSerialNumberForUser(newUserHandle)}", style = bodyTextStyle) }
             }
-        }else{
-            Text(text = "创建用户需安卓7", style = bodyTextStyle)
         }
         UserSessionMessage("用户名","用户名",true,myDpm,myContext,{null},{msg ->  myDpm.setProfileName(myComponent, msg.toString())})
         if(VERSION.SDK_INT>=28){

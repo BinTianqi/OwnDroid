@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build.VERSION
 import android.os.Bundle
+import android.os.UserManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -43,6 +44,7 @@ import java.io.FileNotFoundException
 import java.io.IOException
 
 lateinit var getCaCert: ActivityResultLauncher<Intent>
+lateinit var createUser:ActivityResultLauncher<Intent>
 var caCert = byteArrayOf()
 
 @ExperimentalMaterial3Api
@@ -64,6 +66,13 @@ class MainActivity : ComponentActivity() {
                 catch(e:FileNotFoundException){ Toast.makeText(applicationContext, "文件不存在", Toast.LENGTH_SHORT).show() }
                 catch(e:IOException){ Toast.makeText(applicationContext, "IO异常", Toast.LENGTH_SHORT).show() }
             }else{ Toast.makeText(applicationContext, "空URI", Toast.LENGTH_SHORT).show() }
+        }
+        createUser = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            when(it.resultCode){
+                UserManager.USER_CREATION_FAILED_NO_MORE_USERS->Toast.makeText(applicationContext, "用户太多了", Toast.LENGTH_SHORT).show();
+                UserManager.USER_CREATION_FAILED_NOT_PERMITTED->Toast.makeText(applicationContext, "不是管理员用户", Toast.LENGTH_SHORT).show();
+                else->Toast.makeText(applicationContext, "成功", Toast.LENGTH_SHORT).show()
+            }
         }
         setContent {
             AndroidOwnerTheme {
