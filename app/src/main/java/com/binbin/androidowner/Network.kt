@@ -8,8 +8,13 @@ import android.content.ComponentName
 import android.content.Context
 import android.net.wifi.WifiSsid
 import android.os.Build.VERSION
+import android.telephony.TelephonyManager
+import android.telephony.TelephonyManager.UNKNOWN_CARRIER_ID
+import android.telephony.data.ApnSetting
+import android.telephony.data.ApnSetting.*
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -18,15 +23,19 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 
 @Composable
 fun Network(){
@@ -246,6 +255,373 @@ fun Network(){
                         Text("移除")
                     }
                 }
+            }
+        }
+        
+        if(VERSION.SDK_INT>=28&&isDeviceOwner(myDpm)){
+            Column(modifier = sections()){
+                val setting = myDpm.getOverrideApns(myComponent)
+                var inputNum by remember{mutableStateOf("0")}
+                var nextStep by remember{mutableStateOf(false)}
+                val builder = Builder()
+                Text(text = "APN设置", style = typography.titleLarge)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically){
+                    Text(text = "启用", style = typography.titleLarge)
+                    Switch(checked = myDpm.isOverrideApnEnabled(myComponent), onCheckedChange = {myDpm.setOverrideApnsEnabled(myComponent,it)})
+                }
+                Text(text = "一共有${setting.size}个APN设置", style = bodyTextStyle)
+                if(setting.size>0){
+                    Text(text = "选择一个你要修改的APN设置(1~${setting.size})或者输入0以新建APN设置", style = bodyTextStyle)
+                    TextField(
+                        value = inputNum,
+                        label = { Text("序号")},
+                        onValueChange = {inputNum = it},
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                        enabled = !nextStep
+                    )
+                }else{
+                    Text(text = "当前没有APN设置，你可以新建一个APN设置", style = bodyTextStyle)
+                }
+                Button(
+                    onClick = {focusMgr.clearFocus(); nextStep=!nextStep},
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = inputNum!=""&&(nextStep||inputNum=="0"||setting[inputNum.toInt()-1]!=null)
+                ) {
+                    Text(if(nextStep){"上一步"}else{"下一步"})
+                }
+                var result = Builder().build()
+                AnimatedVisibility(nextStep) {
+                    /*TODO*/
+                    var carrierEnabled by remember{mutableStateOf(false)}
+                    var inputApnName by remember{mutableStateOf("")}
+                    var user by remember{mutableStateOf("")}
+                    var profileId by remember{mutableStateOf("")}
+                    var selectedAuthType by remember{mutableIntStateOf(AUTH_TYPE_NONE)}
+                    var carrierId by remember{mutableStateOf("$UNKNOWN_CARRIER_ID")}
+                    var apnTypeBitmask by remember{mutableStateOf("")}
+                    var entryName by remember{mutableStateOf("")}
+                    var mmsProxyAddress by remember{mutableStateOf("")}
+                    var mmsProxyPort by remember{mutableStateOf("")}
+                    var proxyAddress by remember{mutableStateOf("")}
+                    var proxyPort by remember{mutableStateOf("")}
+                    var mmsc by remember{mutableStateOf("")}
+                    var mtuV4 by remember{mutableStateOf("")}
+                    var mtuV6 by remember{mutableStateOf("")}
+                    var mvnoType by remember{mutableIntStateOf(-1)}
+                    var networkTypeBitmask by remember{mutableStateOf("")}
+                    var operatorNumeric by remember{mutableStateOf("")}
+                    var password by remember{mutableStateOf("")}
+                    var persistent by remember{mutableStateOf(false)}
+                    var protocol by remember{mutableIntStateOf(-1)}
+                    var roamingProtocol by remember{mutableIntStateOf(-1)}
+                    var id by remember{mutableStateOf(0)}
+                    
+                    if(inputNum!="0"){
+                        val current = setting[inputNum.toInt()-1]
+                        id = current.id
+                        carrierEnabled = current.isEnabled
+                        inputApnName = current.apnName
+                        user = current.user
+                        if(VERSION.SDK_INT>=33){profileId = current.profileId.toString()}
+                        selectedAuthType = current.authType
+                        apnTypeBitmask = current.apnTypeBitmask.toString()
+                        entryName = current.entryName
+                        if(VERSION.SDK_INT>=29){mmsProxyAddress = current.mmsProxyAddressAsString}
+                        mmsProxyPort = current.mmsProxyPort.toString()
+                        if(VERSION.SDK_INT>=29){proxyAddress = current.proxyAddressAsString}
+                        proxyPort = current.proxyPort.toString()
+                        mmsc = current.mmsc.toString()
+                        if(VERSION.SDK_INT>=33){ mtuV4 = current.mtuV4.toString(); mtuV6 = current.mtuV6.toString() }
+                        mvnoType = current.mvnoType
+                        networkTypeBitmask = current.networkTypeBitmask.toString()
+                        operatorNumeric = current.operatorNumeric
+                        password = current.password
+                        if(VERSION.SDK_INT>=33){persistent = current.isPersistent}
+                        protocol = current.protocol
+                        roamingProtocol = current.roamingProtocol
+                    }
+                    
+                    Column {
+                        
+                        Text(text = "APN", style = typography.titleLarge)
+                        TextField(
+                            value = inputApnName,
+                            onValueChange = {inputApnName=it},
+                            label = {Text("名称")},
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                        )
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically){
+                            Text(text = "启用", style = typography.titleLarge)
+                            Switch(checked = carrierEnabled, onCheckedChange = {carrierEnabled=it})
+                        }
+                        
+                        Text(text = "用户名", style = typography.titleLarge)
+                        TextField(
+                            value = user,
+                            onValueChange = {user=it},
+                            label = {Text("用户名")},
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                        )
+                        
+                        if(VERSION.SDK_INT>=33){
+                            Text(text = "资料ID", style = typography.titleLarge)
+                            TextField(
+                                value = profileId,
+                                onValueChange = {profileId=it},
+                                label = {Text("ID")},
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                                keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                                modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                            )
+                        }
+                        
+                        Text(text = "验证类型", style = typography.titleLarge)
+                        RadioButtonItem("无",{selectedAuthType==AUTH_TYPE_NONE},{selectedAuthType=AUTH_TYPE_NONE})
+                        RadioButtonItem("CHAP",{selectedAuthType==AUTH_TYPE_CHAP},{selectedAuthType=AUTH_TYPE_CHAP})
+                        RadioButtonItem("PAP",{selectedAuthType==AUTH_TYPE_PAP},{selectedAuthType=AUTH_TYPE_PAP})
+                        RadioButtonItem("PAP/CHAP",{selectedAuthType==AUTH_TYPE_PAP_OR_CHAP},{selectedAuthType=AUTH_TYPE_PAP_OR_CHAP})
+                        
+                        if(VERSION.SDK_INT>=29){
+                            val ts = myContext.getSystemService(ComponentActivity.TELEPHONY_SERVICE) as TelephonyManager
+                            carrierId = ts.simCarrierId.toString()
+                            Text(text = "CarrierID", style = typography.titleLarge)
+                            TextField(
+                                value = carrierId,
+                                onValueChange = {carrierId=it},
+                                label = {Text("ID")},
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                                keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                                modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                            )
+                        }
+                        
+                        Text(text = "APN类型", style = typography.titleLarge)
+                        TextField(
+                            value = apnTypeBitmask,
+                            onValueChange = {apnTypeBitmask=it},
+                            label = {Text("位掩码")},
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                        )
+                        
+                        Text(text = "描述", style = typography.titleLarge)
+                        TextField(
+                            value = entryName,
+                            onValueChange = {entryName=it},
+                            label = {Text("文本")},
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                        )
+                        
+                        Text(text = "MMS代理", style = typography.titleLarge)
+                        if(VERSION.SDK_INT>=29){
+                            TextField(
+                                value = mmsProxyAddress,
+                                onValueChange = {mmsProxyAddress=it},
+                                label = {Text("地址")},
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                                modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                            )
+                        }
+                        TextField(
+                            value = mmsProxyPort,
+                            onValueChange = {mmsProxyPort=it},
+                            label = {Text("端口")},
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                        )
+                        
+                        Text(text = "代理", style = typography.titleLarge)
+                        if(VERSION.SDK_INT>=29){
+                            TextField(
+                                value = proxyAddress,
+                                onValueChange = {proxyAddress=it},
+                                label = {Text("地址")},
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                                modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                            )
+                        }
+                        TextField(
+                            value = proxyPort,
+                            onValueChange = {proxyPort=it},
+                            label = {Text("端口")},
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                        )
+                        
+                        Text(text = "MMSC", style = typography.titleLarge)
+                        TextField(
+                            value = mmsc,
+                            onValueChange = {mmsc=it},
+                            label = {Text("Uri")},
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                        )
+                        
+                        if(VERSION.SDK_INT>=33){
+                            Text(text = "MTU", style = typography.titleLarge)
+                            TextField(
+                                value = mtuV4,
+                                onValueChange = {mtuV4=it},
+                                label = {Text("IPV4")},
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                                modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                            )
+                            TextField(
+                                value = mtuV6,
+                                onValueChange = {mtuV6=it},
+                                label = {Text("IPV6")},
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                                modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                            )
+                        }
+                        
+                        Text(text = "MVNO", style = typography.titleLarge)
+                        RadioButtonItem("SPN",{mvnoType==MVNO_TYPE_SPN},{mvnoType=MVNO_TYPE_SPN})
+                        RadioButtonItem("IMSI",{mvnoType==MVNO_TYPE_IMSI},{mvnoType=MVNO_TYPE_IMSI})
+                        RadioButtonItem("GID",{mvnoType==MVNO_TYPE_GID},{mvnoType=MVNO_TYPE_GID})
+                        RadioButtonItem("ICCID",{mvnoType==MVNO_TYPE_ICCID},{mvnoType=MVNO_TYPE_ICCID})
+                        
+                        Text(text = "网络类型", style = typography.titleLarge)
+                        TextField(
+                            value = networkTypeBitmask,
+                            onValueChange = {networkTypeBitmask=it},
+                            label = {Text("位掩码")},
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                        )
+                        
+                        Text(text = "OperatorNumeric", style = typography.titleLarge)
+                        TextField(
+                            value = operatorNumeric,
+                            onValueChange = {operatorNumeric=it},
+                            label = {Text("ID")},
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                        )
+                        
+                        Text(text = "密码", style = typography.titleLarge)
+                        TextField(
+                            value = password,
+                            onValueChange = {password=it},
+                            label = {Text("密码")},
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                        )
+                        
+                        if(VERSION.SDK_INT>=33){
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically){
+                                Text(text = "持久的", style = typography.titleLarge)
+                                Switch(checked = persistent, onCheckedChange = {persistent=it})
+                            }
+                        }
+                        
+                        Text(text = "协议", style = typography.titleLarge)
+                        RadioButtonItem("IPV4",{protocol==PROTOCOL_IP},{protocol=PROTOCOL_IP})
+                        RadioButtonItem("IPV6",{protocol==PROTOCOL_IPV6},{protocol=PROTOCOL_IPV6})
+                        RadioButtonItem("IPV4/IPV6",{protocol==PROTOCOL_IPV4V6},{protocol=PROTOCOL_IPV4V6})
+                        RadioButtonItem("PPP",{protocol==PROTOCOL_PPP},{protocol=PROTOCOL_PPP})
+                        if(VERSION.SDK_INT>=29){
+                            RadioButtonItem("non-IP",{protocol==PROTOCOL_NON_IP},{protocol=PROTOCOL_NON_IP})
+                            RadioButtonItem("Unstructured",{protocol==PROTOCOL_UNSTRUCTURED},{protocol=PROTOCOL_UNSTRUCTURED})
+                        }
+                        
+                        Text(text = "漫游协议", style = typography.titleLarge)
+                        RadioButtonItem("IPV4",{roamingProtocol==PROTOCOL_IP},{roamingProtocol=PROTOCOL_IP})
+                        RadioButtonItem("IPV6",{roamingProtocol==PROTOCOL_IPV6},{roamingProtocol=PROTOCOL_IPV6})
+                        RadioButtonItem("IPV4/IPV6",{roamingProtocol==PROTOCOL_IPV4V6},{roamingProtocol=PROTOCOL_IPV4V6})
+                        RadioButtonItem("PPP",{roamingProtocol==PROTOCOL_PPP},{roamingProtocol=PROTOCOL_PPP})
+                        if(VERSION.SDK_INT>=29){
+                            RadioButtonItem("non-IP",{roamingProtocol==PROTOCOL_NON_IP},{roamingProtocol=PROTOCOL_NON_IP})
+                            RadioButtonItem("Unstructured",{roamingProtocol==PROTOCOL_UNSTRUCTURED},{roamingProtocol=PROTOCOL_UNSTRUCTURED})
+                        }
+                        
+                        var finalStep by remember{mutableStateOf(false)}
+                        Button(
+                            onClick = {
+                                if(!finalStep){
+                                    builder.setCarrierEnabled(carrierEnabled)
+                                    builder.setApnName(inputApnName)
+                                    builder.setUser(user)
+                                    if(VERSION.SDK_INT>=33){builder.setProfileId(profileId.toInt())}
+                                    builder.setAuthType(selectedAuthType)
+                                    if(VERSION.SDK_INT>=29){builder.setCarrierId(carrierId.toInt())}
+                                    builder.setApnTypeBitmask(apnTypeBitmask.toInt())
+                                    builder.setEntryName(entryName)
+                                    if(VERSION.SDK_INT>=29){builder.setMmsProxyAddress(mmsProxyAddress)}
+                                    builder.setMmsProxyPort(mmsProxyPort.toInt())
+                                    if(VERSION.SDK_INT>=29){builder.setProxyAddress(proxyAddress)}
+                                    builder.setProxyPort(proxyPort.toInt())
+                                    builder.setMmsc(mmsc.toUri())
+                                    if(VERSION.SDK_INT>=33){ builder.setMtuV4(mtuV4.toInt()); builder.setMtuV6(mtuV6.toInt()) }
+                                    builder.setMvnoType(mvnoType)
+                                    builder.setNetworkTypeBitmask(networkTypeBitmask.toInt())
+                                    builder.setOperatorNumeric(operatorNumeric)
+                                    builder.setPassword(password)
+                                    if(VERSION.SDK_INT>=33){builder.setPersistent(persistent)}
+                                    builder.setProtocol(protocol)
+                                    builder.setRoamingProtocol(roamingProtocol)
+                                    result = builder.build()
+                                }
+                                
+                                finalStep=!finalStep
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(if(finalStep){"上一步"}else{"下一步"})
+                        }
+                        AnimatedVisibility(finalStep) {
+                            if(inputNum=="0"){
+                                Button(
+                                    onClick = {myDpm.addOverrideApn(myComponent,result)},
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text("新建")
+                                }
+                            }else{
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+                                    Button(
+                                        onClick = {
+                                            val success = myDpm.updateOverrideApn(myComponent,id,result)
+                                            Toast.makeText(myContext, if(success){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                                        },
+                                        Modifier.fillMaxWidth(0.49F)
+                                    ){
+                                        Text("更新")
+                                    }
+                                    Button(
+                                        onClick = {
+                                            val success = myDpm.removeOverrideApn(myComponent,id)
+                                            Toast.makeText(myContext, if(success){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                                        },
+                                        Modifier.fillMaxWidth(0.96F)
+                                    ){
+                                        Text("移除")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                Text(text = "这个功能没有被全面测试过", style = bodyTextStyle)
             }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
