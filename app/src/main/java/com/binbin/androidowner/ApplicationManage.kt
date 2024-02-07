@@ -4,6 +4,10 @@ import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT
 import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED
 import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED
+import android.app.admin.PackagePolicy
+import android.app.admin.PackagePolicy.PACKAGE_POLICY_ALLOWLIST
+import android.app.admin.PackagePolicy.PACKAGE_POLICY_ALLOWLIST_AND_SYSTEM
+import android.app.admin.PackagePolicy.PACKAGE_POLICY_BLOCKLIST
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -14,10 +18,12 @@ import android.os.Looper
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.compose.foundation.*
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -35,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import java.util.concurrent.Executors
 
+private var credentialList = mutableSetOf<String>()
 @Composable
 fun ApplicationManage(){
     val myContext = LocalContext.current
@@ -70,8 +77,11 @@ fun ApplicationManage(){
         )
         }
         if(VERSION.SDK_INT>=24){
-            val isSuspended = { try{ myDpm.isPackageSuspended(myComponent,pkgName) }catch(e:NameNotFoundException){ false } }
-            AppManageItem(R.string.suspend,R.string.place_holder, isSuspended) { b -> myDpm.setPackagesSuspended(myComponent, arrayOf(pkgName), b) }
+            val isSuspended: Boolean = try{ myDpm.isPackageSuspended(myComponent,pkgName) }
+            catch(e:NameNotFoundException){ false }
+            catch(w:NameNotFoundException){ false }
+            catch(e:IllegalArgumentException){ false }
+            AppManageItem(R.string.suspend,R.string.place_holder, {isSuspended}) { b -> myDpm.setPackagesSuspended(myComponent, arrayOf(pkgName), b) }
         }
         AppManageItem(R.string.hide,R.string.isapphidden_desc, {myDpm.isApplicationHidden(myComponent,pkgName)}, {b -> myDpm.setApplicationHidden(myComponent,pkgName,b)})
         if(VERSION.SDK_INT>=24){
@@ -229,6 +239,79 @@ fun ApplicationManage(){
                     Text("由用户决定")
                 }
                 Text(text ="设为允许或拒绝后，用户不能改变状态", style = bodyTextStyle)
+            }
+        }
+        
+        if(VERSION.SDK_INT>=34&&isDeviceOwner(myDpm)){
+            var policy:PackagePolicy?
+            var policyType by remember{mutableIntStateOf(-1)}
+            var credentialListText by remember{mutableStateOf("")}
+            val refreshPolicy = {
+                policy = myDpm.credentialManagerPolicy
+                policyType = policy?.policyType ?: -1
+                credentialList = policy?.packageNames ?: mutableSetOf()
+                credentialList = credentialList.toMutableSet()
+            }
+            val refreshText = {
+                credentialListText = ""
+                var count = credentialList.size
+                for(item in credentialList){ count-=1; credentialListText+=item; if(count>0){credentialListText+="\n"} }
+            }
+            var inited by remember{mutableStateOf(false)}
+            if(!inited){refreshPolicy(); refreshText(); inited = true}
+            Column(modifier = sections()){
+                Text(text = "凭据管理策略", style = typography.titleLarge)
+                RadioButtonItem("无",{policyType==-1},{policyType=-1})
+                RadioButtonItem("黑名单",{policyType==PACKAGE_POLICY_BLOCKLIST},{policyType=PACKAGE_POLICY_BLOCKLIST})
+                RadioButtonItem("白名单",{policyType==PACKAGE_POLICY_ALLOWLIST},{policyType=PACKAGE_POLICY_ALLOWLIST})
+                RadioButtonItem("白名单和系统应用",{policyType==PACKAGE_POLICY_ALLOWLIST_AND_SYSTEM},{policyType=PACKAGE_POLICY_ALLOWLIST_AND_SYSTEM})
+                AnimatedVisibility(policyType!=-1) {
+                    Column {
+                        Text("应用列表")
+                        Text(text = if(credentialListText!=""){ credentialListText }else{ "无" }, style = bodyTextStyle)
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+                            Button(
+                                onClick = {
+                                    if(pkgName!=""){credentialList.add(pkgName)}
+                                    refreshText()
+                                },
+                                modifier = Modifier.fillMaxWidth(0.49F)
+                            ) {
+                                Text("添加")
+                            }
+                            Button(
+                                onClick = {
+                                    if(pkgName!=""){credentialList.remove(pkgName)}
+                                    refreshText()
+                                },
+                                modifier = Modifier.fillMaxWidth(0.96F)
+                            ) {
+                                Text("移除")
+                            }
+                        }
+                    }
+                }
+                Button(
+                    onClick = {
+                        focusMgr.clearFocus()
+                        try{
+                            if(policyType!=-1&&credentialList.isNotEmpty()){
+                                myDpm.credentialManagerPolicy = PackagePolicy(policyType,credentialList)
+                            }else{
+                                myDpm.credentialManagerPolicy = null
+                            }
+                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                        }catch(e:java.lang.IllegalArgumentException){
+                            Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
+                        }finally {
+                            refreshPolicy()
+                            refreshText()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("应用")
+                }
             }
         }
         
