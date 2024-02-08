@@ -34,7 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -77,22 +76,27 @@ fun ApplicationManage(){
         )
         }
         if(VERSION.SDK_INT>=24&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
-            val isSuspended: Boolean = try{ myDpm.isPackageSuspended(myComponent,pkgName) }
-            catch(e:NameNotFoundException){ false }
-            catch(w:NameNotFoundException){ false }
-            catch(e:IllegalArgumentException){ false }
-            AppManageItem(R.string.suspend,R.string.place_holder, {isSuspended}) { b -> myDpm.setPackagesSuspended(myComponent, arrayOf(pkgName), b) }
-        }
-        AppManageItem(R.string.hide,R.string.isapphidden_desc, {myDpm.isApplicationHidden(myComponent,pkgName)}, {b -> myDpm.setApplicationHidden(myComponent,pkgName,b)})
-        if(VERSION.SDK_INT>=24){
             AppManageItem(
-                R.string.always_on_vpn,R.string.experimental_feature,{pkgName == myDpm.getAlwaysOnVpnPackage(myComponent)},
-                {b ->
-                    try{ myDpm.setAlwaysOnVpnPackage(myComponent,pkgName,b) }
-                    catch(e:java.lang.UnsupportedOperationException){ Toast.makeText(myContext, "不支持", Toast.LENGTH_SHORT).show() }
-                    catch(e:NameNotFoundException){ Toast.makeText(myContext, "未安装", Toast.LENGTH_SHORT).show() }
+                R.string.suspend,R.string.place_holder,
+                {try{ myDpm.isPackageSuspended(myComponent,pkgName) }
+                catch(e:NameNotFoundException){ false }
+                catch(e:IllegalArgumentException){ false }}
+            ) { b -> myDpm.setPackagesSuspended(myComponent, arrayOf(pkgName), b) }
+        }
+        if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
+            AppManageItem(R.string.hide,R.string.isapphidden_desc, {myDpm.isApplicationHidden(myComponent,pkgName)}) {b-> myDpm.setApplicationHidden(myComponent, pkgName, b)}
+        }
+        if(VERSION.SDK_INT>=24&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
+            AppManageItem(
+                R.string.always_on_vpn,R.string.experimental_feature,{pkgName == myDpm.getAlwaysOnVpnPackage(myComponent)}) {b->
+                try {
+                    myDpm.setAlwaysOnVpnPackage(myComponent, pkgName, b)
+                } catch(e: java.lang.UnsupportedOperationException) {
+                    Toast.makeText(myContext, "不支持", Toast.LENGTH_SHORT).show()
+                } catch(e: NameNotFoundException) {
+                    Toast.makeText(myContext, "未安装", Toast.LENGTH_SHORT).show()
                 }
-            )
+            }
         }
         
         if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
@@ -100,15 +104,16 @@ fun ApplicationManage(){
                 var state by remember{mutableStateOf(myDpm.isUninstallBlocked(myComponent,pkgName))}
                 Text(text = "防卸载", style = typography.titleLarge)
                 Text("当前状态：${if(state){"打开"}else{"关闭"}}")
-                Text("有时候无法正确获取防卸载状态")
+                Text(text = "有时候无法正确获取防卸载状态", style = bodyTextStyle)
                 Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                     Button(
                         onClick = {
                             focusMgr.clearFocus()
                             myDpm.setUninstallBlocked(myComponent,pkgName,true)
+                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                             state = myDpm.isUninstallBlocked(myComponent,pkgName)
                         },
-                        modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.49F)}
+                        modifier = Modifier.fillMaxWidth(0.49F)
                     ) {
                         Text("打开")
                     }
@@ -116,9 +121,11 @@ fun ApplicationManage(){
                         onClick = {
                             focusMgr.clearFocus()
                             myDpm.setUninstallBlocked(myComponent,pkgName,false)
+                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                             state = myDpm.isUninstallBlocked(myComponent,pkgName)
                         },
-                        modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.96F)}){
+                        modifier = Modifier.fillMaxWidth(0.96F)
+                    ){
                         Text("关闭")
                     }
                 }
@@ -133,11 +140,7 @@ fun ApplicationManage(){
                     pkgList = myDpm.getUserControlDisabledPackages(myComponent)
                     listText = ""
                     var count = pkgList.size
-                    for(pkg in pkgList){
-                        count-=1
-                        listText+=pkg
-                        if(count>0){listText+="\n"}
-                    }
+                    for(pkg in pkgList){ count-=1; listText+=pkg; if(count>0){listText+="\n"} }
                 }
                 var inited by remember{mutableStateOf(false)}
                 if(!inited){refresh();inited=true}
@@ -178,10 +181,7 @@ fun ApplicationManage(){
                     }
                 }
                 Button(
-                    onClick = {
-                        myDpm.setUserControlDisabledPackages(myComponent, listOf())
-                        refresh()
-                    },
+                    onClick = { myDpm.setUserControlDisabledPackages(myComponent, listOf()); refresh() },
                     modifier = Modifier.fillMaxWidth()
                 ){
                     Text("清空列表")
@@ -469,45 +469,21 @@ private fun AppManageItem(
     getMethod:()->Boolean,
     setMethod:(b:Boolean)->Unit
 ){
-    val myDpm = LocalContext.current.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val focusMgr = LocalFocusManager.current
-    var isEnabled by remember{ mutableStateOf(false) }
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    if(!sharedPref.getBoolean("isWear",false)){
     Row(
         modifier = sections(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column {
+        var enabled by remember{mutableStateOf(getMethod())}
+        enabled = getMethod()
+        Column(modifier = if(sharedPref.getBoolean("isWear",false)){Modifier.fillMaxWidth(0.65F)}else{Modifier}){
             Text(text = stringResource(itemName), style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
             if(itemDesc!=R.string.place_holder){ Text(stringResource(itemDesc)) }
         }
         Switch(
-            checked = isEnabled,
-            onCheckedChange = {
-                setMethod(!isEnabled)
-                isEnabled = getMethod()
-            },
-            enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm)
+            checked = enabled,
+            onCheckedChange = { setMethod(!enabled); enabled=getMethod() }
         )
-    }}else{
-        Column(
-            modifier = sections()
-        ) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(text = stringResource(itemName), fontWeight = FontWeight.SemiBold, style = typography.titleMedium)
-                Switch(
-                    checked = isEnabled,
-                    onCheckedChange = {
-                        setMethod(!isEnabled)
-                        isEnabled = getMethod()
-                        focusMgr.clearFocus()
-                    },
-                    enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm)
-                )
-            }
-            if(itemDesc!=R.string.place_holder){ Text(text = stringResource(itemDesc), style = typography.bodyMedium) }
-        }
     }
 }
