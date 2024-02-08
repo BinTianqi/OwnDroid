@@ -23,6 +23,7 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -100,6 +101,7 @@ fun MyScaffold(){
         "HomePage" to R.string.app_name,
         "DeviceControl" to R.string.device_ctrl,
         "Network" to R.string.network,
+        "ManagedProfile" to R.string.work_profile,
         "Permissions" to R.string.permission,
         "UserManage" to R.string.user_manage,
         "ApplicationManage" to R.string.app_manage,
@@ -160,6 +162,7 @@ fun MyScaffold(){
         ){
             composable(route = "HomePage", content = { HomePage(navCtrl)})
             composable(route = "DeviceControl", content = { DeviceControl()})
+            composable(route = "ManagedProfile", content = {ManagedProfile(navCtrl)})
             composable(route = "Permissions", content = { DpmPermissions(navCtrl)})
             composable(route = "ApplicationManage", content = { ApplicationManage()})
             composable(route = "UserRestriction", content = { UserRestriction()})
@@ -216,6 +219,7 @@ fun HomePage(navCtrl:NavHostController){
         }
         HomePageItem(R.string.device_ctrl, R.drawable.mobile_phone_fill0, "DeviceControl", navCtrl)
         if(VERSION.SDK_INT>=26){HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network",navCtrl)}
+        HomePageItem(R.string.work_profile, R.drawable.work_fill0, "ManagedProfile",navCtrl)
         HomePageItem(R.string.app_manage, R.drawable.apps_fill0, "ApplicationManage", navCtrl)
         HomePageItem(R.string.user_restrict, R.drawable.manage_accounts_fill0, "UserRestriction", navCtrl)
         HomePageItem(R.string.user_manage,R.drawable.account_circle_fill0,"UserManage",navCtrl)
@@ -311,6 +315,7 @@ fun isProfileOwner(dpm:DevicePolicyManager): Boolean {
 
 @SuppressLint("ModifierFactoryExtensionFunction", "ComposableModifierFactory")
 @Composable
+@Stable
 fun sections(bgColor:Color=MaterialTheme.colorScheme.primaryContainer):Modifier{
     val backgroundColor = if(isSystemInDarkTheme()){bgColor.copy(0.4F)}else{bgColor.copy(0.6F)}
     return if(!LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE).getBoolean("isWear",false)){

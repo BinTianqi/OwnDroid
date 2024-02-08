@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
@@ -160,6 +161,7 @@ fun DpmPermissions(navCtrl:NavHostController){
                 if(!isda){
                     Text(text = "使用此命令也会激活Device Admin", style = bodyTextStyle)
                 }
+                Text(text = "成为Device owner后将不能新建工作资料", style = bodyTextStyle)
             }
         }
         if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)||myDpm.isAdminActive(myComponent)){
@@ -175,8 +177,6 @@ fun DpmPermissions(navCtrl:NavHostController){
                 modifier = sections()
             ) {
                 Text(text = "设备信息", style = typography.titleLarge,color = titleColor)
-                val orgDevice = myDpm.isOrganizationOwnedDeviceWithManagedProfile
-                Text("由组织拥有的受管理资料设备：$orgDevice",style=bodyTextStyle)
                 if(VERSION.SDK_INT>=34&&(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))){
                     val financed = myDpm.isDeviceFinanced
                     Text("企业资产 : $financed",style=bodyTextStyle)
@@ -186,9 +186,7 @@ fun DpmPermissions(navCtrl:NavHostController){
                     Text("设备策略管理器角色：${if(dpmRole==null){"null"}else{""}}",style=bodyTextStyle)
                     if(dpmRole!=null){
                         Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())){
-                            SelectionContainer {
-                                Text(dpmRole)
-                            }
+                            SelectionContainer { Text(dpmRole) }
                         }
                     }
                 }
@@ -234,6 +232,33 @@ fun DpmPermissions(navCtrl:NavHostController){
                 }
             }
         }
+        
+        if((VERSION.SDK_INT>=26&&isDeviceOwner(myDpm))||(VERSION.SDK_INT>=24&&isProfileOwner(myDpm))){
+            Column(modifier = sections()){
+                var orgName by remember{
+                    mutableStateOf(
+                        if(myDpm.getOrganizationName(myComponent).toString()=="null"){ "" }else{ myDpm.getOrganizationName(myComponent).toString() }
+                    )
+                }
+                Text(text = "组织名称", style = typography.titleLarge)
+                TextField(
+                    value = orgName, onValueChange = {orgName=it}, modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+                    label = {Text("组织名称")},
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {focusManager.clearFocus()})
+                )
+                Button(
+                    onClick = {
+                        myDpm.setOrganizationName(myComponent,orgName)
+                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ){
+                    Text("应用")
+                }
+            }
+        }
+        
         if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){
             Column(modifier = sections()) {
                 Text(text = "不受控制的账号类型", style = typography.titleLarge,color = titleColor)
@@ -267,12 +292,16 @@ fun DpmPermissions(navCtrl:NavHostController){
                     keyboardActions = KeyboardActions(onDone = {focusManager.clearFocus()})
                 )
                 Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
-                    Button(onClick={focusManager.clearFocus()
-                        myDpm.setAccountManagementDisabled(myComponent,inputText,true)
-                        noManageAccount=myDpm.accountTypesWithManagementDisabled
-                        refreshList()
-                    },modifier = Modifier.fillMaxWidth(0.49f)){
-                        Text("列表")
+                    Button(
+                        onClick={
+                            focusManager.clearFocus()
+                            myDpm.setAccountManagementDisabled(myComponent,inputText,true)
+                            noManageAccount=myDpm.accountTypesWithManagementDisabled
+                            refreshList()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.49f)
+                    ){
+                        Text("添加")
                     }
                     Button(
                         onClick={focusManager.clearFocus()
@@ -282,7 +311,7 @@ fun DpmPermissions(navCtrl:NavHostController){
                         },
                         modifier = Modifier.fillMaxWidth(0.96F)
                     ){
-                        Text("从列表中移除")
+                        Text("移除")
                     }
                 }
             }
@@ -370,7 +399,7 @@ fun DeviceOwnerInfo(
                     fm.clearFocus()
                     Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                 },
-                modifier = if(isWear){Modifier.fillMaxWidth(0.48F)}else{Modifier.fillMaxWidth(0.6F)}
+                modifier = if(isWear){Modifier.fillMaxWidth(0.49F)}else{Modifier.fillMaxWidth(0.6F)}
             ) {
                 Text(text = "应用")
             }
@@ -381,7 +410,7 @@ fun DeviceOwnerInfo(
                     fm.clearFocus()
                     Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                 },
-                modifier = Modifier.fillMaxWidth(0.95F)
+                modifier = Modifier.fillMaxWidth(0.96F)
             ) {
                 Text(text = "重置")
             }

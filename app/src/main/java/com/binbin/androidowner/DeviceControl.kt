@@ -492,7 +492,7 @@ fun DeviceControl(){
             Text(text = "清除数据",style = typography.titleLarge,modifier = Modifier.padding(6.dp),color = colorScheme.onErrorContainer)
             RadioButtonItem("默认",{flag==0},{flag=0}, colorScheme.onErrorContainer)
             RadioButtonItem("WIPE_EXTERNAL_STORAGE",{flag==WIPE_EXTERNAL_STORAGE},{flag=WIPE_EXTERNAL_STORAGE}, colorScheme.onErrorContainer)
-            if(VERSION.SDK_INT>=22){
+            if(VERSION.SDK_INT>=22&&isDeviceOwner(myDpm)){
                 RadioButtonItem("WIPE_RESET_PROTECTION_DATA",{flag==WIPE_RESET_PROTECTION_DATA},{flag=WIPE_RESET_PROTECTION_DATA}, colorScheme.onErrorContainer)
             }
             if(VERSION.SDK_INT>=28){ RadioButtonItem("WIPE_EUICC",{flag==WIPE_EUICC},{flag=WIPE_EUICC}, colorScheme.onErrorContainer) }
@@ -532,6 +532,9 @@ fun DeviceControl(){
                         Text("WipeDevice(API34)")
                     }
                 }
+            }
+            if(VERSION.SDK_INT>=24&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
+                Text("将会删除工作资料")
             }
         }
         Spacer(Modifier.padding(vertical = 30.dp))

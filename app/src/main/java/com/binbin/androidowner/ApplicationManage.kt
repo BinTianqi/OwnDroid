@@ -76,7 +76,7 @@ fun ApplicationManage(){
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
         )
         }
-        if(VERSION.SDK_INT>=24&&isDeviceOwner(myDpm)){
+        if(VERSION.SDK_INT>=24&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
             val isSuspended: Boolean = try{ myDpm.isPackageSuspended(myComponent,pkgName) }
             catch(e:NameNotFoundException){ false }
             catch(w:NameNotFoundException){ false }
@@ -472,7 +472,6 @@ private fun AppManageItem(
     val myDpm = LocalContext.current.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val focusMgr = LocalFocusManager.current
     var isEnabled by remember{ mutableStateOf(false) }
-    if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){ isEnabled = getMethod() }
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     if(!sharedPref.getBoolean("isWear",false)){
     Row(
