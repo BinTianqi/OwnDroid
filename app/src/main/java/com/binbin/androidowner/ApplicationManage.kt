@@ -76,7 +76,7 @@ fun ApplicationManage(){
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
         )
         }
-        if(VERSION.SDK_INT>=24){
+        if(VERSION.SDK_INT>=24&&isDeviceOwner(myDpm)){
             val isSuspended: Boolean = try{ myDpm.isPackageSuspended(myComponent,pkgName) }
             catch(e:NameNotFoundException){ false }
             catch(w:NameNotFoundException){ false }

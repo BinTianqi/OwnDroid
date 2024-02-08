@@ -194,28 +194,39 @@ fun UserManage(navCtrl:NavHostController){
 
         Column(modifier = sections()) {
             Text(text = "工作资料", style = typography.titleLarge)
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+            if(VERSION.SDK_INT>=24){Text(text = "可以创建工作资料：${myDpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)}", style = bodyTextStyle)}
+            if(isDeviceOwner(myDpm)){Text(text = "Device owner不能创建工作资料", style = bodyTextStyle)}
+            if(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE))){
+                var skipEncrypt by remember{mutableStateOf(false)}
+                if(VERSION.SDK_INT>=24){CheckBoxItem("跳过加密",{skipEncrypt},{skipEncrypt=!skipEncrypt})}
                 Button(
-                    onClick = { createWorkProfile(myContext)},
-                    modifier = Modifier.fillMaxWidth(0.49F)
+                    onClick = {
+                        val intent = Intent(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)
+                        if(VERSION.SDK_INT>=23){
+                            intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME,myComponent)
+                        }else{
+                            intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME,"com.binbin.androidowner")
+                        }
+                        if(VERSION.SDK_INT>=24){intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_SKIP_ENCRYPTION,skipEncrypt)}
+                        if(VERSION.SDK_INT>=33){intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_ALLOW_OFFLINE,true)}
+                        createManagedProfile.launch(intent)
+                    },
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("创建")
                 }
+            }
+            if(isProfileOwner(myDpm)){
                 Button(
                     onClick = {
-                        try{
-                            myDpm.setProfileEnabled(myComponent)
-                        }catch(e:SecurityException){
-                            Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
-                        }
+                        myDpm.setProfileEnabled(myComponent)
+                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                     },
-                    enabled = isProfileOwner(myDpm)||isDeviceOwner(myDpm),
-                    modifier = Modifier.fillMaxWidth(0.96F)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(text = "启用")
                 }
             }
-            Text("可能无法创建工作资料",style = bodyTextStyle)
         }
 
         if(VERSION.SDK_INT>=24){

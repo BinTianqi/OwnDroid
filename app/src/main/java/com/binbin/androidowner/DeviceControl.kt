@@ -58,15 +58,17 @@ fun DeviceControl(){
                 {myDpm.isStatusBarDisabled},{b -> myDpm.setStatusBarDisabled(myComponent,b) }
             )
         }
-        if(VERSION.SDK_INT>=30&&isDeviceOwner(myDpm)){
-            DeviceCtrlItem(R.string.auto_time,R.string.place_holder,R.drawable.schedule_fill0,
-                {myDpm.getAutoTimeEnabled(myComponent)},{b -> myDpm.setAutoTimeEnabled(myComponent,b) }
-            )
-            DeviceCtrlItem(R.string.auto_timezone,R.string.place_holder,R.drawable.globe_fill0,
-                {myDpm.getAutoTimeZoneEnabled(myComponent)},{b -> myDpm.setAutoTimeZoneEnabled(myComponent,b) }
-            )
-        }else{
-            DeviceCtrlItem(R.string.auto_time,R.string.place_holder,R.drawable.schedule_fill0,{myDpm.autoTimeRequired},{b -> myDpm.setAutoTimeRequired(myComponent,b)})
+        if(isDeviceOwner(myDpm)){
+            if(VERSION.SDK_INT>=30){
+                DeviceCtrlItem(R.string.auto_time,R.string.place_holder,R.drawable.schedule_fill0,
+                    {myDpm.getAutoTimeEnabled(myComponent)},{b -> myDpm.setAutoTimeEnabled(myComponent,b) }
+                )
+                DeviceCtrlItem(R.string.auto_timezone,R.string.place_holder,R.drawable.globe_fill0,
+                    {myDpm.getAutoTimeZoneEnabled(myComponent)},{b -> myDpm.setAutoTimeZoneEnabled(myComponent,b) }
+                )
+            }else{
+                DeviceCtrlItem(R.string.auto_time,R.string.place_holder,R.drawable.schedule_fill0,{myDpm.autoTimeRequired},{b -> myDpm.setAutoTimeRequired(myComponent,b)})
+            }
         }
         if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
             DeviceCtrlItem(R.string.master_mute,R.string.place_holder,R.drawable.volume_up_fill0,
@@ -155,8 +157,9 @@ fun DeviceControl(){
                         val result = myDpm.requestBugreport(myComponent)
                         Toast.makeText(myContext, if(result){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
                     },
-                    modifier = Modifier.fillMaxWidth()
-                    ) {
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = isDeviceOwner(myDpm)
+                ) {
                     Text("请求错误报告")
                 }
                 Button(
@@ -488,10 +491,12 @@ fun DeviceControl(){
             var confirmed by remember{ mutableStateOf(false) }
             Text(text = "清除数据",style = typography.titleLarge,modifier = Modifier.padding(6.dp),color = colorScheme.onErrorContainer)
             RadioButtonItem("默认",{flag==0},{flag=0}, colorScheme.onErrorContainer)
-            RadioButtonItem("WIPE_EXTERNAL_STORAGE",{flag==0x0001},{flag=0x0001}, colorScheme.onErrorContainer)
-            RadioButtonItem("WIPE_RESET_PROTECTION_DATA",{flag==0x0002},{flag=0x0002}, colorScheme.onErrorContainer)
-            RadioButtonItem("WIPE_EUICC",{flag==0x0004},{flag=0x0004}, colorScheme.onErrorContainer)
-            RadioButtonItem("WIPE_SILENTLY",{flag==0x0008},{flag=0x0008}, colorScheme.onErrorContainer)
+            RadioButtonItem("WIPE_EXTERNAL_STORAGE",{flag==WIPE_EXTERNAL_STORAGE},{flag=WIPE_EXTERNAL_STORAGE}, colorScheme.onErrorContainer)
+            if(VERSION.SDK_INT>=22){
+                RadioButtonItem("WIPE_RESET_PROTECTION_DATA",{flag==WIPE_RESET_PROTECTION_DATA},{flag=WIPE_RESET_PROTECTION_DATA}, colorScheme.onErrorContainer)
+            }
+            if(VERSION.SDK_INT>=28){ RadioButtonItem("WIPE_EUICC",{flag==WIPE_EUICC},{flag=WIPE_EUICC}, colorScheme.onErrorContainer) }
+            if(VERSION.SDK_INT>=29){ RadioButtonItem("WIPE_SILENTLY",{flag==WIPE_SILENTLY},{flag=WIPE_SILENTLY}, colorScheme.onErrorContainer) }
             Text(text = "清空数据的不能是系统用户",color = colorScheme.onErrorContainer,
                 style = if(!sharedPref.getBoolean("isWear",false)){typography.bodyLarge}else{typography.bodyMedium})
             Button(

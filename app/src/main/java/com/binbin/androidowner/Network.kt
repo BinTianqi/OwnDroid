@@ -62,7 +62,7 @@ fun Network(){
                 {myDpm.isPreferentialNetworkServiceEnabled},{b ->  myDpm.isPreferentialNetworkServiceEnabled = b}
             )
         }
-        if(VERSION.SDK_INT>=30){
+        if(VERSION.SDK_INT>=30&&isDeviceOwner(myDpm)){
             DeviceCtrlItem(R.string.wifi_lockdown,R.string.place_holder,R.drawable.wifi_password_fill0,
                 {myDpm.hasLockdownAdminConfiguredNetworks(myComponent)},{b ->  myDpm.setConfiguredNetworksLockdownState(myComponent,b)}
             )

@@ -177,9 +177,6 @@ fun DpmPermissions(navCtrl:NavHostController){
                 Text(text = "设备信息", style = typography.titleLarge,color = titleColor)
                 val orgDevice = myDpm.isOrganizationOwnedDeviceWithManagedProfile
                 Text("由组织拥有的受管理资料设备：$orgDevice",style=bodyTextStyle)
-                if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
-                    Text("Managed profile: ${myDpm.isManagedProfile(myComponent)}",style=bodyTextStyle)
-                }
                 if(VERSION.SDK_INT>=34&&(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))){
                     val financed = myDpm.isDeviceFinanced
                     Text("企业资产 : $financed",style=bodyTextStyle)

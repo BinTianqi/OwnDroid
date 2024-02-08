@@ -1,6 +1,7 @@
 package com.binbin.androidowner
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
@@ -45,6 +46,7 @@ import java.io.IOException
 
 lateinit var getCaCert: ActivityResultLauncher<Intent>
 lateinit var createUser:ActivityResultLauncher<Intent>
+lateinit var createManagedProfile:ActivityResultLauncher<Intent>
 var caCert = byteArrayOf()
 
 @ExperimentalMaterial3Api
@@ -69,9 +71,15 @@ class MainActivity : ComponentActivity() {
         }
         createUser = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             when(it.resultCode){
-                UserManager.USER_CREATION_FAILED_NO_MORE_USERS->Toast.makeText(applicationContext, "用户太多了", Toast.LENGTH_SHORT).show();
-                UserManager.USER_CREATION_FAILED_NOT_PERMITTED->Toast.makeText(applicationContext, "不是管理员用户", Toast.LENGTH_SHORT).show();
+                UserManager.USER_CREATION_FAILED_NO_MORE_USERS->Toast.makeText(applicationContext, "用户太多了", Toast.LENGTH_SHORT).show()
+                UserManager.USER_CREATION_FAILED_NOT_PERMITTED->Toast.makeText(applicationContext, "不是管理员用户", Toast.LENGTH_SHORT).show()
                 else->Toast.makeText(applicationContext, "成功", Toast.LENGTH_SHORT).show()
+            }
+        }
+        createManagedProfile = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            when(it.resultCode){
+                Activity.RESULT_OK->Toast.makeText(applicationContext, "创建成功", Toast.LENGTH_SHORT).show()
+                Activity.RESULT_CANCELED->Toast.makeText(applicationContext, "用户已取消", Toast.LENGTH_SHORT).show()
             }
         }
         setContent {
@@ -168,7 +176,11 @@ fun HomePage(navCtrl:NavHostController){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
-    val activateType = if(isDeviceOwner(myDpm)){"Device Owner"}else if(isProfileOwner(myDpm)){"Profile Owner"}else if(myDpm.isAdminActive(myComponent)){"Device Admin"}else{""}
+    val activateType =
+        if(isDeviceOwner(myDpm)){"Device Owner"}
+        else if(isProfileOwner(myDpm)){if(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)){"工作资料"}else{"Profile Owner"}}
+        else if(myDpm.isAdminActive(myComponent)){"Device Admin"}
+        else{""}
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val isWear = sharedPref.getBoolean("isWear",false)
     caCert = byteArrayOf()
