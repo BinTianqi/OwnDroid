@@ -6,7 +6,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageInstaller
 import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -222,18 +221,6 @@ fun ManagedProfile() {
                     Text("应用")
                 }
                 Text(text = "设置组织ID后才能获取设备唯一标识码", style = bodyTextStyle)
-            }
-        }
-        
-        if(isProfileOwner(myDpm)&&(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)))){
-            Column(modifier = sections(colorScheme.tertiaryContainer)){
-                Text(text = "提示", style = typography.titleLarge)
-                SelectionContainer {
-                    Text(
-                        text = "安装应用的Action是android.intent.action.INSTALL_PACKAGE，需配合android.intent.action.VIEW使用",
-                        style = bodyTextStyle, color = colorScheme.onTertiaryContainer
-                    )
-                }
             }
         }
         

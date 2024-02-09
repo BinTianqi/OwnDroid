@@ -314,7 +314,7 @@ fun DpmPermissions(navCtrl:NavHostController){
             }
         }
 
-        if(isDeviceOwner(myDpm)&&VERSION.SDK_INT>=24){
+        if((isDeviceOwner(myDpm)||isProfileOwner(myDpm))&&VERSION.SDK_INT>=24){
             DeviceOwnerInfo(R.string.owner_lockscr_info,R.string.place_holder,R.string.owner_lockscr_info,focusManager,myContext,
                 {myDpm.deviceOwnerLockScreenInfo},{content ->  myDpm.setDeviceOwnerLockScreenInfo(myComponent,content)})
             DeviceOwnerInfo(R.string.support_msg,R.string.support_msg_desc,R.string.message,focusManager,myContext,

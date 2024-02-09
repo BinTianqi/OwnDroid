@@ -43,12 +43,12 @@ fun DeviceControl(){
     val bodyTextStyle = if(isWear){typography.bodyMedium}else{typography.bodyLarge}
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding()) {
-        if(isDeviceOwner(myDpm)){
+        if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
             DeviceCtrlItem(R.string.disable_cam,R.string.place_holder, R.drawable.photo_camera_fill0,
                 {myDpm.getCameraDisabled(null)},{b -> myDpm.setCameraDisabled(myComponent,b)}
             )
         }
-        if(isDeviceOwner(myDpm)){
+        if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
             DeviceCtrlItem(R.string.disable_scrcap,R.string.aosp_scrrec_also_work,R.drawable.screenshot_fill0,
                 {myDpm.getScreenCaptureDisabled(null)},{b -> myDpm.setScreenCaptureDisabled(myComponent,b) }
             )
@@ -58,7 +58,7 @@ fun DeviceControl(){
                 {myDpm.isStatusBarDisabled},{b -> myDpm.setStatusBarDisabled(myComponent,b) }
             )
         }
-        if(isDeviceOwner(myDpm)){
+        if(isDeviceOwner(myDpm)||(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile)){
             if(VERSION.SDK_INT>=30){
                 DeviceCtrlItem(R.string.auto_time,R.string.place_holder,R.drawable.schedule_fill0,
                     {myDpm.getAutoTimeEnabled(myComponent)},{b -> myDpm.setAutoTimeEnabled(myComponent,b) }
@@ -95,7 +95,7 @@ fun DeviceControl(){
                 {myDpm.isCommonCriteriaModeEnabled(myComponent)},{b ->  myDpm.setCommonCriteriaModeEnabled(myComponent,b)}
             )
         }
-        if(VERSION.SDK_INT>=31&&isDeviceOwner(myDpm)){
+        if(VERSION.SDK_INT>=31&&(isDeviceOwner(myDpm)||(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))){
             if(myDpm.canUsbDataSignalingBeDisabled()){
                 DeviceCtrlItem(R.string.usb_signal,R.string.place_holder,R.drawable.usb_fill0,
                     {myDpm.isUsbDataSignalingEnabled},{b -> myDpm.isUsbDataSignalingEnabled = b }
@@ -104,37 +104,27 @@ fun DeviceControl(){
                 Text(text = "你的设备不支持关闭USB信号",modifier = Modifier.fillMaxWidth(), style = bodyTextStyle, textAlign = TextAlign.Center)
             }
         }
-        if(isDeviceOwner(myDpm)){
-            if(VERSION.SDK_INT<23){ Text(text = "禁止蓝牙分享联系人需API23") }
-            if(VERSION.SDK_INT<24){ Text(text = "安全日志API24",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle) }
-            if(VERSION.SDK_INT<26){ Text(text = "备份服务和网络日志需要API26",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle) }
-            if(VERSION.SDK_INT<30){ Text(text = "自动设置时区和通用标准模式需要API30",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle) }
-            if(VERSION.SDK_INT<31){ Text(text = "关闭USB信号需API31",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle) }
-            if(VERSION.SDK_INT<34){ Text(text = "隐藏状态栏需要API34",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = bodyTextStyle) }
-        }
         if(VERSION.SDK_INT>=28){
             Column(modifier = sections()) {
                 Text(text = "锁屏方式", style = typography.titleLarge,color = colorScheme.onPrimaryContainer)
                 Text(text = "禁用需要无密码",style=bodyTextStyle)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Button(
-                    onClick = { Toast.makeText(myContext, if(myDpm.setKeyguardDisabled(myComponent,true)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show() },
-                    enabled = isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser),
-                    modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.49F)}
-                ) {
-                    Text("禁用")
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Button(
+                        onClick = { Toast.makeText(myContext, if(myDpm.setKeyguardDisabled(myComponent,true)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show() },
+                        enabled = isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser),
+                        modifier = Modifier.fillMaxWidth(0.49F)
+                    ) {
+                        Text("禁用")
+                    }
+                    Button(
+                        onClick = { Toast.makeText(myContext, if(myDpm.setKeyguardDisabled(myComponent,false)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show() },
+                        enabled = isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser),
+                        modifier = Modifier.fillMaxWidth(0.96F)
+                    ) {
+                        Text("启用")
+                    }
                 }
-                Button(
-                    onClick = { Toast.makeText(myContext, if(myDpm.setKeyguardDisabled(myComponent,false)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show() },
-                    enabled = isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser),
-                    modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.96F)}
-                ) {
-                    Text("启用")
-                }
-            }}
+            }
         }
         
         Column(modifier = sections()){
@@ -183,7 +173,7 @@ fun DeviceControl(){
                     onValueChange = {inputTime = it},
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                    enabled = isDeviceOwner(myDpm),
+                    enabled = isDeviceOwner(myDpm)||(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile),
                     modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
                 )
                 if(isWear){
@@ -198,7 +188,7 @@ fun DeviceControl(){
                     Button(
                         onClick = {myDpm.setTime(myComponent,inputTime.toLong())},
                         modifier = Modifier.fillMaxWidth(if(isWear){1F}else{0.35F}),
-                        enabled = inputTime!=""&&isDeviceOwner(myDpm)
+                        enabled = inputTime!=""&&(isDeviceOwner(myDpm)||(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))
                     ) {
                         Text("应用")
                     }
@@ -505,7 +495,8 @@ fun DeviceControl(){
                     containerColor = if(confirmed){ colorScheme.primary }else{ colorScheme.error },
                     contentColor = if(confirmed){ colorScheme.onPrimary }else{ colorScheme.onError }
                 ),
-                enabled = myDpm.isAdminActive(myComponent)
+                enabled = myDpm.isAdminActive(myComponent),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = if(confirmed){"取消"}else{"确定"})
             }
@@ -516,7 +507,8 @@ fun DeviceControl(){
                         containerColor = colorScheme.error,
                         contentColor = colorScheme.onError
                     ),
-                    enabled = confirmed
+                    enabled = confirmed,
+                    modifier = Modifier.fillMaxWidth(if(VERSION.SDK_INT>=34){0.49F}else{1F})
                 ) {
                     Text("WipeData")
                 }
@@ -527,7 +519,8 @@ fun DeviceControl(){
                             containerColor = colorScheme.error,
                             contentColor = colorScheme.onError
                         ),
-                        enabled = confirmed
+                        enabled = confirmed,
+                        modifier = Modifier.fillMaxWidth(0.96F)
                     ) {
                         Text("WipeDevice(API34)")
                     }

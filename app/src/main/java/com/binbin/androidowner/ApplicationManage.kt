@@ -59,7 +59,6 @@ fun ApplicationManage(){
                 value = pkgName,
                 onValueChange = { pkgName = it },
                 label = { Text("包名") },
-                enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm),
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
@@ -71,7 +70,6 @@ fun ApplicationManage(){
             value = pkgName,
             onValueChange = { pkgName = it },
             label = { Text("包名") },
-            enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm),
             modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp,vertical = 2.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
@@ -80,6 +78,18 @@ fun ApplicationManage(){
         if(VERSION.SDK_INT>=24&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
             Text(text = "作用域: 工作资料", style = bodyTextStyle, textAlign = TextAlign.Center,modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp))
         }
+        
+        Button(
+            onClick = {
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                intent.setData(Uri.parse("package:$pkgName"))
+                startActivity(myContext,intent,null)
+            },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+        ){
+            Text("应用详情")
+        }
+        
         if(VERSION.SDK_INT>=24&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
             AppManageItem(
                 R.string.suspend,R.string.place_holder,
@@ -441,87 +451,66 @@ fun ApplicationManage(){
             }
         }
         
-        Column(modifier = sections()) {
-            Text(text = "许可的输入法", style = typography.titleLarge,color = colorScheme.onPrimaryContainer)
-            var imeList = mutableListOf<String>()
-            var imeListText by remember{ mutableStateOf("") }
-            val refreshList = {
-                if(isProfileOwner(myDpm) || isDeviceOwner(myDpm)){
-                    if(myDpm.getPermittedInputMethods(myComponent)!=null){
-                        imeList = myDpm.getPermittedInputMethods(myComponent)!!
+        if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
+            Column(modifier = sections()) {
+                Text(text = "许可的输入法", style = typography.titleLarge,color = colorScheme.onPrimaryContainer)
+                var imeList = mutableListOf<String>()
+                var imeListText by remember{ mutableStateOf("") }
+                val refreshList = {
+                    if(myDpm.getPermittedInputMethods(myComponent)!=null){ imeList = myDpm.getPermittedInputMethods(myComponent)!! }
+                    imeListText = ""
+                    for(eachIme in imeList){ imeListText += "$eachIme \n" }
+                }
+                var inited by remember{mutableStateOf(false)}
+                if(!inited){refreshList();inited=true}
+                Text(text = if(imeListText!=""){imeListText}else{"无"}, style = bodyTextStyle)
+                Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
+                    Button(
+                        onClick = {
+                            focusMgr.clearFocus()
+                            imeList.plus(pkgName)
+                            Toast.makeText(myContext, if(myDpm.setPermittedInputMethods(myComponent, imeList)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                            refreshList()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.49F)
+                    ) {
+                        Text("添加")
                     }
-                }
-                imeListText = ""
-                for(eachIme in imeList){ imeListText += "$eachIme \n" }
-            }
-            var inited by remember{mutableStateOf(false)}
-            if(!inited){refreshList();inited=true}
-            Text(text = if(imeListText!=""){imeListText}else{"无"}, style = bodyTextStyle)
-            Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
-                Button(
-                    onClick = {
-                        imeList.plus(pkgName)
-                        focusMgr.clearFocus()
-                        Toast.makeText(myContext, if(myDpm.setPermittedInputMethods(myComponent, imeList)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
-                        refreshList()
-                    },
-                    modifier = Modifier.fillMaxWidth(0.49F),
-                    enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
-                ) {
-                    Text("添加")
-                }
-                Button(
-                    onClick = {
-                        imeList.remove(pkgName)
-                        focusMgr.clearFocus()
-                        Toast.makeText(myContext, if(myDpm.setPermittedInputMethods(myComponent, imeList)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
-                        refreshList()
-                    },
-                    modifier = Modifier.fillMaxWidth(0.96F),
-                    enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
-                ) {
-                    Text("移除")
+                    Button(
+                        onClick = {
+                            focusMgr.clearFocus()
+                            imeList.remove(pkgName)
+                            Toast.makeText(myContext, if(myDpm.setPermittedInputMethods(myComponent, imeList)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                            refreshList()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.96F)
+                    ) {
+                        Text("移除")
+                    }
                 }
             }
         }
         
-        Column(modifier = sections()){
-            Text(text = "清除应用存储", style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
-                Button(
-                    onClick = {
-                        val executor = Executors.newCachedThreadPool()
-                        val onClear = DevicePolicyManager.OnClearApplicationUserDataListener { pkg: String, succeed: Boolean ->
-                            Looper.prepare()
-                            focusMgr.clearFocus()
-                            val toastText = if(pkg!=""){"$pkg\n"}else{""} + "数据清除" + if(succeed){"成功"}else{"失败"}
-                            Toast.makeText(myContext, toastText, Toast.LENGTH_SHORT).show()
-                            Looper.loop()
-                        }
-                        if(VERSION.SDK_INT>=28){
-                            myDpm.clearApplicationUserData(myComponent,pkgName,executor,onClear)
-                        }
-                    },
-                    enabled = (isDeviceOwner(myDpm)||isProfileOwner(myDpm))&&VERSION.SDK_INT>=28,
-                    modifier = Modifier.fillMaxWidth(0.49F)
-                ) {
-                    Text("清除")
-                }
-                Button(
-                    onClick = {
-                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                        intent.setData(Uri.parse("package:$pkgName"))
-                        startActivity(myContext,intent,null)
-                    },
-                    modifier = Modifier.fillMaxWidth(0.96F)
-                ){
-                    Text("详情")
-                }
-            }
-            if(VERSION.SDK_INT<28){
-                Text(text = "清除存储需API28", style = bodyTextStyle)
+        if(VERSION.SDK_INT>=28){
+            Button(
+                onClick = {
+                    val executor = Executors.newCachedThreadPool()
+                    val onClear = DevicePolicyManager.OnClearApplicationUserDataListener { pkg: String, succeed: Boolean ->
+                        Looper.prepare()
+                        focusMgr.clearFocus()
+                        val toastText = if(pkg!=""){"$pkg\n"}else{""} + "数据清除" + if(succeed){"成功"}else{"失败"}
+                        Toast.makeText(myContext, toastText, Toast.LENGTH_SHORT).show()
+                        Looper.loop()
+                    }
+                    myDpm.clearApplicationUserData(myComponent,pkgName,executor,onClear)
+                },
+                enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+            ) {
+                Text("清除应用存储")
             }
         }
+        
         if(VERSION.SDK_INT>=34){
             Button(
                 onClick = {

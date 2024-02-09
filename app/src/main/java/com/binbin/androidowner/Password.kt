@@ -346,7 +346,7 @@ fun Password(){
                     Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                     calculateCustomFeature()
                 },
-                enabled = isProfileOwner(myDpm)||isDeviceOwner(myDpm),
+                enabled = isDeviceOwner(myDpm),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = "应用")

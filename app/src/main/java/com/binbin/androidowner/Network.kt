@@ -62,7 +62,7 @@ fun Network(){
                 {myDpm.isPreferentialNetworkServiceEnabled},{b ->  myDpm.isPreferentialNetworkServiceEnabled = b}
             )
         }
-        if(VERSION.SDK_INT>=30&&isDeviceOwner(myDpm)){
+        if(VERSION.SDK_INT>=30&&(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))){
             DeviceCtrlItem(R.string.wifi_lockdown,R.string.place_holder,R.drawable.wifi_password_fill0,
                 {myDpm.hasLockdownAdminConfiguredNetworks(myComponent)},{b ->  myDpm.setConfiguredNetworksLockdownState(myComponent,b)}
             )
@@ -76,7 +76,7 @@ fun Network(){
                 RadioButtonItem("WPA-EAP", {selectedWifiSecLevel==DevicePolicyManager.WIFI_SECURITY_ENTERPRISE_EAP}, {selectedWifiSecLevel= DevicePolicyManager.WIFI_SECURITY_ENTERPRISE_EAP})
                 RadioButtonItem("WPA3-192bit", {selectedWifiSecLevel==DevicePolicyManager.WIFI_SECURITY_ENTERPRISE_192}, {selectedWifiSecLevel= DevicePolicyManager.WIFI_SECURITY_ENTERPRISE_192})
                 Button(
-                    enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
+                    enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile),
                     onClick = {
                         myDpm.minimumRequiredWifiSecurityLevel=selectedWifiSecLevel
                         Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
@@ -90,7 +90,7 @@ fun Network(){
             Text(text = "Wifi安全等级需API33", modifier = Modifier.padding(vertical = 3.dp))
         }
         
-        if(VERSION.SDK_INT>=33&&isDeviceOwner(myDpm)){
+        if(VERSION.SDK_INT>=33&&(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))){
             Column(modifier = sections()){
                 var policy = myDpm.wifiSsidPolicy
                 var selectedPolicyType by remember{mutableIntStateOf(policy?.policyType ?: -1)}
