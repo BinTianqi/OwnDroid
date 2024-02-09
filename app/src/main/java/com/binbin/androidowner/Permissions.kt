@@ -28,7 +28,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
@@ -223,12 +222,9 @@ fun DpmPermissions(navCtrl:NavHostController){
                 Text(text = "设备唯一标识码", style = typography.titleLarge,color = titleColor)
                 Text("（恢复出厂设置不变）",style=bodyTextStyle)
                 if(specificId!=""){
-                    Text(specificId)
-                    Button(onClick = {myDpm.setOrganizationId(specificId)}) {
-                        Text("设置为组织ID")
-                    }
+                    SelectionContainer{ Text(specificId, style = bodyTextStyle) }
                 }else{
-                    Text("你的设备不支持",style=bodyTextStyle)
+                    Text("需要设置组织ID",style=bodyTextStyle)
                 }
             }
         }
@@ -249,6 +245,7 @@ fun DpmPermissions(navCtrl:NavHostController){
                 )
                 Button(
                     onClick = {
+                        focusManager.clearFocus()
                         myDpm.setOrganizationName(myComponent,orgName)
                         Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                     },

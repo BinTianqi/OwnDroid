@@ -99,7 +99,7 @@ fun Password(){
                             }else{ Toast.makeText(myContext, "清除失败", Toast.LENGTH_SHORT).show() }
                         },
                         modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.32F)},
-                        enabled = isDeviceOwner(myDpm)
+                        enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
                     ) {
                         Text("清除")
                     }
@@ -116,7 +116,7 @@ fun Password(){
                                 Toast.makeText(myContext, "失败（安全异常）", Toast.LENGTH_SHORT).show()
                             }
                         },
-                        enabled = isDeviceOwner(myDpm),
+                        enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
                         modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.47F)}
                     ) {
                         Text("设置")
@@ -129,7 +129,7 @@ fun Password(){
                                 }catch(e:NullPointerException){ Toast.makeText(myContext, "请先设置令牌", Toast.LENGTH_SHORT).show() }
                             }else{ Toast.makeText(myContext, "已经激活", Toast.LENGTH_SHORT).show() }
                         },
-                        enabled = isDeviceOwner(myDpm),
+                        enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
                         modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.88F)}
                     ) {
                         Text("激活")

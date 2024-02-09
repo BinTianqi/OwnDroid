@@ -43,6 +43,7 @@ private data class Restriction(
 fun UserRestriction(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     var internetVisible by remember{ mutableStateOf(false) }
     var connectivityVisible by remember{ mutableStateOf(false) }
     var applicationVisible by remember{ mutableStateOf(false) }
@@ -53,12 +54,15 @@ fun UserRestriction(){
     val isWear = sharedPref.getBoolean("isWear",false)
     val bodyTextStyle = if(isWear){typography.bodyMedium}else{typography.bodyLarge}
     Column(modifier = Modifier.verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally){
-        Text(text = "打开开关后会禁用对应的功能",modifier = Modifier.padding(3.dp), style = bodyTextStyle)
+        Text(text = "打开开关后会禁用对应的功能",style = bodyTextStyle)
         if(VERSION.SDK_INT<24){
             Text(text = "所有的用户限制都需要API24，你的设备低于API24，无法使用。", style = bodyTextStyle, color = colorScheme.error)
         }
         if(isProfileOwner(myDpm)){
             Text(text = "Profile owner无法使用部分功能", style = bodyTextStyle)
+        }
+        if(isProfileOwner(myDpm)&&(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)))){
+            Text(text = "工作资料中部分功能无效", style = bodyTextStyle)
         }
         if(isWear){
             Text(text = "部分功能在手表上无效", style = typography.bodyMedium)

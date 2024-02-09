@@ -36,11 +36,13 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import java.util.concurrent.Executors
 
 private var credentialList = mutableSetOf<String>()
+private var crossProfilePkg = mutableSetOf<String>()
 @Composable
 fun ApplicationManage(){
     val myContext = LocalContext.current
@@ -74,6 +76,9 @@ fun ApplicationManage(){
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
         )
+        }
+        if(VERSION.SDK_INT>=24&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
+            Text(text = "作用域: 工作资料", style = bodyTextStyle, textAlign = TextAlign.Center,modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp))
         }
         if(VERSION.SDK_INT>=24&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
             AppManageItem(
@@ -239,6 +244,82 @@ fun ApplicationManage(){
                     Text("由用户决定")
                 }
                 Text(text ="设为允许或拒绝后，用户不能改变状态", style = bodyTextStyle)
+            }
+        }
+        
+        if(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
+            Column(modifier = sections()){
+                Text(text = "跨资料应用", style = typography.titleLarge)
+                var list by remember{mutableStateOf("")}
+                val refresh = {
+                    crossProfilePkg = myDpm.getCrossProfilePackages(myComponent)
+                    list = ""
+                    var count = crossProfilePkg.size
+                    for(each in crossProfilePkg){ count-=1; list+=each; if(count>0){list+="\n"} }
+                }
+                var inited by remember{mutableStateOf(false)}
+                if(!inited){refresh();inited=true}
+                Text(text = if(list!=""){list}else{"无"}, style = bodyTextStyle)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+                    Button(
+                        onClick = {
+                            if(pkgName!=""){crossProfilePkg.add(pkgName)}
+                            myDpm.setCrossProfilePackages(myComponent, crossProfilePkg)
+                            refresh()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.49F)
+                    ) {
+                        Text("添加")
+                    }
+                    Button(
+                        onClick = {
+                            if(pkgName!=""){crossProfilePkg.remove(pkgName)}
+                            myDpm.setCrossProfilePackages(myComponent, crossProfilePkg)
+                            refresh()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.96F)
+                    ) {
+                        Text("移除")
+                    }
+                }
+            }
+        }
+        
+        if(isProfileOwner(myDpm)){
+            Column(modifier = sections()){
+                var pkgList: MutableList<String>
+                var list by remember{mutableStateOf("")}
+                val refresh = {
+                    pkgList = myDpm.getCrossProfileWidgetProviders(myComponent)
+                    list = ""
+                    var count = pkgList.size
+                    for(each in pkgList){ count-=1; list+=each; if(count>0){list+="\n"}}
+                }
+                var inited by remember{mutableStateOf(false)}
+                if(!inited){refresh();inited=true}
+                Text(text = "跨资料微件", style = typography.titleLarge)
+                Text(text = "(跨资料桌面小部件提供者)", style = bodyTextStyle)
+                Text(text = if(list!=""){list}else{"无"}, style = bodyTextStyle)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+                    Button(
+                        onClick = {
+                            if(pkgName!=""){myDpm.addCrossProfileWidgetProvider(myComponent,pkgName)}
+                            refresh()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.49F)
+                    ){
+                        Text("添加")
+                    }
+                    Button(
+                        onClick = {
+                            if(pkgName!=""){myDpm.removeCrossProfileWidgetProvider(myComponent,pkgName)}
+                            refresh()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.96F)
+                    ){
+                        Text("移除")
+                    }
+                }
             }
         }
         

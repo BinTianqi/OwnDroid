@@ -22,9 +22,7 @@ import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -97,6 +95,9 @@ fun MyScaffold(){
     val focusMgr = LocalFocusManager.current
     val navCtrl = rememberNavController()
     val backStackEntry by navCtrl.currentBackStackEntryAsState()
+    val myContext = LocalContext.current
+    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val topBarNameMap = mapOf(
         "HomePage" to R.string.app_name,
         "DeviceControl" to R.string.device_ctrl,
@@ -155,6 +156,9 @@ fun MyScaffold(){
             }
         }
     ) {
+        val profileInited = sharedPref.getBoolean("ManagedProfileActivated",false)
+        var inited by remember{mutableStateOf(false)}
+        val jumpToActivateProfile = !profileInited&&isProfileOwner(myDpm)&&(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)))
         NavHost(
             navController = navCtrl,
             startDestination = "HomePage",
@@ -162,7 +166,7 @@ fun MyScaffold(){
         ){
             composable(route = "HomePage", content = { HomePage(navCtrl)})
             composable(route = "DeviceControl", content = { DeviceControl()})
-            composable(route = "ManagedProfile", content = {ManagedProfile(navCtrl)})
+            composable(route = "ManagedProfile", content = {ManagedProfile()})
             composable(route = "Permissions", content = { DpmPermissions(navCtrl)})
             composable(route = "ApplicationManage", content = { ApplicationManage()})
             composable(route = "UserRestriction", content = { UserRestriction()})
@@ -170,7 +174,9 @@ fun MyScaffold(){
             composable(route = "Password", content = { Password()})
             composable(route = "AppSetting", content = { AppSetting(navCtrl)})
             composable(route = "Network", content = {Network()})
+            composable(route = "ActivateManagedProfile", content = {ActivateManagedProfile(navCtrl)})
         }
+        if(!inited&&jumpToActivateProfile){navCtrl.navigate("ActivateManagedProfile");inited=true}
     }
 }
 
