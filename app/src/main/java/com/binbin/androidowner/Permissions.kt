@@ -231,11 +231,7 @@ fun DpmPermissions(navCtrl:NavHostController){
         
         if((VERSION.SDK_INT>=26&&isDeviceOwner(myDpm))||(VERSION.SDK_INT>=24&&isProfileOwner(myDpm))){
             Column(modifier = sections()){
-                var orgName by remember{
-                    mutableStateOf(
-                        if(myDpm.getOrganizationName(myComponent).toString()=="null"){ "" }else{ myDpm.getOrganizationName(myComponent).toString() }
-                    )
-                }
+                var orgName by remember{mutableStateOf(try{myDpm.getOrganizationName(myComponent).toString()}catch(e:SecurityException){""})}
                 Text(text = "组织名称", style = typography.titleLarge)
                 TextField(
                     value = orgName, onValueChange = {orgName=it}, modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),

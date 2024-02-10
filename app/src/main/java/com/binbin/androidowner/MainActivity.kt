@@ -6,6 +6,7 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build.VERSION
 import android.os.Bundle
 import android.os.UserManager
@@ -42,10 +43,14 @@ import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.ui.theme.AndroidOwnerTheme
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.io.InputStream
+
 
 lateinit var getCaCert: ActivityResultLauncher<Intent>
 lateinit var createUser:ActivityResultLauncher<Intent>
 lateinit var createManagedProfile:ActivityResultLauncher<Intent>
+lateinit var getApk:ActivityResultLauncher<Intent>
+lateinit var apkUri: Uri
 var caCert = byteArrayOf()
 
 @ExperimentalMaterial3Api
@@ -53,20 +58,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
-        getCaCert = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        getApk = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             val uri = it.data?.data
-            if(uri!=null){
-                try{
-                    val stream = contentResolver.openInputStream(uri)
-                    if(stream!=null) {
-                        caCert = stream.readBytes()
-                        if(caCert.size>50000){ Toast.makeText(applicationContext, "太大了", Toast.LENGTH_SHORT).show(); caCert = byteArrayOf() }
-                    }else{ Toast.makeText(applicationContext, "空的流", Toast.LENGTH_SHORT).show() }
-                    stream?.close()
-                }
-                catch(e:FileNotFoundException){ Toast.makeText(applicationContext, "文件不存在", Toast.LENGTH_SHORT).show() }
-                catch(e:IOException){ Toast.makeText(applicationContext, "IO异常", Toast.LENGTH_SHORT).show() }
-            }else{ Toast.makeText(applicationContext, "空URI", Toast.LENGTH_SHORT).show() }
+            if(uri!=null){ apkUri = uri }
+            else{ Toast.makeText(applicationContext, "空URI", Toast.LENGTH_SHORT).show() }
+        }
+        getCaCert = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            uriToStream(applicationContext,it.data?.data){stream->
+                caCert = stream.readBytes()
+                if(caCert.size>50000){ Toast.makeText(applicationContext, "太大了", Toast.LENGTH_SHORT).show(); caCert = byteArrayOf() }
+            }
         }
         createUser = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             when(it.resultCode){
@@ -339,4 +340,22 @@ fun sections(bgColor:Color=MaterialTheme.colorScheme.primaryContainer):Modifier{
             .background(color = backgroundColor)
             .padding(vertical = 2.dp, horizontal = 3.dp)
     }
+}
+
+fun uriToStream(
+    context: Context,
+    uri: Uri?,
+    operation:(stream:InputStream)->Unit
+){
+    if(uri!=null){
+        apkUri = uri
+        try{
+            val stream = context.contentResolver.openInputStream(uri)
+            if(stream!=null) { operation(stream) }
+            else{ Toast.makeText(context, "空的流", Toast.LENGTH_SHORT).show() }
+            stream?.close()
+        }
+        catch(e:FileNotFoundException){ Toast.makeText(context, "文件不存在", Toast.LENGTH_SHORT).show() }
+        catch(e:IOException){ Toast.makeText(context, "IO异常", Toast.LENGTH_SHORT).show() }
+    }else{ Toast.makeText(context, "空URI", Toast.LENGTH_SHORT).show() }
 }

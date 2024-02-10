@@ -2,10 +2,12 @@ package com.binbin.androidowner
 
 import android.annotation.SuppressLint
 import android.app.admin.DeviceAdminReceiver
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
+import android.content.pm.PackageInstaller.*
 import android.os.Build.VERSION
+import android.util.Log
 import android.widget.Toast
 
 class MyDeviceAdminReceiver : DeviceAdminReceiver() {
@@ -32,5 +34,24 @@ class MyDeviceAdminReceiver : DeviceAdminReceiver() {
     override fun onSystemUpdatePending(context: Context, intent: Intent, receivedTime: Long) {
         if (VERSION.SDK_INT < 26) { return }
         Toast.makeText(context, "新的系统更新！", Toast.LENGTH_SHORT).show()
+    }
+}
+
+class PackageInstallerReceiver:BroadcastReceiver(){
+    override fun onReceive(context: Context, intent: Intent) {
+        val toastText = when(intent.getIntExtra(EXTRA_STATUS,666)){
+            STATUS_PENDING_USER_ACTION->"等待用户交互"
+            STATUS_SUCCESS->"成功"
+            STATUS_FAILURE->"失败"
+            STATUS_FAILURE_BLOCKED->"失败：被阻止"
+            STATUS_FAILURE_ABORTED->"失败：被打断"
+            STATUS_FAILURE_INVALID->"失败：无效"
+            STATUS_FAILURE_CONFLICT->"失败：冲突"
+            STATUS_FAILURE_STORAGE->"失败：空间不足"
+            STATUS_FAILURE_INCOMPATIBLE->"失败：不兼容"
+            STATUS_FAILURE_TIMEOUT->"失败：超时"
+            else->"未知"
+        }
+        Log.e("静默安装","${intent.getIntExtra(EXTRA_STATUS,666)}:$toastText")
     }
 }

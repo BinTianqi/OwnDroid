@@ -1,5 +1,6 @@
 package com.binbin.androidowner
 
+import android.app.PendingIntent
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT
 import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED
@@ -11,6 +12,7 @@ import android.app.admin.PackagePolicy.PACKAGE_POLICY_BLOCKLIST
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager.NameNotFoundException
 import android.net.Uri
 import android.os.Build.VERSION
@@ -39,6 +41,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
+import java.io.IOException
+import java.io.InputStream
 import java.util.concurrent.Executors
 
 private var credentialList = mutableSetOf<String>()
@@ -527,6 +531,71 @@ fun ApplicationManage(){
                 Text("设为默认拨号应用")
             }
         }
+        
+        Column(modifier = sections()){
+            Text(text = "卸载应用", style = typography.titleLarge)
+            Text(text = "静默卸载需Device owner", style = bodyTextStyle)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+                Button(
+                    onClick = {
+                        val intent = Intent(myContext,PackageInstallerReceiver::class.java)
+                        val intentSender = PendingIntent.getBroadcast(myContext, 8, intent, PendingIntent.FLAG_IMMUTABLE).intentSender
+                        val pkgInstaller = myContext.packageManager.packageInstaller
+                        pkgInstaller.uninstall(pkgName, intentSender)
+                    },
+                    modifier = Modifier.fillMaxWidth(0.49F)
+                ) {
+                    Text("静默卸载")
+                }
+                Button(
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_UNINSTALL_PACKAGE)
+                        intent.setData(Uri.parse("package:$pkgName"))
+                        myContext.startActivity(intent)
+                    },
+                    modifier = Modifier.fillMaxWidth(0.96F)
+                ) {
+                    Text("请求卸载")
+                }
+            }
+        }
+        
+        Column(modifier = sections()){
+            Text(text = "安装应用", style = typography.titleLarge)
+            Text(text = "静默安装需Device owner", style = bodyTextStyle)
+            Button(
+                onClick = {
+                    focusMgr.clearFocus()
+                    val installApkIntent = Intent(Intent.ACTION_GET_CONTENT)
+                    installApkIntent.setType("application/vnd.android.package-archive")
+                    installApkIntent.addCategory(Intent.CATEGORY_OPENABLE)
+                    getApk.launch(installApkIntent)
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("选择APK...")
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+                Button(
+                    onClick = { uriToStream(myContext, apkUri){stream -> installPackage(myContext,stream)} },
+                    modifier = Modifier.fillMaxWidth(0.49F)
+                ) {
+                    Text("静默安装")
+                }
+                Button(
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_INSTALL_PACKAGE)
+                        intent.setData(apkUri)
+                        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        myContext.startActivity(intent)
+                    },
+                    modifier = Modifier.fillMaxWidth(0.96F)
+                ) {
+                    Text("请求安装")
+                }
+            }
+        }
+        
         Spacer(Modifier.padding(30.dp))
     }
     }
@@ -556,4 +625,23 @@ private fun AppManageItem(
             onCheckedChange = { setMethod(!enabled); enabled=getMethod() }
         )
     }
+}
+
+@Throws(IOException::class)
+private fun installPackage(context: Context, inputStream: InputStream){
+    val packageInstaller = context.packageManager.packageInstaller
+    val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
+    val sessionId = packageInstaller.createSession(params)
+    val session = packageInstaller.openSession(sessionId)
+    val out = session.openWrite("COSU", 0, -1)
+    val buffer = ByteArray(65536)
+    var c: Int
+    while(inputStream.read(buffer).also{c = it}!=-1) {
+        out.write(buffer, 0, c)
+    }
+    session.fsync(out)
+    inputStream.close()
+    out.close()
+    val pendingIntent = PendingIntent.getBroadcast(context, sessionId, Intent(context,PackageInstallerReceiver::class.java), PendingIntent.FLAG_IMMUTABLE).intentSender
+    session.commit(pendingIntent)
 }

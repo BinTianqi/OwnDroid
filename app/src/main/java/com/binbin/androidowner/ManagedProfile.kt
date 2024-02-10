@@ -65,7 +65,7 @@ fun ManagedProfile() {
                     Text("跳转至个人应用")
                 }
             }else{
-                if(!myDpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE)){
+                if(!myDpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE)&&!isDeviceOwner(myDpm)){
                     Button(
                         onClick = { myContext.startActivity(Intent("com.binbin.androidowner.MAIN_ACTION")) }, modifier = Modifier.fillMaxWidth()
                     ){
