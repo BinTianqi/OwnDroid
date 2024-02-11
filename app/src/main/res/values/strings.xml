@@ -1,12 +1,11 @@
 <resources>
     <string name="app_name">Android Owner</string>
 
-    <string name="device_ctrl">设备控制</string>
+    <string name="device_ctrl">系统</string>
     <string name="disable_cam">禁用相机</string>
     <string name="disable_scrcap">禁止截屏</string>
     <string name="aosp_scrrec_also_work">对AOSP的录屏也起作用</string>
-    <string name="hide_status_bar">隐藏状态栏</string>
-    <string name="may_hide_notifi_icon_only">也许只能隐藏状态栏上的通知图标</string>
+    <string name="disable_status_bar">禁用状态栏</string>
     <string name="auto_time">自动设置时间</string>
     <string name="auto_timezone">自动设置时区</string>
     <string name="master_mute">全局静音</string>
@@ -16,8 +15,6 @@
     <string name="suspend">挂起</string>
     <string name="hide">隐藏</string>
     <string name="isapphidden_desc">如果隐藏，有可能是没安装</string>
-    <string name="user_ctrl_disabled">禁止用户控制</string>
-    <string name="user_ctrl_disabled_desc">阻止清除应用数据和缓存</string>
     <string name="permission">权限</string>
     <string name="place_holder" />
 
@@ -43,7 +40,7 @@
     <string name="add_wifi_conf">添加WiFi配置</string>
     <string name="change_wifi_state">修改WiFi状态</string>
     <string name="config_cell_broadcasts">配置小区广播</string>
-    <string name="config_credentials">配置可信凭据</string>
+    <string name="config_credentials">配置凭据</string>
     <string name="config_locale">修改语言</string>
     <string name="cellular_2g">使用2G(GSM)</string>
     <string name="config_date_time">修改日期、时间</string>
@@ -83,8 +80,6 @@
     <string name="switch_user">切换用户</string>
     <string name="wifi_direct">WiFi直连</string>
     <string name="wifi_tethering">WiFi共享</string>
-    <string name="add_managed_profile">添加工作资料</string>
-    <string name="remove_managed_profile">移除工作资料</string>
 
     <string name="password">密码与锁屏</string>
     <string name="reset_pwd_desc">留空可以清除密码，纯数字将使用PIN码</string>
@@ -110,12 +105,9 @@
     <string name="setting">设置</string>
     <string name="always_on_vpn">VPN常开</string>
     <string name="experimental_feature">实验性功能</string>
-    <string name="network_logging">网络日志记录</string>
-    <string name="no_effect">没啥用</string>
     <string name="max_time_to_lock">屏幕超时</string>
     <string name="max_time_to_lock_desc">超时后锁屏(毫秒)，0为由用户决定</string>
     <string name="max_time_to_lock_textfield">超时时间(ms)</string>
-    <string name="secure_logging">安全日志</string>
     <string name="common_criteria_mode">通用标准模式</string>
     <string name="common_criteria_mode_desc">Common Criteria</string>
     <string name="preferential_network_service">优先网络服务</string>

@@ -216,7 +216,6 @@ private class RestrictionData{
             list += Restriction(UserManager.DISALLOW_CELLULAR_2G,R.string.cellular_2g,"",R.drawable.network_cell_fill0)
             list += Restriction(UserManager.DISALLOW_ULTRA_WIDEBAND_RADIO,R.string.ultra_wideband_radio,"",R.drawable.android_fill0)
         }
-        list += Restriction(UserManager.DISALLOW_CONFIG_WIFI,R.string.config_wifi,"",R.drawable.wifi_fill0)
         if(VERSION.SDK_INT>=33){
             list += Restriction(UserManager.DISALLOW_ADD_WIFI_CONFIG,R.string.add_wifi_conf,"",R.drawable.wifi_fill0)
             list += Restriction(UserManager.DISALLOW_CHANGE_WIFI_STATE,R.string.change_wifi_state,"",R.drawable.wifi_fill0)
@@ -280,10 +279,6 @@ private class RestrictionData{
         if(VERSION.SDK_INT>=28){list += Restriction(UserManager.DISALLOW_USER_SWITCH,R.string.switch_user,"",R.drawable.account_circle_fill0)}
         if(VERSION.SDK_INT>=24){list += Restriction(UserManager.DISALLOW_SET_USER_ICON,R.string.set_user_icon,"",R.drawable.account_circle_fill0)}
         list += Restriction(UserManager.DISALLOW_CROSS_PROFILE_COPY_PASTE,R.string.cross_profile_copy, "在不同用户和工作资料之间复制粘贴",R.drawable.content_paste_fill0)
-        if(VERSION.SDK_INT>=26){
-            list += Restriction(UserManager.DISALLOW_ADD_MANAGED_PROFILE,R.string.add_managed_profile,"",R.drawable.work_fill0)
-            list += Restriction(UserManager.DISALLOW_REMOVE_MANAGED_PROFILE,R.string.remove_managed_profile,"",R.drawable.work_fill0)
-        }
         if(VERSION.SDK_INT>=28){
             list += Restriction(UserManager.DISALLOW_SHARE_INTO_MANAGED_PROFILE,R.string.share_into_managed_profile,"",R.drawable.share_fill0)
             list += Restriction(UserManager.DISALLOW_UNIFIED_PASSWORD,R.string.unifiied_pwd,"",R.drawable.work_fill0)

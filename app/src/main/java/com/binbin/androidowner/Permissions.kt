@@ -218,9 +218,9 @@ fun DpmPermissions(navCtrl:NavHostController){
         }
         if(VERSION.SDK_INT>=31&&(isProfileOwner(myDpm)|| isDeviceOwner(myDpm))){
             Column(modifier = sections()) {
-                val specificId:String = myDpm.enrollmentSpecificId
+                val specificId = myDpm.enrollmentSpecificId
                 Text(text = "设备唯一标识码", style = typography.titleLarge,color = titleColor)
-                Text("（恢复出厂设置不变）",style=bodyTextStyle)
+                Text(text = "（恢复出厂设置不变）",style=bodyTextStyle)
                 if(specificId!=""){
                     SelectionContainer{ Text(specificId, style = bodyTextStyle) }
                 }else{

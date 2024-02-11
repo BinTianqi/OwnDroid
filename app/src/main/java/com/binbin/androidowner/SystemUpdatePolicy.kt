@@ -42,11 +42,11 @@ fun SysUpdatePolicy(){
                     Text(text = "Update first available: ${Date(sysUpdateInfo.receivedTime)}", style = bodyTextStyle)
                     Text(text = "Hash code: ${sysUpdateInfo.hashCode()}", style = bodyTextStyle)
                     val securityStateDesc = when(sysUpdateInfo.securityPatchState){
-                        SystemUpdateInfo.SECURITY_PATCH_STATE_UNKNOWN->"SECURITY_PATCH_STATE_UNKNOWN"
-                        SystemUpdateInfo.SECURITY_PATCH_STATE_TRUE->"SECURITY_PATCH_STATE_TRUE"
-                        else->"SECURITY_PATCH_STATE_FALSE"
+                        SystemUpdateInfo.SECURITY_PATCH_STATE_UNKNOWN->"未知"
+                        SystemUpdateInfo.SECURITY_PATCH_STATE_TRUE->"是"
+                        else->"否"
                     }
-                    Text(text = "Security patch state: $securityStateDesc", style = bodyTextStyle)
+                    Text(text = "安全补丁: $securityStateDesc", style = bodyTextStyle)
                 }else{
                     Text(text = "暂无系统更新", style = bodyTextStyle)
                 }

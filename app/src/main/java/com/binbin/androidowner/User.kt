@@ -54,7 +54,8 @@ fun UserManage(navCtrl:NavHostController){
                 Text("支持多用户：${UserManager.supportsMultipleUsers()}",style = bodyTextStyle)
                 if(isWear&&UserManager.supportsMultipleUsers()){Text(text = "实际上手表可能不支持", style = typography.bodyMedium, color = colorScheme.error)}
             }
-            if(VERSION.SDK_INT>=31){ Text("系统用户: ${UserManager.isHeadlessSystemUserMode()}",style = bodyTextStyle) }
+            if(VERSION.SDK_INT>=23){Text(text = "系统用户：${userManager.isSystemUser}")}
+            if(VERSION.SDK_INT>=31){ Text(text = "无头系统用户: ${UserManager.isHeadlessSystemUserMode()}",style = bodyTextStyle) }
             Spacer(Modifier.padding(vertical = if(isWear){2.dp}else{5.dp}))
             if (VERSION.SDK_INT >= 28) {
                 val logoutable = myDpm.isLogoutEnabled
@@ -63,10 +64,9 @@ fun UserManage(navCtrl:NavHostController){
                     val ephemeralUser = myDpm.isEphemeralUser(myComponent)
                     Text(text = "临时用户： $ephemeralUser",style = bodyTextStyle)
                 }
-                Text(text = "次级用户: ${myDpm.isAffiliatedUser}",style = bodyTextStyle)
+                Text(text = "附属用户: ${myDpm.isAffiliatedUser}",style = bodyTextStyle)
             }
             Spacer(Modifier.padding(vertical = if(isWear){2.dp}else{5.dp}))
-            Text(text = "当前UID：${android.os.Process.myUid()}",style = bodyTextStyle)
             Text(text = "当前UserID：${getCurrentUserId()}",style = bodyTextStyle)
             Text(text = "当前用户序列号：${userManager.getSerialNumberForUser(android.os.Process.myUserHandle())}",style = bodyTextStyle)
         }

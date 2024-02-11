@@ -157,49 +157,51 @@ fun Password(){
             Text(text = stringResource(R.string.reset_pwd_desc), modifier = Modifier.padding(vertical = 3.dp),style=bodyTextStyle)
             var resetPwdFlag by remember{ mutableIntStateOf(0) }
             if(VERSION.SDK_INT>=23){
-                RadioButtonItem("开机时不要求密码（如果有指纹等其他解锁方式）", {resetPwdFlag==RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT}, {resetPwdFlag=RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT})
+                RadioButtonItem("启动(boot)时不要求密码", {resetPwdFlag==RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT}, {resetPwdFlag=RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT})
             }
-            RadioButtonItem("要求立即输入新密码",{resetPwdFlag==RESET_PASSWORD_REQUIRE_ENTRY}, {resetPwdFlag=RESET_PASSWORD_REQUIRE_ENTRY})
+            RadioButtonItem("不允许其他设备管理员重置密码直至用户输入一次密码",{resetPwdFlag==RESET_PASSWORD_REQUIRE_ENTRY}, {resetPwdFlag=RESET_PASSWORD_REQUIRE_ENTRY})
             RadioButtonItem("无",{resetPwdFlag==0},{resetPwdFlag=0})
-            Row(modifier = if(!isWear){Modifier.fillMaxWidth()}else{Modifier.horizontalScroll(rememberScrollState())},horizontalArrangement = Arrangement.SpaceBetween) {
+            Button(
+                onClick = {
+                    if(newPwd.length>=4||newPwd.isEmpty()){ confirmed=!confirmed
+                    }else{ Toast.makeText(myContext, "需要4位密码", Toast.LENGTH_SHORT).show() }
+                },
+                enabled = isDeviceOwner(myDpm) || isProfileOwner(myDpm) || myDpm.isAdminActive(myComponent),
+                modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.3F)},
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if(confirmed){ colorScheme.primary }else{ colorScheme.error },
+                    contentColor = if(confirmed){ colorScheme.onPrimary }else{ colorScheme.onError }
+                )
+            ) {
+                Text(text = if(confirmed){"取消"}else{"确定"})
+            }
+            if(VERSION.SDK_INT>=26){
                 Button(
                     onClick = {
-                        if(newPwd.length>=4||newPwd.isEmpty()){ confirmed=!confirmed
-                        }else{ Toast.makeText(myContext, "需要4位密码", Toast.LENGTH_SHORT).show() }
-                    },
-                    enabled = isDeviceOwner(myDpm) || isProfileOwner(myDpm) || myDpm.isAdminActive(myComponent),
-                    modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.3F)}
-                ) {
-                    Text(text = if(confirmed){"取消"}else{"确定"})
-                }
-                if(VERSION.SDK_INT>=26){
-                    Button(
-                        onClick = {
-                            val resetSuccess = myDpm.resetPasswordWithToken(myComponent,newPwd,myByteArray,resetPwdFlag)
-                            if(resetSuccess){ Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show()
-                            }else{ Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show() }
-                            confirmed=false
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
-                        enabled = confirmed&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm)),
-                    modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.42F)}
-                    ) {
-                        Text("应用")
-                    }
-                }
-                Button(
-                    onClick = {
-                        val resetSuccess = myDpm.resetPassword(newPwd,resetPwdFlag)
+                        val resetSuccess = myDpm.resetPasswordWithToken(myComponent,newPwd,myByteArray,resetPwdFlag)
                         if(resetSuccess){ Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show()
                         }else{ Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show() }
                         confirmed=false
                     },
-                    enabled = confirmed,
                     colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
-                    modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.9F)}
+                    enabled = confirmed&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm)),
+                    modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.42F)}
                 ) {
-                    Text("应用(旧)")
+                    Text("使用令牌重置密码")
                 }
+            }
+            Button(
+                onClick = {
+                    val resetSuccess = myDpm.resetPassword(newPwd,resetPwdFlag)
+                    if(resetSuccess){ Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show()
+                    }else{ Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show() }
+                    confirmed=false
+                },
+                enabled = confirmed,
+                colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
+                modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.9F)}
+            ) {
+                Text("重置密码（弃用）")
             }
         }
 
@@ -315,13 +317,13 @@ fun Password(){
                     CheckBoxItem("禁用未经编辑的通知",{unredacted},{unredacted=!unredacted})
                     CheckBoxItem("禁用可信代理",{agents},{agents=!agents})
                     CheckBoxItem("禁用指纹解锁",{fingerprint},{fingerprint=!fingerprint})
-                    if(VERSION.SDK_INT>=24){ CheckBoxItem("禁止在锁屏通知中输入(弃用)",{remote}, {remote=!remote}) }
+                    if(VERSION.SDK_INT>=24){ CheckBoxItem("禁止远程输入(弃用)",{remote}, {remote=!remote}) }
                     if(VERSION.SDK_INT>=28){
                         CheckBoxItem("禁用人脸解锁",{face},{face=!face})
                         CheckBoxItem("禁用虹膜解锁(?)",{iris},{iris=!iris})
                         CheckBoxItem("禁用生物识别",{biometrics},{biometrics=!biometrics})
                     }
-                    if(VERSION.SDK_INT>=34){ CheckBoxItem("禁用锁屏快捷方式",{shortcuts},{shortcuts=!shortcuts}) }
+                    if(VERSION.SDK_INT>=34){ CheckBoxItem("禁用快捷方式",{shortcuts},{shortcuts=!shortcuts}) }
                 }
             }
             Button(
@@ -346,7 +348,7 @@ fun Password(){
                     Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                     calculateCustomFeature()
                 },
-                enabled = isDeviceOwner(myDpm),
+                enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = "应用")

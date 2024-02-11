@@ -225,7 +225,7 @@ fun HomePage(navCtrl:NavHostController){
             }
         }
         HomePageItem(R.string.device_ctrl, R.drawable.mobile_phone_fill0, "DeviceControl", navCtrl)
-        if(VERSION.SDK_INT>=26){HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network",navCtrl)}
+        if(VERSION.SDK_INT>=24){HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network",navCtrl)}
         HomePageItem(R.string.work_profile, R.drawable.work_fill0, "ManagedProfile",navCtrl)
         HomePageItem(R.string.app_manage, R.drawable.apps_fill0, "ApplicationManage", navCtrl)
         HomePageItem(R.string.user_restrict, R.drawable.manage_accounts_fill0, "UserRestriction", navCtrl)

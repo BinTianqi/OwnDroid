@@ -11,6 +11,7 @@ import android.os.Build.VERSION
 import android.telephony.TelephonyManager
 import android.telephony.TelephonyManager.UNKNOWN_CARRIER_ID
 import android.telephony.data.ApnSetting.*
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
@@ -52,11 +53,6 @@ fun Network(){
             Text(text = "WiFi MAC: $wifimac",modifier=Modifier.fillMaxWidth(), textAlign = TextAlign.Center,style=bodyTextStyle)
         }
         
-        if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
-            DeviceCtrlItem(R.string.network_logging,R.string.developing,R.drawable.wifi_fill0,
-                {myDpm.isNetworkLoggingEnabled(myComponent)},{b -> myDpm.setNetworkLoggingEnabled(myComponent,b) }
-            )
-        }
         if(VERSION.SDK_INT>=33&&isDeviceOwner(myDpm)){
             DeviceCtrlItem(R.string.preferential_network_service,R.string.developing,R.drawable.globe_fill0,
                 {myDpm.isPreferentialNetworkServiceEnabled},{b ->  myDpm.isPreferentialNetworkServiceEnabled = b}
@@ -220,6 +216,36 @@ fun Network(){
             }
         }
         
+        if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
+            Column(modifier = sections()){
+                Text(text = "收集网络日志", style = typography.titleLarge)
+                Text(text = "功能开发中", style = bodyTextStyle)
+                Row(modifier=Modifier.fillMaxWidth().padding(horizontal=8.dp),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
+                    var checked by remember{mutableStateOf(myDpm.isNetworkLoggingEnabled(myComponent))}
+                    Text(text = "启用", style = typography.titleLarge)
+                    Switch(
+                        checked = checked,
+                        onCheckedChange = {myDpm.setNetworkLoggingEnabled(myComponent,!checked);checked = myDpm.isNetworkLoggingEnabled(myComponent)}
+                    )
+                }
+                Button(
+                    onClick = {
+                        val log = myDpm.retrieveNetworkLogs(myComponent,1234567890)
+                        if(log!=null){
+                            for(i in log){ Log.d("NetLog",i.toString()) }
+                            Toast.makeText(myContext,"已输出至Log",Toast.LENGTH_SHORT).show()
+                        }else{
+                            Log.d("NetLog","无")
+                            Toast.makeText(myContext,"无",Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("收集")
+                }
+            }
+        }
+        
         if(VERSION.SDK_INT>=31&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
             Column(modifier = sections()){
                 var keyPair by remember{mutableStateOf("")}
@@ -292,7 +318,6 @@ fun Network(){
                 }
                 var result = Builder().build()
                 AnimatedVisibility(nextStep) {
-                    /*TODO*/
                     var carrierEnabled by remember{mutableStateOf(false)}
                     var inputApnName by remember{mutableStateOf("")}
                     var user by remember{mutableStateOf("")}

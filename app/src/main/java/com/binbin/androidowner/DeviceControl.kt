@@ -6,6 +6,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build.VERSION
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
@@ -54,7 +55,7 @@ fun DeviceControl(){
             )
         }
         if(VERSION.SDK_INT>=34&&(isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser))){
-            DeviceCtrlItem(R.string.hide_status_bar,R.string.may_hide_notifi_icon_only,R.drawable.notifications_fill0,
+            DeviceCtrlItem(R.string.disable_status_bar,R.string.place_holder,R.drawable.notifications_fill0,
                 {myDpm.isStatusBarDisabled},{b -> myDpm.setStatusBarDisabled(myComponent,b) }
             )
         }
@@ -83,11 +84,6 @@ fun DeviceControl(){
         if(VERSION.SDK_INT>=23&&(isDeviceOwner(myDpm)|| isProfileOwner(myDpm))){
             DeviceCtrlItem(R.string.disable_bt_contact_share,R.string.place_holder,R.drawable.account_circle_fill0,
                 {myDpm.getBluetoothContactSharingDisabled(myComponent)},{b -> myDpm.setBluetoothContactSharingDisabled(myComponent,b)}
-            )
-        }
-        if(VERSION.SDK_INT>=24&&isDeviceOwner(myDpm)){
-            DeviceCtrlItem(R.string.secure_logging,R.string.no_effect,R.drawable.description_fill0,
-                {myDpm.isSecurityLoggingEnabled(myComponent)},{b -> myDpm.setSecurityLoggingEnabled(myComponent,b) }
             )
         }
         if(VERSION.SDK_INT>=30&&isDeviceOwner(myDpm)){
@@ -220,7 +216,6 @@ fun DeviceControl(){
                 ) {
                     Text("应用")
                 }
-                
             }
         }
         
@@ -256,7 +251,7 @@ fun DeviceControl(){
                 RadioButtonItem("由用户决定",{appPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY},{appPolicy = NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY})
                 RadioButtonItem("启用",{appPolicy == NEARBY_STREAMING_ENABLED},{appPolicy = NEARBY_STREAMING_ENABLED})
                 RadioButtonItem("禁用",{appPolicy == NEARBY_STREAMING_DISABLED},{appPolicy = NEARBY_STREAMING_DISABLED})
-                RadioButtonItem("如果足够安全(默认)",{appPolicy == NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY},{appPolicy = NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY})
+                RadioButtonItem("在足够安全时启用",{appPolicy == NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY},{appPolicy = NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY})
                 Button(
                     onClick = {
                         myDpm.nearbyAppStreamingPolicy = appPolicy
@@ -272,7 +267,7 @@ fun DeviceControl(){
                 RadioButtonItem("由用户决定",{notificationPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY},{notificationPolicy = NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY})
                 RadioButtonItem("启用",{notificationPolicy == NEARBY_STREAMING_ENABLED},{notificationPolicy = NEARBY_STREAMING_ENABLED})
                 RadioButtonItem("禁用",{notificationPolicy == NEARBY_STREAMING_DISABLED},{notificationPolicy = NEARBY_STREAMING_DISABLED})
-                RadioButtonItem("如果足够安全(默认)",{notificationPolicy == NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY},{notificationPolicy = NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY})
+                RadioButtonItem("在足够安全时启用",{notificationPolicy == NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY},{notificationPolicy = NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY})
                 Button(
                     onClick = {
                         myDpm.nearbyNotificationStreamingPolicy = notificationPolicy
@@ -472,6 +467,36 @@ fun DeviceControl(){
             }
         }
         
+        if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
+            Column(modifier = sections()){
+                Text(text = "收集安全日志", style = typography.titleLarge)
+                Text(text = "功能开发中", style = bodyTextStyle)
+                Row(modifier=Modifier.fillMaxWidth().padding(horizontal=8.dp),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
+                    var checked by remember{mutableStateOf(myDpm.isSecurityLoggingEnabled(myComponent))}
+                    Text(text = "启用", style = typography.titleLarge)
+                    Switch(
+                        checked = checked,
+                        onCheckedChange = {myDpm.setSecurityLoggingEnabled(myComponent,!checked);checked=myDpm.isSecurityLoggingEnabled(myComponent)}
+                    )
+                }
+                Button(
+                    onClick = {
+                        val log = myDpm.retrieveSecurityLogs(myComponent)
+                        if(log!=null){
+                            for(i in log){ Log.d("NetLog",i.toString()) }
+                            Toast.makeText(myContext,"已输出至Log",Toast.LENGTH_SHORT).show()
+                        }else{
+                            Log.d("NetLog","无")
+                            Toast.makeText(myContext,"无",Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("收集")
+                }
+            }
+        }
+        
         if(isDeviceOwner(myDpm)){
             SysUpdatePolicy()
         }
@@ -481,11 +506,11 @@ fun DeviceControl(){
             var confirmed by remember{ mutableStateOf(false) }
             Text(text = "清除数据",style = typography.titleLarge,modifier = Modifier.padding(6.dp),color = colorScheme.onErrorContainer)
             RadioButtonItem("默认",{flag==0},{flag=0}, colorScheme.onErrorContainer)
-            RadioButtonItem("WIPE_EXTERNAL_STORAGE",{flag==WIPE_EXTERNAL_STORAGE},{flag=WIPE_EXTERNAL_STORAGE}, colorScheme.onErrorContainer)
+            RadioButtonItem("清除外部存储",{flag==WIPE_EXTERNAL_STORAGE},{flag=WIPE_EXTERNAL_STORAGE}, colorScheme.onErrorContainer)
             if(VERSION.SDK_INT>=22&&isDeviceOwner(myDpm)){
-                RadioButtonItem("WIPE_RESET_PROTECTION_DATA",{flag==WIPE_RESET_PROTECTION_DATA},{flag=WIPE_RESET_PROTECTION_DATA}, colorScheme.onErrorContainer)
+                RadioButtonItem("清除受保护的数据",{flag==WIPE_RESET_PROTECTION_DATA},{flag=WIPE_RESET_PROTECTION_DATA}, colorScheme.onErrorContainer)
             }
-            if(VERSION.SDK_INT>=28){ RadioButtonItem("WIPE_EUICC",{flag==WIPE_EUICC},{flag=WIPE_EUICC}, colorScheme.onErrorContainer) }
+            if(VERSION.SDK_INT>=28){ RadioButtonItem("清除eUICC",{flag==WIPE_EUICC},{flag=WIPE_EUICC}, colorScheme.onErrorContainer) }
             if(VERSION.SDK_INT>=29){ RadioButtonItem("WIPE_SILENTLY",{flag==WIPE_SILENTLY},{flag=WIPE_SILENTLY}, colorScheme.onErrorContainer) }
             Text(text = "清空数据的不能是系统用户",color = colorScheme.onErrorContainer,
                 style = if(!sharedPref.getBoolean("isWear",false)){typography.bodyLarge}else{typography.bodyMedium})
@@ -522,7 +547,7 @@ fun DeviceControl(){
                         enabled = confirmed,
                         modifier = Modifier.fillMaxWidth(0.96F)
                     ) {
-                        Text("WipeDevice(API34)")
+                        Text("WipeDevice")
                     }
                 }
             }

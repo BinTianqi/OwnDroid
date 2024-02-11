@@ -184,6 +184,8 @@ adb shell dpm remove-active-admin com.binbin.androidowner/com.binbin.androidowne
 
 需要API34或以上
 
+状态栏仍会显示时间和系统图标，但是通知图标会隐藏，并且状态栏不能下拉
+
 ### 自动设置时间
 
 需要的权限：Device owner或由组织拥有的工作资料的Profile owner
@@ -217,12 +219,6 @@ adb shell dpm remove-active-admin com.binbin.androidowner/com.binbin.androidowne
 需要的权限：Device owner或Profile owner
 
 需要API23或以上
-
-### 安全日志
-
-需要的权限：Device owner
-
-需要API24或以上
 
 ### 通用标准模式
 
@@ -339,6 +335,12 @@ MTE: Memory Tagging Extension（内存标记拓展）[安卓开发者：MTE](htt
 
 或者清除所有用户证书
 
+### 安全日志
+
+需要的权限：Device owner
+
+需要API24或以上
+
 ### 系统更新策略
 
 需要的权限：Device owner
@@ -387,14 +389,6 @@ MTE: Memory Tagging Extension（内存标记拓展）[安卓开发者：MTE](htt
 需要API24或以上
 
 得到的是设备真实的Wi-Fi Mac地址，不是连接Wi-Fi时随机生成的Mac地址
-
-### 网络日志记录
-
-需要的权限：Device owner或Profile owner
-
-需要API26或以上
-
-功能开发中
 
 ### 优先网络服务
 
@@ -449,6 +443,14 @@ MTE: Memory Tagging Extension（内存标记拓展）[安卓开发者：MTE](htt
 可以将私人DNS模式设为自动
 
 也可以设置私人DNS主机名
+
+### 网络日志记录
+
+需要的权限：Device owner或Profile owner
+
+需要API26或以上
+
+功能开发中
 
 ### Wi-Fi密钥对
 
