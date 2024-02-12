@@ -18,11 +18,20 @@ class MyDeviceAdminReceiver : DeviceAdminReceiver() {
     @SuppressLint("UnsafeProtectedBroadcastReceiver")
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
-        if(VERSION.SDK_INT>=26){
-            DeviceAdminReceiver().onNetworkLogsAvailable(context,intent,1234567890,20)
-            DeviceAdminReceiver().onSecurityLogsAvailable(context,intent)
-        }
     }
+    
+    override fun onNetworkLogsAvailable(context: Context, intent: Intent, batchToken: Long, networkLogsCount: Int) {
+        super.onNetworkLogsAvailable(context, intent, batchToken, networkLogsCount)
+        Toast.makeText(context,"可以收集网络日志",Toast.LENGTH_SHORT).show()
+        Log.e("","网络日志可用")
+    }
+    
+    override fun onSecurityLogsAvailable(context: Context, intent: Intent) {
+        super.onSecurityLogsAvailable(context, intent)
+        Toast.makeText(context,"可以收集安全日志",Toast.LENGTH_SHORT).show()
+        Log.e("","安全日志可用")
+    }
+    
     override fun onDisableRequested(context: Context, intent: Intent): CharSequence {
         Toast.makeText(context, "撤销授权", Toast.LENGTH_SHORT).show()
         return "这是取消时的提示"

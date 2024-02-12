@@ -167,7 +167,7 @@ fun Password(){
                     }else{ Toast.makeText(myContext, "需要4位密码", Toast.LENGTH_SHORT).show() }
                 },
                 enabled = isDeviceOwner(myDpm) || isProfileOwner(myDpm) || myDpm.isAdminActive(myComponent),
-                modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.3F)},
+                modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if(confirmed){ colorScheme.primary }else{ colorScheme.error },
                     contentColor = if(confirmed){ colorScheme.onPrimary }else{ colorScheme.onError }
@@ -185,7 +185,7 @@ fun Password(){
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
                     enabled = confirmed&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm)),
-                    modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.42F)}
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("使用令牌重置密码")
                 }
@@ -199,7 +199,7 @@ fun Password(){
                 },
                 enabled = confirmed,
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
-                modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.9F)}
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text("重置密码（弃用）")
             }

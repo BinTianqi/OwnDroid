@@ -3,7 +3,6 @@ package com.binbin.androidowner
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.os.Build.VERSION
 import android.os.UserHandle
 import android.os.UserManager
@@ -32,10 +31,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.os.UserManagerCompat
-import androidx.navigation.NavHostController
 
+var affiliationID = mutableSetOf<String>()
 @Composable
-fun UserManage(navCtrl:NavHostController){
+fun UserManage() {
     Column(
         modifier = Modifier.verticalScroll(rememberScrollState())
     ) {
@@ -237,6 +236,61 @@ fun UserManage(navCtrl:NavHostController){
                 if(newUserHandle!=null){ Text(text = "新用户的序列号：${userManager.getSerialNumberForUser(newUserHandle)}", style = bodyTextStyle) }
             }
         }
+        if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
+            Column(modifier = sections()){
+                var input by remember{mutableStateOf("")}
+                var list by remember{mutableStateOf("")}
+                val refresh = {
+                    list = ""
+                    var count = affiliationID.size
+                    for(item in affiliationID){ count-=1; list+=item; if(count>0){list+="\n"} }
+                }
+                var inited by remember{mutableStateOf(false)}
+                if(!inited){affiliationID = myDpm.getAffiliationIds(myComponent);refresh();inited=true}
+                Text(text = "附属用户ID", style = typography.titleLarge)
+                TextField(
+                    value = input,
+                    onValueChange = {input = it},
+                    label = {Text("ID")},
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
+                )
+                Text(text = if(list==""){"无"}else{list}, style = bodyTextStyle)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+                    Button(
+                        onClick = { affiliationID.add(input); refresh() },
+                        modifier = Modifier.fillMaxWidth(0.49F)
+                    ){
+                        Text("添加")
+                    }
+                    Button(
+                        onClick = { affiliationID.remove(input); refresh() },
+                        modifier = Modifier.fillMaxWidth(0.96F)
+                    ){
+                        Text("移除")
+                    }
+                }
+                Button(
+                    onClick = {
+                        if("" in affiliationID) {
+                            Toast.makeText(myContext, "有空字符串", Toast.LENGTH_SHORT).show()
+                        }else if(affiliationID.isEmpty()){
+                            Toast.makeText(myContext, "不能为空", Toast.LENGTH_SHORT).show()
+                        }else{
+                            myDpm.setAffiliationIds(myComponent, affiliationID)
+                            affiliationID = myDpm.getAffiliationIds(myComponent)
+                            refresh()
+                            Toast.makeText(myContext,"成功",Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("应用")
+                }
+            }
+        }
+        
         UserSessionMessage("用户名","用户名",true,myDpm,myContext,{null},{msg ->  myDpm.setProfileName(myComponent, msg.toString())})
         if(VERSION.SDK_INT>=28){
             UserSessionMessage("用户会话开始消息","消息",false,myDpm,myContext,{myDpm.getStartUserSessionMessage(myComponent)},{msg ->  myDpm.setStartUserSessionMessage(myComponent,msg)})
@@ -310,17 +364,6 @@ private fun userOperationResultCode(result:Int): String {
         UserManager.USER_OPERATION_ERROR_CURRENT_USER->"失败：当前用户"
         else->"未知"
     }
-}
-
-private fun createWorkProfile(myContext: Context) {
-    val intent = Intent(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)
-    if(VERSION.SDK_INT>=23){
-        intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME, ComponentName(myContext,MyDeviceAdminReceiver::class.java))
-    }
-    intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME, myContext.packageName)
-    if (VERSION.SDK_INT >= 33) { intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_ALLOW_OFFLINE,true) }
-    intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION,"hello")
-    myContext.startActivity(intent)
 }
 
 fun getCurrentUserId(): Int {

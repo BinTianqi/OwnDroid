@@ -171,7 +171,7 @@ fun MyScaffold(){
             composable(route = "Permissions", content = { DpmPermissions(navCtrl)})
             composable(route = "ApplicationManage", content = { ApplicationManage()})
             composable(route = "UserRestriction", content = { UserRestriction()})
-            composable(route = "UserManage", content = { UserManage(navCtrl)})
+            composable(route = "UserManage", content = { UserManage()})
             composable(route = "Password", content = { Password()})
             composable(route = "AppSetting", content = { AppSetting(navCtrl)})
             composable(route = "Network", content = {Network()})

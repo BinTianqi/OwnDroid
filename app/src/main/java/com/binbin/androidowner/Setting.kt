@@ -5,16 +5,11 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build.VERSION
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -23,10 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 
 @Composable
@@ -65,7 +57,7 @@ fun AppSetting(navCtrl:NavHostController){
             Column(
                 modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 12.dp)
             ) {
-                Text(text = "关于", style = typography.headlineSmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text(text = "关于", style = typography.headlineSmall, color = colorScheme.onPrimaryContainer)
                 Text(text = "使用安卓的Device admin、Device owner 、Profile owner，全方位掌控你的设备", style = bodyTextStyle)
                 Spacer(Modifier.padding(vertical = 4.dp))
                 Text(text = "这个应用只在AOSP和LineageOS上测试过，不确保每个功能都在其它系统可用，尤其是国内的魔改系统。", style = bodyTextStyle)
@@ -78,6 +70,21 @@ fun AppSetting(navCtrl:NavHostController){
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clickable { shareLink(myContext, "https://github.com/BinTianqi/AndroidOwner/Guide.md") }
+                    .padding(start = 8.dp, bottom = 4.dp)
+            ){
+                Icon(
+                    painter = painterResource(id = R.drawable.open_in_new),
+                    contentDescription = null,
+                    modifier = Modifier.padding(start = 6.dp, end = 10.dp),
+                    tint = colorScheme.primary
+                )
+                Text(text = "使用教程", style = typography.titleLarge, color = colorScheme.onPrimaryContainer, modifier = Modifier.padding(bottom = 2.dp))
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
                     .clickable { shareLink(myContext, "https://github.com/BinTianqi/AndroidOwner") }
                     .padding(start = 8.dp, bottom = 4.dp)
             ) {
@@ -85,15 +92,9 @@ fun AppSetting(navCtrl:NavHostController){
                     painter = painterResource(id = R.drawable.open_in_new),
                     contentDescription = null,
                     modifier = Modifier.padding(start = 6.dp, end = 10.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = colorScheme.primary
                 )
-                Column {
-                    Text(text = "源代码", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
-                    if(!isWear){
-                        Text(text = "https://github.com/BinTianqi/AndroidOwner", color = MaterialTheme.colorScheme.onPrimaryContainer)
-                        Text(text = "欢迎提交issue、给小星星")
-                    }
-                }
+                Text(text = "源代码", style = typography.titleLarge, color = colorScheme.onPrimaryContainer, modifier = Modifier.padding(bottom = 2.dp))
             }
         }
         Spacer(Modifier.padding(vertical = 30.dp))

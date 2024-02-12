@@ -309,10 +309,12 @@ fun DpmPermissions(navCtrl:NavHostController){
                 }
             }
         }
-
-        if((isDeviceOwner(myDpm)||isProfileOwner(myDpm))&&VERSION.SDK_INT>=24){
+        
+        if(VERSION.SDK_INT>=24&&isDeviceOwner(myDpm)){
             DeviceOwnerInfo(R.string.owner_lockscr_info,R.string.place_holder,R.string.owner_lockscr_info,focusManager,myContext,
                 {myDpm.deviceOwnerLockScreenInfo},{content ->  myDpm.setDeviceOwnerLockScreenInfo(myComponent,content)})
+        }
+        if((isDeviceOwner(myDpm)||isProfileOwner(myDpm))&&VERSION.SDK_INT>=24){
             DeviceOwnerInfo(R.string.support_msg,R.string.support_msg_desc,R.string.message,focusManager,myContext,
                 {myDpm.getShortSupportMessage(myComponent)},{content ->  myDpm.setShortSupportMessage(myComponent,content)})
             DeviceOwnerInfo(R.string.long_support_msg,R.string.long_support_msg_desc,R.string.message,focusManager,myContext,

@@ -6,6 +6,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build.VERSION
+import android.os.UserManager
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -41,6 +42,7 @@ fun DeviceControl(){
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val isWear = sharedPref.getBoolean("isWear",false)
+    val userManager = myContext.getSystemService(Context.USER_SERVICE) as UserManager
     val bodyTextStyle = if(isWear){typography.bodyMedium}else{typography.bodyLarge}
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding()) {
@@ -467,7 +469,7 @@ fun DeviceControl(){
             }
         }
         
-        if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
+        if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))){
             Column(modifier = sections()){
                 Text(text = "收集安全日志", style = typography.titleLarge)
                 Text(text = "功能开发中", style = bodyTextStyle)
@@ -504,18 +506,36 @@ fun DeviceControl(){
         Column(modifier = sections(if(isSystemInDarkTheme()){ colorScheme.errorContainer }else{ colorScheme.errorContainer.copy(alpha = 0.6F) })) {
             var flag by remember{ mutableIntStateOf(0) }
             var confirmed by remember{ mutableStateOf(false) }
+            var externalStorage by remember{mutableStateOf(false)}
+            var protectionData by remember{mutableStateOf(false)}
+            var euicc by remember{mutableStateOf(false)}
+            var silent by remember{mutableStateOf(false)}
+            var reason by remember{mutableStateOf("")}
             Text(text = "清除数据",style = typography.titleLarge,modifier = Modifier.padding(6.dp),color = colorScheme.onErrorContainer)
-            RadioButtonItem("默认",{flag==0},{flag=0}, colorScheme.onErrorContainer)
-            RadioButtonItem("清除外部存储",{flag==WIPE_EXTERNAL_STORAGE},{flag=WIPE_EXTERNAL_STORAGE}, colorScheme.onErrorContainer)
+            CheckBoxItem("清除外部存储",{externalStorage},{externalStorage=!externalStorage}, colorScheme.onErrorContainer)
             if(VERSION.SDK_INT>=22&&isDeviceOwner(myDpm)){
-                RadioButtonItem("清除受保护的数据",{flag==WIPE_RESET_PROTECTION_DATA},{flag=WIPE_RESET_PROTECTION_DATA}, colorScheme.onErrorContainer)
+                CheckBoxItem("清除受保护的数据",{protectionData},{protectionData=!protectionData}, colorScheme.onErrorContainer)
             }
-            if(VERSION.SDK_INT>=28){ RadioButtonItem("清除eUICC",{flag==WIPE_EUICC},{flag=WIPE_EUICC}, colorScheme.onErrorContainer) }
-            if(VERSION.SDK_INT>=29){ RadioButtonItem("WIPE_SILENTLY",{flag==WIPE_SILENTLY},{flag=WIPE_SILENTLY}, colorScheme.onErrorContainer) }
-            Text(text = "清空数据的不能是系统用户",color = colorScheme.onErrorContainer,
-                style = if(!sharedPref.getBoolean("isWear",false)){typography.bodyLarge}else{typography.bodyMedium})
+            if(VERSION.SDK_INT>=28){ CheckBoxItem("清除eUICC",{euicc},{euicc=!euicc}, colorScheme.onErrorContainer) }
+            if(VERSION.SDK_INT>=29){ CheckBoxItem("静默清除",{silent},{silent=!silent}, colorScheme.onErrorContainer) }
+            AnimatedVisibility(!silent&&VERSION.SDK_INT>=28) {
+                TextField(
+                    value = reason, onValueChange = {reason=it},
+                    label = {Text("原因")},
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
+                )
+            }
             Button(
-                onClick = {confirmed=!confirmed},
+                onClick = {
+                    flag = 0
+                    if(externalStorage){flag += WIPE_EXTERNAL_STORAGE}
+                    if(protectionData&&VERSION.SDK_INT>=22){flag += WIPE_RESET_PROTECTION_DATA}
+                    if(euicc&&VERSION.SDK_INT>=28){flag += WIPE_EUICC}
+                    if(silent&&VERSION.SDK_INT>=29){flag += WIPE_SILENTLY}
+                    confirmed=!confirmed
+                },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if(confirmed){ colorScheme.primary }else{ colorScheme.error },
                     contentColor = if(confirmed){ colorScheme.onPrimary }else{ colorScheme.onError }
@@ -527,23 +547,20 @@ fun DeviceControl(){
             }
             Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween) {
                 Button(
-                    onClick = {myDpm.wipeData(flag)},
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorScheme.error,
-                        contentColor = colorScheme.onError
-                    ),
-                    enabled = confirmed,
-                    modifier = Modifier.fillMaxWidth(if(VERSION.SDK_INT>=34){0.49F}else{1F})
+                    onClick = {
+                        if(VERSION.SDK_INT>=28){myDpm.wipeData(flag,reason)}
+                        else{myDpm.wipeData(flag)}
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
+                    enabled = confirmed&&(VERSION.SDK_INT<34||(VERSION.SDK_INT>=34&&!userManager.isSystemUser)),
+                    modifier = Modifier.fillMaxWidth(if(VERSION.SDK_INT >= 34&&(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))){0.49F}else{1F})
                 ) {
                     Text("WipeData")
                 }
-                if (VERSION.SDK_INT >= 34) {
+                if (VERSION.SDK_INT >= 34&&(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))) {
                     Button(
                         onClick = {myDpm.wipeDevice(flag)},
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = colorScheme.error,
-                            contentColor = colorScheme.onError
-                        ),
+                        colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
                         enabled = confirmed,
                         modifier = Modifier.fillMaxWidth(0.96F)
                     ) {
@@ -552,8 +569,9 @@ fun DeviceControl(){
                 }
             }
             if(VERSION.SDK_INT>=24&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
-                Text("将会删除工作资料")
+                Text(text = "将会删除工作资料", style = bodyTextStyle)
             }
+            Text(text = "API34或以上将不能在系统用户中使用WipeData", style = bodyTextStyle)
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
