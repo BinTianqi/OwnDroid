@@ -216,7 +216,7 @@ fun Network(){
             }
         }
         
-        if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
+        if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)))){
             Column(modifier = sections()){
                 Text(text = "收集网络日志", style = typography.titleLarge)
                 Text(text = "功能开发中", style = bodyTextStyle)

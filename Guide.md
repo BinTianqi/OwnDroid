@@ -166,6 +166,16 @@ adb shell dpm remove-active-admin com.binbin.androidowner/com.binbin.androidowne
 
 提供支持的长消息不知道有啥用
 
+### 转移所有权
+
+需要Device owner或Profile owner
+
+需要API28或以上
+
+转移设备所有权到另外一个Device owner或Profile owner
+
+目标应用必须是Device admin且支持被转移所有权
+
 ## 系统
 
 ### 禁用相机
@@ -450,7 +460,7 @@ API34或以上将不能在系统用户中使用WipeData，如果要恢复出厂�
 
 ### 网络日志记录
 
-需要的权限：Device owner或Profile owner
+需要的权限：Device owner或工作资料的Profile owner
 
 需要API26或以上
 
@@ -476,21 +486,27 @@ API34或以上将不能在系统用户中使用WipeData，如果要恢复出厂�
 
 ## 工作资料
 
-工作资料是一种特殊的用户，使用`adb shell pm list user`命令可以看到工作资料
+工作资料是一种特殊的用户，使用`adb shell pm list user`命令可以看到工作资料，工作资料的默认用户名是“工作资料”或“Work Profile”
 
 ### 创建工作资料
 
 设备上不能有Device owner或Profile owner
 
-只能有一个工作资料
+一个设备只能有一个工作资料
 
 选项：
 
-- 跳过加密（需要API24或以上，没啥用）
+- 跳过加密（需要API24或以上，没有实际作用）
 
 创建后会跳转到工作资料中的Android owner，请立即按照指引激活工作资料
 
 创建后工作资料中的Android owner会成为Profile owner
+
+在WearOS上创建工作资料会导致SystemUI停止运行一次。WearOS原生的启动器不支持工作资料，你需要使用第三方启动器（比如微软桌面）。你可以通过[ADB命令移除工作资料](#删除工作资料)
+
+此外，不要作死给工作资料重置密码，不然你连输入密码的地方都没有
+
+（只在原生WearOS4(AVD)上测试过）
 
 ### 由组织拥有的工作资料
 
@@ -527,8 +543,6 @@ dpm mark-profile-owner-on-organization-owned-device --user USER_ID com.binbin.an
 
 ### 跨资料Intent过滤器
 
-[安卓开发者：Intent](https://developer.android.google.cn/reference/kotlin/android/content/Intent)
-
 需要的权限：工作资料的Profile owner
 
 默认情况下，工作资料中的应用不能打开个人应用，个人应用也不可以打开工作资料中的应用
@@ -550,6 +564,12 @@ dpm mark-profile-owner-on-organization-owned-device --user USER_ID com.binbin.an
 你可以使用 [恢复出厂设置](#恢复出厂设置) 来删除工作资料
 
 如果你的工作资料不是由组织拥有的，你可以打开安卓设置->安全->更多安全设置->设备管理器->带工作资料图标的Android owner->移除工作资料（非原生用户自己找）
+
+你也可以使用ADB命令移除工作资料（把USER_ID替换为工作资料的UserID）
+
+```shell
+adb shell pm remove-user USER_ID
+```
 
 ## 应用管理
 
@@ -770,19 +790,33 @@ Profile owner无法禁用部分功能，工作资料中部分功能无效，wear
 
 ## 用户管理
 
+用户（user）不是账号（account）
+
+使用ADB查看所有用户：
+
+```shell
+adb shell pm list users
+```
+
+用户名前面的数字就是UserID
+
 ### 用户信息
 
-当前用户的信息
+用户已解锁：你能看到这个的时候一定解锁了
+
+支持多用户：系统是否支持多用户。WearOS即使写着支持多用户，但不一定支持
 
 系统用户：UserID为0的用户（需API23）
 
+管理员用户：可以创建、删除用户。一个设备可以有多个管理员用户（需API34）
+
 无头系统用户：~~头被砍掉了~~ 系统用户运行着系统服务，但是没有分配给任何人使用，也不能切换到系统用户（需API31）
 
-可以登出：用户限制->[用户](#用户)->切换用户（需API28）
+可以登出：功能未知，无论什么用户都不能登出
 
-临时用户：临时用户登出后会被删除（需API28）
+临时用户：临时用户登出后或重启后会被删除（需API28）
 
-附属用户：运行Device owner的用户是附属于设备的用户，受管理用户可以设置附属用户ID以成为附属用户（开发中）
+附属用户：详见[附属用户ID](#附属用户ID)
 
 UserID：不是UID。系统用户的UserID为0，其他用户（包括工作资料）的UserID从10开始计算
 
@@ -798,7 +832,7 @@ UserID：不是UID。系统用户的UserID为0，其他用户（包括工作资�
 
 ### 创建并管理用户
 
-创建一个受管理用户
+创建一个受管理用户，新用户的头像右下方会有公文包标志
 
 需要Device owner和API24
 
@@ -807,6 +841,36 @@ UserID：不是UID。系统用户的UserID为0，其他用户（包括工作资�
 - 跳过创建用户向导（切换到新用户之后的向导）
 - 临时用户（需API28）
 - 启用所有系统应用（有些系统应用在新用户中是默认不启用的，比如谷歌手机上的YouTube）
+
+创建后，Android owner会成为受管理用户中的Profile owner
+
+这个功能在WearOS上使用会导致SystemUI停止运行一次，过几秒恢复正常。创建用户实际上成功了，回到Android owner后能看到新用户的序列号，`pm list users`也能看到新用户。如果切换到新用户，SystemUI无法使用，表现为黑屏（可以用ADB命令启动别的应用）。如果黑屏无法使用，ADB执行下面这个命令（把USER_ID替换成受管理用户的用户序列号）
+
+```shell
+adb shell pm remove-user --set-ephemeral-if-in-use USER_ID
+```
+
+新用户会被设为临时用户，重启后临时用户会被删除并切换到主用户
+
+（原生WearOS4(AVD)会出现这个问题，其他版本不知道有没有这个问题）
+
+### 使用Intent创建用户
+
+不需要任何权限，但也没啥用，建议Device owner创建并管理用户
+
+可能会导致Android owner停止运行，但是停止运行后没log，所以不知道为什么无法创建
+
+### 附属用户ID
+
+需要Device owner或Profile owner（工作资料中的Profile owner虽然也能设置，但是没有实际作用）
+
+附属用户ID是一个列表，列表中可以有多个不相同的ID，不考虑顺序
+
+当Device owner创建并管理用户时，新的用户不是附属用户。Device owner设置和受管理用户完全相同的附属用户ID后，受管理用户成为附属于Device owner的用户
+
+Device owner无论在何时都是附属于设备的用户
+
+你可以在用户管理->[用户信息](#用户信息)查看当前用户是否附属用户
 
 ### 用户名
 

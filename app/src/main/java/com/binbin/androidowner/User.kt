@@ -49,11 +49,9 @@ fun UserManage() {
         Column(modifier = sections()) {
             Text(text = "用户信息", style = typography.titleLarge,color = colorScheme.onPrimaryContainer)
             Text("用户已解锁：${UserManagerCompat.isUserUnlocked(myContext)}",style = bodyTextStyle)
-            if(VERSION.SDK_INT>=24){
-                Text("支持多用户：${UserManager.supportsMultipleUsers()}",style = bodyTextStyle)
-                if(isWear&&UserManager.supportsMultipleUsers()){Text(text = "实际上手表可能不支持", style = typography.bodyMedium, color = colorScheme.error)}
-            }
-            if(VERSION.SDK_INT>=23){Text(text = "系统用户：${userManager.isSystemUser}")}
+            if(VERSION.SDK_INT>=24){ Text("支持多用户：${UserManager.supportsMultipleUsers()}",style = bodyTextStyle) }
+            if(VERSION.SDK_INT>=23){ Text(text = "系统用户：${userManager.isSystemUser}", style = bodyTextStyle) }
+            if(VERSION.SDK_INT>=34){ Text(text = "管理员用户：${userManager.isAdminUser}", style = bodyTextStyle) }
             if(VERSION.SDK_INT>=31){ Text(text = "无头系统用户: ${UserManager.isHeadlessSystemUserMode()}",style = bodyTextStyle) }
             Spacer(Modifier.padding(vertical = if(isWear){2.dp}else{5.dp}))
             if (VERSION.SDK_INT >= 28) {
@@ -140,7 +138,6 @@ fun UserManage() {
                     onClick = {
                         focusMgr.clearFocus()
                         if(myDpm.switchUser(myComponent,userHandleById)){
-                            focusMgr.clearFocus()
                             Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                         }else{
                             Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
@@ -200,7 +197,6 @@ fun UserManage() {
                     onValueChange = {userName=it},
                     label = {Text("用户名")},
                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                    enabled = isDeviceOwner(myDpm),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
                 )
@@ -223,16 +219,18 @@ fun UserManage() {
                 ) {
                     Text("创建(Owner)")
                 }
-                Button(
-                    onClick = {
-                        val intent = UserManager.createUserCreationIntent(userName,null,null,null)
-                        createUser.launch(intent)
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("创建(Intent)")
+                if(UserManager.supportsMultipleUsers()&&(VERSION.SDK_INT<34||(VERSION.SDK_INT>=34&&userManager.isAdminUser))){
+                    Button(
+                        onClick = {
+                            val intent = UserManager.createUserCreationIntent(userName,null,null,null)
+                            createUser.launch(intent)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("创建(Intent)")
+                    }
+                    Text(text = "尽量用Device owner模式创建，Intent模式可能没有效果", style = bodyTextStyle)
                 }
-                Text(text = "尽量用Device owner模式创建，Intent模式可能没有效果", style = bodyTextStyle)
                 if(newUserHandle!=null){ Text(text = "新用户的序列号：${userManager.getSerialNumberForUser(newUserHandle)}", style = bodyTextStyle) }
             }
         }
@@ -288,6 +286,7 @@ fun UserManage() {
                 ) {
                     Text("应用")
                 }
+                Text(text = "如果多用户，附属用户ID相同时可以让其他用户附属于主用户", style = bodyTextStyle)
             }
         }
         

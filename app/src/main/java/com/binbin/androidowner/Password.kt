@@ -179,8 +179,8 @@ fun Password(){
                 Button(
                     onClick = {
                         val resetSuccess = myDpm.resetPasswordWithToken(myComponent,newPwd,myByteArray,resetPwdFlag)
-                        if(resetSuccess){ Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show()
-                        }else{ Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show() }
+                        if(resetSuccess){ Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show();newPwd=""}
+                        else{ Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show() }
                         confirmed=false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
@@ -193,8 +193,8 @@ fun Password(){
             Button(
                 onClick = {
                     val resetSuccess = myDpm.resetPassword(newPwd,resetPwdFlag)
-                    if(resetSuccess){ Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show()
-                    }else{ Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show() }
+                    if(resetSuccess){ Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show();newPwd=""}
+                    else{ Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show() }
                     confirmed=false
                 },
                 enabled = confirmed,

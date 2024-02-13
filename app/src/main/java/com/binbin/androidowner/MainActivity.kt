@@ -71,16 +71,15 @@ class MainActivity : ComponentActivity() {
         }
         createUser = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             when(it.resultCode){
-                UserManager.USER_CREATION_FAILED_NO_MORE_USERS->Toast.makeText(applicationContext, "用户太多了", Toast.LENGTH_SHORT).show()
+                Activity.RESULT_OK->Toast.makeText(applicationContext, "成功", Toast.LENGTH_SHORT).show()
+                Activity.RESULT_CANCELED->Toast.makeText(applicationContext, "用户太多了", Toast.LENGTH_SHORT).show()
                 UserManager.USER_CREATION_FAILED_NOT_PERMITTED->Toast.makeText(applicationContext, "不是管理员用户", Toast.LENGTH_SHORT).show()
-                else->Toast.makeText(applicationContext, "成功", Toast.LENGTH_SHORT).show()
+                UserManager.USER_CREATION_FAILED_NO_MORE_USERS->Toast.makeText(applicationContext, "用户太多了", Toast.LENGTH_SHORT).show()
+                else->Toast.makeText(applicationContext, "创建用户结果未知", Toast.LENGTH_SHORT).show()
             }
         }
         createManagedProfile = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            when(it.resultCode){
-                Activity.RESULT_OK->Toast.makeText(applicationContext, "创建成功", Toast.LENGTH_SHORT).show()
-                Activity.RESULT_CANCELED->Toast.makeText(applicationContext, "用户已取消", Toast.LENGTH_SHORT).show()
-            }
+            if(it.resultCode==Activity.RESULT_CANCELED){Toast.makeText(applicationContext, "用户已取消", Toast.LENGTH_SHORT).show()}
         }
         setContent {
             AndroidOwnerTheme {
@@ -141,12 +140,8 @@ fun MyScaffold(){
             if(sharedPref.getBoolean("isWear",false)&&topBarName!=R.string.app_name){
                 FloatingActionButton(
                     onClick = {
-                        navCtrl.navigate("HomePage") {
-                            popUpTo(
-                                navCtrl.graph.findStartDestination().id
-                            ) { saveState = true }
-                        }
                         focusMgr.clearFocus()
+                        navCtrl.navigateUp()
                     },
                     modifier = Modifier.size(35.dp),
                     containerColor = MaterialTheme.colorScheme.tertiaryContainer,

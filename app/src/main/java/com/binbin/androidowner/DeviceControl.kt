@@ -522,6 +522,7 @@ fun DeviceControl(){
                 TextField(
                     value = reason, onValueChange = {reason=it},
                     label = {Text("原因")},
+                    enabled = !confirmed,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                     modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
@@ -529,6 +530,7 @@ fun DeviceControl(){
             }
             Button(
                 onClick = {
+                    focusMgr.clearFocus()
                     flag = 0
                     if(externalStorage){flag += WIPE_EXTERNAL_STORAGE}
                     if(protectionData&&VERSION.SDK_INT>=22){flag += WIPE_RESET_PROTECTION_DATA}
@@ -571,7 +573,9 @@ fun DeviceControl(){
             if(VERSION.SDK_INT>=24&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
                 Text(text = "将会删除工作资料", style = bodyTextStyle)
             }
-            Text(text = "API34或以上将不能在系统用户中使用WipeData", style = bodyTextStyle)
+            if(VERSION.SDK_INT>=34){
+                Text(text = "API34或以上将不能在系统用户中使用WipeData", style = bodyTextStyle)
+            }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }

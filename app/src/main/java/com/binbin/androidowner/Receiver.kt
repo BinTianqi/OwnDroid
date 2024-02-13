@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller.*
 import android.os.Build.VERSION
+import android.os.PersistableBundle
 import android.util.Log
 import android.widget.Toast
 
@@ -15,6 +16,22 @@ class MyDeviceAdminReceiver : DeviceAdminReceiver() {
         super.onEnabled(context, intent)
         Toast.makeText(context, "已启用", Toast.LENGTH_SHORT).show()
     }
+    
+    override fun onTransferOwnershipComplete(context: Context, bundle: PersistableBundle?) {
+        super.onTransferOwnershipComplete(context, bundle)
+        if(bundle!=null){
+            Toast.makeText(context,"转移控制权完毕，附加内容长度：${bundle.size()}",Toast.LENGTH_SHORT).show()
+            Log.d("TransferOwnerShip",bundle.toString())
+        }else{
+            Toast.makeText(context,"转移控制权完毕，无附加内容}",Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    override fun onProfileProvisioningComplete(context: Context, intent: Intent) {
+        super.onProfileProvisioningComplete(context, intent)
+        Toast.makeText(context, "创建工作资料完成", Toast.LENGTH_SHORT).show()
+    }
+    
     @SuppressLint("UnsafeProtectedBroadcastReceiver")
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)

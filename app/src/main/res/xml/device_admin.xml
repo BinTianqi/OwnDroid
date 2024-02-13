@@ -12,4 +12,5 @@
         <set-global-proxy/>
         <disable-keyguard-features/>
     </uses-policies>
+    <support-transfer-ownership />
 </device-admin>

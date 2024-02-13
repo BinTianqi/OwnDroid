@@ -23,6 +23,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -32,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavHostController
+import java.lang.IllegalArgumentException
 
 
 @Composable
@@ -320,6 +322,41 @@ fun DpmPermissions(navCtrl:NavHostController){
             DeviceOwnerInfo(R.string.long_support_msg,R.string.long_support_msg_desc,R.string.message,focusManager,myContext,
                 {myDpm.getLongSupportMessage(myComponent)},{content ->  myDpm.setLongSupportMessage(myComponent,content)})
         }
+        
+        if(VERSION.SDK_INT>=28&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
+            Column(modifier = sections()){
+                var pkg by remember{mutableStateOf("")}
+                var cls by remember{mutableStateOf("")}
+                Text(text = "转移所有权", style = typography.titleLarge)
+                Text(text = "把Device owner或Profile owner权限转移到另一个应用。目标必须是Device admin", style = bodyTextStyle)
+                TextField(
+                    value = pkg, onValueChange = {pkg = it}, label = {Text("目标包名")},
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = {focusManager.moveFocus(FocusDirection.Down)})
+                )
+                TextField(
+                    value = cls, onValueChange = {cls = it}, label = {Text("目标类名")},
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {focusManager.clearFocus()})
+                )
+                Button(
+                    onClick = {
+                        try {
+                            myDpm.transferOwnership(myComponent,ComponentName(pkg, cls),null)
+                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                        }catch(e:IllegalArgumentException){
+                            Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("转移")
+                }
+            }
+        }
+        
         if(isWear&&(myDpm.isAdminActive(myComponent)||isProfileOwner(myDpm)||isDeviceOwner(myDpm))){
             Column(modifier = sections(), horizontalAlignment = Alignment.CenterHorizontally) {
                 Button(
