@@ -11,8 +11,8 @@ android {
         applicationId = "com.binbin.androidowner"
         minSdk = 21
         targetSdk = 34
-        versionCode = 14
-        versionName = "3.1"
+        versionCode = 15
+        versionName = "3.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

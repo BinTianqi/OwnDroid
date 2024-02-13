@@ -20,10 +20,10 @@ class MyDeviceAdminReceiver : DeviceAdminReceiver() {
     override fun onTransferOwnershipComplete(context: Context, bundle: PersistableBundle?) {
         super.onTransferOwnershipComplete(context, bundle)
         if(bundle!=null){
-            Toast.makeText(context,"转移控制权完毕，附加内容长度：${bundle.size()}",Toast.LENGTH_SHORT).show()
+            Toast.makeText(context,"转移所有权完毕，附加内容长度：${bundle.size()}",Toast.LENGTH_SHORT).show()
             Log.d("TransferOwnerShip",bundle.toString())
         }else{
-            Toast.makeText(context,"转移控制权完毕，无附加内容}",Toast.LENGTH_SHORT).show()
+            Toast.makeText(context,"转移所有权完毕，无附加内容}",Toast.LENGTH_SHORT).show()
         }
     }
     

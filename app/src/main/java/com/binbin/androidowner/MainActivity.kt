@@ -34,7 +34,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -50,7 +49,9 @@ lateinit var getCaCert: ActivityResultLauncher<Intent>
 lateinit var createUser:ActivityResultLauncher<Intent>
 lateinit var createManagedProfile:ActivityResultLauncher<Intent>
 lateinit var getApk:ActivityResultLauncher<Intent>
-lateinit var apkUri: Uri
+lateinit var getUserIcon:ActivityResultLauncher<Intent>
+var userIconUri:Uri? = null
+var apkUri: Uri? = null
 var caCert = byteArrayOf()
 
 @ExperimentalMaterial3Api
@@ -58,10 +59,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
+        getUserIcon = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            userIconUri = it.data?.data
+            if(userIconUri==null){ Toast.makeText(applicationContext, "空URI", Toast.LENGTH_SHORT).show() }
+        }
         getApk = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            val uri = it.data?.data
-            if(uri!=null){ apkUri = uri }
-            else{ Toast.makeText(applicationContext, "空URI", Toast.LENGTH_SHORT).show() }
+            apkUri = it.data?.data
+            if(apkUri==null){ Toast.makeText(applicationContext, "空URI", Toast.LENGTH_SHORT).show() }
         }
         getCaCert = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             uriToStream(applicationContext,it.data?.data){stream->

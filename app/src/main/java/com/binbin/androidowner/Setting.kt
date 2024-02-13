@@ -70,7 +70,7 @@ fun AppSetting(navCtrl:NavHostController){
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { shareLink(myContext, "https://github.com/BinTianqi/AndroidOwner/Guide.md") }
+                    .clickable { shareLink(myContext, "https://github.com/BinTianqi/AndroidOwner/blob/master/Guide.md") }
                     .padding(start = 8.dp, bottom = 4.dp)
             ){
                 Icon(

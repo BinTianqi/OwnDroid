@@ -3,9 +3,12 @@ package com.binbin.androidowner
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Build.VERSION
 import android.os.UserHandle
 import android.os.UserManager
+import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
@@ -31,6 +34,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.os.UserManagerCompat
+
 
 var affiliationID = mutableSetOf<String>()
 @Composable
@@ -290,31 +294,62 @@ fun UserManage() {
             }
         }
         
-        UserSessionMessage("用户名","用户名",true,myDpm,myContext,{null},{msg ->  myDpm.setProfileName(myComponent, msg.toString())})
+        UserSessionMessage("用户名", "用户名", true, {null}) {msg-> myDpm.setProfileName(myComponent, msg.toString())}
+        
+        if(VERSION.SDK_INT>=23&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
+            Column(modifier = sections()){
+                var getContent by remember{mutableStateOf(false)}
+                Text(text = "用户图标", style = typography.titleLarge)
+                Text(text = "尽量选择正方形的图片，以免产生问题", style = bodyTextStyle)
+                CheckBoxItem("使用文件选择器而不是相册",{getContent},{getContent=!getContent})
+                Button(
+                    onClick = {
+                        val intent = Intent(if(getContent){Intent.ACTION_GET_CONTENT}else{Intent.ACTION_PICK})
+                        if(getContent){intent.addCategory(Intent.CATEGORY_OPENABLE)}
+                        intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*")
+                        getUserIcon.launch(intent)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("选择图片...")
+                }
+                Button(
+                    onClick = {
+                        if(userIconUri!=null){
+                            uriToStream(myContext, userIconUri){stream ->
+                                val bitmap = BitmapFactory.decodeStream(stream)
+                                myDpm.setUserIcon(myComponent,bitmap)
+                                Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                            }
+                        }else{
+                            Toast.makeText(myContext, "请先选择图片", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("应用")
+                }
+            }
+        }
+        
         if(VERSION.SDK_INT>=28){
-            UserSessionMessage("用户会话开始消息","消息",false,myDpm,myContext,{myDpm.getStartUserSessionMessage(myComponent)},{msg ->  myDpm.setStartUserSessionMessage(myComponent,msg)})
-            UserSessionMessage("用户会话结束消息","消息",false,myDpm,myContext,{myDpm.getEndUserSessionMessage(myComponent)},{msg ->  myDpm.setEndUserSessionMessage(myComponent,msg)})
+            UserSessionMessage("用户会话开始消息", "消息", false, {myDpm.getStartUserSessionMessage(myComponent)}) {msg-> myDpm.setStartUserSessionMessage(myComponent, msg)}
+            UserSessionMessage("用户会话结束消息", "消息", false, {myDpm.getEndUserSessionMessage(myComponent)}) {msg-> myDpm.setEndUserSessionMessage(myComponent, msg)}
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
 @Composable
-private fun UserSessionMessage(
-    text:String,
-    textField:String,
-    profileOwner:Boolean,
-    myDpm:DevicePolicyManager,
-    myContext: Context,
-    get:()->CharSequence?,
-    setMsg:(msg:CharSequence?)->Unit
-){
+private fun UserSessionMessage(text:String, textField:String, profileOwner:Boolean, get: ()->CharSequence?, setMsg:(msg: CharSequence?)->Unit){
     Column(
         modifier = sections()
     ) {
+        val myContext = LocalContext.current
+        val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         val focusMgr = LocalFocusManager.current
         var msg by remember{ mutableStateOf(if(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner)){ if(get()==null){""}else{get().toString()} }else{""}) }
-        val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+        val sharedPref = myContext.getSharedPreferences("data", Context.MODE_PRIVATE)
         val isWear = sharedPref.getBoolean("isWear",false)
         Text(text = text, style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
         TextField(

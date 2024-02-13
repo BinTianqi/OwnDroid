@@ -80,7 +80,7 @@ fun Password(){
                 }
                 val pwdFailedAttempts = myDpm.currentFailedPasswordAttempts
                 Text(text = "密码已错误次数：$pwdFailedAttempts",style=bodyTextStyle)
-                if(VERSION.SDK_INT>=28&&(myDpm.isManagedProfile(myComponent)||myDpm.isProfileOwnerApp("com.binbin.androidowner"))){
+                if(VERSION.SDK_INT>=28&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
                     val unifiedPwd = myDpm.isUsingUnifiedPassword(myComponent)
                     Text("个人与工作应用密码一致：$unifiedPwd",style=bodyTextStyle)
                 }
@@ -137,7 +137,6 @@ fun Password(){
                 }
                 if(isWear){ Text(text = "（可以水平滚动）",style=typography.bodyMedium) }
                 Text("没有密码时会自动激活令牌",style=bodyTextStyle)
-                Text("有可能无法设置密码重置令牌，因机而异",style=bodyTextStyle)
             }
         }
         Column(

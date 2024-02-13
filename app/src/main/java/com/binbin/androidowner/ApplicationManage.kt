@@ -47,6 +47,9 @@ import java.util.concurrent.Executors
 
 private var credentialList = mutableSetOf<String>()
 private var crossProfilePkg = mutableSetOf<String>()
+private var keepUninstallPkg = mutableListOf<String>()
+private var permittedIme = mutableListOf<String>()
+private var permittedAccessibility = mutableListOf<String>()
 @Composable
 fun ApplicationManage(){
     val myContext = LocalContext.current
@@ -218,7 +221,6 @@ fun ApplicationManage(){
                 var inputPermission by remember{mutableStateOf("android.permission.")}
                 var currentState by remember{mutableStateOf(grantState[myDpm.getPermissionGrantState(myComponent,pkgName,inputPermission)])}
                 Text(text = "权限管理", style = typography.titleLarge)
-                Text(text = "查看系统支持的权限：adb shell pm list permissions", style = bodyTextStyle)
                 OutlinedTextField(
                     value = inputPermission,
                     label = { Text("权限")},
@@ -258,6 +260,7 @@ fun ApplicationManage(){
                     Text("由用户决定")
                 }
                 Text(text ="设为允许或拒绝后，用户不能改变状态", style = bodyTextStyle)
+                if(VERSION.SDK_INT>=31){Text(text = "可以修改传感器相关权限：${myDpm.canAdminGrantSensorsPermissions()}", style = bodyTextStyle)}
             }
         }
         
@@ -413,44 +416,44 @@ fun ApplicationManage(){
         if(isProfileOwner(myDpm)||isDeviceOwner(myDpm)){
             Column(modifier = sections()) {
                 Text(text = "许可的无障碍应用", style = typography.titleLarge,color = colorScheme.onPrimaryContainer)
-                var list = mutableListOf("")
                 var listText by remember{ mutableStateOf("") }
                 val refreshList = {
-                    list = myDpm.getPermittedAccessibilityServices(myComponent) ?: mutableListOf("")
                     listText = ""
-                    var count = list.size
-                    for(eachAccessibility in list) {
-                        count -= 1
-                        listText += eachAccessibility
-                        if(count>0) { listText += "\n" }
-                    }
+                    var count = permittedAccessibility.size
+                    for(eachAccessibility in permittedAccessibility){ count-=1; listText+=eachAccessibility; if(count>0){listText+="\n"} }
                 }
                 var inited by remember{mutableStateOf(false)}
-                if(!inited){refreshList(); inited=true}
+                if(!inited){
+                    val getList = myDpm.getPermittedAccessibilityServices(myComponent)
+                    if(getList!=null){ permittedAccessibility = getList }
+                    refreshList(); inited=true
+                }
                 Text(text = if(listText!=""){listText}else{"无"}, style = bodyTextStyle)
                 Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
-                        onClick = {
-                            focusMgr.clearFocus()
-                            list.plus(pkgName)
-                            Toast.makeText(myContext, if(myDpm.setPermittedAccessibilityServices(myComponent,list)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
-                            refreshList()
-                        },
+                        onClick = { permittedAccessibility.add(pkgName); refreshList()},
                         modifier = Modifier.fillMaxWidth(0.49F)
                     ) {
                         Text("添加")
                     }
                     Button(
-                        onClick = {
-                            focusMgr.clearFocus()
-                            list.remove(pkgName)
-                            Toast.makeText(myContext, if(myDpm.setPermittedAccessibilityServices(myComponent,list)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
-                            refreshList()
-                        },
+                        onClick = { permittedAccessibility.remove(pkgName); refreshList() },
                         modifier = Modifier.fillMaxWidth(0.96F)
                     ) {
                         Text("移除")
                     }
+                }
+                Button(
+                    onClick = {
+                        focusMgr.clearFocus()
+                        Toast.makeText(myContext, if(myDpm.setPermittedAccessibilityServices(myComponent, permittedAccessibility)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                        val getList = myDpm.getPermittedAccessibilityServices(myComponent)
+                        if(getList!=null){ permittedAccessibility = getList }
+                        refreshList()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = "应用")
                 }
             }
         }
@@ -458,39 +461,94 @@ fun ApplicationManage(){
         if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
             Column(modifier = sections()) {
                 Text(text = "许可的输入法", style = typography.titleLarge,color = colorScheme.onPrimaryContainer)
-                var imeList = mutableListOf<String>()
                 var imeListText by remember{ mutableStateOf("") }
                 val refreshList = {
-                    if(myDpm.getPermittedInputMethods(myComponent)!=null){ imeList = myDpm.getPermittedInputMethods(myComponent)!! }
                     imeListText = ""
-                    for(eachIme in imeList){ imeListText += "$eachIme \n" }
+                    for(eachIme in permittedIme){ imeListText += "$eachIme \n" }
                 }
                 var inited by remember{mutableStateOf(false)}
-                if(!inited){refreshList();inited=true}
+                if(!inited){
+                    val getList = myDpm.getPermittedInputMethods(myComponent)
+                    if(getList!=null){ permittedIme = getList }
+                    refreshList();inited=true
+                }
                 Text(text = if(imeListText!=""){imeListText}else{"无"}, style = bodyTextStyle)
                 Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
-                        onClick = {
-                            focusMgr.clearFocus()
-                            imeList.plus(pkgName)
-                            Toast.makeText(myContext, if(myDpm.setPermittedInputMethods(myComponent, imeList)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
-                            refreshList()
-                        },
+                        onClick = { permittedIme.add(pkgName); refreshList() },
                         modifier = Modifier.fillMaxWidth(0.49F)
                     ) {
                         Text("添加")
                     }
                     Button(
-                        onClick = {
-                            focusMgr.clearFocus()
-                            imeList.remove(pkgName)
-                            Toast.makeText(myContext, if(myDpm.setPermittedInputMethods(myComponent, imeList)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
-                            refreshList()
-                        },
+                        onClick = { permittedIme.remove(pkgName); refreshList()},
                         modifier = Modifier.fillMaxWidth(0.96F)
                     ) {
                         Text("移除")
                     }
+                }
+                Button(
+                    onClick = {
+                        Toast.makeText(myContext, if(myDpm.setPermittedInputMethods(myComponent, permittedIme)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                        val getList = myDpm.getPermittedInputMethods(myComponent)
+                        if(getList!=null){ permittedIme = getList }
+                        refreshList()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("应用")
+                }
+            }
+        }
+        
+        if(VERSION.SDK_INT>=28&&isDeviceOwner(myDpm)){
+            Column(modifier = sections()){
+                Text(text = "保持卸载的应用", style = typography.titleLarge)
+                Text(text = "作用未知", style = bodyTextStyle)
+                var listText by remember{mutableStateOf("")}
+                val refresh = {
+                    listText = ""
+                    var count = keepUninstallPkg.size
+                    for(each in keepUninstallPkg){ count-=1; listText+=each; if(count>0){listText+="\n"} }
+                }
+                var inited by remember{mutableStateOf(false)}
+                if(!inited){
+                    val getList = myDpm.getKeepUninstalledPackages(myComponent)
+                    if(getList!=null){ keepUninstallPkg = getList }
+                    refresh(); inited=true
+                }
+                Text(text = if(listText==""){"无"}else{listText}, style = bodyTextStyle)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+                    Button(
+                        onClick = {
+                            keepUninstallPkg.add(pkgName)
+                            refresh()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.49F)
+                    ){
+                        Text("添加")
+                    }
+                    Button(
+                        onClick = {
+                            keepUninstallPkg.remove(pkgName)
+                            refresh()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.96F)
+                    ){
+                        Text("移除")
+                    }
+                }
+                Button(
+                    onClick = {
+                        focusMgr.clearFocus()
+                        myDpm.setKeepUninstalledPackages(myComponent, keepUninstallPkg)
+                        val getList = myDpm.getKeepUninstalledPackages(myComponent)
+                        if(getList!=null){ keepUninstallPkg = getList }
+                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ){
+                    Text("应用")
                 }
             }
         }
@@ -509,7 +567,7 @@ fun ApplicationManage(){
                     myDpm.clearApplicationUserData(myComponent,pkgName,executor,onClear)
                 },
                 enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp)
             ) {
                 Text("清除应用存储")
             }
@@ -584,10 +642,14 @@ fun ApplicationManage(){
                 }
                 Button(
                     onClick = {
-                        val intent = Intent(Intent.ACTION_INSTALL_PACKAGE)
-                        intent.setData(apkUri)
-                        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        myContext.startActivity(intent)
+                        if(apkUri!=null){
+                            val intent = Intent(Intent.ACTION_INSTALL_PACKAGE)
+                            intent.setData(apkUri)
+                            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            myContext.startActivity(intent)
+                        }else{
+                            Toast.makeText(myContext, "请先选择APK", Toast.LENGTH_SHORT).show()
+                        }
                     },
                     modifier = Modifier.fillMaxWidth(0.96F)
                 ) {

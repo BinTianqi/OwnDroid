@@ -485,16 +485,31 @@ fun DeviceControl(){
                     onClick = {
                         val log = myDpm.retrieveSecurityLogs(myComponent)
                         if(log!=null){
-                            for(i in log){ Log.d("NetLog",i.toString()) }
+                            for(i in log){ Log.d("SecureLog",i.toString()) }
                             Toast.makeText(myContext,"已输出至Log",Toast.LENGTH_SHORT).show()
                         }else{
-                            Log.d("NetLog","无")
-                            Toast.makeText(myContext,"无",Toast.LENGTH_SHORT).show()
+                            Log.d("Secure5Log","无")
+                            Toast.makeText(myContext,"无日志",Toast.LENGTH_SHORT).show()
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("收集")
+                    Text("安全日志")
+                }
+                Button(
+                    onClick = {
+                        val log = myDpm.retrievePreRebootSecurityLogs(myComponent)
+                        if(log!=null){
+                            for(i in log){ Log.d("SecureLog",i.toString()) }
+                            Toast.makeText(myContext,"已输出至Log",Toast.LENGTH_SHORT).show()
+                        }else{
+                            Log.d("SecureLog","无")
+                            Toast.makeText(myContext,"无日志",Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("重启前安全日志")
                 }
             }
         }
