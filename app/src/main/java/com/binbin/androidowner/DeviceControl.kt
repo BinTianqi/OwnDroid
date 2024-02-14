@@ -42,6 +42,7 @@ fun DeviceControl(){
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val isWear = sharedPref.getBoolean("isWear",false)
+    val titleColor = colorScheme.onPrimaryContainer
     val userManager = myContext.getSystemService(Context.USER_SERVICE) as UserManager
     val bodyTextStyle = if(isWear){typography.bodyMedium}else{typography.bodyLarge}
     val focusMgr = LocalFocusManager.current
@@ -126,7 +127,7 @@ fun DeviceControl(){
         }
         
         Column(modifier = sections()){
-            Text(text = "锁屏", style = typography.titleLarge)
+            Text(text = "锁屏", style = typography.titleLarge, color = titleColor)
             var flag by remember{mutableIntStateOf(0)}
             if(VERSION.SDK_INT>=26){ CheckBoxItem("需要重新输入密码",{flag==FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY},{flag = if(flag==0){1}else{0} }) }
             Button(
@@ -162,10 +163,10 @@ fun DeviceControl(){
         
         if(VERSION.SDK_INT>=28){
             Column(modifier = sections()){
-                Text(text = "修改时间", style = typography.titleLarge)
+                Text(text = "修改时间", style = typography.titleLarge, color = titleColor)
                 var inputTime by remember{mutableStateOf("")}
                 Text(text = "从Epoch(1970/1/1 00:00:00 UTC)到你想设置的时间(毫秒)", style = bodyTextStyle)
-                TextField(
+                OutlinedTextField(
                     value = inputTime,
                     label = { Text("时间(ms)")},
                     onValueChange = {inputTime = it},
@@ -205,7 +206,7 @@ fun DeviceControl(){
         if(VERSION.SDK_INT>=23&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
             Column(modifier = sections()){
                 var selectedPolicy by remember{mutableIntStateOf(myDpm.getPermissionPolicy(myComponent))}
-                Text(text = "权限策略", style = typography.titleLarge)
+                Text(text = "权限策略", style = typography.titleLarge, color = titleColor)
                 RadioButtonItem("默认", {selectedPolicy==PERMISSION_POLICY_PROMPT}, {selectedPolicy= PERMISSION_POLICY_PROMPT})
                 RadioButtonItem("自动允许", {selectedPolicy==PERMISSION_POLICY_AUTO_GRANT}, {selectedPolicy= PERMISSION_POLICY_AUTO_GRANT})
                 RadioButtonItem("自动拒绝", {selectedPolicy==PERMISSION_POLICY_AUTO_DENY}, {selectedPolicy= PERMISSION_POLICY_AUTO_DENY})
@@ -223,7 +224,7 @@ fun DeviceControl(){
         
         if(VERSION.SDK_INT>=34&&isDeviceOwner(myDpm)){
             Column(modifier = sections()){
-                Text(text = "MTE策略", style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
+                Text(text = "MTE策略", style = typography.titleLarge, color = titleColor)
                 Text("MTE：内存标记拓展，安卓14和ARMv9的高端功能")
                 var selectedMtePolicy by remember{mutableIntStateOf(myDpm.mtePolicy)}
                 RadioButtonItem("由用户决定", {selectedMtePolicy==MTE_NOT_CONTROLLED_BY_POLICY}, {selectedMtePolicy= MTE_NOT_CONTROLLED_BY_POLICY})
@@ -249,7 +250,7 @@ fun DeviceControl(){
         if(VERSION.SDK_INT>=31&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
             Column(modifier = sections()){
                 var appPolicy by remember{mutableIntStateOf(myDpm.nearbyAppStreamingPolicy)}
-                Text(text = "附近App共享", style = typography.titleLarge)
+                Text(text = "附近App共享", style = typography.titleLarge, color = titleColor)
                 RadioButtonItem("由用户决定",{appPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY},{appPolicy = NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY})
                 RadioButtonItem("启用",{appPolicy == NEARBY_STREAMING_ENABLED},{appPolicy = NEARBY_STREAMING_ENABLED})
                 RadioButtonItem("禁用",{appPolicy == NEARBY_STREAMING_DISABLED},{appPolicy = NEARBY_STREAMING_DISABLED})
@@ -265,7 +266,7 @@ fun DeviceControl(){
                 }
                 Spacer(Modifier.padding(vertical = 3.dp))
                 var notificationPolicy by remember{mutableIntStateOf(myDpm.nearbyNotificationStreamingPolicy)}
-                Text(text = "附近通知共享", style = typography.titleLarge)
+                Text(text = "附近通知共享", style = typography.titleLarge, color = titleColor)
                 RadioButtonItem("由用户决定",{notificationPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY},{notificationPolicy = NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY})
                 RadioButtonItem("启用",{notificationPolicy == NEARBY_STREAMING_ENABLED},{notificationPolicy = NEARBY_STREAMING_ENABLED})
                 RadioButtonItem("禁用",{notificationPolicy == NEARBY_STREAMING_DISABLED},{notificationPolicy = NEARBY_STREAMING_DISABLED})
@@ -317,7 +318,7 @@ fun DeviceControl(){
                         custom = false
                     }
                 }
-                Text(text = "锁定任务模式", style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
+                Text(text = "锁定任务模式", style = typography.titleLarge, color = titleColor)
                 if(!inited){ refreshFeature();custom=myDpm.getLockTaskFeatures(myComponent)!=0;inited=true }
                 Text(text = "在锁定任务模式下：", style = bodyTextStyle)
                 RadioButtonItem("禁用全部",{!custom},{custom=false})
@@ -368,9 +369,9 @@ fun DeviceControl(){
                     }
                 }
                 refreshWhitelist()
-                Text(text = "白名单应用", style = typography.titleLarge)
+                Text(text = "白名单应用", style = typography.titleLarge, color = titleColor)
                 if(listText!=""){ Text(listText) }else{ Text(("无")) }
-                TextField(
+                OutlinedTextField(
                     value = inputPkg,
                     onValueChange = {inputPkg=it},
                     label = {Text("包名")},
@@ -420,7 +421,7 @@ fun DeviceControl(){
             }
             LaunchedEffect(exist){ launch{isCaCertSelected(600){refresh()}} }
             Column(modifier = sections()){
-                Text(text = "Ca证书", style = typography.titleLarge)
+                Text(text = "Ca证书", style = typography.titleLarge, color = titleColor)
                 if(isEmpty){ Text(text = "请选择Ca证书(.0)") }else{ Text(text = "证书已安装：$exist") }
                 Button(
                     onClick = {
@@ -471,7 +472,7 @@ fun DeviceControl(){
         
         if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))){
             Column(modifier = sections()){
-                Text(text = "收集安全日志", style = typography.titleLarge)
+                Text(text = "收集安全日志", style = typography.titleLarge, color = titleColor)
                 Text(text = "功能开发中", style = bodyTextStyle)
                 Row(modifier=Modifier.fillMaxWidth().padding(horizontal=8.dp),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
                     var checked by remember{mutableStateOf(myDpm.isSecurityLoggingEnabled(myComponent))}
@@ -534,7 +535,7 @@ fun DeviceControl(){
             if(VERSION.SDK_INT>=28){ CheckBoxItem("清除eUICC",{euicc},{euicc=!euicc}, colorScheme.onErrorContainer) }
             if(VERSION.SDK_INT>=29){ CheckBoxItem("静默清除",{silent},{silent=!silent}, colorScheme.onErrorContainer) }
             AnimatedVisibility(!silent&&VERSION.SDK_INT>=28) {
-                TextField(
+                OutlinedTextField(
                     value = reason, onValueChange = {reason=it},
                     label = {Text("原因")},
                     enabled = !confirmed,

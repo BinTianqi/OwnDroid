@@ -19,9 +19,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,10 +41,11 @@ fun ManagedProfile() {
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val isWear = sharedPref.getBoolean("isWear",false)
     val bodyTextStyle = if(isWear){ typography.bodyMedium}else{ typography.bodyLarge}
+    val titleColor = colorScheme.onPrimaryContainer
     Column(modifier = Modifier.verticalScroll(rememberScrollState())){
         
         Column(modifier = sections()){
-            Text(text = "信息", style = typography.titleLarge)
+            Text(text = "信息", style = typography.titleLarge, color = titleColor)
             if(VERSION.SDK_INT>=24){
                 if(isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
                     Text(text = "已是工作资料")
@@ -77,7 +78,7 @@ fun ManagedProfile() {
         
         if(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)&&!myDpm.isOrganizationOwnedDeviceWithManagedProfile){
             Column(modifier = sections(colorScheme.tertiaryContainer)){
-                Text("成为组织拥有的工作资料")
+                Text(text = "成为组织拥有的工作资料", color = titleColor)
                 Text(text = "首先在“用户管理”中查看UserID，然后使用ADB执行下面这条命令", style = bodyTextStyle)
                 SelectionContainer {
                     Text(
@@ -90,7 +91,7 @@ fun ManagedProfile() {
         }
         if(!isProfileOwner(myDpm)&&(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE)))){
             Column(modifier = sections()) {
-                Text(text = "工作资料", style = typography.titleLarge)
+                Text(text = "工作资料", style = typography.titleLarge, color = titleColor)
                 var skipEncrypt by remember{mutableStateOf(false)}
                 if(VERSION.SDK_INT>=24){CheckBoxItem("跳过加密",{skipEncrypt},{skipEncrypt=!skipEncrypt})}
                 Button(
@@ -116,7 +117,7 @@ fun ManagedProfile() {
             Row(modifier = sections(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically){
                 var suspended by remember{mutableStateOf(false)}
                 suspended = myDpm.getPersonalAppsSuspendedReasons(myComponent)!=PERSONAL_APPS_NOT_SUSPENDED
-                Text(text = "挂起个人应用", style = typography.titleLarge)
+                Text(text = "挂起个人应用", style = typography.titleLarge, color = titleColor)
                 Switch(
                     checked = suspended,
                     onCheckedChange ={
@@ -131,10 +132,10 @@ fun ManagedProfile() {
             Column(modifier = sections()){
                 var time by remember{mutableStateOf("")}
                 time = myDpm.getManagedProfileMaximumTimeOff(myComponent).toString()
-                Text(text = "资料关闭时间", style = typography.titleLarge)
+                Text(text = "资料关闭时间", style = typography.titleLarge, color = titleColor)
                 Text(text = "工作资料处于关闭状态的时间达到该限制后会挂起个人应用，0为无限制", style = bodyTextStyle)
                 Text(text = "个人应用已经因此挂起：${myDpm.getPersonalAppsSuspendedReasons(myComponent)==PERSONAL_APPS_SUSPENDED_PROFILE_TIMEOUT}")
-                TextField(
+                OutlinedTextField(
                     value = time, onValueChange = {time=it}, modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
                     label = {Text("时间(ms)")},
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
@@ -156,8 +157,8 @@ fun ManagedProfile() {
         if(isProfileOwner(myDpm)&&(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)))){
             Column(modifier = sections()){
                 var action by remember{mutableStateOf("")}
-                Text(text = "Intent过滤器", style = typography.titleLarge)
-                TextField(
+                Text(text = "Intent过滤器", style = typography.titleLarge, color = titleColor)
+                OutlinedTextField(
                     value = action, onValueChange = {action = it},
                     label = {Text("Action")},
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
@@ -199,8 +200,8 @@ fun ManagedProfile() {
         if(VERSION.SDK_INT>=31&&(isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent))){
             Column(modifier = sections()){
                 var orgId by remember{mutableStateOf("")}
-                Text(text = "组织ID", style = typography.titleLarge)
-                TextField(
+                Text(text = "组织ID", style = typography.titleLarge, color = titleColor)
+                OutlinedTextField(
                     value = orgId, onValueChange = {orgId=it},
                     label = {Text("组织ID")},
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),

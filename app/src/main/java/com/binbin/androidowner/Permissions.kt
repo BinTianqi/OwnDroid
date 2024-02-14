@@ -18,8 +18,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavHostController
-import java.lang.IllegalArgumentException
 
 
 @Composable
@@ -234,8 +233,8 @@ fun DpmPermissions(navCtrl:NavHostController){
         if((VERSION.SDK_INT>=26&&isDeviceOwner(myDpm))||(VERSION.SDK_INT>=24&&isProfileOwner(myDpm))){
             Column(modifier = sections()){
                 var orgName by remember{mutableStateOf(try{myDpm.getOrganizationName(myComponent).toString()}catch(e:SecurityException){""})}
-                Text(text = "组织名称", style = typography.titleLarge)
-                TextField(
+                Text(text = "组织名称", style = typography.titleLarge, color = titleColor)
+                OutlinedTextField(
                     value = orgName, onValueChange = {orgName=it}, modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
                     label = {Text("组织名称")},
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -264,21 +263,14 @@ fun DpmPermissions(navCtrl:NavHostController){
                     accountlist = ""
                     if (noManageAccount != null) {
                         var count = noManageAccount!!.size
-                        for(eachAccount in noManageAccount!!){
-                            count -= 1
-                            accountlist += eachAccount
-                            if(count>0){accountlist += "\n"}
-                        }
+                        for(each in noManageAccount!!){ count -= 1; accountlist += each; if(count>0){accountlist += "\n"} }
                     }
                 }
-                refreshList()
-                if(accountlist!=""){
-                    Text(text = accountlist, color = titleColor)
-                }else{
-                    Text("无",style=bodyTextStyle)
-                }
+                var inited by remember{mutableStateOf(false)}
+                if(!inited){ refreshList(); inited=true }
+                Text(text = if(accountlist==""){"无"}else{accountlist}, style = bodyTextStyle)
                 var inputText by remember{ mutableStateOf("") }
-                TextField(
+                OutlinedTextField(
                     value = inputText,
                     onValueChange = {inputText=it},
                     label = {Text("账号类型")},
@@ -327,15 +319,15 @@ fun DpmPermissions(navCtrl:NavHostController){
             Column(modifier = sections()){
                 var pkg by remember{mutableStateOf("")}
                 var cls by remember{mutableStateOf("")}
-                Text(text = "转移所有权", style = typography.titleLarge)
+                Text(text = "转移所有权", style = typography.titleLarge, color = titleColor)
                 Text(text = "把Device owner或Profile owner权限转移到另一个应用。目标必须是Device admin", style = bodyTextStyle)
-                TextField(
+                OutlinedTextField(
                     value = pkg, onValueChange = {pkg = it}, label = {Text("目标包名")},
                     modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     keyboardActions = KeyboardActions(onNext = {focusManager.moveFocus(FocusDirection.Down)})
                 )
-                TextField(
+                OutlinedTextField(
                     value = cls, onValueChange = {cls = it}, label = {Text("目标类名")},
                     modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -350,7 +342,7 @@ fun DpmPermissions(navCtrl:NavHostController){
                             Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
                         }
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp)
                 ) {
                     Text("转移")
                 }
@@ -417,7 +409,7 @@ fun DeviceOwnerInfo(
                 style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
         }
         var inputContent by remember{ mutableStateOf(input()) }
-        TextField(
+        OutlinedTextField(
             value = if(inputContent!=null){ inputContent.toString() }else{""},
             label = {Text(stringResource(textfield))},
             onValueChange = { inputContent=it },

@@ -28,9 +28,10 @@ fun AppSetting(navCtrl:NavHostController){
         val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
         val isWear = sharedPref.getBoolean("isWear",false)
         val bodyTextStyle = if(isWear){typography.bodyMedium}else{typography.bodyLarge}
+        val titleColor = colorScheme.onPrimaryContainer
         Column(modifier = sections()) {
             Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 3.dp),horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Wear", style = typography.titleLarge)
+                Text(text = "Wear", style = typography.titleLarge, color = titleColor)
                 Switch(
                     checked = isWear,
                     onCheckedChange = {
@@ -41,7 +42,7 @@ fun AppSetting(navCtrl:NavHostController){
             }
             if(VERSION.SDK_INT>=32){
                 Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 3.dp),horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "动态取色", style = typography.titleLarge)
+                    Text(text = "动态取色", style = typography.titleLarge, color = titleColor)
                     Switch(
                         checked = sharedPref.getBoolean("dynamicColor",false),
                         onCheckedChange = {
@@ -57,7 +58,7 @@ fun AppSetting(navCtrl:NavHostController){
             Column(
                 modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 12.dp)
             ) {
-                Text(text = "关于", style = typography.headlineSmall, color = colorScheme.onPrimaryContainer)
+                Text(text = "关于", style = typography.headlineSmall, color = titleColor)
                 Text(text = "使用安卓的Device admin、Device owner 、Profile owner，全方位掌控你的设备", style = bodyTextStyle)
                 Spacer(Modifier.padding(vertical = 4.dp))
                 Text(text = "这个应用只在AOSP和LineageOS上测试过，不确保每个功能都在其它系统可用，尤其是国内的魔改系统。", style = bodyTextStyle)

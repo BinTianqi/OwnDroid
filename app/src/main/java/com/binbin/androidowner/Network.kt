@@ -23,6 +23,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -47,6 +48,7 @@ fun Network(){
         val isWear = sharedPref.getBoolean("isWear",false)
         val bodyTextStyle = if(isWear){ typography.bodyMedium }else{ typography.bodyLarge }
         val focusMgr = LocalFocusManager.current
+        val titleColor = colorScheme.onPrimaryContainer
         
         if(VERSION.SDK_INT>=24){
             val wifimac = try { myDpm.getWifiMacAddress(myComponent).toString() }catch(e:SecurityException){ "没有权限" }
@@ -66,7 +68,7 @@ fun Network(){
         if(VERSION.SDK_INT>=33){
             Column(modifier = sections()){
                 var selectedWifiSecLevel by remember{mutableIntStateOf(myDpm.minimumRequiredWifiSecurityLevel)}
-                Text(text = "要求最小WiFi安全等级", style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
+                Text(text = "要求最小WiFi安全等级", style = typography.titleLarge, color = titleColor)
                 RadioButtonItem("开放", {selectedWifiSecLevel==DevicePolicyManager.WIFI_SECURITY_OPEN}, {selectedWifiSecLevel= DevicePolicyManager.WIFI_SECURITY_OPEN})
                 RadioButtonItem("WEP, WPA(2)-PSK", {selectedWifiSecLevel==DevicePolicyManager.WIFI_SECURITY_PERSONAL}, {selectedWifiSecLevel= DevicePolicyManager.WIFI_SECURITY_PERSONAL})
                 RadioButtonItem("WPA-EAP", {selectedWifiSecLevel==DevicePolicyManager.WIFI_SECURITY_ENTERPRISE_EAP}, {selectedWifiSecLevel= DevicePolicyManager.WIFI_SECURITY_ENTERPRISE_EAP})
@@ -108,12 +110,12 @@ fun Network(){
                 }
                 var inited by remember{mutableStateOf(false)}
                 if(!inited){refreshList(); inited=true}
-                Text(text = "WiFi SSID策略", style = typography.titleLarge)
+                Text(text = "WiFi SSID策略", style = typography.titleLarge, color = titleColor)
                 RadioButtonItem("白名单",{selectedPolicyType==WIFI_SSID_POLICY_TYPE_ALLOWLIST},{selectedPolicyType=WIFI_SSID_POLICY_TYPE_ALLOWLIST})
                 RadioButtonItem("黑名单",{selectedPolicyType==WIFI_SSID_POLICY_TYPE_DENYLIST},{selectedPolicyType=WIFI_SSID_POLICY_TYPE_DENYLIST})
                 Text("SSID列表：")
                 Text(text = if(ssidList!=""){ssidList}else{"无"}, style = bodyTextStyle)
-                TextField(
+                OutlinedTextField(
                     value = inputSsid,
                     label = { Text("SSID")},
                     onValueChange = {inputSsid = it},
@@ -161,7 +163,7 @@ fun Network(){
         }
         if(VERSION.SDK_INT>=29&&isDeviceOwner(myDpm)){
             Column(modifier = sections()){
-                Text(text = "私人DNS", style = typography.titleLarge)
+                Text(text = "私人DNS", style = typography.titleLarge, color = titleColor)
                 val dnsStatus = mapOf(
                     DevicePolicyManager.PRIVATE_DNS_MODE_UNKNOWN to "未知",
                     DevicePolicyManager.PRIVATE_DNS_MODE_OFF to "关闭",
@@ -187,7 +189,7 @@ fun Network(){
                 }
                 Spacer(Modifier.padding(vertical = 3.dp))
                 var inputHost by remember{mutableStateOf(myDpm.getGlobalPrivateDnsHost(myComponent) ?: "")}
-                TextField(
+                OutlinedTextField(
                     value = inputHost,
                     onValueChange = {inputHost=it},
                     label = {Text("DNS主机名")},
@@ -218,7 +220,7 @@ fun Network(){
         
         if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)))){
             Column(modifier = sections()){
-                Text(text = "收集网络日志", style = typography.titleLarge)
+                Text(text = "收集网络日志", style = typography.titleLarge, color = titleColor)
                 Text(text = "功能开发中", style = bodyTextStyle)
                 Row(modifier=Modifier.fillMaxWidth().padding(horizontal=8.dp),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
                     var checked by remember{mutableStateOf(myDpm.isNetworkLoggingEnabled(myComponent))}
@@ -249,8 +251,8 @@ fun Network(){
         if(VERSION.SDK_INT>=31&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
             Column(modifier = sections()){
                 var keyPair by remember{mutableStateOf("")}
-                Text(text = "WiFi密钥对", style = typography.titleLarge)
-                TextField(
+                Text(text = "WiFi密钥对", style = typography.titleLarge, color = titleColor)
+                OutlinedTextField(
                     value = keyPair,
                     label = { Text("密钥对")},
                     onValueChange = {keyPair = it},
@@ -289,7 +291,7 @@ fun Network(){
                 var inputNum by remember{mutableStateOf("0")}
                 var nextStep by remember{mutableStateOf(false)}
                 val builder = Builder()
-                Text(text = "APN设置", style = typography.titleLarge)
+                Text(text = "APN设置", style = typography.titleLarge, color = titleColor)
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically){
                     Text(text = "启用", style = typography.titleLarge)
                     Switch(checked = myDpm.isOverrideApnEnabled(myComponent), onCheckedChange = {myDpm.setOverrideApnsEnabled(myComponent,it)})

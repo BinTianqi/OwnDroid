@@ -60,6 +60,7 @@ fun ApplicationManage(){
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val isWear = sharedPref.getBoolean("isWear",false)
     val bodyTextStyle = if(isWear){ typography.bodyMedium }else{ typography.bodyLarge }
+    val titleColor = colorScheme.onPrimaryContainer
     Column{
         if(!isWear){
             TextField(
@@ -81,7 +82,7 @@ fun ApplicationManage(){
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
         )
-        }
+        }else{Spacer(Modifier.padding(vertical = 2.dp))}
         if(VERSION.SDK_INT>=24&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
             Text(text = "作用域: 工作资料", style = bodyTextStyle, textAlign = TextAlign.Center,modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp))
         }
@@ -124,7 +125,7 @@ fun ApplicationManage(){
         if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
             Column(modifier = sections()){
                 var state by remember{mutableStateOf(myDpm.isUninstallBlocked(myComponent,pkgName))}
-                Text(text = "防卸载", style = typography.titleLarge)
+                Text(text = "防卸载", style = typography.titleLarge, color = titleColor)
                 Text("当前状态：${if(state){"打开"}else{"关闭"}}")
                 Text(text = "有时候无法正确获取防卸载状态", style = bodyTextStyle)
                 Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
@@ -166,7 +167,7 @@ fun ApplicationManage(){
                 }
                 var inited by remember{mutableStateOf(false)}
                 if(!inited){refresh();inited=true}
-                Text(text = "禁止用户控制", style = typography.titleLarge)
+                Text(text = "禁止用户控制", style = typography.titleLarge, color = titleColor)
                 Text(text = "用户将无法清除应用的存储空间和缓存", style = bodyTextStyle)
                 Text(text = "应用列表：")
                 if(listText!=""){
@@ -220,7 +221,7 @@ fun ApplicationManage(){
             Column(modifier = sections()){
                 var inputPermission by remember{mutableStateOf("android.permission.")}
                 var currentState by remember{mutableStateOf(grantState[myDpm.getPermissionGrantState(myComponent,pkgName,inputPermission)])}
-                Text(text = "权限管理", style = typography.titleLarge)
+                Text(text = "权限管理", style = typography.titleLarge, color = titleColor)
                 OutlinedTextField(
                     value = inputPermission,
                     label = { Text("权限")},
@@ -266,7 +267,7 @@ fun ApplicationManage(){
         
         if(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
             Column(modifier = sections()){
-                Text(text = "跨资料应用", style = typography.titleLarge)
+                Text(text = "跨资料应用", style = typography.titleLarge, color = titleColor)
                 var list by remember{mutableStateOf("")}
                 val refresh = {
                     crossProfilePkg = myDpm.getCrossProfilePackages(myComponent)
@@ -314,7 +315,7 @@ fun ApplicationManage(){
                 }
                 var inited by remember{mutableStateOf(false)}
                 if(!inited){refresh();inited=true}
-                Text(text = "跨资料微件", style = typography.titleLarge)
+                Text(text = "跨资料微件", style = typography.titleLarge, color = titleColor)
                 Text(text = "(跨资料桌面小部件提供者)", style = bodyTextStyle)
                 Text(text = if(list!=""){list}else{"无"}, style = bodyTextStyle)
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
@@ -358,7 +359,7 @@ fun ApplicationManage(){
             var inited by remember{mutableStateOf(false)}
             if(!inited){refreshPolicy(); refreshText(); inited = true}
             Column(modifier = sections()){
-                Text(text = "凭据管理策略", style = typography.titleLarge)
+                Text(text = "凭据管理策略", style = typography.titleLarge, color = titleColor)
                 RadioButtonItem("无",{policyType==-1},{policyType=-1})
                 RadioButtonItem("黑名单",{policyType==PACKAGE_POLICY_BLOCKLIST},{policyType=PACKAGE_POLICY_BLOCKLIST})
                 RadioButtonItem("白名单",{policyType==PACKAGE_POLICY_ALLOWLIST},{policyType=PACKAGE_POLICY_ALLOWLIST})
@@ -415,7 +416,7 @@ fun ApplicationManage(){
         
         if(isProfileOwner(myDpm)||isDeviceOwner(myDpm)){
             Column(modifier = sections()) {
-                Text(text = "许可的无障碍应用", style = typography.titleLarge,color = colorScheme.onPrimaryContainer)
+                Text(text = "许可的无障碍应用", style = typography.titleLarge, color = titleColor)
                 var listText by remember{ mutableStateOf("") }
                 val refreshList = {
                     listText = ""
@@ -460,7 +461,7 @@ fun ApplicationManage(){
         
         if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
             Column(modifier = sections()) {
-                Text(text = "许可的输入法", style = typography.titleLarge,color = colorScheme.onPrimaryContainer)
+                Text(text = "许可的输入法", style = typography.titleLarge, color = titleColor)
                 var imeListText by remember{ mutableStateOf("") }
                 val refreshList = {
                     imeListText = ""
@@ -503,7 +504,7 @@ fun ApplicationManage(){
         
         if(VERSION.SDK_INT>=28&&isDeviceOwner(myDpm)){
             Column(modifier = sections()){
-                Text(text = "保持卸载的应用", style = typography.titleLarge)
+                Text(text = "保持卸载的应用", style = typography.titleLarge, color = titleColor)
                 Text(text = "作用未知", style = bodyTextStyle)
                 var listText by remember{mutableStateOf("")}
                 val refresh = {
@@ -591,7 +592,7 @@ fun ApplicationManage(){
         }
         
         Column(modifier = sections()){
-            Text(text = "卸载应用", style = typography.titleLarge)
+            Text(text = "卸载应用", style = typography.titleLarge, color = titleColor)
             Text(text = "静默卸载需Device owner", style = bodyTextStyle)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                 Button(
@@ -619,7 +620,7 @@ fun ApplicationManage(){
         }
         
         Column(modifier = sections()){
-            Text(text = "安装应用", style = typography.titleLarge)
+            Text(text = "安装应用", style = typography.titleLarge, color = titleColor)
             Text(text = "静默安装需Device owner", style = bodyTextStyle)
             Button(
                 onClick = {

@@ -14,8 +14,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -65,7 +65,7 @@ fun SysUpdatePolicy(){
             if(selectedPolicy==2){
                 Spacer(Modifier.padding(vertical = 3.dp))
                 Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.Center) {
-                    TextField(
+                    OutlinedTextField(
                         value = windowedPolicyStart,
                         label = { Text("开始时间")},
                         onValueChange = {windowedPolicyStart=it},
@@ -74,7 +74,7 @@ fun SysUpdatePolicy(){
                         modifier = Modifier.fillMaxWidth(0.5F)
                     )
                     Spacer(Modifier.padding(horizontal = 3.dp))
-                    TextField(
+                    OutlinedTextField(
                         value = windowedPolicyEnd,
                         onValueChange = {windowedPolicyEnd=it},
                         label = {Text("结束时间")},

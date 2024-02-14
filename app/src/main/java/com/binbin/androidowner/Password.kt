@@ -10,9 +10,11 @@ import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -24,9 +26,11 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -144,7 +148,7 @@ fun Password(){
         ) {
             var confirmed by remember{ mutableStateOf(false) }
             Text(text = "修改密码",style = typography.titleLarge,color = titleColor)
-            TextField(
+            OutlinedTextField(
                 value = newPwd,
                 onValueChange = {newPwd=it},
                 enabled = !confirmed&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm)||myDpm.isAdminActive(myComponent)),
@@ -437,7 +441,7 @@ private fun PasswordItem(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ){
-            TextField(
+            OutlinedTextField(
                 value = inputContent,
                 label = { Text(stringResource(textFieldLabel))},
                 onValueChange = {
@@ -447,30 +451,17 @@ private fun PasswordItem(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                 enabled = isDeviceOwner(myDpm),
-                modifier = if(isWear){Modifier.fillMaxWidth()}else{Modifier.fillMaxWidth(0.8F)}
+                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.Check, contentDescription = "OK",
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(50))
+                            .clickable(onClick = {focusMgr.clearFocus() ; setMethod(inputContent)}, enabled = isDeviceOwner(myDpm)&&ableToApply)
+                            .padding(2.dp)
+                    )
+                }
             )
-            if(!isWear){
-            IconButton(
-                onClick = { focusMgr.clearFocus() ; setMethod(inputContent) },
-                enabled = isDeviceOwner(myDpm)&&ableToApply,
-                colors = IconButtonDefaults.iconButtonColors(
-                    contentColor = colorScheme.onPrimary,
-                    containerColor = colorScheme.primary,
-                    disabledContentColor = Color.Transparent,
-                    disabledContainerColor = Color.Transparent
-                )
-            ) {
-                Icon(imageVector = Icons.Outlined.Check, contentDescription = null)
-            }}
-        }
-        if(isWear){
-            Button(
-                onClick = {focusMgr.clearFocus() ; setMethod(inputContent)},
-                enabled = isDeviceOwner(myDpm)&&ableToApply,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("应用")
-            }
         }
     }
 }

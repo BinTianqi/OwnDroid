@@ -200,7 +200,7 @@ fun HomePage(navCtrl:NavHostController){
                 .fillMaxWidth()
                 .padding(vertical = if (!isWear) { 5.dp } else { 2.dp }, horizontal = if (!isWear) { 8.dp } else { 4.dp })
                 .clip(RoundedCornerShape(15))
-                .background(color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.8F))
+                .background(color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7F))
                 .clickable(onClick = { navCtrl.navigate("Permissions") })
                 .padding(
                     horizontal = 5.dp,
@@ -244,7 +244,7 @@ fun HomePageItem(name:Int, imgVector:Int, navTo:String, myNav:NavHostController)
             .fillMaxWidth()
             .padding(vertical = if (!isWear) { 4.dp } else { 2.dp }, horizontal = if (!isWear) { 7.dp } else { 4.dp })
             .clip(RoundedCornerShape(15))
-            .background(color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8F))
+            .background(color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7F))
             .clickable(onClick = { myNav.navigate(navTo) })
             .padding(vertical = if(isWear){6.dp}else{10.dp}, horizontal = 6.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -323,7 +323,7 @@ fun isProfileOwner(dpm:DevicePolicyManager): Boolean {
 @Composable
 @Stable
 fun sections(bgColor:Color=MaterialTheme.colorScheme.primaryContainer):Modifier{
-    val backgroundColor = if(isSystemInDarkTheme()){bgColor.copy(0.4F)}else{bgColor.copy(0.6F)}
+    val backgroundColor = if(isSystemInDarkTheme()){bgColor.copy(0.3F)}else{bgColor.copy(0.8F)}
     return if(!LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE).getBoolean("isWear",false)){
         Modifier
             .fillMaxWidth()

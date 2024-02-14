@@ -124,7 +124,7 @@ fun SectionTab(txt:String,getSection:()->Boolean,setSection:()->Unit){
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     Text(
         text = txt,
-        color = if(getSection()){ colorScheme.onTertiaryContainer }else{ colorScheme.onPrimaryContainer },
+        color = if(getSection()){ colorScheme.onTertiaryContainer.copy(alpha = 0.8F) }else{ colorScheme.onPrimaryContainer.copy(alpha = 0.8F) },
         textAlign = TextAlign.Center,
         style = if(!sharedPref.getBoolean("isWear",false)){typography.headlineMedium}else{typography.titleLarge},
         modifier = Modifier

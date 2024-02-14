@@ -50,8 +50,9 @@ fun UserManage() {
         val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
         val isWear = sharedPref.getBoolean("isWear",false)
         val bodyTextStyle = if(isWear){ typography.bodyMedium}else{ typography.bodyLarge}
+        val titleColor = colorScheme.onPrimaryContainer
         Column(modifier = sections()) {
-            Text(text = "用户信息", style = typography.titleLarge,color = colorScheme.onPrimaryContainer)
+            Text(text = "用户信息", style = typography.titleLarge, color = titleColor)
             Text("用户已解锁：${UserManagerCompat.isUserUnlocked(myContext)}",style = bodyTextStyle)
             if(VERSION.SDK_INT>=24){ Text("支持多用户：${UserManager.supportsMultipleUsers()}",style = bodyTextStyle) }
             if(VERSION.SDK_INT>=23){ Text(text = "系统用户：${userManager.isSystemUser}", style = bodyTextStyle) }
@@ -73,7 +74,7 @@ fun UserManage() {
         }
 
         Column(modifier = sections()) {
-            Text(text = "用户操作", style = typography.titleLarge,color = colorScheme.onPrimaryContainer)
+            Text(text = "用户操作", style = typography.titleLarge,color = titleColor)
             var idInput by remember{ mutableStateOf("") }
             var userHandleById:UserHandle by remember{ mutableStateOf(android.os.Process.myUserHandle()) }
             var useUid by remember{ mutableStateOf(false) }
@@ -195,7 +196,7 @@ fun UserManage() {
         if(VERSION.SDK_INT>=24){
             Column(modifier = sections()) {
                 var userName by remember{ mutableStateOf("") }
-                Text(text = "创建用户", style = typography.titleLarge,color = colorScheme.onPrimaryContainer)
+                Text(text = "创建用户", style = typography.titleLarge, color = titleColor)
                 TextField(
                     value = userName,
                     onValueChange = {userName=it},
@@ -249,7 +250,7 @@ fun UserManage() {
                 }
                 var inited by remember{mutableStateOf(false)}
                 if(!inited){affiliationID = myDpm.getAffiliationIds(myComponent);refresh();inited=true}
-                Text(text = "附属用户ID", style = typography.titleLarge)
+                Text(text = "附属用户ID", style = typography.titleLarge, color = titleColor)
                 TextField(
                     value = input,
                     onValueChange = {input = it},
@@ -299,7 +300,7 @@ fun UserManage() {
         if(VERSION.SDK_INT>=23&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
             Column(modifier = sections()){
                 var getContent by remember{mutableStateOf(false)}
-                Text(text = "用户图标", style = typography.titleLarge)
+                Text(text = "用户图标", style = typography.titleLarge, color = titleColor)
                 Text(text = "尽量选择正方形的图片，以免产生问题", style = bodyTextStyle)
                 CheckBoxItem("使用文件选择器而不是相册",{getContent},{getContent=!getContent})
                 Button(
