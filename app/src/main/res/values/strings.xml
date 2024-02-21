@@ -103,7 +103,7 @@
     <string name="disable_bt_contact_share">禁止蓝牙分享联系人</string>
     <string name="user_manage">用户管理</string>
     <string name="setting">设置</string>
-    <string name="always_on_vpn">VPN常开</string>
+    <string name="always_on_vpn">VPN保持打开</string>
     <string name="experimental_feature">实验性功能</string>
     <string name="max_time_to_lock">屏幕超时</string>
     <string name="max_time_to_lock_desc">超时后锁屏(毫秒)，0为由用户决定</string>

@@ -29,6 +29,9 @@ fun AppSetting(navCtrl:NavHostController){
         val isWear = sharedPref.getBoolean("isWear",false)
         val bodyTextStyle = if(isWear){typography.bodyMedium}else{typography.bodyLarge}
         val titleColor = colorScheme.onPrimaryContainer
+        val pkgInfo = myContext.packageManager.getPackageInfo(myContext.packageName,0)
+        val verCode = pkgInfo.versionCode
+        val verName = pkgInfo.versionName
         Column(modifier = sections()) {
             Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 3.dp),horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "Wear", style = typography.titleLarge, color = titleColor)
@@ -59,6 +62,7 @@ fun AppSetting(navCtrl:NavHostController){
                 modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 12.dp)
             ) {
                 Text(text = "关于", style = typography.headlineSmall, color = titleColor)
+                Text(text = "Android owner v$verName ($verCode)", style = bodyTextStyle)
                 Text(text = "使用安卓的Device admin、Device owner 、Profile owner，全方位掌控你的设备", style = bodyTextStyle)
                 Spacer(Modifier.padding(vertical = 4.dp))
                 Text(text = "这个应用只在AOSP和LineageOS上测试过，不确保每个功能都在其它系统可用，尤其是国内的魔改系统。", style = bodyTextStyle)

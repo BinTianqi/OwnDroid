@@ -17,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -35,13 +36,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.os.UserManagerCompat
 
-
 var affiliationID = mutableSetOf<String>()
 @Composable
 fun UserManage() {
-    Column(
-        modifier = Modifier.verticalScroll(rememberScrollState())
-    ) {
+    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         val myContext = LocalContext.current
         val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
@@ -97,19 +95,8 @@ fun UserManage() {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
             )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(15.dp))
-                    .clickable(enabled = VERSION.SDK_INT >= 24 && isDeviceOwner(myDpm)) { useUid = !useUid }
-                    .padding(end = 12.dp)
-            ){
-                Checkbox(
-                    checked = useUid,
-                    onCheckedChange = {useUid=it},
-                    enabled = VERSION.SDK_INT>=24&& isDeviceOwner(myDpm)
-                )
-                Text(text = "使用UID(不靠谱)",modifier = Modifier.padding(bottom = 2.dp), style = bodyTextStyle)
+            if(VERSION.SDK_INT>=24&&isDeviceOwner(myDpm)){
+                CheckBoxItem(text = "使用UID", checked = {useUid}, operation = {idInput=""; useUid = !useUid})
             }
             if(VERSION.SDK_INT>28){
                 if(isProfileOwner(myDpm)&&myDpm.isAffiliatedUser){
@@ -224,18 +211,6 @@ fun UserManage() {
                 ) {
                     Text("创建(Owner)")
                 }
-                if(UserManager.supportsMultipleUsers()&&(VERSION.SDK_INT<34||(VERSION.SDK_INT>=34&&userManager.isAdminUser))){
-                    Button(
-                        onClick = {
-                            val intent = UserManager.createUserCreationIntent(userName,null,null,null)
-                            createUser.launch(intent)
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("创建(Intent)")
-                    }
-                    Text(text = "尽量用Device owner模式创建，Intent模式可能没有效果", style = bodyTextStyle)
-                }
                 if(newUserHandle!=null){ Text(text = "新用户的序列号：${userManager.getSerialNumberForUser(newUserHandle)}", style = bodyTextStyle) }
             }
         }
@@ -259,7 +234,13 @@ fun UserManage() {
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
                 )
-                Text(text = if(list==""){"无"}else{list}, style = bodyTextStyle)
+                if(list!=""){
+                    SelectionContainer {
+                        Text(text = list, style = bodyTextStyle)
+                    }
+                }else{
+                    Text(text = "无", style = bodyTextStyle)
+                }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
                         onClick = { affiliationID.add(input); refresh() },
@@ -371,7 +352,7 @@ private fun UserSessionMessage(text:String, textField:String, profileOwner:Boole
                     Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                 },
                 enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner),
-                modifier = if(isWear){Modifier.fillMaxWidth(0.48F)}else{Modifier.fillMaxWidth(0.65F)}
+                modifier = Modifier.fillMaxWidth(if(isWear){0.49F}else{0.65F})
             ) {
                 Text("应用")
             }
@@ -379,11 +360,11 @@ private fun UserSessionMessage(text:String, textField:String, profileOwner:Boole
                 onClick = {
                     focusMgr.clearFocus()
                     setMsg(null)
-                    msg = if(get()==null){""}else{get().toString()}
+                    msg = get()?.toString() ?: ""
                     Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
                 },
                 enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner),
-                modifier = Modifier.fillMaxWidth(0.92F)
+                modifier = Modifier.fillMaxWidth(0.96F)
             ) {
                 Text("默认")
             }

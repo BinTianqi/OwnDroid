@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -32,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -114,7 +116,13 @@ fun Network(){
                 RadioButtonItem("白名单",{selectedPolicyType==WIFI_SSID_POLICY_TYPE_ALLOWLIST},{selectedPolicyType=WIFI_SSID_POLICY_TYPE_ALLOWLIST})
                 RadioButtonItem("黑名单",{selectedPolicyType==WIFI_SSID_POLICY_TYPE_DENYLIST},{selectedPolicyType=WIFI_SSID_POLICY_TYPE_DENYLIST})
                 Text("SSID列表：")
-                Text(text = if(ssidList!=""){ssidList}else{"无"}, style = bodyTextStyle)
+                if(ssidList!=""){
+                    SelectionContainer {
+                        Text(text = ssidList, style = bodyTextStyle)
+                    }
+                }else{
+                    Text(text = "无", style = bodyTextStyle)
+                }
                 OutlinedTextField(
                     value = inputSsid,
                     label = { Text("SSID")},
@@ -176,7 +184,7 @@ fun Network(){
                     DevicePolicyManager.PRIVATE_DNS_SET_ERROR_FAILURE_SETTING to "失败"
                 )
                 var status by remember{mutableStateOf(dnsStatus[myDpm.getGlobalPrivateDnsMode(myComponent)])}
-                Text(text = "状态：$status")
+                Text(text = "当前状态：$status")
                 Button(
                     onClick = {
                         val result = myDpm.setGlobalPrivateDnsModeOpportunistic(myComponent)
@@ -199,6 +207,7 @@ fun Network(){
                 )
                 Button(
                     onClick = {
+                        focusMgr.clearFocus()
                         val result: Int
                         try{
                             result = myDpm.setGlobalPrivateDnsModeSpecifiedHost(myComponent,inputHost)
@@ -647,7 +656,7 @@ fun Network(){
                         }
                     }
                 }
-                Text(text = "这个功能没有被全面测试过", style = bodyTextStyle)
+                Text(text = stringResource(id = R.string.developing), style = bodyTextStyle)
             }
         }
         Spacer(Modifier.padding(vertical = 30.dp))

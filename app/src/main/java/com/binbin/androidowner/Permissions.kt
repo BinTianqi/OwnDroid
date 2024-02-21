@@ -1,6 +1,7 @@
 package com.binbin.androidowner
 
 import android.app.admin.DevicePolicyManager
+import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -443,8 +444,12 @@ fun DeviceOwnerInfo(
 }
 
 fun activateDeviceAdmin(inputContext:Context,inputComponent:ComponentName){
-    val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
-    intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, inputComponent)
-    intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "在这里激活Android Owner")
-    startActivity(inputContext,intent,null)
+    try {
+        val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+        intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, inputComponent)
+        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "在这里激活Android Owner")
+        startActivity(inputContext,intent,null)
+    }catch(e:ActivityNotFoundException){
+        Toast.makeText(inputContext,"不支持",Toast.LENGTH_SHORT).show()
+    }
 }

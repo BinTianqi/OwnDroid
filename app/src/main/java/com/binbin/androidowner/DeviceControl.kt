@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -36,7 +37,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun DeviceControl(){
+fun SystemManage(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
@@ -370,7 +371,13 @@ fun DeviceControl(){
                 }
                 refreshWhitelist()
                 Text(text = "白名单应用", style = typography.titleLarge, color = titleColor)
-                if(listText!=""){ Text(listText) }else{ Text(("无")) }
+                if(listText!=""){
+                    SelectionContainer {
+                        Text(text = listText, style = bodyTextStyle)
+                    }
+                }else{
+                    Text(text = "无", style = bodyTextStyle)
+                }
                 OutlinedTextField(
                     value = inputPkg,
                     onValueChange = {inputPkg=it},

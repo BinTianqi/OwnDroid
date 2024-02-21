@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -111,7 +112,7 @@ fun ApplicationManage(){
         }
         if(VERSION.SDK_INT>=24&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
             AppManageItem(
-                R.string.always_on_vpn,R.string.experimental_feature,{pkgName == myDpm.getAlwaysOnVpnPackage(myComponent)}) {b->
+                R.string.always_on_vpn,R.string.place_holder,{pkgName == myDpm.getAlwaysOnVpnPackage(myComponent)}) {b->
                 try {
                     myDpm.setAlwaysOnVpnPackage(myComponent, pkgName, b)
                 } catch(e: java.lang.UnsupportedOperationException) {
@@ -171,7 +172,11 @@ fun ApplicationManage(){
                 Text(text = "用户将无法清除应用的存储空间和缓存", style = bodyTextStyle)
                 Text(text = "应用列表：")
                 if(listText!=""){
-                    Text(text = listText, style = bodyTextStyle)
+                    SelectionContainer {
+                        Text(text = listText, style = bodyTextStyle)
+                    }
+                }else{
+                    Text(text = "无", style = bodyTextStyle)
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
@@ -277,7 +282,13 @@ fun ApplicationManage(){
                 }
                 var inited by remember{mutableStateOf(false)}
                 if(!inited){refresh();inited=true}
-                Text(text = if(list!=""){list}else{"无"}, style = bodyTextStyle)
+                if(list!=""){
+                    SelectionContainer {
+                        Text(text = list, style = bodyTextStyle)
+                    }
+                }else{
+                    Text(text = "无", style = bodyTextStyle)
+                }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
                         onClick = {
@@ -317,7 +328,13 @@ fun ApplicationManage(){
                 if(!inited){refresh();inited=true}
                 Text(text = "跨资料微件", style = typography.titleLarge, color = titleColor)
                 Text(text = "(跨资料桌面小部件提供者)", style = bodyTextStyle)
-                Text(text = if(list!=""){list}else{"无"}, style = bodyTextStyle)
+                if(list!=""){
+                    SelectionContainer {
+                        Text(text = list, style = bodyTextStyle)
+                    }
+                }else{
+                    Text(text = "无", style = bodyTextStyle)
+                }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
                         onClick = {
@@ -429,7 +446,13 @@ fun ApplicationManage(){
                     if(getList!=null){ permittedAccessibility = getList }
                     refreshList(); inited=true
                 }
-                Text(text = if(listText!=""){listText}else{"无"}, style = bodyTextStyle)
+                if(listText!=""){
+                    SelectionContainer {
+                        Text(text = listText, style = bodyTextStyle)
+                    }
+                }else{
+                    Text(text = "无", style = bodyTextStyle)
+                }
                 Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
                         onClick = { permittedAccessibility.add(pkgName); refreshList()},
@@ -473,7 +496,13 @@ fun ApplicationManage(){
                     if(getList!=null){ permittedIme = getList }
                     refreshList();inited=true
                 }
-                Text(text = if(imeListText!=""){imeListText}else{"无"}, style = bodyTextStyle)
+                if(imeListText!=""){
+                    SelectionContainer {
+                        Text(text = imeListText, style = bodyTextStyle)
+                    }
+                }else{
+                    Text(text = "无", style = bodyTextStyle)
+                }
                 Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
                         onClick = { permittedIme.add(pkgName); refreshList() },
@@ -518,7 +547,13 @@ fun ApplicationManage(){
                     if(getList!=null){ keepUninstallPkg = getList }
                     refresh(); inited=true
                 }
-                Text(text = if(listText==""){"无"}else{listText}, style = bodyTextStyle)
+                if(listText!=""){
+                    SelectionContainer {
+                        Text(text = listText, style = bodyTextStyle)
+                    }
+                }else{
+                    Text(text = "无", style = bodyTextStyle)
+                }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
                         onClick = {

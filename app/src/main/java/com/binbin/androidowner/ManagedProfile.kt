@@ -2,10 +2,12 @@ package com.binbin.androidowner
 
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.*
+import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager.NameNotFoundException
 import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -96,15 +98,19 @@ fun ManagedProfile() {
                 if(VERSION.SDK_INT>=24){CheckBoxItem("跳过加密",{skipEncrypt},{skipEncrypt=!skipEncrypt})}
                 Button(
                     onClick = {
-                        val intent = Intent(ACTION_PROVISION_MANAGED_PROFILE)
-                        if(VERSION.SDK_INT>=23){
-                            intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME,myComponent)
-                        }else{
-                            intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME,"com.binbin.androidowner")
+                        try {
+                            val intent = Intent(ACTION_PROVISION_MANAGED_PROFILE)
+                            if(VERSION.SDK_INT>=23){
+                                intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME,myComponent)
+                            }else{
+                                intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME,"com.binbin.androidowner")
+                            }
+                            if(VERSION.SDK_INT>=24){intent.putExtra(EXTRA_PROVISIONING_SKIP_ENCRYPTION,skipEncrypt)}
+                            if(VERSION.SDK_INT>=33){intent.putExtra(EXTRA_PROVISIONING_ALLOW_OFFLINE,true)}
+                            createManagedProfile.launch(intent)
+                        }catch(e:ActivityNotFoundException){
+                            Toast.makeText(myContext,"不支持",Toast.LENGTH_SHORT).show()
                         }
-                        if(VERSION.SDK_INT>=24){intent.putExtra(EXTRA_PROVISIONING_SKIP_ENCRYPTION,skipEncrypt)}
-                        if(VERSION.SDK_INT>=33){intent.putExtra(EXTRA_PROVISIONING_ALLOW_OFFLINE,true)}
-                        createManagedProfile.launch(intent)
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {

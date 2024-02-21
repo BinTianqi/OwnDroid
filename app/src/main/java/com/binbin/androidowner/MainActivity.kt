@@ -165,7 +165,7 @@ fun MyScaffold(){
             modifier = Modifier.padding(top = it.calculateTopPadding()).imePadding()
         ){
             composable(route = "HomePage", content = { HomePage(navCtrl)})
-            composable(route = "DeviceControl", content = { DeviceControl()})
+            composable(route = "DeviceControl", content = { SystemManage()})
             composable(route = "ManagedProfile", content = {ManagedProfile()})
             composable(route = "Permissions", content = { DpmPermissions(navCtrl)})
             composable(route = "ApplicationManage", content = { ApplicationManage()})
