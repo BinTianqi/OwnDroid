@@ -50,7 +50,7 @@ fun ShizukuActivate(){
     Column(modifier = Modifier.verticalScroll(rememberScrollState())){
         var outputText by remember{mutableStateOf("")}
         if(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
-            Row(modifier = sections(colorScheme.errorContainer), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically){
+            Row(modifier = sections(colorScheme.errorContainer), verticalAlignment = Alignment.CenterVertically){
                 Icon(imageVector = Icons.Rounded.Warning, contentDescription = null, tint = colorScheme.onErrorContainer)
                 Text(text = "暂不支持在工作资料中使用Shizuku", style = bodyTextStyle, color = colorScheme.onErrorContainer)
             }
