@@ -5,30 +5,26 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.os.Binder
 import android.os.Build.VERSION
 import android.os.UserHandle
 import android.os.UserManager
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
@@ -67,7 +63,7 @@ fun UserManage() {
                 Text(text = "附属用户: ${myDpm.isAffiliatedUser}",style = bodyTextStyle)
             }
             Spacer(Modifier.padding(vertical = if(isWear){2.dp}else{5.dp}))
-            Text(text = "当前UserID：${getCurrentUserId()}",style = bodyTextStyle)
+            Text(text = "当前UserID：${Binder.getCallingUid()/100000}",style = bodyTextStyle)
             Text(text = "当前用户序列号：${userManager.getSerialNumberForUser(android.os.Process.myUserHandle())}",style = bodyTextStyle)
         }
 
@@ -380,14 +376,4 @@ private fun userOperationResultCode(result:Int): String {
         UserManager.USER_OPERATION_ERROR_CURRENT_USER->"失败：当前用户"
         else->"未知"
     }
-}
-
-fun getCurrentUserId(): Int {
-    try {
-        val uh = UserHandle::class.java.getDeclaredMethod("myUserId")
-        uh.isAccessible = true
-        val userId = uh.invoke(null)
-        if (userId is Int) { return userId }
-    } catch (ignored: Exception) { }
-    return -1
 }

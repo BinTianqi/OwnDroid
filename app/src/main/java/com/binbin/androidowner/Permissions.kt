@@ -15,12 +15,11 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +50,13 @@ fun DpmPermissions(navCtrl:NavHostController){
         modifier = Modifier.verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Row(
+            modifier = sections(onClick = {navCtrl.navigate("ShizukuActivate")}, clickable = true),
+            horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically
+        ){
+            Text(text = "Shizuku", style = typography.titleLarge, color = titleColor)
+            Icon(imageVector = Icons.Default.KeyboardArrowRight,contentDescription = null, tint = colorScheme.onPrimaryContainer)
+        }
         if(!myDpm.isAdminActive(myComponent)&&isWear){
             Button(onClick = { activateDeviceAdmin(myContext,myComponent) },modifier = Modifier.padding(horizontal = 3.dp).fillMaxWidth()) {
                 Text("激活Device admin")
@@ -81,97 +87,70 @@ fun DpmPermissions(navCtrl:NavHostController){
                 }
             }
         }
-        if(!isda){
-            Column(
-                modifier = sections(colorScheme.tertiaryContainer.copy(alpha = 0.8F)),
-                horizontalAlignment = Alignment.Start
+        if(!isda&&!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)){
+            SelectionContainer(modifier = sections(colorScheme.tertiaryContainer)){
+                Text("激活命令：\nadb shell dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
+                    color = colorScheme.onTertiaryContainer, style = bodyTextStyle)
+            }
+        }
+        
+        if(!isDeviceOwner(myDpm)){
+            Row(
+                modifier = sections(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                SelectionContainer {
-                    Text("adb shell dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
-                        color = colorScheme.onTertiaryContainer, style = bodyTextStyle)
+                Column {
+                    Text(text = "Profile Owner", fontSize = if(!isWear){22.sp}else{20.sp},color = titleColor)
+                    Text(if(isProfileOwner(myDpm)){"已激活"}else{"未激活"})
                 }
-                Text(text = "或者进入设置（原生安卓） -> 安全 -> 更多安全设置 -> 设备管理应用 -> Android Owner", style = bodyTextStyle)
-            }
-        }
-        Row(
-            modifier = sections(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(text = "Profile Owner", fontSize = if(!isWear){22.sp}else{20.sp},color = titleColor)
-                Text(if(isProfileOwner(myDpm)){"已激活"}else{"未激活"})
-            }
-            if(isProfileOwner(myDpm)&&VERSION.SDK_INT>=24&&!isWear){
-                Button(
-                    onClick = {
-                        myDpm.clearProfileOwner(myComponent)
-                        navCtrl.navigateUp()
+                if(isProfileOwner(myDpm)&&VERSION.SDK_INT>=24&&!isWear){
+                    Button(
+                        onClick = {
+                            myDpm.clearProfileOwner(myComponent)
+                            navCtrl.navigateUp()
+                        }
+                    ) {
+                        Text("撤销")
                     }
-                ) {
-                    Text("撤销")
-                }
-            }
-        }
-        if(!isProfileOwner(myDpm)){
-            Column(
-                modifier = sections(colorScheme.tertiaryContainer.copy(alpha = 0.8F)),
-                horizontalAlignment = Alignment.Start
-            ) {
-                if(!isDeviceOwner(myDpm)){
-                    SelectionContainer {
-                        Text("adb shell dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
-                            color = colorScheme.onTertiaryContainer, style = bodyTextStyle)
-                    }
-                    Text(text = "Device owner和Profile owner不能同时存在，强烈建议激活Device owner", style = bodyTextStyle)
-                }
-                if(isDeviceOwner(myDpm)){
-                    Text(text = "Device owner创建其他用户后，这个应用会成为新用户的Profile owner", style = bodyTextStyle)
-                }
-            }
-        }
-        Row(
-            modifier = sections(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(text = "Device Owner", fontSize = if(!isWear){22.sp}else{20.sp},color = titleColor)
-                Text(if(isDeviceOwner(myDpm)){"已激活"}else{"未激活"})
-            }
-            if(isDeviceOwner(myDpm)&&!isWear){
-                Button(
-                    onClick = {
-                        myDpm.clearDeviceOwnerApp("com.binbin.androidowner")
-                        navCtrl.navigateUp()
-                    }
-                ) {
-                    Text("撤销")
                 }
             }
         }
         if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)){
-            Column(
-                modifier = sections(colorScheme.tertiaryContainer.copy(alpha = 0.8F)),
-                horizontalAlignment = Alignment.Start
-            ) {
-                SelectionContainer {
-                    Text(text = "adb shell dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
+            SelectionContainer(modifier = sections(colorScheme.tertiaryContainer)){
+                Text("激活命令：\nadb shell dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
                     color = colorScheme.onTertiaryContainer, style = bodyTextStyle)
-                }
-                if(!isda){
-                    Text(text = "使用此命令也会激活Device Admin", style = bodyTextStyle)
-                }
-                Text(text = "成为Device owner后将不能新建工作资料", style = bodyTextStyle)
             }
         }
-        if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)||myDpm.isAdminActive(myComponent)){
-            Text(
-                text = "注意！在这里撤销权限不会清除配置。比如：被停用的应用会保持停用状态",
-                color = colorScheme.onErrorContainer,
-                modifier = sections(colorScheme.errorContainer.copy(alpha = 0.8F)),
-                style = bodyTextStyle
-            )
+        
+        if(!isProfileOwner(myDpm)){
+            Row(
+                modifier = sections(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(text = "Device Owner", fontSize = if(!isWear){22.sp}else{20.sp},color = titleColor)
+                    Text(if(isDeviceOwner(myDpm)){"已激活"}else{"未激活"})
+                }
+                if(isDeviceOwner(myDpm)&&!isWear){
+                    Button(
+                        onClick = {
+                            myDpm.clearDeviceOwnerApp("com.binbin.androidowner")
+                            navCtrl.navigateUp()
+                        }
+                    ) {
+                        Text("撤销")
+                    }
+                }
+            }
+        }
+        
+        if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)){
+            SelectionContainer(modifier = sections(colorScheme.tertiaryContainer)){
+                Text(text = "激活命令：\nadb shell dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
+                    color = colorScheme.onTertiaryContainer, style = bodyTextStyle)
+            }
         }
         if(VERSION.SDK_INT>=30){
             Column(
@@ -452,4 +431,8 @@ fun activateDeviceAdmin(inputContext:Context,inputComponent:ComponentName){
     }catch(e:ActivityNotFoundException){
         Toast.makeText(inputContext,"不支持",Toast.LENGTH_SHORT).show()
     }
+}
+
+fun activateShizuku(){
+
 }

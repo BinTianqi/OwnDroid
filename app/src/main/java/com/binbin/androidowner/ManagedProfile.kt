@@ -91,7 +91,7 @@ fun ManagedProfile() {
                 Text(text = "把上面命令中的USER_ID替换成你的UserID", style = bodyTextStyle)
             }
         }
-        if(!isProfileOwner(myDpm)&&(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE)))){
+        if(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE))){
             Column(modifier = sections()) {
                 Text(text = "工作资料", style = typography.titleLarge, color = titleColor)
                 var skipEncrypt by remember{mutableStateOf(false)}

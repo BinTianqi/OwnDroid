@@ -35,6 +35,7 @@
 
 - 安卓设置中激活（你可以在此应用中跳转到安卓设置的激活界面）
 - ADB命令
+- Shizuku（本质上还是ADB激活）
 
 ADB激活命令：
 ```shell
@@ -42,6 +43,9 @@ adb shell dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.M
 ```
 
 一个设备可以同时存在多个Device admin。
+
+小天才电话手表（Android 8.1）使用ADB激活Device admin会返回"Success"，但是实际上没有效果
+
 #### 停用
 
 - 此应用的”权限“界面中停用
@@ -57,6 +61,7 @@ adb shell dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.M
 #### 激活
 
 - 使用ADB激活（不推荐，如果能使用ADB，建议激活Device owner），只能有一个Profile owner
+- Shizuku（本质上还是ADB激活）
 - 创建工作资料，此应用会成为工作资料中的Profile owner，只能有一个Profile owner
 - 成为Device owner后创建并管理用户，此应用会成为新用户的Profile owner，每个用户各有一个Profile owner
 
@@ -81,8 +86,9 @@ adb shell dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.
 #### 激活
 
 - 使用ADB激活
+- Shizuku（本质上还是ADB激活）
 - 恢复出厂设置并开机后，使用NFC发送这个app的下载链接（没试过）
-- 使用Root权限往/data/system里面放一个xml文件（没试过）
+- 使用Root权限往/data/system里面放一个xml文件（可以无视当前存在的用户和账号，没试过）
 
 ADB激活命令：
 
@@ -110,6 +116,8 @@ MIUI：需要在开发者选项中打开”USB调试（安全设置）“
 
 ColorOS：完全不支持Device owner
 
+小天才电话手表（Android 8.1）：完全不支持Device owner
+
 #### 停用
 
 - 恢复出厂设置（这是官方推荐的做法）
@@ -131,6 +139,17 @@ adb shell dpm remove-active-admin com.binbin.androidowner/com.binbin.androidowne
 使用这条命令也可以停用Device admin和Profile owner
 
 以上三种方法停用Device owner都会同时停用Device admin
+
+### Shizuku
+
+可以用来
+
+- 激活Device admin
+- 激活Profile owner
+- 激活Device admin
+- 激活由组织拥有的工作资料
+
+局限性：不能在工作资料中使用
 
 ### 设备唯一标识码
 
@@ -508,7 +527,7 @@ API34或以上将不能在系统用户中使用WipeData，如果要恢复出厂�
 
 ### 创建工作资料
 
-设备上不能有Device owner或Profile owner
+设备上不能有Device owner
 
 一个设备只能有一个工作资料
 
@@ -850,7 +869,7 @@ adb shell pm list users
 
 UserID：不是UID。系统用户的UserID为0，其他用户（包括工作资料）的UserID从10开始计算
 
-序列号：每个用户都不同的序列号
+序列号：每个用户都不同的序列号（序列号和UserID可能是一样的，但是这是两个不同的东西）
 
 ### 用户操作
 

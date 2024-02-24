@@ -40,6 +40,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.ui.theme.AndroidOwnerTheme
+import rikka.shizuku.Shizuku
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
@@ -56,9 +57,22 @@ var caCert = byteArrayOf()
 
 @ExperimentalMaterial3Api
 class MainActivity : ComponentActivity() {
+    override fun onDestroy() {
+        super.onDestroy()
+        if(VERSION.SDK_INT>=24){
+            Shizuku.removeBinderReceivedListener(ShizukuUtil.binderReceivedListener)
+            Shizuku.removeBinderDeadListener(ShizukuUtil.binderDeadListener)
+            Shizuku.removeRequestPermissionResultListener(ShizukuUtil.requestPermissionListener)
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
+        if(VERSION.SDK_INT>=24){
+            Shizuku.addBinderReceivedListenerSticky(ShizukuUtil.binderReceivedListener)
+            Shizuku.addBinderDeadListener(ShizukuUtil.binderDeadListener)
+            Shizuku.addRequestPermissionResultListener(ShizukuUtil.requestPermissionListener)
+        }
         getUserIcon = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             userIconUri = it.data?.data
             if(userIconUri==null){ Toast.makeText(applicationContext, "空URI", Toast.LENGTH_SHORT).show() }
@@ -90,6 +104,7 @@ class MainActivity : ComponentActivity() {
                 MyScaffold()
             }
         }
+        deleteRish(applicationContext)
     }
 }
 
@@ -112,7 +127,8 @@ fun MyScaffold(){
         "ApplicationManage" to R.string.app_manage,
         "UserRestriction" to R.string.user_restrict,
         "Password" to R.string.password,
-        "AppSetting" to R.string.setting
+        "AppSetting" to R.string.setting,
+        "ShizukuActivate" to R.string.shizuku_activate
     )
     val topBarName = topBarNameMap[backStackEntry?.destination?.route]?: R.string.app_name
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
@@ -175,6 +191,7 @@ fun MyScaffold(){
             composable(route = "AppSetting", content = { AppSetting(navCtrl)})
             composable(route = "Network", content = {Network()})
             composable(route = "ActivateManagedProfile", content = {ActivateManagedProfile(navCtrl)})
+            composable(route = "ShizukuActivate", content = {ShizukuActivate()})
         }
         if(!inited&&jumpToActivateProfile){navCtrl.navigate("ActivateManagedProfile");inited=true}
     }
@@ -322,13 +339,14 @@ fun isProfileOwner(dpm:DevicePolicyManager): Boolean {
 @SuppressLint("ModifierFactoryExtensionFunction", "ComposableModifierFactory")
 @Composable
 @Stable
-fun sections(bgColor:Color=MaterialTheme.colorScheme.primaryContainer):Modifier{
+fun sections(bgColor:Color=MaterialTheme.colorScheme.primaryContainer,onClick:()->Unit={},clickable:Boolean=false):Modifier{
     val backgroundColor = if(isSystemInDarkTheme()){bgColor.copy(0.3F)}else{bgColor.copy(0.8F)}
     return if(!LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE).getBoolean("isWear",false)){
         Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp)
             .clip(RoundedCornerShape(14.dp))
+            .clickable(onClick=onClick, enabled = clickable)
             .background(color = backgroundColor)
             .padding(vertical = 10.dp, horizontal = 10.dp)
     }else{
@@ -336,6 +354,7 @@ fun sections(bgColor:Color=MaterialTheme.colorScheme.primaryContainer):Modifier{
             .fillMaxWidth()
             .padding(horizontal = 3.dp, vertical = 3.dp)
             .clip(RoundedCornerShape(10.dp))
+            .clickable(onClick=onClick, enabled = clickable)
             .background(color = backgroundColor)
             .padding(vertical = 2.dp, horizontal = 3.dp)
     }
