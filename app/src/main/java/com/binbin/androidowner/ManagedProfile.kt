@@ -64,7 +64,7 @@ fun ManagedProfile() {
                     Text("跳转至个人应用")
                 }
             }else{
-                if(!myDpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE)&&!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)){
+                if(!myDpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE)&&!isDeviceOwner(myDpm)){
                     Button(
                         onClick = { myContext.startActivity(Intent("com.binbin.androidowner.MAIN_ACTION")) }, modifier = Modifier.fillMaxWidth()
                     ){
@@ -115,7 +115,7 @@ fun ManagedProfile() {
             }
         }
         
-        if(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile){
+        if(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile){
             Row(modifier = sections(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically){
                 var suspended by remember{mutableStateOf(false)}
                 suspended = myDpm.getPersonalAppsSuspendedReasons(myComponent)!=PERSONAL_APPS_NOT_SUSPENDED
@@ -130,7 +130,7 @@ fun ManagedProfile() {
             }
         }
         
-        if(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile){
+        if(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile){
             Column(modifier = sections()){
                 var time by remember{mutableStateOf("")}
                 time = myDpm.getManagedProfileMaximumTimeOff(myComponent).toString()

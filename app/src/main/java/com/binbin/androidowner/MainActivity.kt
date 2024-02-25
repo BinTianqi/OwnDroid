@@ -104,7 +104,6 @@ class MainActivity : ComponentActivity() {
                 MyScaffold()
             }
         }
-        deleteRish(applicationContext)
     }
 }
 

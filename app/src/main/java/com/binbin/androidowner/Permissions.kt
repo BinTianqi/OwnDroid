@@ -55,7 +55,7 @@ fun DpmPermissions(navCtrl:NavHostController){
             modifier = sections(onClick = {navCtrl.navigate("ShizukuActivate")}, clickable = true),
             horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically
         ){
-            Text(text = "Shizuku", style = typography.titleLarge, color = titleColor)
+            Text(text = "Shizuku", style = typography.titleLarge, color = titleColor, modifier = Modifier.padding(vertical = 2.dp))
             Icon(imageVector = Icons.Default.KeyboardArrowRight,contentDescription = null, tint = colorScheme.onPrimaryContainer)
         }
         if(!myDpm.isAdminActive(myComponent)&&isWear){
@@ -74,13 +74,15 @@ fun DpmPermissions(navCtrl:NavHostController){
             }
             if(!isWear)
             if(isda){
-                Button(
-                    onClick = {
-                        myDpm.removeActiveAdmin(myComponent)
-                        navCtrl.navigateUp()
+                if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)){
+                    Button(
+                        onClick = {
+                            myDpm.removeActiveAdmin(myComponent)
+                            navCtrl.navigateUp()
+                        }
+                    ) {
+                        Text("撤销")
                     }
-                ) {
-                    Text("撤销")
                 }
             }else{
                 Button(onClick = { activateDeviceAdmin(myContext,myComponent) }) {
