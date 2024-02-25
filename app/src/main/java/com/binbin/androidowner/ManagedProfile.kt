@@ -2,16 +2,12 @@ package com.binbin.androidowner
 
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.*
-import android.content.ActivityNotFoundException
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import android.content.pm.PackageManager.NameNotFoundException
+import android.content.*
 import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -142,7 +138,7 @@ fun ManagedProfile() {
                 Text(text = "工作资料处于关闭状态的时间达到该限制后会挂起个人应用，0为无限制", style = bodyTextStyle)
                 Text(text = "个人应用已经因此挂起：${myDpm.getPersonalAppsSuspendedReasons(myComponent)==PERSONAL_APPS_SUSPENDED_PROFILE_TIMEOUT}")
                 OutlinedTextField(
-                    value = time, onValueChange = {time=it}, modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                    value = time, onValueChange = {time=it}, modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp),
                     label = {Text("时间(ms)")},
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
@@ -169,7 +165,7 @@ fun ManagedProfile() {
                     label = {Text("Action")},
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
+                    modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp)
                 )
                 Button(
                     onClick = {
@@ -212,7 +208,7 @@ fun ManagedProfile() {
                     label = {Text("组织ID")},
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
+                    modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp)
                 )
                 AnimatedVisibility(orgId.length !in 6..64) {
                     Text(text = "长度应在6~64个字符之间", style = bodyTextStyle)

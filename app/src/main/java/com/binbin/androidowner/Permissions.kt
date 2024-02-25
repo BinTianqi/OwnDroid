@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -215,7 +216,7 @@ fun DpmPermissions(navCtrl:NavHostController){
                 var orgName by remember{mutableStateOf(try{myDpm.getOrganizationName(myComponent).toString()}catch(e:SecurityException){""})}
                 Text(text = "组织名称", style = typography.titleLarge, color = titleColor)
                 OutlinedTextField(
-                    value = orgName, onValueChange = {orgName=it}, modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+                    value = orgName, onValueChange = {orgName=it}, modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 3.dp),
                     label = {Text("组织名称")},
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusManager.clearFocus()})
@@ -254,7 +255,7 @@ fun DpmPermissions(navCtrl:NavHostController){
                     value = inputText,
                     onValueChange = {inputText=it},
                     label = {Text("账号类型")},
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                    modifier = Modifier.focusable().fillMaxWidth().padding(bottom = 4.dp),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusManager.clearFocus()})
                 )
@@ -303,13 +304,13 @@ fun DpmPermissions(navCtrl:NavHostController){
                 Text(text = "把Device owner或Profile owner权限转移到另一个应用。目标必须是Device admin", style = bodyTextStyle)
                 OutlinedTextField(
                     value = pkg, onValueChange = {pkg = it}, label = {Text("目标包名")},
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                    modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     keyboardActions = KeyboardActions(onNext = {focusManager.moveFocus(FocusDirection.Down)})
                 )
                 OutlinedTextField(
                     value = cls, onValueChange = {cls = it}, label = {Text("目标类名")},
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                    modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusManager.clearFocus()})
                 )
@@ -393,7 +394,7 @@ fun DeviceOwnerInfo(
             value = if(inputContent!=null){ inputContent.toString() }else{""},
             label = {Text(stringResource(textfield))},
             onValueChange = { inputContent=it },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 4.dp)
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Button(
@@ -431,8 +432,4 @@ fun activateDeviceAdmin(inputContext:Context,inputComponent:ComponentName){
     }catch(e:ActivityNotFoundException){
         Toast.makeText(inputContext,"不支持",Toast.LENGTH_SHORT).show()
     }
-}
-
-fun activateShizuku(){
-
 }

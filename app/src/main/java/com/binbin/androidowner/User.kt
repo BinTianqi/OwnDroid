@@ -12,6 +12,7 @@ import android.os.UserManager
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -87,7 +88,7 @@ fun UserManage() {
                 },
                 label = {Text(if(useUid){"UID"}else{"序列号"})},
                 enabled = isDeviceOwner(myDpm),
-                modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+                modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 3.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
             )
@@ -184,7 +185,7 @@ fun UserManage() {
                     value = userName,
                     onValueChange = {userName=it},
                     label = {Text("用户名")},
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 4.dp),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
                 )
@@ -226,7 +227,7 @@ fun UserManage() {
                     value = input,
                     onValueChange = {input = it},
                     label = {Text("ID")},
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                    modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
                 )
@@ -336,7 +337,7 @@ private fun UserSessionMessage(text:String, textField:String, profileOwner:Boole
             label = {Text(textField)},
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-            modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+            modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 6.dp),
             enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner)
         )
         Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween) {

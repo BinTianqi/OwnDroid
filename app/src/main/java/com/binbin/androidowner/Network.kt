@@ -15,6 +15,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -129,7 +130,7 @@ fun Network(){
                     onValueChange = {inputSsid = it},
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
+                    modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp)
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
@@ -203,7 +204,7 @@ fun Network(){
                     label = {Text("DNS主机名")},
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
+                    modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp)
                 )
                 Button(
                     onClick = {
@@ -267,7 +268,7 @@ fun Network(){
                     onValueChange = {keyPair = it},
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
+                    modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp)
                 )
                 val isExist = try{myDpm.isKeyPairGrantedToWifiAuth(keyPair)}catch(e:java.lang.IllegalArgumentException){false}
                 Text("已存在：$isExist")
@@ -314,7 +315,7 @@ fun Network(){
                         onValueChange = {inputNum = it},
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                        modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp),
                         enabled = !nextStep
                     )
                 }else{
@@ -387,7 +388,7 @@ fun Network(){
                             label = {Text("名称")},
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                            modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                         )
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically){
                             Text(text = "启用", style = typography.titleLarge)
@@ -401,7 +402,7 @@ fun Network(){
                             label = {Text("用户名")},
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                            modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                         )
                         
                         if(VERSION.SDK_INT>=33){
@@ -412,7 +413,7 @@ fun Network(){
                                 label = {Text("ID")},
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                                modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                                modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                             )
                         }
                         
@@ -432,7 +433,7 @@ fun Network(){
                                 label = {Text("ID")},
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                                modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                                modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                             )
                         }
                         
@@ -443,7 +444,7 @@ fun Network(){
                             label = {Text("位掩码")},
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                            modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                         )
                         
                         Text(text = "描述", style = typography.titleLarge)
@@ -453,7 +454,7 @@ fun Network(){
                             label = {Text("文本")},
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                            modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                         )
                         
                         Text(text = "MMS代理", style = typography.titleLarge)
@@ -464,7 +465,7 @@ fun Network(){
                                 label = {Text("地址")},
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                                modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                                modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                             )
                         }
                         TextField(
@@ -473,7 +474,7 @@ fun Network(){
                             label = {Text("端口")},
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                            modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                         )
                         
                         Text(text = "代理", style = typography.titleLarge)
@@ -484,7 +485,7 @@ fun Network(){
                                 label = {Text("地址")},
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                                modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                                modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                             )
                         }
                         TextField(
@@ -493,7 +494,7 @@ fun Network(){
                             label = {Text("端口")},
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                            modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                         )
                         
                         Text(text = "MMSC", style = typography.titleLarge)
@@ -503,7 +504,7 @@ fun Network(){
                             label = {Text("Uri")},
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                            modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                         )
                         
                         if(VERSION.SDK_INT>=33){
@@ -514,7 +515,7 @@ fun Network(){
                                 label = {Text("IPV4")},
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                                modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                                modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                             )
                             TextField(
                                 value = mtuV6,
@@ -522,7 +523,7 @@ fun Network(){
                                 label = {Text("IPV6")},
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                                modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                                modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                             )
                         }
                         
@@ -539,7 +540,7 @@ fun Network(){
                             label = {Text("位掩码")},
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                            modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                         )
                         
                         Text(text = "OperatorNumeric", style = typography.titleLarge)
@@ -549,7 +550,7 @@ fun Network(){
                             label = {Text("ID")},
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                            modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                         )
                         
                         Text(text = "密码", style = typography.titleLarge)
@@ -559,7 +560,7 @@ fun Network(){
                             label = {Text("密码")},
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                            modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                         )
                         
                         if(VERSION.SDK_INT>=33){

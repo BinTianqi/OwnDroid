@@ -11,6 +11,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -174,7 +175,7 @@ fun SystemManage(){
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                     enabled = isDeviceOwner(myDpm)||(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile),
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
+                    modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp)
                 )
                 if(isWear){
                     Button(
@@ -384,7 +385,7 @@ fun SystemManage(){
                     label = {Text("包名")},
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
+                    modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 3.dp)
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
@@ -535,12 +536,12 @@ fun SystemManage(){
             var silent by remember{mutableStateOf(false)}
             var reason by remember{mutableStateOf("")}
             Text(text = "清除数据",style = typography.titleLarge,modifier = Modifier.padding(6.dp),color = colorScheme.onErrorContainer)
-            CheckBoxItem("清除外部存储",{externalStorage},{externalStorage=!externalStorage}, colorScheme.onErrorContainer)
+            CheckBoxItem("清除外部存储",{externalStorage},{externalStorage=!externalStorage;confirmed=false}, colorScheme.onErrorContainer)
             if(VERSION.SDK_INT>=22&&isDeviceOwner(myDpm)){
-                CheckBoxItem("清除受保护的数据",{protectionData},{protectionData=!protectionData}, colorScheme.onErrorContainer)
+                CheckBoxItem("清除受保护的数据",{protectionData},{protectionData=!protectionData;confirmed=false}, colorScheme.onErrorContainer)
             }
-            if(VERSION.SDK_INT>=28){ CheckBoxItem("清除eUICC",{euicc},{euicc=!euicc}, colorScheme.onErrorContainer) }
-            if(VERSION.SDK_INT>=29){ CheckBoxItem("静默清除",{silent},{silent=!silent}, colorScheme.onErrorContainer) }
+            if(VERSION.SDK_INT>=28){ CheckBoxItem("清除eUICC",{euicc},{euicc=!euicc;confirmed=false}, colorScheme.onErrorContainer) }
+            if(VERSION.SDK_INT>=29){ CheckBoxItem("静默清除",{silent},{silent=!silent;confirmed=false}, colorScheme.onErrorContainer) }
             AnimatedVisibility(!silent&&VERSION.SDK_INT>=28) {
                 OutlinedTextField(
                     value = reason, onValueChange = {reason=it},
@@ -548,7 +549,7 @@ fun SystemManage(){
                     enabled = !confirmed,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
+                    modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 3.dp)
                 )
             }
             Button(
@@ -558,6 +559,7 @@ fun SystemManage(){
                     if(externalStorage){flag += WIPE_EXTERNAL_STORAGE}
                     if(protectionData&&VERSION.SDK_INT>=22){flag += WIPE_RESET_PROTECTION_DATA}
                     if(euicc&&VERSION.SDK_INT>=28){flag += WIPE_EUICC}
+                    if(reason==""){silent = true}
                     if(silent&&VERSION.SDK_INT>=29){flag += WIPE_SILENTLY}
                     confirmed=!confirmed
                 },

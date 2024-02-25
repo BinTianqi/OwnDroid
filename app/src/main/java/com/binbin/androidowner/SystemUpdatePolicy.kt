@@ -8,6 +8,7 @@ import android.content.Context
 import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -71,7 +72,7 @@ fun SysUpdatePolicy(){
                         onValueChange = {windowedPolicyStart=it},
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                        modifier = Modifier.fillMaxWidth(0.5F)
+                        modifier = Modifier.focusable().fillMaxWidth(0.5F)
                     )
                     Spacer(Modifier.padding(horizontal = 3.dp))
                     OutlinedTextField(
@@ -80,7 +81,7 @@ fun SysUpdatePolicy(){
                         label = {Text("结束时间")},
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.focusable().fillMaxWidth()
                     )
                 }
                 Spacer(Modifier.padding(vertical = 3.dp))

@@ -21,6 +21,7 @@ import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -69,7 +70,7 @@ fun ApplicationManage(){
                 onValueChange = { pkgName = it },
                 label = { Text("包名") },
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
             )
         }
@@ -80,7 +81,7 @@ fun ApplicationManage(){
             onValueChange = { pkgName = it },
             label = { Text("包名") },
             modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp,vertical = 2.dp),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
         )
         }else{Spacer(Modifier.padding(vertical = 2.dp))}
@@ -233,7 +234,7 @@ fun ApplicationManage(){
                     onValueChange = {inputPermission = it},
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
+                    modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp)
                 )
                 Text("当前状态：$currentState", style = bodyTextStyle)
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){

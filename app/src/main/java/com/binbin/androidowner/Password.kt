@@ -10,14 +10,11 @@ import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.*
@@ -27,10 +24,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -155,7 +150,7 @@ fun Password(){
                 label = { Text("密码")},
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                modifier = Modifier.padding(vertical = if(isWear){0.dp}else{5.dp}).fillMaxWidth()
+                modifier = Modifier.focusable().padding(vertical = if(isWear){0.dp}else{5.dp}).fillMaxWidth()
             )
             Text(text = stringResource(R.string.reset_pwd_desc), modifier = Modifier.padding(vertical = 3.dp),style=bodyTextStyle)
             var resetPwdFlag by remember{ mutableIntStateOf(0) }
@@ -451,7 +446,7 @@ private fun PasswordItem(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                 enabled = isDeviceOwner(myDpm),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.focusable().fillMaxWidth(),
                 trailingIcon = {
                     Icon(
                         imageVector = Icons.Outlined.Check, contentDescription = "OK",
