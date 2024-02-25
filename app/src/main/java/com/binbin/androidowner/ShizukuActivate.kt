@@ -50,7 +50,7 @@ fun ShizukuActivate(){
     val isWear = sharedPref.getBoolean("isWear",false)
     val bodyTextStyle = if(isWear){ typography.bodyMedium }else{ typography.bodyLarge }
     val filesDir = myContext.filesDir
-    var launchExtractRish by remember{mutableStateOf(false)}
+    var launchExtractRish by remember{mutableStateOf(true)}
     LaunchedEffect(launchExtractRish){ if(launchExtractRish){ extractRish(myContext);launchExtractRish=false } }
     val scrollState = rememberScrollState()
     Column(modifier = Modifier.verticalScroll(scrollState)){
