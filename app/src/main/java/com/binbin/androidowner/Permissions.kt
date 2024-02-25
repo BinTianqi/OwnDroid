@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -47,6 +48,7 @@ fun DpmPermissions(navCtrl:NavHostController){
     val isWear = sharedPref.getBoolean("isWear",false)
     val titleColor = colorScheme.onPrimaryContainer
     val bodyTextStyle = if(isWear){typography.bodyMedium}else{typography.bodyLarge}
+    var expandCommandBlock by remember{mutableStateOf("")}
     Column(
         modifier = Modifier.verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -91,9 +93,17 @@ fun DpmPermissions(navCtrl:NavHostController){
             }
         }
         if(!isda&&!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)){
-            SelectionContainer(modifier = sections(colorScheme.tertiaryContainer)){
-                Text("激活命令：\nadb shell dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
-                    color = colorScheme.onTertiaryContainer, style = bodyTextStyle)
+            SelectionContainer(
+                modifier = sections(colorScheme.tertiaryContainer,{expandCommandBlock="admin"},expandCommandBlock!="admin").animateContentSize(animationSpec = scrollAnim())
+            ){
+                if(expandCommandBlock=="admin"){
+                    Text(
+                        text = "adb shell dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
+                        color = colorScheme.onTertiaryContainer, style = bodyTextStyle
+                    )
+                }else{
+                    Text(text = "点击查看激活命令", style = bodyTextStyle)
+                }
             }
         }
         
@@ -107,7 +117,7 @@ fun DpmPermissions(navCtrl:NavHostController){
                     Text(text = "Profile Owner", fontSize = if(!isWear){22.sp}else{20.sp},color = titleColor)
                     Text(if(isProfileOwner(myDpm)){"已激活"}else{"未激活"})
                 }
-                if(isProfileOwner(myDpm)&&VERSION.SDK_INT>=24&&!isWear){
+                if(isProfileOwner(myDpm)&&VERSION.SDK_INT>=24&&!isWear&&!myDpm.isManagedProfile(myComponent)){
                     Button(
                         onClick = {
                             myDpm.clearProfileOwner(myComponent)
@@ -120,9 +130,17 @@ fun DpmPermissions(navCtrl:NavHostController){
             }
         }
         if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)){
-            SelectionContainer(modifier = sections(colorScheme.tertiaryContainer)){
-                Text("激活命令：\nadb shell dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
-                    color = colorScheme.onTertiaryContainer, style = bodyTextStyle)
+            SelectionContainer(
+                modifier = sections(colorScheme.tertiaryContainer,{expandCommandBlock="profile"},expandCommandBlock!="profile").animateContentSize(animationSpec = scrollAnim())
+            ){
+                if(expandCommandBlock=="profile"){
+                    Text(
+                        text = "adb shell dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
+                        color = colorScheme.onTertiaryContainer, style = bodyTextStyle
+                    )
+                }else{
+                    Text(text = "点击查看激活命令", style = bodyTextStyle)
+                }
             }
         }
         
@@ -150,9 +168,17 @@ fun DpmPermissions(navCtrl:NavHostController){
         }
         
         if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)){
-            SelectionContainer(modifier = sections(colorScheme.tertiaryContainer)){
-                Text(text = "激活命令：\nadb shell dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
-                    color = colorScheme.onTertiaryContainer, style = bodyTextStyle)
+            SelectionContainer(
+                modifier = sections(colorScheme.tertiaryContainer,{expandCommandBlock="device"},expandCommandBlock!="device").animateContentSize(animationSpec = scrollAnim())
+            ){
+                if(expandCommandBlock=="device"){
+                    Text(
+                        text = "adb shell dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver",
+                        color = colorScheme.onTertiaryContainer, style = bodyTextStyle
+                    )
+                }else{
+                    Text(text = "点击查看激活命令", style = bodyTextStyle)
+                }
             }
         }
         if(VERSION.SDK_INT>=30){
@@ -166,10 +192,10 @@ fun DpmPermissions(navCtrl:NavHostController){
                 }
                 if(VERSION.SDK_INT>=33){
                     val dpmRole = myDpm.devicePolicyManagementRoleHolderPackage
-                    Text("设备策略管理器角色：${if(dpmRole==null){"null"}else{""}}",style=bodyTextStyle)
+                    Text("设备策略管理器角色(DPMRH)：${if(dpmRole==null){"无"}else{""}}",style=bodyTextStyle)
                     if(dpmRole!=null){
-                        Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())){
-                            SelectionContainer { Text(dpmRole) }
+                        SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState())){
+                            Text(text = dpmRole, style = bodyTextStyle, color = colorScheme.onPrimaryContainer)
                         }
                     }
                 }
@@ -204,9 +230,8 @@ fun DpmPermissions(navCtrl:NavHostController){
             Column(modifier = sections()) {
                 val specificId = myDpm.enrollmentSpecificId
                 Text(text = "设备唯一标识码", style = typography.titleLarge,color = titleColor)
-                Text(text = "（恢复出厂设置不变）",style=bodyTextStyle)
                 if(specificId!=""){
-                    SelectionContainer{ Text(specificId, style = bodyTextStyle) }
+                    SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState())){ Text(specificId, style = bodyTextStyle, softWrap = false) }
                 }else{
                     Text("需要设置组织ID",style=bodyTextStyle)
                 }

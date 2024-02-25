@@ -5,6 +5,7 @@ import android.app.admin.DevicePolicyManager.*
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.os.Binder
 import android.os.Build.VERSION
 import android.os.UserManager
 import android.util.Log
@@ -35,7 +36,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Composable
 fun SystemManage(){
@@ -427,7 +427,7 @@ fun SystemManage(){
                 isEmpty = caCert.isEmpty()
                 exist = if(!isEmpty){ myDpm.hasCaCertInstalled(myComponent, caCert) }else{ false }
             }
-            LaunchedEffect(exist){ launch{isCaCertSelected(600){refresh()}} }
+            LaunchedEffect(exist){ isCaCertSelected(600){refresh()} }
             Column(modifier = sections()){
                 Text(text = "Ca证书", style = typography.titleLarge, color = titleColor)
                 if(isEmpty){ Text(text = "请选择Ca证书(.0)") }else{ Text(text = "证书已安装：$exist") }
@@ -442,28 +442,30 @@ fun SystemManage(){
                 ) {
                     Text("选择证书...")
                 }
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
-                    Button(
-                        onClick = {
-                            val result = myDpm.installCaCert(myComponent, caCert)
-                            Toast.makeText(myContext, if(result){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
-                            refresh()
-                        },
-                        modifier = Modifier.fillMaxWidth(0.49F)
-                    ) {
-                        Text("安装")
-                    }
-                    Button(
-                        onClick = {
-                            if(exist){
-                                myDpm.uninstallCaCert(myComponent, caCert)
-                                exist = myDpm.hasCaCertInstalled(myComponent, caCert)
-                                Toast.makeText(myContext, if(exist){"失败"}else{"成功"}, Toast.LENGTH_SHORT).show()
-                            }else{ Toast.makeText(myContext, "不存在", Toast.LENGTH_SHORT).show() }
-                        },
-                        modifier = Modifier.fillMaxWidth(0.96F)
-                    ) {
-                        Text("卸载")
+                AnimatedVisibility(!isEmpty) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+                        Button(
+                            onClick = {
+                                val result = myDpm.installCaCert(myComponent, caCert)
+                                Toast.makeText(myContext, if(result){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                                refresh()
+                            },
+                            modifier = Modifier.fillMaxWidth(0.49F)
+                        ) {
+                            Text("安装")
+                        }
+                        Button(
+                            onClick = {
+                                if(exist){
+                                    myDpm.uninstallCaCert(myComponent, caCert)
+                                    exist = myDpm.hasCaCertInstalled(myComponent, caCert)
+                                    Toast.makeText(myContext, if(exist){"失败"}else{"成功"}, Toast.LENGTH_SHORT).show()
+                                }else{ Toast.makeText(myContext, "不存在", Toast.LENGTH_SHORT).show() }
+                            },
+                            modifier = Modifier.fillMaxWidth(0.96F)
+                        ) {
+                            Text("卸载")
+                        }
                     }
                 }
                 Button(
@@ -598,7 +600,7 @@ fun SystemManage(){
             if(VERSION.SDK_INT>=24&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
                 Text(text = "将会删除工作资料", style = bodyTextStyle)
             }
-            if(VERSION.SDK_INT>=34){
+            if(VERSION.SDK_INT>=34&&Binder.getCallingUid()/100000==0){
                 Text(text = "API34或以上将不能在系统用户中使用WipeData", style = bodyTextStyle)
             }
         }
@@ -655,7 +657,7 @@ fun DeviceCtrlItem(
     }
 }
 
-suspend fun isCaCertSelected(delay:Long,operation:()->Unit){
+private suspend fun isCaCertSelected(delay:Long,operation:()->Unit){
     while(true){
         delay(delay)
         operation()

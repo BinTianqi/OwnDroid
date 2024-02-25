@@ -10,6 +10,7 @@ import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,6 +32,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
+import kotlinx.coroutines.delay
 
 @Composable
 fun Password(){
@@ -43,9 +45,10 @@ fun Password(){
     val isWear = sharedPref.getBoolean("isWear",false)
     val titleColor = colorScheme.onPrimaryContainer
     val bodyTextStyle = if(isWear){typography.bodyMedium}else{typography.bodyLarge}
+    val scrollState = rememberScrollState()
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding()
+        modifier = Modifier.fillMaxWidth().verticalScroll(scrollState)
     ) {
         val myByteArray by remember{ mutableStateOf(byteArrayOf(1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0)) }
         Text(
@@ -353,8 +356,16 @@ fun Password(){
             }
         }
 
-        Column(modifier = sections()) {
-            var expanded by remember{ mutableStateOf(VERSION.SDK_INT < 31) }
+        var passwordQualityExpand by remember{mutableStateOf(VERSION.SDK_INT < 31)}
+        var launchScrollDown by remember{mutableStateOf(false)}
+        LaunchedEffect(launchScrollDown){
+            if(launchScrollDown){
+                delay(10)
+                scrollState.animateScrollTo((scrollState.value+myContext.resources.displayMetrics.heightPixels*0.4).toInt(), scrollAnim())
+                launchScrollDown=false
+            }
+        }
+        Column(modifier = sections(onClick = {passwordQualityExpand=true;launchScrollDown=true}, clickable = !passwordQualityExpand).animateContentSize(animationSpec = scrollAnim())) {
             val passwordQuality = mapOf(
                 PASSWORD_QUALITY_UNSPECIFIED to "未指定",
                 PASSWORD_QUALITY_SOMETHING to "需要密码或图案，不管复杂度",
@@ -366,18 +377,14 @@ fun Password(){
                 PASSWORD_QUALITY_COMPLEX to "自定义（暂不支持）",
             ).toList()
             var selectedItem by remember{ mutableIntStateOf(passwordQuality[0].first) }
-            if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){
-                selectedItem=myDpm.getPasswordQuality(myComponent)
-            }
+            if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){ selectedItem=myDpm.getPasswordQuality(myComponent) }
             Text(text = "密码质量要求", style = typography.titleLarge,color = titleColor)
-            if(expanded){
+            if(passwordQualityExpand){
                 Text(text = "不是实际密码质量", style = bodyTextStyle)
                 Text(text = "设置密码复杂度将会取代密码质量", style = bodyTextStyle)
             }
-            if(VERSION.SDK_INT>=31){
-                Text(text = "已弃用，请使用上面的”密码复杂度要求“", color = colorScheme.error, style = bodyTextStyle)
-            }
-            if(expanded){
+            if(VERSION.SDK_INT>=31){ Text(text = "已弃用，请使用上面的”密码复杂度要求“。点击展开", color = colorScheme.error, style = bodyTextStyle) }
+            if(passwordQualityExpand){
             RadioButtonItem(passwordQuality[0].second,{selectedItem==passwordQuality[0].first},{selectedItem=passwordQuality[0].first})
             RadioButtonItem(passwordQuality[1].second,{selectedItem==passwordQuality[1].first},{selectedItem=passwordQuality[1].first})
             RadioButtonItem(passwordQuality[2].second,{selectedItem==passwordQuality[2].first},{selectedItem=passwordQuality[2].first})
@@ -401,10 +408,6 @@ fun Password(){
             Button(onClick = {myContext.startActivity(Intent(ACTION_SET_NEW_PASSWORD))}){
                 Text("要求设置新密码")
             }}
-            }else{
-                Button(onClick = {expanded=true}) {
-                    Text("展开")
-                }
             }
         }
         Spacer(Modifier.padding(vertical = 30.dp))

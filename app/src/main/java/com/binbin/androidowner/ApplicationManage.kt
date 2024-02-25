@@ -21,7 +21,9 @@ import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -43,6 +45,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
+import kotlinx.coroutines.delay
 import java.io.IOException
 import java.io.InputStream
 import java.util.concurrent.Executors
@@ -172,12 +175,8 @@ fun ApplicationManage(){
                 Text(text = "禁止用户控制", style = typography.titleLarge, color = titleColor)
                 Text(text = "用户将无法清除应用的存储空间和缓存", style = bodyTextStyle)
                 Text(text = "应用列表：")
-                if(listText!=""){
-                    SelectionContainer {
-                        Text(text = listText, style = bodyTextStyle)
-                    }
-                }else{
-                    Text(text = "无", style = bodyTextStyle)
+                SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())){
+                    Text(text = if(listText==""){"无"}else{listText}, style = bodyTextStyle, color = titleColor)
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
@@ -266,8 +265,6 @@ fun ApplicationManage(){
                 ) {
                     Text("由用户决定")
                 }
-                Text(text ="设为允许或拒绝后，用户不能改变状态", style = bodyTextStyle)
-                if(VERSION.SDK_INT>=31){Text(text = "可以修改传感器相关权限：${myDpm.canAdminGrantSensorsPermissions()}", style = bodyTextStyle)}
             }
         }
         
@@ -283,12 +280,8 @@ fun ApplicationManage(){
                 }
                 var inited by remember{mutableStateOf(false)}
                 if(!inited){refresh();inited=true}
-                if(list!=""){
-                    SelectionContainer {
-                        Text(text = list, style = bodyTextStyle)
-                    }
-                }else{
-                    Text(text = "无", style = bodyTextStyle)
+                SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())){
+                    Text(text = if(list==""){"无"}else{list}, style = bodyTextStyle, color = titleColor)
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
@@ -329,12 +322,8 @@ fun ApplicationManage(){
                 if(!inited){refresh();inited=true}
                 Text(text = "跨资料微件", style = typography.titleLarge, color = titleColor)
                 Text(text = "(跨资料桌面小部件提供者)", style = bodyTextStyle)
-                if(list!=""){
-                    SelectionContainer {
-                        Text(text = list, style = bodyTextStyle)
-                    }
-                }else{
-                    Text(text = "无", style = bodyTextStyle)
+                SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())){
+                    Text(text = if(list==""){"无"}else{list}, style = bodyTextStyle, color = titleColor)
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
@@ -385,7 +374,9 @@ fun ApplicationManage(){
                 AnimatedVisibility(policyType!=-1) {
                     Column {
                         Text("应用列表")
-                        Text(text = if(credentialListText!=""){ credentialListText }else{ "无" }, style = bodyTextStyle)
+                        SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())){
+                            Text(text = if(credentialListText!=""){ credentialListText }else{ "无" }, style = bodyTextStyle, color = titleColor)
+                        }
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                             Button(
                                 onClick = {
@@ -447,12 +438,8 @@ fun ApplicationManage(){
                     if(getList!=null){ permittedAccessibility = getList }
                     refreshList(); inited=true
                 }
-                if(listText!=""){
-                    SelectionContainer {
-                        Text(text = listText, style = bodyTextStyle)
-                    }
-                }else{
-                    Text(text = "无", style = bodyTextStyle)
+                SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())){
+                    Text(text = if(listText==""){"无"}else{listText}, style = bodyTextStyle, color = titleColor)
                 }
                 Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
@@ -497,12 +484,8 @@ fun ApplicationManage(){
                     if(getList!=null){ permittedIme = getList }
                     refreshList();inited=true
                 }
-                if(imeListText!=""){
-                    SelectionContainer {
-                        Text(text = imeListText, style = bodyTextStyle)
-                    }
-                }else{
-                    Text(text = "无", style = bodyTextStyle)
+                SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())){
+                    Text(text = if(imeListText==""){"无"}else{imeListText}, style = bodyTextStyle, color = titleColor)
                 }
                 Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
@@ -548,12 +531,8 @@ fun ApplicationManage(){
                     if(getList!=null){ keepUninstallPkg = getList }
                     refresh(); inited=true
                 }
-                if(listText!=""){
-                    SelectionContainer {
-                        Text(text = listText, style = bodyTextStyle)
-                    }
-                }else{
-                    Text(text = "无", style = bodyTextStyle)
+                SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())){
+                    Text(text = if(listText==""){"无"}else{listText}, style = bodyTextStyle, color = titleColor)
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
@@ -670,27 +649,27 @@ fun ApplicationManage(){
             ) {
                 Text("选择APK...")
             }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
-                Button(
-                    onClick = { uriToStream(myContext, apkUri){stream -> installPackage(myContext,stream)} },
-                    modifier = Modifier.fillMaxWidth(0.49F)
-                ) {
-                    Text("静默安装")
-                }
-                Button(
-                    onClick = {
-                        if(apkUri!=null){
+            var selected by remember{mutableStateOf(false)}
+            LaunchedEffect(selected){apkSelected{selected = apkUri!=null}}
+            AnimatedVisibility(selected) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+                    Button(
+                        onClick = { uriToStream(myContext, apkUri){stream -> installPackage(myContext,stream)} },
+                        modifier = Modifier.fillMaxWidth(0.49F)
+                    ) {
+                        Text("静默安装")
+                    }
+                    Button(
+                        onClick = {
                             val intent = Intent(Intent.ACTION_INSTALL_PACKAGE)
                             intent.setData(apkUri)
                             intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             myContext.startActivity(intent)
-                        }else{
-                            Toast.makeText(myContext, "请先选择APK", Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(0.96F)
-                ) {
-                    Text("请求安装")
+                        },
+                        modifier = Modifier.fillMaxWidth(0.96F)
+                    ) {
+                        Text("请求安装")
+                    }
                 }
             }
         }
@@ -735,12 +714,17 @@ private fun installPackage(context: Context, inputStream: InputStream){
     val out = session.openWrite("COSU", 0, -1)
     val buffer = ByteArray(65536)
     var c: Int
-    while(inputStream.read(buffer).also{c = it}!=-1) {
-        out.write(buffer, 0, c)
-    }
+    while(inputStream.read(buffer).also{c = it}!=-1) { out.write(buffer, 0, c) }
     session.fsync(out)
     inputStream.close()
     out.close()
     val pendingIntent = PendingIntent.getBroadcast(context, sessionId, Intent(context,PackageInstallerReceiver::class.java), PendingIntent.FLAG_IMMUTABLE).intentSender
     session.commit(pendingIntent)
+}
+
+private suspend fun apkSelected(operation:()->Unit){
+    while(true){
+        delay(500)
+        operation()
+    }
 }

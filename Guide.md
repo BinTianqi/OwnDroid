@@ -29,7 +29,7 @@
 
 ### Device admin
 
-权限最小
+权限最小，数量不限
 
 #### 激活
 
@@ -58,6 +58,8 @@ adb shell dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.M
 
 如无特别说明，Profile owner包括主用户、工作资料和受管理用户中的Profile owner
 
+每个用户都可以有一个Profile owner
+
 #### 激活
 
 - 使用ADB激活（不推荐，如果能使用ADB，建议激活Device owner），只能有一个Profile owner
@@ -73,7 +75,7 @@ adb shell dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.
 
 #### 停用
 
-主用户：”权限“界面中停用
+主用户：”权限“界面中停用~~或ADB停用~~
 
 工作资料：”设备控制“界面中的”清除数据“，会删除工作资料
 
@@ -81,7 +83,7 @@ adb shell dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.
 
 ### Device owner
 
-权限最高
+权限最高，一个设备只能有一个
 
 #### 激活
 

@@ -3,10 +3,12 @@ package com.binbin.androidowner
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.*
 import android.content.*
+import android.os.Binder
 import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -75,16 +77,22 @@ fun ManagedProfile() {
         }
         
         if(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)&&!myDpm.isOrganizationOwnedDeviceWithManagedProfile){
-            Column(modifier = sections(colorScheme.tertiaryContainer)){
-                Text(text = "成为组织拥有的工作资料", color = titleColor)
-                Text(text = "首先在“用户管理”中查看UserID，然后使用ADB执行下面这条命令", style = bodyTextStyle)
-                SelectionContainer {
-                    Text(
-                        text = "adb shell “dpm mark-profile-owner-on-organization-owned-device --user USER_ID com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver”",
-                        color = colorScheme.onTertiaryContainer, style = bodyTextStyle
-                    )
+            var expand by remember{mutableStateOf(false)}
+            Column(modifier = sections(colorScheme.tertiaryContainer,{expand=true},!expand).animateContentSize(animationSpec = scrollAnim())){
+                if(expand){
+                    Text(text = "组织拥有的工作资料", color = colorScheme.onTertiaryContainer, style = typography.titleLarge)
+                    SelectionContainer {
+                        Text(text = "使用ADB执行以下命令，或者使用Shizuku")
+                        Text(
+                            text = "adb shell \"dpm mark-profile-owner-on-organization-owned-device --user ${Binder.getCallingUid()/100000}" +
+                                    " com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver\"",
+                            color = colorScheme.onTertiaryContainer, style = bodyTextStyle
+                        )
+                    }
+                }else{
+                    Text(text = "成为组织拥有的工作资料", color = colorScheme.onTertiaryContainer)
+                    Text(text = "点击展开", style = bodyTextStyle)
                 }
-                Text(text = "把上面命令中的USER_ID替换成你的UserID", style = bodyTextStyle)
             }
         }
         if(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE))){
