@@ -15,7 +15,9 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -41,6 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 
+var ssidSet = mutableSetOf<WifiSsid>()
 @Composable
 fun Network(){
     Column(modifier = Modifier.verticalScroll(rememberScrollState()).fillMaxWidth()){
@@ -96,33 +99,30 @@ fun Network(){
                 var policy = myDpm.wifiSsidPolicy
                 var selectedPolicyType by remember{mutableIntStateOf(policy?.policyType ?: -1)}
                 var inputSsid by remember{mutableStateOf("")}
-                var ssidSet = policy?.ssids ?: mutableSetOf<WifiSsid>()
                 var ssidList by remember{mutableStateOf("")}
-                val refreshList = {
+                val refreshPolicy = {
                     policy = myDpm.wifiSsidPolicy
                     selectedPolicyType = policy?.policyType ?: -1
-                    ssidSet = policy?.ssids ?: mutableSetOf<WifiSsid>()
-                    inputSsid = ""
+                    ssidSet = policy?.ssids ?: mutableSetOf()
+                }
+                val refreshList = {
                     ssidList = ""
                     var count = ssidSet.size
-                    for(ssid in ssidSet){
-                        count-=1
-                        ssidList+=ssid
-                        if(count>0){ssidList+="\n"}
-                    }
+                    for(ssid in ssidSet){ count-=1; ssidList+=ssid; if(count>0){ssidList+="\n"} }
                 }
                 var inited by remember{mutableStateOf(false)}
-                if(!inited){refreshList(); inited=true}
+                if(!inited){ refreshPolicy(); refreshList(); inited=true }
                 Text(text = "WiFi SSID策略", style = typography.titleLarge, color = titleColor)
+                RadioButtonItem("无",{selectedPolicyType==-1},{selectedPolicyType=-1})
                 RadioButtonItem("白名单",{selectedPolicyType==WIFI_SSID_POLICY_TYPE_ALLOWLIST},{selectedPolicyType=WIFI_SSID_POLICY_TYPE_ALLOWLIST})
                 RadioButtonItem("黑名单",{selectedPolicyType==WIFI_SSID_POLICY_TYPE_DENYLIST},{selectedPolicyType=WIFI_SSID_POLICY_TYPE_DENYLIST})
-                Text("SSID列表：")
-                if(ssidList!=""){
-                    SelectionContainer {
-                        Text(text = ssidList, style = bodyTextStyle)
+                Column(modifier = Modifier.animateContentSize(scrollAnim()).horizontalScroll(rememberScrollState())){
+                    if(ssidList!=""){
+                        Text("SSID列表：")
+                        SelectionContainer{
+                            Text(text = ssidList, style = bodyTextStyle, color = colorScheme.onPrimaryContainer)
+                        }
                     }
-                }else{
-                    Text(text = "无", style = bodyTextStyle)
                 }
                 OutlinedTextField(
                     value = inputSsid,
@@ -135,14 +135,15 @@ fun Network(){
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
                         onClick = {
-                            focusMgr.clearFocus()
-                            if(selectedPolicyType==-1){
-                                Toast.makeText(myContext, "请选择策略", Toast.LENGTH_SHORT).show()
+                            if(inputSsid==""){
+                                Toast.makeText(myContext, "不能为空", Toast.LENGTH_SHORT).show()
+                            }else if(WifiSsid.fromBytes(inputSsid.toByteArray()) in ssidSet){
+                                Toast.makeText(myContext, "重复", Toast.LENGTH_SHORT).show()
                             }else{
                                 ssidSet.add(WifiSsid.fromBytes(inputSsid.toByteArray()))
-                                myDpm.wifiSsidPolicy = WifiSsidPolicy(selectedPolicyType, ssidSet)
                                 refreshList()
                             }
+                            inputSsid = ""
                         },
                         modifier = Modifier.fillMaxWidth(0.49F)
                     ) {
@@ -150,23 +151,41 @@ fun Network(){
                     }
                     Button(
                         onClick = {
-                            focusMgr.clearFocus()
-                            if(selectedPolicyType==-1){
-                                Toast.makeText(myContext, "请选择策略", Toast.LENGTH_SHORT).show()
+                            if(inputSsid==""){
+                                Toast.makeText(myContext, "不能为空", Toast.LENGTH_SHORT).show()
+                            }else if(WifiSsid.fromBytes(inputSsid.toByteArray()) in ssidSet){
+                                ssidSet.remove(WifiSsid.fromBytes(inputSsid.toByteArray()))
+                                inputSsid = ""
+                                refreshList()
                             }else{
-                                if(WifiSsid.fromBytes(inputSsid.toByteArray()) in ssidSet){
-                                    ssidSet.remove(WifiSsid.fromBytes(inputSsid.toByteArray()))
-                                    myDpm.wifiSsidPolicy = if(ssidSet.size==0){ null }else{ WifiSsidPolicy(selectedPolicyType, ssidSet) }
-                                    refreshList()
-                                }else{
-                                    Toast.makeText(myContext, "不存在", Toast.LENGTH_SHORT).show()
-                                }
+                                Toast.makeText(myContext, "不存在", Toast.LENGTH_SHORT).show()
                             }
                         },
                         modifier = Modifier.fillMaxWidth(0.96F)
                     ) {
                         Text("移除")
                     }
+                }
+                Button(
+                    onClick = {
+                        focusMgr.clearFocus()
+                        if(selectedPolicyType==-1){
+                            if(policy==null&&ssidSet.isNotEmpty()){
+                                Toast.makeText(myContext, "请选择策略", Toast.LENGTH_SHORT).show()
+                            }else{
+                                myDpm.wifiSsidPolicy = null
+                                refreshPolicy()
+                                Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                            }
+                        }else{
+                            myDpm.wifiSsidPolicy = if(ssidSet.size==0){ null }else{ WifiSsidPolicy(selectedPolicyType, ssidSet) }
+                            refreshPolicy()
+                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.apply))
                 }
             }
         }
