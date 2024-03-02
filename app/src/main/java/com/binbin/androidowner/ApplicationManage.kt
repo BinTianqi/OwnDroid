@@ -71,7 +71,7 @@ fun ApplicationManage(){
             TextField(
                 value = pkgName,
                 onValueChange = { pkgName = it },
-                label = { Text("包名") },
+                label = { Text(stringResource(R.string.package_name)) },
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
@@ -82,14 +82,14 @@ fun ApplicationManage(){
         TextField(
             value = pkgName,
             onValueChange = { pkgName = it },
-            label = { Text("包名") },
+            label = { Text(stringResource(R.string.package_name)) },
             modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp,vertical = 2.dp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
         )
         }else{Spacer(Modifier.padding(vertical = 2.dp))}
         if(VERSION.SDK_INT>=24&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
-            Text(text = "作用域: 工作资料", style = bodyTextStyle, textAlign = TextAlign.Center,modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp))
+            Text(text = stringResource(R.string.scope_is_work_profile), style = bodyTextStyle, textAlign = TextAlign.Center,modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp))
         }
         
         Button(
@@ -100,7 +100,7 @@ fun ApplicationManage(){
             },
             modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
         ){
-            Text("应用详情")
+            Text(stringResource(R.string.app_info))
         }
         
         if(VERSION.SDK_INT>=24&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
@@ -120,9 +120,9 @@ fun ApplicationManage(){
                 try {
                     myDpm.setAlwaysOnVpnPackage(myComponent, pkgName, b)
                 } catch(e: java.lang.UnsupportedOperationException) {
-                    Toast.makeText(myContext, "不支持", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, myContext.getString(R.string.unsupported), Toast.LENGTH_SHORT).show()
                 } catch(e: NameNotFoundException) {
-                    Toast.makeText(myContext, "未安装", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, myContext.getString(R.string.not_installed), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -130,31 +130,31 @@ fun ApplicationManage(){
         if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
             Column(modifier = sections()){
                 var state by remember{mutableStateOf(myDpm.isUninstallBlocked(myComponent,pkgName))}
-                Text(text = "防卸载", style = typography.titleLarge, color = titleColor)
-                Text("当前状态：${if(state){"打开"}else{"关闭"}}")
-                Text(text = "有时候无法正确获取防卸载状态", style = bodyTextStyle)
+                Text(text = stringResource(R.string.block_uninstall), style = typography.titleLarge, color = titleColor)
+                Text(stringResource(R.string.current_state, stringResource(if(state){R.string.enabled}else{R.string.disabled})))
+                Text(text = stringResource(R.string.sometimes_get_wrong_block_uninstall_state), style = bodyTextStyle)
                 Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                     Button(
                         onClick = {
                             focusMgr.clearFocus()
                             myDpm.setUninstallBlocked(myComponent,pkgName,true)
-                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                             state = myDpm.isUninstallBlocked(myComponent,pkgName)
                         },
                         modifier = Modifier.fillMaxWidth(0.49F)
                     ) {
-                        Text("打开")
+                        Text(stringResource(R.string.enable))
                     }
                     Button(
                         onClick = {
                             focusMgr.clearFocus()
                             myDpm.setUninstallBlocked(myComponent,pkgName,false)
-                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                             state = myDpm.isUninstallBlocked(myComponent,pkgName)
                         },
                         modifier = Modifier.fillMaxWidth(0.96F)
                     ){
-                        Text("关闭")
+                        Text(stringResource(R.string.disable))
                     }
                 }
             }
@@ -172,11 +172,11 @@ fun ApplicationManage(){
                 }
                 var inited by remember{mutableStateOf(false)}
                 if(!inited){refresh();inited=true}
-                Text(text = "禁止用户控制", style = typography.titleLarge, color = titleColor)
-                Text(text = "用户将无法清除应用的存储空间和缓存", style = bodyTextStyle)
-                Text(text = "应用列表：")
+                Text(text = stringResource(R.string.ucd), style = typography.titleLarge, color = titleColor)
+                Text(text = stringResource(R.string.ucd_desc), style = bodyTextStyle)
+                Text(text = stringResource(R.string.app_list_is))
                 SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())){
-                    Text(text = if(listText==""){"无"}else{listText}, style = bodyTextStyle, color = titleColor)
+                    Text(text = if(listText==""){stringResource(R.string.none)}else{listText}, style = bodyTextStyle, color = titleColor)
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
@@ -186,12 +186,12 @@ fun ApplicationManage(){
                                 myDpm.setUserControlDisabledPackages(myComponent,pkgList)
                                 refresh()
                             }else{
-                                Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show()
                             }
                         },
                         modifier = Modifier.fillMaxWidth(0.49F)
                     ){
-                        Text("添加")
+                        Text(stringResource(R.string.add))
                     }
                     Button(
                         onClick = {
@@ -200,42 +200,42 @@ fun ApplicationManage(){
                                 myDpm.setUserControlDisabledPackages(myComponent,pkgList)
                                 refresh()
                             }else{
-                                Toast.makeText(myContext, "不存在", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(myContext, myContext.getString(R.string.not_exist), Toast.LENGTH_SHORT).show()
                             }
                         },
                         modifier = Modifier.fillMaxWidth(0.96F)
                     ){
-                        Text("移除")
+                        Text(stringResource(R.string.remove))
                     }
                 }
                 Button(
                     onClick = { myDpm.setUserControlDisabledPackages(myComponent, listOf()); refresh() },
                     modifier = Modifier.fillMaxWidth()
                 ){
-                    Text("清空列表")
+                    Text(stringResource(R.string.clear_list))
                 }
             }
         }
         
         if(VERSION.SDK_INT>=23&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
             val grantState = mapOf(
-                PERMISSION_GRANT_STATE_DEFAULT to "由用户决定",
-                PERMISSION_GRANT_STATE_GRANTED to "允许",
-                PERMISSION_GRANT_STATE_DENIED to "拒绝"
+                PERMISSION_GRANT_STATE_DEFAULT to stringResource(R.string.decide_by_user),
+                PERMISSION_GRANT_STATE_GRANTED to stringResource(R.string.granted),
+                PERMISSION_GRANT_STATE_DENIED to stringResource(R.string.denied)
             )
             Column(modifier = sections()){
                 var inputPermission by remember{mutableStateOf("android.permission.")}
                 var currentState by remember{mutableStateOf(grantState[myDpm.getPermissionGrantState(myComponent,pkgName,inputPermission)])}
-                Text(text = "权限管理", style = typography.titleLarge, color = titleColor)
+                Text(text = stringResource(R.string.permission_manage), style = typography.titleLarge, color = titleColor)
                 OutlinedTextField(
                     value = inputPermission,
-                    label = { Text("权限")},
+                    label = { Text(stringResource(R.string.permission))},
                     onValueChange = {inputPermission = it},
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                     modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp)
                 )
-                Text("当前状态：$currentState", style = bodyTextStyle)
+                Text(stringResource(R.string.current_state, currentState?:stringResource(R.string.unknown)), style = bodyTextStyle)
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
                         onClick = {
@@ -244,7 +244,7 @@ fun ApplicationManage(){
                         },
                         modifier = Modifier.fillMaxWidth(0.49F)
                     ) {
-                        Text("允许")
+                        Text(stringResource(R.string.grant))
                     }
                     Button(
                         onClick = {
@@ -253,7 +253,7 @@ fun ApplicationManage(){
                         },
                         Modifier.fillMaxWidth(0.96F)
                     ) {
-                        Text("拒绝")
+                        Text(stringResource(R.string.deny))
                     }
                 }
                 Button(
@@ -263,14 +263,14 @@ fun ApplicationManage(){
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("由用户决定")
+                    Text(stringResource(R.string.decide_by_user))
                 }
             }
         }
         
         if(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
             Column(modifier = sections()){
-                Text(text = "跨资料应用", style = typography.titleLarge, color = titleColor)
+                Text(text = stringResource(R.string.cross_profile_package), style = typography.titleLarge, color = titleColor)
                 var list by remember{mutableStateOf("")}
                 val refresh = {
                     crossProfilePkg = myDpm.getCrossProfilePackages(myComponent)
@@ -281,7 +281,7 @@ fun ApplicationManage(){
                 var inited by remember{mutableStateOf(false)}
                 if(!inited){refresh();inited=true}
                 SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())){
-                    Text(text = if(list==""){"无"}else{list}, style = bodyTextStyle, color = titleColor)
+                    Text(text = if(list==""){stringResource(R.string.none)}else{list}, style = bodyTextStyle, color = titleColor)
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
@@ -292,7 +292,7 @@ fun ApplicationManage(){
                         },
                         modifier = Modifier.fillMaxWidth(0.49F)
                     ) {
-                        Text("添加")
+                        Text(stringResource(R.string.add))
                     }
                     Button(
                         onClick = {
@@ -302,7 +302,7 @@ fun ApplicationManage(){
                         },
                         modifier = Modifier.fillMaxWidth(0.96F)
                     ) {
-                        Text("移除")
+                        Text(stringResource(R.string.remove))
                     }
                 }
             }
@@ -320,10 +320,10 @@ fun ApplicationManage(){
                 }
                 var inited by remember{mutableStateOf(false)}
                 if(!inited){refresh();inited=true}
-                Text(text = "跨资料微件", style = typography.titleLarge, color = titleColor)
-                Text(text = "(跨资料桌面小部件提供者)", style = bodyTextStyle)
+                Text(text = stringResource(R.string.cross_profile_widget), style = typography.titleLarge, color = titleColor)
+                Text(text = stringResource(R.string.cross_profile_widget_desc), style = bodyTextStyle)
                 SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())){
-                    Text(text = if(list==""){"无"}else{list}, style = bodyTextStyle, color = titleColor)
+                    Text(text = if(list==""){stringResource(R.string.none)}else{list}, style = bodyTextStyle, color = titleColor)
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
@@ -333,7 +333,7 @@ fun ApplicationManage(){
                         },
                         modifier = Modifier.fillMaxWidth(0.49F)
                     ){
-                        Text("添加")
+                        Text(stringResource(R.string.add))
                     }
                     Button(
                         onClick = {
@@ -342,7 +342,7 @@ fun ApplicationManage(){
                         },
                         modifier = Modifier.fillMaxWidth(0.96F)
                     ){
-                        Text("移除")
+                        Text(stringResource(R.string.remove))
                     }
                 }
             }
@@ -366,16 +366,16 @@ fun ApplicationManage(){
             var inited by remember{mutableStateOf(false)}
             if(!inited){refreshPolicy(); refreshText(); inited = true}
             Column(modifier = sections()){
-                Text(text = "凭据管理策略", style = typography.titleLarge, color = titleColor)
-                RadioButtonItem("无",{policyType==-1},{policyType=-1})
-                RadioButtonItem("黑名单",{policyType==PACKAGE_POLICY_BLOCKLIST},{policyType=PACKAGE_POLICY_BLOCKLIST})
-                RadioButtonItem("白名单",{policyType==PACKAGE_POLICY_ALLOWLIST},{policyType=PACKAGE_POLICY_ALLOWLIST})
-                RadioButtonItem("白名单和系统应用",{policyType==PACKAGE_POLICY_ALLOWLIST_AND_SYSTEM},{policyType=PACKAGE_POLICY_ALLOWLIST_AND_SYSTEM})
+                Text(text = stringResource(R.string.credential_manage_policy), style = typography.titleLarge, color = titleColor)
+                RadioButtonItem(stringResource(R.string.none),{policyType==-1},{policyType=-1})
+                RadioButtonItem(stringResource(R.string.blacklist),{policyType==PACKAGE_POLICY_BLOCKLIST},{policyType=PACKAGE_POLICY_BLOCKLIST})
+                RadioButtonItem(stringResource(R.string.whitelist),{policyType==PACKAGE_POLICY_ALLOWLIST},{policyType=PACKAGE_POLICY_ALLOWLIST})
+                RadioButtonItem(stringResource(R.string.whitelist_and_system_app),{policyType==PACKAGE_POLICY_ALLOWLIST_AND_SYSTEM},{policyType=PACKAGE_POLICY_ALLOWLIST_AND_SYSTEM})
                 AnimatedVisibility(policyType!=-1) {
                     Column {
                         Text("应用列表")
                         SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())){
-                            Text(text = if(credentialListText!=""){ credentialListText }else{ "无" }, style = bodyTextStyle, color = titleColor)
+                            Text(text = if(credentialListText!=""){ credentialListText }else{ stringResource(R.string.none) }, style = bodyTextStyle, color = titleColor)
                         }
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                             Button(
@@ -385,7 +385,7 @@ fun ApplicationManage(){
                                 },
                                 modifier = Modifier.fillMaxWidth(0.49F)
                             ) {
-                                Text("添加")
+                                Text(stringResource(R.string.add))
                             }
                             Button(
                                 onClick = {
@@ -394,7 +394,7 @@ fun ApplicationManage(){
                                 },
                                 modifier = Modifier.fillMaxWidth(0.96F)
                             ) {
-                                Text("移除")
+                                Text(stringResource(R.string.remove))
                             }
                         }
                     }
@@ -408,9 +408,9 @@ fun ApplicationManage(){
                             }else{
                                 myDpm.credentialManagerPolicy = null
                             }
-                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                         }catch(e:java.lang.IllegalArgumentException){
-                            Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show()
                         }finally {
                             refreshPolicy()
                             refreshText()
@@ -418,14 +418,14 @@ fun ApplicationManage(){
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("应用")
+                    Text(stringResource(R.string.apply))
                 }
             }
         }
         
         if(isProfileOwner(myDpm)||isDeviceOwner(myDpm)){
             Column(modifier = sections()) {
-                Text(text = "许可的无障碍应用", style = typography.titleLarge, color = titleColor)
+                Text(text = stringResource(R.string.permitted_accessibility_app), style = typography.titleLarge, color = titleColor)
                 var listText by remember{ mutableStateOf("") }
                 val refreshList = {
                     listText = ""
@@ -439,20 +439,20 @@ fun ApplicationManage(){
                     refreshList(); inited=true
                 }
                 SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())){
-                    Text(text = if(listText==""){"无"}else{listText}, style = bodyTextStyle, color = titleColor)
+                    Text(text = if(listText==""){stringResource(R.string.none)}else{listText}, style = bodyTextStyle, color = titleColor)
                 }
                 Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
                         onClick = { permittedAccessibility.add(pkgName); refreshList()},
                         modifier = Modifier.fillMaxWidth(0.49F)
                     ) {
-                        Text("添加")
+                        Text(stringResource(R.string.add))
                     }
                     Button(
                         onClick = { permittedAccessibility.remove(pkgName); refreshList() },
                         modifier = Modifier.fillMaxWidth(0.96F)
                     ) {
-                        Text("移除")
+                        Text(stringResource(R.string.remove))
                     }
                 }
                 Button(
@@ -465,14 +465,14 @@ fun ApplicationManage(){
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(text = "应用")
+                    Text(text = stringResource(R.string.apply))
                 }
             }
         }
         
         if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
             Column(modifier = sections()) {
-                Text(text = "许可的输入法", style = typography.titleLarge, color = titleColor)
+                Text(text = stringResource(R.string.permitted_ime), style = typography.titleLarge, color = titleColor)
                 var imeListText by remember{ mutableStateOf("") }
                 val refreshList = {
                     imeListText = ""
@@ -485,20 +485,20 @@ fun ApplicationManage(){
                     refreshList();inited=true
                 }
                 SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())){
-                    Text(text = if(imeListText==""){"无"}else{imeListText}, style = bodyTextStyle, color = titleColor)
+                    Text(text = if(imeListText==""){stringResource(R.string.none)}else{imeListText}, style = bodyTextStyle, color = titleColor)
                 }
                 Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
                         onClick = { permittedIme.add(pkgName); refreshList() },
                         modifier = Modifier.fillMaxWidth(0.49F)
                     ) {
-                        Text("添加")
+                        Text(stringResource(R.string.add))
                     }
                     Button(
                         onClick = { permittedIme.remove(pkgName); refreshList()},
                         modifier = Modifier.fillMaxWidth(0.96F)
                     ) {
-                        Text("移除")
+                        Text(stringResource(R.string.remove))
                     }
                 }
                 Button(
@@ -510,15 +510,14 @@ fun ApplicationManage(){
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("应用")
+                    Text(stringResource(R.string.apply))
                 }
             }
         }
         
         if(VERSION.SDK_INT>=28&&isDeviceOwner(myDpm)){
             Column(modifier = sections()){
-                Text(text = "保持卸载的应用", style = typography.titleLarge, color = titleColor)
-                Text(text = "作用未知", style = bodyTextStyle)
+                Text(text = stringResource(R.string.keep_uninstalled_pkgs), style = typography.titleLarge, color = titleColor)
                 var listText by remember{mutableStateOf("")}
                 val refresh = {
                     listText = ""
@@ -532,7 +531,7 @@ fun ApplicationManage(){
                     refresh(); inited=true
                 }
                 SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())){
-                    Text(text = if(listText==""){"无"}else{listText}, style = bodyTextStyle, color = titleColor)
+                    Text(text = if(listText==""){stringResource(R.string.none)}else{listText}, style = bodyTextStyle, color = titleColor)
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
@@ -542,7 +541,7 @@ fun ApplicationManage(){
                         },
                         modifier = Modifier.fillMaxWidth(0.49F)
                     ){
-                        Text("添加")
+                        Text(stringResource(R.string.add))
                     }
                     Button(
                         onClick = {
@@ -551,7 +550,7 @@ fun ApplicationManage(){
                         },
                         modifier = Modifier.fillMaxWidth(0.96F)
                     ){
-                        Text("移除")
+                        Text(stringResource(R.string.remove))
                     }
                 }
                 Button(
@@ -560,11 +559,11 @@ fun ApplicationManage(){
                         myDpm.setKeepUninstalledPackages(myComponent, keepUninstallPkg)
                         val getList = myDpm.getKeepUninstalledPackages(myComponent)
                         if(getList!=null){ keepUninstallPkg = getList }
-                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.fillMaxWidth()
                 ){
-                    Text("应用")
+                    Text(stringResource(R.string.apply))
                 }
             }
         }
@@ -576,7 +575,7 @@ fun ApplicationManage(){
                     val onClear = DevicePolicyManager.OnClearApplicationUserDataListener { pkg: String, succeed: Boolean ->
                         Looper.prepare()
                         focusMgr.clearFocus()
-                        val toastText = if(pkg!=""){"$pkg\n"}else{""} + "数据清除" + if(succeed){"成功"}else{"失败"}
+                        val toastText = if(pkg!=""){"$pkg\n"}else{""} + myContext.getString(R.string.clear_data) + myContext.getString(if(succeed){R.string.success}else{R.string.fail})
                         Toast.makeText(myContext, toastText, Toast.LENGTH_SHORT).show()
                         Looper.loop()
                     }
@@ -585,7 +584,7 @@ fun ApplicationManage(){
                 enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp)
             ) {
-                Text("清除应用存储")
+                Text(stringResource(R.string.clear_app_data))
             }
         }
         
@@ -594,21 +593,20 @@ fun ApplicationManage(){
                 onClick = {
                     try{
                         myDpm.setDefaultDialerApplication(pkgName)
-                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                     }catch(e:IllegalArgumentException){
-                        Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show()
                     }
                 },
                 enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp)
             ) {
-                Text("设为默认拨号应用")
+                Text(stringResource(R.string.set_default_dialer))
             }
         }
         
         Column(modifier = sections()){
-            Text(text = "卸载应用", style = typography.titleLarge, color = titleColor)
-            Text(text = "静默卸载需Device owner", style = bodyTextStyle)
+            Text(text = stringResource(R.string.uninstall_app), style = typography.titleLarge, color = titleColor)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                 Button(
                     onClick = {
@@ -619,7 +617,7 @@ fun ApplicationManage(){
                     },
                     modifier = Modifier.fillMaxWidth(0.49F)
                 ) {
-                    Text("静默卸载")
+                    Text(stringResource(R.string.silent_uninstall))
                 }
                 Button(
                     onClick = {
@@ -629,14 +627,13 @@ fun ApplicationManage(){
                     },
                     modifier = Modifier.fillMaxWidth(0.96F)
                 ) {
-                    Text("请求卸载")
+                    Text(stringResource(R.string.request_uninstall))
                 }
             }
         }
         
         Column(modifier = sections()){
-            Text(text = "安装应用", style = typography.titleLarge, color = titleColor)
-            Text(text = "静默安装需Device owner", style = bodyTextStyle)
+            Text(text = stringResource(R.string.install_app), style = typography.titleLarge, color = titleColor)
             Button(
                 onClick = {
                     focusMgr.clearFocus()
@@ -647,7 +644,7 @@ fun ApplicationManage(){
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("选择APK...")
+                Text(stringResource(R.string.select_apk))
             }
             var selected by remember{mutableStateOf(false)}
             LaunchedEffect(selected){apkSelected{selected = apkUri!=null}}
@@ -657,7 +654,7 @@ fun ApplicationManage(){
                         onClick = { uriToStream(myContext, apkUri){stream -> installPackage(myContext,stream)} },
                         modifier = Modifier.fillMaxWidth(0.49F)
                     ) {
-                        Text("静默安装")
+                        Text(stringResource(R.string.silent_install))
                     }
                     Button(
                         onClick = {
@@ -668,7 +665,7 @@ fun ApplicationManage(){
                         },
                         modifier = Modifier.fillMaxWidth(0.96F)
                     ) {
-                        Text("请求安装")
+                        Text(stringResource(R.string.request_install))
                     }
                 }
             }

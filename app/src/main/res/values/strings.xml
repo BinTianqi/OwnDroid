@@ -17,6 +17,13 @@
     <string name="deactivated">未激活</string>
     <string name="activate">激活</string>
     <string name="deactivate">撤销</string>
+    <string name="blacklist">黑名单</string>
+    <string name="whitelist">白名单</string>
+    <string name="granted">允许</string>
+    <string name="denied">拒绝</string>
+    <string name="grant">允许</string>
+    <string name="deny">拒绝</string>
+    <string name="current_state">当前状态：%1$s</string>
     <string name="reason">原因</string>
     <string name="custom">自定义</string>
     <string name="unknown">未知</string>
@@ -120,11 +127,40 @@
     <string name="will_delete_work_profile">将会删除工作资料</string>
     <string name="api34_or_above_wipedata_cannot_in_system_user">API34或以上将不能在系统用户中使用WipeData</string>
 
+    <!--AppManage-->
     <string name="app_manage">应用管理</string>
     <string name="suspend">挂起</string>
     <string name="hide">隐藏</string>
     <string name="isapphidden_desc">如果隐藏，有可能是没安装</string>
     <string name="permission">权限</string>
+    <string name="scope_is_work_profile">作用域: 工作资料</string>
+    <string name="app_info">应用详情</string>
+    <string name="not_installed">未安装</string>
+    <string name="block_uninstall">防卸载</string>
+    <string name="sometimes_get_wrong_block_uninstall_state">有时候无法正确获取防卸载状态</string>
+    <string name="ucd">禁止用户控制</string>
+    <string name="ucd_desc">用户将无法清除应用的存储空间和缓存</string>
+    <string name="app_list_is">应用列表：</string>
+    <string name="clear_list">清空列表</string>
+    <string name="permission_manage">权限管理</string>
+    <string name="cross_profile_package">跨资料应用</string>
+    <string name="cross_profile_widget">跨资料微件</string>
+    <string name="cross_profile_widget_desc">(跨资料桌面小部件提供者)</string>
+    <string name="credential_manage_policy">凭据管理策略</string>
+    <string name="whitelist_and_system_app">白名单和系统应用</string>
+    <string name="permitted_accessibility_app">许可的无障碍应用</string>
+    <string name="permitted_ime">许可的输入法</string>
+    <string name="keep_uninstalled_pkgs">保持卸载的应用</string>
+    <string name="clear_data">数据清除</string>
+    <string name="clear_app_data">清除应用存储</string>
+    <string name="set_default_dialer">设为默认拨号应用</string>
+    <string name="uninstall_app">卸载应用</string>
+    <string name="silent_uninstall">静默卸载</string>
+    <string name="request_uninstall">请求卸载</string>
+    <string name="install_app">安装应用</string>
+    <string name="select_apk" tools:ignore="TypographyEllipsis">选择APK...</string>
+    <string name="silent_install">静默安装</string>
+    <string name="request_install">请求安装</string>
 
     <string name="user_restrict">用户限制</string>
     <string name="config_mobile_network">配置移动数据</string>
