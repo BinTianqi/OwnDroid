@@ -1,22 +1,97 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!--Global-->
     <string name="app_name">Android Owner</string>
+    <string name="disabled">禁用</string>
+    <string name="enabled">启用</string>
+    <string name="disable">禁用</string>
+    <string name="enable">启用</string>
+    <string name="success">成功</string>
+    <string name="fail">失败</string>
+    <string name="add">添加</string>
+    <string name="remove">移除</string>
+    <string name="install">安装</string>
+    <string name="uninstall">卸载</string>
+    <string name="cancel">取消</string>
+    <string name="confirm">确定</string>
+    <string name="reason">原因</string>
+    <string name="custom">自定义</string>
+    <string name="time_unit_ms">时间(ms)</string>
+    <string name="none">无</string>
+    <string name="no_logs">无日志</string>
+    <string name="default_stringres">默认</string>
+    <string name="apply">应用</string>
+    <string name="decide_by_user">由用户决定</string>
+    <string name="unsupported">不支持</string>
+    <string name="place_holder" />
 
+    <!--Permissions-->
+
+
+    <!--System-->
     <string name="device_ctrl">系统</string>
     <string name="disable_cam">禁用相机</string>
     <string name="disable_scrcap">禁止截屏</string>
-    <string name="aosp_scrrec_also_work">对AOSP的录屏也起作用</string>
     <string name="disable_status_bar">禁用状态栏</string>
+    <string name="aosp_scrrec_also_work">对AOSP的录屏也起作用</string>
     <string name="auto_time">自动设置时间</string>
     <string name="auto_timezone">自动设置时区</string>
     <string name="master_mute">全局静音</string>
     <string name="backup_service">备份服务</string>
+    <string name="disable_bt_contact_share">禁止蓝牙分享联系人</string>
+    <string name="common_criteria_mode">通用标准模式</string>
+    <string name="common_criteria_mode_desc">Common Criteria</string>
+    <string name="usb_signal">USB信号</string>
+    <string name="turn_off_usb_not_support">你的设备不支持关闭USB信号</string>
+    <string name="keyguard">锁屏</string>
+    <string name="require_no_password_to_disable">禁用需要无密码</string>
+    <string name="lock_now">立即锁屏</string>
+    <string name="require_enter_password_again">需要重新输入密码</string>
+    <string name="request_bug_report">请求错误报告</string>
+    <string name="reboot">重启</string>
+    <string name="edit_time">修改时间</string>
+    <string name="from_epoch_to_target_time">从Epoch(1970/1/1 00:00:00 UTC)到你想设置的时间(毫秒)</string>
+    <string name="get_current_time">获取当前时间</string>
+    <string name="permission_policy">权限策略</string>
+    <string name="auto_grant">自动允许</string>
+    <string name="auto_deny">自动拒绝</string>
+    <string name="mte_policy">MTE策略</string>
+    <string name="mte_policy_desc">MTE：内存标记拓展，安卓14和ARMv9的高端功能</string>
+    <string name="nearby_app_streaming">附近App共享</string>
+    <string name="nearby_notifi_streaming">附近通知共享</string>
+    <string name="enable_if_secure_enough">在足够安全时启用</string>
+    <string name="lock_task_feature">锁定任务功能</string>
+    <string name="disable_all">禁用全部</string>
+    <string name="ltf_sys_info">允许状态栏信息</string>
+    <string name="ltf_notifications">允许通知</string>
+    <string name="ltf_home">允许返回主屏幕</string>
+    <string name="ltf_overview">允许打开后台应用概览</string>
+    <string name="ltf_global_actions">允许全局行为(比如长按电源键对话框)</string>
+    <string name="ltf_keyguard">允许锁屏</string>
+    <string name="ltf_block_activity_start_in_task">阻止启动未允许的应用</string>
+    <string name="whitelist_app">白名单应用</string>
+    <string name="package_name">包名</string>
+    <string name="not_exist">不存在</string>
+    <string name="ca_cert">Ca证书</string>
+    <string name="please_select_ca_cert">请选择Ca证书(.0)</string>
+    <string name="cacert_installed">证书已安装：%1$s</string>
+    <string name="select_ca_cert" tools:ignore="TypographyEllipsis">选择证书...</string>
+    <string name="uninstall_all_user_ca_cert">卸载所有用户证书</string>
+    <string name="retrieve_security_logs">收集安全日志</string>
+    <string name="security_logs">安全日志</string>
+    <string name="pre_reboot_security_logs">重启前安全日志</string>
+    <string name="wipe_data">清除数据</string>
+    <string name="wipe_external_storage">清除外部存储</string>
+    <string name="wipe_reset_protection_data">清除受保护的数据</string>
+    <string name="wipe_euicc">清除eUICC</string>
+    <string name="wipe_silently">静默清除</string>
+    <string name="will_delete_work_profile">将会删除工作资料</string>
+    <string name="api34_or_above_wipedata_cannot_in_system_user">API34或以上将不能在系统用户中使用WipeData</string>
 
     <string name="app_manage">应用管理</string>
     <string name="suspend">挂起</string>
     <string name="hide">隐藏</string>
     <string name="isapphidden_desc">如果隐藏，有可能是没安装</string>
     <string name="permission">权限</string>
-    <string name="place_holder" />
 
     <string name="user_restrict">用户限制</string>
     <string name="config_mobile_network">配置移动数据</string>
@@ -92,7 +167,6 @@
     <string name="pwd_history">密码历史记录长度</string>
     <string name="pwd_history_desc">用户输入的密码不能与历史记录中的任何密码相同，0为无限制</string>
     <string name="pwd_history_textfield">历史记录长度</string>
-    <string name="usb_signal">USB信号</string>
 
     <string name="owner_lockscr_info">锁屏信息</string>
     <string name="support_msg">提供支持的短消息</string>
@@ -100,7 +174,6 @@
     <string name="message">消息</string>
     <string name="long_support_msg">提供支持的长消息</string>
     <string name="long_support_msg_desc">都是显示短消息，长消息不知道在哪里显示</string>
-    <string name="disable_bt_contact_share">禁止蓝牙分享联系人</string>
     <string name="user_manage">用户管理</string>
     <string name="setting">设置</string>
     <string name="always_on_vpn">VPN保持打开</string>
@@ -108,8 +181,6 @@
     <string name="max_time_to_lock">屏幕超时</string>
     <string name="max_time_to_lock_desc">超时后锁屏(毫秒)，0为由用户决定</string>
     <string name="max_time_to_lock_textfield">超时时间(ms)</string>
-    <string name="common_criteria_mode">通用标准模式</string>
-    <string name="common_criteria_mode_desc">Common Criteria</string>
     <string name="preferential_network_service">优先网络服务</string>
     <string name="network">网络</string>
     <string name="developing">功能开发中</string>

@@ -102,43 +102,45 @@ fun SystemManage(){
                     {myDpm.isUsbDataSignalingEnabled},{b -> myDpm.isUsbDataSignalingEnabled = b }
                 )
             }else{
-                Text(text = "你的设备不支持关闭USB信号",modifier = Modifier.fillMaxWidth(), style = bodyTextStyle, textAlign = TextAlign.Center)
+                Text(text = stringResource(R.string.turn_off_usb_not_support),modifier = Modifier.fillMaxWidth(), style = bodyTextStyle, textAlign = TextAlign.Center)
             }
         }
-        if(VERSION.SDK_INT>=28){
-            Column(modifier = sections()) {
-                Text(text = "锁屏方式", style = typography.titleLarge,color = colorScheme.onPrimaryContainer)
-                Text(text = "禁用需要无密码",style=bodyTextStyle)
+        Column(modifier = sections()) {
+            Text(text = stringResource(R.string.keyguard), style = typography.titleLarge,color = colorScheme.onPrimaryContainer)
+            if(VERSION.SDK_INT>=23){
+                Text(text = stringResource(R.string.require_no_password_to_disable),style=bodyTextStyle)
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Button(
-                        onClick = { Toast.makeText(myContext, if(myDpm.setKeyguardDisabled(myComponent,true)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show() },
-                        enabled = isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser),
+                        onClick = {
+                            Toast.makeText(myContext,
+                                myContext.getString(if(myDpm.setKeyguardDisabled(myComponent,true)){R.string.success}else{R.string.fail}), Toast.LENGTH_SHORT).show()
+                        },
+                        enabled = isDeviceOwner(myDpm)|| (VERSION.SDK_INT>=28&&isProfileOwner(myDpm)&&myDpm.isAffiliatedUser),
                         modifier = Modifier.fillMaxWidth(0.49F)
                     ) {
-                        Text("禁用")
+                        Text(stringResource(R.string.disable))
                     }
                     Button(
-                        onClick = { Toast.makeText(myContext, if(myDpm.setKeyguardDisabled(myComponent,false)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show() },
-                        enabled = isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser),
+                        onClick = {
+                            Toast.makeText(myContext,
+                                myContext.getString(if(myDpm.setKeyguardDisabled(myComponent,false)){R.string.success}else{R.string.fail}), Toast.LENGTH_SHORT).show()
+                        },
+                        enabled = isDeviceOwner(myDpm)|| (VERSION.SDK_INT>=28&&isProfileOwner(myDpm)&&myDpm.isAffiliatedUser),
                         modifier = Modifier.fillMaxWidth(0.96F)
                     ) {
-                        Text("启用")
+                        Text(stringResource(R.string.enable))
                     }
                 }
             }
-        }
-        
-        Column(modifier = sections()){
-            Text(text = "锁屏", style = typography.titleLarge, color = titleColor)
             var flag by remember{mutableIntStateOf(0)}
-            if(VERSION.SDK_INT>=26){ CheckBoxItem("需要重新输入密码",{flag==FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY},{flag = if(flag==0){1}else{0} }) }
             Button(
                 onClick = {myDpm.lockNow()},
                 enabled = myDpm.isAdminActive(myComponent),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("立即锁屏")
+                Text(stringResource(R.string.lock_now))
             }
+            if(VERSION.SDK_INT>=26){ CheckBoxItem(stringResource(R.string.require_enter_password_again),{flag==FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY},{flag = if(flag==0){1}else{0} }) }
         }
         
         if(VERSION.SDK_INT>=24){
@@ -151,26 +153,26 @@ fun SystemManage(){
                     modifier = Modifier.fillMaxWidth(),
                     enabled = isDeviceOwner(myDpm)
                 ) {
-                    Text("请求错误报告")
+                    Text(stringResource(R.string.request_bug_report))
                 }
                 Button(
                     onClick = {myDpm.reboot(myComponent)},
                     enabled = isDeviceOwner(myDpm),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("重启")
+                    Text(stringResource(R.string.reboot))
                 }
             }
         }
         
         if(VERSION.SDK_INT>=28){
             Column(modifier = sections()){
-                Text(text = "修改时间", style = typography.titleLarge, color = titleColor)
+                Text(text = stringResource(R.string.edit_time), style = typography.titleLarge, color = titleColor)
                 var inputTime by remember{mutableStateOf("")}
-                Text(text = "从Epoch(1970/1/1 00:00:00 UTC)到你想设置的时间(毫秒)", style = bodyTextStyle)
+                Text(text = stringResource(R.string.from_epoch_to_target_time), style = bodyTextStyle)
                 OutlinedTextField(
                     value = inputTime,
-                    label = { Text("时间(ms)")},
+                    label = { Text(stringResource(R.string.time_unit_ms))},
                     onValueChange = {inputTime = it},
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
@@ -182,7 +184,7 @@ fun SystemManage(){
                         onClick = {inputTime = System.currentTimeMillis().toString()},
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("获取当前时间")
+                        Text(stringResource(R.string.get_current_time))
                     }
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
@@ -198,7 +200,7 @@ fun SystemManage(){
                             onClick = {inputTime = System.currentTimeMillis().toString()},
                             modifier = Modifier.fillMaxWidth(0.98F)
                         ) {
-                            Text("获取当前时间")
+                            Text(stringResource(R.string.get_current_time))
                         }
                     }
                 }
@@ -208,43 +210,43 @@ fun SystemManage(){
         if(VERSION.SDK_INT>=23&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
             Column(modifier = sections()){
                 var selectedPolicy by remember{mutableIntStateOf(myDpm.getPermissionPolicy(myComponent))}
-                Text(text = "权限策略", style = typography.titleLarge, color = titleColor)
-                RadioButtonItem("默认", {selectedPolicy==PERMISSION_POLICY_PROMPT}, {selectedPolicy= PERMISSION_POLICY_PROMPT})
-                RadioButtonItem("自动允许", {selectedPolicy==PERMISSION_POLICY_AUTO_GRANT}, {selectedPolicy= PERMISSION_POLICY_AUTO_GRANT})
-                RadioButtonItem("自动拒绝", {selectedPolicy==PERMISSION_POLICY_AUTO_DENY}, {selectedPolicy= PERMISSION_POLICY_AUTO_DENY})
+                Text(text = stringResource(R.string.permission_policy), style = typography.titleLarge, color = titleColor)
+                RadioButtonItem(stringResource(R.string.default_stringres), {selectedPolicy==PERMISSION_POLICY_PROMPT}, {selectedPolicy= PERMISSION_POLICY_PROMPT})
+                RadioButtonItem(stringResource(R.string.auto_grant), {selectedPolicy==PERMISSION_POLICY_AUTO_GRANT}, {selectedPolicy= PERMISSION_POLICY_AUTO_GRANT})
+                RadioButtonItem(stringResource(R.string.auto_deny), {selectedPolicy==PERMISSION_POLICY_AUTO_DENY}, {selectedPolicy= PERMISSION_POLICY_AUTO_DENY})
                 Button(
                     onClick = {
                         myDpm.setPermissionPolicy(myComponent,selectedPolicy)
-                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("应用")
+                    Text(stringResource(R.string.apply))
                 }
             }
         }
         
         if(VERSION.SDK_INT>=34&&isDeviceOwner(myDpm)){
             Column(modifier = sections()){
-                Text(text = "MTE策略", style = typography.titleLarge, color = titleColor)
-                Text("MTE：内存标记拓展，安卓14和ARMv9的高端功能")
+                Text(text = stringResource(R.string.mte_policy), style = typography.titleLarge, color = titleColor)
+                Text(stringResource(R.string.mte_policy_desc))
                 var selectedMtePolicy by remember{mutableIntStateOf(myDpm.mtePolicy)}
-                RadioButtonItem("由用户决定", {selectedMtePolicy==MTE_NOT_CONTROLLED_BY_POLICY}, {selectedMtePolicy= MTE_NOT_CONTROLLED_BY_POLICY})
-                RadioButtonItem("开启", {selectedMtePolicy==MTE_ENABLED}, {selectedMtePolicy=MTE_ENABLED})
-                RadioButtonItem("关闭", {selectedMtePolicy==MTE_DISABLED}, {selectedMtePolicy=MTE_DISABLED})
+                RadioButtonItem(stringResource(R.string.decide_by_user), {selectedMtePolicy==MTE_NOT_CONTROLLED_BY_POLICY}, {selectedMtePolicy= MTE_NOT_CONTROLLED_BY_POLICY})
+                RadioButtonItem(stringResource(R.string.enabled), {selectedMtePolicy==MTE_ENABLED}, {selectedMtePolicy=MTE_ENABLED})
+                RadioButtonItem(stringResource(R.string.disabled), {selectedMtePolicy==MTE_DISABLED}, {selectedMtePolicy=MTE_DISABLED})
                 Button(
                     onClick = {
                         try {
                             myDpm.mtePolicy = selectedMtePolicy
-                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                         }catch(e:java.lang.UnsupportedOperationException){
-                            Toast.makeText(myContext, "不支持", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(myContext, myContext.getString(R.string.unsupported), Toast.LENGTH_SHORT).show()
                         }
                         selectedMtePolicy = myDpm.mtePolicy
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("应用")
+                    Text(stringResource(R.string.apply))
                 }
             }
         }
@@ -252,11 +254,11 @@ fun SystemManage(){
         if(VERSION.SDK_INT>=31&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
             Column(modifier = sections()){
                 var appPolicy by remember{mutableIntStateOf(myDpm.nearbyAppStreamingPolicy)}
-                Text(text = "附近App共享", style = typography.titleLarge, color = titleColor)
-                RadioButtonItem("由用户决定",{appPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY},{appPolicy = NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY})
-                RadioButtonItem("启用",{appPolicy == NEARBY_STREAMING_ENABLED},{appPolicy = NEARBY_STREAMING_ENABLED})
-                RadioButtonItem("禁用",{appPolicy == NEARBY_STREAMING_DISABLED},{appPolicy = NEARBY_STREAMING_DISABLED})
-                RadioButtonItem("在足够安全时启用",{appPolicy == NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY},{appPolicy = NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY})
+                Text(text = stringResource(R.string.nearby_app_streaming), style = typography.titleLarge, color = titleColor)
+                RadioButtonItem(stringResource(R.string.decide_by_user),{appPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY},{appPolicy = NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY})
+                RadioButtonItem(stringResource(R.string.enabled),{appPolicy == NEARBY_STREAMING_ENABLED},{appPolicy = NEARBY_STREAMING_ENABLED})
+                RadioButtonItem(stringResource(R.string.disabled),{appPolicy == NEARBY_STREAMING_DISABLED},{appPolicy = NEARBY_STREAMING_DISABLED})
+                RadioButtonItem(stringResource(R.string.enable_if_secure_enough),{appPolicy == NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY},{appPolicy = NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY})
                 Button(
                     onClick = {
                         myDpm.nearbyAppStreamingPolicy = appPolicy
@@ -268,19 +270,19 @@ fun SystemManage(){
                 }
                 Spacer(Modifier.padding(vertical = 3.dp))
                 var notificationPolicy by remember{mutableIntStateOf(myDpm.nearbyNotificationStreamingPolicy)}
-                Text(text = "附近通知共享", style = typography.titleLarge, color = titleColor)
-                RadioButtonItem("由用户决定",{notificationPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY},{notificationPolicy = NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY})
-                RadioButtonItem("启用",{notificationPolicy == NEARBY_STREAMING_ENABLED},{notificationPolicy = NEARBY_STREAMING_ENABLED})
-                RadioButtonItem("禁用",{notificationPolicy == NEARBY_STREAMING_DISABLED},{notificationPolicy = NEARBY_STREAMING_DISABLED})
-                RadioButtonItem("在足够安全时启用",{notificationPolicy == NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY},{notificationPolicy = NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY})
+                Text(text = stringResource(R.string.nearby_notifi_streaming), style = typography.titleLarge, color = titleColor)
+                RadioButtonItem(stringResource(R.string.decide_by_user),{notificationPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY},{notificationPolicy = NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY})
+                RadioButtonItem(stringResource(R.string.enabled),{notificationPolicy == NEARBY_STREAMING_ENABLED},{notificationPolicy = NEARBY_STREAMING_ENABLED})
+                RadioButtonItem(stringResource(R.string.disabled),{notificationPolicy == NEARBY_STREAMING_DISABLED},{notificationPolicy = NEARBY_STREAMING_DISABLED})
+                RadioButtonItem(stringResource(R.string.enable_if_secure_enough),{notificationPolicy == NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY},{notificationPolicy = NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY})
                 Button(
                     onClick = {
                         myDpm.nearbyNotificationStreamingPolicy = notificationPolicy
-                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("应用")
+                    Text(stringResource(R.string.apply))
                 }
             }
         }
@@ -320,20 +322,19 @@ fun SystemManage(){
                         custom = false
                     }
                 }
-                Text(text = "锁定任务模式", style = typography.titleLarge, color = titleColor)
+                Text(text = stringResource(R.string.lock_task_feature), style = typography.titleLarge, color = titleColor)
                 if(!inited){ refreshFeature();custom=myDpm.getLockTaskFeatures(myComponent)!=0;inited=true }
-                Text(text = "在锁定任务模式下：", style = bodyTextStyle)
-                RadioButtonItem("禁用全部",{!custom},{custom=false})
-                RadioButtonItem("自定义",{custom},{custom=true})
+                RadioButtonItem(stringResource(R.string.disable_all),{!custom},{custom=false})
+                RadioButtonItem(stringResource(R.string.custom),{custom},{custom=true})
                 AnimatedVisibility(custom) {
                     Column {
-                        CheckBoxItem("允许状态栏信息",{sysInfo},{sysInfo=!sysInfo})
-                        CheckBoxItem("允许通知",{notifications},{notifications=!notifications})
-                        CheckBoxItem("允许返回主屏幕",{home},{home=!home})
-                        CheckBoxItem("允许打开后台应用概览",{overview},{overview=!overview})
-                        CheckBoxItem("允许全局行为(比如长按电源键对话框)",{globalAction},{globalAction=!globalAction})
-                        CheckBoxItem("允许锁屏(如果没有选择此项，即使有密码也不会锁屏)",{keyGuard},{keyGuard=!keyGuard})
-                        if(VERSION.SDK_INT>=30){ CheckBoxItem("阻止启动未允许的应用",{blockAct},{blockAct=!blockAct}) }
+                        CheckBoxItem(stringResource(R.string.ltf_sys_info),{sysInfo},{sysInfo=!sysInfo})
+                        CheckBoxItem(stringResource(R.string.ltf_notifications),{notifications},{notifications=!notifications})
+                        CheckBoxItem(stringResource(R.string.ltf_home),{home},{home=!home})
+                        CheckBoxItem(stringResource(R.string.ltf_overview),{overview},{overview=!overview})
+                        CheckBoxItem(stringResource(R.string.ltf_global_actions),{globalAction},{globalAction=!globalAction})
+                        CheckBoxItem(stringResource(R.string.ltf_keyguard),{keyGuard},{keyGuard=!keyGuard})
+                        if(VERSION.SDK_INT>=30){ CheckBoxItem(stringResource(R.string.ltf_block_activity_start_in_task),{blockAct},{blockAct=!blockAct}) }
                     }
                 }
                 Button(
@@ -351,10 +352,10 @@ fun SystemManage(){
                         }
                         myDpm.setLockTaskFeatures(myComponent,result)
                         refreshFeature()
-                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                     }
                 ) {
-                    Text("应用")
+                    Text(stringResource(R.string.apply))
                 }
                 Spacer(Modifier.padding(vertical = 4.dp))
                 val whitelist = myDpm.getLockTaskPackages(myComponent).toMutableList()
@@ -371,18 +372,18 @@ fun SystemManage(){
                     }
                 }
                 refreshWhitelist()
-                Text(text = "白名单应用", style = typography.titleLarge, color = titleColor)
+                Text(text = stringResource(R.string.whitelist_app), style = typography.titleLarge, color = titleColor)
                 if(listText!=""){
                     SelectionContainer {
                         Text(text = listText, style = bodyTextStyle)
                     }
                 }else{
-                    Text(text = "无", style = bodyTextStyle)
+                    Text(text = stringResource(R.string.none), style = bodyTextStyle)
                 }
                 OutlinedTextField(
                     value = inputPkg,
                     onValueChange = {inputPkg=it},
-                    label = {Text("包名")},
+                    label = {Text(stringResource(R.string.package_name))},
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                     modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 3.dp)
@@ -393,12 +394,12 @@ fun SystemManage(){
                             focusMgr.clearFocus()
                             whitelist.add(inputPkg)
                             myDpm.setLockTaskPackages(myComponent,whitelist.toTypedArray())
-                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                             refreshWhitelist()
                         },
                         modifier = Modifier.fillMaxWidth(0.49F)
                     ) {
-                        Text("添加")
+                        Text(stringResource(R.string.add))
                     }
                     Button(
                         onClick = {
@@ -406,15 +407,15 @@ fun SystemManage(){
                             if(inputPkg in whitelist){
                                 whitelist.remove(inputPkg)
                                 myDpm.setLockTaskPackages(myComponent,whitelist.toTypedArray())
-                                Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                             }else{
-                                Toast.makeText(myContext, "不存在", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(myContext, myContext.getString(R.string.not_exist), Toast.LENGTH_SHORT).show()
                             }
                             refreshWhitelist()
                         },
                         modifier = Modifier.fillMaxWidth(0.96F)
                     ) {
-                        Text("移除")
+                        Text(stringResource(R.string.remove))
                     }
                 }
             }
@@ -429,8 +430,8 @@ fun SystemManage(){
             }
             LaunchedEffect(exist){ isCaCertSelected(600){refresh()} }
             Column(modifier = sections()){
-                Text(text = "Ca证书", style = typography.titleLarge, color = titleColor)
-                if(isEmpty){ Text(text = "请选择Ca证书(.0)") }else{ Text(text = "证书已安装：$exist") }
+                Text(text = stringResource(R.string.ca_cert), style = typography.titleLarge, color = titleColor)
+                if(isEmpty){ Text(text = stringResource(R.string.please_select_ca_cert)) }else{ Text(text = stringResource(R.string.cacert_installed, exist)) }
                 Button(
                     onClick = {
                         val caCertIntent = Intent(Intent.ACTION_GET_CONTENT)
@@ -440,53 +441,53 @@ fun SystemManage(){
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("选择证书...")
+                    Text(stringResource(R.string.select_ca_cert))
                 }
                 AnimatedVisibility(!isEmpty) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                         Button(
                             onClick = {
                                 val result = myDpm.installCaCert(myComponent, caCert)
-                                Toast.makeText(myContext, if(result){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                                Toast.makeText(myContext, myContext.getString(if(result){R.string.success}else{R.string.fail}), Toast.LENGTH_SHORT).show()
                                 refresh()
                             },
                             modifier = Modifier.fillMaxWidth(0.49F)
                         ) {
-                            Text("安装")
+                            Text(stringResource(R.string.install))
                         }
                         Button(
                             onClick = {
                                 if(exist){
                                     myDpm.uninstallCaCert(myComponent, caCert)
                                     exist = myDpm.hasCaCertInstalled(myComponent, caCert)
-                                    Toast.makeText(myContext, if(exist){"失败"}else{"成功"}, Toast.LENGTH_SHORT).show()
-                                }else{ Toast.makeText(myContext, "不存在", Toast.LENGTH_SHORT).show() }
+                                    Toast.makeText(myContext, myContext.getString(if(exist){R.string.fail}else{R.string.success}), Toast.LENGTH_SHORT).show()
+                                }else{ Toast.makeText(myContext, myContext.getString(R.string.not_exist), Toast.LENGTH_SHORT).show() }
                             },
                             modifier = Modifier.fillMaxWidth(0.96F)
                         ) {
-                            Text("卸载")
+                            Text(stringResource(R.string.uninstall))
                         }
                     }
                 }
                 Button(
                     onClick = {
                         myDpm.uninstallAllUserCaCerts(myComponent)
-                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.fillMaxWidth()
                 ){
-                    Text("清除用户Ca证书")
+                    Text(stringResource(R.string.uninstall_all_user_ca_cert))
                 }
             }
         }
         
         if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))){
             Column(modifier = sections()){
-                Text(text = "收集安全日志", style = typography.titleLarge, color = titleColor)
-                Text(text = "功能开发中", style = bodyTextStyle)
+                Text(text = stringResource(R.string.retrieve_security_logs), style = typography.titleLarge, color = titleColor)
+                Text(text = stringResource(R.string.developing), style = bodyTextStyle)
                 Row(modifier=Modifier.fillMaxWidth().padding(horizontal=8.dp),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
                     var checked by remember{mutableStateOf(myDpm.isSecurityLoggingEnabled(myComponent))}
-                    Text(text = "启用", style = typography.titleLarge)
+                    Text(text = stringResource(R.string.enabled), style = typography.titleLarge)
                     Switch(
                         checked = checked,
                         onCheckedChange = {myDpm.setSecurityLoggingEnabled(myComponent,!checked);checked=myDpm.isSecurityLoggingEnabled(myComponent)}
@@ -497,30 +498,30 @@ fun SystemManage(){
                         val log = myDpm.retrieveSecurityLogs(myComponent)
                         if(log!=null){
                             for(i in log){ Log.d("SecureLog",i.toString()) }
-                            Toast.makeText(myContext,"已输出至Log",Toast.LENGTH_SHORT).show()
+                            Toast.makeText(myContext,myContext.getString(R.string.success),Toast.LENGTH_SHORT).show()
                         }else{
-                            Log.d("Secure5Log","无")
-                            Toast.makeText(myContext,"无日志",Toast.LENGTH_SHORT).show()
+                            Log.d("SecureLog",myContext.getString(R.string.none))
+                            Toast.makeText(myContext, myContext.getString(R.string.no_logs),Toast.LENGTH_SHORT).show()
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("安全日志")
+                    Text(stringResource(R.string.security_logs))
                 }
                 Button(
                     onClick = {
                         val log = myDpm.retrievePreRebootSecurityLogs(myComponent)
                         if(log!=null){
                             for(i in log){ Log.d("SecureLog",i.toString()) }
-                            Toast.makeText(myContext,"已输出至Log",Toast.LENGTH_SHORT).show()
+                            Toast.makeText(myContext,myContext.getString(R.string.success),Toast.LENGTH_SHORT).show()
                         }else{
-                            Log.d("SecureLog","无")
-                            Toast.makeText(myContext,"无日志",Toast.LENGTH_SHORT).show()
+                            Log.d("SecureLog",myContext.getString(R.string.none))
+                            Toast.makeText(myContext,myContext.getString(R.string.no_logs),Toast.LENGTH_SHORT).show()
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("重启前安全日志")
+                    Text(stringResource(R.string.pre_reboot_security_logs))
                 }
             }
         }
@@ -537,17 +538,17 @@ fun SystemManage(){
             var euicc by remember{mutableStateOf(false)}
             var silent by remember{mutableStateOf(false)}
             var reason by remember{mutableStateOf("")}
-            Text(text = "清除数据",style = typography.titleLarge,modifier = Modifier.padding(6.dp),color = colorScheme.onErrorContainer)
-            CheckBoxItem("清除外部存储",{externalStorage},{externalStorage=!externalStorage;confirmed=false}, colorScheme.onErrorContainer)
+            Text(text = stringResource(R.string.wipe_data),style = typography.titleLarge,modifier = Modifier.padding(6.dp),color = colorScheme.onErrorContainer)
+            CheckBoxItem(stringResource(R.string.wipe_external_storage),{externalStorage},{externalStorage=!externalStorage;confirmed=false}, colorScheme.onErrorContainer)
             if(VERSION.SDK_INT>=22&&isDeviceOwner(myDpm)){
-                CheckBoxItem("清除受保护的数据",{protectionData},{protectionData=!protectionData;confirmed=false}, colorScheme.onErrorContainer)
+                CheckBoxItem(stringResource(R.string.wipe_reset_protection_data),{protectionData},{protectionData=!protectionData;confirmed=false}, colorScheme.onErrorContainer)
             }
-            if(VERSION.SDK_INT>=28){ CheckBoxItem("清除eUICC",{euicc},{euicc=!euicc;confirmed=false}, colorScheme.onErrorContainer) }
-            if(VERSION.SDK_INT>=29){ CheckBoxItem("静默清除",{silent},{silent=!silent;confirmed=false}, colorScheme.onErrorContainer) }
+            if(VERSION.SDK_INT>=28){ CheckBoxItem(stringResource(R.string.wipe_euicc),{euicc},{euicc=!euicc;confirmed=false}, colorScheme.onErrorContainer) }
+            if(VERSION.SDK_INT>=29){ CheckBoxItem(stringResource(R.string.wipe_silently),{silent},{silent=!silent;confirmed=false}, colorScheme.onErrorContainer) }
             AnimatedVisibility(!silent&&VERSION.SDK_INT>=28) {
                 OutlinedTextField(
                     value = reason, onValueChange = {reason=it},
-                    label = {Text("原因")},
+                    label = {Text(stringResource(R.string.reason))},
                     enabled = !confirmed,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
@@ -572,7 +573,7 @@ fun SystemManage(){
                 enabled = myDpm.isAdminActive(myComponent),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = if(confirmed){"取消"}else{"确定"})
+                Text(text = stringResource(if(confirmed){ R.string.cancel }else{ R.string.confirm }))
             }
             Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween) {
                 Button(
@@ -598,10 +599,10 @@ fun SystemManage(){
                 }
             }
             if(VERSION.SDK_INT>=24&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
-                Text(text = "将会删除工作资料", style = bodyTextStyle)
+                Text(text = stringResource(R.string.will_delete_work_profile), style = bodyTextStyle)
             }
             if(VERSION.SDK_INT>=34&&Binder.getCallingUid()/100000==0){
-                Text(text = "API34或以上将不能在系统用户中使用WipeData", style = bodyTextStyle)
+                Text(text = stringResource(R.string.api34_or_above_wipedata_cannot_in_system_user), style = bodyTextStyle)
             }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
