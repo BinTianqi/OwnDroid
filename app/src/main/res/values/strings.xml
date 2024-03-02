@@ -13,8 +13,14 @@
     <string name="uninstall">卸载</string>
     <string name="cancel">取消</string>
     <string name="confirm">确定</string>
+    <string name="activated">已激活</string>
+    <string name="deactivated">未激活</string>
+    <string name="activate">激活</string>
+    <string name="deactivate">撤销</string>
     <string name="reason">原因</string>
     <string name="custom">自定义</string>
+    <string name="unknown">未知</string>
+    <string name="reset">重置</string>
     <string name="time_unit_ms">时间(ms)</string>
     <string name="none">无</string>
     <string name="no_logs">无日志</string>
@@ -25,7 +31,34 @@
     <string name="place_holder" />
 
     <!--Permissions-->
-
+    <string name="activate_device_admin">激活Device admin</string>
+    <string name="touch_to_view_command">点击查看激活命令</string>
+    <string name="activate_device_admin_command">adb shell dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver</string>
+    <string name="activate_profile_owner_command">adb shell dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver</string>
+    <string name="activate_device_owner_command">adb shell dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver</string>
+    <string name="device_info">设备信息</string>
+    <string name="is_device_financed">企业资产 : %1$s</string>
+    <string name="dpmrh">设备策略管理器角色(DPMRH)：%1$s</string>
+    <string name="es_inactive">未使用</string>
+    <string name="es_active">正在使用</string>
+    <string name="es_unsupported">不支持</string>
+    <string name="es_active_default_key">使用默认密钥</string>
+    <string name="es_active_per_user">每个用户分别加密</string>
+    <string name="activated_device_admin">激活的Device admin: %1$s</string>
+    <string name="enrollment_specific_id">设备唯一标识码</string>
+    <string name="require_set_org_id">需要设置组织ID</string>
+    <string name="org_name">组织名称</string>
+    <string name="account_types_management_disabled">不受控制的账号类型</string>
+    <string name="account_types">账号类型</string>
+    <string name="transform_ownership">转移所有权</string>
+    <string name="transform_ownership_desc">把Device owner或Profile owner权限转移到另一个应用。目标必须是Device admin</string>
+    <string name="target_package_name">目标包名</string>
+    <string name="target_class_name">目标类名</string>
+    <string name="transform">转移</string>
+    <string name="deactivate_da">撤销Device admin</string>
+    <string name="deactivate_po">撤销Profile owner</string>
+    <string name="deactivate_do">撤销Device owner</string>
+    <string name="activate_android_owner_here">在这里激活Android Owner</string>
 
     <!--System-->
     <string name="device_ctrl">系统</string>
