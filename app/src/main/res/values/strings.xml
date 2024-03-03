@@ -39,6 +39,7 @@
     <string name="unsupported">不支持</string>
     <string name="developing">功能开发中</string>
     <string name="place_holder" />
+    <string name="try_again">请再试一次</string>
 
     <!--Permissions-->
     <string name="activate_device_admin">激活Device admin</string>
@@ -85,9 +86,15 @@
     <string name="should_contain_2000_or_0">下面应该出现一行包含“2000”或“0”的文本\n</string>
     <string name="test_rish">测试rish</string>
     <string name="please_update_shizuku">请更新Shizuku</string>
-    <string name="shizuku_permission_granted">Shizuku v%1$i\n已授权（%2$s）</string>
+    <string name="shizuku_permission_granted">Shizuku v%1$s\n已授权（%2$s）</string>
     <string name="request_permission">请求授权</string>
     <string name="shizuku_not_started">服务未启动</string>
+    <string name="activate_org_profile_command_with_user_id" tools:ignore="TypographyDashes">
+        dpm mark-profile-owner-on-organization-owned-device --user %1$s com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver
+    </string>
+    <string name="dpm_activate_do_command">dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver</string>
+    <string name="dpm_activate_po_command">dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver</string>
+    <string name="dpm_activate_da_command">dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver</string>
 
     <!--System-->
     <string name="device_ctrl">系统</string>
