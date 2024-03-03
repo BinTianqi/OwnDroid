@@ -4,7 +4,6 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
-import android.content.pm.PackageManager
 import android.os.Binder
 import android.os.Build.VERSION
 import android.widget.Toast
@@ -40,7 +39,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.apache.commons.io.IOUtils
-import rikka.shizuku.Shizuku
 import java.io.*
 
 @Composable
@@ -57,7 +55,7 @@ fun ShizukuActivate(){
     val coScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     val outputTextScrollState = rememberScrollState()
-    Column(modifier = Modifier.verticalScroll(scrollState)){
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState), horizontalAlignment = Alignment.CenterHorizontally){
         var outputText by remember{mutableStateOf("")}
         if(Binder.getCallingUid()/100000!=0){
             Row(modifier = sections(colorScheme.errorContainer), verticalAlignment = Alignment.CenterVertically){
@@ -66,19 +64,25 @@ fun ShizukuActivate(){
             }
         }
         
-        var launchPermissionCheck by remember{mutableStateOf(false)}
-        LaunchedEffect(launchPermissionCheck){
-            if(launchPermissionCheck){
-                outputText = checkPermission(myContext)
-                scrollState.animateScrollTo(scrollState.maxValue, scrollAnim())
-                launchPermissionCheck=false
-            }
-        }
         Button(
-            onClick = {launchPermissionCheck=true},
-            enabled = VERSION.SDK_INT>=24, modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+            onClick = {
+                coScope.launch {
+                    scrollState.animateScrollTo(scrollState.maxValue, scrollAnim())
+                    outputTextScrollState.animateScrollTo(0, scrollAnim())
+                    val getUid = executeCommand(myContext, "sh rish.sh","id -u",null,filesDir)
+                    outputText = if(getUid.contains("2000")){
+                        myContext.getString(R.string.shizuku_activated_shell)
+                    }else if(getUid.contains("0")){
+                        myContext.getString(R.string.shizuku_activated_root)
+                    }else if(getUid.contains("Error: 1")){
+                        myContext.getString(R.string.shizuku_not_started)
+                    }else{
+                        getUid
+                    }
+                }
+            }
         ) {
-            Text(text = stringResource(R.string.check_permission))
+            Text(text = stringResource(R.string.check_shizuku))
         }
         
         if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)){
@@ -160,7 +164,6 @@ fun ShizukuActivate(){
             }
         }
         
-        
         Button(
             onClick = {
                 coScope.launch{
@@ -168,27 +171,12 @@ fun ShizukuActivate(){
                     scrollState.animateScrollTo(scrollState.maxValue, scrollAnim())
                     outputTextScrollState.animateScrollTo(0, scrollAnim())
                 }
-            },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+            }
         ) {
             Text(text = stringResource(R.string.list_owners))
         }
         
-        Button(
-            onClick = {
-                coScope.launch {
-                    outputText= myContext.getString(R.string.should_contain_2000_or_0)
-                    scrollState.animateScrollTo(scrollState.maxValue, scrollAnim())
-                    outputTextScrollState.animateScrollTo(0, scrollAnim())
-                    outputText+=executeCommand(myContext, "sh rish.sh","id",null,filesDir)
-                }
-            },
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        ) {
-            Text(text = stringResource(R.string.test_rish))
-        }
-        
-        SelectionContainer(modifier = Modifier.horizontalScroll(outputTextScrollState)){
+        SelectionContainer(modifier = Modifier.align(Alignment.Start).horizontalScroll(outputTextScrollState)){
             Text(text = outputText, style = bodyTextStyle, softWrap = false, modifier = Modifier.padding(4.dp))
         }
         
@@ -216,20 +204,6 @@ fun extractRish(myContext:Context){
     IOUtils.copy(dexInput,dexOutput)
     dexOutput.close()
     if(VERSION.SDK_INT>=34){ Runtime.getRuntime().exec("chmod 400 rish_shizuku.dex",null,myContext.filesDir) }
-}
-
-private fun checkPermission(myContext: Context):String {
-    return if(Shizuku.isPreV11()) {
-        myContext.getString(R.string.please_update_shizuku)
-    }else{
-        try{
-            if(Shizuku.checkSelfPermission()==PackageManager.PERMISSION_GRANTED) {
-                val permission = when(Shizuku.getUid()){ 0->"Root"; 2000->"Shell"; else->myContext.getString(R.string.unknown) }
-                myContext.getString(R.string.shizuku_permission_granted, Shizuku.getVersion().toString(), permission)
-            }else if(Shizuku.shouldShowRequestPermissionRationale()){ myContext.getString(R.string.denied) }
-            else{ Shizuku.requestPermission(0); myContext.getString(R.string.request_permission) }
-        }catch(e: Throwable){ myContext.getString(R.string.shizuku_not_started) }
-    }
 }
 
 suspend fun executeCommand(myContext: Context, command: String, subCommand:String, env: Array<String>?, dir:File?): String {

@@ -80,14 +80,9 @@
     <!--Shizuku-->
     <string name="shizuku">Shizuku</string>
     <string name="not_primary_user_not_support_shizuku">暂不支持在非主用户中使用Shizuku</string>
-    <string name="check_permission">检查权限</string>
+    <string name="check_shizuku">检查Shizuku</string>
     <string name="input_userid_of_work_profile">请输入工作资料的UserID</string>
     <string name="list_owners">列出Owners</string>
-    <string name="should_contain_2000_or_0">下面应该出现一行包含“2000”或“0”的文本\n</string>
-    <string name="test_rish">测试rish</string>
-    <string name="please_update_shizuku">请更新Shizuku</string>
-    <string name="shizuku_permission_granted">Shizuku v%1$s\n已授权（%2$s）</string>
-    <string name="request_permission">请求授权</string>
     <string name="shizuku_not_started">服务未启动</string>
     <string name="activate_org_profile_command_with_user_id" tools:ignore="TypographyDashes">
         dpm mark-profile-owner-on-organization-owned-device --user %1$s com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver
@@ -95,6 +90,8 @@
     <string name="dpm_activate_do_command">dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver</string>
     <string name="dpm_activate_po_command">dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver</string>
     <string name="dpm_activate_da_command">dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver</string>
+    <string name="shizuku_activated_shell">已授权（Shell）</string>
+    <string name="shizuku_activated_root">已授权（Root）</string>
 
     <!--System-->
     <string name="device_ctrl">系统</string>

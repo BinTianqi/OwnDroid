@@ -40,7 +40,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.ui.theme.AndroidOwnerTheme
-import rikka.shizuku.Shizuku
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
@@ -57,22 +56,9 @@ var caCert = byteArrayOf()
 
 @ExperimentalMaterial3Api
 class MainActivity : ComponentActivity() {
-    override fun onDestroy() {
-        super.onDestroy()
-        if(VERSION.SDK_INT>=24){
-            Shizuku.removeBinderReceivedListener(ShizukuUtil.binderReceivedListener)
-            Shizuku.removeBinderDeadListener(ShizukuUtil.binderDeadListener)
-            Shizuku.removeRequestPermissionResultListener(ShizukuUtil.requestPermissionListener)
-        }
-    }
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
-        if(VERSION.SDK_INT>=24){
-            Shizuku.addBinderReceivedListenerSticky(ShizukuUtil.binderReceivedListener)
-            Shizuku.addBinderDeadListener(ShizukuUtil.binderDeadListener)
-            Shizuku.addRequestPermissionResultListener(ShizukuUtil.requestPermissionListener)
-        }
         getUserIcon = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             userIconUri = it.data?.data
             if(userIconUri==null){ Toast.makeText(applicationContext, "空URI", Toast.LENGTH_SHORT).show() }
