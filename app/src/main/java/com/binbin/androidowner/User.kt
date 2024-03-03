@@ -36,7 +36,7 @@ import androidx.core.os.UserManagerCompat
 var affiliationID = mutableSetOf<String>()
 @Composable
 fun UserManage() {
-    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         val myContext = LocalContext.current
         val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)

@@ -48,7 +48,7 @@ fun SystemManage(){
     val userManager = myContext.getSystemService(Context.USER_SERVICE) as UserManager
     val bodyTextStyle = if(isWear){typography.bodyMedium}else{typography.bodyLarge}
     val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding()) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
             DeviceCtrlItem(R.string.disable_cam,R.string.place_holder, R.drawable.photo_camera_fill0,
                 {myDpm.getCameraDisabled(null)},{b -> myDpm.setCameraDisabled(myComponent,b)}

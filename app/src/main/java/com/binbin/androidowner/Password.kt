@@ -48,7 +48,7 @@ fun Password(){
     val scrollState = rememberScrollState()
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth().verticalScroll(scrollState)
+        modifier = Modifier.fillMaxSize().verticalScroll(scrollState)
     ) {
         val myByteArray by remember{ mutableStateOf(byteArrayOf(1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0)) }
         Text(

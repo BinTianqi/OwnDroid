@@ -34,7 +34,7 @@ fun AppSetting(navCtrl:NavHostController){
         val verCode = pkgInfo.versionCode
         val verName = pkgInfo.versionName
         Column(modifier = sections()) {
-            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 3.dp),horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Row(modifier = Modifier.fillMaxSize().padding(horizontal = 3.dp),horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "Wear", style = typography.titleLarge, color = titleColor)
                 Switch(
                     checked = isWear,

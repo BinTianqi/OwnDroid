@@ -53,7 +53,7 @@ fun UserRestriction(){
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val isWear = sharedPref.getBoolean("isWear",false)
     val bodyTextStyle = if(isWear){typography.bodyMedium}else{typography.bodyLarge}
-    Column(modifier = Modifier.verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally){
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally){
         Text(text = "打开开关后会禁用对应的功能",style = bodyTextStyle)
         if(VERSION.SDK_INT<24){
             Text(text = "所有的用户限制都需要API24，你的设备低于API24，无法使用。", style = bodyTextStyle, color = colorScheme.error)

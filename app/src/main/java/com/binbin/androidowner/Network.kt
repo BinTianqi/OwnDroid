@@ -46,7 +46,7 @@ import androidx.core.net.toUri
 var ssidSet = mutableSetOf<WifiSsid>()
 @Composable
 fun Network(){
-    Column(modifier = Modifier.verticalScroll(rememberScrollState()).fillMaxWidth()){
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
         val myContext = LocalContext.current
         val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)

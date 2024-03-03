@@ -50,7 +50,7 @@ fun DpmPermissions(navCtrl:NavHostController){
     val bodyTextStyle = if(isWear){typography.bodyMedium}else{typography.bodyLarge}
     var expandCommandBlock by remember{mutableStateOf("")}
     Column(
-        modifier = Modifier.verticalScroll(rememberScrollState()),
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(

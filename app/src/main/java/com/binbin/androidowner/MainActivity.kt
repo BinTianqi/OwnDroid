@@ -15,11 +15,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.typography
@@ -40,6 +42,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.ui.theme.AndroidOwnerTheme
+import com.binbin.androidowner.ui.theme.Animations
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
@@ -121,14 +124,18 @@ fun MyScaffold(){
         topBar = {
             if(!sharedPref.getBoolean("isWear",false)){
             TopAppBar(
-                title = { Text(text = stringResource(topBarName) , color = MaterialTheme.colorScheme.onSurface) },
+                title = {Text(text = stringResource(topBarName) , color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(bottom = 2.dp))},
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 ),
                 navigationIcon = {
-                    if(topBarName!=R.string.app_name){
+                    AnimatedVisibility(
+                        visible = topBarName!=R.string.app_name,
+                        enter = Animations(myContext).navIconEnterTransition,
+                        exit = Animations(myContext).navIconExitTransition
+                    ){
                         Icon(
-                            imageVector = Icons.Outlined.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
                             contentDescription = "Back",
                             modifier = Modifier
                                 .padding(horizontal = 6.dp)
@@ -163,7 +170,11 @@ fun MyScaffold(){
         NavHost(
             navController = navCtrl,
             startDestination = "HomePage",
-            modifier = Modifier.padding(top = it.calculateTopPadding()).imePadding()
+            modifier = Modifier.fillMaxSize().padding(top = it.calculateTopPadding()).imePadding(),
+            enterTransition = Animations(myContext).navHostEnterTransition,
+            exitTransition = Animations(myContext).navHostExitTransition,
+            popEnterTransition = Animations(myContext).navHostPopEnterTransition,
+            popExitTransition = Animations(myContext).navHostPopExitTransition
         ){
             composable(route = "HomePage", content = { HomePage(navCtrl)})
             composable(route = "DeviceControl", content = { SystemManage()})

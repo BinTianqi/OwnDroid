@@ -43,7 +43,7 @@ fun ManagedProfile() {
     val isWear = sharedPref.getBoolean("isWear",false)
     val bodyTextStyle = if(isWear){ typography.bodyMedium}else{ typography.bodyLarge}
     val titleColor = colorScheme.onPrimaryContainer
-    Column(modifier = Modifier.verticalScroll(rememberScrollState())){
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
         
         Column(modifier = sections()){
             Text(text = stringResource(R.string.info), style = typography.titleLarge, color = titleColor)

@@ -77,7 +77,7 @@ fun ApplicationManage(){
                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
             )
         }
-    Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         if(isWear){
         TextField(
             value = pkgName,
