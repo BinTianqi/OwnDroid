@@ -32,10 +32,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
 import org.apache.commons.io.IOUtils
 import rikka.shizuku.Shizuku
 import java.io.*
@@ -58,14 +58,14 @@ fun ShizukuActivate(){
         if(Binder.getCallingUid()/100000!=0){
             Row(modifier = sections(colorScheme.errorContainer), verticalAlignment = Alignment.CenterVertically){
                 Icon(imageVector = Icons.Rounded.Warning, contentDescription = null, tint = colorScheme.onErrorContainer)
-                Text(text = "暂不支持在非主用户中使用Shizuku", style = bodyTextStyle, color = colorScheme.onErrorContainer)
+                Text(text = stringResource(R.string.not_primary_user_not_support_shizuku), style = bodyTextStyle, color = colorScheme.onErrorContainer)
             }
         }
         
         var launchPermissionCheck by remember{mutableStateOf(false)}
         LaunchedEffect(launchPermissionCheck){
             if(launchPermissionCheck){
-                outputText = checkPermission()
+                outputText = checkPermission(myContext)
                 scrollState.animateScrollTo(scrollState.maxValue, scrollAnim())
                 launchPermissionCheck=false
             }
@@ -74,12 +74,12 @@ fun ShizukuActivate(){
             onClick = {launchPermissionCheck=true},
             enabled = VERSION.SDK_INT>=24, modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
         ) {
-            Text(text = "检查权限")
+            Text(text = stringResource(R.string.check_permission))
         }
         
         if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)){
             Column(modifier = sections()){
-                Text(text = "激活", style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
+                Text(text = stringResource(R.string.activate), style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
                 
                 if(!myDpm.isAdminActive(myComponent)){
                     var launchActivateDA by remember{mutableStateOf(false)}
@@ -124,8 +124,8 @@ fun ShizukuActivate(){
         
         if(VERSION.SDK_INT>=30&&!isDeviceOwner(myDpm)&&!myDpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)&&!myDpm.isOrganizationOwnedDeviceWithManagedProfile){
             Column(modifier = sections()){
-                Text(text = "组织拥有工作资料", style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
-                Text(text = "请输入工作资料的UserID", style = bodyTextStyle)
+                Text(text = stringResource(R.string.org_owned_work_profile), style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
+                Text(text = stringResource(R.string.input_userid_of_work_profile), style = bodyTextStyle)
                 var inputUserID by remember{mutableStateOf("")}
                 OutlinedTextField(
                     value = inputUserID, onValueChange = {inputUserID=it},
@@ -151,12 +151,12 @@ fun ShizukuActivate(){
                     onClick = {
                         launchActivateOrgProfile=true
                         if(myDpm.isOrganizationOwnedDeviceWithManagedProfile){
-                            Toast.makeText(myContext,"成功",Toast.LENGTH_SHORT).show()
+                            Toast.makeText(myContext, myContext.getString(R.string.success),Toast.LENGTH_SHORT).show()
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(text = "激活")
+                    Text(text = stringResource(R.string.activate))
                 }
             }
         }
@@ -172,13 +172,13 @@ fun ShizukuActivate(){
         Button(
             onClick = {launchListOwners=true}, modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
         ) {
-            Text(text = "列出Owners")
+            Text(text = stringResource(R.string.list_owners))
         }
         
         var launchTest by remember{mutableStateOf(false)}
         LaunchedEffect(launchTest){
             if(launchTest){
-                outputText="下面应该出现一行包含“2000”或“0”的文本\n"
+                outputText= myContext.getString(R.string.should_contain_2000_or_0)
                 scrollState.animateScrollTo(scrollState.maxValue, scrollAnim())
                 outputText+=executeCommand("sh rish.sh","id",null,filesDir)
                 launchTest=false
@@ -187,7 +187,7 @@ fun ShizukuActivate(){
         Button(
             onClick = {launchTest=true}, modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
-            Text(text = "测试rish")
+            Text(text = stringResource(R.string.test_rish))
         }
         
         SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState())){
@@ -220,17 +220,17 @@ fun extractRish(myContext:Context){
     if(VERSION.SDK_INT>=34){ Runtime.getRuntime().exec("chmod 400 rish_shizuku.dex",null,myContext.filesDir) }
 }
 
-private fun checkPermission():String {
+private fun checkPermission(myContext: Context):String {
     return if(Shizuku.isPreV11()) {
-        "请更新Shizuku"
+        myContext.getString(R.string.please_update_shizuku)
     }else{
         try{
             if(Shizuku.checkSelfPermission()==PackageManager.PERMISSION_GRANTED) {
-                val permission = when(Shizuku.getUid()){ 0->"Root"; 2000->"Shell"; else->"未知权限" }
-                "Shizuku v${Shizuku.getVersion()}\n已授权（$permission）"
-            }else if(Shizuku.shouldShowRequestPermissionRationale()){ "用户拒绝" }
-            else{ Shizuku.requestPermission(0); "请求授权" }
-        }catch(e: Throwable){ "服务未启动" }
+                val permission = when(Shizuku.getUid()){ 0->"Root"; 2000->"Shell"; else->myContext.getString(R.string.unknown) }
+                myContext.getString(R.string.shizuku_permission_granted, Shizuku.getVersion(), permission)
+            }else if(Shizuku.shouldShowRequestPermissionRationale()){ myContext.getString(R.string.denied) }
+            else{ Shizuku.requestPermission(0); myContext.getString(R.string.request_permission) }
+        }catch(e: Throwable){ myContext.getString(R.string.shizuku_not_started) }
     }
 }
 
@@ -246,7 +246,7 @@ fun executeCommand(command: String, subCommand:String, env: Array<String>?, dir:
         IOUtils.copy(tunnel,outputStream)
         outputStream.close()
         val exitCode = process.waitFor()
-        if(exitCode!=0){ result+="出错了！退出码：$exitCode" }
+        if(exitCode!=0){ result+="Error: $exitCode" }
     }catch(e:Exception){
         e.printStackTrace()
         return e.toString()

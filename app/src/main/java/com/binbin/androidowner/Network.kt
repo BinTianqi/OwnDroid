@@ -74,8 +74,8 @@ fun Network(){
         if(VERSION.SDK_INT>=33){
             Column(modifier = sections()){
                 var selectedWifiSecLevel by remember{mutableIntStateOf(myDpm.minimumRequiredWifiSecurityLevel)}
-                Text(text = "要求最小WiFi安全等级", style = typography.titleLarge, color = titleColor)
-                RadioButtonItem("开放", {selectedWifiSecLevel==DevicePolicyManager.WIFI_SECURITY_OPEN}, {selectedWifiSecLevel= DevicePolicyManager.WIFI_SECURITY_OPEN})
+                Text(text = stringResource(R.string.min_wifi_security_level), style = typography.titleLarge, color = titleColor)
+                RadioButtonItem(stringResource(R.string.wifi_security_level_open), {selectedWifiSecLevel==DevicePolicyManager.WIFI_SECURITY_OPEN}, {selectedWifiSecLevel= DevicePolicyManager.WIFI_SECURITY_OPEN})
                 RadioButtonItem("WEP, WPA(2)-PSK", {selectedWifiSecLevel==DevicePolicyManager.WIFI_SECURITY_PERSONAL}, {selectedWifiSecLevel= DevicePolicyManager.WIFI_SECURITY_PERSONAL})
                 RadioButtonItem("WPA-EAP", {selectedWifiSecLevel==DevicePolicyManager.WIFI_SECURITY_ENTERPRISE_EAP}, {selectedWifiSecLevel= DevicePolicyManager.WIFI_SECURITY_ENTERPRISE_EAP})
                 RadioButtonItem("WPA3-192bit", {selectedWifiSecLevel==DevicePolicyManager.WIFI_SECURITY_ENTERPRISE_192}, {selectedWifiSecLevel= DevicePolicyManager.WIFI_SECURITY_ENTERPRISE_192})
@@ -83,15 +83,13 @@ fun Network(){
                     enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile),
                     onClick = {
                         myDpm.minimumRequiredWifiSecurityLevel=selectedWifiSecLevel
-                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.fillMaxWidth()
                 ){
-                    Text("应用")
+                    Text(stringResource(R.string.apply))
                 }
             }
-        }else{
-            Text(text = "Wifi安全等级需API33", modifier = Modifier.padding(vertical = 3.dp))
         }
         
         if(VERSION.SDK_INT>=33&&(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))){
@@ -112,13 +110,13 @@ fun Network(){
                 }
                 var inited by remember{mutableStateOf(false)}
                 if(!inited){ refreshPolicy(); refreshList(); inited=true }
-                Text(text = "WiFi SSID策略", style = typography.titleLarge, color = titleColor)
-                RadioButtonItem("无",{selectedPolicyType==-1},{selectedPolicyType=-1})
-                RadioButtonItem("白名单",{selectedPolicyType==WIFI_SSID_POLICY_TYPE_ALLOWLIST},{selectedPolicyType=WIFI_SSID_POLICY_TYPE_ALLOWLIST})
-                RadioButtonItem("黑名单",{selectedPolicyType==WIFI_SSID_POLICY_TYPE_DENYLIST},{selectedPolicyType=WIFI_SSID_POLICY_TYPE_DENYLIST})
+                Text(text = stringResource(R.string.wifi_ssid_policy), style = typography.titleLarge, color = titleColor)
+                RadioButtonItem(stringResource(R.string.none),{selectedPolicyType==-1},{selectedPolicyType=-1})
+                RadioButtonItem(stringResource(R.string.whitelist),{selectedPolicyType==WIFI_SSID_POLICY_TYPE_ALLOWLIST},{selectedPolicyType=WIFI_SSID_POLICY_TYPE_ALLOWLIST})
+                RadioButtonItem(stringResource(R.string.blacklist),{selectedPolicyType==WIFI_SSID_POLICY_TYPE_DENYLIST},{selectedPolicyType=WIFI_SSID_POLICY_TYPE_DENYLIST})
                 Column(modifier = Modifier.animateContentSize(scrollAnim()).horizontalScroll(rememberScrollState())){
                     if(ssidList!=""){
-                        Text("SSID列表：")
+                        Text(stringResource(R.string.ssid_list_is))
                         SelectionContainer{
                             Text(text = ssidList, style = bodyTextStyle, color = colorScheme.onPrimaryContainer)
                         }
@@ -136,9 +134,9 @@ fun Network(){
                     Button(
                         onClick = {
                             if(inputSsid==""){
-                                Toast.makeText(myContext, "不能为空", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(myContext, myContext.getString(R.string.cannot_be_empty), Toast.LENGTH_SHORT).show()
                             }else if(WifiSsid.fromBytes(inputSsid.toByteArray()) in ssidSet){
-                                Toast.makeText(myContext, "重复", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(myContext, myContext.getString(R.string.already_exist), Toast.LENGTH_SHORT).show()
                             }else{
                                 ssidSet.add(WifiSsid.fromBytes(inputSsid.toByteArray()))
                                 refreshList()
@@ -147,23 +145,23 @@ fun Network(){
                         },
                         modifier = Modifier.fillMaxWidth(0.49F)
                     ) {
-                        Text("添加")
+                        Text(stringResource(R.string.add))
                     }
                     Button(
                         onClick = {
                             if(inputSsid==""){
-                                Toast.makeText(myContext, "不能为空", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(myContext, myContext.getString(R.string.cannot_be_empty), Toast.LENGTH_SHORT).show()
                             }else if(WifiSsid.fromBytes(inputSsid.toByteArray()) in ssidSet){
                                 ssidSet.remove(WifiSsid.fromBytes(inputSsid.toByteArray()))
                                 inputSsid = ""
                                 refreshList()
                             }else{
-                                Toast.makeText(myContext, "不存在", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(myContext, myContext.getString(R.string.not_exist), Toast.LENGTH_SHORT).show()
                             }
                         },
                         modifier = Modifier.fillMaxWidth(0.96F)
                     ) {
-                        Text("移除")
+                        Text(stringResource(R.string.remove))
                     }
                 }
                 Button(
@@ -171,16 +169,16 @@ fun Network(){
                         focusMgr.clearFocus()
                         if(selectedPolicyType==-1){
                             if(policy==null&&ssidSet.isNotEmpty()){
-                                Toast.makeText(myContext, "请选择策略", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(myContext, myContext.getString(R.string.please_select_a_policy), Toast.LENGTH_SHORT).show()
                             }else{
                                 myDpm.wifiSsidPolicy = null
                                 refreshPolicy()
-                                Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                             }
                         }else{
                             myDpm.wifiSsidPolicy = if(ssidSet.size==0){ null }else{ WifiSsidPolicy(selectedPolicyType, ssidSet) }
                             refreshPolicy()
-                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -191,20 +189,20 @@ fun Network(){
         }
         if(VERSION.SDK_INT>=29&&isDeviceOwner(myDpm)){
             Column(modifier = sections()){
-                Text(text = "私人DNS", style = typography.titleLarge, color = titleColor)
+                Text(text = stringResource(R.string.private_dns), style = typography.titleLarge, color = titleColor)
                 val dnsStatus = mapOf(
-                    DevicePolicyManager.PRIVATE_DNS_MODE_UNKNOWN to "未知",
-                    DevicePolicyManager.PRIVATE_DNS_MODE_OFF to "关闭",
-                    DevicePolicyManager.PRIVATE_DNS_MODE_OPPORTUNISTIC to "自动",
-                    DevicePolicyManager.PRIVATE_DNS_MODE_PROVIDER_HOSTNAME to "指定主机名"
+                    DevicePolicyManager.PRIVATE_DNS_MODE_UNKNOWN to stringResource(R.string.unknown),
+                    DevicePolicyManager.PRIVATE_DNS_MODE_OFF to stringResource(R.string.disabled),
+                    DevicePolicyManager.PRIVATE_DNS_MODE_OPPORTUNISTIC to stringResource(R.string.auto),
+                    DevicePolicyManager.PRIVATE_DNS_MODE_PROVIDER_HOSTNAME to stringResource(R.string.dns_provide_hostname)
                 )
                 val operationResult = mapOf(
-                    DevicePolicyManager.PRIVATE_DNS_SET_NO_ERROR to "成功",
-                    DevicePolicyManager.PRIVATE_DNS_SET_ERROR_HOST_NOT_SERVING to "主机不支持DNS over TLS",
-                    DevicePolicyManager.PRIVATE_DNS_SET_ERROR_FAILURE_SETTING to "失败"
+                    DevicePolicyManager.PRIVATE_DNS_SET_NO_ERROR to stringResource(R.string.success),
+                    DevicePolicyManager.PRIVATE_DNS_SET_ERROR_HOST_NOT_SERVING to stringResource(R.string.host_not_serving_dns_tls),
+                    DevicePolicyManager.PRIVATE_DNS_SET_ERROR_FAILURE_SETTING to stringResource(R.string.fail)
                 )
                 var status by remember{mutableStateOf(dnsStatus[myDpm.getGlobalPrivateDnsMode(myComponent)])}
-                Text(text = "当前状态：$status")
+                Text(text = stringResource(R.string.current_state, status?:stringResource(R.string.unknown)))
                 Button(
                     onClick = {
                         val result = myDpm.setGlobalPrivateDnsModeOpportunistic(myComponent)
@@ -213,14 +211,14 @@ fun Network(){
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("设为自动")
+                    Text(stringResource(R.string.set_to_auto))
                 }
                 Spacer(Modifier.padding(vertical = 3.dp))
                 var inputHost by remember{mutableStateOf(myDpm.getGlobalPrivateDnsHost(myComponent) ?: "")}
                 OutlinedTextField(
                     value = inputHost,
                     onValueChange = {inputHost=it},
-                    label = {Text("DNS主机名")},
+                    label = {Text(stringResource(R.string.dns_hostname))},
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                     modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp)
@@ -233,27 +231,27 @@ fun Network(){
                             result = myDpm.setGlobalPrivateDnsModeSpecifiedHost(myComponent,inputHost)
                             Toast.makeText(myContext, operationResult[result], Toast.LENGTH_SHORT).show()
                         }catch(e:IllegalArgumentException){
-                            Toast.makeText(myContext, "无效主机名", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(myContext, myContext.getString(R.string.invalid_hostname), Toast.LENGTH_SHORT).show()
                         }catch(e:SecurityException){
-                            Toast.makeText(myContext, "安全错误", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(myContext, myContext.getString(R.string.security_exception), Toast.LENGTH_SHORT).show()
                         }finally {
                             status = dnsStatus[myDpm.getGlobalPrivateDnsMode(myComponent)]
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("设置DNS主机")
+                    Text(stringResource(R.string.set_dns_host))
                 }
             }
         }
         
         if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)))){
             Column(modifier = sections()){
-                Text(text = "收集网络日志", style = typography.titleLarge, color = titleColor)
-                Text(text = "功能开发中", style = bodyTextStyle)
+                Text(text = stringResource(R.string.retrieve_net_logs), style = typography.titleLarge, color = titleColor)
+                Text(text = stringResource(R.string.developing), style = bodyTextStyle)
                 Row(modifier=Modifier.fillMaxWidth().padding(horizontal=8.dp),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
                     var checked by remember{mutableStateOf(myDpm.isNetworkLoggingEnabled(myComponent))}
-                    Text(text = "启用", style = typography.titleLarge)
+                    Text(text = stringResource(R.string.enabled), style = typography.titleLarge)
                     Switch(
                         checked = checked,
                         onCheckedChange = {myDpm.setNetworkLoggingEnabled(myComponent,!checked);checked = myDpm.isNetworkLoggingEnabled(myComponent)}
@@ -264,15 +262,15 @@ fun Network(){
                         val log = myDpm.retrieveNetworkLogs(myComponent,1234567890)
                         if(log!=null){
                             for(i in log){ Log.d("NetLog",i.toString()) }
-                            Toast.makeText(myContext,"已输出至Log",Toast.LENGTH_SHORT).show()
+                            Toast.makeText(myContext, myContext.getString(R.string.success),Toast.LENGTH_SHORT).show()
                         }else{
-                            Log.d("NetLog","无")
-                            Toast.makeText(myContext,"无",Toast.LENGTH_SHORT).show()
+                            Log.d("NetLog",myContext.getString(R.string.none))
+                            Toast.makeText(myContext, myContext.getString(R.string.none),Toast.LENGTH_SHORT).show()
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("收集")
+                    Text(stringResource(R.string.retrieve))
                 }
             }
         }
@@ -280,35 +278,35 @@ fun Network(){
         if(VERSION.SDK_INT>=31&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
             Column(modifier = sections()){
                 var keyPair by remember{mutableStateOf("")}
-                Text(text = "WiFi密钥对", style = typography.titleLarge, color = titleColor)
+                Text(text = stringResource(R.string.wifi_keypair), style = typography.titleLarge, color = titleColor)
                 OutlinedTextField(
                     value = keyPair,
-                    label = { Text("密钥对")},
+                    label = { Text(stringResource(R.string.keypair))},
                     onValueChange = {keyPair = it},
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                     modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp)
                 )
                 val isExist = try{myDpm.isKeyPairGrantedToWifiAuth(keyPair)}catch(e:java.lang.IllegalArgumentException){false}
-                Text("已存在：$isExist")
+                Text(stringResource(R.string.already_exist)+"：$isExist")
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
                         onClick = {
                             val result = myDpm.grantKeyPairToWifiAuth(keyPair)
-                            Toast.makeText(myContext, if(result){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                            Toast.makeText(myContext, myContext.getString(if(result){R.string.success}else{R.string.fail}), Toast.LENGTH_SHORT).show()
                         },
                         modifier = Modifier.fillMaxWidth(0.49F)
                     ) {
-                        Text("添加")
+                        Text(stringResource(R.string.add))
                     }
                     Button(
                         onClick = {
                             val result = myDpm.revokeKeyPairFromWifiAuth(keyPair)
-                            Toast.makeText(myContext, if(result){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                            Toast.makeText(myContext, myContext.getString(if(result){R.string.success}else{R.string.fail}), Toast.LENGTH_SHORT).show()
                         },
                         modifier = Modifier.fillMaxWidth(0.96F)
                     ) {
-                        Text("移除")
+                        Text(stringResource(R.string.remove))
                     }
                 }
             }
@@ -320,17 +318,17 @@ fun Network(){
                 var inputNum by remember{mutableStateOf("0")}
                 var nextStep by remember{mutableStateOf(false)}
                 val builder = Builder()
-                Text(text = "APN设置", style = typography.titleLarge, color = titleColor)
+                Text(text = stringResource(R.string.apn_settings), style = typography.titleLarge, color = titleColor)
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically){
-                    Text(text = "启用", style = typography.titleLarge)
+                    Text(text = stringResource(R.string.enable), style = typography.titleLarge)
                     Switch(checked = myDpm.isOverrideApnEnabled(myComponent), onCheckedChange = {myDpm.setOverrideApnsEnabled(myComponent,it)})
                 }
-                Text(text = "一共有${setting.size}个APN设置", style = bodyTextStyle)
+                Text(text = stringResource(R.string.total_apn_amount, setting.size), style = bodyTextStyle)
                 if(setting.size>0){
-                    Text(text = "选择一个你要修改的APN设置(1~${setting.size})或者输入0以新建APN设置", style = bodyTextStyle)
+                    Text(text = stringResource(R.string.select_a_apn_or_create, setting.size), style = bodyTextStyle)
                     TextField(
                         value = inputNum,
-                        label = { Text("序号")},
+                        label = { Text("APN")},
                         onValueChange = {inputNum = it},
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
@@ -338,14 +336,14 @@ fun Network(){
                         enabled = !nextStep
                     )
                 }else{
-                    Text(text = "当前没有APN设置，你可以新建一个APN设置", style = bodyTextStyle)
+                    Text(text = stringResource(R.string.no_apn_you_should_create_one), style = bodyTextStyle)
                 }
                 Button(
                     onClick = {focusMgr.clearFocus(); nextStep=!nextStep},
                     modifier = Modifier.fillMaxWidth(),
                     enabled = inputNum!=""&&(nextStep||inputNum=="0"||setting[inputNum.toInt()-1]!=null)
                 ) {
-                    Text(if(nextStep){"上一步"}else{"下一步"})
+                    Text(stringResource(if(nextStep){R.string.previous_step}else{R.string.next_step}))
                 }
                 var result = Builder().build()
                 AnimatedVisibility(nextStep) {
@@ -404,28 +402,28 @@ fun Network(){
                         TextField(
                             value = inputApnName,
                             onValueChange = {inputApnName=it},
-                            label = {Text("名称")},
+                            label = {Text(stringResource(R.string.name))},
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                             modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                         )
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically){
-                            Text(text = "启用", style = typography.titleLarge)
+                            Text(text = stringResource(R.string.enable), style = typography.titleLarge)
                             Switch(checked = carrierEnabled, onCheckedChange = {carrierEnabled=it})
                         }
                         
-                        Text(text = "用户名", style = typography.titleLarge)
+                        Text(text = stringResource(R.string.user_name), style = typography.titleLarge)
                         TextField(
                             value = user,
                             onValueChange = {user=it},
-                            label = {Text("用户名")},
+                            label = {Text(stringResource(R.string.user_name))},
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                             modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                         )
                         
                         if(VERSION.SDK_INT>=33){
-                            Text(text = "资料ID", style = typography.titleLarge)
+                            Text(text = stringResource(R.string.profile_id), style = typography.titleLarge)
                             TextField(
                                 value = profileId,
                                 onValueChange = {profileId=it},
@@ -436,7 +434,7 @@ fun Network(){
                             )
                         }
                         
-                        Text(text = "验证类型", style = typography.titleLarge)
+                        Text(text = stringResource(R.string.auth_type), style = typography.titleLarge)
                         RadioButtonItem("无",{selectedAuthType==AUTH_TYPE_NONE},{selectedAuthType=AUTH_TYPE_NONE})
                         RadioButtonItem("CHAP",{selectedAuthType==AUTH_TYPE_CHAP},{selectedAuthType=AUTH_TYPE_CHAP})
                         RadioButtonItem("PAP",{selectedAuthType==AUTH_TYPE_PAP},{selectedAuthType=AUTH_TYPE_PAP})
@@ -456,32 +454,32 @@ fun Network(){
                             )
                         }
                         
-                        Text(text = "APN类型", style = typography.titleLarge)
+                        Text(text = stringResource(R.string.apn_type), style = typography.titleLarge)
                         TextField(
                             value = apnTypeBitmask,
                             onValueChange = {apnTypeBitmask=it},
-                            label = {Text("位掩码")},
+                            label = {Text(stringResource(R.string.bitmask))},
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                             modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                         )
                         
-                        Text(text = "描述", style = typography.titleLarge)
+                        Text(text = stringResource(R.string.description), style = typography.titleLarge)
                         TextField(
                             value = entryName,
                             onValueChange = {entryName=it},
-                            label = {Text("文本")},
+                            label = {Text(stringResource(R.string.description))},
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                             modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                         )
                         
-                        Text(text = "MMS代理", style = typography.titleLarge)
+                        Text(text = stringResource(R.string.mms_proxy), style = typography.titleLarge)
                         if(VERSION.SDK_INT>=29){
                             TextField(
                                 value = mmsProxyAddress,
                                 onValueChange = {mmsProxyAddress=it},
-                                label = {Text("地址")},
+                                label = {Text(stringResource(R.string.address))},
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                                 modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
@@ -490,18 +488,18 @@ fun Network(){
                         TextField(
                             value = mmsProxyPort,
                             onValueChange = {mmsProxyPort=it},
-                            label = {Text("端口")},
+                            label = {Text(stringResource(R.string.port))},
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                             modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                         )
                         
-                        Text(text = "代理", style = typography.titleLarge)
+                        Text(text = stringResource(R.string.proxy), style = typography.titleLarge)
                         if(VERSION.SDK_INT>=29){
                             TextField(
                                 value = proxyAddress,
                                 onValueChange = {proxyAddress=it},
-                                label = {Text("地址")},
+                                label = {Text(stringResource(R.string.address))},
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                                 modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
@@ -510,7 +508,7 @@ fun Network(){
                         TextField(
                             value = proxyPort,
                             onValueChange = {proxyPort=it},
-                            label = {Text("端口")},
+                            label = {Text(stringResource(R.string.port))},
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                             modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
@@ -552,11 +550,11 @@ fun Network(){
                         RadioButtonItem("GID",{mvnoType==MVNO_TYPE_GID},{mvnoType=MVNO_TYPE_GID})
                         RadioButtonItem("ICCID",{mvnoType==MVNO_TYPE_ICCID},{mvnoType=MVNO_TYPE_ICCID})
                         
-                        Text(text = "网络类型", style = typography.titleLarge)
+                        Text(text = stringResource(R.string.network_type), style = typography.titleLarge)
                         TextField(
                             value = networkTypeBitmask,
                             onValueChange = {networkTypeBitmask=it},
-                            label = {Text("位掩码")},
+                            label = {Text(stringResource(R.string.bitmask))},
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                             modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
@@ -572,11 +570,11 @@ fun Network(){
                             modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                         )
                         
-                        Text(text = "密码", style = typography.titleLarge)
+                        Text(text = stringResource(R.string.password), style = typography.titleLarge)
                         TextField(
                             value = password,
                             onValueChange = {password=it},
-                            label = {Text("密码")},
+                            label = {Text(stringResource(R.string.password))},
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                             modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
@@ -584,12 +582,12 @@ fun Network(){
                         
                         if(VERSION.SDK_INT>=33){
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically){
-                                Text(text = "持久的", style = typography.titleLarge)
+                                Text(text = stringResource(R.string.persistent), style = typography.titleLarge)
                                 Switch(checked = persistent, onCheckedChange = {persistent=it})
                             }
                         }
                         
-                        Text(text = "协议", style = typography.titleLarge)
+                        Text(text = stringResource(R.string.protocol), style = typography.titleLarge)
                         RadioButtonItem("IPV4",{protocol==PROTOCOL_IP},{protocol=PROTOCOL_IP})
                         RadioButtonItem("IPV6",{protocol==PROTOCOL_IPV6},{protocol=PROTOCOL_IPV6})
                         RadioButtonItem("IPV4/IPV6",{protocol==PROTOCOL_IPV4V6},{protocol=PROTOCOL_IPV4V6})
@@ -599,7 +597,7 @@ fun Network(){
                             RadioButtonItem("Unstructured",{protocol==PROTOCOL_UNSTRUCTURED},{protocol=PROTOCOL_UNSTRUCTURED})
                         }
                         
-                        Text(text = "漫游协议", style = typography.titleLarge)
+                        Text(text = stringResource(R.string.roaming_protocol), style = typography.titleLarge)
                         RadioButtonItem("IPV4",{roamingProtocol==PROTOCOL_IP},{roamingProtocol=PROTOCOL_IP})
                         RadioButtonItem("IPV6",{roamingProtocol==PROTOCOL_IPV6},{roamingProtocol=PROTOCOL_IPV6})
                         RadioButtonItem("IPV4/IPV6",{roamingProtocol==PROTOCOL_IPV4V6},{roamingProtocol=PROTOCOL_IPV4V6})
@@ -641,7 +639,7 @@ fun Network(){
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(if(finalStep){"上一步"}else{"下一步"})
+                            Text(stringResource(if(finalStep){R.string.previous_step}else{R.string.next_step}))
                         }
                         AnimatedVisibility(finalStep) {
                             if(inputNum=="0"){
@@ -649,18 +647,18 @@ fun Network(){
                                     onClick = {myDpm.addOverrideApn(myComponent,result)},
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    Text("新建")
+                                    Text(stringResource(R.string.create))
                                 }
                             }else{
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                                     Button(
                                         onClick = {
                                             val success = myDpm.updateOverrideApn(myComponent,id,result)
-                                            Toast.makeText(myContext, if(success){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(myContext, myContext.getString(if(success){R.string.success}else{R.string.fail}), Toast.LENGTH_SHORT).show()
                                         },
                                         Modifier.fillMaxWidth(0.49F)
                                     ){
-                                        Text("更新")
+                                        Text(stringResource(R.string.update))
                                     }
                                     Button(
                                         onClick = {
@@ -669,7 +667,7 @@ fun Network(){
                                         },
                                         Modifier.fillMaxWidth(0.96F)
                                     ){
-                                        Text("移除")
+                                        Text(stringResource(R.string.remove))
                                     }
                                 }
                             }

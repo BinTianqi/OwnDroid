@@ -52,14 +52,14 @@ fun Password(){
     ) {
         val myByteArray by remember{ mutableStateOf(byteArrayOf(1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0)) }
         Text(
-            text = "以下操作可能会造成不可挽回的损失，请先备份好数据。执行操作时一定要谨慎！！！",
+            text = stringResource(R.string.password_warning),
             color = colorScheme.onErrorContainer,
             modifier = sections(colorScheme.errorContainer),
             style=bodyTextStyle
         )
         if(isWear){
             Text(
-                text = "警告！手表不支持带字母的密码，也不支持超过4位的PIN码！如果你设置了这样的密码（或密码复杂度要求），你将无法解锁你的手表！",
+                text = stringResource(R.string.password_wearos_warning),
                 color = colorScheme.onErrorContainer,
                 modifier = sections(colorScheme.errorContainer),
                 style = typography.bodyMedium
@@ -69,88 +69,87 @@ fun Password(){
             Column(modifier = sections()) {
                 if(VERSION.SDK_INT>=29){
                     val passwordComplexity = mapOf(
-                        PASSWORD_COMPLEXITY_NONE to "无（允许不设密码）",
-                        PASSWORD_COMPLEXITY_LOW to "低（允许图案和连续性）",
-                        PASSWORD_COMPLEXITY_MEDIUM to "中（无连续性，至少4位）",
-                        PASSWORD_COMPLEXITY_HIGH to "高（无连续性，至少6位）"
+                        PASSWORD_COMPLEXITY_NONE to stringResource(R.string.password_complexity_none),
+                        PASSWORD_COMPLEXITY_LOW to stringResource(R.string.password_complexity_low),
+                        PASSWORD_COMPLEXITY_MEDIUM to stringResource(R.string.password_complexity_medium),
+                        PASSWORD_COMPLEXITY_HIGH to stringResource(R.string.password_complexity_high)
                     )
                     val pwdComplex = passwordComplexity[myDpm.passwordComplexity]
-                    Text(text = "当前密码复杂度：$pwdComplex",style=bodyTextStyle)
+                    Text(text = stringResource(R.string.current_password_complexity_is, pwdComplex?:stringResource(R.string.unknown)),style=bodyTextStyle)
                 }
                 if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
-                    Text("密码达到要求：${myDpm.isActivePasswordSufficient}",style=bodyTextStyle)
+                    Text(stringResource(R.string.is_password_sufficient, myDpm.isActivePasswordSufficient),style=bodyTextStyle)
                 }
                 val pwdFailedAttempts = myDpm.currentFailedPasswordAttempts
-                Text(text = "密码已错误次数：$pwdFailedAttempts",style=bodyTextStyle)
+                Text(text = stringResource(R.string.password_failed_attempts_is, pwdFailedAttempts),style=bodyTextStyle)
                 if(VERSION.SDK_INT>=28&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
                     val unifiedPwd = myDpm.isUsingUnifiedPassword(myComponent)
-                    Text("个人与工作应用密码一致：$unifiedPwd",style=bodyTextStyle)
+                    Text(stringResource(R.string.is_using_unified_password, unifiedPwd),style=bodyTextStyle)
                 }
             }
         }
         if(VERSION.SDK_INT>=26){
             Column(horizontalAlignment = Alignment.Start, modifier = sections()) {
-                Text(text = "密码重置令牌", style = typography.titleLarge,color = titleColor)
+                Text(text = stringResource(R.string.reset_password_token), style = typography.titleLarge,color = titleColor)
                 Row(
                     modifier = if(!isWear){Modifier.fillMaxWidth()}else{Modifier.horizontalScroll(rememberScrollState())},
                     horizontalArrangement = Arrangement.SpaceBetween
                 ){
                     Button(
                         onClick = {
-                            if(myDpm.clearResetPasswordToken(myComponent)){ Toast.makeText(myContext, "清除成功", Toast.LENGTH_SHORT).show()
-                            }else{ Toast.makeText(myContext, "清除失败", Toast.LENGTH_SHORT).show() }
+                            if(myDpm.clearResetPasswordToken(myComponent)){ Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                            }else{ Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show() }
                         },
                         modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.32F)},
                         enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
                     ) {
-                        Text("清除")
+                        Text(stringResource(R.string.clear))
                     }
                     if(isWear){Spacer(Modifier.padding(horizontal = 2.dp))}
                     Button(
                         onClick = {
                             try {
                                 if(myDpm.setResetPasswordToken(myComponent, myByteArray)){
-                                    Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                                 }else{
-                                    Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show()
                                 }
                             }catch(e:SecurityException){
-                                Toast.makeText(myContext, "失败（安全异常）", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(myContext, myContext.getString(R.string.security_exception), Toast.LENGTH_SHORT).show()
                             }
                         },
                         enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
                         modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.47F)}
                     ) {
-                        Text("设置")
+                        Text(stringResource(R.string.set))
                     }
                     if(isWear){Spacer(Modifier.padding(horizontal = 2.dp))}
                     Button(
                         onClick = {
                             if(!myDpm.isResetPasswordTokenActive(myComponent)){
-                                try{ activateToken(myContext)
-                                }catch(e:NullPointerException){ Toast.makeText(myContext, "请先设置令牌", Toast.LENGTH_SHORT).show() }
+                                try{ activateToken(myContext) }
+                                catch(e:NullPointerException){ Toast.makeText(myContext, myContext.getString(R.string.please_set_a_token), Toast.LENGTH_SHORT).show() }
                             }else{ Toast.makeText(myContext, "已经激活", Toast.LENGTH_SHORT).show() }
                         },
                         enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
                         modifier = if(isWear){Modifier}else{Modifier.fillMaxWidth(0.88F)}
                     ) {
-                        Text("激活")
+                        Text(stringResource(R.string.activate))
                     }
                 }
-                if(isWear){ Text(text = "（可以水平滚动）",style=typography.bodyMedium) }
-                Text("没有密码时会自动激活令牌",style=bodyTextStyle)
+                Text(stringResource(R.string.activate_token_not_required_when_no_password),style=bodyTextStyle)
             }
         }
         Column(
             modifier = sections()
         ) {
             var confirmed by remember{ mutableStateOf(false) }
-            Text(text = "修改密码",style = typography.titleLarge,color = titleColor)
+            Text(text = stringResource(R.string.reset_password),style = typography.titleLarge,color = titleColor)
             OutlinedTextField(
                 value = newPwd,
                 onValueChange = {newPwd=it},
                 enabled = !confirmed&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm)||myDpm.isAdminActive(myComponent)),
-                label = { Text("密码")},
+                label = { Text(stringResource(R.string.password))},
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                 modifier = Modifier.focusable().padding(vertical = if(isWear){0.dp}else{5.dp}).fillMaxWidth()
@@ -158,14 +157,17 @@ fun Password(){
             Text(text = stringResource(R.string.reset_pwd_desc), modifier = Modifier.padding(vertical = 3.dp),style=bodyTextStyle)
             var resetPwdFlag by remember{ mutableIntStateOf(0) }
             if(VERSION.SDK_INT>=23){
-                RadioButtonItem("启动(boot)时不要求密码", {resetPwdFlag==RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT}, {resetPwdFlag=RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT})
+                RadioButtonItem(
+                    stringResource(R.string.do_not_ask_credentials_on_boot),
+                    {resetPwdFlag==RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT}, {resetPwdFlag=RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT}
+                )
             }
-            RadioButtonItem("不允许其他设备管理员重置密码直至用户输入一次密码",{resetPwdFlag==RESET_PASSWORD_REQUIRE_ENTRY}, {resetPwdFlag=RESET_PASSWORD_REQUIRE_ENTRY})
-            RadioButtonItem("无",{resetPwdFlag==0},{resetPwdFlag=0})
+            RadioButtonItem(stringResource(R.string.reset_password_require_entry),{resetPwdFlag==RESET_PASSWORD_REQUIRE_ENTRY}, {resetPwdFlag=RESET_PASSWORD_REQUIRE_ENTRY})
+            RadioButtonItem(stringResource(R.string.none),{resetPwdFlag==0},{resetPwdFlag=0})
             Button(
                 onClick = {
                     if(newPwd.length>=4||newPwd.isEmpty()){ confirmed=!confirmed
-                    }else{ Toast.makeText(myContext, "需要4位密码", Toast.LENGTH_SHORT).show() }
+                    }else{ Toast.makeText(myContext, myContext.getString(R.string.require_4_digit_password), Toast.LENGTH_SHORT).show() }
                 },
                 enabled = isDeviceOwner(myDpm) || isProfileOwner(myDpm) || myDpm.isAdminActive(myComponent),
                 modifier = Modifier.fillMaxWidth(),
@@ -174,35 +176,35 @@ fun Password(){
                     contentColor = if(confirmed){ colorScheme.onPrimary }else{ colorScheme.onError }
                 )
             ) {
-                Text(text = if(confirmed){"取消"}else{"确定"})
+                Text(text = stringResource(if(confirmed){R.string.cancel}else{R.string.confirm}))
             }
             if(VERSION.SDK_INT>=26){
                 Button(
                     onClick = {
                         val resetSuccess = myDpm.resetPasswordWithToken(myComponent,newPwd,myByteArray,resetPwdFlag)
-                        if(resetSuccess){ Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show();newPwd=""}
-                        else{ Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show() }
+                        if(resetSuccess){ Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show();newPwd=""}
+                        else{ Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show() }
                         confirmed=false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
                     enabled = confirmed&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("使用令牌重置密码")
+                    Text(stringResource(R.string.reset_password_with_token))
                 }
             }
             Button(
                 onClick = {
                     val resetSuccess = myDpm.resetPassword(newPwd,resetPwdFlag)
-                    if(resetSuccess){ Toast.makeText(myContext, "设置成功", Toast.LENGTH_SHORT).show();newPwd=""}
-                    else{ Toast.makeText(myContext, "设置失败", Toast.LENGTH_SHORT).show() }
+                    if(resetSuccess){ Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show(); newPwd=""}
+                    else{ Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show() }
                     confirmed=false
                 },
                 enabled = confirmed,
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("重置密码（弃用）")
+                Text(stringResource(R.string.reset_password_deprecated))
             }
         }
 
@@ -212,23 +214,22 @@ fun Password(){
             {myDpm.getPasswordExpiration(null).toString()},{ic -> myDpm.setPasswordExpirationTimeout(myComponent, ic.toLong()) })
         PasswordItem(R.string.pwd_history,R.string.pwd_history_desc,R.string.pwd_history_textfield,true,
             {myDpm.getPasswordHistoryLength(null).toString()},{ic -> myDpm.setPasswordHistoryLength(myComponent, ic.toInt()) })
-        PasswordItem(R.string.max_time_to_lock,R.string.max_time_to_lock_desc,R.string.max_time_to_lock_textfield,true,
+        PasswordItem(R.string.max_time_to_lock,R.string.max_time_to_lock_desc,R.string.time_unit_ms,true,
             {myDpm.getMaximumTimeToLock(myComponent).toString()},{ic -> myDpm.setMaximumTimeToLock(myComponent,ic.toLong())})
 
         if(VERSION.SDK_INT>=31){
             Column(modifier = sections()) {
                 val passwordComplexity = mapOf(
-                    PASSWORD_COMPLEXITY_NONE to "无（允许不设密码）",
-                    PASSWORD_COMPLEXITY_LOW to "低（允许图案和连续性）",
-                    PASSWORD_COMPLEXITY_MEDIUM to "中（无连续性，至少4位）",
-                    PASSWORD_COMPLEXITY_HIGH to "高（无连续性，至少6位）"
+                    PASSWORD_COMPLEXITY_NONE to stringResource(R.string.password_complexity_none),
+                    PASSWORD_COMPLEXITY_LOW to stringResource(R.string.password_complexity_low),
+                    PASSWORD_COMPLEXITY_MEDIUM to stringResource(R.string.password_complexity_medium),
+                    PASSWORD_COMPLEXITY_HIGH to stringResource(R.string.password_complexity_high)
                 ).toList()
                 var selectedItem by remember{ mutableIntStateOf(passwordComplexity[0].first) }
                 if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){
                     selectedItem=myDpm.requiredPasswordComplexity
                 }
-                Text(text = "密码复杂度要求", style = typography.titleLarge,color = titleColor)
-                Text(text = "不是实际密码复杂度", style = bodyTextStyle)
+                Text(text = stringResource(R.string.required_password_complexity), style = typography.titleLarge,color = titleColor)
                 RadioButtonItem(passwordComplexity[0].second,{selectedItem==passwordComplexity[0].first},{selectedItem=passwordComplexity[0].first})
                 RadioButtonItem(passwordComplexity[1].second,{selectedItem==passwordComplexity[1].first},{selectedItem=passwordComplexity[1].first})
                 RadioButtonItem(passwordComplexity[2].second,{selectedItem==passwordComplexity[2].first},{selectedItem=passwordComplexity[2].first})
@@ -236,24 +237,24 @@ fun Password(){
                 if(isWear){
                     colorScheme.error}else{
                     colorScheme.onBackground})
-                Text(text = "连续性：密码重复（6666）或密码递增递减（4321、2468）", modifier = Modifier.padding(vertical = 3.dp), style = bodyTextStyle)
+                Text(text = stringResource(R.string.password_ordered_desc), modifier = Modifier.padding(vertical = 3.dp), style = bodyTextStyle)
                 Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
                     Button(
                         onClick = {
                             myDpm.requiredPasswordComplexity = selectedItem
-                            Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                         },
                         enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm),
                         modifier = if(isWear){Modifier.fillMaxWidth()}else{Modifier.fillMaxWidth(0.4F)}
                     ) {
-                        Text(text = "应用")
+                        Text(text = stringResource(R.string.apply))
                     }
                     if(!isWear){
                         Button(
                             onClick = {myContext.startActivity(Intent(ACTION_SET_NEW_PASSWORD))},
                             modifier = Modifier.fillMaxWidth(0.95F)
                         ){
-                            Text("要求设置新密码")
+                            Text(stringResource(R.string.require_set_new_password))
                         }
                     }
                 }
@@ -262,7 +263,7 @@ fun Password(){
                         onClick = {myContext.startActivity(Intent(ACTION_SET_NEW_PASSWORD))},
                         modifier = Modifier.fillMaxWidth()
                     ){
-                        Text("要求设置新密码")
+                        Text(stringResource(R.string.require_set_new_password))
                     }
                 }
             }
@@ -306,25 +307,25 @@ fun Password(){
                 }
                 calculateCustomFeature()
             }
-            Text(text = "锁屏功能", style = typography.titleLarge)
-            RadioButtonItem("允许全部",{state==0},{state=0})
-            RadioButtonItem("禁用全部",{state==1},{state=1})
-            RadioButtonItem("自定义",{state==2},{state=2})
+            Text(text = stringResource(R.string.keyguard_disabled_features), style = typography.titleLarge)
+            RadioButtonItem(stringResource(R.string.enable_all),{state==0},{state=0})
+            RadioButtonItem(stringResource(R.string.disable_all),{state==1},{state=1})
+            RadioButtonItem(stringResource(R.string.custom),{state==2},{state=2})
             AnimatedVisibility(state==2) {
                 Column {
-                    CheckBoxItem("禁用小工具(安卓5以下)",{widgets},{widgets=!widgets})
-                    CheckBoxItem("禁用相机",{camera},{camera=!camera})
-                    CheckBoxItem("禁用通知",{notification},{notification=!notification})
-                    CheckBoxItem("禁用未经编辑的通知",{unredacted},{unredacted=!unredacted})
-                    CheckBoxItem("禁用可信代理",{agents},{agents=!agents})
-                    CheckBoxItem("禁用指纹解锁",{fingerprint},{fingerprint=!fingerprint})
-                    if(VERSION.SDK_INT>=24){ CheckBoxItem("禁止远程输入(弃用)",{remote}, {remote=!remote}) }
+                    CheckBoxItem(stringResource(R.string.keyguard_disabled_features_widgets),{widgets},{widgets=!widgets})
+                    CheckBoxItem(stringResource(R.string.keyguard_disabled_features_camera),{camera},{camera=!camera})
+                    CheckBoxItem(stringResource(R.string.keyguard_disabled_features_notification),{notification},{notification=!notification})
+                    CheckBoxItem(stringResource(R.string.keyguard_disabled_features_unredacted_notification),{unredacted},{unredacted=!unredacted})
+                    CheckBoxItem(stringResource(R.string.keyguard_disabled_features_trust_agents),{agents},{agents=!agents})
+                    CheckBoxItem(stringResource(R.string.keyguard_disabled_features_fingerprint),{fingerprint},{fingerprint=!fingerprint})
+                    if(VERSION.SDK_INT>=24){ CheckBoxItem(stringResource(R.string.keyguard_disabled_features_remote_input),{remote}, {remote=!remote}) }
                     if(VERSION.SDK_INT>=28){
-                        CheckBoxItem("禁用人脸解锁",{face},{face=!face})
-                        CheckBoxItem("禁用虹膜解锁(?)",{iris},{iris=!iris})
-                        CheckBoxItem("禁用生物识别",{biometrics},{biometrics=!biometrics})
+                        CheckBoxItem(stringResource(R.string.keyguard_disabled_features_face),{face},{face=!face})
+                        CheckBoxItem(stringResource(R.string.keyguard_disabled_features_iris),{iris},{iris=!iris})
+                        CheckBoxItem(stringResource(R.string.keyguard_disabled_features_biometrics),{biometrics},{biometrics=!biometrics})
                     }
-                    if(VERSION.SDK_INT>=34){ CheckBoxItem("禁用快捷方式",{shortcuts},{shortcuts=!shortcuts}) }
+                    if(VERSION.SDK_INT>=34){ CheckBoxItem(stringResource(R.string.keyguard_disabled_features_shortcuts),{shortcuts},{shortcuts=!shortcuts}) }
                 }
             }
             Button(
@@ -346,13 +347,13 @@ fun Password(){
                         if(widgets){result+=KEYGUARD_DISABLE_WIDGETS_ALL}
                     }
                     myDpm.setKeyguardDisabledFeatures(myComponent,result)
-                    Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                     calculateCustomFeature()
                 },
                 enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "应用")
+                Text(text = stringResource(R.string.apply))
             }
         }
 
@@ -367,23 +368,22 @@ fun Password(){
         }
         Column(modifier = sections(onClick = {passwordQualityExpand=true;launchScrollDown=true}, clickable = !passwordQualityExpand).animateContentSize(animationSpec = scrollAnim())) {
             val passwordQuality = mapOf(
-                PASSWORD_QUALITY_UNSPECIFIED to "未指定",
-                PASSWORD_QUALITY_SOMETHING to "需要密码或图案，不管复杂度",
-                PASSWORD_QUALITY_ALPHABETIC to "至少1个字母",
-                PASSWORD_QUALITY_NUMERIC to "至少1个数字",
-                PASSWORD_QUALITY_ALPHANUMERIC to "数字字母各至少一个",
-                PASSWORD_QUALITY_BIOMETRIC_WEAK to "生物识别（弱）",
-                PASSWORD_QUALITY_NUMERIC_COMPLEX to "复杂数字（无连续性）",
-                PASSWORD_QUALITY_COMPLEX to "自定义（暂不支持）",
+                PASSWORD_QUALITY_UNSPECIFIED to stringResource(R.string.password_quality_unspecified),
+                PASSWORD_QUALITY_SOMETHING to stringResource(R.string.password_quality_something),
+                PASSWORD_QUALITY_ALPHABETIC to stringResource(R.string.password_quality_alphabetic),
+                PASSWORD_QUALITY_NUMERIC to stringResource(R.string.password_quality_numeric),
+                PASSWORD_QUALITY_ALPHANUMERIC to stringResource(R.string.password_quality_alphanumeric),
+                PASSWORD_QUALITY_BIOMETRIC_WEAK to stringResource(R.string.password_quality_biometrics_weak),
+                PASSWORD_QUALITY_NUMERIC_COMPLEX to stringResource(R.string.password_quality_numeric_complex),
+                PASSWORD_QUALITY_COMPLEX to stringResource(R.string.custom)+"（${stringResource(R.string.unsupported)}）",
             ).toList()
             var selectedItem by remember{ mutableIntStateOf(passwordQuality[0].first) }
             if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){ selectedItem=myDpm.getPasswordQuality(myComponent) }
-            Text(text = "密码质量要求", style = typography.titleLarge,color = titleColor)
+            Text(text = stringResource(R.string.required_password_quality), style = typography.titleLarge,color = titleColor)
             if(passwordQualityExpand){
-                Text(text = "不是实际密码质量", style = bodyTextStyle)
-                Text(text = "设置密码复杂度将会取代密码质量", style = bodyTextStyle)
+                Text(text = stringResource(R.string.password_complexity_instead_password_quality), style = bodyTextStyle)
             }
-            if(VERSION.SDK_INT>=31){ Text(text = "已弃用，请使用上面的”密码复杂度要求“。点击展开", color = colorScheme.error, style = bodyTextStyle) }
+            if(VERSION.SDK_INT>=31){ Text(text = stringResource(R.string.password_quality_deprecated_desc), color = colorScheme.error, style = bodyTextStyle) }
             if(passwordQualityExpand){
             RadioButtonItem(passwordQuality[0].second,{selectedItem==passwordQuality[0].first},{selectedItem=passwordQuality[0].first})
             RadioButtonItem(passwordQuality[1].second,{selectedItem==passwordQuality[1].first},{selectedItem=passwordQuality[1].first})
@@ -393,20 +393,20 @@ fun Password(){
             RadioButtonItem(passwordQuality[5].second,{selectedItem==passwordQuality[5].first},{selectedItem=passwordQuality[5].first})
             RadioButtonItem(passwordQuality[6].second,{selectedItem==passwordQuality[6].first},{selectedItem=passwordQuality[6].first})
             RadioButtonItem(passwordQuality[7].second,{selectedItem==passwordQuality[7].first},{selectedItem=passwordQuality[7].first})
-            Text(text = "连续性：密码重复（6666）或密码递增递减（4321、2468）", modifier = Modifier.padding(vertical = 3.dp), style = bodyTextStyle)
+            Text(text = stringResource(R.string.password_ordered_desc), modifier = Modifier.padding(vertical = 3.dp), style = bodyTextStyle)
             Button(
                 onClick = {
                     myDpm.setPasswordQuality(myComponent,selectedItem)
-                    Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                 },
                 enabled = isDeviceOwner(myDpm) || isProfileOwner(myDpm),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("应用")
+                Text(stringResource(R.string.apply))
             }
             if(VERSION.SDK_INT<31){
             Button(onClick = {myContext.startActivity(Intent(ACTION_SET_NEW_PASSWORD))}){
-                Text("要求设置新密码")
+                Text(stringResource(R.string.require_set_new_password))
             }}
             }
         }
@@ -465,12 +465,12 @@ private fun PasswordItem(
 }
 
 fun activateToken(myContext: Context){
-    val desc = "在这里激活密码重置令牌"
+    val desc = myContext.getString(R.string.activate_reset_password_token_here)
     val keyguardManager = myContext.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
-    val confirmIntent = keyguardManager.createConfirmDeviceCredentialIntent(null, desc)
+    val confirmIntent = keyguardManager.createConfirmDeviceCredentialIntent(myContext.getString(R.string.app_name), desc)
     if (confirmIntent != null) {
         startActivity(myContext,confirmIntent, null)
     } else {
-        Toast.makeText(myContext, "激活失败", Toast.LENGTH_SHORT).show()
+        Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show()
     }
 }

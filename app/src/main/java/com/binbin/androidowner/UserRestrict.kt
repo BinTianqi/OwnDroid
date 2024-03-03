@@ -78,7 +78,7 @@ fun UserRestriction(){
         SectionTab("更多连接",{connectivityVisible}) { connectivityVisible=!connectivityVisible }
         AnimatedVisibility(connectivityVisible) {
             Column {
-                for(connectivityItem in RestrictionData().connectivity()){
+                for(connectivityItem in RestrictionData().connectivity(myContext)){
                     UserRestrictionItem(connectivityItem.restriction,connectivityItem.name,connectivityItem.desc,connectivityItem.ico)
                 }
             }
@@ -86,7 +86,7 @@ fun UserRestriction(){
         SectionTab("应用",{applicationVisible}) { applicationVisible=!applicationVisible }
         AnimatedVisibility(applicationVisible) {
             Column {
-                for(applicationItem in RestrictionData().application()){
+                for(applicationItem in RestrictionData().application(myContext)){
                     UserRestrictionItem(applicationItem.restriction,applicationItem.name,applicationItem.desc,applicationItem.ico)
                 }
             }
@@ -110,7 +110,7 @@ fun UserRestriction(){
         SectionTab("其他",{otherVisible}) { otherVisible=!otherVisible }
         AnimatedVisibility(otherVisible) {
             Column {
-                for(otherItem in RestrictionData().other()){
+                for(otherItem in RestrictionData().other(myContext)){
                     UserRestrictionItem(otherItem.restriction,otherItem.name,otherItem.desc,otherItem.ico)
                 }
             }
@@ -214,7 +214,7 @@ private class RestrictionData{
         if(VERSION.SDK_INT>=24){list += Restriction(UserManager.DISALLOW_DATA_ROAMING,R.string.data_roaming,"",R.drawable.network_cell_fill0)}
         if(VERSION.SDK_INT>=34){
             list += Restriction(UserManager.DISALLOW_CELLULAR_2G,R.string.cellular_2g,"",R.drawable.network_cell_fill0)
-            list += Restriction(UserManager.DISALLOW_ULTRA_WIDEBAND_RADIO,R.string.ultra_wideband_radio,"",R.drawable.android_fill0)
+            list += Restriction(UserManager.DISALLOW_ULTRA_WIDEBAND_RADIO,R.string.ultra_wideband_radio,"",R.drawable.wifi_tethering_fill0)
         }
         if(VERSION.SDK_INT>=33){
             list += Restriction(UserManager.DISALLOW_ADD_WIFI_CONFIG,R.string.add_wifi_conf,"",R.drawable.wifi_fill0)
@@ -233,7 +233,7 @@ private class RestrictionData{
         list += Restriction(UserManager.DISALLOW_OUTGOING_CALLS,R.string.outgoing_calls,"",R.drawable.phone_forwarded_fill0)
         return list
     }
-    fun connectivity():List<Restriction>{
+    fun connectivity(myContext:Context):List<Restriction>{
         val list:MutableList<Restriction> = mutableListOf()
         if(VERSION.SDK_INT>=26){
             list += Restriction(UserManager.DISALLOW_BLUETOOTH,R.string.bluetooth,"",R.drawable.bluetooth_fill0)
@@ -243,17 +243,17 @@ private class RestrictionData{
         if(VERSION.SDK_INT>=28){list += Restriction(UserManager.DISALLOW_CONFIG_LOCATION,R.string.config_location,"",R.drawable.location_on_fill0)}
         if(VERSION.SDK_INT>=22){list += Restriction(UserManager.DISALLOW_OUTGOING_BEAM,R.string.outgoing_beam,"",R.drawable.nfc_fill0)}
         list += Restriction(UserManager.DISALLOW_USB_FILE_TRANSFER,R.string.usb_file_transfer,"",R.drawable.usb_fill0)
-        list += Restriction(UserManager.DISALLOW_MOUNT_PHYSICAL_MEDIA,R.string.mount_physical_media, "包括TF卡和USB-OTG",R.drawable.sd_card_fill0)
+        list += Restriction(UserManager.DISALLOW_MOUNT_PHYSICAL_MEDIA,R.string.mount_physical_media, myContext.getString(R.string.mount_physical_media_desc),R.drawable.sd_card_fill0)
         if(VERSION.SDK_INT>=28){list += Restriction(UserManager.DISALLOW_PRINTING,R.string.printing,"",R.drawable.print_fill0)}
         return list
     }
-    fun application():List<Restriction>{
+    fun application(myContext: Context):List<Restriction>{
         val list:MutableList<Restriction> = mutableListOf()
         list += Restriction(UserManager.DISALLOW_INSTALL_APPS,R.string.install_apps,"",R.drawable.android_fill0)
         if(VERSION.SDK_INT>=29){list += Restriction(UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY,R.string.install_unknown_src_globally,"",R.drawable.android_fill0)}
         list += Restriction(UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES,R.string.inst_unknown_src,"",R.drawable.android_fill0)
         list += Restriction(UserManager.DISALLOW_UNINSTALL_APPS,R.string.uninstall_apps,"",R.drawable.delete_fill0)
-        list += Restriction(UserManager.DISALLOW_APPS_CONTROL,R.string.apps_ctrl, "清空缓存/清空内部存储",R.drawable.apps_fill0)
+        list += Restriction(UserManager.DISALLOW_APPS_CONTROL,R.string.apps_ctrl, myContext.getString(R.string.apps_control_desc),R.drawable.apps_fill0)
         if(VERSION.SDK_INT>=34){ list += Restriction(UserManager.DISALLOW_CONFIG_DEFAULT_APPS,R.string.config_default_apps,"",R.drawable.apps_fill0) }
         return list
     }
@@ -278,14 +278,14 @@ private class RestrictionData{
         list += Restriction(UserManager.DISALLOW_REMOVE_USER,R.string.remove_user,"",R.drawable.account_circle_fill0)
         if(VERSION.SDK_INT>=28){list += Restriction(UserManager.DISALLOW_USER_SWITCH,R.string.switch_user,"",R.drawable.account_circle_fill0)}
         if(VERSION.SDK_INT>=24){list += Restriction(UserManager.DISALLOW_SET_USER_ICON,R.string.set_user_icon,"",R.drawable.account_circle_fill0)}
-        list += Restriction(UserManager.DISALLOW_CROSS_PROFILE_COPY_PASTE,R.string.cross_profile_copy, "在不同用户和工作资料之间复制粘贴",R.drawable.content_paste_fill0)
+        list += Restriction(UserManager.DISALLOW_CROSS_PROFILE_COPY_PASTE,R.string.cross_profile_copy, "",R.drawable.content_paste_fill0)
         if(VERSION.SDK_INT>=28){
             list += Restriction(UserManager.DISALLOW_SHARE_INTO_MANAGED_PROFILE,R.string.share_into_managed_profile,"",R.drawable.share_fill0)
-            list += Restriction(UserManager.DISALLOW_UNIFIED_PASSWORD,R.string.unifiied_pwd,"",R.drawable.work_fill0)
+            list += Restriction(UserManager.DISALLOW_UNIFIED_PASSWORD,R.string.unified_pwd,"",R.drawable.work_fill0)
         }
         return list
     }
-    fun other():List<Restriction>{
+    fun other(myContext: Context):List<Restriction>{
         val list:MutableList<Restriction> = mutableListOf()
         if(VERSION.SDK_INT>=26){ list += Restriction(UserManager.DISALLOW_AUTOFILL,R.string.autofill, "",R.drawable.password_fill0) }
         list += Restriction(UserManager.DISALLOW_CONFIG_CREDENTIALS,R.string.config_credentials,"",R.drawable.android_fill0)
@@ -293,10 +293,10 @@ private class RestrictionData{
             list += Restriction(UserManager.DISALLOW_CONTENT_CAPTURE,R.string.content_capture,"",R.drawable.android_fill0)
             list += Restriction(UserManager.DISALLOW_CONTENT_SUGGESTIONS,R.string.content_suggestions,"",R.drawable.android_fill0)
         }
-        list += Restriction(UserManager.DISALLOW_CREATE_WINDOWS,R.string.create_windows, "可能包括Toast和浮动通知",R.drawable.web_asset)
+        list += Restriction(UserManager.DISALLOW_CREATE_WINDOWS,R.string.create_windows, myContext.getString(R.string.create_windows_desc),R.drawable.web_asset)
         if(VERSION.SDK_INT>=24){list += Restriction(UserManager.DISALLOW_SET_WALLPAPER,R.string.set_wallpaper,"",R.drawable.wallpaper_fill0)}
         if(VERSION.SDK_INT>=34){ list += Restriction(UserManager.DISALLOW_GRANT_ADMIN,R.string.grant_admin,"",R.drawable.android_fill0) }
-        if(VERSION.SDK_INT>=23){ list += Restriction(UserManager.DISALLOW_FUN,R.string.`fun`,"可能会影响谷歌商店的游戏",R.drawable.stadia_controller_fill0) }
+        if(VERSION.SDK_INT>=23){ list += Restriction(UserManager.DISALLOW_FUN,R.string.`fun`, myContext.getString(R.string.fun_desc),R.drawable.stadia_controller_fill0) }
         list += Restriction(UserManager.DISALLOW_MODIFY_ACCOUNTS,R.string.modify_accounts,"",R.drawable.manage_accounts_fill0)
         if(VERSION.SDK_INT>=28){
             list += Restriction(UserManager.DISALLOW_CONFIG_LOCALE,R.string.config_locale,"",R.drawable.language_fill0)

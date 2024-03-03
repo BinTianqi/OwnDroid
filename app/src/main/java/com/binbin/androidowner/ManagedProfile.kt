@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -45,19 +46,19 @@ fun ManagedProfile() {
     Column(modifier = Modifier.verticalScroll(rememberScrollState())){
         
         Column(modifier = sections()){
-            Text(text = "信息", style = typography.titleLarge, color = titleColor)
+            Text(text = stringResource(R.string.info), style = typography.titleLarge, color = titleColor)
             if(VERSION.SDK_INT>=24){
                 if(isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
-                    Text(text = "已是工作资料")
+                    Text(text = stringResource(R.string.is_already_work_profile))
                 }else{
-                    Text(text = "可以创建工作资料：${myDpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE)}", style = bodyTextStyle)
+                    Text(text = stringResource(R.string.able_to_create_work_profile, myDpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE)), style = bodyTextStyle)
                     if(isDeviceOwner(myDpm)){
-                        Text(text = "Device owner不能创建工作资料", style = bodyTextStyle)
+                        Text(text = stringResource(R.string.device_owner_cannot_create_work_profile), style = bodyTextStyle)
                     }
                 }
             }
             if(VERSION.SDK_INT>=30){
-                Text(text = "由组织拥有的工作资料：${myDpm.isOrganizationOwnedDeviceWithManagedProfile}", style = bodyTextStyle)
+                Text(text = stringResource(R.string.is_org_owned_profile, myDpm.isOrganizationOwnedDeviceWithManagedProfile), style = bodyTextStyle)
             }
             if(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent))){
                 Button(
@@ -80,26 +81,25 @@ fun ManagedProfile() {
             var expand by remember{mutableStateOf(false)}
             Column(modifier = sections(colorScheme.tertiaryContainer,{expand=true},!expand).animateContentSize(animationSpec = scrollAnim())){
                 if(expand){
-                    Text(text = "组织拥有的工作资料", color = colorScheme.onTertiaryContainer, style = typography.titleLarge)
+                    Text(text = stringResource(R.string.org_owned_work_profile), color = colorScheme.onTertiaryContainer, style = typography.titleLarge)
                     SelectionContainer {
                         Text(text = "使用ADB执行以下命令，或者使用Shizuku")
                         Text(
-                            text = "adb shell \"dpm mark-profile-owner-on-organization-owned-device --user ${Binder.getCallingUid()/100000}" +
-                                    " com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver\"",
+                            text = stringResource(R.string.activate_org_profile_command, Binder.getCallingUid()/100000),
                             color = colorScheme.onTertiaryContainer, style = bodyTextStyle
                         )
                     }
                 }else{
-                    Text(text = "成为组织拥有的工作资料", color = colorScheme.onTertiaryContainer)
-                    Text(text = "点击展开", style = bodyTextStyle)
+                    Text(text = stringResource(R.string.become_org_profile), color = colorScheme.onTertiaryContainer)
+                    Text(text = stringResource(R.string.touch_to_view_command), style = bodyTextStyle)
                 }
             }
         }
         if(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE))){
             Column(modifier = sections()) {
-                Text(text = "工作资料", style = typography.titleLarge, color = titleColor)
+                Text(text = stringResource(R.string.work_profile), style = typography.titleLarge, color = titleColor)
                 var skipEncrypt by remember{mutableStateOf(false)}
-                if(VERSION.SDK_INT>=24){CheckBoxItem("跳过加密",{skipEncrypt},{skipEncrypt=!skipEncrypt})}
+                if(VERSION.SDK_INT>=24){CheckBoxItem(stringResource(R.string.skip_encryption),{skipEncrypt},{skipEncrypt=!skipEncrypt})}
                 Button(
                     onClick = {
                         try {
@@ -113,12 +113,12 @@ fun ManagedProfile() {
                             if(VERSION.SDK_INT>=33){intent.putExtra(EXTRA_PROVISIONING_ALLOW_OFFLINE,true)}
                             createManagedProfile.launch(intent)
                         }catch(e:ActivityNotFoundException){
-                            Toast.makeText(myContext,"不支持",Toast.LENGTH_SHORT).show()
+                            Toast.makeText(myContext,myContext.getString(R.string.unsupported),Toast.LENGTH_SHORT).show()
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("创建")
+                    Text(stringResource(R.string.create))
                 }
             }
         }
@@ -127,7 +127,7 @@ fun ManagedProfile() {
             Row(modifier = sections(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically){
                 var suspended by remember{mutableStateOf(false)}
                 suspended = myDpm.getPersonalAppsSuspendedReasons(myComponent)!=PERSONAL_APPS_NOT_SUSPENDED
-                Text(text = "挂起个人应用", style = typography.titleLarge, color = titleColor)
+                Text(text = stringResource(R.string.suspend_personal_app), style = typography.titleLarge, color = titleColor)
                 Switch(
                     checked = suspended,
                     onCheckedChange ={
@@ -142,24 +142,24 @@ fun ManagedProfile() {
             Column(modifier = sections()){
                 var time by remember{mutableStateOf("")}
                 time = myDpm.getManagedProfileMaximumTimeOff(myComponent).toString()
-                Text(text = "资料关闭时间", style = typography.titleLarge, color = titleColor)
-                Text(text = "工作资料处于关闭状态的时间达到该限制后会挂起个人应用，0为无限制", style = bodyTextStyle)
-                Text(text = "个人应用已经因此挂起：${myDpm.getPersonalAppsSuspendedReasons(myComponent)==PERSONAL_APPS_SUSPENDED_PROFILE_TIMEOUT}")
+                Text(text = stringResource(R.string.profile_max_time_off), style = typography.titleLarge, color = titleColor)
+                Text(text = stringResource(R.string.profile_max_time_out_desc), style = bodyTextStyle)
+                Text(text = stringResource(R.string.personal_app_suspended_because_timeout, myDpm.getPersonalAppsSuspendedReasons(myComponent)==PERSONAL_APPS_SUSPENDED_PROFILE_TIMEOUT))
                 OutlinedTextField(
                     value = time, onValueChange = {time=it}, modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp),
-                    label = {Text("时间(ms)")},
+                    label = {Text(stringResource(R.string.time_unit_ms))},
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
                 )
-                Text(text = "不能少于72小时", style = bodyTextStyle)
+                Text(text = stringResource(R.string.cannot_less_than_72_hours), style = bodyTextStyle)
                 Button(
                     onClick = {
                         myDpm.setManagedProfileMaximumTimeOff(myComponent,time.toLong())
-                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("应用")
+                    Text(stringResource(R.string.apply))
                 }
             }
         }
@@ -167,7 +167,7 @@ fun ManagedProfile() {
         if(isProfileOwner(myDpm)&&(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)))){
             Column(modifier = sections()){
                 var action by remember{mutableStateOf("")}
-                Text(text = "Intent过滤器", style = typography.titleLarge, color = titleColor)
+                Text(text = stringResource(R.string.intent_filter), style = typography.titleLarge, color = titleColor)
                 OutlinedTextField(
                     value = action, onValueChange = {action = it},
                     label = {Text("Action")},
@@ -178,31 +178,31 @@ fun ManagedProfile() {
                 Button(
                     onClick = {
                         myDpm.addCrossProfileIntentFilter(myComponent, IntentFilter(action), FLAG_PARENT_CAN_ACCESS_MANAGED)
-                        Toast.makeText(myContext,"成功",Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, myContext.getString(R.string.success),Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("添加（工作到个人）")
+                    Text(stringResource(R.string.add_intent_filter_work_to_personal))
                 }
                 Button(
                     onClick = {
                         myDpm.addCrossProfileIntentFilter(myComponent, IntentFilter(action), FLAG_MANAGED_CAN_ACCESS_PARENT)
-                        Toast.makeText(myContext,"成功",Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, myContext.getString(R.string.success),Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("添加（个人到工作）")
+                    Text(stringResource(R.string.add_intent_filter_personal_to_work))
                 }
                 Button(
                     onClick = {
                         myDpm.clearCrossProfileIntentFilters(myComponent)
                         myDpm.addCrossProfileIntentFilter(myComponent, IntentFilter("com.binbin.androidowner.MAIN_ACTION"), FLAG_MANAGED_CAN_ACCESS_PARENT)
                         myDpm.addCrossProfileIntentFilter(myComponent, IntentFilter("com.binbin.androidowner.MAIN_ACTION"), FLAG_PARENT_CAN_ACCESS_MANAGED)
-                        Toast.makeText(myContext,"成功",Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, myContext.getString(R.string.success),Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.fillMaxWidth()
                 ){
-                    Text("清除所有过滤器")
+                    Text(stringResource(R.string.clear_cross_profile_filters))
                 }
             }
         }
@@ -210,28 +210,28 @@ fun ManagedProfile() {
         if(VERSION.SDK_INT>=31&&(isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent))){
             Column(modifier = sections()){
                 var orgId by remember{mutableStateOf("")}
-                Text(text = "组织ID", style = typography.titleLarge, color = titleColor)
+                Text(text = stringResource(R.string.org_id), style = typography.titleLarge, color = titleColor)
                 OutlinedTextField(
                     value = orgId, onValueChange = {orgId=it},
-                    label = {Text("组织ID")},
+                    label = {Text(stringResource(R.string.org_id))},
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
                     modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp)
                 )
                 AnimatedVisibility(orgId.length !in 6..64) {
-                    Text(text = "长度应在6~64个字符之间", style = bodyTextStyle)
+                    Text(text = stringResource(R.string.length_6_to_64), style = bodyTextStyle)
                 }
                 Button(
                     onClick = {
                         myDpm.setOrganizationId(orgId)
-                        Toast.makeText(myContext,"成功",Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, myContext.getString(R.string.success),Toast.LENGTH_SHORT).show()
                     },
                     enabled = orgId.length in 6..64,
                     modifier = Modifier.fillMaxWidth()
                 ){
-                    Text("应用")
+                    Text(stringResource(R.string.apply))
                 }
-                Text(text = "设置组织ID后才能获取设备唯一标识码", style = bodyTextStyle)
+                Text(text = stringResource(R.string.get_specific_id_after_set_org_id), style = bodyTextStyle)
             }
         }
         
@@ -248,18 +248,18 @@ fun ActivateManagedProfile(navCtrl: NavHostController){
     myDpm.addCrossProfileIntentFilter(myComponent, IntentFilter("com.binbin.androidowner.MAIN_ACTION"), FLAG_MANAGED_CAN_ACCESS_PARENT)
     myDpm.addCrossProfileIntentFilter(myComponent, IntentFilter("com.binbin.androidowner.MAIN_ACTION"), FLAG_PARENT_CAN_ACCESS_MANAGED)
     Column(modifier = Modifier.verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally){
-        Text(text = "激活工作资料", style = typography.titleLarge)
-        Text(text = "你还没有激活工作资料，请立即激活")
+        Text(text = stringResource(R.string.activate_managed_profile), style = typography.titleLarge)
+        Text(text = stringResource(R.string.activate_managed_profile_desc))
         Button(
             onClick = {
                 myDpm.setProfileEnabled(myComponent)
                 navCtrl.popBackStack("HomePage",false)
                 sharedPref.edit().putBoolean("ManagedProfileActivated",true).apply()
-                Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth().padding(8.dp)
         ) {
-            Text("激活")
+            Text(stringResource(R.string.activate))
         }
     }
 }

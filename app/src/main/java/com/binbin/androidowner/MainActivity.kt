@@ -125,9 +125,9 @@ fun MyScaffold(){
         "UserManage" to R.string.user_manage,
         "ApplicationManage" to R.string.app_manage,
         "UserRestriction" to R.string.user_restrict,
-        "Password" to R.string.password,
+        "Password" to R.string.password_and_keyguard,
         "AppSetting" to R.string.setting,
-        "ShizukuActivate" to R.string.shizuku_activate
+        "ShizukuActivate" to R.string.shizuku
     )
     val topBarName = topBarNameMap[backStackEntry?.destination?.route]?: R.string.app_name
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
@@ -245,7 +245,7 @@ fun HomePage(navCtrl:NavHostController){
         HomePageItem(R.string.app_manage, R.drawable.apps_fill0, "ApplicationManage", navCtrl)
         HomePageItem(R.string.user_restrict, R.drawable.manage_accounts_fill0, "UserRestriction", navCtrl)
         HomePageItem(R.string.user_manage,R.drawable.account_circle_fill0,"UserManage",navCtrl)
-        HomePageItem(R.string.password, R.drawable.password_fill0, "Password",navCtrl)
+        HomePageItem(R.string.password_and_keyguard, R.drawable.password_fill0, "Password",navCtrl)
         HomePageItem(R.string.setting, R.drawable.info_fill0, "AppSetting",navCtrl)
         Spacer(Modifier.padding(vertical = 20.dp))
     }

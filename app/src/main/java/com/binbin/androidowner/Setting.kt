@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 
@@ -45,7 +46,7 @@ fun AppSetting(navCtrl:NavHostController){
             }
             if(VERSION.SDK_INT>=32){
                 Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 3.dp),horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "动态取色", style = typography.titleLarge, color = titleColor)
+                    Text(text = stringResource(R.string.dynamic_color), style = typography.titleLarge, color = titleColor)
                     Switch(
                         checked = sharedPref.getBoolean("dynamicColor",false),
                         onCheckedChange = {
@@ -54,22 +55,16 @@ fun AppSetting(navCtrl:NavHostController){
                         }
                     )
                 }
-                Text(text = "打开或关闭动态取色需要重启应用", style = if(isWear){typography.bodyMedium}else{typography.bodyLarge})
+                Text(text = stringResource(R.string.dynamic_color_desc), style = if(isWear){typography.bodyMedium}else{typography.bodyLarge})
             }
         }
         Column(modifier = sections()) {
             Column(
                 modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 12.dp)
             ) {
-                Text(text = "关于", style = typography.headlineSmall, color = titleColor)
-                Text(text = "Android owner v$verName ($verCode)", style = bodyTextStyle)
-                Text(text = "使用安卓的Device admin、Device owner 、Profile owner，全方位掌控你的设备", style = bodyTextStyle)
-                Spacer(Modifier.padding(vertical = 4.dp))
-                Text(text = "这个应用只在AOSP和LineageOS上测试过，不确保每个功能都在其它系统可用，尤其是国内的魔改系统。", style = bodyTextStyle)
-                Spacer(Modifier.padding(vertical = 4.dp))
-                Text(text = "大部分功能都要Device owner权限", style = bodyTextStyle)
-                Spacer(Modifier.padding(vertical = 2.dp))
-                Text(text = "安卓版本越高，支持的功能越多", style = bodyTextStyle)
+                Text(text = stringResource(R.string.about), style = typography.headlineSmall, color = titleColor)
+                Text(text = stringResource(R.string.app_name)+" v$verName ($verCode)", style = bodyTextStyle)
+                Text(text = stringResource(R.string.about_desc), style = bodyTextStyle)
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -84,7 +79,7 @@ fun AppSetting(navCtrl:NavHostController){
                     modifier = Modifier.padding(start = 6.dp, end = 10.dp),
                     tint = colorScheme.primary
                 )
-                Text(text = "使用教程", style = typography.titleLarge, color = colorScheme.onPrimaryContainer, modifier = Modifier.padding(bottom = 2.dp))
+                Text(text = stringResource(R.string.user_guide), style = typography.titleLarge, color = colorScheme.onPrimaryContainer, modifier = Modifier.padding(bottom = 2.dp))
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -99,7 +94,7 @@ fun AppSetting(navCtrl:NavHostController){
                     modifier = Modifier.padding(start = 6.dp, end = 10.dp),
                     tint = colorScheme.primary
                 )
-                Text(text = "源代码", style = typography.titleLarge, color = colorScheme.onPrimaryContainer, modifier = Modifier.padding(bottom = 2.dp))
+                Text(text = stringResource(R.string.source_code), style = typography.titleLarge, color = colorScheme.onPrimaryContainer, modifier = Modifier.padding(bottom = 2.dp))
             }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -109,5 +104,5 @@ fun AppSetting(navCtrl:NavHostController){
 fun shareLink(inputContext:Context,link:String){
     val uri = Uri.parse(link)
     val intent = Intent(Intent.ACTION_VIEW, uri)
-    inputContext.startActivity(Intent.createChooser(intent, "Hello"),null)
+    inputContext.startActivity(Intent.createChooser(intent, "Open in browser"),null)
 }
