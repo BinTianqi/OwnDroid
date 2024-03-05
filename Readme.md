@@ -1,23 +1,23 @@
 # Android Owner
 
+[English](Readme-en.md)
+
 ### 简介
 
-使用安卓的Device Admin和Device Owner，全方位掌控你的设备。
+使用安卓的Device Admin和Device Owner特权，完全掌控你的设备。
 
 ### 优点
 
-- 开源。Device owner权限仅次于Root权限，十分危险，闭源软件的安全性没有保证
-- UI友好。易于上手，使用Material design 3，支持系统主题色，适配手机和手表的屏幕尺寸
-- 与时俱进。使用 Kotlin + Jetpack Compose，支持安卓14的新功能
+- 开源。Device owner权限可能比root权限更危险，闭源软件的安全性没有保证
+- 易于使用。应用中的功能清晰明了，并且在Github上有在线的 [使用指南](Guide.md)
+- 现代化。使用 Kotlin + Jetpack Compose，使用Material Design 3，适配安卓14的一些新功能
 - 维护中。这个项目正在不断更新。欢迎 Issue 和 Pull request
 
 ### 缺点
 
-功能不完整。如果追求功能齐全，谷歌官方的 [TestDPC](https://github.com/googlesamples/android-testdpc) 可能更适合你
+功能没有谷歌官方的 [TestDPC](https://github.com/googlesamples/android-testdpc) 那么多
 
 ### 功能
-
-适配了一些预见式返回动画（需安卓13或14），可能不太稳定，如果有问题请向我反馈
 
 - 系统
 - 网络
@@ -27,8 +27,6 @@
 - 用户管理
 - 密码与锁屏
 
-[用户指南](Guide.md)（一定要看，应用里只有功能的简单介绍）
-
 ### 正在开发的功能
 
 - 应用管理：包选择器（目前只能手动输入包名）
@@ -37,6 +35,8 @@
 - 安全日志和网络日志
 
 ### 许可证
+
+[License.md](License.md)
 
 > Copyright (C)  2024  BinTianqi
 >
