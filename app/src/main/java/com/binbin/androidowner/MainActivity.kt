@@ -21,8 +21,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -121,12 +121,9 @@ fun MyScaffold(){
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     Scaffold(
         topBar = {
-            if(!sharedPref.getBoolean("isWear",false)){
             TopAppBar(
-                title = {Text(text = stringResource(topBarName) , color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(bottom = 2.dp))},
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
+                title = {Text(text = stringResource(topBarName) , color = colorScheme.onSurface, modifier = Modifier.padding(bottom = 2.dp))},
+                colors = TopAppBarDefaults.topAppBarColors( containerColor = colorScheme.surfaceVariant ),
                 navigationIcon = {
                     AnimatedVisibility(
                         visible = topBarName!=R.string.app_name,
@@ -145,22 +142,6 @@ fun MyScaffold(){
                     }
                 }
             )
-            }
-        },
-        floatingActionButton = {
-            if(sharedPref.getBoolean("isWear",false)&&topBarName!=R.string.app_name){
-                FloatingActionButton(
-                    onClick = {
-                        focusMgr.clearFocus()
-                        navCtrl.navigateUp()
-                    },
-                    modifier = Modifier.size(35.dp),
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                    contentColor = MaterialTheme.colorScheme.tertiary
-                ) {
-                    Icon(imageVector = Icons.Outlined.Home, contentDescription = null)
-                }
-            }
         }
     ) {
         val profileInited = sharedPref.getBoolean("ManagedProfileActivated",false)
@@ -169,7 +150,10 @@ fun MyScaffold(){
         NavHost(
             navController = navCtrl,
             startDestination = "HomePage",
-            modifier = Modifier.fillMaxSize().padding(top = it.calculateTopPadding()).imePadding(),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color = if(isSystemInDarkTheme()) { colorScheme.background }else{ colorScheme.primary.copy(alpha = 0.05F) })
+                .padding(top = it.calculateTopPadding()).imePadding(),
             enterTransition = Animations(myContext).navHostEnterTransition,
             exitTransition = Animations(myContext).navHostExitTransition,
             popEnterTransition = Animations(myContext).navHostPopEnterTransition,
@@ -199,40 +183,35 @@ fun HomePage(navCtrl:NavHostController){
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val activateType =
         if(isDeviceOwner(myDpm)){"Device Owner"}
-        else if(isProfileOwner(myDpm)){if(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)){"工作资料"}else{"Profile Owner"}}
-        else if(myDpm.isAdminActive(myComponent)){"Device Admin"}
-        else{""}
-    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    val isWear = sharedPref.getBoolean("isWear",false)
+        else if(isProfileOwner(myDpm)){if(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)){stringResource(R.string.work_profile)}else{"Profile Owner"}}
+        else if(myDpm.isAdminActive(myComponent)){"Device Admin"} else{""}
     caCert = byteArrayOf()
     Column(modifier = Modifier.verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
-        if(isWear){ Spacer(Modifier.padding(vertical = 3.dp)) }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = if (!isWear) { 5.dp } else { 2.dp }, horizontal = if (!isWear) { 8.dp } else { 4.dp })
+                .padding(vertical = 8.dp, horizontal = 8.dp)
                 .clip(RoundedCornerShape(15))
-                .background(color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7F))
+                .background(color = colorScheme.primaryContainer)
                 .clickable(onClick = { navCtrl.navigate("Permissions") })
-                .padding(
-                    horizontal = 5.dp,
-                    vertical = if (!isWear) { 14.dp } else { 2.dp }
-                ),
+                .padding(vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Spacer(modifier = Modifier.fillMaxWidth(0.06F))
             Icon(
-                painter = painterResource(if(myDpm.isAdminActive(myComponent)){ R.drawable.check_fill0 }else{ R.drawable.block_fill0 }),
+                painter = painterResource(if(myDpm.isAdminActive(myComponent)){ R.drawable.check_circle_fill1 }else{ R.drawable.block_fill0 }),
                 contentDescription = null,
-                modifier = Modifier.padding(horizontal = if(!isWear){10.dp}else{6.dp}),
-                tint = MaterialTheme.colorScheme.tertiary
+                tint = colorScheme.primary
             )
+            Spacer(modifier = Modifier.fillMaxWidth(0.05F))
             Column {
                 Text(
-                    text = if(isDeviceOwner(myDpm)||myDpm.isAdminActive(myComponent)||isProfileOwner(myDpm)){"已激活"}else{"未激活"},
+                    text = if(myDpm.isAdminActive(myComponent)){"已激活"}else{"未激活"},
                     style = typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                    color = colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(bottom = 2.dp)
                 )
-                if(activateType!=""){ Text(activateType) }
+                if(activateType!=""){ Text(text = activateType, color = colorScheme.onPrimaryContainer, modifier = Modifier.padding(start = 2.dp)) }
             }
         }
         HomePageItem(R.string.device_ctrl, R.drawable.mobile_phone_fill0, "DeviceControl", navCtrl)
@@ -249,32 +228,28 @@ fun HomePage(navCtrl:NavHostController){
 
 @Composable
 fun HomePageItem(name:Int, imgVector:Int, navTo:String, myNav:NavHostController){
-    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    val isWear = sharedPref.getBoolean("isWear", false)
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = if (!isWear) { 4.dp } else { 2.dp }, horizontal = if (!isWear) { 7.dp } else { 4.dp })
-            .clip(RoundedCornerShape(15))
-            .background(color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7F))
+            .clip(RoundedCornerShape(25))
             .clickable(onClick = { myNav.navigate(navTo) })
-            .padding(vertical = if(isWear){6.dp}else{10.dp}, horizontal = 6.dp),
+            .padding(vertical = 13.dp),
         verticalAlignment = Alignment.CenterVertically
-
     ) {
+        Spacer(modifier = Modifier.fillMaxWidth(0.08F))
         Icon(
             painter = painterResource(imgVector),
             contentDescription = null,
-            modifier = Modifier.padding(horizontal = if(!sharedPref.getBoolean("isWear",false)){12.dp}else{6.dp}),
-            tint = MaterialTheme.colorScheme.primary
+            tint = colorScheme.onBackground
         )
+        Spacer(modifier = Modifier.fillMaxWidth(0.05F))
         Column {
             Text(
                 text = stringResource(name),
                 style = typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                color = colorScheme.onBackground,
+                modifier = Modifier.padding(bottom = 2.dp)
             )
-            Spacer(Modifier.padding(top = 2.dp))
         }
     }
 }
@@ -284,7 +259,7 @@ fun RadioButtonItem(
     text:String,
     selected:()->Boolean,
     operation:()->Unit,
-    textColor:Color = MaterialTheme.colorScheme.onBackground
+    textColor:Color = colorScheme.onBackground
 ){
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val isWear = sharedPref.getBoolean("isWear",false)
@@ -304,7 +279,7 @@ fun CheckBoxItem(
     text:String,
     checked:()->Boolean,
     operation:()->Unit,
-    textColor:Color = MaterialTheme.colorScheme.onBackground
+    textColor:Color = colorScheme.onBackground
 ){
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val isWear = sharedPref.getBoolean("isWear",false)
@@ -334,7 +309,7 @@ fun isProfileOwner(dpm:DevicePolicyManager): Boolean {
 @SuppressLint("ModifierFactoryExtensionFunction", "ComposableModifierFactory")
 @Composable
 @Stable
-fun sections(bgColor:Color=MaterialTheme.colorScheme.primaryContainer,onClick:()->Unit={},clickable:Boolean=false):Modifier{
+fun sections(bgColor:Color=colorScheme.primaryContainer,onClick:()->Unit={},clickable:Boolean=false):Modifier{
     val backgroundColor = if(isSystemInDarkTheme()){bgColor.copy(0.3F)}else{bgColor.copy(0.8F)}
     return if(!LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE).getBoolean("isWear",false)){
         Modifier
