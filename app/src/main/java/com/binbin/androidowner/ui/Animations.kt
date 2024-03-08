@@ -2,54 +2,55 @@ package com.binbin.androidowner.ui.theme
 
 import android.content.Context
 import androidx.compose.animation.*
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VisibilityThreshold
+import androidx.compose.animation.core.spring
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.navigation.NavBackStackEntry
 
 class Animations(myContext: Context){
-    private val springFade = tween<Float>(durationMillis = 150)
-    private val springSlide:SpringSpec<IntOffset> = SpringSpec(Spring.DampingRatioNoBouncy, Spring.StiffnessMediumLow, null)
+    private val fade: FiniteAnimationSpec<Float> = spring(stiffness = Spring.StiffnessMediumLow)
+    private val spring:FiniteAnimationSpec<IntOffset> = spring(stiffness = Spring.StiffnessMediumLow, visibilityThreshold = IntOffset.VisibilityThreshold)
     
-    private val navIconSpringSlide:SpringSpec<IntSize> = SpringSpec(Spring.DampingRatioNoBouncy, Spring.StiffnessMediumLow, null)
-    val navIconEnterTransition:EnterTransition = expandHorizontally(navIconSpringSlide) + fadeIn()
-    val navIconExitTransition:ExitTransition = shrinkHorizontally(navIconSpringSlide) + fadeOut()
+    val navIconEnterTransition:EnterTransition = expandHorizontally() + fadeIn()
+    val navIconExitTransition:ExitTransition = shrinkHorizontally() + fadeOut()
     
     private val screenWidth = myContext.resources.displayMetrics.widthPixels
-    private val initialOffsetValue = screenWidth/12
-    private val targetOffsetValue = screenWidth/12
+    private val initialOffsetValue = screenWidth/8
+    private val targetOffsetValue = screenWidth/8
     
     val navHostEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
-        fadeIn(animationSpec = springFade) +
+        fadeIn(animationSpec = fade) +
         slideIntoContainer(
-            animationSpec = springSlide,
+            animationSpec = spring,
             towards = AnimatedContentTransitionScope.SlideDirection.End,
             initialOffset = {initialOffsetValue}
         )
     }
     
     val navHostExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
-        fadeOut(animationSpec = springFade) +
+        fadeOut(animationSpec = fade) +
         slideOutOfContainer(
-            animationSpec = springSlide,
+            animationSpec = spring,
             towards = AnimatedContentTransitionScope.SlideDirection.Start,
             targetOffset = {-targetOffsetValue}
         )
     }
     
     val navHostPopEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
-        fadeIn(animationSpec = springFade) +
+        fadeIn(animationSpec = fade) +
         slideIntoContainer(
-            animationSpec = springSlide,
+            animationSpec = spring,
             towards = AnimatedContentTransitionScope.SlideDirection.End,
             initialOffset = {-initialOffsetValue}
         )
     }
     
     val navHostPopExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
-        fadeOut(animationSpec = springFade) +
+        fadeOut(animationSpec = fade) +
         slideOutOfContainer(
-            animationSpec = springSlide,
+            animationSpec = spring,
             towards = AnimatedContentTransitionScope.SlideDirection.Start,
             targetOffset = {targetOffsetValue}
         )
