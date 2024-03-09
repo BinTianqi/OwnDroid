@@ -5,15 +5,12 @@ import android.app.Activity
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.os.Build.VERSION
 import android.os.Bundle
 import android.os.UserManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.*
@@ -40,27 +37,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.binbin.androidowner.dpm.*
 import com.binbin.androidowner.ui.theme.AndroidOwnerTheme
 import com.binbin.androidowner.ui.theme.Animations
-import java.io.FileNotFoundException
-import java.io.IOException
-import java.io.InputStream
 
-
-lateinit var getCaCert: ActivityResultLauncher<Intent>
-lateinit var createUser:ActivityResultLauncher<Intent>
-lateinit var createManagedProfile:ActivityResultLauncher<Intent>
-lateinit var getApk:ActivityResultLauncher<Intent>
-lateinit var getUserIcon:ActivityResultLauncher<Intent>
-var userIconUri:Uri? = null
-var apkUri: Uri? = null
-var caCert = byteArrayOf()
 
 @ExperimentalMaterial3Api
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        super.onCreate(savedInstanceState)
+    private fun registerActivityResult(){
         getUserIcon = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             userIconUri = it.data?.data
             if(userIconUri==null){ Toast.makeText(applicationContext, "空URI", Toast.LENGTH_SHORT).show() }
@@ -87,6 +71,12 @@ class MainActivity : ComponentActivity() {
         createManagedProfile = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if(it.resultCode==Activity.RESULT_CANCELED){Toast.makeText(applicationContext, "用户已取消", Toast.LENGTH_SHORT).show()}
         }
+    }
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        super.onCreate(savedInstanceState)
+        registerActivityResult()
         setContent {
             AndroidOwnerTheme {
                 MyScaffold()
@@ -160,7 +150,7 @@ fun MyScaffold(){
             popExitTransition = Animations(myContext).navHostPopExitTransition
         ){
             composable(route = "HomePage", content = { HomePage(navCtrl)})
-            composable(route = "DeviceControl", content = { SystemManage()})
+            composable(route = "SystemManage", content = { SystemManage() })
             composable(route = "ManagedProfile", content = {ManagedProfile()})
             composable(route = "Permissions", content = { DpmPermissions(navCtrl)})
             composable(route = "ApplicationManage", content = { ApplicationManage()})
@@ -254,57 +244,6 @@ fun HomePageItem(name:Int, imgVector:Int, navTo:String, myNav:NavHostController)
     }
 }
 
-@Composable
-fun RadioButtonItem(
-    text:String,
-    selected:()->Boolean,
-    operation:()->Unit,
-    textColor:Color = colorScheme.onBackground
-){
-    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    val isWear = sharedPref.getBoolean("isWear",false)
-    Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
-        .fillMaxWidth()
-        .padding(vertical = if(isWear){3.dp}else{0.dp})
-        .clip(RoundedCornerShape(25))
-        .clickable(onClick = operation)
-    ) {
-        RadioButton(selected = selected(), onClick = operation,modifier=if(isWear){Modifier.size(28.dp)}else{Modifier})
-        Text(text = text, style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium}, color = textColor,
-            modifier = Modifier.padding(bottom = 2.dp))
-    }
-}
-@Composable
-fun CheckBoxItem(
-    text:String,
-    checked:()->Boolean,
-    operation:()->Unit,
-    textColor:Color = colorScheme.onBackground
-){
-    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    val isWear = sharedPref.getBoolean("isWear",false)
-    Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
-        .fillMaxWidth()
-        .padding(vertical = if(isWear){3.dp}else{0.dp})
-        .clip(RoundedCornerShape(25))
-        .clickable(onClick = operation)
-    ) {
-        Checkbox(
-            checked = checked(),
-            onCheckedChange = {operation()},
-            modifier=if(isWear){Modifier.size(28.dp)}else{Modifier}
-        )
-        Text(text = text, style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium}, color = textColor, modifier = Modifier.padding(bottom = 2.dp))
-    }
-}
-
-fun isDeviceOwner(dpm:DevicePolicyManager): Boolean {
-    return dpm.isDeviceOwnerApp("com.binbin.androidowner")
-}
-
-fun isProfileOwner(dpm:DevicePolicyManager): Boolean {
-    return dpm.isProfileOwnerApp("com.binbin.androidowner")
-}
 
 @SuppressLint("ModifierFactoryExtensionFunction", "ComposableModifierFactory")
 @Composable
@@ -330,20 +269,3 @@ fun sections(bgColor:Color=colorScheme.primaryContainer,onClick:()->Unit={},clic
     }
 }
 
-fun uriToStream(
-    context: Context,
-    uri: Uri?,
-    operation:(stream:InputStream)->Unit
-){
-    if(uri!=null){
-        apkUri = uri
-        try{
-            val stream = context.contentResolver.openInputStream(uri)
-            if(stream!=null) { operation(stream) }
-            else{ Toast.makeText(context, "空的流", Toast.LENGTH_SHORT).show() }
-            stream?.close()
-        }
-        catch(e:FileNotFoundException){ Toast.makeText(context, "文件不存在", Toast.LENGTH_SHORT).show() }
-        catch(e:IOException){ Toast.makeText(context, "IO异常", Toast.LENGTH_SHORT).show() }
-    }else{ Toast.makeText(context, "空URI", Toast.LENGTH_SHORT).show() }
-}

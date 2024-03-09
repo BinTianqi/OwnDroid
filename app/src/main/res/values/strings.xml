@@ -85,11 +85,11 @@
     <string name="list_owners">列出Owners</string>
     <string name="shizuku_not_started">服务未启动</string>
     <string name="activate_org_profile_command_with_user_id" tools:ignore="TypographyDashes">
-        dpm mark-profile-owner-on-organization-owned-device --user %1$s com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver
+        dpm mark-profile-owner-on-organization-owned-device --user %1$s com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver
     </string>
-    <string name="dpm_activate_do_command">dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver</string>
-    <string name="dpm_activate_po_command">dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver</string>
-    <string name="dpm_activate_da_command">dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver</string>
+    <string name="dpm_activate_do_command">dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver</string>
+    <string name="dpm_activate_po_command">dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver</string>
+    <string name="dpm_activate_da_command">dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver</string>
     <string name="shizuku_activated_shell">已授权（Shell）</string>
     <string name="shizuku_activated_root">已授权（Root）</string>
 

@@ -47,7 +47,7 @@
         </activity>
 
         <receiver
-            android:name="MyDeviceAdminReceiver"
+            android:name=".dpm.MyDeviceAdminReceiver"
             android:description="@string/app_name"
             android:permission="android.permission.BIND_DEVICE_ADMIN"
             android:exported="true">
@@ -65,7 +65,7 @@
             </intent-filter>
         </receiver>
         <receiver
-        android:name="PackageInstallerReceiver"
+        android:name=".dpm.PackageInstallerReceiver"
         android:description="@string/app_name"
         android:permission="android.permission.BIND_DEVICE_ADMIN"
         android:exported="true">

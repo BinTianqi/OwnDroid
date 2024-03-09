@@ -1,4 +1,4 @@
-package com.binbin.androidowner
+package com.binbin.androidowner.dpm
 
 import android.annotation.SuppressLint
 import android.app.admin.DeviceAdminReceiver

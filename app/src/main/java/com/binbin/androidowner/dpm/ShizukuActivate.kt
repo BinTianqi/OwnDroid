@@ -1,4 +1,4 @@
-package com.binbin.androidowner
+package com.binbin.androidowner.dpm
 
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
@@ -35,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.binbin.androidowner.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -58,7 +59,7 @@ fun ShizukuActivate(){
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState), horizontalAlignment = Alignment.CenterHorizontally){
         var outputText by remember{mutableStateOf("")}
         if(Binder.getCallingUid()/100000!=0){
-            Row(modifier = sections(colorScheme.errorContainer), verticalAlignment = Alignment.CenterVertically){
+            Row{
                 Icon(imageVector = Icons.Rounded.Warning, contentDescription = null, tint = colorScheme.onErrorContainer)
                 Text(text = stringResource(R.string.not_primary_user_not_support_shizuku), style = bodyTextStyle, color = colorScheme.onErrorContainer)
             }
@@ -86,7 +87,7 @@ fun ShizukuActivate(){
         }
         
         if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)){
-            Column(modifier = sections()){
+            Column {
                 Text(text = stringResource(R.string.activate), style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
                 
                 if(!myDpm.isAdminActive(myComponent)){
@@ -131,7 +132,7 @@ fun ShizukuActivate(){
         }
         
         if(VERSION.SDK_INT>=30&&!isDeviceOwner(myDpm)&&!myDpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)&&!myDpm.isOrganizationOwnedDeviceWithManagedProfile){
-            Column(modifier = sections()){
+            Column {
                 Text(text = stringResource(R.string.org_owned_work_profile), style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
                 Text(text = stringResource(R.string.input_userid_of_work_profile), style = bodyTextStyle)
                 var inputUserID by remember{mutableStateOf("")}
