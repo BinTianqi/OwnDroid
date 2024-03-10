@@ -38,7 +38,6 @@
     <string name="decide_by_user">由用户决定</string>
     <string name="unsupported">不支持</string>
     <string name="developing">功能开发中</string>
-    <string name="place_holder" />
     <string name="try_again">请再试一次</string>
     <string name="unknown_effect">效果未知</string>
     <string name="options">选项</string>
@@ -48,7 +47,6 @@
     <string name="profile_owner">Profile owner</string>
     <string name="device_owner">Device owner</string>
     <string name="activate_device_admin">激活Device admin</string>
-    <string name="touch_to_view_command">点击查看激活命令</string>
     <string name="activate_device_admin_command">adb shell dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver</string>
     <string name="activate_profile_owner_command">adb shell dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver</string>
     <string name="activate_device_owner_command">adb shell dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver</string>
@@ -72,15 +70,10 @@
     <string name="target_class_name">目标类名</string>
     <string name="owner_lockscr_info">锁屏提示信息</string>
     <string name="support_msg">提供支持的消息</string>
-    <string name="short_support_msg">提供支持的消息</string>
+    <string name="short_support_msg">提供支持的短消息</string>
     <string name="support_msg_desc">如果你禁用了某个功能，用户尝试使用这个功能时会看见这个消息（可多行）</string>
-    <string name="message">消息</string>
     <string name="long_support_msg">提供支持的长消息</string>
-    <string name="long_support_msg_desc">都是显示短消息，长消息不知道在哪里显示</string>
     <string name="transform">转移</string>
-    <string name="deactivate_da">撤销Device admin</string>
-    <string name="deactivate_po">撤销Profile owner</string>
-    <string name="deactivate_do">撤销Device owner</string>
     <string name="activate_android_owner_here">在这里激活Android Owner</string>
 
     <!--Shizuku-->
@@ -98,6 +91,8 @@
     <string name="dpm_activate_da_command">dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver</string>
     <string name="shizuku_activated_shell">已授权（Shell）</string>
     <string name="shizuku_activated_root">已授权（Root）</string>
+    <string name="activate_profile_owner">激活Profile owner</string>
+    <string name="activate_device_owner">激活Device owner</string>
 
     <!--System-->
     <string name="device_ctrl">系统</string>
@@ -113,7 +108,6 @@
     <string name="common_criteria_mode">通用标准模式</string>
     <string name="common_criteria_mode_desc">Common Criteria</string>
     <string name="usb_signal">USB信号</string>
-    <string name="turn_off_usb_not_support">你的设备不支持关闭USB信号</string>
     <string name="keyguard">锁屏</string>
     <string name="require_no_password_to_disable">禁用需要无密码</string>
     <string name="lock_now">立即锁屏</string>
@@ -222,15 +216,10 @@
     <string name="work_profile">工作资料</string>
     <string name="work_profile_owner">Profile owner（工作资料）</string>
     <string name="work_profile_activated">工作资料已激活</string>
-    <string name="info">信息</string>
-    <string name="is_already_work_profile">已是工作资料</string>
     <string name="create_work_profile">创建工作资料</string>
-    <string name="able_to_create_work_profile">可以创建工作资料：%1$s</string>
-    <string name="device_owner_cannot_create_work_profile">Device owner不能创建工作资料</string>
     <string name="is_org_owned_profile">由组织拥有的工作资料：%1$s</string>
     <string name="org_owned_work_profile">组织拥有的工作资料</string>
     <string name="activate_org_profile_command" tools:ignore="TypographyDashes">adb shell \"dpm mark-profile-owner-on-organization-owned-device --user %1$s com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver\"</string>
-    <string name="become_org_profile">成为组织拥有的工作资料</string>
     <string name="skip_encryption">跳过加密</string>
     <string name="create">创建</string>
     <string name="suspend_personal_app">挂起个人应用</string>
@@ -245,8 +234,6 @@
     <string name="org_id">组织ID</string>
     <string name="length_6_to_64">长度应在6~64个字符之间</string>
     <string name="get_specific_id_after_set_org_id">设置组织ID后才能获取设备唯一标识码</string>
-    <string name="activate_managed_profile">激活工作资料</string>
-    <string name="activate_managed_profile_desc">你还没有激活工作资料，请立即激活</string>
 
     <!--AppManage-->
     <string name="app_manage">应用管理</string>
@@ -409,18 +396,13 @@
     <string name="password_info">密码信息</string>
     <string name="reset_pwd_desc">留空可以清除密码，纯数字将使用PIN码</string>
     <string name="max_pwd_fail">最大密码错误次数</string>
-    <string name="max_pwd_fail_desc">达到该限制会恢复出厂设置</string>
+    <string name="max_pwd_fail_desc">达到该限制会恢复出厂设置，0为无限制</string>
     <string name="max_pwd_fail_textfield">错误次数</string>
     <string name="pwd_timeout">密码失效超时时间</string>
     <string name="max_time_to_lock">屏幕超时</string>
     <string name="max_time_to_lock_desc">超时后锁屏(毫秒)，0为由用户决定</string>
     <string name="pwd_timeout_desc">超时后用户需重新设置密码（毫秒），0为无限制</string>
-    <string name="pwd_timeout_textfield">超时时间(ms)</string>
     <string name="pwd_history">密码历史记录长度</string>
-    <string name="pwd_history_desc">用户输入的密码不能与历史记录中的任何密码相同，0为无限制</string>
-    <string name="pwd_history_textfield">历史记录长度</string>
-    <string name="password_warning">以下操作可能会造成不可挽回的损失，请先备份好数据。执行操作时一定要谨慎！！！</string>
-    <string name="password_wearos_warning">警告！手表不支持带字母的密码，也不支持超过4位的PIN码！如果你设置了这样的密码（或密码复杂度要求），你将无法解锁你的手表！</string>
     <string name="password_complexity_none">无（允许不设密码）</string>
     <string name="password_complexity_low">低（允许图案和连续性）</string>
     <string name="password_complexity_medium">中（无连续性，至少4位）</string>

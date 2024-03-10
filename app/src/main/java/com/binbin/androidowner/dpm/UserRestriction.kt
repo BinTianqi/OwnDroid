@@ -287,19 +287,19 @@ private class RestrictionData{
         if(VERSION.SDK_INT>=26){ list += Restriction(UserManager.DISALLOW_AUTOFILL,R.string.autofill, "",R.drawable.password_fill0) }
         list += Restriction(UserManager.DISALLOW_CONFIG_CREDENTIALS,R.string.config_credentials,"",R.drawable.android_fill0)
         if(VERSION.SDK_INT>=29){
-            list += Restriction(UserManager.DISALLOW_CONTENT_CAPTURE,R.string.content_capture,"",R.drawable.android_fill0)
-            list += Restriction(UserManager.DISALLOW_CONTENT_SUGGESTIONS,R.string.content_suggestions,"",R.drawable.android_fill0)
+            list += Restriction(UserManager.DISALLOW_CONTENT_CAPTURE,R.string.content_capture,"",R.drawable.screenshot_fill0)
+            list += Restriction(UserManager.DISALLOW_CONTENT_SUGGESTIONS,R.string.content_suggestions,"",R.drawable.sms_fill0)
         }
         list += Restriction(UserManager.DISALLOW_CREATE_WINDOWS,R.string.create_windows, myContext.getString(R.string.create_windows_desc),R.drawable.web_asset)
         if(VERSION.SDK_INT>=24){list += Restriction(UserManager.DISALLOW_SET_WALLPAPER,R.string.set_wallpaper,"",R.drawable.wallpaper_fill0)}
-        if(VERSION.SDK_INT>=34){ list += Restriction(UserManager.DISALLOW_GRANT_ADMIN,R.string.grant_admin,"",R.drawable.android_fill0) }
+        if(VERSION.SDK_INT>=34){ list += Restriction(UserManager.DISALLOW_GRANT_ADMIN,R.string.grant_admin,"",R.drawable.security_fill0) }
         if(VERSION.SDK_INT>=23){ list += Restriction(UserManager.DISALLOW_FUN,R.string.`fun`, myContext.getString(R.string.fun_desc),R.drawable.stadia_controller_fill0) }
         list += Restriction(UserManager.DISALLOW_MODIFY_ACCOUNTS,R.string.modify_accounts,"",R.drawable.manage_accounts_fill0)
         if(VERSION.SDK_INT>=28){
             list += Restriction(UserManager.DISALLOW_CONFIG_LOCALE,R.string.config_locale,"",R.drawable.language_fill0)
             list += Restriction(UserManager.DISALLOW_CONFIG_DATE_TIME,R.string.config_date_time,"",R.drawable.schedule_fill0)
         }
-        if(VERSION.SDK_INT>=28){list += Restriction(UserManager.DISALLOW_SYSTEM_ERROR_DIALOGS,R.string.sys_err_dialog,"",R.drawable.android_fill0)}
+        if(VERSION.SDK_INT>=28){list += Restriction(UserManager.DISALLOW_SYSTEM_ERROR_DIALOGS,R.string.sys_err_dialog,"",R.drawable.warning_fill0)}
         list += Restriction(UserManager.DISALLOW_FACTORY_RESET,R.string.factory_reset,"",R.drawable.android_fill0)
         if(VERSION.SDK_INT>=23){ list += Restriction(UserManager.DISALLOW_SAFE_BOOT,R.string.safe_boot,"",R.drawable.security_fill0) }
         list += Restriction(UserManager.DISALLOW_DEBUGGING_FEATURES,R.string.debug_features,"",R.drawable.adb_fill0)

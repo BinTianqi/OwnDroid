@@ -19,7 +19,8 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -32,9 +33,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.R
+import com.binbin.androidowner.ui.Animations
+import com.binbin.androidowner.ui.Information
 import com.binbin.androidowner.ui.NavIcon
 import com.binbin.androidowner.ui.SubPageItem
-import com.binbin.androidowner.ui.Animations
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,9 +80,9 @@ fun DpmPermissions(navCtrl:NavHostController){
         ){
             composable(route = "Home"){Home(localNavCtrl)}
             composable(route = "Shizuku"){ShizukuActivate()}
-            composable(route = "DeviceAdmin"){DeviceAdmin()}
+            composable(route = "DeviceAdmin"){DeviceAdmin(navCtrl)}
             composable(route = "ProfileOwner"){ProfileOwner()}
-            composable(route = "DeviceOwner"){DeviceOwner()}
+            composable(route = "DeviceOwner"){DeviceOwner(navCtrl)}
             composable(route = "DeviceInfo"){DeviceInfo()}
             composable(route = "SpecificID"){SpecificID()}
             composable(route = "OrgName"){OrgName()}
@@ -173,10 +177,11 @@ private fun LockScreenInfo(){
 }
 
 @Composable
-private fun DeviceAdmin(){
+private fun DeviceAdmin(navCtrl: NavHostController){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val co = rememberCoroutineScope()
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.device_admin), style = typography.headlineLarge)
@@ -184,7 +189,13 @@ private fun DeviceAdmin(){
         Spacer(Modifier.padding(vertical = 5.dp))
         if(myDpm.isAdminActive(myComponent)) {
             if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)) {
-                Button(onClick = {myDpm.removeActiveAdmin(myComponent)}, modifier = Modifier.fillMaxWidth()) {
+                Button(
+                    onClick = {
+                        myDpm.removeActiveAdmin(myComponent)
+                        co.launch{ delay(600); if(!myDpm.isAdminActive(myComponent)){navCtrl.navigateUp()} }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text(stringResource(R.string.deactivate))
                 }
             }
@@ -226,16 +237,23 @@ private fun ProfileOwner(){
 }
 
 @Composable
-private fun DeviceOwner(){
+private fun DeviceOwner(navCtrl: NavHostController){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val co = rememberCoroutineScope()
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.device_owner), style = typography.headlineLarge)
         Text(text = stringResource(if(isDeviceOwner(myDpm)){R.string.activated}else{R.string.deactivated}), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         if(isDeviceOwner(myDpm)){
-            Button(onClick = {myDpm.clearDeviceOwnerApp(myContext.packageName)}, modifier = Modifier.fillMaxWidth()) {
+            Button(
+                onClick = {
+                    myDpm.clearDeviceOwnerApp(myContext.packageName)
+                    co.launch{ delay(600); if(!isDeviceOwner(myDpm)){navCtrl.navigateUp()} }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Text(text = stringResource(R.string.deactivate))
             }
         }
@@ -359,60 +377,46 @@ private fun SupportMsg(){
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.short_support_msg), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
             value = shortMsg,
-            label = {Text(stringResource(R.string.message))},
+            label = {Text(stringResource(R.string.short_support_msg))},
             onValueChange = { shortMsg=it },
-            modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 4.dp)
+            modifier = Modifier.focusable().fillMaxWidth()
         )
-        Button(
-            onClick = {
-                focusMgr.clearFocus()
-                myDpm.setShortSupportMessage(myComponent,shortMsg)
-                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = stringResource(R.string.apply))
-        }
-        Button(
-            onClick = {
-                focusMgr.clearFocus()
-                myDpm.setShortSupportMessage(myComponent,null)
-                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = stringResource(R.string.reset))
-        }
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.long_support_msg), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 2.dp))
         OutlinedTextField(
             value = longMsg,
-            label = {Text(stringResource(R.string.message))},
+            label = {Text(stringResource(R.string.long_support_msg))},
             onValueChange = { longMsg=it },
-            modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 4.dp)
+            modifier = Modifier.focusable().fillMaxWidth()
         )
+        Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                myDpm.setLongSupportMessage(myComponent,longMsg)
+                myDpm.setShortSupportMessage(myComponent, shortMsg)
+                myDpm.setLongSupportMessage(myComponent, longMsg)
                 Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = stringResource(R.string.apply))
         }
+        Spacer(Modifier.padding(vertical = 1.dp))
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                myDpm.setLongSupportMessage(myComponent,null)
+                myDpm.setShortSupportMessage(myComponent, null)
+                myDpm.setLongSupportMessage(myComponent, null)
                 Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = stringResource(R.string.reset))
         }
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Information{Text(text = stringResource(R.string.support_msg_desc))}
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
@@ -477,6 +481,7 @@ private fun TransformOwnership(){
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val focusMgr = LocalFocusManager.current
+    val focusRequester = FocusRequester()
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
         var pkg by remember{mutableStateOf("")}
         var cls by remember{mutableStateOf("")}
@@ -484,18 +489,21 @@ private fun TransformOwnership(){
         Text(text = stringResource(R.string.transform_ownership), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.transform_ownership_desc))
+        Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
             value = pkg, onValueChange = {pkg = it}, label = {Text(stringResource(R.string.target_package_name))},
-            modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 4.dp),
+            modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            keyboardActions = KeyboardActions(onNext = {focusMgr.moveFocus(FocusDirection.Down)})
+            keyboardActions = KeyboardActions(onNext = {focusRequester.requestFocus()})
         )
+        Spacer(Modifier.padding(vertical = 2.dp))
         OutlinedTextField(
             value = cls, onValueChange = {cls = it}, label = {Text(stringResource(R.string.target_class_name))},
-            modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 4.dp),
+            modifier = Modifier.focusRequester(focusRequester).fillMaxWidth(),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
         )
+        Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 try {
@@ -505,7 +513,7 @@ private fun TransformOwnership(){
                     Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show()
                 }
             },
-            modifier = Modifier.fillMaxWidth().padding(top = 2.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.transform))
         }

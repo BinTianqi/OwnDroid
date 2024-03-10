@@ -144,6 +144,7 @@ private fun Home(navCtrl: NavHostController){
         }
         SubPageItem(R.string.wipe_data,""){navCtrl.navigate("WipeData")}
         Spacer(Modifier.padding(vertical = 30.dp))
+        LaunchedEffect(Unit){caCert=byteArrayOf()}
     }
 }
 
@@ -594,7 +595,7 @@ private fun CaCert(){
         isEmpty = caCert.isEmpty()
         exist = if(!isEmpty){ myDpm.hasCaCertInstalled(myComponent, caCert) }else{ false }
     }
-    LaunchedEffect(exist){ caCert=byteArrayOf(); while(true){ refresh();delay(600) } }
+    LaunchedEffect(exist){ while(true){ refresh();delay(600) } }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.ca_cert), style = typography.headlineLarge)

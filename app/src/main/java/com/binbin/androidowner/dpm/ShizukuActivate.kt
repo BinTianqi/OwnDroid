@@ -56,7 +56,10 @@ fun ShizukuActivate(){
     val coScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     val outputTextScrollState = rememberScrollState()
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState), horizontalAlignment = Alignment.CenterHorizontally){
+    Column(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(scrollState),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
         var outputText by remember{mutableStateOf("")}
         if(Binder.getCallingUid()/100000!=0){
             Row{
@@ -64,7 +67,6 @@ fun ShizukuActivate(){
                 Text(text = stringResource(R.string.not_primary_user_not_support_shizuku), style = bodyTextStyle, color = colorScheme.onErrorContainer)
             }
         }
-        
         Button(
             onClick = {
                 coScope.launch {
@@ -86,10 +88,21 @@ fun ShizukuActivate(){
             Text(text = stringResource(R.string.check_shizuku))
         }
         
+        Button(
+            onClick = {
+                coScope.launch{
+                    outputText=executeCommand(myContext, "sh rish.sh","dpm list-owners",null,filesDir)
+                    scrollState.animateScrollTo(scrollState.maxValue, scrollAnim())
+                    outputTextScrollState.animateScrollTo(0, scrollAnim())
+                }
+            }
+        ) {
+            Text(text = stringResource(R.string.list_owners))
+        }
+        Spacer(Modifier.padding(vertical = 5.dp))
+        
         if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)){
             Column {
-                Text(text = stringResource(R.string.activate), style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
-                
                 if(!myDpm.isAdminActive(myComponent)){
                     Button(
                         onClick = {
@@ -100,7 +113,7 @@ fun ShizukuActivate(){
                             }
                         },
                         modifier = Modifier.fillMaxWidth()) {
-                        Text(text = "Device admin")
+                        Text(text = stringResource(R.string.activate_device_admin))
                     }
                 }
                 
@@ -113,7 +126,7 @@ fun ShizukuActivate(){
                         }
                     },
                     modifier = Modifier.fillMaxWidth()) {
-                    Text(text = "Profile owner")
+                    Text(text = stringResource(R.string.activate_profile_owner))
                 }
                 
                 Button(
@@ -125,13 +138,16 @@ fun ShizukuActivate(){
                         }
                     },
                     modifier = Modifier.fillMaxWidth()) {
-                    Text(text = "Device owner")
+                    Text(text = stringResource(R.string.activate_device_owner))
                 }
                 
             }
         }
         
-        if(VERSION.SDK_INT>=30&&!isDeviceOwner(myDpm)&&!myDpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)&&!myDpm.isOrganizationOwnedDeviceWithManagedProfile){
+        if(
+            VERSION.SDK_INT>=30&&!isDeviceOwner(myDpm)&&!myDpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)&&
+            !myDpm.isOrganizationOwnedDeviceWithManagedProfile
+        ){
             Column {
                 Text(text = stringResource(R.string.org_owned_work_profile), style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
                 Text(text = stringResource(R.string.input_userid_of_work_profile), style = bodyTextStyle)
@@ -163,18 +179,6 @@ fun ShizukuActivate(){
                     Text(text = stringResource(R.string.activate))
                 }
             }
-        }
-        
-        Button(
-            onClick = {
-                coScope.launch{
-                    outputText=executeCommand(myContext, "sh rish.sh","dpm list-owners",null,filesDir)
-                    scrollState.animateScrollTo(scrollState.maxValue, scrollAnim())
-                    outputTextScrollState.animateScrollTo(0, scrollAnim())
-                }
-            }
-        ) {
-            Text(text = stringResource(R.string.list_owners))
         }
         
         SelectionContainer(modifier = Modifier.align(Alignment.Start).horizontalScroll(outputTextScrollState)){

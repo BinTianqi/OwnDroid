@@ -3,7 +3,6 @@ package com.binbin.androidowner
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build.VERSION
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -22,7 +21,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.binbin.androidowner.dpm.*
 import com.binbin.androidowner.ui.Animations
 import com.binbin.androidowner.ui.NavIcon
 import com.binbin.androidowner.ui.SubPageItem

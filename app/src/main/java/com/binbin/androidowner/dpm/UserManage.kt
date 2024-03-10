@@ -158,7 +158,7 @@ private fun UserOperation(){
         var userHandleById:UserHandle by remember{ mutableStateOf(Process.myUserHandle()) }
         var useUid by remember{ mutableStateOf(false) }
         Spacer(Modifier.padding(vertical = 5.dp))
-        TextField(
+        OutlinedTextField(
             value = idInput,
             onValueChange = {
                 idInput=it
@@ -271,7 +271,7 @@ private fun CreateUser(){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.create_user), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        TextField(
+        OutlinedTextField(
             value = userName,
             onValueChange = {userName=it},
             label = {Text(stringResource(R.string.username))},
@@ -331,7 +331,7 @@ private fun AffiliationID(){
             Text(text = stringResource(R.string.none))
         }
         Spacer(Modifier.padding(vertical = 5.dp))
-        TextField(
+        OutlinedTextField(
             value = input,
             onValueChange = {input = it},
             label = {Text("ID")},
@@ -388,7 +388,7 @@ private fun Username(){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.edit_username), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        TextField(
+        OutlinedTextField(
             value = inputUsername,
             onValueChange = {inputUsername=it},
             label = {Text(stringResource(R.string.username))},
@@ -427,13 +427,15 @@ private fun UserSessionMessage(){
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val focusMgr = LocalFocusManager.current
-    var start by remember{mutableStateOf(myDpm.getStartUserSessionMessage(myComponent).toString())}
-    var end by remember{mutableStateOf(myDpm.getEndUserSessionMessage(myComponent).toString())}
+    val getStart = myDpm.getStartUserSessionMessage(myComponent)?:""
+    val getEnd = myDpm.getEndUserSessionMessage(myComponent)?:""
+    var start by remember{mutableStateOf(getStart.toString())}
+    var end by remember{mutableStateOf(getEnd.toString())}
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.user_session_msg), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        TextField(
+        OutlinedTextField(
             value = start,
             onValueChange = {start=it},
             label = {Text(stringResource(R.string.start_user_session_msg))},
@@ -442,8 +444,8 @@ private fun UserSessionMessage(){
             modifier = Modifier.focusable().fillMaxWidth(),
             enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
         )
-        Spacer(Modifier.padding(vertical = 5.dp))
-        TextField(
+        Spacer(Modifier.padding(vertical = 2.dp))
+        OutlinedTextField(
             value = end,
             onValueChange = {end=it},
             label = {Text(stringResource(R.string.end_user_session_msg))},

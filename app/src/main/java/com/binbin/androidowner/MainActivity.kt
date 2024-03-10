@@ -13,6 +13,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,7 +26,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -75,6 +78,7 @@ fun MyScaffold(){
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val focusMgr = LocalFocusManager.current
     NavHost(
         navController = navCtrl,
         startDestination = "HomePage",
@@ -82,7 +86,8 @@ fun MyScaffold(){
             .statusBarsPadding()
             .fillMaxSize()
             .background(color = if(isSystemInDarkTheme()) { colorScheme.background }else{ colorScheme.primary.copy(alpha = 0.05F) })
-            .imePadding(),
+            .imePadding()
+            .pointerInput(Unit) {detectTapGestures(onTap = {focusMgr.clearFocus()})},
         enterTransition = Animations().navHostEnterTransition,
         exitTransition = Animations().navHostExitTransition,
         popEnterTransition = Animations().navHostPopEnterTransition,
@@ -200,20 +205,3 @@ fun HomePageItem(name:Int, imgVector:Int, navTo:String, myNav:NavHostController)
         }
     }
 }
-
-
-@SuppressLint("ModifierFactoryExtensionFunction", "ComposableModifierFactory")
-@Composable
-@Stable
-fun sections(bgColor:Color=colorScheme.primaryContainer,onClick:()->Unit={},clickable:Boolean=false):Modifier{
-    val backgroundColor = if(isSystemInDarkTheme()){bgColor.copy(0.3F)}else{bgColor.copy(0.8F)}
-    return Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-            .clip(RoundedCornerShape(14.dp))
-            .clickable(onClick=onClick, enabled = clickable)
-            .background(color = backgroundColor)
-            .padding(vertical = 10.dp, horizontal = 10.dp)
-    
-}
-
