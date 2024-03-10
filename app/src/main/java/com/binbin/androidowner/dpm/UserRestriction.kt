@@ -1,5 +1,6 @@
 package com.binbin.androidowner.dpm
 
+import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
@@ -9,28 +10,33 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
+import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.R
+import com.binbin.androidowner.ui.Animations
+import com.binbin.androidowner.ui.NavIcon
+import com.binbin.androidowner.ui.SubPageItem
+import com.binbin.androidowner.ui.SwitchItem
 
 private data class Restriction(
     val restriction:String,
@@ -39,99 +45,135 @@ private data class Restriction(
     @DrawableRes val ico:Int
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserRestriction(){
+fun UserRestriction(navCtrl: NavHostController){
+    val localNavCtrl = rememberNavController()
+    val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
+    val titleMap = mapOf(
+        "Internet" to R.string.network_internet,
+        "Connectivity" to R.string.more_connectivity,
+        "Users" to R.string.users,
+        "Media" to R.string.media,
+        "Applications" to R.string.applications,
+        "Other" to R.string.other
+    )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {Text(text = stringResource(titleMap[backStackEntry?.destination?.route]?:R.string.user_restrict))},
+                navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
+            )
+        }
+    ){
+        NavHost(
+            navController = localNavCtrl, startDestination = "Home",
+            enterTransition = Animations().navHostEnterTransition,
+            exitTransition = Animations().navHostExitTransition,
+            popEnterTransition = Animations().navHostPopEnterTransition,
+            popExitTransition = Animations().navHostPopExitTransition,
+            modifier = Modifier
+                .background(color = if(isSystemInDarkTheme()) { colorScheme.background }else{ colorScheme.primary.copy(alpha = 0.05F) })
+                .padding(top = it.calculateTopPadding())
+        ){
+            composable(route = "Internet"){Internet()}
+            composable(route = "Home"){Home(localNavCtrl)}
+            composable(route = "Connectivity"){Connectivity()}
+            composable(route = "Applications"){Application()}
+            composable(route = "Users"){User()}
+            composable(route = "Media"){Media()}
+            composable(route = "Other"){Other()}
+        }
+    }
+}
+
+@Composable
+private fun Home(navCtrl:NavHostController){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
-    var internetVisible by remember{ mutableStateOf(false) }
-    var connectivityVisible by remember{ mutableStateOf(false) }
-    var applicationVisible by remember{ mutableStateOf(false) }
-    var mediaVisible by remember{ mutableStateOf(false) }
-    var userVisible by remember{ mutableStateOf(false) }
-    var otherVisible by remember{ mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally){
+        Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = "打开开关后会禁用对应的功能")
-        if(VERSION.SDK_INT<24){
-            Text(text = "所有的用户限制都需要API24，你的设备低于API24，无法使用。", color = colorScheme.error)
-        }
-        if(isProfileOwner(myDpm)){
-            Text(text = "Profile owner无法使用部分功能")
-        }
-        if(isProfileOwner(myDpm)&&(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)))){
-            Text(text = "工作资料中部分功能无效")
-        }
-        SectionTab("网络和互联网",{internetVisible}, { internetVisible=!internetVisible})
-        AnimatedVisibility(internetVisible) {
-            Column {
-                for(internetItem in RestrictionData().internet()){
-                    UserRestrictionItem(internetItem.restriction,internetItem.name,internetItem.desc,internetItem.ico)
-                }
-            }
-        }
-        SectionTab("更多连接",{connectivityVisible}) { connectivityVisible=!connectivityVisible }
-        AnimatedVisibility(connectivityVisible) {
-            Column {
-                for(connectivityItem in RestrictionData().connectivity(myContext)){
-                    UserRestrictionItem(connectivityItem.restriction,connectivityItem.name,connectivityItem.desc,connectivityItem.ico)
-                }
-            }
-        }
-        SectionTab("应用",{applicationVisible}) { applicationVisible=!applicationVisible }
-        AnimatedVisibility(applicationVisible) {
-            Column {
-                for(applicationItem in RestrictionData().application(myContext)){
-                    UserRestrictionItem(applicationItem.restriction,applicationItem.name,applicationItem.desc,applicationItem.ico)
-                }
-            }
-        }
-        SectionTab("用户",{userVisible}) { userVisible=!userVisible }
-        AnimatedVisibility(userVisible) {
-            Column {
-                for(userItem in RestrictionData().user()){
-                    UserRestrictionItem(userItem.restriction,userItem.name,userItem.desc,userItem.ico)
-                }
-            }
-        }
-        SectionTab("媒体",{mediaVisible}) { mediaVisible=!mediaVisible }
-        AnimatedVisibility(mediaVisible) {
-            Column {
-                for(mediaItem in RestrictionData().media()){
-                    UserRestrictionItem(mediaItem.restriction,mediaItem.name,mediaItem.desc,mediaItem.ico)
-                }
-            }
-        }
-        SectionTab("其他",{otherVisible}) { otherVisible=!otherVisible }
-        AnimatedVisibility(otherVisible) {
-            Column {
-                for(otherItem in RestrictionData().other(myContext)){
-                    UserRestrictionItem(otherItem.restriction,otherItem.name,otherItem.desc,otherItem.ico)
-                }
-            }
+        if(isProfileOwner(myDpm)){ Text(text = "Profile owner无法使用部分功能") }
+        if(isProfileOwner(myDpm)&&(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)))){ Text(text = "工作资料中部分功能无效") }
+        Spacer(Modifier.padding(vertical = 2.dp))
+        SubPageItem(R.string.network_internet,""){navCtrl.navigate("Internet")}
+        SubPageItem(R.string.more_connectivity,""){navCtrl.navigate("Connectivity")}
+        SubPageItem(R.string.applications,""){navCtrl.navigate("Applications")}
+        SubPageItem(R.string.users,""){navCtrl.navigate("Users")}
+        SubPageItem(R.string.media,""){navCtrl.navigate("Media")}
+        SubPageItem(R.string.other,""){navCtrl.navigate("Other")}
+        Spacer(Modifier.padding(vertical = 30.dp))
+    }
+}
+
+@SuppressLint("NewApi")
+@Composable
+private fun Internet(){
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
+        for(internetItem in RestrictionData().internet()){
+            UserRestrictionItem(internetItem.restriction,internetItem.name,internetItem.desc,internetItem.ico)
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
 @Composable
-fun SectionTab(txt:String,getSection:()->Boolean,setSection:()->Unit){
-    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    Text(
-        text = txt,
-        color = if(getSection()){ colorScheme.onTertiaryContainer.copy(alpha = 0.8F) }else{ colorScheme.onPrimaryContainer.copy(alpha = 0.8F) },
-        textAlign = TextAlign.Center,
-        style = if(!sharedPref.getBoolean("isWear",false)){typography.headlineMedium}else{typography.titleLarge},
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = if(!sharedPref.getBoolean("isWear",false)){8.dp}else{4.dp},
-                vertical = if(!sharedPref.getBoolean("isWear",false)){5.dp}else{2.dp})
-            .clip(RoundedCornerShape(15.dp))
-            .background(color = if (getSection()){ colorScheme.tertiaryContainer }else{ colorScheme.primaryContainer }.copy(0.8F))
-            .clickable(onClick = setSection)
-            .padding(vertical = if(!sharedPref.getBoolean("isWear",false)){8.dp}else{3.dp})
-    )
+private fun Connectivity(){
+    val myContext = LocalContext.current
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
+        for(connectivityItem in RestrictionData().connectivity(myContext)){
+            UserRestrictionItem(connectivityItem.restriction,connectivityItem.name,connectivityItem.desc,connectivityItem.ico)
+        }
+        Spacer(Modifier.padding(vertical = 30.dp))
+    }
 }
 
+@Composable
+fun Application(){
+    val myContext = LocalContext.current
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
+        for(applicationItem in RestrictionData().application(myContext)){
+            UserRestrictionItem(applicationItem.restriction,applicationItem.name,applicationItem.desc,applicationItem.ico)
+        }
+        Spacer(Modifier.padding(vertical = 30.dp))
+    }
+}
+
+@Composable
+private fun User(){
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
+        for(userItem in RestrictionData().user()){
+            UserRestrictionItem(userItem.restriction,userItem.name,userItem.desc,userItem.ico)
+        }
+        Spacer(Modifier.padding(vertical = 30.dp))
+    }
+}
+
+@Composable
+private fun Media(){
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
+        for(mediaItem in RestrictionData().media()){
+            UserRestrictionItem(mediaItem.restriction,mediaItem.name,mediaItem.desc,mediaItem.ico)
+        }
+        Spacer(Modifier.padding(vertical = 30.dp))
+    }
+}
+
+@Composable
+private fun Other(){
+    val myContext = LocalContext.current
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
+        for(otherItem in RestrictionData().other(myContext)){
+            UserRestrictionItem(otherItem.restriction,otherItem.name,otherItem.desc,otherItem.ico)
+        }
+        Spacer(Modifier.padding(vertical = 30.dp))
+    }
+}
+
+@SuppressLint("NewApi")
 @Composable
 private fun UserRestrictionItem(
     restriction:String, itemName:Int,
@@ -141,58 +183,24 @@ private fun UserRestrictionItem(
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
-    var strictState by remember{ mutableStateOf(false) }
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ){
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth(0.8F)
-        ) {
-            Icon(
-                painter = painterResource(leadIcon),
-                contentDescription = null,
-                modifier = Modifier.padding(start = 4.dp, end = 8.dp),
-                tint = colorScheme.secondary
-            )
-            Column{
-                Text(
-                    text = stringResource(itemName),
-                    style = typography.titleLarge,
-                    color = colorScheme.onSecondaryContainer
-                )
-                if(restrictionDescription!=""){
-                    Text(text = restrictionDescription, color = colorScheme.onSecondaryContainer, style = typography.titleLarge)
+    SwitchItem(
+        itemName,restrictionDescription,leadIcon,
+        { if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){ myDpm.getUserRestrictions(myComponent).getBoolean(restriction) }else{ false } },
+        {
+            try{
+                if(it){
+                    myDpm.addUserRestriction(myComponent,restriction)
+                }else{
+                    myDpm.clearUserRestriction(myComponent,restriction)
+                }
+            }catch(e:SecurityException){
+                if(isProfileOwner(myDpm)){
+                    Toast.makeText(myContext, myContext.getString(R.string.require_device_owner), Toast.LENGTH_SHORT).show()
                 }
             }
-        }
-        if(VERSION.SDK_INT>=24&&(isDeviceOwner(myDpm)|| isProfileOwner(myDpm))){
-            strictState = myDpm.getUserRestrictions(myComponent).getBoolean(restriction)
-        }
-        if(VERSION.SDK_INT>=24){
-            Switch(
-                checked = strictState,
-                onCheckedChange = {
-                    strictState=it
-                    try{
-                        if(strictState){
-                            myDpm.addUserRestriction(myComponent,restriction)
-                        }else{
-                            myDpm.clearUserRestriction(myComponent,restriction)
-                        }
-                    }catch(e:SecurityException){
-                        if(isProfileOwner(myDpm)){
-                            Toast.makeText(myContext, "需要DeviceOwner", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                    strictState = myDpm.getUserRestrictions(myComponent).getBoolean(restriction)
-                },
-                enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm),
-                modifier = Modifier.padding(end = 5.dp)
-            )
-        }
-    }
+        },
+        isDeviceOwner(myDpm)||isProfileOwner(myDpm)
+    )
 }
 
 private class RestrictionData{
@@ -238,10 +246,10 @@ private class RestrictionData{
     }
     fun application(myContext: Context):List<Restriction>{
         val list:MutableList<Restriction> = mutableListOf()
-        list += Restriction(UserManager.DISALLOW_INSTALL_APPS,R.string.install_apps,"",R.drawable.android_fill0)
+        list += Restriction(UserManager.DISALLOW_INSTALL_APPS,R.string.install_app,"",R.drawable.android_fill0)
         if(VERSION.SDK_INT>=29){list += Restriction(UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY,R.string.install_unknown_src_globally,"",R.drawable.android_fill0)}
         list += Restriction(UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES,R.string.inst_unknown_src,"",R.drawable.android_fill0)
-        list += Restriction(UserManager.DISALLOW_UNINSTALL_APPS,R.string.uninstall_apps,"",R.drawable.delete_fill0)
+        list += Restriction(UserManager.DISALLOW_UNINSTALL_APPS,R.string.uninstall_app,"",R.drawable.delete_fill0)
         list += Restriction(UserManager.DISALLOW_APPS_CONTROL,R.string.apps_ctrl, myContext.getString(R.string.apps_control_desc),R.drawable.apps_fill0)
         if(VERSION.SDK_INT>=34){ list += Restriction(UserManager.DISALLOW_CONFIG_DEFAULT_APPS,R.string.config_default_apps,"",R.drawable.apps_fill0) }
         return list

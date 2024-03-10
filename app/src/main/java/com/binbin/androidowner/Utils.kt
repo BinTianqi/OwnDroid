@@ -24,3 +24,23 @@ fun uriToStream(
         catch(e: IOException){ Toast.makeText(context, "IO异常", Toast.LENGTH_SHORT).show() }
     }else{ Toast.makeText(context, "空URI", Toast.LENGTH_SHORT).show() }
 }
+
+fun List<Any>.toText():String{
+    var output = ""
+    var isFirst = true
+    for(each in listIterator()){
+        if(isFirst){isFirst=false}else{output+="\n"}
+        output+=each
+    }
+    return output
+}
+
+fun Set<Any>.toText():String{
+    var output = ""
+    var isFirst = true
+    for(each in iterator()){
+        if(isFirst){isFirst=false}else{output+="\n"}
+        output+=each
+    }
+    return output
+}

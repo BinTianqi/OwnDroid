@@ -7,7 +7,6 @@ import androidx.activity.result.ActivityResultLauncher
 
 
 lateinit var getCaCert: ActivityResultLauncher<Intent>
-lateinit var createUser: ActivityResultLauncher<Intent>
 lateinit var createManagedProfile: ActivityResultLauncher<Intent>
 lateinit var getApk: ActivityResultLauncher<Intent>
 lateinit var getUserIcon: ActivityResultLauncher<Intent>

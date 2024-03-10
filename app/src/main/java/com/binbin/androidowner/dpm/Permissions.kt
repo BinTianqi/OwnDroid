@@ -14,278 +14,284 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.R
+import com.binbin.androidowner.ui.NavIcon
+import com.binbin.androidowner.ui.SubPageItem
+import com.binbin.androidowner.ui.Animations
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DpmPermissions(navCtrl:NavHostController){
+    val localNavCtrl = rememberNavController()
+    val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
+    val titleMap = mapOf(
+        "Home" to R.string.permission,
+        "Shizuku" to R.string.shizuku,
+        "DeviceAdmin" to R.string.device_admin,
+        "ProfileOwner" to R.string.profile_owner,
+        "DeviceOwner" to R.string.device_owner,
+        "DeviceInfo" to R.string.device_info,
+        "SpecificID" to R.string.enrollment_specific_id,
+        "OrgName" to R.string.org_name,
+        "NoManagementAccount" to R.string.account_types_management_disabled,
+        "LockScreenInfo" to R.string.owner_lockscr_info,
+        "SupportMsg" to R.string.support_msg,
+        "TransformOwnership" to R.string.transform_ownership
+    )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {Text(text = stringResource(titleMap[backStackEntry?.destination?.route]?:R.string.permission))},
+                navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
+            )
+        }
+    ){
+        NavHost(
+            navController = localNavCtrl, startDestination = "Home",
+            enterTransition = Animations().navHostEnterTransition,
+            exitTransition = Animations().navHostExitTransition,
+            popEnterTransition = Animations().navHostPopEnterTransition,
+            popExitTransition = Animations().navHostPopExitTransition,
+            modifier = Modifier
+                .background(color = if(isSystemInDarkTheme()) { colorScheme.background }else{ colorScheme.primary.copy(alpha = 0.05F) })
+                .padding(top = it.calculateTopPadding())
+        ){
+            composable(route = "Home"){Home(localNavCtrl)}
+            composable(route = "Shizuku"){ShizukuActivate()}
+            composable(route = "DeviceAdmin"){DeviceAdmin()}
+            composable(route = "ProfileOwner"){ProfileOwner()}
+            composable(route = "DeviceOwner"){DeviceOwner()}
+            composable(route = "DeviceInfo"){DeviceInfo()}
+            composable(route = "SpecificID"){SpecificID()}
+            composable(route = "OrgName"){OrgName()}
+            composable(route = "NoManagementAccount"){NoManageAccount()}
+            composable(route = "LockScreenInfo"){LockScreenInfo()}
+            composable(route = "SupportMsg"){SupportMsg()}
+            composable(route = "TransformOwnership"){TransformOwnership()}
+        }
+    }
+}
+
+@Composable
+private fun Home(localNavCtrl:NavHostController){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
-    val focusManager = LocalFocusManager.current
-    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    val isWear = sharedPref.getBoolean("isWear",false)
-    val titleColor = colorScheme.onPrimaryContainer
-    val bodyTextStyle = if(isWear){typography.bodyMedium}else{typography.bodyLarge}
-    val expandCommandBlock by remember{mutableStateOf("")}
-    Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Row(
-            modifier = Modifier.clickable {navCtrl.navigate("ShizukuActivate")},
-            horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically
-        ){
-            Text(text = "Shizuku", style = typography.titleLarge, color = titleColor, modifier = Modifier.padding(vertical = 2.dp))
-            Icon(imageVector = Icons.Default.KeyboardArrowRight,contentDescription = null, tint = colorScheme.onPrimaryContainer)
-        }
-        DeviceAdmin()
-        ProfileOwner()
-        DeviceOwner()
-        if(VERSION.SDK_INT>=30){
-            Column {
-                Text(text = stringResource(R.string.device_info), style = typography.titleLarge,color = titleColor)
-                if(VERSION.SDK_INT>=34&&(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))){
-                    val financed = myDpm.isDeviceFinanced
-                    Text(stringResource(R.string.is_device_financed, financed),style=bodyTextStyle)
-                }
-                if(VERSION.SDK_INT>=33){
-                    val dpmRole = myDpm.devicePolicyManagementRoleHolderPackage
-                    Text(stringResource(R.string.dpmrh, if(dpmRole==null) { stringResource(R.string.none) } else { "" }),style=bodyTextStyle)
-                    if(dpmRole!=null){
-                        SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState())){
-                            Text(text = dpmRole, style = bodyTextStyle, color = colorScheme.onPrimaryContainer)
-                        }
-                    }
-                }
-                val encryptionStatus = mapOf(
-                    DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE to stringResource(R.string.es_inactive),
-                    DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE to stringResource(R.string.es_active),
-                    DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED to stringResource(R.string.es_unsupported),
-                    DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY to stringResource(R.string.es_active_default_key),
-                    DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER to stringResource(R.string.es_active_per_user),
-                    DevicePolicyManager.ENCRYPTION_STATUS_ACTIVATING to stringResource(R.string.unknown)
-                )
-                Text("加密状态：${encryptionStatus[myDpm.storageEncryptionStatus]}",style=bodyTextStyle)
-                val adminList = myDpm.activeAdmins
-                if(adminList!=null){
-                    var adminListText = ""
-                    Text(text = stringResource(R.string.activated_device_admin, adminList.size), style = bodyTextStyle)
-                    var count = adminList.size
-                    for(each in adminList){
-                        count -= 1
-                        adminListText += "$each"
-                        if(count>0){adminListText += "\n"}
-                    }
-                    SelectionContainer(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp).horizontalScroll(rememberScrollState())){
-                        Text(text = adminListText, style = bodyTextStyle, color = titleColor)
-                    }
-                }
-            }
-        }
-        
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        Spacer(Modifier.padding(vertical = 10.dp))
+        SubPageItem(
+            R.string.device_admin, stringResource(if(myDpm.isAdminActive(myComponent)){R.string.activated}else{R.string.deactivated}),
+            operation = {localNavCtrl.navigate("DeviceAdmin")}
+        )
+        SubPageItem(
+            R.string.profile_owner, stringResource(if(isProfileOwner(myDpm)){R.string.activated}else{R.string.deactivated}),
+            operation = {localNavCtrl.navigate("ProfileOwner")}
+        )
+        SubPageItem(
+            R.string.device_owner, stringResource(if(isDeviceOwner(myDpm)){R.string.activated}else{R.string.deactivated}),
+            operation = {localNavCtrl.navigate("DeviceOwner")}
+        )
+        SubPageItem(R.string.shizuku,""){localNavCtrl.navigate("Shizuku")}
+        SubPageItem(R.string.device_info,""){localNavCtrl.navigate("DeviceInfo")}
         if(VERSION.SDK_INT>=31&&(isProfileOwner(myDpm)|| isDeviceOwner(myDpm))){
-            SpecificID()
+            SubPageItem(R.string.enrollment_specific_id,""){localNavCtrl.navigate("SpecificID")}
         }
-        
         if((VERSION.SDK_INT>=26&&isDeviceOwner(myDpm))||(VERSION.SDK_INT>=24&&isProfileOwner(myDpm))){
-            OrgName()
+            SubPageItem(R.string.org_name,""){localNavCtrl.navigate("OrgName")}
         }
-        
         if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){
-            NoManageAccount()
+            SubPageItem(R.string.account_types_management_disabled,""){localNavCtrl.navigate("NoManagementAccount")}
         }
-        
         if(VERSION.SDK_INT>=24&&isDeviceOwner(myDpm)){
-            DeviceOwnerInfo(R.string.owner_lockscr_info,R.string.place_holder,R.string.owner_lockscr_info,focusManager,myContext,
-                {myDpm.deviceOwnerLockScreenInfo},{content ->  myDpm.setDeviceOwnerLockScreenInfo(myComponent,content)})
+            SubPageItem(R.string.owner_lockscr_info,""){localNavCtrl.navigate("LockScreenInfo")}
         }
         if(VERSION.SDK_INT>=24&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
-            SupportMsg()
+            SubPageItem(R.string.support_msg,""){localNavCtrl.navigate("SupportMsg")}
         }
-        
         if(VERSION.SDK_INT>=28&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
-            TransformOwnership()
+            SubPageItem(R.string.transform_ownership,""){localNavCtrl.navigate("TransformOwnership")}
         }
-        
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
+@SuppressLint("NewApi")
 @Composable
-fun DeviceOwnerInfo(
-    name:Int,
-    desc:Int,
-    textfield:Int,
-    fm:FocusManager,
-    myContext:Context,
-    input:()->CharSequence?,
-    output:(content:String?)->Unit
-){
-    Column{
-        val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-        val isWear = sharedPref.getBoolean("isWear",false)
-        Text(text = stringResource(name), style = typography.titleLarge, softWrap = false, color = colorScheme.onPrimaryContainer)
-        if(desc!=R.string.place_holder){
-            Text(
-                text = stringResource(desc),modifier = Modifier.padding(top = 6.dp),
-                style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium})
-        }
-        var inputContent by remember{ mutableStateOf(input()) }
+private fun LockScreenInfo(){
+    val myContext = LocalContext.current
+    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val focusMgr = LocalFocusManager.current
+    var infoText by remember{mutableStateOf(myDpm.deviceOwnerLockScreenInfo?.toString() ?: "")}
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
+        Text(text = stringResource(R.string.owner_lockscr_info), style = typography.headlineLarge)
         OutlinedTextField(
-            value = if(inputContent!=null){ inputContent.toString() }else{""},
-            label = {Text(stringResource(textfield))},
-            onValueChange = { inputContent=it },
+            value = infoText,
+            label = {Text(stringResource(R.string.owner_lockscr_info))},
+            onValueChange = { infoText=it },
             modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 4.dp)
         )
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Button(
-                onClick = {
-                    output(inputContent.toString())
-                    inputContent= input()
-                    fm.clearFocus()
-                    Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
-                },
-                modifier = if(isWear){Modifier.fillMaxWidth(0.49F)}else{Modifier.fillMaxWidth(0.6F)}
-            ) {
-                Text(text = stringResource(R.string.apply))
-            }
-            Button(
-                onClick = {
-                    output(null)
-                    inputContent = input()
-                    fm.clearFocus()
-                    Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
-                },
-                modifier = Modifier.fillMaxWidth(0.96F)
-            ) {
-                Text(text = stringResource(R.string.reset))
-            }
+        Button(
+            onClick = {
+                focusMgr.clearFocus()
+                myDpm.setDeviceOwnerLockScreenInfo(myComponent,infoText)
+                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = stringResource(R.string.apply))
+        }
+        Button(
+            onClick = {
+                focusMgr.clearFocus()
+                myDpm.setDeviceOwnerLockScreenInfo(myComponent,null)
+                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = stringResource(R.string.reset))
         }
     }
 }
 
 @Composable
-fun DeviceAdmin(){
+private fun DeviceAdmin(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
-    Column {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(text = "Device Admin")
-                Text(
-                    text = stringResource(
-                        if(myDpm.isAdminActive(myComponent)) {
-                            R.string.activated
-                        } else {
-                            R.string.deactivated
-                        }
-                    )
-                )
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.device_admin), style = typography.headlineLarge)
+        Text(text = stringResource(if(myDpm.isAdminActive(myComponent)) { R.string.activated } else { R.string.deactivated }), style = typography.titleLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
+        if(myDpm.isAdminActive(myComponent)) {
+            if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)) {
+                Button(onClick = {myDpm.removeActiveAdmin(myComponent)}, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.deactivate))
+                }
             }
-            if(myDpm.isAdminActive(myComponent)) {
-                if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)) {
-                    Button(onClick = {
-                        myDpm.removeActiveAdmin(myComponent)
-                    }) {
-                        Text(stringResource(R.string.deactivate))
-                    }
-                }
-            } else {
-                Button(onClick = {activateDeviceAdmin(myContext, myComponent)}) {
-                    Text(stringResource(R.string.activate))
-                }
+        } else {
+            Button(onClick = {activateDeviceAdmin(myContext, myComponent)}, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.activate))
             }
         }
+        Spacer(Modifier.padding(vertical = 5.dp))
         if(!myDpm.isAdminActive(myComponent)) {
             SelectionContainer {
-                Text(text = stringResource(R.string.activate_device_admin_command), color = colorScheme.onTertiaryContainer)
+                Text(text = stringResource(R.string.activate_device_admin_command))
             }
         }
     }
 }
 
 @Composable
-fun ProfileOwner(){
+private fun ProfileOwner(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
-    Column {
-        if(!isDeviceOwner(myDpm)){
-            Row(
-                
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(text = "Profile Owner")
-                    Text(stringResource(if(isProfileOwner(myDpm)){R.string.activated}else{R.string.deactivated}))
-                }
-                if(isProfileOwner(myDpm)&&VERSION.SDK_INT>=24&&!myDpm.isManagedProfile(myComponent)){
-                    Button(onClick = {myDpm.clearProfileOwner(myComponent)}) {
-                        Text(stringResource(R.string.deactivate))
-                    }
-                }
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.profile_owner), style = typography.headlineLarge)
+        Text(stringResource(if(isProfileOwner(myDpm)){R.string.activated}else{R.string.deactivated}), style = typography.titleLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
+        if(isProfileOwner(myDpm)&&VERSION.SDK_INT>=24){
+            Button(onClick = {myDpm.clearProfileOwner(myComponent)}, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.deactivate))
             }
         }
-        if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)){
+        if(!isProfileOwner(myDpm)){
             SelectionContainer{
-                Text(text = stringResource(R.string.activate_profile_owner_command), color = colorScheme.onTertiaryContainer)
+                Text(text = stringResource(R.string.activate_profile_owner_command))
             }
         }
     }
 }
 
 @Composable
-fun DeviceOwner(){
+private fun DeviceOwner(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    Column {
-        if(!isProfileOwner(myDpm)){
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(text = "Device Owner")
-                    Text(stringResource(if(isDeviceOwner(myDpm)){R.string.activated}else{R.string.deactivated}))
-                }
-                if(isDeviceOwner(myDpm)){
-                    Button(
-                        onClick = {
-                            myDpm.clearDeviceOwnerApp(myContext.packageName)
-                        }
-                    ) {
-                        Text(stringResource(R.string.deactivate))
-                    }
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.device_owner), style = typography.headlineLarge)
+        Text(text = stringResource(if(isDeviceOwner(myDpm)){R.string.activated}else{R.string.deactivated}), style = typography.titleLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
+        if(isDeviceOwner(myDpm)){
+            Button(onClick = {myDpm.clearDeviceOwnerApp(myContext.packageName)}, modifier = Modifier.fillMaxWidth()) {
+                Text(text = stringResource(R.string.deactivate))
+            }
+        }
+        if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)){
+            SelectionContainer{
+                Text(text = stringResource(R.string.activate_device_owner_command))
+            }
+        }
+    }
+}
+
+@Composable
+fun DeviceInfo(){
+    val myContext = LocalContext.current
+    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.device_info), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
+        if(VERSION.SDK_INT>=34&&(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))){
+            val financed = myDpm.isDeviceFinanced
+            Text(stringResource(R.string.is_device_financed, financed))
+        }
+        Spacer(Modifier.padding(vertical = 2.dp))
+        if(VERSION.SDK_INT>=33){
+            val dpmRole = myDpm.devicePolicyManagementRoleHolderPackage
+            Text(stringResource(R.string.dpmrh, if(dpmRole==null) { stringResource(R.string.none) } else { "" }))
+            if(dpmRole!=null){
+                SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState())){
+                    Text(text = dpmRole)
                 }
             }
         }
-        
-        if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)){
-            SelectionContainer{
-                Text(text = stringResource(R.string.activate_device_owner_command), color = colorScheme.onTertiaryContainer)
+        Spacer(Modifier.padding(vertical = 2.dp))
+        val encryptionStatus = mutableMapOf(
+            DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE to stringResource(R.string.es_inactive),
+            DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE to stringResource(R.string.es_active),
+            DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED to stringResource(R.string.es_unsupported),
+            DevicePolicyManager.ENCRYPTION_STATUS_ACTIVATING to stringResource(R.string.unknown)
+        )
+        if(VERSION.SDK_INT>=23){ encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY] = stringResource(R.string.es_active_default_key) }
+        if(VERSION.SDK_INT>=24){ encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER] = stringResource(R.string.es_active_per_user) }
+        Text("加密状态：${encryptionStatus[myDpm.storageEncryptionStatus]}")
+        Spacer(Modifier.padding(vertical = 2.dp))
+        val adminList = myDpm.activeAdmins
+        if(adminList!=null){
+            var adminListText = ""
+            Text(text = stringResource(R.string.activated_device_admin, adminList.size))
+            var count = adminList.size
+            for(each in adminList){
+                count -= 1
+                adminListText += "$each"
+                if(count>0){adminListText += "\n"}
+            }
+            SelectionContainer(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp).horizontalScroll(rememberScrollState())){
+                Text(text = adminListText)
             }
         }
     }
@@ -293,14 +299,16 @@ fun DeviceOwner(){
 
 @SuppressLint("NewApi")
 @Composable
-fun SpecificID(){
+private fun SpecificID(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    Column{
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
         val specificId = myDpm.enrollmentSpecificId
-        Text(text = stringResource(R.string.enrollment_specific_id), style = typography.titleLarge)
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.enrollment_specific_id), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
         if(specificId!=""){
-            SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState())){ Text(specificId,softWrap = false) }
+            SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState())){ Text(specificId) }
         }else{
             Text(stringResource(R.string.require_set_org_id))
         }
@@ -309,20 +317,23 @@ fun SpecificID(){
 
 @SuppressLint("NewApi")
 @Composable
-fun OrgName(){
+private fun OrgName(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val focusMgr = LocalFocusManager.current
-    Column{
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
         var orgName by remember{mutableStateOf(try{myDpm.getOrganizationName(myComponent).toString()}catch(e:SecurityException){""})}
-        Text(text = stringResource(R.string.org_name), style = typography.titleLarge)
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.org_name), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
             value = orgName, onValueChange = {orgName=it}, modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 3.dp),
             label = {Text(stringResource(R.string.org_name))},
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
         )
+        Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 focusMgr.clearFocus()
@@ -338,94 +349,150 @@ fun OrgName(){
 
 @SuppressLint("NewApi")
 @Composable
-fun SupportMsg(){
+private fun SupportMsg(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val focusMgr = LocalFocusManager.current
-    DeviceOwnerInfo(R.string.support_msg,R.string.support_msg_desc,R.string.message,focusMgr,myContext,
-        {myDpm.getShortSupportMessage(myComponent)},{content ->  myDpm.setShortSupportMessage(myComponent,content)})
-    DeviceOwnerInfo(R.string.long_support_msg,R.string.long_support_msg_desc,R.string.message,focusMgr,myContext,
-        {myDpm.getLongSupportMessage(myComponent)},{content ->  myDpm.setLongSupportMessage(myComponent,content)})
+    var shortMsg by remember{mutableStateOf(myDpm.getShortSupportMessage(myComponent)?.toString() ?: "")}
+    var longMsg by remember{mutableStateOf(myDpm.getLongSupportMessage(myComponent)?.toString() ?: "")}
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.short_support_msg), style = typography.headlineLarge)
+        OutlinedTextField(
+            value = shortMsg,
+            label = {Text(stringResource(R.string.message))},
+            onValueChange = { shortMsg=it },
+            modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 4.dp)
+        )
+        Button(
+            onClick = {
+                focusMgr.clearFocus()
+                myDpm.setShortSupportMessage(myComponent,shortMsg)
+                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = stringResource(R.string.apply))
+        }
+        Button(
+            onClick = {
+                focusMgr.clearFocus()
+                myDpm.setShortSupportMessage(myComponent,null)
+                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = stringResource(R.string.reset))
+        }
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.long_support_msg), style = typography.headlineLarge)
+        OutlinedTextField(
+            value = longMsg,
+            label = {Text(stringResource(R.string.message))},
+            onValueChange = { longMsg=it },
+            modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 4.dp)
+        )
+        Button(
+            onClick = {
+                focusMgr.clearFocus()
+                myDpm.setLongSupportMessage(myComponent,longMsg)
+                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = stringResource(R.string.apply))
+        }
+        Button(
+            onClick = {
+                focusMgr.clearFocus()
+                myDpm.setLongSupportMessage(myComponent,null)
+                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = stringResource(R.string.reset))
+        }
+        Spacer(Modifier.padding(vertical = 30.dp))
+    }
 }
 
 @Composable
-fun NoManageAccount(){
+private fun NoManageAccount(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val focusMgr = LocalFocusManager.current
-    Column{
-        Text(text = stringResource(R.string.account_types_management_disabled), style = typography.titleLarge)
-        Text(stringResource(R.string.developing))
-        var noManageAccount = myDpm.accountTypesWithManagementDisabled
-        var accountlist by remember{ mutableStateOf("") }
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.account_types_management_disabled), style = typography.headlineLarge)
+        Text(stringResource(R.string.unknown_effect))
+        var accountList by remember{ mutableStateOf("") }
         val refreshList = {
-            accountlist = ""
+            val noManageAccount = myDpm.accountTypesWithManagementDisabled
+            accountList = ""
             if (noManageAccount != null) {
-                var count = noManageAccount!!.size
-                for(each in noManageAccount!!){ count -= 1; accountlist += each; if(count>0){accountlist += "\n"} }
+                var count = noManageAccount.size
+                for(each in noManageAccount){ count -= 1; accountList += each; if(count>0){accountList += "\n"} }
             }
         }
         var inited by remember{mutableStateOf(false)}
         if(!inited){ refreshList(); inited=true }
-        Text(text = if(accountlist==""){stringResource(R.string.none)}else{accountlist})
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Text(text = if(accountList==""){stringResource(R.string.none)}else{accountList})
         var inputText by remember{ mutableStateOf("") }
         OutlinedTextField(
             value = inputText,
             onValueChange = {inputText=it},
             label = {Text(stringResource(R.string.account_types))},
-            modifier = Modifier.focusable().fillMaxWidth().padding(bottom = 4.dp),
+            modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 4.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
         )
-        Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
-            Button(
-                onClick={
-                    focusMgr.clearFocus()
-                    myDpm.setAccountManagementDisabled(myComponent,inputText,true)
-                    noManageAccount=myDpm.accountTypesWithManagementDisabled
-                    refreshList()
-                },
-                modifier = Modifier.fillMaxWidth(0.49f)
-            ){
-                Text(stringResource(R.string.add))
-            }
-            Button(
-                onClick={focusMgr.clearFocus()
-                    myDpm.setAccountManagementDisabled(myComponent,inputText,false)
-                    noManageAccount=myDpm.accountTypesWithManagementDisabled
-                    refreshList()
-                },
-                modifier = Modifier.fillMaxWidth(0.96F)
-            ){
-                Text(stringResource(R.string.remove))
-            }
+        Button(
+            onClick={
+                myDpm.setAccountManagementDisabled(myComponent,inputText,true)
+                refreshList()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ){
+            Text(stringResource(R.string.add))
+        }
+        Button(
+            onClick={
+                myDpm.setAccountManagementDisabled(myComponent,inputText,false)
+                refreshList()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ){
+            Text(stringResource(R.string.remove))
         }
     }
 }
 
 @SuppressLint("NewApi")
 @Composable
-fun TransformOwnership(){
+private fun TransformOwnership(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val focusMgr = LocalFocusManager.current
-    Column{
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
         var pkg by remember{mutableStateOf("")}
         var cls by remember{mutableStateOf("")}
-        Text(text = stringResource(R.string.transform_ownership), style = typography.titleLarge)
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.transform_ownership), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.transform_ownership_desc))
         OutlinedTextField(
             value = pkg, onValueChange = {pkg = it}, label = {Text(stringResource(R.string.target_package_name))},
-            modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp),
+            modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 4.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = {focusMgr.moveFocus(FocusDirection.Down)})
         )
         OutlinedTextField(
             value = cls, onValueChange = {cls = it}, label = {Text(stringResource(R.string.target_class_name))},
-            modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp),
+            modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 4.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
         )
@@ -442,10 +509,11 @@ fun TransformOwnership(){
         ) {
             Text(stringResource(R.string.transform))
         }
+        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
-fun activateDeviceAdmin(inputContext:Context,inputComponent:ComponentName){
+private fun activateDeviceAdmin(inputContext:Context,inputComponent:ComponentName){
     try {
         val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, inputComponent)

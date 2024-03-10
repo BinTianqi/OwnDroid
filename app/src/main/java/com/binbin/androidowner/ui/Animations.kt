@@ -1,22 +1,22 @@
-package com.binbin.androidowner.ui.theme
+package com.binbin.androidowner.ui
 
-import android.content.Context
 import androidx.compose.animation.*
 import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.spring
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.navigation.NavBackStackEntry
+import com.binbin.androidowner.displayMetrics
 
-class Animations(myContext: Context){
+class Animations{
     private val fade: FiniteAnimationSpec<Float> = spring(stiffness = Spring.StiffnessMediumLow)
     private val spring:FiniteAnimationSpec<IntOffset> = spring(stiffness = Spring.StiffnessMediumLow, visibilityThreshold = IntOffset.VisibilityThreshold)
     
-    val navIconEnterTransition:EnterTransition = expandHorizontally() + fadeIn()
-    val navIconExitTransition:ExitTransition = shrinkHorizontally() + fadeOut()
+    val animateListSize:FiniteAnimationSpec<IntSize> = spring(stiffness = Spring.StiffnessMediumLow, visibilityThreshold = IntSize.VisibilityThreshold)
     
-    private val screenWidth = myContext.resources.displayMetrics.widthPixels
+    private val screenWidth = displayMetrics.widthPixels
     private val initialOffsetValue = screenWidth/8
     private val targetOffsetValue = screenWidth/8
     

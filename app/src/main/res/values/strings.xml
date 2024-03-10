@@ -16,7 +16,7 @@
     <string name="activated">已激活</string>
     <string name="deactivated">未激活</string>
     <string name="activate">激活</string>
-    <string name="deactivate">撤销</string>
+    <string name="deactivate">停用</string>
     <string name="blacklist">黑名单</string>
     <string name="whitelist">白名单</string>
     <string name="granted">允许</string>
@@ -40,13 +40,18 @@
     <string name="developing">功能开发中</string>
     <string name="place_holder" />
     <string name="try_again">请再试一次</string>
+    <string name="unknown_effect">效果未知</string>
+    <string name="options">选项</string>
 
     <!--Permissions-->
+    <string name="device_admin">Device admin</string>
+    <string name="profile_owner">Profile owner</string>
+    <string name="device_owner">Device owner</string>
     <string name="activate_device_admin">激活Device admin</string>
     <string name="touch_to_view_command">点击查看激活命令</string>
-    <string name="activate_device_admin_command">adb shell dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver</string>
-    <string name="activate_profile_owner_command">adb shell dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver</string>
-    <string name="activate_device_owner_command">adb shell dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver</string>
+    <string name="activate_device_admin_command">adb shell dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver</string>
+    <string name="activate_profile_owner_command">adb shell dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver</string>
+    <string name="activate_device_owner_command">adb shell dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver</string>
     <string name="device_info">设备信息</string>
     <string name="is_device_financed">企业资产 : %1$s</string>
     <string name="dpmrh">设备策略管理器角色(DPMRH)：%1$s</string>
@@ -59,14 +64,15 @@
     <string name="enrollment_specific_id">设备唯一标识码</string>
     <string name="require_set_org_id">需要设置组织ID</string>
     <string name="org_name">组织名称</string>
-    <string name="account_types_management_disabled">不受控制的账号类型</string>
+    <string name="account_types_management_disabled">不受管理的账号</string>
     <string name="account_types">账号类型</string>
     <string name="transform_ownership">转移所有权</string>
     <string name="transform_ownership_desc">把Device owner或Profile owner权限转移到另一个应用。目标必须是Device admin</string>
     <string name="target_package_name">目标包名</string>
     <string name="target_class_name">目标类名</string>
-    <string name="owner_lockscr_info">锁屏信息</string>
-    <string name="support_msg">提供支持的短消息</string>
+    <string name="owner_lockscr_info">锁屏提示信息</string>
+    <string name="support_msg">提供支持的消息</string>
+    <string name="short_support_msg">提供支持的消息</string>
     <string name="support_msg_desc">如果你禁用了某个功能，用户尝试使用这个功能时会看见这个消息（可多行）</string>
     <string name="message">消息</string>
     <string name="long_support_msg">提供支持的长消息</string>
@@ -123,6 +129,7 @@
     <string name="mte_policy">MTE策略</string>
     <string name="mte_policy_desc">MTE：内存标记拓展，安卓14和ARMv9的高端功能</string>
     <string name="nearby_app_streaming">附近App共享</string>
+    <string name="nearby_streaming_policy">附近共享策略</string>
     <string name="nearby_notifi_streaming">附近通知共享</string>
     <string name="enable_if_secure_enough">在足够安全时启用</string>
     <string name="lock_task_feature">锁定任务功能</string>
@@ -163,17 +170,18 @@
     <string name="start_time">开始时间</string>
     <string name="end_time">结束时间</string>
     <string name="minutes_in_one_day">请输入一天中的分钟（0~1440）</string>
+    <string name="update_received_time">系统更新接收时间: %1$s</string>
 
     <!--Network-->
     <string name="network">网络</string>
-    <string name="min_wifi_security_level">要求最小WiFi安全等级</string>
+    <string name="min_wifi_security_level">最小WiFi安全等级</string>
     <string name="wifi_security_level_open">开放</string>
     <string name="preferential_network_service">优先网络服务</string>
     <string name="wifi_lockdown">WiFi锁定</string>
     <string name="wifi_ssid_policy">WiFi SSID策略</string>
     <string name="ssid_list_is">SSID列表：</string>
     <string name="cannot_be_empty">不能为空</string>
-    <string name="already_exist">重复</string>
+    <string name="already_exist">已经存在</string>
     <string name="please_select_a_policy">请选择策略</string>
     <string name="private_dns">私人DNS</string>
     <string name="dns_provide_hostname">指定主机名</string>
@@ -212,13 +220,16 @@
 
     <!--WorkProfile-->
     <string name="work_profile">工作资料</string>
+    <string name="work_profile_owner">Profile owner（工作资料）</string>
+    <string name="work_profile_activated">工作资料已激活</string>
     <string name="info">信息</string>
     <string name="is_already_work_profile">已是工作资料</string>
+    <string name="create_work_profile">创建工作资料</string>
     <string name="able_to_create_work_profile">可以创建工作资料：%1$s</string>
     <string name="device_owner_cannot_create_work_profile">Device owner不能创建工作资料</string>
     <string name="is_org_owned_profile">由组织拥有的工作资料：%1$s</string>
     <string name="org_owned_work_profile">组织拥有的工作资料</string>
-    <string name="activate_org_profile_command" tools:ignore="TypographyDashes">adb shell \"dpm mark-profile-owner-on-organization-owned-device --user %1$s com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver\"</string>
+    <string name="activate_org_profile_command" tools:ignore="TypographyDashes">adb shell \"dpm mark-profile-owner-on-organization-owned-device --user %1$s com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver\"</string>
     <string name="become_org_profile">成为组织拥有的工作资料</string>
     <string name="skip_encryption">跳过加密</string>
     <string name="create">创建</string>
@@ -275,6 +286,13 @@
 
     <!--UserRestriction-->
     <string name="user_restrict">用户限制</string>
+    <string name="network_internet">网络和互联网</string>
+    <string name="more_connectivity">更多连接</string>
+    <string name="applications">应用</string>
+    <string name="users">用户</string>
+    <string name="media">媒体</string>
+    <string name="other">其他</string>
+    <string name="require_device_owner">需要DeviceOwner</string>
     <string name="config_mobile_network">配置移动数据</string>
     <string name="config_wifi">配置Wi-Fi</string>
     <string name="data_roaming">数据漫游</string>
@@ -304,10 +322,8 @@
     <string name="mount_physical_media_desc">包括TF卡和USB-OTG</string>
     <string name="printing">打印</string>
 
-    <string name="install_apps">安装应用</string>
     <string name="install_unknown_src_globally">安装未知来源应用（全局）</string>
     <string name="inst_unknown_src">安装未知来源应用</string>
-    <string name="uninstall_apps">卸载应用</string>
     <string name="apps_ctrl">控制应用</string>
     <string name="apps_control_desc">清空缓存/清空内部存储</string>
     <string name="config_default_apps">修改默认App</string>
@@ -348,10 +364,49 @@
 
     <!--UserManage-->
     <string name="user_manage">用户管理</string>
-
+    <string name="edit_username">修改用户名</string>
+    <string name="start_user_session_msg">用户会话开始消息</string>
+    <string name="end_user_session_msg">用户会话结束消息</string>
+    <string name="user_info">用户信息</string>
+    <string name="is_user_unlocked">用户已解锁：%1$s</string>
+    <string name="is_support_multi_user">支持多用户：%1$s</string>
+    <string name="is_system_user">系统用户：%1$s</string>
+    <string name="is_admin_user">管理员用户：%1$s</string>
+    <string name="is_headless_system_user">无头系统用户: %1$s</string>
+    <string name="user_can_logout">用户可以退出 : %1$s</string>
+    <string name="is_ephemeral_user">临时用户： %1$s</string>
+    <string name="is_affiliated_user">附属用户: %1$s</string>
+    <string name="user_id_is">当前UserID：%1$s</string>
+    <string name="user_serial_number_is">当前用户序列号：%1$s</string>
+    <string name="user_operation">用户操作</string>
+    <string name="serial_number">序列号</string>
+    <string name="use_uid">使用UID</string>
+    <string name="logout_current_user">登出当前用户</string>
+    <string name="start_in_background">在后台启动</string>
+    <string name="user_operation_switch">切换</string>
+    <string name="user_operation_stop">停止</string>
+    <string name="user_operation_remove">移除</string>
+    <string name="create_user">创建用户</string>
+    <string name="username">用户名</string>
+    <string name="create_user_skip_wizard">跳过创建用户向导</string>
+    <string name="create_user_ephemeral_user">临时用户</string>
+    <string name="create_user_enable_all_system_app">启用所有系统应用</string>
+    <string name="serial_number_of_new_user_is">新用户的序列号：%1$s</string>
+    <string name="affiliation_id">附属用户ID</string>
+    <string name="include_empty_string">有空字符串</string>
+    <string name="affiliation_id_desc">如果多用户，附属用户ID相同时可以让其他用户附属于主用户</string>
+    <string name="change_user_icon">更换用户头像</string>
+    <string name="pick_a_rect_picture">尽量选择正方形的图片，以免产生问题</string>
+    <string name="file_picker_instead_gallery">使用文件选择器而不是相册</string>
+    <string name="select_picture" tools:ignore="TypographyEllipsis">选择图片...</string>
+    <string name="unknown_result">未知结果（失败）</string>
+    <string name="fail_managed_profile">失败：受管理的资料</string>
+    <string name="fail_current_user">失败：当前用户</string>
+    <string name="user_session_msg">用户会话消息</string>
 
     <!--Password&Keyguard-->
     <string name="password_and_keyguard">密码与锁屏</string>
+    <string name="password_info">密码信息</string>
     <string name="reset_pwd_desc">留空可以清除密码，纯数字将使用PIN码</string>
     <string name="max_pwd_fail">最大密码错误次数</string>
     <string name="max_pwd_fail_desc">达到该限制会恢复出厂设置</string>

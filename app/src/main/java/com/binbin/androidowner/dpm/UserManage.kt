@@ -8,150 +8,156 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Binder
 import android.os.Build.VERSION
+import android.os.Process
 import android.os.UserHandle
 import android.os.UserManager
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.compose.foundation.focusable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
+import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.os.UserManagerCompat
-import com.binbin.androidowner.ui.CheckBoxItem
-import com.binbin.androidowner.ui.RadioButtonItem
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.binbin.androidowner.R
+import com.binbin.androidowner.toText
+import com.binbin.androidowner.ui.*
 import com.binbin.androidowner.uriToStream
+import kotlinx.coroutines.delay
 
 var affiliationID = mutableSetOf<String>()
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserManage() {
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        val myContext = LocalContext.current
-        val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
-        val userManager = myContext.getSystemService(Context.USER_SERVICE) as UserManager
-        val titleColor = colorScheme.onPrimaryContainer
-        Column{
-            Text(text = "用户信息", style = typography.titleLarge, color = titleColor)
-            Text("用户已解锁：${UserManagerCompat.isUserUnlocked(myContext)}")
-            if(VERSION.SDK_INT>=24){ Text("支持多用户：${UserManager.supportsMultipleUsers()}") }
-            if(VERSION.SDK_INT>=23){ Text(text = "系统用户：${userManager.isSystemUser}") }
-            if(VERSION.SDK_INT>=34){ Text(text = "管理员用户：${userManager.isAdminUser}") }
-            if(VERSION.SDK_INT>=31){ Text(text = "无头系统用户: ${UserManager.isHeadlessSystemUserMode()}") }
-            Spacer(Modifier.padding(vertical = 5.dp))
-            if (VERSION.SDK_INT >= 28) {
-                val logoutable = myDpm.isLogoutEnabled
-                Text(text = "用户可以退出 : $logoutable")
-                if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
-                    val ephemeralUser = myDpm.isEphemeralUser(myComponent)
-                    Text(text = "临时用户： $ephemeralUser")
-                }
-                Text(text = "附属用户: ${myDpm.isAffiliatedUser}")
-            }
-            Spacer(Modifier.padding(vertical = 5.dp))
-            Text(text = "当前UserID：${Binder.getCallingUid()/100000}")
-            Text(text = "当前用户序列号：${userManager.getSerialNumberForUser(android.os.Process.myUserHandle())}")
+fun UserManage(navCtrl:NavHostController) {
+    val localNavCtrl = rememberNavController()
+    val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
+    val titleMap = mapOf(
+        "UserInfo" to R.string.user_info,
+        "UserOperation" to R.string.user_operation,
+        "CreateUser" to R.string.create_user,
+        "EditUsername" to R.string.edit_username,
+        "ChangeUserIcon" to R.string.change_user_icon,
+        "UserSessionMessage" to R.string.user_session_msg,
+        "AffiliationID" to R.string.affiliation_id,
+    )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {Text(text = stringResource(titleMap[backStackEntry?.destination?.route]?:R.string.user_manage))},
+                navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
+            )
         }
+    ){
+        NavHost(
+            navController = localNavCtrl, startDestination = "Home",
+            enterTransition = Animations().navHostEnterTransition,
+            exitTransition = Animations().navHostExitTransition,
+            popEnterTransition = Animations().navHostPopEnterTransition,
+            popExitTransition = Animations().navHostPopExitTransition,
+            modifier = Modifier
+                .background(color = if(isSystemInDarkTheme()) { colorScheme.background }else{ colorScheme.primary.copy(alpha = 0.05F) })
+                .padding(top = it.calculateTopPadding())
+        ){
+            composable(route = "Home"){Home(localNavCtrl)}
+            composable(route = "UserInfo"){CurrentUserInfo()}
+            composable(route = "UserOperation"){UserOperation()}
+            composable(route = "CreateUser"){CreateUser()}
+            composable(route = "EditUsername"){Username()}
+            composable(route = "ChangeUserIcon"){UserIcon()}
+            composable(route = "UserSessionMessage"){UserSessionMessage()}
+            composable(route = "AffiliationID"){AffiliationID()}
+        }
+    }
+}
 
-        UserOperation()
-
+@Composable
+private fun Home(navCtrl: NavHostController){
+    val myContext = LocalContext.current
+    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
+        SubPageItem(R.string.user_info,""){navCtrl.navigate("UserInfo")}
+        SubPageItem(R.string.user_operation,""){navCtrl.navigate("UserOperation")}
         if(VERSION.SDK_INT>=24&&isDeviceOwner(myDpm)){
-            CreateUser()
+            SubPageItem(R.string.create_user,""){navCtrl.navigate("CreateUser")}
         }
-        
-        if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
-            AffiliationID()
-        }
-        
-        UserSessionMessage("用户名", "用户名", true, {null}) {msg-> myDpm.setProfileName(myComponent, msg.toString())}
-        
+        SubPageItem(R.string.edit_username,""){navCtrl.navigate("EditUsername")}
         if(VERSION.SDK_INT>=23&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
-            UserIcon()
+            SubPageItem(R.string.change_user_icon,""){navCtrl.navigate("ChangeUserIcon")}
         }
-        
-        if(VERSION.SDK_INT>=28){
-            UserSessionMessage("用户会话开始消息", "消息", false, {myDpm.getStartUserSessionMessage(myComponent)}) {msg-> myDpm.setStartUserSessionMessage(myComponent, msg)}
-            UserSessionMessage("用户会话结束消息", "消息", false, {myDpm.getEndUserSessionMessage(myComponent)}) {msg-> myDpm.setEndUserSessionMessage(myComponent, msg)}
+        if(VERSION.SDK_INT>=28&&isDeviceOwner(myDpm)){
+            SubPageItem(R.string.user_session_msg,""){navCtrl.navigate("UserSessionMessage")}
+        }
+        if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
+            SubPageItem(R.string.affiliation_id,""){navCtrl.navigate("AffiliationID")}
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
 @Composable
-private fun UserSessionMessage(text:String, textField:String, profileOwner:Boolean, get: ()->CharSequence?, setMsg:(msg: CharSequence?)->Unit){
-    Column{
-        val myContext = LocalContext.current
-        val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        val focusMgr = LocalFocusManager.current
-        var msg by remember{ mutableStateOf(if(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner)){ if(get()==null){""}else{get().toString()} }else{""}) }
-        val sharedPref = myContext.getSharedPreferences("data", Context.MODE_PRIVATE)
-        val isWear = sharedPref.getBoolean("isWear",false)
-        Text(text = text, style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
-        TextField(
-            value = msg,
-            onValueChange = {msg=it},
-            label = {Text(textField)},
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-            modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 6.dp),
-            enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner)
-        )
-        Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween) {
-            Button(
-                onClick = {
-                    focusMgr.clearFocus()
-                    setMsg(msg)
-                    msg = if(get()==null){""}else{get().toString()}
-                    Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
-                },
-                enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner),
-                modifier = Modifier.fillMaxWidth(if(isWear){0.49F}else{0.65F})
-            ) {
-                Text("应用")
+private fun CurrentUserInfo(){
+    val myContext = LocalContext.current
+    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val userManager = myContext.getSystemService(Context.USER_SERVICE) as UserManager
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.user_info), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Text(stringResource(R.string.is_user_unlocked, UserManagerCompat.isUserUnlocked(myContext)))
+        if(VERSION.SDK_INT>=24){ Text(stringResource(R.string.is_support_multi_user, UserManager.supportsMultipleUsers())) }
+        if(VERSION.SDK_INT>=23){ Text(text = stringResource(R.string.is_system_user, userManager.isSystemUser)) }
+        if(VERSION.SDK_INT>=34){ Text(text = stringResource(R.string.is_admin_user, userManager.isAdminUser)) }
+        if(VERSION.SDK_INT>=31){ Text(text = stringResource(R.string.is_headless_system_user, UserManager.isHeadlessSystemUserMode())) }
+        Spacer(Modifier.padding(vertical = 5.dp))
+        if (VERSION.SDK_INT >= 28) {
+            val logoutable = myDpm.isLogoutEnabled
+            Text(text = stringResource(R.string.user_can_logout, logoutable))
+            if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
+                val ephemeralUser = myDpm.isEphemeralUser(myComponent)
+                Text(text = stringResource(R.string.is_ephemeral_user, ephemeralUser))
             }
-            Button(
-                onClick = {
-                    focusMgr.clearFocus()
-                    setMsg(null)
-                    msg = get()?.toString() ?: ""
-                    Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
-                },
-                enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&profileOwner),
-                modifier = Modifier.fillMaxWidth(0.96F)
-            ) {
-                Text("默认")
-            }
+            Text(text = stringResource(R.string.is_affiliated_user, myDpm.isAffiliatedUser))
         }
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Text(text = stringResource(R.string.user_id_is, Binder.getCallingUid()/100000))
+        Text(text = stringResource(R.string.user_serial_number_is, userManager.getSerialNumberForUser(Process.myUserHandle())))
     }
 }
 
 @Composable
-fun UserOperation(){
+private fun UserOperation(){
     val myContext = LocalContext.current
     val userManager = myContext.getSystemService(Context.USER_SERVICE) as UserManager
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val focusMgr = LocalFocusManager.current
-    Column{
-        Text(text = "用户操作", style = typography.titleLarge)
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.user_operation), style = typography.headlineLarge)
         var idInput by remember{ mutableStateOf("") }
-        var userHandleById:UserHandle by remember{ mutableStateOf(android.os.Process.myUserHandle()) }
+        var userHandleById:UserHandle by remember{ mutableStateOf(Process.myUserHandle()) }
         var useUid by remember{ mutableStateOf(false) }
+        Spacer(Modifier.padding(vertical = 5.dp))
         TextField(
             value = idInput,
             onValueChange = {
@@ -162,128 +168,127 @@ fun UserOperation(){
                     }
                 }else{
                     val userHandleBySerial = userManager.getUserForSerialNumber(idInput.toLong())
-                    userHandleById = userHandleBySerial ?: android.os.Process.myUserHandle()
+                    userHandleById = userHandleBySerial ?: Process.myUserHandle()
                 }
             },
-            label = {Text(if(useUid){"UID"}else{"序列号"})},
+            label = {Text(if(useUid){"UID"}else{ stringResource(R.string.serial_number) })},
             enabled = isDeviceOwner(myDpm),
-            modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 3.dp),
+            modifier = Modifier.focusable().fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
         )
-        if(VERSION.SDK_INT>=24&&isDeviceOwner(myDpm)){
-            CheckBoxItem(text = "使用UID", checked = {useUid}, operation = {idInput=""; useUid = !useUid})
+        Spacer(Modifier.padding(vertical = 3.dp))
+        if(VERSION.SDK_INT>=24){
+            CheckBoxItem(text = stringResource(R.string.use_uid), checked = {useUid}, operation = {idInput=""; useUid = !useUid})
         }
+        Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT>28){
             if(isProfileOwner(myDpm)&&myDpm.isAffiliatedUser){
                 Button(
                     onClick = {
                         val result = myDpm.logoutUser(myComponent)
-                        Toast.makeText(myContext, userOperationResultCode(result), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, userOperationResultCode(result,myContext), Toast.LENGTH_SHORT).show()
                     },
                     enabled = isProfileOwner(myDpm),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("登出当前用户")
+                    Text(stringResource(R.string.logout_current_user))
                 }
             }
         }
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+        if(VERSION.SDK_INT>=28){
             Button(
                 onClick = {
                     focusMgr.clearFocus()
-                    if(VERSION.SDK_INT>=28){
-                        val result = myDpm.startUserInBackground(myComponent,userHandleById)
-                        Toast.makeText(myContext, userOperationResultCode(result), Toast.LENGTH_SHORT).show()
-                    }
-                },
-                enabled = isDeviceOwner(myDpm)&&VERSION.SDK_INT>=28,
-                modifier = Modifier.fillMaxWidth(0.49F)
-            ){
-                Text("在后台启动")
-            }
-            Button(
-                onClick = {
-                    focusMgr.clearFocus()
-                    if(myDpm.switchUser(myComponent,userHandleById)){
-                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
-                    }else{
-                        Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
-                    }
+                    val result = myDpm.startUserInBackground(myComponent,userHandleById)
+                    Toast.makeText(myContext, userOperationResultCode(result,myContext), Toast.LENGTH_SHORT).show()
                 },
                 enabled = isDeviceOwner(myDpm),
-                modifier = Modifier.fillMaxWidth(0.96F)
-            ) {
-                Text("切换")
+                modifier = Modifier.fillMaxWidth()
+            ){
+                Text(stringResource(R.string.start_in_background))
             }
         }
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
+        Button(
+            onClick = {
+                focusMgr.clearFocus()
+                Toast.makeText(
+                    myContext,
+                    myContext.getString(if(myDpm.switchUser(myComponent,userHandleById)) { R.string.success }else{ R.string.fail }), Toast.LENGTH_SHORT
+                ).show()
+            },
+            enabled = isDeviceOwner(myDpm),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.user_operation_switch))
+        }
+        if(VERSION.SDK_INT>=28){
             Button(
                 onClick = {
                     focusMgr.clearFocus()
                     try{
-                        if(VERSION.SDK_INT>=28){
-                            val result = myDpm.stopUser(myComponent,userHandleById)
-                            Toast.makeText(myContext, userOperationResultCode(result), Toast.LENGTH_SHORT).show()
-                        }
+                        val result = myDpm.stopUser(myComponent,userHandleById)
+                        Toast.makeText(myContext, userOperationResultCode(result,myContext), Toast.LENGTH_SHORT).show()
                     }catch(e:IllegalArgumentException){
-                        Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
-                    }
-                },
-                enabled = isDeviceOwner(myDpm)&&VERSION.SDK_INT>=28,
-                modifier = Modifier.fillMaxWidth(0.49F)
-            ) {
-                Text("停止")
-            }
-            Button(
-                onClick = {
-                    focusMgr.clearFocus()
-                    if(myDpm.removeUser(myComponent,userHandleById)){
-                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
-                        idInput=""
-                    }else{
-                        Toast.makeText(myContext, "失败", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show()
                     }
                 },
                 enabled = isDeviceOwner(myDpm),
-                modifier = Modifier.fillMaxWidth(0.96F)
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("移除")
+                Text(stringResource(R.string.user_operation_stop))
             }
         }
-        if(VERSION.SDK_INT<28){
-            Text(text = "停止用户需API28")
+        Button(
+            onClick = {
+                focusMgr.clearFocus()
+                if(myDpm.removeUser(myComponent,userHandleById)){
+                    Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                    idInput=""
+                }else{
+                    Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show()
+                }
+            },
+            enabled = isDeviceOwner(myDpm),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.user_operation_remove))
         }
+        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
 @SuppressLint("NewApi")
 @Composable
-fun CreateUser(){
+private fun CreateUser(){
     val myContext = LocalContext.current
     val userManager = myContext.getSystemService(Context.USER_SERVICE) as UserManager
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val focusMgr = LocalFocusManager.current
-    Column{
-        var userName by remember{ mutableStateOf("") }
-        Text(text = "创建用户", style = typography.titleLarge)
+    var userName by remember{ mutableStateOf("") }
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.create_user), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
         TextField(
             value = userName,
             onValueChange = {userName=it},
-            label = {Text("用户名")},
-            modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 4.dp),
+            label = {Text(stringResource(R.string.username))},
+            modifier = Modifier.focusable().fillMaxWidth(),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
         )
+        Spacer(Modifier.padding(vertical = 5.dp))
         var selectedFlag by remember{ mutableIntStateOf(0) }
-        RadioButtonItem("无",{selectedFlag==0},{selectedFlag=0})
-        RadioButtonItem("跳过创建用户向导",{selectedFlag==DevicePolicyManager.SKIP_SETUP_WIZARD},{selectedFlag=DevicePolicyManager.SKIP_SETUP_WIZARD})
+        RadioButtonItem(stringResource(R.string.none),{selectedFlag==0},{selectedFlag=0})
+        RadioButtonItem(stringResource(R.string.create_user_skip_wizard),{selectedFlag==DevicePolicyManager.SKIP_SETUP_WIZARD},{selectedFlag=DevicePolicyManager.SKIP_SETUP_WIZARD})
         if(VERSION.SDK_INT>=28){
-            RadioButtonItem("临时用户",{selectedFlag==DevicePolicyManager.MAKE_USER_EPHEMERAL},{selectedFlag=DevicePolicyManager.MAKE_USER_EPHEMERAL})
-            RadioButtonItem("启用所有系统应用",{selectedFlag==DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED},{selectedFlag=DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED})
+            RadioButtonItem(stringResource(R.string.create_user_ephemeral_user),{selectedFlag==DevicePolicyManager.MAKE_USER_EPHEMERAL},{selectedFlag=DevicePolicyManager.MAKE_USER_EPHEMERAL})
+            RadioButtonItem(stringResource(R.string.create_user_enable_all_system_app),{selectedFlag==DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED},{selectedFlag=DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED})
         }
         var newUserHandle: UserHandle? by remember{ mutableStateOf(null) }
+        Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 newUserHandle=myDpm.createAndManageUser(myComponent,userName,myComponent,null,selectedFlag)
@@ -293,30 +298,39 @@ fun CreateUser(){
             enabled = isDeviceOwner(myDpm),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("创建(Owner)")
+            Text(stringResource(R.string.create))
         }
-        if(newUserHandle!=null){ Text(text = "新用户的序列号：${userManager.getSerialNumberForUser(newUserHandle)}") }
+        Spacer(Modifier.padding(vertical = 5.dp))
+        if(newUserHandle!=null){ Text(text = stringResource(R.string.serial_number_of_new_user_is, userManager.getSerialNumberForUser(newUserHandle))) }
+        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
 @SuppressLint("NewApi")
 @Composable
-fun AffiliationID(){
+private fun AffiliationID(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val focusMgr = LocalFocusManager.current
-    Column{
-        var input by remember{mutableStateOf("")}
-        var list by remember{mutableStateOf("")}
-        val refresh = {
-            list = ""
-            var count = affiliationID.size
-            for(item in affiliationID){ count-=1; list+=item; if(count>0){list+="\n"} }
+    var input by remember{mutableStateOf("")}
+    var list by remember{mutableStateOf("")}
+    LaunchedEffect(Unit){
+        affiliationID = myDpm.getAffiliationIds(myComponent)
+        list = affiliationID.toText()
+    }
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.affiliation_id), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
+        if(list!=""){
+            SelectionContainer {
+                Text(text = list)
+            }
+        }else{
+            Text(text = stringResource(R.string.none))
         }
-        var inited by remember{mutableStateOf(false)}
-        if(!inited){affiliationID = myDpm.getAffiliationIds(myComponent);refresh();inited=true}
-        Text(text = "附属用户ID", style = typography.titleLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
         TextField(
             value = input,
             onValueChange = {input = it},
@@ -325,59 +339,162 @@ fun AffiliationID(){
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
         )
-        if(list!=""){
-            SelectionContainer {
-                Text(text = list)
-            }
-        }else{
-            Text(text = "无")
-        }
+        Spacer(Modifier.padding(vertical = 5.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
             Button(
-                onClick = { affiliationID.add(input); refresh() },
+                onClick = { affiliationID.add(input); list = affiliationID.toText() },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ){
-                Text("添加")
+                Text(stringResource(R.string.add))
             }
             Button(
-                onClick = { affiliationID.remove(input); refresh() },
+                onClick = { affiliationID.remove(input); list = affiliationID.toText() },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ){
-                Text("移除")
+                Text(stringResource(R.string.remove))
             }
         }
         Button(
             onClick = {
                 if("" in affiliationID) {
-                    Toast.makeText(myContext, "有空字符串", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, myContext.getString(R.string.include_empty_string), Toast.LENGTH_SHORT).show()
                 }else if(affiliationID.isEmpty()){
-                    Toast.makeText(myContext, "不能为空", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, myContext.getString(R.string.cannot_be_empty), Toast.LENGTH_SHORT).show()
                 }else{
                     myDpm.setAffiliationIds(myComponent, affiliationID)
                     affiliationID = myDpm.getAffiliationIds(myComponent)
-                    refresh()
-                    Toast.makeText(myContext,"成功",Toast.LENGTH_SHORT).show()
+                    list = affiliationID.toText()
+                    Toast.makeText(myContext,myContext.getString(R.string.success),Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("应用")
+            Text(stringResource(R.string.apply))
         }
-        Text(text = "如果多用户，附属用户ID相同时可以让其他用户附属于主用户")
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Information{Text(text = stringResource(R.string.affiliation_id_desc))}
+        Spacer(Modifier.padding(vertical = 30.dp))
+    }
+}
+
+@Composable
+private fun Username(){
+    val myContext = LocalContext.current
+    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val focusMgr = LocalFocusManager.current
+    var inputUsername by remember{mutableStateOf("")}
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.edit_username), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
+        TextField(
+            value = inputUsername,
+            onValueChange = {inputUsername=it},
+            label = {Text(stringResource(R.string.username))},
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+            modifier = Modifier.focusable().fillMaxWidth(),
+            enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
+        )
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Button(
+            onClick = {
+                myDpm.setProfileName(myComponent,inputUsername)
+                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+            },
+            enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.apply))
+        }
+        Button(
+            onClick = {
+                myDpm.setProfileName(myComponent,null)
+            },
+            enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.reset))
+        }
     }
 }
 
 @SuppressLint("NewApi")
 @Composable
-fun UserIcon(){
+private fun UserSessionMessage(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
-    Column{
-        var getContent by remember{mutableStateOf(false)}
-        Text(text = "用户图标", style = typography.titleLarge)
-        Text(text = "尽量选择正方形的图片，以免产生问题")
-        CheckBoxItem("使用文件选择器而不是相册",{getContent},{getContent=!getContent})
+    val focusMgr = LocalFocusManager.current
+    var start by remember{mutableStateOf(myDpm.getStartUserSessionMessage(myComponent).toString())}
+    var end by remember{mutableStateOf(myDpm.getEndUserSessionMessage(myComponent).toString())}
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.user_session_msg), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
+        TextField(
+            value = start,
+            onValueChange = {start=it},
+            label = {Text(stringResource(R.string.start_user_session_msg))},
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+            modifier = Modifier.focusable().fillMaxWidth(),
+            enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
+        )
+        Spacer(Modifier.padding(vertical = 5.dp))
+        TextField(
+            value = end,
+            onValueChange = {end=it},
+            label = {Text(stringResource(R.string.end_user_session_msg))},
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+            modifier = Modifier.focusable().fillMaxWidth(),
+            enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
+        )
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Button(
+            onClick = {
+                myDpm.setStartUserSessionMessage(myComponent,start)
+                myDpm.setEndUserSessionMessage(myComponent,end)
+                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+            },
+            enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.apply))
+        }
+        Button(
+            onClick = {
+                myDpm.setStartUserSessionMessage(myComponent,null)
+                myDpm.setEndUserSessionMessage(myComponent,null)
+                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+            },
+            enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.reset))
+        }
+        Spacer(Modifier.padding(vertical = 30.dp))
+    }
+}
+
+@SuppressLint("NewApi")
+@Composable
+private fun UserIcon(){
+    val myContext = LocalContext.current
+    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    var getContent by remember{mutableStateOf(false)}
+    var canApply by remember{mutableStateOf(false)}
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.change_user_icon), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Text(text = stringResource(R.string.pick_a_rect_picture))
+        Spacer(Modifier.padding(vertical = 5.dp))
+        CheckBoxItem(stringResource(R.string.file_picker_instead_gallery),{getContent},{getContent=!getContent})
+        Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 val intent = Intent(if(getContent){Intent.ACTION_GET_CONTENT}else{Intent.ACTION_PICK})
@@ -387,33 +504,32 @@ fun UserIcon(){
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("选择图片...")
+            Text(stringResource(R.string.select_picture))
         }
-        Button(
-            onClick = {
-                if(userIconUri!=null){
+        LaunchedEffect(Unit){ delay(600); canApply = userIconUri!=null }
+        AnimatedVisibility(canApply) {
+            Button(
+                onClick = {
                     uriToStream(myContext, userIconUri){stream ->
                         val bitmap = BitmapFactory.decodeStream(stream)
                         myDpm.setUserIcon(myComponent,bitmap)
-                        Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
                     }
-                }else{
-                    Toast.makeText(myContext, "请先选择图片", Toast.LENGTH_SHORT).show()
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("应用")
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.apply))
+            }
         }
     }
 }
 
-private fun userOperationResultCode(result:Int): String {
+private fun userOperationResultCode(result:Int, myContext: Context): String {
     return when(result){
-        UserManager.USER_OPERATION_SUCCESS->"成功"
-        UserManager.USER_OPERATION_ERROR_UNKNOWN->"未知结果（失败）"
-        UserManager.USER_OPERATION_ERROR_MANAGED_PROFILE->"失败：受管理的资料"
-        UserManager.USER_OPERATION_ERROR_CURRENT_USER->"失败：当前用户"
+        UserManager.USER_OPERATION_SUCCESS->myContext.getString(R.string.success)
+        UserManager.USER_OPERATION_ERROR_UNKNOWN-> myContext.getString(R.string.unknown_result)
+        UserManager.USER_OPERATION_ERROR_MANAGED_PROFILE-> myContext.getString(R.string.fail_managed_profile)
+        UserManager.USER_OPERATION_ERROR_CURRENT_USER-> myContext.getString(R.string.fail_current_user)
         else->"未知"
     }
 }
