@@ -97,15 +97,14 @@ private fun About(){
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { shareLink(myContext, "https://github.com/BinTianqi/AndroidOwner/blob/master/Guide.md") }
-                .padding(start = 8.dp, bottom = 4.dp)
+                .padding(start = 8.dp, bottom = 8.dp)
         ){
             Icon(
                 painter = painterResource(id = R.drawable.open_in_new),
                 contentDescription = null,
-                modifier = Modifier.padding(start = 6.dp, end = 10.dp),
-                tint = colorScheme.primary
+                modifier = Modifier.padding(start = 6.dp, end = 10.dp)
             )
-            Text(text = stringResource(R.string.user_guide), style = typography.titleLarge, color = colorScheme.onPrimaryContainer, modifier = Modifier.padding(bottom = 2.dp))
+            Text(text = stringResource(R.string.user_guide), style = typography.titleLarge, modifier = Modifier.padding(bottom = 2.dp))
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -117,10 +116,9 @@ private fun About(){
             Icon(
                 painter = painterResource(id = R.drawable.open_in_new),
                 contentDescription = null,
-                modifier = Modifier.padding(start = 6.dp, end = 10.dp),
-                tint = colorScheme.primary
+                modifier = Modifier.padding(start = 6.dp, end = 10.dp)
             )
-            Text(text = stringResource(R.string.source_code), style = typography.titleLarge, color = colorScheme.onPrimaryContainer, modifier = Modifier.padding(bottom = 2.dp))
+            Text(text = stringResource(R.string.source_code), style = typography.titleLarge, modifier = Modifier.padding(bottom = 2.dp))
         }
     }
 }

@@ -85,7 +85,7 @@ fun MyScaffold(){
         modifier = Modifier
             .statusBarsPadding()
             .fillMaxSize()
-            .background(color = if(isSystemInDarkTheme()) { colorScheme.background }else{ colorScheme.primary.copy(alpha = 0.05F) })
+            .background(color = if(isSystemInDarkTheme()) { Color(0xFF000000) }else{ colorScheme.primary.copy(alpha = 0.05F) })
             .imePadding()
             .pointerInput(Unit) {detectTapGestures(onTap = {focusMgr.clearFocus()})},
         enterTransition = Animations().navHostEnterTransition,
@@ -128,14 +128,14 @@ private fun HomePage(navCtrl:NavHostController){
         else if(myDpm.isAdminActive(myComponent)){"Device Admin"}else{""}
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 18.dp))
-        Text(text = stringResource(R.string.app_name), style = typography.headlineLarge, modifier = Modifier.padding(start = 10.dp))
+        Text(text = stringResource(R.string.app_name), style = typography.headlineLarge, modifier = Modifier.padding(start = 10.dp), color = colorScheme.onBackground)
         Spacer(Modifier.padding(vertical = 8.dp))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp, horizontal = 8.dp)
                 .clip(RoundedCornerShape(15))
-                .background(color = colorScheme.primaryContainer)
+                .background(color = colorScheme.primary)
                 .clickable(onClick = { navCtrl.navigate("Permissions") })
                 .padding(vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -144,17 +144,17 @@ private fun HomePage(navCtrl:NavHostController){
             Icon(
                 painter = painterResource(if(myDpm.isAdminActive(myComponent)){ R.drawable.check_circle_fill1 }else{ R.drawable.block_fill0 }),
                 contentDescription = null,
-                tint = colorScheme.primary
+                tint = colorScheme.onPrimary
             )
             Spacer(modifier = Modifier.fillMaxWidth(0.05F))
             Column {
                 Text(
                     text = if(myDpm.isAdminActive(myComponent)){"已激活"}else{"未激活"},
                     style = typography.headlineSmall,
-                    color = colorScheme.onPrimaryContainer,
+                    color = colorScheme.onPrimary,
                     modifier = Modifier.padding(bottom = 2.dp)
                 )
-                if(activateType!=""){ Text(text = activateType, color = colorScheme.onPrimaryContainer, modifier = Modifier.padding(start = 2.dp)) }
+                if(activateType!=""){ Text(text = activateType, color = colorScheme.onPrimary, modifier = Modifier.padding(start = 2.dp)) }
             }
         }
         HomePageItem(R.string.device_ctrl, R.drawable.mobile_phone_fill0, "SystemManage", navCtrl)
