@@ -11,10 +11,13 @@ import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -34,13 +37,13 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.R
 import com.binbin.androidowner.ui.*
+import com.binbin.androidowner.ui.theme.bgColor
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Password(navCtrl: NavHostController){
     val localNavCtrl = rememberNavController()
     val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
-    val titleMap = mapOf(
+    /*val titleMap = mapOf(
         "ResetPasswordToken" to R.string.reset_password_token,
         "PasswordInfo" to R.string.password_info,
         "ResetPassword" to R.string.reset_password,
@@ -51,14 +54,15 @@ fun Password(navCtrl: NavHostController){
         "MaxPasswordFail" to R.string.max_pwd_fail,
         "PasswordHistoryLength" to R.string.pwd_history,
         "RequirePasswordQuality" to R.string.required_password_quality,
-    )
+    )*/
     Scaffold(
         topBar = {
-            TopAppBar(
+            /*TopAppBar(
                 title = {Text(text = stringResource(titleMap[backStackEntry?.destination?.route]?:R.string.password_and_keyguard))},
                 navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
-            )
+            )*/
+            TopBar(backStackEntry, navCtrl, localNavCtrl)
         }
     ){
         NavHost(
@@ -67,9 +71,7 @@ fun Password(navCtrl: NavHostController){
             exitTransition = Animations().navHostExitTransition,
             popEnterTransition = Animations().navHostPopEnterTransition,
             popExitTransition = Animations().navHostPopExitTransition,
-            modifier = Modifier
-                .background(color = if(isSystemInDarkTheme()) { colorScheme.background }else{ colorScheme.primary.copy(alpha = 0.05F) })
-                .padding(top = it.calculateTopPadding())
+            modifier = Modifier.background(bgColor).padding(top = it.calculateTopPadding())
         ){
             composable(route = "Home"){Home(localNavCtrl)}
             composable(route = "PasswordInfo"){PasswordInfo()}
@@ -89,6 +91,7 @@ fun Password(navCtrl: NavHostController){
 @Composable
 private fun Home(navCtrl:NavHostController){
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
+        Text(text = stringResource(R.string.password_and_keyguard), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
         SubPageItem(R.string.password_info,""){navCtrl.navigate("PasswordInfo")}
         if(VERSION.SDK_INT>=26){
             SubPageItem(R.string.reset_password_token,""){navCtrl.navigate("ResetPasswordToken")}

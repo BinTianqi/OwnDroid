@@ -14,9 +14,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material3.*
-import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -35,17 +37,17 @@ import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.R
 import com.binbin.androidowner.ui.Animations
 import com.binbin.androidowner.ui.Information
-import com.binbin.androidowner.ui.NavIcon
 import com.binbin.androidowner.ui.SubPageItem
+import com.binbin.androidowner.ui.TopBar
+import com.binbin.androidowner.ui.theme.bgColor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DpmPermissions(navCtrl:NavHostController){
     val localNavCtrl = rememberNavController()
     val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
-    val titleMap = mapOf(
+    /*val titleMap = mapOf(
         "Home" to R.string.permission,
         "Shizuku" to R.string.shizuku,
         "DeviceAdmin" to R.string.device_admin,
@@ -58,14 +60,15 @@ fun DpmPermissions(navCtrl:NavHostController){
         "LockScreenInfo" to R.string.owner_lockscr_info,
         "SupportMsg" to R.string.support_msg,
         "TransformOwnership" to R.string.transform_ownership
-    )
+    )*/
     Scaffold(
         topBar = {
-            TopAppBar(
+            /*TopAppBar(
                 title = {Text(text = stringResource(titleMap[backStackEntry?.destination?.route]?:R.string.permission))},
                 navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
-            )
+            )*/
+            TopBar(backStackEntry,navCtrl,localNavCtrl)
         }
     ){
         NavHost(
@@ -74,9 +77,7 @@ fun DpmPermissions(navCtrl:NavHostController){
             exitTransition = Animations().navHostExitTransition,
             popEnterTransition = Animations().navHostPopEnterTransition,
             popExitTransition = Animations().navHostPopExitTransition,
-            modifier = Modifier
-                .background(color = if(isSystemInDarkTheme()) { colorScheme.background }else{ colorScheme.primary.copy(alpha = 0.05F) })
-                .padding(top = it.calculateTopPadding())
+            modifier = Modifier.background(bgColor).padding(top = it.calculateTopPadding())
         ){
             composable(route = "Home"){Home(localNavCtrl)}
             composable(route = "Shizuku"){ShizukuActivate()}
@@ -100,7 +101,7 @@ private fun Home(localNavCtrl:NavHostController){
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.permission), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
         SubPageItem(
             R.string.device_admin, stringResource(if(myDpm.isAdminActive(myComponent)){R.string.activated}else{R.string.deactivated}),
             operation = {localNavCtrl.navigate("DeviceAdmin")}

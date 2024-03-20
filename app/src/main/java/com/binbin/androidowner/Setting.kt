@@ -3,11 +3,15 @@ package com.binbin.androidowner
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -21,26 +25,25 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.binbin.androidowner.ui.Animations
-import com.binbin.androidowner.ui.NavIcon
-import com.binbin.androidowner.ui.SubPageItem
-import com.binbin.androidowner.ui.SwitchItem
+import com.binbin.androidowner.ui.*
+import com.binbin.androidowner.ui.theme.SetDarkTheme
+import com.binbin.androidowner.ui.theme.bgColor
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppSetting(navCtrl:NavHostController){
     val localNavCtrl = rememberNavController()
     val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
-    val titleMap = mapOf(
+    /*val titleMap = mapOf(
         "About" to R.string.about
-    )
+    )*/
     Scaffold(
         topBar = {
-            TopAppBar(
+            /*TopAppBar(
                 title = {Text(text = stringResource(titleMap[backStackEntry?.destination?.route]?:R.string.setting))},
                 navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
-            )
+            )*/
+            TopBar(backStackEntry, navCtrl, localNavCtrl)
         }
     ){
         NavHost(
@@ -49,9 +52,7 @@ fun AppSetting(navCtrl:NavHostController){
             exitTransition = Animations().navHostExitTransition,
             popEnterTransition = Animations().navHostPopEnterTransition,
             popExitTransition = Animations().navHostPopExitTransition,
-            modifier = Modifier
-                .background(color = if(isSystemInDarkTheme()) { colorScheme.background }else{ colorScheme.primary.copy(alpha = 0.05F) })
-                .padding(top = it.calculateTopPadding())
+            modifier = Modifier.background(bgColor).padding(top = it.calculateTopPadding())
         ){
             composable(route = "Home"){Home(localNavCtrl)}
             composable(route = "Settings"){Settings()}
@@ -71,11 +72,21 @@ private fun Home(navCtrl: NavHostController){
 @Composable
 private fun Settings(){
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    SetDarkTheme()
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         SwitchItem(
             R.string.dynamic_color, stringResource(R.string.dynamic_color_desc),null,
             {sharedPref.getBoolean("dynamicColor",false)},{sharedPref.edit().putBoolean("dynamicColor",it).apply()}
         )
+        SwitchItem(
+            R.string.blackTheme, stringResource(R.string.blackTheme_desc),null,
+            {sharedPref.getBoolean("blackTheme",false)},{sharedPref.edit().putBoolean("blackTheme",it).apply()}
+        )
+        Box(modifier = Modifier.padding(10.dp)){
+            Information {
+                Text(text = stringResource(R.string.need_relaunch))
+            }
+        }
     }
 }
 

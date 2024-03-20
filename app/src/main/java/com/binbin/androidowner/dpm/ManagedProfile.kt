@@ -9,11 +9,14 @@ import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -32,26 +35,27 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.R
 import com.binbin.androidowner.ui.*
+import com.binbin.androidowner.ui.theme.bgColor
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManagedProfile(navCtrl: NavHostController) {
     val localNavCtrl = rememberNavController()
     val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
-    val titleMap = mapOf(
+    /*val titleMap = mapOf(
         "OrgOwnedWorkProfile" to R.string.org_owned_work_profile,
         "CreateWorkProfile" to R.string.create_work_profile,
         "SuspendPersonalApp" to R.string.suspend_personal_app,
         "IntentFilter" to R.string.intent_filter,
         "OrgID" to R.string.org_id
-    )
+    )*/
     Scaffold(
         topBar = {
-            TopAppBar(
+            /*TopAppBar(
                 title = {Text(text = stringResource(titleMap[backStackEntry?.destination?.route]?:R.string.work_profile))},
                 navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
-            )
+            )*/
+            TopBar(backStackEntry,navCtrl, localNavCtrl)
         }
     ){
         NavHost(
@@ -60,9 +64,7 @@ fun ManagedProfile(navCtrl: NavHostController) {
             exitTransition = Animations().navHostExitTransition,
             popEnterTransition = Animations().navHostPopEnterTransition,
             popExitTransition = Animations().navHostPopExitTransition,
-            modifier = Modifier
-                .background(color = if(isSystemInDarkTheme()) { colorScheme.background }else{ colorScheme.primary.copy(alpha = 0.05F) })
-                .padding(top = it.calculateTopPadding())
+            modifier = Modifier.background(bgColor).padding(top = it.calculateTopPadding())
         ){
             composable(route = "Home"){Home(localNavCtrl)}
             composable(route = "OrgOwnedWorkProfile"){OrgOwnedProfile()}
@@ -80,7 +82,7 @@ private fun Home(navCtrl: NavHostController){
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
-        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.work_profile), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
         if(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
             SubPageItem(R.string.org_owned_work_profile,""){navCtrl.navigate("OrgOwnedWorkProfile")}
         }

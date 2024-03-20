@@ -273,6 +273,9 @@
 
     <!--UserRestriction-->
     <string name="user_restrict">用户限制</string>
+    <string name="profile_owner_is_restricted">Profile owner无法使用部分功能</string>
+    <string name="switch_to_disable_feature">打开开关后会禁用对应的功能</string>
+    <string name="some_features_invalid_in_work_profile">工作资料中部分功能无效</string>
     <string name="network_internet">网络和互联网</string>
     <string name="more_connectivity">更多连接</string>
     <string name="applications">应用</string>
@@ -453,10 +456,13 @@
     <!--Settings&About-->
     <string name="setting">设置</string>
     <string name="dynamic_color">动态取色</string>
-    <string name="dynamic_color_desc">打开或关闭动态取色需要重启应用</string>
+    <string name="dynamic_color_desc">安卓12+</string>
     <string name="about">关于</string>
     <string name="about_desc">使用安卓的Device admin、Device owner 、Profile owner，全方位掌控你的设备</string>
     <string name="user_guide">使用教程</string>
     <string name="source_code">源代码</string>
+    <string name="blackTheme">纯黑夜间主题</string>
+    <string name="blackTheme_desc">需要打开夜间模式</string>
+    <string name="need_relaunch">需要重启应用</string>
 
 </resources>

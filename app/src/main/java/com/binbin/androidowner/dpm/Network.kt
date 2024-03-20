@@ -43,14 +43,14 @@ import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.R
 import com.binbin.androidowner.toText
 import com.binbin.androidowner.ui.*
+import com.binbin.androidowner.ui.theme.bgColor
 
 var ssidSet = mutableSetOf<WifiSsid>()
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Network(navCtrl: NavHostController){
     val localNavCtrl = rememberNavController()
     val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
-    val titleMap = mapOf(
+    /*val titleMap = mapOf(
         "Home" to R.string.network,
         "MinWifiSecurityLevel" to R.string.min_wifi_security_level,
         "WifiSsidPolicy" to R.string.wifi_ssid_policy,
@@ -58,14 +58,15 @@ fun Network(navCtrl: NavHostController){
         "NetLog" to R.string.retrieve_net_logs,
         "WifiKeypair" to R.string.wifi_keypair,
         "APN" to R.string.apn_settings
-    )
+    )*/
     Scaffold(
         topBar = {
-            TopAppBar(
+            /*TopAppBar(
                 title = {Text(text = stringResource(titleMap[backStackEntry?.destination?.route]?:R.string.network))},
                 navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
-            )
+            )*/
+            TopBar(backStackEntry, navCtrl, localNavCtrl)
         }
     ){
         NavHost(
@@ -74,9 +75,7 @@ fun Network(navCtrl: NavHostController){
             exitTransition = Animations().navHostExitTransition,
             popEnterTransition = Animations().navHostPopEnterTransition,
             popExitTransition = Animations().navHostPopExitTransition,
-            modifier = Modifier
-                .background(color = if(isSystemInDarkTheme()) { colorScheme.background }else{ colorScheme.primary.copy(alpha = 0.05F) })
-                .padding(top = it.calculateTopPadding())
+            modifier = Modifier.background(bgColor).padding(top = it.calculateTopPadding())
         ){
             composable(route = "Home"){Home(localNavCtrl)}
             composable(route = "Switches"){Switches()}
@@ -96,7 +95,7 @@ private fun Home(navCtrl:NavHostController){
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
-        Spacer(Modifier.padding(vertical = 5.dp))
+        Text(text = stringResource(R.string.network), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
         if(VERSION.SDK_INT>=24){
             val wifimac = try { myDpm.getWifiMacAddress(myComponent).toString() }catch(e:SecurityException){ "没有权限" }
             Text(text = "WiFi MAC: $wifimac", modifier = Modifier.padding(start = 15.dp))

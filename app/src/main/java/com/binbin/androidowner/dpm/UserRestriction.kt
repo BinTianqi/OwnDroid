@@ -11,18 +11,17 @@ import androidx.activity.ComponentActivity
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -34,9 +33,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.R
 import com.binbin.androidowner.ui.Animations
-import com.binbin.androidowner.ui.NavIcon
 import com.binbin.androidowner.ui.SubPageItem
 import com.binbin.androidowner.ui.SwitchItem
+import com.binbin.androidowner.ui.TopBar
+import com.binbin.androidowner.ui.theme.bgColor
 
 private data class Restriction(
     val restriction:String,
@@ -45,26 +45,26 @@ private data class Restriction(
     @DrawableRes val ico:Int
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserRestriction(navCtrl: NavHostController){
     val localNavCtrl = rememberNavController()
     val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
-    val titleMap = mapOf(
+    /*val titleMap = mapOf(
         "Internet" to R.string.network_internet,
         "Connectivity" to R.string.more_connectivity,
         "Users" to R.string.users,
         "Media" to R.string.media,
         "Applications" to R.string.applications,
         "Other" to R.string.other
-    )
+    )*/
     Scaffold(
         topBar = {
-            TopAppBar(
+            /*TopAppBar(
                 title = {Text(text = stringResource(titleMap[backStackEntry?.destination?.route]?:R.string.user_restrict))},
                 navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
-            )
+            )*/
+            TopBar(backStackEntry,navCtrl,localNavCtrl)
         }
     ){
         NavHost(
@@ -73,9 +73,7 @@ fun UserRestriction(navCtrl: NavHostController){
             exitTransition = Animations().navHostExitTransition,
             popEnterTransition = Animations().navHostPopEnterTransition,
             popExitTransition = Animations().navHostPopExitTransition,
-            modifier = Modifier
-                .background(color = if(isSystemInDarkTheme()) { colorScheme.background }else{ colorScheme.primary.copy(alpha = 0.05F) })
-                .padding(top = it.calculateTopPadding())
+            modifier = Modifier.background(bgColor).padding(top = it.calculateTopPadding())
         ){
             composable(route = "Internet"){Internet()}
             composable(route = "Home"){Home(localNavCtrl)}
@@ -93,11 +91,13 @@ private fun Home(navCtrl:NavHostController){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally){
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text = "打开开关后会禁用对应的功能")
-        if(isProfileOwner(myDpm)){ Text(text = "Profile owner无法使用部分功能") }
-        if(isProfileOwner(myDpm)&&(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)))){ Text(text = "工作资料中部分功能无效") }
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
+        Text(text = stringResource(R.string.user_restrict), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 7.dp, start = 15.dp))
+        Text(text = stringResource(R.string.switch_to_disable_feature), modifier = Modifier.padding(start = 15.dp))
+        if(isProfileOwner(myDpm)){ Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.padding(start = 15.dp)) }
+        if(isProfileOwner(myDpm)&&(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)))){
+            Text(text = stringResource(R.string.some_features_invalid_in_work_profile), modifier = Modifier.padding(start = 15.dp))
+        }
         Spacer(Modifier.padding(vertical = 2.dp))
         SubPageItem(R.string.network_internet,""){navCtrl.navigate("Internet")}
         SubPageItem(R.string.more_connectivity,""){navCtrl.navigate("Connectivity")}

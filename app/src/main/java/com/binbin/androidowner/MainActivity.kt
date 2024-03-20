@@ -1,6 +1,5 @@
 package com.binbin.androidowner
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
@@ -12,20 +11,23 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -38,8 +40,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.dpm.*
-import com.binbin.androidowner.ui.theme.AndroidOwnerTheme
 import com.binbin.androidowner.ui.Animations
+import com.binbin.androidowner.ui.theme.AndroidOwnerTheme
+import com.binbin.androidowner.ui.theme.SetDarkTheme
+import com.binbin.androidowner.ui.theme.bgColor
 
 lateinit var displayMetrics: DisplayMetrics
 @ExperimentalMaterial3Api
@@ -85,7 +89,7 @@ fun MyScaffold(){
         modifier = Modifier
             .statusBarsPadding()
             .fillMaxSize()
-            .background(color = if(isSystemInDarkTheme()) { Color(0xFF000000) }else{ colorScheme.primary.copy(alpha = 0.05F) })
+            .background(bgColor)
             .imePadding()
             .pointerInput(Unit) {detectTapGestures(onTap = {focusMgr.clearFocus()})},
         enterTransition = Animations().navHostEnterTransition,
@@ -126,6 +130,7 @@ private fun HomePage(navCtrl:NavHostController){
             stringResource(if(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)){R.string.work_profile_owner}else{R.string.profile_owner})
         }
         else if(myDpm.isAdminActive(myComponent)){"Device Admin"}else{""}
+    SetDarkTheme()
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 18.dp))
         Text(text = stringResource(R.string.app_name), style = typography.headlineLarge, modifier = Modifier.padding(start = 10.dp), color = colorScheme.onBackground)

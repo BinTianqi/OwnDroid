@@ -29,7 +29,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.*
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -50,6 +49,7 @@ import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.R
 import com.binbin.androidowner.toText
 import com.binbin.androidowner.ui.*
+import com.binbin.androidowner.ui.theme.bgColor
 import com.binbin.androidowner.uriToStream
 import kotlinx.coroutines.delay
 import java.io.IOException
@@ -61,7 +61,6 @@ private var crossProfilePkg = mutableSetOf<String>()
 private var keepUninstallPkg = mutableListOf<String>()
 private var permittedIme = mutableListOf<String>()
 private var permittedAccessibility = mutableListOf<String>()
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ApplicationManage(navCtrl:NavHostController){
     val focusMgr = LocalFocusManager.current
@@ -85,11 +84,12 @@ fun ApplicationManage(navCtrl:NavHostController){
     )
     Scaffold(
         topBar = {
-            TopAppBar(
+            /*TopAppBar(
                 title = {Text(text = stringResource(titleMap[backStackEntry?.destination?.route]?:R.string.app_manage))},
                 navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
-            )
+            )*/
+            TopBar(backStackEntry, navCtrl, localNavCtrl){Text(text = stringResource(titleMap[backStackEntry?.destination?.route] ?: R.string.app_manage))}
         }
     ){ paddingValues->
         Column(modifier = Modifier.fillMaxSize().padding(top = paddingValues.calculateTopPadding())){
@@ -109,7 +109,7 @@ fun ApplicationManage(navCtrl:NavHostController){
                 exitTransition = Animations().navHostExitTransition,
                 popEnterTransition = Animations().navHostPopEnterTransition,
                 popExitTransition = Animations().navHostPopExitTransition,
-                modifier = Modifier.background(color = if(isSystemInDarkTheme()) { colorScheme.background }else{ colorScheme.primary.copy(alpha = 0.05F) })
+                modifier = Modifier.background(bgColor)
             ){
                 composable(route = "Home"){Home(localNavCtrl,pkgName)}
                 composable(route = "BlockUninstall"){BlockUninstall(pkgName)}

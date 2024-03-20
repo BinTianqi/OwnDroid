@@ -18,7 +18,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavHostController
 import com.binbin.androidowner.R
+import com.binbin.androidowner.ui.theme.bgColor
 
 @Composable
 fun SubPageItem(
@@ -135,4 +138,20 @@ fun SwitchItem(
             modifier = Modifier.align(Alignment.CenterEnd).padding(end = 12.dp), enabled = enable
         )
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TopBar(
+    backStackEntry:NavBackStackEntry?,
+    navCtrl:NavHostController,
+    localNavCtrl:NavHostController,
+    title:@Composable ()->Unit = {}
+){
+    TopAppBar(
+        //Text(text = stringResource(titleMap[backStackEntry?.destination?.route]?:R.string.user_restrict))
+        title = title,
+        navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = bgColor)
+    )
 }

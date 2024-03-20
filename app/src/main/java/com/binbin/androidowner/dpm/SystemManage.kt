@@ -19,11 +19,14 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -43,16 +46,15 @@ import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.R
 import com.binbin.androidowner.toText
 import com.binbin.androidowner.ui.*
-import com.binbin.androidowner.ui.Animations
+import com.binbin.androidowner.ui.theme.bgColor
 import kotlinx.coroutines.delay
 import java.util.Date
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SystemManage(navCtrl:NavHostController){
     val localNavCtrl = rememberNavController()
     val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
-    val titleMap = mapOf(
+    /*val titleMap = mapOf(
         "Switches" to R.string.options,
         "Keyguard" to R.string.keyguard,
         "BugReport" to R.string.request_bug_report,
@@ -66,14 +68,15 @@ fun SystemManage(navCtrl:NavHostController){
         "SecurityLogs" to R.string.security_logs,
         "SystemUpdatePolicy" to R.string.system_update_policy,
         "WipeData" to R.string.wipe_data
-    )
+    )*/
     Scaffold(
         topBar = {
-            TopAppBar(
+            /*TopAppBar(
                 title = {Text(text = stringResource(titleMap[backStackEntry?.destination?.route]?:R.string.device_ctrl))},
                 navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
-            )
+            )*/
+            TopBar(backStackEntry,navCtrl,localNavCtrl)
         }
     ){
         NavHost(
@@ -82,9 +85,7 @@ fun SystemManage(navCtrl:NavHostController){
             exitTransition = Animations().navHostExitTransition,
             popEnterTransition = Animations().navHostPopEnterTransition,
             popExitTransition = Animations().navHostPopExitTransition,
-            modifier = Modifier
-                .background(color = if(isSystemInDarkTheme()) { colorScheme.background }else{ colorScheme.primary.copy(alpha = 0.05F) })
-                .padding(top = it.calculateTopPadding())
+            modifier = Modifier.background(bgColor).padding(top = it.calculateTopPadding())
         ){
             composable(route = "Home"){Home(localNavCtrl)}
             composable(route = "Switches"){Switches()}
@@ -109,7 +110,7 @@ private fun Home(navCtrl: NavHostController){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
-        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.device_ctrl), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
         if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
             SubPageItem(R.string.options,""){navCtrl.navigate("Switches")}
         }
