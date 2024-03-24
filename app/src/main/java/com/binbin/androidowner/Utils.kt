@@ -1,8 +1,13 @@
 package com.binbin.androidowner
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
+import android.os.Build.VERSION
 import android.widget.Toast
+import androidx.core.content.ContextCompat.startActivity
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
@@ -43,4 +48,22 @@ fun Set<Any>.toText():String{
         output+=each
     }
     return output
+}
+
+fun writeClipBoard(context: Context, string: String):Boolean{
+    val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    try {
+        if(VERSION.SDK_INT>=23){
+            val hasPermission: Boolean = clipboardManager.hasPrimaryClip()
+            if(!hasPermission) {
+                val intent = Intent(android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS)
+                intent.setData(Uri.parse("package:"+context.packageName))
+                startActivity(context,intent,null)
+            }
+        }
+        clipboardManager.setPrimaryClip(ClipData.newPlainText("", string))
+    }catch(e:Exception){
+        return false
+    }
+    return true
 }

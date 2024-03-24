@@ -84,19 +84,19 @@ private fun Home(navCtrl: NavHostController){
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
         Text(text = stringResource(R.string.work_profile), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
         if(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
-            SubPageItem(R.string.org_owned_work_profile,""){navCtrl.navigate("OrgOwnedWorkProfile")}
+            SubPageItem(R.string.org_owned_work_profile,"",R.drawable.corporate_fare_fill0){navCtrl.navigate("OrgOwnedWorkProfile")}
         }
         if(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE))){
-            SubPageItem(R.string.create_work_profile,""){navCtrl.navigate("CreateWorkProfile")}
+            SubPageItem(R.string.create_work_profile,"",R.drawable.work_fill0){navCtrl.navigate("CreateWorkProfile")}
         }
         if(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile){
-            SubPageItem(R.string.suspend_personal_app,""){navCtrl.navigate("SuspendPersonalApp")}
+            SubPageItem(R.string.suspend_personal_app,"",R.drawable.block_fill0){navCtrl.navigate("SuspendPersonalApp")}
         }
         if(isProfileOwner(myDpm)&&(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)))){
-            SubPageItem(R.string.intent_filter,""){navCtrl.navigate("IntentFilter")}
+            SubPageItem(R.string.intent_filter,"",R.drawable.filter_alt_fill0){navCtrl.navigate("IntentFilter")}
         }
         if(VERSION.SDK_INT>=31&&(isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent))){
-            SubPageItem(R.string.org_id,""){navCtrl.navigate("OrgID")}
+            SubPageItem(R.string.org_id,"",R.drawable.corporate_fare_fill0){navCtrl.navigate("OrgID")}
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
@@ -154,6 +154,7 @@ private fun OrgOwnedProfile(){
                     color = colorScheme.onTertiaryContainer
                 )
             }
+            CopyTextButton(myContext, R.string.copy_code, stringResource(R.string.activate_org_profile_command, Binder.getCallingUid()/100000))
         }
     }
 }

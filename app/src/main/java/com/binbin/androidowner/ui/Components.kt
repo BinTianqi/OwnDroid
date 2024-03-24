@@ -1,8 +1,10 @@
 package com.binbin.androidowner.ui
 
 import android.content.Context
+import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,6 +24,9 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import com.binbin.androidowner.R
 import com.binbin.androidowner.ui.theme.bgColor
+import com.binbin.androidowner.writeClipBoard
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun SubPageItem(
@@ -160,4 +165,28 @@ fun TopBar(
         navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
         colors = TopAppBarDefaults.topAppBarColors(containerColor = bgColor)
     )
+}
+
+@Composable
+fun CopyTextButton(context: Context, @StringRes label: Int, content: String){
+    var ok by remember{mutableStateOf(false)}
+    val scope = rememberCoroutineScope()
+    Button(
+        onClick = {
+            if(!ok){
+                scope.launch{
+                    if(writeClipBoard(context,content)){ ok = true; delay(2000); ok = false }
+                    else{ Toast.makeText(context,context.getString(R.string.fail),Toast.LENGTH_SHORT).show() }
+                }
+            }
+        }
+    ){
+        Row(
+            verticalAlignment = Alignment.CenterVertically, modifier = Modifier.animateContentSize()
+        ){
+            Icon(painter = painterResource(if(ok){R.drawable.check_fill0}else{R.drawable.content_copy_fill0}),contentDescription = null)
+            Spacer(modifier = Modifier.padding(horizontal = 2.dp))
+            Text(text = stringResource(if(ok){R.string.success}else{label}))
+        }
+    }
 }

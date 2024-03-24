@@ -41,6 +41,7 @@
     <string name="try_again">请再试一次</string>
     <string name="unknown_effect">效果未知</string>
     <string name="options">选项</string>
+    <string name="copy_code">复制代码</string>
 
     <!--Permissions-->
     <string name="device_admin">Device admin</string>

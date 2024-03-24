@@ -36,10 +36,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.R
-import com.binbin.androidowner.ui.Animations
-import com.binbin.androidowner.ui.Information
-import com.binbin.androidowner.ui.SubPageItem
-import com.binbin.androidowner.ui.TopBar
+import com.binbin.androidowner.ui.*
 import com.binbin.androidowner.ui.theme.bgColor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -219,6 +216,7 @@ private fun DeviceAdmin(navCtrl: NavHostController){
             SelectionContainer {
                 Text(text = stringResource(R.string.activate_device_admin_command))
             }
+            CopyTextButton(myContext, R.string.copy_code, stringResource(R.string.activate_device_admin_command))
         }
     }
 }
@@ -242,6 +240,7 @@ private fun ProfileOwner(){
             SelectionContainer{
                 Text(text = stringResource(R.string.activate_profile_owner_command))
             }
+            CopyTextButton(myContext, R.string.copy_code, stringResource(R.string.activate_profile_owner_command))
         }
     }
 }
@@ -271,6 +270,7 @@ private fun DeviceOwner(navCtrl: NavHostController){
             SelectionContainer{
                 Text(text = stringResource(R.string.activate_device_owner_command))
             }
+            CopyTextButton(myContext, R.string.copy_code, stringResource(R.string.activate_device_owner_command))
         }
     }
 }

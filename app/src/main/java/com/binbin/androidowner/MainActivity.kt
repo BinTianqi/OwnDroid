@@ -83,6 +83,7 @@ fun MyScaffold(){
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val focusMgr = LocalFocusManager.current
+    SetDarkTheme()
     NavHost(
         navController = navCtrl,
         startDestination = "HomePage",
@@ -129,7 +130,6 @@ private fun HomePage(navCtrl:NavHostController){
             stringResource(if(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)){R.string.work_profile_owner}else{R.string.profile_owner})
         }
         else if(myDpm.isAdminActive(myComponent)){"Device Admin"}else{""}
-    SetDarkTheme()
     Column(modifier = Modifier.statusBarsPadding().verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 25.dp))
         Text(text = stringResource(R.string.app_name), style = typography.headlineLarge, modifier = Modifier.padding(start = 10.dp), color = colorScheme.onBackground)

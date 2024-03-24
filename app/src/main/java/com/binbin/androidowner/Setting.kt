@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -16,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -78,10 +80,12 @@ private fun Settings(){
             R.string.dynamic_color, stringResource(R.string.dynamic_color_desc),null,
             {sharedPref.getBoolean("dynamicColor",false)},{sharedPref.edit().putBoolean("dynamicColor",it).apply()}
         )
-        SwitchItem(
-            R.string.blackTheme, stringResource(R.string.blackTheme_desc),null,
-            {sharedPref.getBoolean("blackTheme",false)},{sharedPref.edit().putBoolean("blackTheme",it).apply()}
-        )
+        if(colorScheme.background!=Color(0xFF000000)){
+            SwitchItem(
+                R.string.blackTheme, stringResource(R.string.blackTheme_desc),null,
+                {sharedPref.getBoolean("blackTheme",false)},{sharedPref.edit().putBoolean("blackTheme",it).apply()}
+            )
+        }
         Box(modifier = Modifier.padding(10.dp)){
             Information {
                 Text(text = stringResource(R.string.need_relaunch))
