@@ -115,24 +115,24 @@ private fun Home(localNavCtrl:NavHostController){
             operation = {localNavCtrl.navigate("DeviceOwner")}
         )
         SubPageItem(R.string.shizuku,""){localNavCtrl.navigate("Shizuku")}
-        SubPageItem(R.string.device_info,""){localNavCtrl.navigate("DeviceInfo")}
+        SubPageItem(R.string.device_info,"",R.drawable.perm_device_information_fill0){localNavCtrl.navigate("DeviceInfo")}
         if(VERSION.SDK_INT>=31&&(isProfileOwner(myDpm)|| isDeviceOwner(myDpm))){
-            SubPageItem(R.string.enrollment_specific_id,""){localNavCtrl.navigate("SpecificID")}
+            SubPageItem(R.string.enrollment_specific_id,"",R.drawable.id_card_fill0){localNavCtrl.navigate("SpecificID")}
         }
         if((VERSION.SDK_INT>=26&&isDeviceOwner(myDpm))||(VERSION.SDK_INT>=24&&isProfileOwner(myDpm))){
-            SubPageItem(R.string.org_name,""){localNavCtrl.navigate("OrgName")}
+            SubPageItem(R.string.org_name,"",R.drawable.corporate_fare_fill0){localNavCtrl.navigate("OrgName")}
         }
         if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){
-            SubPageItem(R.string.account_types_management_disabled,""){localNavCtrl.navigate("NoManagementAccount")}
+            SubPageItem(R.string.account_types_management_disabled,"",R.drawable.account_circle_fill0){localNavCtrl.navigate("NoManagementAccount")}
         }
         if(VERSION.SDK_INT>=24&&isDeviceOwner(myDpm)){
-            SubPageItem(R.string.owner_lockscr_info,""){localNavCtrl.navigate("LockScreenInfo")}
+            SubPageItem(R.string.owner_lockscr_info,"",R.drawable.screen_lock_portrait_fill0){localNavCtrl.navigate("LockScreenInfo")}
         }
         if(VERSION.SDK_INT>=24&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
-            SubPageItem(R.string.support_msg,""){localNavCtrl.navigate("SupportMsg")}
+            SubPageItem(R.string.support_msg,"",R.drawable.chat_fill0){localNavCtrl.navigate("SupportMsg")}
         }
         if(VERSION.SDK_INT>=28&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
-            SubPageItem(R.string.transform_ownership,""){localNavCtrl.navigate("TransformOwnership")}
+            SubPageItem(R.string.transform_ownership,"",R.drawable.admin_panel_settings_fill0){localNavCtrl.navigate("TransformOwnership")}
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }

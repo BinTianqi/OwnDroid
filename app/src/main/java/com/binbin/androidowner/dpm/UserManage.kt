@@ -96,20 +96,20 @@ private fun Home(navCtrl: NavHostController){
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
         Text(text = stringResource(R.string.user_manage), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
-        SubPageItem(R.string.user_info,""){navCtrl.navigate("UserInfo")}
-        SubPageItem(R.string.user_operation,""){navCtrl.navigate("UserOperation")}
+        SubPageItem(R.string.user_info,"",R.drawable.person_fill0){navCtrl.navigate("UserInfo")}
+        SubPageItem(R.string.user_operation,"",R.drawable.sync_alt_fill0){navCtrl.navigate("UserOperation")}
         if(VERSION.SDK_INT>=24&&isDeviceOwner(myDpm)){
-            SubPageItem(R.string.create_user,""){navCtrl.navigate("CreateUser")}
+            SubPageItem(R.string.create_user,"",R.drawable.person_add_fill0){navCtrl.navigate("CreateUser")}
         }
-        SubPageItem(R.string.edit_username,""){navCtrl.navigate("EditUsername")}
+        SubPageItem(R.string.edit_username,"",R.drawable.edit_fill0){navCtrl.navigate("EditUsername")}
         if(VERSION.SDK_INT>=23&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
-            SubPageItem(R.string.change_user_icon,""){navCtrl.navigate("ChangeUserIcon")}
+            SubPageItem(R.string.change_user_icon,"",R.drawable.account_circle_fill0){navCtrl.navigate("ChangeUserIcon")}
         }
         if(VERSION.SDK_INT>=28&&isDeviceOwner(myDpm)){
-            SubPageItem(R.string.user_session_msg,""){navCtrl.navigate("UserSessionMessage")}
+            SubPageItem(R.string.user_session_msg,"",R.drawable.notifications_fill0){navCtrl.navigate("UserSessionMessage")}
         }
         if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
-            SubPageItem(R.string.affiliation_id,""){navCtrl.navigate("AffiliationID")}
+            SubPageItem(R.string.affiliation_id,"",R.drawable.id_card_fill0){navCtrl.navigate("AffiliationID")}
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }

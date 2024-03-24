@@ -64,8 +64,8 @@ fun AppSetting(navCtrl:NavHostController){
 @Composable
 private fun Home(navCtrl: NavHostController){
     Column(modifier = Modifier.fillMaxSize()){
-        SubPageItem(R.string.setting,""){navCtrl.navigate("Settings")}
-        SubPageItem(R.string.about,""){navCtrl.navigate("About")}
+        SubPageItem(R.string.setting,"",R.drawable.settings_fill0){navCtrl.navigate("Settings")}
+        SubPageItem(R.string.about,"",R.drawable.info_fill0){navCtrl.navigate("About")}
     }
 }
 

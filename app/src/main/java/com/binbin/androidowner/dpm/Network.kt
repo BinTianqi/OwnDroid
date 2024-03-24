@@ -96,31 +96,31 @@ private fun Home(navCtrl:NavHostController){
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
         Text(text = stringResource(R.string.network), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
-        if(VERSION.SDK_INT>=24){
-            val wifimac = try { myDpm.getWifiMacAddress(myComponent).toString() }catch(e:SecurityException){ "没有权限" }
+        if(VERSION.SDK_INT>=24&&isDeviceOwner(myDpm)){
+            val wifimac = myDpm.getWifiMacAddress(myComponent)
             Text(text = "WiFi MAC: $wifimac", modifier = Modifier.padding(start = 15.dp))
         }
         Spacer(Modifier.padding(vertical = 3.dp))
         if(VERSION.SDK_INT>=30){
-            SubPageItem(R.string.options,""){navCtrl.navigate("Switches")}
+            SubPageItem(R.string.options,"",R.drawable.tune_fill0){navCtrl.navigate("Switches")}
         }
         if(VERSION.SDK_INT>=33){
-            SubPageItem(R.string.min_wifi_security_level,""){navCtrl.navigate("MinWifiSecurityLevel")}
+            SubPageItem(R.string.min_wifi_security_level,"",R.drawable.wifi_password_fill0){navCtrl.navigate("MinWifiSecurityLevel")}
         }
         if(VERSION.SDK_INT>=33&&(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))){
-            SubPageItem(R.string.wifi_ssid_policy,""){navCtrl.navigate("WifiSsidPolicy")}
+            SubPageItem(R.string.wifi_ssid_policy,"",R.drawable.wifi_fill0){navCtrl.navigate("WifiSsidPolicy")}
         }
         if(VERSION.SDK_INT>=29&&isDeviceOwner(myDpm)){
-            SubPageItem(R.string.private_dns,""){navCtrl.navigate("PrivateDNS")}
+            SubPageItem(R.string.private_dns,"",R.drawable.dns_fill0){navCtrl.navigate("PrivateDNS")}
         }
         if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)))){
-            SubPageItem(R.string.retrieve_net_logs,""){navCtrl.navigate("NetLog")}
+            SubPageItem(R.string.retrieve_net_logs,"",R.drawable.description_fill0){navCtrl.navigate("NetLog")}
         }
         if(VERSION.SDK_INT>=31&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
-            SubPageItem(R.string.wifi_keypair,""){navCtrl.navigate("WifiKeypair")}
+            SubPageItem(R.string.wifi_keypair,"",R.drawable.key_fill0){navCtrl.navigate("WifiKeypair")}
         }
         if(VERSION.SDK_INT>=28&&isDeviceOwner(myDpm)){
-            SubPageItem(R.string.apn_settings,""){navCtrl.navigate("APN")}
+            SubPageItem(R.string.apn_settings,"",R.drawable.cell_tower_fill0){navCtrl.navigate("APN")}
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }

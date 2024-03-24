@@ -87,7 +87,6 @@ fun MyScaffold(){
         navController = navCtrl,
         startDestination = "HomePage",
         modifier = Modifier
-            .statusBarsPadding()
             .fillMaxSize()
             .background(bgColor)
             .imePadding()
@@ -131,8 +130,8 @@ private fun HomePage(navCtrl:NavHostController){
         }
         else if(myDpm.isAdminActive(myComponent)){"Device Admin"}else{""}
     SetDarkTheme()
-    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 18.dp))
+    Column(modifier = Modifier.statusBarsPadding().verticalScroll(rememberScrollState())) {
+        Spacer(Modifier.padding(vertical = 25.dp))
         Text(text = stringResource(R.string.app_name), style = typography.headlineLarge, modifier = Modifier.padding(start = 10.dp), color = colorScheme.onBackground)
         Spacer(Modifier.padding(vertical = 8.dp))
         Row(
@@ -174,11 +173,11 @@ private fun HomePage(navCtrl:NavHostController){
         }
         HomePageItem(R.string.app_manage, R.drawable.apps_fill0, "ApplicationManage", navCtrl)
         if(VERSION.SDK_INT>=24){
-            HomePageItem(R.string.user_restrict, R.drawable.manage_accounts_fill0, "UserRestriction", navCtrl)
+            HomePageItem(R.string.user_restrict, R.drawable.person_off, "UserRestriction", navCtrl)
         }
-        HomePageItem(R.string.user_manage,R.drawable.account_circle_fill0,"UserManage",navCtrl)
+        HomePageItem(R.string.user_manage,R.drawable.manage_accounts_fill0,"UserManage",navCtrl)
         HomePageItem(R.string.password_and_keyguard, R.drawable.password_fill0, "Password",navCtrl)
-        HomePageItem(R.string.setting, R.drawable.info_fill0, "AppSetting",navCtrl)
+        HomePageItem(R.string.setting, R.drawable.settings_fill0, "AppSetting",navCtrl)
         Spacer(Modifier.padding(vertical = 20.dp))
     }
 }

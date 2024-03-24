@@ -99,12 +99,12 @@ private fun Home(navCtrl:NavHostController){
             Text(text = stringResource(R.string.some_features_invalid_in_work_profile), modifier = Modifier.padding(start = 15.dp))
         }
         Spacer(Modifier.padding(vertical = 2.dp))
-        SubPageItem(R.string.network_internet,""){navCtrl.navigate("Internet")}
-        SubPageItem(R.string.more_connectivity,""){navCtrl.navigate("Connectivity")}
-        SubPageItem(R.string.applications,""){navCtrl.navigate("Applications")}
-        SubPageItem(R.string.users,""){navCtrl.navigate("Users")}
-        SubPageItem(R.string.media,""){navCtrl.navigate("Media")}
-        SubPageItem(R.string.other,""){navCtrl.navigate("Other")}
+        SubPageItem(R.string.network_internet,"",R.drawable.wifi_fill0){navCtrl.navigate("Internet")}
+        SubPageItem(R.string.more_connectivity,"",R.drawable.devices_other_fill0){navCtrl.navigate("Connectivity")}
+        SubPageItem(R.string.applications,"",R.drawable.apps_fill0){navCtrl.navigate("Applications")}
+        SubPageItem(R.string.users,"",R.drawable.account_circle_fill0){navCtrl.navigate("Users")}
+        SubPageItem(R.string.media,"",R.drawable.volume_up_fill0){navCtrl.navigate("Media")}
+        SubPageItem(R.string.other,"",R.drawable.more_horiz_fill0){navCtrl.navigate("Other")}
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }

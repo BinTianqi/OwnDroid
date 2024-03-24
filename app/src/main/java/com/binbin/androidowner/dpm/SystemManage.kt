@@ -112,38 +112,38 @@ private fun Home(navCtrl: NavHostController){
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
         Text(text = stringResource(R.string.device_ctrl), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
         if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
-            SubPageItem(R.string.options,""){navCtrl.navigate("Switches")}
+            SubPageItem(R.string.options,"",R.drawable.tune_fill0){navCtrl.navigate("Switches")}
         }
-        SubPageItem(R.string.keyguard,""){navCtrl.navigate("Keyguard")}
+        SubPageItem(R.string.keyguard,"",R.drawable.screen_lock_portrait_fill0){navCtrl.navigate("Keyguard")}
         if(VERSION.SDK_INT>=24){
-            SubPageItem(R.string.request_bug_report,""){navCtrl.navigate("BugReport")}
-            SubPageItem(R.string.reboot,""){navCtrl.navigate("Reboot")}
+            SubPageItem(R.string.request_bug_report,"",R.drawable.bug_report_fill0){navCtrl.navigate("BugReport")}
+            SubPageItem(R.string.reboot,"",R.drawable.restart_alt_fill0){navCtrl.navigate("Reboot")}
         }
         if(VERSION.SDK_INT>=28){
-            SubPageItem(R.string.edit_time,""){navCtrl.navigate("EditTime")}
+            SubPageItem(R.string.edit_time,"",R.drawable.schedule_fill0){navCtrl.navigate("EditTime")}
         }
         if(VERSION.SDK_INT>=23&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
-            SubPageItem(R.string.permission_policy,""){navCtrl.navigate("PermissionPolicy")}
+            SubPageItem(R.string.permission_policy,"",R.drawable.key_fill0){navCtrl.navigate("PermissionPolicy")}
         }
         if(VERSION.SDK_INT>=34&&isDeviceOwner(myDpm)){
-            SubPageItem(R.string.mte_policy,""){navCtrl.navigate("MTEPolicy")}
+            SubPageItem(R.string.mte_policy,"",R.drawable.memory_fill0){navCtrl.navigate("MTEPolicy")}
         }
         if(VERSION.SDK_INT>=31&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
-            SubPageItem(R.string.nearby_streaming_policy,""){navCtrl.navigate("NearbyStreamingPolicy")}
+            SubPageItem(R.string.nearby_streaming_policy,"",R.drawable.share_fill0){navCtrl.navigate("NearbyStreamingPolicy")}
         }
         if(VERSION.SDK_INT>=28&&isDeviceOwner(myDpm)){
-            SubPageItem(R.string.lock_task_feature,""){navCtrl.navigate("LockTaskFeatures")}
+            SubPageItem(R.string.lock_task_feature,"",R.drawable.lock_fill0){navCtrl.navigate("LockTaskFeatures")}
         }
         if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
-            SubPageItem(R.string.ca_cert,""){navCtrl.navigate("CaCert")}
+            SubPageItem(R.string.ca_cert,"",R.drawable.license_fill0){navCtrl.navigate("CaCert")}
         }
         if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))){
-            SubPageItem(R.string.security_logs,""){navCtrl.navigate("SecurityLogs")}
+            SubPageItem(R.string.security_logs,"",R.drawable.description_fill0){navCtrl.navigate("SecurityLogs")}
         }
         if(VERSION.SDK_INT>=23&&isDeviceOwner(myDpm)){
-            SubPageItem(R.string.system_update_policy,""){navCtrl.navigate("SystemUpdatePolicy")}
+            SubPageItem(R.string.system_update_policy,"",R.drawable.system_update_fill0){navCtrl.navigate("SystemUpdatePolicy")}
         }
-        SubPageItem(R.string.wipe_data,""){navCtrl.navigate("WipeData")}
+        SubPageItem(R.string.wipe_data,"",R.drawable.warning_fill0){navCtrl.navigate("WipeData")}
         Spacer(Modifier.padding(vertical = 30.dp))
         LaunchedEffect(Unit){caCert=byteArrayOf()}
     }

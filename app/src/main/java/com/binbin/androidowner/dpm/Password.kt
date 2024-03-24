@@ -92,20 +92,20 @@ fun Password(navCtrl: NavHostController){
 private fun Home(navCtrl:NavHostController){
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
         Text(text = stringResource(R.string.password_and_keyguard), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
-        SubPageItem(R.string.password_info,""){navCtrl.navigate("PasswordInfo")}
+        SubPageItem(R.string.password_info,"",R.drawable.info_fill0){navCtrl.navigate("PasswordInfo")}
         if(VERSION.SDK_INT>=26){
-            SubPageItem(R.string.reset_password_token,""){navCtrl.navigate("ResetPasswordToken")}
+            SubPageItem(R.string.reset_password_token,"",R.drawable.key_vertical_fill0){navCtrl.navigate("ResetPasswordToken")}
         }
-        SubPageItem(R.string.reset_password,""){navCtrl.navigate("ResetPassword")}
+        SubPageItem(R.string.reset_password,"",R.drawable.lock_reset_fill0){navCtrl.navigate("ResetPassword")}
         if(VERSION.SDK_INT>=31){
-            SubPageItem(R.string.required_password_complexity,""){navCtrl.navigate("RequirePasswordComplexity")}
+            SubPageItem(R.string.required_password_complexity,"",R.drawable.password_fill0){navCtrl.navigate("RequirePasswordComplexity")}
         }
-        SubPageItem(R.string.keyguard_disabled_features,""){navCtrl.navigate("KeyguardDisabledFeatures")}
-        SubPageItem(R.string.max_time_to_lock,""){navCtrl.navigate("MaxTimeToLock")}
-        SubPageItem(R.string.pwd_timeout,""){navCtrl.navigate("PasswordTimeout")}
-        SubPageItem(R.string.max_pwd_fail,""){navCtrl.navigate("MaxPasswordFail")}
-        SubPageItem(R.string.pwd_history,""){navCtrl.navigate("PasswordHistoryLength")}
-        SubPageItem(R.string.required_password_quality,""){navCtrl.navigate("RequirePasswordQuality")}
+        SubPageItem(R.string.keyguard_disabled_features,"",R.drawable.screen_lock_portrait_fill0){navCtrl.navigate("KeyguardDisabledFeatures")}
+        SubPageItem(R.string.max_time_to_lock,"",R.drawable.schedule_fill0){navCtrl.navigate("MaxTimeToLock")}
+        SubPageItem(R.string.pwd_timeout,"",R.drawable.lock_clock_fill0){navCtrl.navigate("PasswordTimeout")}
+        SubPageItem(R.string.max_pwd_fail,"",R.drawable.no_encryption_fill0){navCtrl.navigate("MaxPasswordFail")}
+        SubPageItem(R.string.pwd_history,"",R.drawable.history_fill0){navCtrl.navigate("PasswordHistoryLength")}
+        SubPageItem(R.string.required_password_quality,"",R.drawable.password_fill0){navCtrl.navigate("RequirePasswordQuality")}
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }

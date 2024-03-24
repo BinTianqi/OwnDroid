@@ -21,20 +21,28 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import com.binbin.androidowner.R
+import com.binbin.androidowner.displayMetrics
 import com.binbin.androidowner.ui.theme.bgColor
 
 @Composable
 fun SubPageItem(
     @StringRes title: Int,
     desc:String,
+    @DrawableRes icon: Int? = null,
     operation: () -> Unit
 ){
     Row(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = operation).padding(vertical = 15.dp)
+        modifier = Modifier.fillMaxWidth().clickable(onClick = operation).padding(vertical = 15.dp),
+        verticalAlignment = Alignment.CenterVertically
     ){
-        Spacer(Modifier.fillMaxWidth(0.07F))
+        Spacer(Modifier.padding(start = (displayMetrics.widthPixels/20).dp))
+        if(icon!=null){
+            Spacer(Modifier.padding(start = (displayMetrics.widthPixels/60).dp))
+            Icon(painter = painterResource(icon), contentDescription = stringResource(title), modifier = Modifier.padding(top = 1.dp))
+            Spacer(Modifier.padding(start = (displayMetrics.widthPixels/30).dp))
+        }
         Column {
-            Text(text = stringResource(title), style = typography.titleLarge)
+            Text(text = stringResource(title), style = typography.titleLarge, modifier = Modifier.padding(bottom = 1.dp))
             if(desc!=""){Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F))}
         }
     }
@@ -48,7 +56,7 @@ fun NavIcon(operation: () -> Unit){
         modifier = Modifier
             .padding(horizontal = 6.dp)
             .clip(RoundedCornerShape(50))
-            .clickable{ operation() }
+            .clickable(onClick = operation)
             .padding(5.dp)
     )
 }
@@ -123,10 +131,11 @@ fun SwitchItem(
     checked = getState()
     Box(modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.align(Alignment.CenterStart)){
-            Spacer(Modifier.fillMaxWidth(0.07F))
+            Spacer(Modifier.padding(start = (displayMetrics.widthPixels/20).dp))
             if(icon!=null){
+                Spacer(Modifier.padding(start = (displayMetrics.widthPixels/60).dp))
                 Icon(painter = painterResource(icon),contentDescription = null)
-                Spacer(Modifier.fillMaxWidth(0.08F))
+                Spacer(Modifier.padding(start = (displayMetrics.widthPixels/30).dp))
             }
             Column(modifier = Modifier.padding(end = 60.dp)){
                 Text(text = stringResource(title), style = typography.titleLarge)
