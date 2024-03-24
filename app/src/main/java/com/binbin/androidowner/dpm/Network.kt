@@ -28,6 +28,7 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -50,6 +51,7 @@ var ssidSet = mutableSetOf<WifiSsid>()
 fun Network(navCtrl: NavHostController){
     val localNavCtrl = rememberNavController()
     val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
+    val scrollState = rememberScrollState()
     /*val titleMap = mapOf(
         "Home" to R.string.network,
         "MinWifiSecurityLevel" to R.string.min_wifi_security_level,
@@ -66,7 +68,14 @@ fun Network(navCtrl: NavHostController){
                 navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
             )*/
-            TopBar(backStackEntry, navCtrl, localNavCtrl)
+            TopBar(backStackEntry,navCtrl,localNavCtrl){
+                if(backStackEntry?.destination?.route=="Home"){
+                    Text(
+                        text = stringResource(R.string.network),
+                        modifier = Modifier.alpha((maxOf(scrollState.value-30,0)).toFloat()/80)
+                    )
+                }
+            }
         }
     ){
         NavHost(
@@ -77,7 +86,7 @@ fun Network(navCtrl: NavHostController){
             popExitTransition = Animations().navHostPopExitTransition,
             modifier = Modifier.background(bgColor).padding(top = it.calculateTopPadding())
         ){
-            composable(route = "Home"){Home(localNavCtrl)}
+            composable(route = "Home"){Home(localNavCtrl,scrollState)}
             composable(route = "Switches"){Switches()}
             composable(route = "MinWifiSecurityLevel"){WifiSecLevel()}
             composable(route = "WifiSsidPolicy"){WifiSsidPolicy()}
@@ -90,11 +99,11 @@ fun Network(navCtrl: NavHostController){
 }
 
 @Composable
-private fun Home(navCtrl:NavHostController){
+private fun Home(navCtrl:NavHostController,scrollState: ScrollState){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)){
         Text(text = stringResource(R.string.network), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
         if(VERSION.SDK_INT>=24&&isDeviceOwner(myDpm)){
             val wifimac = myDpm.getWifiMacAddress(myComponent)

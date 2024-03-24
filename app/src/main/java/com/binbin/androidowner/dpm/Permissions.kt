@@ -21,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
@@ -47,6 +48,7 @@ import kotlinx.coroutines.launch
 fun DpmPermissions(navCtrl:NavHostController){
     val localNavCtrl = rememberNavController()
     val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
+    val scrollState = rememberScrollState()
     /*val titleMap = mapOf(
         "Home" to R.string.permission,
         "Shizuku" to R.string.shizuku,
@@ -68,7 +70,14 @@ fun DpmPermissions(navCtrl:NavHostController){
                 navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
             )*/
-            TopBar(backStackEntry,navCtrl,localNavCtrl)
+            TopBar(backStackEntry,navCtrl,localNavCtrl){
+                if(backStackEntry?.destination?.route=="Home"){
+                    Text(
+                        text = stringResource(R.string.permission),
+                        modifier = Modifier.alpha((maxOf(scrollState.value-30,0)).toFloat()/80)
+                    )
+                }
+            }
         }
     ){
         NavHost(
@@ -79,7 +88,7 @@ fun DpmPermissions(navCtrl:NavHostController){
             popExitTransition = Animations().navHostPopExitTransition,
             modifier = Modifier.background(bgColor).padding(top = it.calculateTopPadding())
         ){
-            composable(route = "Home"){Home(localNavCtrl)}
+            composable(route = "Home"){Home(localNavCtrl,scrollState)}
             composable(route = "Shizuku"){ShizukuActivate()}
             composable(route = "DeviceAdmin"){DeviceAdmin(navCtrl)}
             composable(route = "ProfileOwner"){ProfileOwner()}
@@ -96,11 +105,11 @@ fun DpmPermissions(navCtrl:NavHostController){
 }
 
 @Composable
-private fun Home(localNavCtrl:NavHostController){
+private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(listScrollState)) {
         Text(text = stringResource(R.string.permission), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
         SubPageItem(
             R.string.device_admin, stringResource(if(myDpm.isAdminActive(myComponent)){R.string.activated}else{R.string.deactivated}),

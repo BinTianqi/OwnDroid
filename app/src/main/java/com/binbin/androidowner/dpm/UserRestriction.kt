@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -23,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -49,6 +51,7 @@ private data class Restriction(
 fun UserRestriction(navCtrl: NavHostController){
     val localNavCtrl = rememberNavController()
     val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
+    val scrollState = rememberScrollState()
     /*val titleMap = mapOf(
         "Internet" to R.string.network_internet,
         "Connectivity" to R.string.more_connectivity,
@@ -64,7 +67,14 @@ fun UserRestriction(navCtrl: NavHostController){
                 navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
             )*/
-            TopBar(backStackEntry,navCtrl,localNavCtrl)
+            TopBar(backStackEntry,navCtrl,localNavCtrl){
+                if(backStackEntry?.destination?.route=="Home"){
+                    Text(
+                        text = stringResource(R.string.user_restrict),
+                        modifier = Modifier.alpha((maxOf(scrollState.value-30,0)).toFloat()/80)
+                    )
+                }
+            }
         }
     ){
         NavHost(
@@ -76,7 +86,7 @@ fun UserRestriction(navCtrl: NavHostController){
             modifier = Modifier.background(bgColor).padding(top = it.calculateTopPadding())
         ){
             composable(route = "Internet"){Internet()}
-            composable(route = "Home"){Home(localNavCtrl)}
+            composable(route = "Home"){Home(localNavCtrl,scrollState)}
             composable(route = "Connectivity"){Connectivity()}
             composable(route = "Applications"){Application()}
             composable(route = "Users"){User()}
@@ -87,11 +97,11 @@ fun UserRestriction(navCtrl: NavHostController){
 }
 
 @Composable
-private fun Home(navCtrl:NavHostController){
+private fun Home(navCtrl:NavHostController,scrollState: ScrollState){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)){
         Text(text = stringResource(R.string.user_restrict), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 7.dp, start = 15.dp))
         Text(text = stringResource(R.string.switch_to_disable_feature), modifier = Modifier.padding(start = 15.dp))
         if(isProfileOwner(myDpm)){ Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.padding(start = 15.dp)) }

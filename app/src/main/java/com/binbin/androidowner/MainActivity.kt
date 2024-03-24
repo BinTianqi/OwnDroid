@@ -192,13 +192,13 @@ fun HomePageItem(name:Int, imgVector:Int, navTo:String, myNav:NavHostController)
             .padding(vertical = 13.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Spacer(modifier = Modifier.fillMaxWidth(0.08F))
+        Spacer(Modifier.padding(start = 30.dp))
         Icon(
             painter = painterResource(imgVector),
             contentDescription = null,
             tint = colorScheme.onBackground
         )
-        Spacer(modifier = Modifier.fillMaxWidth(0.05F))
+        Spacer(Modifier.padding(start = 15.dp))
         Column {
             Text(
                 text = stringResource(name),

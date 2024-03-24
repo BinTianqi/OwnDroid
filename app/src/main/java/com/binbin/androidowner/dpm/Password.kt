@@ -11,18 +11,16 @@ import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
-import androidx.compose.foundation.focusable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -43,6 +41,7 @@ import com.binbin.androidowner.ui.theme.bgColor
 fun Password(navCtrl: NavHostController){
     val localNavCtrl = rememberNavController()
     val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
+    val scrollState = rememberScrollState()
     /*val titleMap = mapOf(
         "ResetPasswordToken" to R.string.reset_password_token,
         "PasswordInfo" to R.string.password_info,
@@ -62,7 +61,14 @@ fun Password(navCtrl: NavHostController){
                 navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
             )*/
-            TopBar(backStackEntry, navCtrl, localNavCtrl)
+            TopBar(backStackEntry,navCtrl,localNavCtrl){
+                if(backStackEntry?.destination?.route=="Home"){
+                    Text(
+                        text = stringResource(R.string.password_and_keyguard),
+                        modifier = Modifier.alpha((maxOf(scrollState.value-30,0)).toFloat()/80)
+                    )
+                }
+            }
         }
     ){
         NavHost(
@@ -73,7 +79,7 @@ fun Password(navCtrl: NavHostController){
             popExitTransition = Animations().navHostPopExitTransition,
             modifier = Modifier.background(bgColor).padding(top = it.calculateTopPadding())
         ){
-            composable(route = "Home"){Home(localNavCtrl)}
+            composable(route = "Home"){Home(localNavCtrl,scrollState)}
             composable(route = "PasswordInfo"){PasswordInfo()}
             composable(route = "ResetPasswordToken"){ResetPasswordToken()}
             composable(route = "ResetPassword"){ResetPassword()}
@@ -89,8 +95,8 @@ fun Password(navCtrl: NavHostController){
 }
 
 @Composable
-private fun Home(navCtrl:NavHostController){
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
+private fun Home(navCtrl:NavHostController,scrollState: ScrollState){
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)){
         Text(text = stringResource(R.string.password_and_keyguard), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
         SubPageItem(R.string.password_info,"",R.drawable.info_fill0){navCtrl.navigate("PasswordInfo")}
         if(VERSION.SDK_INT>=26){

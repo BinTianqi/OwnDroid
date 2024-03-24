@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import com.binbin.androidowner.R
-import com.binbin.androidowner.displayMetrics
 import com.binbin.androidowner.ui.theme.bgColor
 
 @Composable
@@ -35,11 +34,10 @@ fun SubPageItem(
         modifier = Modifier.fillMaxWidth().clickable(onClick = operation).padding(vertical = 15.dp),
         verticalAlignment = Alignment.CenterVertically
     ){
-        Spacer(Modifier.padding(start = (displayMetrics.widthPixels/20).dp))
+        Spacer(Modifier.padding(start = 30.dp))
         if(icon!=null){
-            Spacer(Modifier.padding(start = (displayMetrics.widthPixels/60).dp))
             Icon(painter = painterResource(icon), contentDescription = stringResource(title), modifier = Modifier.padding(top = 1.dp))
-            Spacer(Modifier.padding(start = (displayMetrics.widthPixels/30).dp))
+            Spacer(Modifier.padding(start = 15.dp))
         }
         Column {
             Text(text = stringResource(title), style = typography.titleLarge, modifier = Modifier.padding(bottom = 1.dp))
@@ -131,11 +129,10 @@ fun SwitchItem(
     checked = getState()
     Box(modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.align(Alignment.CenterStart)){
-            Spacer(Modifier.padding(start = (displayMetrics.widthPixels/20).dp))
+            Spacer(Modifier.padding(start = 30.dp))
             if(icon!=null){
-                Spacer(Modifier.padding(start = (displayMetrics.widthPixels/60).dp))
                 Icon(painter = painterResource(icon),contentDescription = null)
-                Spacer(Modifier.padding(start = (displayMetrics.widthPixels/30).dp))
+                Spacer(Modifier.padding(start = 15.dp))
             }
             Column(modifier = Modifier.padding(end = 60.dp)){
                 Text(text = stringResource(title), style = typography.titleLarge)
