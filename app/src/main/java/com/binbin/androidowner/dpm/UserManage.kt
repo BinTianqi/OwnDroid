@@ -67,7 +67,7 @@ fun UserManage(navCtrl:NavHostController) {
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
             )*/
             TopBar(backStackEntry,navCtrl,localNavCtrl){
-                if(backStackEntry?.destination?.route=="Home"){
+                if(backStackEntry?.destination?.route=="Home"&&scrollState.maxValue>80){
                     Text(
                         text = stringResource(R.string.user_manage),
                         modifier = Modifier.alpha((maxOf(scrollState.value-30,0)).toFloat()/80)

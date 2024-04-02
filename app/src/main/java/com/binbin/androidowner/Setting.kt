@@ -18,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -80,7 +81,7 @@ private fun Settings(){
             R.string.dynamic_color, stringResource(R.string.dynamic_color_desc),null,
             {sharedPref.getBoolean("dynamicColor",false)},{sharedPref.edit().putBoolean("dynamicColor",it).apply()}
         )
-        if(colorScheme.background!=Color(0xFF000000)){
+        if(colorScheme.background.toArgb()!=Color(0xFF000000).toArgb()){
             SwitchItem(
                 R.string.blackTheme, stringResource(R.string.blackTheme_desc),null,
                 {sharedPref.getBoolean("blackTheme",false)},{sharedPref.edit().putBoolean("blackTheme",it).apply()}

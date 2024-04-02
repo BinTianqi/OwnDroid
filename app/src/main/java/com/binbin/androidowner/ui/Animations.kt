@@ -17,8 +17,8 @@ class Animations{
     val animateListSize:FiniteAnimationSpec<IntSize> = spring(stiffness = Spring.StiffnessMediumLow, visibilityThreshold = IntSize.VisibilityThreshold)
     
     private val screenWidth = displayMetrics.widthPixels
-    private val initialOffsetValue = screenWidth/8
-    private val targetOffsetValue = screenWidth/8
+    private val initialOffsetValue = screenWidth/10
+    private val targetOffsetValue = screenWidth/10
     
     val navHostEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
         fadeIn(animationSpec = fade) +

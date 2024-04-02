@@ -76,7 +76,7 @@ fun SystemManage(navCtrl:NavHostController){
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
             )*/
             TopBar(backStackEntry,navCtrl,localNavCtrl){
-                if(backStackEntry?.destination?.route=="Home"){
+                if(backStackEntry?.destination?.route=="Home"&&scrollState.maxValue>80){
                     Text(
                         text = stringResource(R.string.device_ctrl),
                         modifier = Modifier.alpha((maxOf(scrollState.value-30,0)).toFloat()/80)

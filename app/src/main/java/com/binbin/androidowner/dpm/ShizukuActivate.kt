@@ -111,8 +111,8 @@ fun ShizukuActivate(){
                                 scrollState.animateScrollTo(scrollState.maxValue, scrollAnim())
                                 outputTextScrollState.animateScrollTo(0, scrollAnim())
                             }
-                        },
-                        modifier = Modifier.fillMaxWidth()) {
+                        }
+                    ) {
                         Text(text = stringResource(R.string.activate_device_admin))
                     }
                 }
@@ -124,8 +124,8 @@ fun ShizukuActivate(){
                             scrollState.animateScrollTo(scrollState.maxValue, scrollAnim())
                             outputTextScrollState.animateScrollTo(0, scrollAnim())
                         }
-                    },
-                    modifier = Modifier.fillMaxWidth()) {
+                    }
+                ) {
                     Text(text = stringResource(R.string.activate_profile_owner))
                 }
                 
@@ -136,8 +136,8 @@ fun ShizukuActivate(){
                             scrollState.animateScrollTo(scrollState.maxValue, scrollAnim())
                             outputTextScrollState.animateScrollTo(0, scrollAnim())
                         }
-                    },
-                    modifier = Modifier.fillMaxWidth()) {
+                    }
+                ) {
                     Text(text = stringResource(R.string.activate_device_owner))
                 }
                 

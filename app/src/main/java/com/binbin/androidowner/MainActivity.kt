@@ -144,16 +144,16 @@ private fun HomePage(navCtrl:NavHostController){
                 .padding(vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Spacer(modifier = Modifier.fillMaxWidth(0.06F))
+            Spacer(modifier = Modifier.padding(start = 22.dp))
             Icon(
                 painter = painterResource(if(myDpm.isAdminActive(myComponent)){ R.drawable.check_circle_fill1 }else{ R.drawable.block_fill0 }),
                 contentDescription = null,
                 tint = colorScheme.onPrimary
             )
-            Spacer(modifier = Modifier.fillMaxWidth(0.05F))
+            Spacer(modifier = Modifier.padding(start = 10.dp))
             Column {
                 Text(
-                    text = if(myDpm.isAdminActive(myComponent)){"已激活"}else{"未激活"},
+                    text = stringResource(if(myDpm.isAdminActive(myComponent)){R.string.activated}else{R.string.deactivated}),
                     style = typography.headlineSmall,
                     color = colorScheme.onPrimary,
                     modifier = Modifier.padding(bottom = 2.dp)

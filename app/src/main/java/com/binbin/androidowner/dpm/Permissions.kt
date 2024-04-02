@@ -14,11 +14,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material3.Button
+import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -68,7 +66,7 @@ fun DpmPermissions(navCtrl:NavHostController){
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
             )*/
             TopBar(backStackEntry,navCtrl,localNavCtrl){
-                if(backStackEntry?.destination?.route=="Home"){
+                if(backStackEntry?.destination?.route=="Home"&&scrollState.maxValue>80){
                     Text(
                         text = stringResource(R.string.permission),
                         modifier = Modifier.alpha((maxOf(scrollState.value-30,0)).toFloat()/80)
@@ -201,7 +199,7 @@ private fun DeviceAdmin(navCtrl: NavHostController){
                         myDpm.removeActiveAdmin(myComponent)
                         co.launch{ delay(600); if(!myDpm.isAdminActive(myComponent)){navCtrl.navigateUp()} }
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
                 ) {
                     Text(stringResource(R.string.deactivate))
                 }
@@ -232,7 +230,10 @@ private fun ProfileOwner(){
         Text(stringResource(if(isProfileOwner(myDpm)){R.string.activated}else{R.string.deactivated}), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         if(isProfileOwner(myDpm)&&VERSION.SDK_INT>=24){
-            Button(onClick = {myDpm.clearProfileOwner(myComponent)}, modifier = Modifier.fillMaxWidth()) {
+            Button(
+                onClick = {myDpm.clearProfileOwner(myComponent)},
+                colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
+            ) {
                 Text(stringResource(R.string.deactivate))
             }
         }
@@ -261,7 +262,7 @@ private fun DeviceOwner(navCtrl: NavHostController){
                     myDpm.clearDeviceOwnerApp(myContext.packageName)
                     co.launch{ delay(600); if(!isDeviceOwner(myDpm)){navCtrl.navigateUp()} }
                 },
-                modifier = Modifier.fillMaxWidth()
+                colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
             ) {
                 Text(text = stringResource(R.string.deactivate))
             }
