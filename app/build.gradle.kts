@@ -11,8 +11,8 @@ android {
         applicationId = "com.binbin.androidowner"
         minSdk = 21
         targetSdk = 34
-        versionCode = 21
-        versionName = "4.4"
+        versionCode = 22
+        versionName = "4.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -60,6 +60,7 @@ dependencies {
     implementation(platform("androidx.compose:compose-bom:2024.02.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
+    implementation("com.google.accompanist:accompanist-drawablepainter:0.35.0-alpha")
     debugImplementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3:1.2.0")
     implementation("androidx.navigation:navigation-compose:2.7.7")

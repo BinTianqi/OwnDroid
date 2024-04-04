@@ -25,6 +25,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -33,8 +34,10 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -93,6 +96,12 @@ fun ApplicationManage(navCtrl:NavHostController){
         }
     ){ paddingValues->
         Column(modifier = Modifier.fillMaxSize().padding(top = paddingValues.calculateTopPadding())){
+            LaunchedEffect(Unit) {
+                while(true){
+                    if(applySelectedPackage){pkgName = selectedPackage; applySelectedPackage = false}
+                    delay(200)
+                }
+            }
             if(backStackEntry?.destination?.route!="InstallApp"){
                 TextField(
                     value = pkgName,
@@ -100,7 +109,15 @@ fun ApplicationManage(navCtrl:NavHostController){
                     label = { Text(stringResource(R.string.package_name)) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
+                    keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+                    trailingIcon = {
+                        Icon(painter = painterResource(R.drawable.checklist_fill0), contentDescription = null,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(50))
+                                .clickable(onClick = {navCtrl.navigate("PackageSelector")})
+                                .padding(3.dp))
+                    },
+                    singleLine = true
                 )
             }
             NavHost(

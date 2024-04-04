@@ -6,9 +6,7 @@
 
 使用安卓的Device Admin和Device Owner特权，完全掌控你的设备。
 
-**从v4.2开始，重写代码，重新设计，界面会发生很大改变。**
-
-我正在为这个App取一个新的名字......
+_我正在为这个App取一个新的名字......_
 
 ### 优点
 
@@ -19,7 +17,7 @@
 
 ### 缺点
 
-功能没有谷歌官方的 [TestDPC](https://github.com/googlesamples/android-testdpc) 那么多
+功能没有谷歌官方的 [TestDPC](https://github.com/googlesamples/android-testdpc) 那么全
 
 ### 功能
 
@@ -33,14 +31,13 @@
 
 ### 正在开发的功能
 
-- 应用管理：包选择器（目前只能手动输入包名）
-- 应用管理：应用权限选择器
-- 用户管理：用户选择器（目前只能手动输入用户序列号）
+- 应用管理：应用权限选择器（现在只能手动输入权限名称）
+- 用户管理：用户选择器（现在只能手动输入用户序列号）
 - 安全日志和网络日志
 
 ### 许可证
 
-[License.md](License.md)
+[License.md](LICENSE.md)
 
 > Copyright (C)  2024  BinTianqi
 >

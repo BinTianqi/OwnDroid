@@ -238,6 +238,12 @@
 
     <!--AppManage-->
     <string name="app_manage">应用管理</string>
+    <string name="pkg_selector">应用选择器</string>
+    <string name="loading">加载中</string>
+    <string name="show_user_app">显示用户应用</string>
+    <string name="show_system_app">显示系统应用</string>
+    <string name="show_priv_app">显示priv-app</string>
+    <string name="show_apex_app">显示apex应用</string>
     <string name="suspend">挂起</string>
     <string name="hide">隐藏</string>
     <string name="isapphidden_desc">如果隐藏，有可能是没安装</string>

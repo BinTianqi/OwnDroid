@@ -5,7 +5,8 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.result.ActivityResultLauncher
 
-
+var selectedPackage = ""
+var applySelectedPackage = false
 lateinit var getCaCert: ActivityResultLauncher<Intent>
 lateinit var createManagedProfile: ActivityResultLauncher<Intent>
 lateinit var getApk: ActivityResultLauncher<Intent>
