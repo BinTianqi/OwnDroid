@@ -244,6 +244,7 @@
     <string name="show_system_app">显示系统应用</string>
     <string name="show_priv_app">显示priv-app</string>
     <string name="show_apex_app">显示apex应用</string>
+    <string name="permission_picker">权限选择器</string>
     <string name="suspend">挂起</string>
     <string name="hide">隐藏</string>
     <string name="isapphidden_desc">如果隐藏，有可能是没安装</string>
@@ -471,5 +472,32 @@
     <string name="blackTheme">纯黑夜间主题</string>
     <string name="blackTheme_desc">需要打开夜间模式</string>
     <string name="need_relaunch">需要重启应用</string>
+
+    <!--AndroidPermission-->
+    <string name="permission_READ_EXTERNAL_STORAGE">读取外部存储</string>
+    <string name="permission_WRITE_EXTERNAL_STORAGE">写入外部存储</string>
+    <string name="permission_READ_MEDIA_AUDIO">读取音频</string>
+    <string name="permission_READ_MEDIA_VIDEO">读取视频</string>
+    <string name="permission_READ_MEDIA_IMAGES">读取图片</string>
+    <string name="permission_CAMERA">相机</string>
+    <string name="permission_RECORD_AUDIO">录音</string>
+    <string name="permission_READ_CONTACTS">读取联系人</string>
+    <string name="permission_WRITE_CONTACTS">写入联系人</string>
+    <string name="permission_READ_CALENDAR">读取日历</string>
+    <string name="permission_WRITE_CALENDAR">写入日历</string>
+    <string name="permission_ACCESS_COARSE_LOCATION">粗略位置</string>
+    <string name="permission_ACCESS_FINE_LOCATION">准确位置</string>
+    <string name="permission_ACCESS_BACKGROUND_LOCATION">后台获取位置</string>
+    <string name="permission_CALL_PHONE">打电话</string>
+    <string name="permission_READ_PHONE_STATE">读取手机状态</string>
+    <string name="permission_READ_SMS">读取短信</string>
+    <string name="permission_RECEIVE_SMS">接收短信</string>
+    <string name="permission_SEND_SMS">发送短信</string>
+    <string name="permission_READ_CALL_LOG">读取通话记录</string>
+    <string name="permission_WRITE_CALL_LOG">写入通话记录</string>
+    <string name="permission_BODY_SENSORS">传感器</string>
+    <string name="permission_BODY_SENSORS_BACKGROUND">后台使用传感器</string>
+    <string name="permission_ACTIVITY_RECOGNITION">查看使用情况</string>
+    <string name="permission_POST_NOTIFICATIONS">发送通知</string>
 
 </resources>

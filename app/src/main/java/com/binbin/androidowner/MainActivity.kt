@@ -108,6 +108,7 @@ fun MyScaffold(){
         composable(route = "AppSetting", content = { AppSetting(navCtrl)})
         composable(route = "Network", content = {Network(navCtrl)})
         composable(route = "PackageSelector"){PackageSelector(navCtrl)}
+        composable(route = "PermissionPicker"){PermissionPicker(navCtrl)}
     }
     LaunchedEffect(Unit){
         val profileInited = sharedPref.getBoolean("ManagedProfileActivated",false)

@@ -64,6 +64,7 @@ private var crossProfilePkg = mutableSetOf<String>()
 private var keepUninstallPkg = mutableListOf<String>()
 private var permittedIme = mutableListOf<String>()
 private var permittedAccessibility = mutableListOf<String>()
+
 @Composable
 fun ApplicationManage(navCtrl:NavHostController){
     val focusMgr = LocalFocusManager.current
@@ -98,8 +99,8 @@ fun ApplicationManage(navCtrl:NavHostController){
         Column(modifier = Modifier.fillMaxSize().padding(top = paddingValues.calculateTopPadding())){
             LaunchedEffect(Unit) {
                 while(true){
-                    if(applySelectedPackage){pkgName = selectedPackage; applySelectedPackage = false}
-                    delay(200)
+                    if(applySelectedPackage){ pkgName = selectedPackage; applySelectedPackage = false; applySelectedPermission = true}
+                    delay(100)
                 }
             }
             if(backStackEntry?.destination?.route!="InstallApp"){
@@ -131,7 +132,7 @@ fun ApplicationManage(navCtrl:NavHostController){
                 composable(route = "Home"){Home(localNavCtrl,pkgName)}
                 composable(route = "BlockUninstall"){BlockUninstall(pkgName)}
                 composable(route = "UserControlDisabled"){UserCtrlDisabledPkg(pkgName)}
-                composable(route = "PermissionManage"){PermissionManage(pkgName)}
+                composable(route = "PermissionManage"){PermissionManage(pkgName,navCtrl)}
                 composable(route = "CrossProfilePackage"){CrossProfilePkg(pkgName)}
                 composable(route = "CrossProfileWidget"){CrossProfileWidget(pkgName)}
                 composable(route = "CredentialManagePolicy"){CredentialManagePolicy(pkgName)}
@@ -155,8 +156,7 @@ private fun Home(navCtrl:NavHostController, pkgName: String){
         val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT>=24&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
-            Text(text = stringResource(R.string.scope_is_work_profile), textAlign = TextAlign.Center,modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp))
-            Spacer(Modifier.padding(vertical = 5.dp))
+            Text(text = stringResource(R.string.scope_is_work_profile), textAlign = TextAlign.Center,modifier = Modifier.fillMaxWidth())
         }
         SubPageItem(R.string.app_info,"",R.drawable.open_in_new){
             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
@@ -343,38 +343,57 @@ private fun BlockUninstall(pkgName: String){
 
 @SuppressLint("NewApi")
 @Composable
-private fun PermissionManage(pkgName: String){
+private fun PermissionManage(pkgName: String, navCtrl: NavHostController){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val focusMgr = LocalFocusManager.current
+    var inputPermission by remember{mutableStateOf(selectedPermission)}
+    var currentState by remember{mutableStateOf(myContext.getString(R.string.unknown))}
     val grantState = mapOf(
         PERMISSION_GRANT_STATE_DEFAULT to stringResource(R.string.decide_by_user),
         PERMISSION_GRANT_STATE_GRANTED to stringResource(R.string.granted),
         PERMISSION_GRANT_STATE_DENIED to stringResource(R.string.denied)
     )
+    LaunchedEffect(Unit) {
+        while(true){
+            if(applySelectedPermission){inputPermission = selectedPermission; applySelectedPermission = false}
+            delay(100)
+        }
+    }
+    LaunchedEffect(pkgName) {
+        if(pkgName!=""){currentState = grantState[myDpm.getPermissionGrantState(myComponent,pkgName,inputPermission)]!!}
+    }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
-        var inputPermission by remember{mutableStateOf("android.permission.")}
-        var currentState by remember{mutableStateOf(grantState[myDpm.getPermissionGrantState(myComponent,pkgName,inputPermission)])}
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.permission_manage), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
             value = inputPermission,
             label = { Text(stringResource(R.string.permission))},
-            onValueChange = {inputPermission = it},
+            onValueChange = {
+                inputPermission = it; selectedPermission = inputPermission
+                currentState = grantState[myDpm.getPermissionGrantState(myComponent,pkgName,inputPermission)]!!
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-            modifier = Modifier.focusable().fillMaxWidth()
+            modifier = Modifier.focusable().fillMaxWidth(),
+            trailingIcon = {
+                Icon(painter = painterResource(R.drawable.checklist_fill0), contentDescription = null,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50))
+                        .clickable(onClick = {navCtrl.navigate("PermissionPicker")})
+                        .padding(3.dp))
+            }
         )
         Spacer(Modifier.padding(vertical = 5.dp))
-        Text(stringResource(R.string.current_state, currentState?:stringResource(R.string.unknown)))
+        Text(stringResource(R.string.current_state, currentState))
         Spacer(Modifier.padding(vertical = 5.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
             Button(
                 onClick = {
                     myDpm.setPermissionGrantState(myComponent,pkgName,inputPermission, PERMISSION_GRANT_STATE_GRANTED)
-                    currentState = grantState[myDpm.getPermissionGrantState(myComponent,pkgName,inputPermission)]
+                    currentState = grantState[myDpm.getPermissionGrantState(myComponent,pkgName,inputPermission)]!!
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) {
@@ -383,7 +402,7 @@ private fun PermissionManage(pkgName: String){
             Button(
                 onClick = {
                     myDpm.setPermissionGrantState(myComponent,pkgName,inputPermission, PERMISSION_GRANT_STATE_DENIED)
-                    currentState = grantState[myDpm.getPermissionGrantState(myComponent,pkgName,inputPermission)]
+                    currentState = grantState[myDpm.getPermissionGrantState(myComponent,pkgName,inputPermission)]!!
                 },
                 Modifier.fillMaxWidth(0.96F)
             ) {
@@ -393,7 +412,7 @@ private fun PermissionManage(pkgName: String){
         Button(
             onClick = {
                 myDpm.setPermissionGrantState(myComponent,pkgName,inputPermission, PERMISSION_GRANT_STATE_DEFAULT)
-                currentState = grantState[myDpm.getPermissionGrantState(myComponent,pkgName,inputPermission)]
+                currentState = grantState[myDpm.getPermissionGrantState(myComponent,pkgName,inputPermission)]!!
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -410,6 +429,7 @@ private fun CrossProfilePkg(pkgName: String){
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
+        Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.cross_profile_package), style = typography.headlineLarge)
         var list by remember{mutableStateOf("")}
         val refresh = {

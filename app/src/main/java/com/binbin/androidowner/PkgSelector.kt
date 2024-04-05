@@ -152,6 +152,7 @@ fun PackageSelector(navCtrl:NavHostController){
                         PackageItem(it, navCtrl)
                     }
                 }
+                items(1){Spacer(Modifier.padding(vertical = 30.dp))}
             }else{
                 items(1){
                     Spacer(Modifier.padding(top = 5.dp))
