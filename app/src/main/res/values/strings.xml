@@ -150,7 +150,7 @@
     <string name="wipe_data">清除数据</string>
     <string name="wipe_external_storage">清除外部存储</string>
     <string name="wipe_reset_protection_data">清除受保护的数据</string>
-    <string name="wipe_euicc">清除eUICC</string>
+    <string name="wipe_euicc">清除eUICC(eSIM)</string>
     <string name="wipe_silently">静默清除</string>
     <string name="will_delete_work_profile">将会删除工作资料</string>
     <string name="api34_or_above_wipedata_cannot_in_system_user">API34或以上将不能在系统用户中使用WipeData</string>
