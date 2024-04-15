@@ -78,7 +78,7 @@ fun SystemManage(navCtrl:NavHostController){
             TopBar(backStackEntry,navCtrl,localNavCtrl){
                 if(backStackEntry?.destination?.route=="Home"&&scrollState.maxValue>80){
                     Text(
-                        text = stringResource(R.string.device_ctrl),
+                        text = stringResource(R.string.system_manage),
                         modifier = Modifier.alpha((maxOf(scrollState.value-30,0)).toFloat()/80)
                     )
                 }
@@ -116,7 +116,7 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)){
-        Text(text = stringResource(R.string.device_ctrl), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
+        Text(text = stringResource(R.string.system_manage), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
         if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
             SubPageItem(R.string.options,"",R.drawable.tune_fill0){navCtrl.navigate("Switches")}
         }
@@ -168,7 +168,7 @@ private fun Switches(){
             )
         }
         if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
-            SwitchItem(R.string.disable_scrcap, stringResource(R.string.aosp_scrrec_also_work),R.drawable.screenshot_fill0,
+            SwitchItem(R.string.disable_screenshot, stringResource(R.string.also_disable_aosp_screen_record),R.drawable.screenshot_fill0,
                 {myDpm.getScreenCaptureDisabled(null)},{myDpm.setScreenCaptureDisabled(myComponent,it) }
             )
         }
@@ -437,7 +437,7 @@ private fun NearbyStreamingPolicy(){
         }
         var notificationPolicy by remember{mutableIntStateOf(myDpm.nearbyNotificationStreamingPolicy)}
         Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.nearby_notifi_streaming), style = typography.titleLarge)
+        Text(text = stringResource(R.string.nearby_notification_streaming), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 3.dp))
         RadioButtonItem(stringResource(R.string.decide_by_user),{notificationPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY},{notificationPolicy = NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY})
         RadioButtonItem(stringResource(R.string.enabled),{notificationPolicy == NEARBY_STREAMING_ENABLED},{notificationPolicy = NEARBY_STREAMING_ENABLED})
@@ -666,7 +666,7 @@ private fun SecurityLogs(){
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.retrieve_security_logs), style = typography.headlineLarge)
+        Text(text = stringResource(R.string.security_logs), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.developing))
         SwitchItem(R.string.enable,"",null,{myDpm.isSecurityLoggingEnabled(myComponent)},{myDpm.setSecurityLoggingEnabled(myComponent,it)})

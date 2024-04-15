@@ -154,7 +154,7 @@ private fun OrgOwnedProfile(){
                     color = colorScheme.onTertiaryContainer
                 )
             }
-            CopyTextButton(myContext, R.string.copy_code, stringResource(R.string.activate_org_profile_command, Binder.getCallingUid()/100000))
+            CopyTextButton(myContext, R.string.copy_command, stringResource(R.string.activate_org_profile_command, Binder.getCallingUid()/100000))
         }
     }
 }

@@ -326,8 +326,6 @@ private fun PasswordComplexity(){
         ){
             Text(stringResource(R.string.require_set_new_password))
         }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Information{Text(text = stringResource(R.string.password_ordered_desc))}
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
@@ -617,8 +615,6 @@ private fun PasswordQuality(){
         ) {
             Text(stringResource(R.string.apply))
         }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Information{Text(text = stringResource(R.string.password_ordered_desc))}
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }

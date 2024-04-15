@@ -69,7 +69,7 @@ fun UserManage(navCtrl:NavHostController) {
             TopBar(backStackEntry,navCtrl,localNavCtrl){
                 if(backStackEntry?.destination?.route=="Home"&&scrollState.maxValue>80){
                     Text(
-                        text = stringResource(R.string.user_manage),
+                        text = stringResource(R.string.user_manager),
                         modifier = Modifier.alpha((maxOf(scrollState.value-30,0)).toFloat()/80)
                     )
                 }
@@ -101,7 +101,7 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)){
-        Text(text = stringResource(R.string.user_manage), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
+        Text(text = stringResource(R.string.user_manager), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
         SubPageItem(R.string.user_info,"",R.drawable.person_fill0){navCtrl.navigate("UserInfo")}
         SubPageItem(R.string.user_operation,"",R.drawable.sync_alt_fill0){navCtrl.navigate("UserOperation")}
         if(VERSION.SDK_INT>=24&&isDeviceOwner(myDpm)){
@@ -379,8 +379,6 @@ private fun AffiliationID(){
         ) {
             Text(stringResource(R.string.apply))
         }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Information{Text(text = stringResource(R.string.affiliation_id_desc))}
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
@@ -501,7 +499,7 @@ private fun UserIcon(){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.change_user_icon), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text = stringResource(R.string.pick_a_rect_picture))
+        Text(text = stringResource(R.string.pick_a_square_image))
         Spacer(Modifier.padding(vertical = 5.dp))
         CheckBoxItem(stringResource(R.string.file_picker_instead_gallery),{getContent},{getContent=!getContent})
         Spacer(Modifier.padding(vertical = 5.dp))

@@ -165,7 +165,7 @@ private fun HomePage(navCtrl:NavHostController){
                 if(activateType!=""){ Text(text = activateType, color = colorScheme.onPrimary, modifier = Modifier.padding(start = 2.dp)) }
             }
         }
-        HomePageItem(R.string.device_ctrl, R.drawable.mobile_phone_fill0, "SystemManage", navCtrl)
+        HomePageItem(R.string.system_manage, R.drawable.mobile_phone_fill0, "SystemManage", navCtrl)
         if(VERSION.SDK_INT>=24&&(isDeviceOwner(myDpm))||isProfileOwner(myDpm)){ HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network",navCtrl) }
         if(
             (VERSION.SDK_INT<24&&!isDeviceOwner(myDpm))||(
@@ -175,11 +175,11 @@ private fun HomePage(navCtrl:NavHostController){
         ){
             HomePageItem(R.string.work_profile, R.drawable.work_fill0, "ManagedProfile",navCtrl)
         }
-        HomePageItem(R.string.app_manage, R.drawable.apps_fill0, "ApplicationManage", navCtrl)
+        HomePageItem(R.string.app_manager, R.drawable.apps_fill0, "ApplicationManage", navCtrl)
         if(VERSION.SDK_INT>=24){
             HomePageItem(R.string.user_restrict, R.drawable.person_off, "UserRestriction", navCtrl)
         }
-        HomePageItem(R.string.user_manage,R.drawable.manage_accounts_fill0,"UserManage",navCtrl)
+        HomePageItem(R.string.user_manager,R.drawable.manage_accounts_fill0,"UserManage",navCtrl)
         HomePageItem(R.string.password_and_keyguard, R.drawable.password_fill0, "Password",navCtrl)
         HomePageItem(R.string.setting, R.drawable.settings_fill0, "AppSetting",navCtrl)
         Spacer(Modifier.padding(vertical = 20.dp))

@@ -93,7 +93,7 @@ fun ApplicationManage(navCtrl:NavHostController){
                 navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
             )*/
-            TopBar(backStackEntry, navCtrl, localNavCtrl){Text(text = stringResource(titleMap[backStackEntry?.destination?.route] ?: R.string.app_manage))}
+            TopBar(backStackEntry, navCtrl, localNavCtrl){Text(text = stringResource(titleMap[backStackEntry?.destination?.route] ?: R.string.app_manager))}
         }
     ){ paddingValues->
         Column(modifier = Modifier.fillMaxSize().padding(top = paddingValues.calculateTopPadding())){
@@ -482,8 +482,6 @@ private fun CrossProfileWidget(pkgName: String){
         LaunchedEffect(Unit){refresh()}
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.cross_profile_widget), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text = stringResource(R.string.cross_profile_widget_desc))
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.app_list_is))
         SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(Animations().animateListSize)){

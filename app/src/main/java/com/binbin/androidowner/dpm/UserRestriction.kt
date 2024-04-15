@@ -250,7 +250,7 @@ private class RestrictionData{
         if(VERSION.SDK_INT>=28){list += Restriction(UserManager.DISALLOW_CONFIG_LOCATION,R.string.config_location,"",R.drawable.location_on_fill0)}
         if(VERSION.SDK_INT>=22){list += Restriction(UserManager.DISALLOW_OUTGOING_BEAM,R.string.outgoing_beam,"",R.drawable.nfc_fill0)}
         list += Restriction(UserManager.DISALLOW_USB_FILE_TRANSFER,R.string.usb_file_transfer,"",R.drawable.usb_fill0)
-        list += Restriction(UserManager.DISALLOW_MOUNT_PHYSICAL_MEDIA,R.string.mount_physical_media, myContext.getString(R.string.mount_physical_media_desc),R.drawable.sd_card_fill0)
+        list += Restriction(UserManager.DISALLOW_MOUNT_PHYSICAL_MEDIA,R.string.mount_physical_media, "", R.drawable.sd_card_fill0)
         if(VERSION.SDK_INT>=28){list += Restriction(UserManager.DISALLOW_PRINTING,R.string.printing,"",R.drawable.print_fill0)}
         return list
     }

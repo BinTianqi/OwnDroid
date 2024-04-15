@@ -130,7 +130,7 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState){
             SubPageItem(R.string.account_types_management_disabled,"",R.drawable.account_circle_fill0){localNavCtrl.navigate("NoManagementAccount")}
         }
         if(VERSION.SDK_INT>=24&&isDeviceOwner(myDpm)){
-            SubPageItem(R.string.owner_lockscr_info,"",R.drawable.screen_lock_portrait_fill0){localNavCtrl.navigate("LockScreenInfo")}
+            SubPageItem(R.string.device_owner_lock_screen_info,"",R.drawable.screen_lock_portrait_fill0){localNavCtrl.navigate("LockScreenInfo")}
         }
         if(VERSION.SDK_INT>=24&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
             SubPageItem(R.string.support_msg,"",R.drawable.chat_fill0){localNavCtrl.navigate("SupportMsg")}
@@ -151,10 +151,10 @@ private fun LockScreenInfo(){
     val focusMgr = LocalFocusManager.current
     var infoText by remember{mutableStateOf(myDpm.deviceOwnerLockScreenInfo?.toString() ?: "")}
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
-        Text(text = stringResource(R.string.owner_lockscr_info), style = typography.headlineLarge)
+        Text(text = stringResource(R.string.device_owner_lock_screen_info), style = typography.headlineLarge)
         OutlinedTextField(
             value = infoText,
-            label = {Text(stringResource(R.string.owner_lockscr_info))},
+            label = {Text(stringResource(R.string.device_owner_lock_screen_info))},
             onValueChange = { infoText=it },
             modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 4.dp)
         )
@@ -214,7 +214,7 @@ private fun DeviceAdmin(navCtrl: NavHostController){
             SelectionContainer {
                 Text(text = stringResource(R.string.activate_device_admin_command))
             }
-            CopyTextButton(myContext, R.string.copy_code, stringResource(R.string.activate_device_admin_command))
+            CopyTextButton(myContext, R.string.copy_command, stringResource(R.string.activate_device_admin_command))
         }
     }
 }
@@ -241,7 +241,7 @@ private fun ProfileOwner(){
             SelectionContainer{
                 Text(text = stringResource(R.string.activate_profile_owner_command))
             }
-            CopyTextButton(myContext, R.string.copy_code, stringResource(R.string.activate_profile_owner_command))
+            CopyTextButton(myContext, R.string.copy_command, stringResource(R.string.activate_profile_owner_command))
         }
     }
 }
@@ -271,7 +271,7 @@ private fun DeviceOwner(navCtrl: NavHostController){
             SelectionContainer{
                 Text(text = stringResource(R.string.activate_device_owner_command))
             }
-            CopyTextButton(myContext, R.string.copy_code, stringResource(R.string.activate_device_owner_command))
+            CopyTextButton(myContext, R.string.copy_command, stringResource(R.string.activate_device_owner_command))
         }
     }
 }

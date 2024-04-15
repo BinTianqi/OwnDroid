@@ -48,9 +48,6 @@ fun ShizukuActivate(){
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
     val focusMgr = LocalFocusManager.current
-    val sharedPref = LocalContext.current.getSharedPreferences("data", MODE_PRIVATE)
-    val isWear = sharedPref.getBoolean("isWear",false)
-    val bodyTextStyle = if(isWear){ typography.bodyMedium }else{ typography.bodyLarge }
     val filesDir = myContext.filesDir
     LaunchedEffect(Unit){ extractRish(myContext) }
     val coScope = rememberCoroutineScope()
@@ -64,7 +61,7 @@ fun ShizukuActivate(){
         if(Binder.getCallingUid()/100000!=0){
             Row{
                 Icon(imageVector = Icons.Rounded.Warning, contentDescription = null, tint = colorScheme.onErrorContainer)
-                Text(text = stringResource(R.string.not_primary_user_not_support_shizuku), style = bodyTextStyle, color = colorScheme.onErrorContainer)
+                Text(text = stringResource(R.string.not_primary_user_not_support_shizuku), color = colorScheme.onErrorContainer)
             }
         }
         Button(
@@ -150,7 +147,7 @@ fun ShizukuActivate(){
         ){
             Column {
                 Text(text = stringResource(R.string.org_owned_work_profile), style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
-                Text(text = stringResource(R.string.input_userid_of_work_profile), style = bodyTextStyle)
+                Text(text = stringResource(R.string.input_userid_of_work_profile))
                 var inputUserID by remember{mutableStateOf("")}
                 OutlinedTextField(
                     value = inputUserID, onValueChange = {inputUserID=it},
@@ -182,7 +179,7 @@ fun ShizukuActivate(){
         }
         
         SelectionContainer(modifier = Modifier.align(Alignment.Start).horizontalScroll(outputTextScrollState)){
-            Text(text = outputText, style = bodyTextStyle, softWrap = false, modifier = Modifier.padding(4.dp))
+            Text(text = outputText, softWrap = false, modifier = Modifier.padding(4.dp))
         }
         
         Spacer(Modifier.padding(vertical = 30.dp))
