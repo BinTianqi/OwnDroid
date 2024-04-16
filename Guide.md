@@ -116,7 +116,7 @@ adb shell dumpsys account
 
 MIUI：需要在开发者选项中打开”USB调试（安全设置）“
 
-ColorOS：完全不支持Device owner
+ColorOS：请使用调试签名的apk（下个release就有了），当前可参考issue [#5](https://github.com/BinTianqi/AndroidOwner/issues/5) [#6](https://github.com/BinTianqi/AndroidOwner/issues/6)
 
 小天才电话手表（Android 8.1）：完全不支持Device owner
 
