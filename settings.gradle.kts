@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Android Owner"
+rootProject.name = "OwnDroid"
 include(":app")
  

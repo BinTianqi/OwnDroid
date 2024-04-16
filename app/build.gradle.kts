@@ -11,8 +11,8 @@ android {
         applicationId = "com.binbin.androidowner"
         minSdk = 21
         targetSdk = 34
-        versionCode = 23
-        versionName = "4.6"
+        versionCode = 24
+        versionName = "5.0-preview"
     }
 
     buildTypes {

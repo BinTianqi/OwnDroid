@@ -536,7 +536,7 @@ private fun activateDeviceAdmin(inputContext:Context,inputComponent:ComponentNam
     try {
         val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, inputComponent)
-        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, inputContext.getString(R.string.activate_android_owner_here))
+        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, inputContext.getString(R.string.activate_device_admin_here))
         startActivity(inputContext,intent,null)
     }catch(e:ActivityNotFoundException){
         Toast.makeText(inputContext,inputContext.getString(R.string.unsupported),Toast.LENGTH_SHORT).show()

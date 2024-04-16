@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!--Global-->
-    <string name="app_name" translatable="false">Android Owner</string>
+    <string name="app_name" translatable="false">OwnDroid</string>
     <string name="disabled">Disabled</string>
     <string name="enabled">Enabled</string>
     <string name="disable">Disable</string>
@@ -78,7 +78,7 @@
     <string name="support_msg_desc">When you try to use functions disabled by this app, the support message will show. </string>
     <string name="long_support_msg">Long message</string>
     <string name="transform">Transform</string>
-    <string name="activate_android_owner_here">Activate Android Owner here. </string>
+    <string name="activate_device_admin_here">Activate Device admin here. </string>
 
     <!--Shizuku-->
     <string name="shizuku" translatable="false">Shizuku</string>

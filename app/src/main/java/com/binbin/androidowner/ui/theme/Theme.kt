@@ -95,7 +95,7 @@ fun SetDarkTheme(){
 }
 
 @Composable
-fun AndroidOwnerTheme(
+fun OwnDroidTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {

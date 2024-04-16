@@ -1,10 +1,16 @@
-# Android Owner
+# OwnDroid
 
 [简体中文](Readme.md)
 
 ### Description
 
 Use Device admin and Device owner privilege to fully manage your Android device. 
+
+I'm renaming this app, from "Android Owner" to "OwnDroid". 
+
+- [x] rename app
+- [ ] update guide
+- [ ] rename repo
 
 ### Advantage
 
@@ -29,8 +35,6 @@ This software may not have as many features as Google's official [TestDPC](https
 
 ### Implementing features
 
-- App manage: package picker
-- App manage: permission picker
 - User manage: user picker
 - Security logs and network logs
 

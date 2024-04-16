@@ -1,4 +1,4 @@
-# Android Owner
+# OwnDroid
 
 [English](Readme-en.md)
 
@@ -6,7 +6,11 @@
 
 使用安卓的Device Admin和Device Owner特权，完全掌控你的设备。
 
-_我正在为这个App取一个新的名字......_
+这个APP正在从"Android Owner"改名为"OwnDroid"
+
+- [x] 重命名app
+- [ ] 修改使用指南
+- [ ] 修改仓库名
 
 ### 优点
 

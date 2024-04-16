@@ -42,7 +42,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.binbin.androidowner.dpm.*
 import com.binbin.androidowner.ui.Animations
-import com.binbin.androidowner.ui.theme.AndroidOwnerTheme
+import com.binbin.androidowner.ui.theme.OwnDroidTheme
 import com.binbin.androidowner.ui.theme.SetDarkTheme
 import com.binbin.androidowner.ui.theme.bgColor
 
@@ -69,7 +69,7 @@ class MainActivity : ComponentActivity() {
         registerActivityResult()
         displayMetrics = applicationContext.resources.displayMetrics
         setContent {
-            AndroidOwnerTheme {
+            OwnDroidTheme {
                 MyScaffold()
             }
         }

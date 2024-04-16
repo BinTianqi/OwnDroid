@@ -74,7 +74,7 @@
     <string name="support_msg_desc">如果你禁用了某个功能，用户尝试使用这个功能时会看见这个消息（可多行）</string>
     <string name="long_support_msg">提供支持的长消息</string>
     <string name="transform">转移</string>
-    <string name="activate_android_owner_here">在这里激活Android Owner</string>
+    <string name="activate_device_admin_here">在这里激活Device admin</string>
 
     <!--Shizuku-->
     <string name="not_primary_user_not_support_shizuku">暂不支持在非主用户中使用Shizuku</string>
