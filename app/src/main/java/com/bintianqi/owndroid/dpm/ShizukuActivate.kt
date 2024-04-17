@@ -1,4 +1,4 @@
-package com.binbin.androidowner.dpm
+package com.bintianqi.owndroid.dpm
 
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
@@ -35,7 +35,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.binbin.androidowner.R
+import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.Receiver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -46,7 +47,7 @@ import java.io.*
 fun ShizukuActivate(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext, Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     val filesDir = myContext.filesDir
     LaunchedEffect(Unit){ extractRish(myContext) }
@@ -88,7 +89,7 @@ fun ShizukuActivate(){
         Button(
             onClick = {
                 coScope.launch{
-                    outputText=executeCommand(myContext, "sh rish.sh","dpm list-owners",null,filesDir)
+                    outputText= executeCommand(myContext, "sh rish.sh","dpm list-owners",null,filesDir)
                     scrollState.animateScrollTo(scrollState.maxValue, scrollAnim())
                     outputTextScrollState.animateScrollTo(0, scrollAnim())
                 }

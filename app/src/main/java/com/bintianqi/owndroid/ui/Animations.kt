@@ -1,4 +1,4 @@
-package com.binbin.androidowner.ui
+package com.bintianqi.owndroid.ui
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.FiniteAnimationSpec
@@ -8,7 +8,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.navigation.NavBackStackEntry
-import com.binbin.androidowner.displayMetrics
+import com.bintianqi.owndroid.displayMetrics
 
 class Animations{
     private val fade: FiniteAnimationSpec<Float> = spring(stiffness = Spring.StiffnessMediumLow)

@@ -1,4 +1,4 @@
-package com.binbin.androidowner.dpm
+package com.bintianqi.owndroid.dpm
 
 import android.annotation.SuppressLint
 import android.app.KeyguardManager
@@ -33,9 +33,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.binbin.androidowner.R
-import com.binbin.androidowner.ui.*
-import com.binbin.androidowner.ui.theme.bgColor
+import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.Receiver
+import com.bintianqi.owndroid.ui.*
+import com.bintianqi.owndroid.ui.theme.bgColor
 
 @Composable
 fun Password(navCtrl: NavHostController){
@@ -120,7 +121,7 @@ private fun Home(navCtrl:NavHostController,scrollState: ScrollState){
 private fun PasswordInfo(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext, Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.password_info), style = typography.headlineLarge)
@@ -152,7 +153,7 @@ private fun PasswordInfo(){
 private fun ResetPasswordToken(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val myByteArray by remember{ mutableStateOf(byteArrayOf(1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0)) }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -206,7 +207,7 @@ private fun ResetPasswordToken(){
 private fun ResetPassword(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     var newPwd by remember{ mutableStateOf("") }
     val myByteArray by remember{ mutableStateOf(byteArrayOf(1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0)) }
@@ -334,7 +335,7 @@ private fun PasswordComplexity(){
 private fun ScreenTimeout(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     var inputContent by remember{ mutableStateOf(if(isDeviceOwner(myDpm)){myDpm.getMaximumTimeToLock(myComponent).toString()}else{""}) }
     var ableToApply by remember{ mutableStateOf(inputContent!="") }
@@ -370,7 +371,7 @@ private fun ScreenTimeout(){
 private fun MaxFailedPasswordForWipe(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     var inputContent by remember{ mutableStateOf(if(isDeviceOwner(myDpm)){myDpm.getMaximumFailedPasswordsForWipe(myComponent).toString()}else{""}) }
     var ableToApply by remember{ mutableStateOf(inputContent!=""&&inputContent!="0") }
@@ -406,7 +407,7 @@ private fun MaxFailedPasswordForWipe(){
 private fun PasswordExpiration(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     var inputContent by remember{ mutableStateOf(if(isDeviceOwner(myDpm)){myDpm.getPasswordExpirationTimeout(myComponent).toString()}else{""}) }
     var ableToApply by remember{ mutableStateOf(inputContent!="") }
@@ -442,7 +443,7 @@ private fun PasswordExpiration(){
 private fun PasswordHistoryLength(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     var inputContent by remember{ mutableStateOf(if(isDeviceOwner(myDpm)){myDpm.getPasswordHistoryLength(myComponent).toString()}else{""}) }
     var ableToApply by remember{ mutableStateOf(inputContent!="") }
@@ -478,7 +479,7 @@ private fun PasswordHistoryLength(){
 private fun KeyguardDisabledFeatures(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     var state by remember{mutableIntStateOf(-1)}
     var shortcuts by remember{mutableStateOf(false)}
     var biometrics by remember{mutableStateOf(false)}
@@ -576,7 +577,7 @@ private fun KeyguardDisabledFeatures(){
 private fun PasswordQuality(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val passwordQuality = mapOf(
         PASSWORD_QUALITY_UNSPECIFIED to stringResource(R.string.password_quality_unspecified),
         PASSWORD_QUALITY_SOMETHING to stringResource(R.string.password_quality_something),

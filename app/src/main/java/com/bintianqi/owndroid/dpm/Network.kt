@@ -1,4 +1,4 @@
-package com.binbin.androidowner.dpm
+package com.bintianqi.owndroid.dpm
 
 import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
@@ -41,10 +41,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.binbin.androidowner.R
-import com.binbin.androidowner.toText
-import com.binbin.androidowner.ui.*
-import com.binbin.androidowner.ui.theme.bgColor
+import com.bintianqi.owndroid.dpm.scrollAnim
+import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.Receiver
+import com.bintianqi.owndroid.toText
+import com.bintianqi.owndroid.ui.*
+import com.bintianqi.owndroid.ui.theme.bgColor
 
 var ssidSet = mutableSetOf<WifiSsid>()
 @Composable
@@ -102,7 +104,7 @@ fun Network(navCtrl: NavHostController){
 private fun Home(navCtrl:NavHostController,scrollState: ScrollState){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext, Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)){
         Text(text = stringResource(R.string.network), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
         if(VERSION.SDK_INT>=24&&isDeviceOwner(myDpm)){
@@ -139,7 +141,7 @@ private fun Home(navCtrl:NavHostController,scrollState: ScrollState){
 private fun Switches(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize()){
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT>=33&&isDeviceOwner(myDpm)){
@@ -200,7 +202,7 @@ private fun WifiSsidPolicy(){
             selectedPolicyType = policy?.policyType ?: -1
             ssidSet = policy?.ssids ?: mutableSetOf()
         }
-        LaunchedEffect(Unit){refreshPolicy(); ssidList=ssidSet.toText()}
+        LaunchedEffect(Unit){refreshPolicy(); ssidList= ssidSet.toText()}
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.wifi_ssid_policy), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -290,7 +292,7 @@ private fun WifiSsidPolicy(){
 private fun PrivateDNS(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -360,7 +362,7 @@ private fun PrivateDNS(){
 private fun NetLog(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.retrieve_net_logs), style = typography.headlineLarge)
@@ -438,7 +440,7 @@ private fun WifiKeypair(){
 private fun APN(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         val setting = myDpm.getOverrideApns(myComponent)

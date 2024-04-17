@@ -1,4 +1,4 @@
-package com.binbin.androidowner.ui.theme
+package com.bintianqi.owndroid.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

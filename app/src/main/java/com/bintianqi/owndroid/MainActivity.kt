@@ -1,4 +1,4 @@
-package com.binbin.androidowner
+package com.bintianqi.owndroid
 
 import android.app.Activity
 import android.app.admin.DevicePolicyManager
@@ -40,11 +40,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.binbin.androidowner.dpm.*
-import com.binbin.androidowner.ui.Animations
-import com.binbin.androidowner.ui.theme.OwnDroidTheme
-import com.binbin.androidowner.ui.theme.SetDarkTheme
-import com.binbin.androidowner.ui.theme.bgColor
+import com.bintianqi.owndroid.dpm.*
+import com.bintianqi.owndroid.ui.Animations
+import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
+import com.bintianqi.owndroid.ui.theme.SetDarkTheme
+import com.bintianqi.owndroid.ui.theme.bgColor
 
 lateinit var displayMetrics: DisplayMetrics
 @ExperimentalMaterial3Api
@@ -82,7 +82,7 @@ fun MyScaffold(){
     val navCtrl = rememberNavController()
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val focusMgr = LocalFocusManager.current
     SetDarkTheme()
@@ -127,7 +127,7 @@ fun MyScaffold(){
 private fun HomePage(navCtrl:NavHostController){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val activateType =
         if(isDeviceOwner(myDpm)){"Device Owner"}
         else if(isProfileOwner(myDpm)){

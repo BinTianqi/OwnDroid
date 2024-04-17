@@ -1,4 +1,4 @@
-package com.binbin.androidowner
+package com.bintianqi.owndroid
 
 import android.Manifest
 import android.os.Build.VERSION
@@ -14,10 +14,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.binbin.androidowner.dpm.applySelectedPermission
-import com.binbin.androidowner.dpm.selectedPermission
-import com.binbin.androidowner.ui.NavIcon
-import com.binbin.androidowner.ui.theme.bgColor
+import com.bintianqi.owndroid.dpm.applySelectedPermission
+import com.bintianqi.owndroid.dpm.selectedPermission
+import com.bintianqi.owndroid.ui.NavIcon
+import com.bintianqi.owndroid.ui.theme.bgColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

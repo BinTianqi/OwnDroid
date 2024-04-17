@@ -1,4 +1,4 @@
-package com.binbin.androidowner.dpm
+package com.bintianqi.owndroid.dpm
 
 import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
@@ -41,10 +41,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.binbin.androidowner.R
-import com.binbin.androidowner.toText
-import com.binbin.androidowner.ui.*
-import com.binbin.androidowner.ui.theme.bgColor
+import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.Receiver
+import com.bintianqi.owndroid.toText
+import com.bintianqi.owndroid.ui.*
+import com.bintianqi.owndroid.ui.theme.bgColor
 import kotlinx.coroutines.delay
 import java.util.Date
 
@@ -151,7 +152,7 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState){
         }
         SubPageItem(R.string.wipe_data,"",R.drawable.warning_fill0){navCtrl.navigate("WipeData")}
         Spacer(Modifier.padding(vertical = 30.dp))
-        LaunchedEffect(Unit){caCert=byteArrayOf()}
+        LaunchedEffect(Unit){caCert =byteArrayOf()}
     }
 }
 
@@ -159,7 +160,7 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState){
 private fun Switches(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext, Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
@@ -229,7 +230,7 @@ private fun Switches(){
 private fun Keyguard(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.keyguard), style = typography.headlineLarge)
@@ -277,7 +278,7 @@ private fun Keyguard(){
 private fun BugReport(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp)){
         Spacer(Modifier.padding(vertical = 10.dp))
         Button(
@@ -298,7 +299,7 @@ private fun BugReport(){
 private fun Reboot(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp)){
         Spacer(Modifier.padding(vertical = 10.dp))
         Button(
@@ -316,7 +317,7 @@ private fun Reboot(){
 private fun EditTime(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -356,7 +357,7 @@ private fun EditTime(){
 private fun PermissionPolicy(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         var selectedPolicy by remember{mutableIntStateOf(myDpm.getPermissionPolicy(myComponent))}
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -462,7 +463,7 @@ private fun NearbyStreamingPolicy(){
 private fun LockTaskFeatures(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         val lockTaskPolicyList = mutableListOf(
@@ -595,7 +596,7 @@ private fun LockTaskFeatures(){
 private fun CaCert(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     var exist by remember{mutableStateOf(false)}
     var isEmpty by remember{mutableStateOf(true)}
     val refresh = {
@@ -663,7 +664,7 @@ private fun CaCert(){
 private fun SecurityLogs(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.security_logs), style = typography.headlineLarge)
@@ -708,7 +709,7 @@ private fun WipeData(){
     val myContext = LocalContext.current
     val userManager = myContext.getSystemService(Context.USER_SERVICE) as UserManager
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         var flag by remember{ mutableIntStateOf(0) }
@@ -794,7 +795,7 @@ private fun WipeData(){
 private fun SysUpdatePolicy(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     val sharedPref = myContext.getSharedPreferences("data", Context.MODE_PRIVATE)
     val isWear = sharedPref.getBoolean("isWear",false)

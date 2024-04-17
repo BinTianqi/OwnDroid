@@ -47,9 +47,6 @@
     <string name="profile_owner">Profile owner</string>
     <string name="device_owner">Device owner</string>
     <string name="activate_device_admin">激活Device admin</string>
-    <string name="activate_device_admin_command">adb shell dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver</string>
-    <string name="activate_profile_owner_command">adb shell dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver</string>
-    <string name="activate_device_owner_command">adb shell dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver</string>
     <string name="device_info">设备信息</string>
     <string name="is_device_financed">Financed device: %1$s</string>
     <string name="dpmrh">设备策略管理器角色(DPMRH)：%1$s</string>
