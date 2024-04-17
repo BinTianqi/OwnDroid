@@ -41,7 +41,7 @@
 
 ADB激活命令：
 ```shell
-adb shell dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver
+adb shell dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver
 ```
 
 一个设备可以同时存在多个Device admin。
@@ -72,7 +72,7 @@ adb shell dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.M
 ADB激活命令：
 
 ```shell
-adb shell dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver
+adb shell dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver
 ```
 
 #### 停用
@@ -97,7 +97,7 @@ adb shell dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.
 ADB激活命令：
 
 ```shell
-adb shell dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver
+adb shell dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver
 ```
 
 ADB激活有一定局限性
