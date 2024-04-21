@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.binbin.androidowner"
+    namespace = "com.bintianqi.owndroid"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.binbin.androidowner"
+        applicationId = "com.bintianqi.owndroid"
         minSdk = 21
         targetSdk = 34
         versionCode = 24

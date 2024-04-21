@@ -1,4 +1,4 @@
-package com.binbin.androidowner.dpm
+package com.bintianqi.owndroid.dpm
 
 import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
@@ -33,9 +33,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.binbin.androidowner.R
-import com.binbin.androidowner.ui.*
-import com.binbin.androidowner.ui.theme.bgColor
+import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.Receiver
+import com.bintianqi.owndroid.ui.*
+import com.bintianqi.owndroid.ui.theme.bgColor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -103,7 +104,7 @@ fun DpmPermissions(navCtrl:NavHostController){
 private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext, Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(listScrollState)) {
         Text(text = stringResource(R.string.permission), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
         SubPageItem(
@@ -147,7 +148,7 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState){
 private fun LockScreenInfo(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     var infoText by remember{mutableStateOf(myDpm.deviceOwnerLockScreenInfo?.toString() ?: "")}
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
@@ -185,7 +186,7 @@ private fun LockScreenInfo(){
 private fun DeviceAdmin(navCtrl: NavHostController){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val co = rememberCoroutineScope()
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -223,7 +224,7 @@ private fun DeviceAdmin(navCtrl: NavHostController){
 private fun ProfileOwner(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.profile_owner), style = typography.headlineLarge)
@@ -349,7 +350,7 @@ private fun SpecificID(){
 private fun OrgName(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
         var orgName by remember{mutableStateOf(try{myDpm.getOrganizationName(myComponent).toString()}catch(e:SecurityException){""})}
@@ -381,7 +382,7 @@ private fun OrgName(){
 private fun SupportMsg(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     var shortMsg by remember{mutableStateOf(myDpm.getShortSupportMessage(myComponent)?.toString() ?: "")}
     var longMsg by remember{mutableStateOf(myDpm.getLongSupportMessage(myComponent)?.toString() ?: "")}
@@ -436,7 +437,7 @@ private fun SupportMsg(){
 private fun NoManageAccount(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -490,7 +491,7 @@ private fun NoManageAccount(){
 private fun TransformOwnership(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     val focusRequester = FocusRequester()
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){

@@ -4,13 +4,9 @@
 
 ### Description
 
-Use Device admin and Device owner privilege to fully manage your Android device. 
+Use Device admin and Device owner privilege to take full control of your device. 
 
-I'm renaming this app, from "Android Owner" to "OwnDroid". 
-
-- [x] rename app
-- [ ] update guide
-- [ ] rename repo
+This app is renamed to "OwnDroid" from "Android Owner".
 
 ### Advantage
 
@@ -40,7 +36,7 @@ This software may not have as many features as Google's official [TestDPC](https
 
 ### License
 
-[License.md](License.md)
+[License.md](LICENSE.md)
 
 > Copyright (C)  2024  BinTianqi
 >

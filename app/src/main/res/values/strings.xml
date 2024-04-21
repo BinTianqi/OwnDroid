@@ -50,9 +50,9 @@
     <string name="profile_owner">Profile owner</string>
     <string name="device_owner">Device owner</string>
     <string name="activate_device_admin">Activate Device admin</string>
-    <string name="activate_device_admin_command">adb shell dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver</string>
-    <string name="activate_profile_owner_command">adb shell dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver</string>
-    <string name="activate_device_owner_command">adb shell dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver</string>
+    <string name="activate_device_admin_command" translatable="false">adb shell dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
+    <string name="activate_profile_owner_command" translatable="false">adb shell dpm set-profile-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
+    <string name="activate_device_owner_command" translatable="false">adb shell dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="device_info">Device info</string>
     <string name="is_device_financed">Financed device: %1$s</string>
     <string name="dpmrh">Device policy manager role holder：%1$s</string>
@@ -88,11 +88,11 @@
     <string name="list_owners">List owners</string>
     <string name="shizuku_not_started">Shizuku not started. </string>
     <string name="activate_org_profile_command_with_user_id" tools:ignore="TypographyDashes" translatable="false">
-        dpm mark-profile-owner-on-organization-owned-device --user %1$s com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver
+        dpm mark-profile-owner-on-organization-owned-device --user %1$s com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver
     </string>
-    <string name="dpm_activate_do_command" translatable="false">dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver</string>
-    <string name="dpm_activate_po_command" translatable="false">dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver</string>
-    <string name="dpm_activate_da_command" translatable="false">dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver</string>
+    <string name="dpm_activate_do_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
+    <string name="dpm_activate_po_command" translatable="false">dpm set-profile-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
+    <string name="dpm_activate_da_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="shizuku_activated_shell">Permission granted (Shell)</string>
     <string name="shizuku_activated_root">Permission granted (Root)</string>
     <string name="activate_profile_owner">Activate profile owner</string>
@@ -222,7 +222,7 @@
     <string name="is_org_owned_profile">Organization owned work profile: %1$s</string>
     <string name="org_owned_work_profile">Organization work profile</string>
     <string name="activate_org_profile_command" tools:ignore="TypographyDashes" translatable="false">
-        adb shell \"dpm mark-profile-owner-on-organization-owned-device --user %1$s com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver\"
+        adb shell \"dpm mark-profile-owner-on-organization-owned-device --user %1$s com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver\"
     </string>
     <string name="skip_encryption">Skip encryption</string>
     <string name="create">Create</string>

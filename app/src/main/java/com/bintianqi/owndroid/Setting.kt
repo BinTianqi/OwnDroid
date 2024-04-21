@@ -1,4 +1,4 @@
-package com.binbin.androidowner
+package com.bintianqi.owndroid
 
 import android.content.Context
 import android.content.Intent
@@ -24,9 +24,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.binbin.androidowner.ui.*
-import com.binbin.androidowner.ui.theme.SetDarkTheme
-import com.binbin.androidowner.ui.theme.bgColor
+import com.bintianqi.owndroid.ui.*
+import com.bintianqi.owndroid.ui.theme.SetDarkTheme
+import com.bintianqi.owndroid.ui.theme.bgColor
 
 @Composable
 fun AppSetting(navCtrl:NavHostController){

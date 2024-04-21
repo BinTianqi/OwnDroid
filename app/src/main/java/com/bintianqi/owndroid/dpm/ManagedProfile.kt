@@ -1,4 +1,4 @@
-package com.binbin.androidowner.dpm
+package com.bintianqi.owndroid.dpm
 
 import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
@@ -33,9 +33,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.binbin.androidowner.R
-import com.binbin.androidowner.ui.*
-import com.binbin.androidowner.ui.theme.bgColor
+import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.Receiver
+import com.bintianqi.owndroid.ui.*
+import com.bintianqi.owndroid.ui.theme.bgColor
 
 @Composable
 fun ManagedProfile(navCtrl: NavHostController) {
@@ -80,7 +81,7 @@ fun ManagedProfile(navCtrl: NavHostController) {
 private fun Home(navCtrl: NavHostController){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext, Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
         Text(text = stringResource(R.string.work_profile), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
         if(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
@@ -105,13 +106,15 @@ private fun Home(navCtrl: NavHostController){
 @Composable
 private fun CreateWorkProfile(){
     val myContext = LocalContext.current
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.create_work_profile), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         var skipEncrypt by remember{mutableStateOf(false)}
-        if(VERSION.SDK_INT>=24){CheckBoxItem(stringResource(R.string.skip_encryption),{skipEncrypt},{skipEncrypt=!skipEncrypt})}
+        if(VERSION.SDK_INT>=24){
+            CheckBoxItem(stringResource(R.string.skip_encryption),{skipEncrypt},{skipEncrypt=!skipEncrypt})
+        }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
@@ -202,7 +205,7 @@ private fun OrgID(){
 private fun SuspendPersonalApp(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -239,7 +242,7 @@ private fun SuspendPersonalApp(){
 private fun IntentFilter(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         var action by remember{mutableStateOf("")}

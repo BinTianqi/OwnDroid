@@ -1,10 +1,12 @@
 # 使用指南
 
-欢迎来到Android owner使用教程
+欢迎来到OwnDroid使用教程
 
 在这里了解各个功能所需的权限、兼容的安卓版本和注意事项
 
 ## 目录
+
+0. [使用前须知](#使用前须知)
 
 
 1. [权限](#权限)
@@ -25,6 +27,12 @@
 
 9. [其他功能](#其他功能)
 
+## 使用前须知
+
+1. device admin, profile owner和device owner有极高的特权，包括但不限于让你的设备丢失所有数据。所以，请谨慎使用
+2. 以下的所有命令都需要在`adb shell`中执行。请进入`adb shell`后执行，不要直接`adb shell xxx`，容易出问题
+3. ColorOS用户请在release页面下载testKey版，否则无法激活Device owner
+
 ## 权限
 
 ### Device admin
@@ -41,7 +49,7 @@
 
 ADB激活命令：
 ```shell
-adb shell dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver
+dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver
 ```
 
 一个设备可以同时存在多个Device admin。
@@ -72,7 +80,7 @@ adb shell dpm set-active-admin com.binbin.androidowner/com.binbin.androidowner.d
 ADB激活命令：
 
 ```shell
-adb shell dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver
+dpm set-profile-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver
 ```
 
 #### 停用
@@ -97,7 +105,7 @@ adb shell dpm set-profile-owner com.binbin.androidowner/com.binbin.androidowner.
 ADB激活命令：
 
 ```shell
-adb shell dpm set-device-owner com.binbin.androidowner/com.binbin.androidowner.dpm.MyDeviceAdminReceiver
+dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver
 ```
 
 ADB激活有一定局限性
@@ -105,20 +113,20 @@ ADB激活有一定局限性
 激活前必须删除所有用户（user），否则会报错。你可以使用下面这条ADB命令查看已有的用户
 
 ```shell
-adb shell pm list users
+pm list users
 ```
 
 激活前也要删除所有账号（account），否则会报错。你可以使用下面这条ADB命令查看已有的账号
 
 ```shell
-adb shell dumpsys account
+dumpsys account
 ```
 
 上面两个是安卓系统的限制，此外，还有设备生产商的限制
 
 MIUI：需要在开发者选项中打开”USB调试（安全设置）“
 
-ColorOS：请使用调试签名的apk
+ColorOS：请使用testKey的apk，否则只能使用Device admin和工作资料中的Profile owner
 
 小天才电话手表（Android 8.1）：完全不支持Device owner
 
@@ -130,14 +138,14 @@ ColorOS：请使用调试签名的apk
 
 ADB命令停用十分麻烦，你需要修改AndroidManifest.xml并自己编译项目。
 
-你需要把AndroidManifest.xml中第39行的`android:testOnly="false"`的值改为true
+你需要把AndroidManifest.xml中的`android:testOnly="false"`的值改为true
 
-由于签名校验，如果你已经安装了release，那这个方法没用
+签名校验问题请自己解决
 
 然后，使用这条ADB命令停用
 
 ```shell
-adb shell dpm remove-active-admin com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver
+dpm remove-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver
 ```
 
 使用这条命令也可以停用Device admin和Profile owner
@@ -148,7 +156,7 @@ adb shell dpm remove-active-admin com.binbin.androidowner/com.binbin.androidowne
 
 请自己学习如何启动[Shizuku](https://github.com/RikkaApps/Shizuku)
 
-如果Shizuku正在运行但是Android owner无法申请权限，请关闭Shizuku和Android owner的电池优化（这种情况在非原生系统中比较常见）
+如果Shizuku正在运行但是OwnDroid无法申请权限，请关闭Shizuku和OwnDroid的电池优化（这种情况在非原生系统中比较常见）
 
 功能：
 
@@ -162,7 +170,7 @@ Shizuku的本质是ADB。在安卓10或以下，你还是要连接电脑激活Sh
 
 不能在非主用户中使用
 
-因为作者懒得研究Shizuku-API，所以Android owner没有添加任何Shizuku相关依赖。以上功能均是通过rish实现。因为是套壳的rish，所以不支持Sui
+因为作者懒得研究Shizuku-API，所以OwnDroid没有添加任何Shizuku相关依赖。以上功能均是通过rish实现。因为是套壳的rish，所以不支持Sui
 
 ### 设备唯一标识码
 
@@ -534,7 +542,7 @@ API34或以上将不能在系统用户中使用WipeData，如果要恢复出厂�
 
 ## 工作资料
 
-工作资料是一种特殊的用户，使用`adb shell pm list user`命令可以看到工作资料，工作资料的默认用户名是“工作资料”或“Work Profile”
+工作资料是一种特殊的用户，使用`pm list user`命令可以看到工作资料，工作资料的默认用户名是“工作资料”或“Work Profile”
 
 工作资料创建后默认禁用[安装未知来源应用](#应用)
 
@@ -548,9 +556,9 @@ API34或以上将不能在系统用户中使用WipeData，如果要恢复出厂�
 
 - 跳过加密（需要API24或以上，没有实际作用）
 
-创建后会跳转到工作资料中的Android owner，请立即按照指引激活工作资料
+创建后会跳转到工作资料中的OwnDroid，请立即按照指引激活工作资料
 
-创建后工作资料中的Android owner会成为Profile owner
+创建后工作资料中的OwnDroid会成为Profile owner
 
 在WearOS上可以创建工作资料，但是会导致SystemUI停止运行一次。WearOS原生的启动器不会显示工作资料中的应用，你需要使用支持工作资料的启动器。你可以通过[ADB命令移除工作资料](#删除工作资料)。此外，不要尝试给工作资料重置密码，因为WearOS不能输入工作资料的密码。（测试环境：WearOS4(AVD)）
 
@@ -560,15 +568,14 @@ API34或以上将不能在系统用户中使用WipeData，如果要恢复出厂�
 
 成为由组织拥有的工作资料后可以使用更多功能
 
-前提条件：Android owner是工作资料中的Profile owner
+前提条件：OwnDroid是工作资料中的Profile owner
 
-首先，你需要在工作资料中的Android owner的“用户管理”页面中查看UserID
+首先，你需要在工作资料中的OwnDroid的“用户管理”页面中查看UserID
 
 然后执行下面这个ADB命令
 
 ```shell
-adb shell
-dpm mark-profile-owner-on-organization-owned-device --user USER_ID com.binbin.androidowner/com.binbin.androidowner.MyDeviceAdminReceiver
+dpm mark-profile-owner-on-organization-owned-device --user USER_ID com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver
 ```
 
 把命令中的USER_ID替换为你的UserID
@@ -579,7 +586,7 @@ dpm mark-profile-owner-on-organization-owned-device --user USER_ID com.binbin.an
 
 需要的权限：由组织拥有的工作资料的Profile owner
 
-只会挂起个人的用户应用，系统应用和Android owner仍然可以打开
+只会挂起个人的用户应用，系统应用和OwnDroid仍然可以打开
 
 ### 资料最长关闭时间
 
@@ -611,12 +618,12 @@ dpm mark-profile-owner-on-organization-owned-device --user USER_ID com.binbin.an
 
 你可以在工作资料中使用 [恢复出厂设置](#恢复出厂设置) 来删除工作资料
 
-如果你的工作资料不是由组织拥有的，你可以打开安卓设置->安全->更多安全设置->设备管理器->带工作资料图标的Android owner->移除工作资料（非原生用户自己找）
+如果你的工作资料不是由组织拥有的，你可以打开安卓设置->安全->更多安全设置->设备管理器->带工作资料图标的OwnDroid->移除工作资料（非原生用户自己找）
 
 你也可以使用ADB命令移除工作资料（把USER_ID替换为工作资料的UserID）
 
 ```shell
-adb shell pm remove-user USER_ID
+pm remove-user USER_ID
 ```
 
 ## 应用管理
@@ -628,7 +635,7 @@ adb shell pm remove-user USER_ID
 除了安装应用，所有的操作都需要应用的包名，你可以通过ADB命令查看所有已安装应用的包名
 
 ```shell
-adb shell pm list packages
+pm list packages
 ```
 
 ### 应用详情
@@ -680,7 +687,7 @@ adb shell pm list packages
 使用这个ADB命令查看系统支持的所有权限
 
 ```shell
-adb shell pm list permissions
+pm list permissions
 ```
 
 权限有三种状态：
@@ -859,7 +866,7 @@ Profile owner无法禁用部分功能，工作资料中部分功能无效，wear
 使用ADB查看所有用户：
 
 ```shell
-adb shell pm list users
+pm list users
 ```
 
 上面这条命令返回的结果中，用户名前面的数字就是UserID
@@ -913,12 +920,12 @@ UserID：不是UID。系统用户的UserID为0，其他用户（包括工作资�
 - 临时用户（需API28）
 - 启用所有系统应用（有些系统应用在新用户中是默认不启用的，比如谷歌手机上的YouTube）
 
-创建后，Android owner会成为受管理用户中的Profile owner
+创建后，OwnDroid会成为受管理用户中的Profile owner
 
-这个功能在WearOS上使用会导致SystemUI停止运行一次，过几秒恢复正常。创建用户实际上成功了，回到Android owner后能看到新用户的序列号，`pm list users`也能看到新用户。如果切换到新用户，SystemUI无法使用，表现为黑屏（可以用ADB命令启动别的应用）。如果黑屏无法使用，ADB执行下面这个命令（把USER_ID替换成受管理用户的用户序列号）
+这个功能在WearOS上使用会导致SystemUI停止运行一次，过几秒恢复正常。创建用户实际上成功了，回到OwnDroid后能看到新用户的序列号，`pm list users`也能看到新用户。如果切换到新用户，SystemUI无法使用，表现为黑屏（可以用ADB命令启动别的应用）。如果黑屏无法使用，ADB执行下面这个命令（把USER_ID替换成受管理用户的用户序列号）
 
 ```shell
-adb shell pm remove-user --set-ephemeral-if-in-use USER_ID
+pm remove-user --set-ephemeral-if-in-use USER_ID
 ```
 
 新用户会被设为临时用户，重启后临时用户会被删除并切换到主用户
@@ -1009,7 +1016,7 @@ Device owner无论在何时都是附属于设备的用户
 
 需要Device owner
 
-输入密码错误次数达到限制后会恢复出厂设置（前提是Android owner有权限恢复出厂设置）
+输入密码错误次数达到限制后会恢复出厂设置（前提是OwnDroid有权限恢复出厂设置）
 
 ### 密码失效超时时间
 
@@ -1060,7 +1067,7 @@ Device owner无论在何时都是附属于设备的用户
 
 自定义的项目：
 
-- 禁用小工具（API21或以上弃用，Android owner的最小兼容API版本21，所以这个功能没用）
+- 禁用小工具（API21或以上弃用，OwnDroid的最小兼容API版本21，所以这个功能没用）
 - 禁用相机
 - 禁用通知（不知道是否包含音乐播放器）
 - 禁用未经编辑的通知（作用未知）
@@ -1095,7 +1102,7 @@ API31及以上弃用，请使用[密码复杂度要求](#密码复杂度要求)
 
 正在修改，预计在5.0版本重新加入。
 
-在Android owner的设置中打开
+在OwnDroid的设置中打开
 
 适配手表的屏幕大小，添加一些WearOS/AndroidWear相关的提示，比如[密码与锁屏](#密码与锁屏)
 
@@ -1105,8 +1112,8 @@ API31及以上弃用，请使用[密码复杂度要求](#密码复杂度要求)
 
 在安卓12或以上此功能默认打开
 
-打开后Android owner中的颜色方案将会跟随系统
+打开后OwnDroid中的颜色方案将会跟随系统
 
 建议打开，因为自带的颜色方案不好看
 
-打开或关闭此功能都要重启Android owner
+打开或关闭此功能都要重启OwnDroid

@@ -25,7 +25,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:theme="@style/Theme.AndroidOwner"
+        android:theme="@style/Theme.OwnDroid"
         android:enableOnBackInvokedCallback="true"
         android:testOnly="false"
         tools:targetApi="34">
@@ -33,21 +33,20 @@
             android:name=".MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize|stateHidden"
-            android:theme="@style/Theme.AndroidOwner">
+            android:theme="@style/Theme.OwnDroid">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.app.action.PROVISIONING_SUCCESSFUL" />
                 <action android:name="android.app.action.PROVISION_MANAGED_PROFILE"/>
                 <action android:name="android.app.action.MANAGED_PROFILE_PROVISIONED"/>
                 <action android:name="android.app.action.PROFILE_PROVISIONING_COMPLETE"/>
-                <action android:name="com.binbin.androidowner.MAIN_ACTION"/>
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
         <receiver
-            android:name=".dpm.MyDeviceAdminReceiver"
+            android:name=".Receiver"
             android:description="@string/app_name"
             android:permission="android.permission.BIND_DEVICE_ADMIN"
             android:exported="true">
@@ -65,12 +64,12 @@
             </intent-filter>
         </receiver>
         <receiver
-        android:name=".dpm.PackageInstallerReceiver"
+        android:name=".PackageInstallerReceiver"
         android:description="@string/app_name"
         android:permission="android.permission.BIND_DEVICE_ADMIN"
         android:exported="true">
             <intent-filter>
-                <action android:name="com.binbin.androidowner.PKG_INSTALL_RESULT"/>
+                <action android:name="com.bintianqi.owndroid.PKG_INSTALL_RESULT"/>
             </intent-filter>
         </receiver>
     </application>

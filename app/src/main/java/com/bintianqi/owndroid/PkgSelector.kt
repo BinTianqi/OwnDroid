@@ -1,4 +1,4 @@
-package com.binbin.androidowner
+package com.bintianqi.owndroid
 
 import android.graphics.drawable.Drawable
 import android.widget.Toast
@@ -21,10 +21,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.binbin.androidowner.dpm.applySelectedPackage
-import com.binbin.androidowner.dpm.selectedPackage
-import com.binbin.androidowner.ui.NavIcon
-import com.binbin.androidowner.ui.theme.bgColor
+import com.bintianqi.owndroid.dpm.applySelectedPackage
+import com.bintianqi.owndroid.dpm.selectedPackage
+import com.bintianqi.owndroid.ui.NavIcon
+import com.bintianqi.owndroid.ui.theme.bgColor
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -57,7 +57,7 @@ fun PackageSelector(navCtrl:NavHostController){
         pkgs.clear()
         for(pkg in apps){
             val srcDir = pkg.sourceDir
-            pkgs+=PkgInfo(
+            pkgs += PkgInfo(
                 pkg.packageName, pkg.loadLabel(pm).toString(), pkg.loadIcon(pm),
                 if(srcDir.contains("/data/")){ "data" }
                 else if(
@@ -168,12 +168,12 @@ fun PackageSelector(navCtrl:NavHostController){
 }
 
 @Composable
-private fun PackageItem(pkg:PkgInfo, navCtrl: NavHostController){
+private fun PackageItem(pkg: PkgInfo, navCtrl: NavHostController){
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable{selectedPackage=pkg.pkgName;applySelectedPackage=true;navCtrl.navigateUp()}
+            .clickable{selectedPackage =pkg.pkgName;applySelectedPackage =true;navCtrl.navigateUp()}
             .padding(vertical = 3.dp)
     ){
         Spacer(Modifier.padding(start = 15.dp))

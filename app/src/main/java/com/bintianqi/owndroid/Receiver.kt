@@ -1,4 +1,4 @@
-package com.binbin.androidowner.dpm
+package com.bintianqi.owndroid
 
 import android.annotation.SuppressLint
 import android.app.admin.DeviceAdminReceiver
@@ -11,7 +11,7 @@ import android.os.PersistableBundle
 import android.util.Log
 import android.widget.Toast
 
-class MyDeviceAdminReceiver : DeviceAdminReceiver() {
+class Receiver : DeviceAdminReceiver() {
     override fun onEnabled(context: Context, intent: Intent) {
         super.onEnabled(context, intent)
         Toast.makeText(context, "已启用", Toast.LENGTH_SHORT).show()

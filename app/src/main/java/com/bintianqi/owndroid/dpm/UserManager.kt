@@ -1,4 +1,4 @@
-package com.binbin.androidowner.dpm
+package com.bintianqi.owndroid.dpm
 
 import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
@@ -20,8 +20,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -37,11 +40,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.binbin.androidowner.R
-import com.binbin.androidowner.toText
-import com.binbin.androidowner.ui.*
-import com.binbin.androidowner.ui.theme.bgColor
-import com.binbin.androidowner.uriToStream
+import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.Receiver
+import com.bintianqi.owndroid.toText
+import com.bintianqi.owndroid.ui.*
+import com.bintianqi.owndroid.ui.theme.bgColor
+import com.bintianqi.owndroid.uriToStream
 import kotlinx.coroutines.delay
 
 var affiliationID = mutableSetOf<String>()
@@ -125,7 +129,7 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState){
 private fun CurrentUserInfo(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext, Receiver::class.java)
     val userManager = myContext.getSystemService(Context.USER_SERVICE) as UserManager
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -157,7 +161,7 @@ private fun UserOperation(){
     val myContext = LocalContext.current
     val userManager = myContext.getSystemService(Context.USER_SERVICE) as UserManager
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -272,7 +276,7 @@ private fun CreateUser(){
     val myContext = LocalContext.current
     val userManager = myContext.getSystemService(Context.USER_SERVICE) as UserManager
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     var userName by remember{ mutableStateOf("") }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
@@ -319,7 +323,7 @@ private fun CreateUser(){
 private fun AffiliationID(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     var input by remember{mutableStateOf("")}
     var list by remember{mutableStateOf("")}
@@ -387,7 +391,7 @@ private fun AffiliationID(){
 private fun Username(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     var inputUsername by remember{mutableStateOf("")}
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
@@ -431,7 +435,7 @@ private fun Username(){
 private fun UserSessionMessage(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     val getStart = myDpm.getStartUserSessionMessage(myComponent)?:""
     val getEnd = myDpm.getEndUserSessionMessage(myComponent)?:""
@@ -492,7 +496,7 @@ private fun UserSessionMessage(){
 private fun UserIcon(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     var getContent by remember{mutableStateOf(false)}
     var canApply by remember{mutableStateOf(false)}
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){

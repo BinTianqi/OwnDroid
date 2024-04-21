@@ -1,4 +1,4 @@
-package com.binbin.androidowner.dpm
+package com.bintianqi.owndroid.dpm
 
 import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
@@ -33,12 +33,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.binbin.androidowner.R
-import com.binbin.androidowner.ui.Animations
-import com.binbin.androidowner.ui.SubPageItem
-import com.binbin.androidowner.ui.SwitchItem
-import com.binbin.androidowner.ui.TopBar
-import com.binbin.androidowner.ui.theme.bgColor
+import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.Receiver
+import com.bintianqi.owndroid.ui.Animations
+import com.bintianqi.owndroid.ui.SubPageItem
+import com.bintianqi.owndroid.ui.SwitchItem
+import com.bintianqi.owndroid.ui.TopBar
+import com.bintianqi.owndroid.ui.theme.bgColor
 
 private data class Restriction(
     val restriction:String,
@@ -100,7 +101,7 @@ fun UserRestriction(navCtrl: NavHostController){
 private fun Home(navCtrl:NavHostController,scrollState: ScrollState){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext, Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)){
         Text(text = stringResource(R.string.user_restrict), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 7.dp, start = 15.dp))
         Text(text = stringResource(R.string.switch_to_disable_feature), modifier = Modifier.padding(start = 15.dp))
@@ -192,7 +193,7 @@ private fun UserRestrictionItem(
 ){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,MyDeviceAdminReceiver::class.java)
+    val myComponent = ComponentName(myContext,Receiver::class.java)
     SwitchItem(
         itemName,restrictionDescription,leadIcon,
         { if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){ myDpm.getUserRestrictions(myComponent).getBoolean(restriction) }else{ false } },

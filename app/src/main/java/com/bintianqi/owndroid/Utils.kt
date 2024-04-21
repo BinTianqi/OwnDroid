@@ -1,4 +1,4 @@
-package com.binbin.androidowner
+package com.bintianqi.owndroid
 
 import android.content.ClipData
 import android.content.ClipboardManager

@@ -1,4 +1,4 @@
-package com.binbin.androidowner.ui.theme
+package com.bintianqi.owndroid.ui.theme
 
 import android.app.Activity
 import android.content.Context

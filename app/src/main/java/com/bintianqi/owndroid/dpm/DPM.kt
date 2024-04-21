@@ -1,4 +1,4 @@
-package com.binbin.androidowner.dpm
+package com.bintianqi.owndroid.dpm
 
 import android.app.admin.DevicePolicyManager
 import android.content.Intent
@@ -19,10 +19,10 @@ var apkUri: Uri? = null
 var caCert = byteArrayOf()
 
 fun isDeviceOwner(dpm: DevicePolicyManager): Boolean {
-    return dpm.isDeviceOwnerApp("com.binbin.androidowner")
+    return dpm.isDeviceOwnerApp("com.bintianqi.owndroid")
 }
 
 fun isProfileOwner(dpm: DevicePolicyManager): Boolean {
-    return dpm.isProfileOwnerApp("com.binbin.androidowner")
+    return dpm.isProfileOwnerApp("com.bintianqi.owndroid")
 }
 

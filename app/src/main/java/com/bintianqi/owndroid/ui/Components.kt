@@ -1,4 +1,4 @@
-package com.binbin.androidowner.ui
+package com.bintianqi.owndroid.ui
 
 import android.content.Context
 import android.widget.Toast
@@ -22,9 +22,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
-import com.binbin.androidowner.R
-import com.binbin.androidowner.ui.theme.bgColor
-import com.binbin.androidowner.writeClipBoard
+import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.theme.bgColor
+import com.bintianqi.owndroid.writeClipBoard
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
