@@ -417,12 +417,12 @@
     <string name="max_time_to_lock_desc">Enter 0 to allow user decision, unit: millisecond</string>
     <string name="pwd_timeout_desc">When reach this limit, user should set a new password. Enter 0 to allow user decision, unit: millisecond</string>
     <string name="pwd_history">Password history length</string>
-    <string name="password_complexity_none">None</string>
-    <string name="password_complexity_low">Low</string>
-    <string name="password_complexity_medium">Medium</string>
-    <string name="password_complexity_high">High</string>
+    <string name="password_complexity_none">None (No password allowed)</string>
+    <string name="password_complexity_low">Low (Gesture password and characters repetition allowed)</string>
+    <string name="password_complexity_medium">Medium (Repetition disallowed, 4 characters at least)</string>
+    <string name="password_complexity_high">High (Repetition disallowed, 6 characters at least)</string>
     <string name="current_password_complexity_is">Current password complexity: %1$s</string>
-    <string name="is_password_sufficient">is password sufficient: %1$s</string>
+    <string name="is_password_sufficient">Is password complexity sufficient: %1$s</string>
     <string name="password_failed_attempts_is">Password failed attempts: %1$s</string>
     <string name="is_using_unified_password">Unified password: %1$s</string>
     <string name="reset_password_token">Reset password token</string>
@@ -437,7 +437,7 @@
     <string name="reset_password_with_token">Reset password with token</string>
     <string name="reset_password_deprecated">Reset password</string>
     <string name="required_password_complexity">Required password complexity</string>
-    <string name="require_set_new_password">Require set new password</string>
+    <string name="require_set_new_password">Request to set a new password</string>
     <string name="keyguard_disabled_features">Keyguard features</string>
     <string name="enable_all">Enable all</string>
     <string name="keyguard_disabled_features_widgets">Disable widget</string>
@@ -459,7 +459,7 @@
     <string name="password_quality_biometrics_weak">Biometrics</string>
     <string name="password_quality_numeric_complex">Numeric complex</string>
     <string name="required_password_quality">Required password quality</string>
-    <string name="password_complexity_instead_password_quality">Set password complexity will disable password complexity. </string>
+    <string name="password_complexity_instead_password_quality">Set password complexity will disable password quality settings. </string>
     <string name="password_quality_deprecated_desc">Deprecated. Use required password complexity instead. </string>
     <string name="activate_reset_password_token_here">Activate reset password token here. </string>
 
