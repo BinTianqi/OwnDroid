@@ -11,8 +11,8 @@ android {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 21
         targetSdk = 34
-        versionCode = 24
-        versionName = "5.0-preview"
+        versionCode = 25
+        versionName = "5.0"
     }
 
     buildTypes {

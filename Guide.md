@@ -27,6 +27,8 @@
 
 9. [其他功能](#其他功能)
 
+10. [构建](#构建)
+
 ## 使用前须知
 
 1. device admin, profile owner和device owner有极高的特权，包括但不限于让你的设备丢失所有数据。所以，请谨慎使用
@@ -1117,3 +1119,15 @@ API31及以上弃用，请使用[密码复杂度要求](#密码复杂度要求)
 建议打开，因为自带的颜色方案不好看
 
 打开或关闭此功能都要重启OwnDroid
+
+
+## 构建
+
+建议使用Android Studio
+
+### testkey
+
+- 使用Gradle执行任务assembleRelease，生成未签名的release
+- 打开signature目录，运行signApk-testKey.bat或signApk-testKey.sh
+- Windows: apk在`app/build/outputs/apk/release`目录中
+- Linux: apk在`signature`目录中
