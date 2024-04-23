@@ -44,6 +44,7 @@
     <string name="copy_command">Copy Command</string>
     <string name="package_name">Package name</string>
     <string name="not_exist">Not exist</string>
+    <string name="unknown_status">Unknown status</string>
 
     <!--Permissions-->
     <string name="device_admin">Device admin</string>
@@ -87,9 +88,6 @@
     <string name="input_userid_of_work_profile">Enter UserID of work profile</string>
     <string name="list_owners">List owners</string>
     <string name="shizuku_not_started">Shizuku not started. </string>
-    <string name="activate_org_profile_command_with_user_id" tools:ignore="TypographyDashes" translatable="false">
-        dpm mark-profile-owner-on-organization-owned-device --user %1$s com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver
-    </string>
     <string name="dpm_activate_do_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="dpm_activate_po_command" translatable="false">dpm set-profile-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="dpm_activate_da_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
@@ -97,6 +95,12 @@
     <string name="shizuku_activated_root">Permission granted (Root)</string>
     <string name="activate_profile_owner">Activate profile owner</string>
     <string name="activate_device_owner">Activate device owner</string>
+    <string name="activate_org_profile">Activate organization-owned work profile</string>
+    <string name="shizuku_service_disconnected">Shizuku service disconnected</string>
+    <string name="invalid_binder">Invalid binder</string>
+    <string name="bind_shizuku">Connect Shizuku</string>
+    <string name="shizuku_not_bind">Shizuku disconnected</string>
+    <string name="shizuku_permission_denied">Permission denied</string>
 
     <!--System-->
     <string name="system_manage">System manager</string>

@@ -25,4 +25,3 @@ fun isDeviceOwner(dpm: DevicePolicyManager): Boolean {
 fun isProfileOwner(dpm: DevicePolicyManager): Boolean {
     return dpm.isProfileOwnerApp("com.bintianqi.owndroid")
 }
-

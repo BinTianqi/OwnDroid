@@ -41,6 +41,7 @@
     <string name="unknown_effect">效果未知</string>
     <string name="options">选项</string>
     <string name="copy_command">复制代码</string>
+    <string name="unknown_status">未知状态</string>
 
     <!--Permissions-->
     <string name="device_admin">Device admin</string>
@@ -83,6 +84,12 @@
     <string name="shizuku_activated_root">已授权（Root）</string>
     <string name="activate_profile_owner">激活Profile owner</string>
     <string name="activate_device_owner">激活Device owner</string>
+    <string name="activate_org_profile">激活由组织拥有的工作资料</string>
+    <string name="shizuku_service_disconnected">Shizuku服务断开连接</string>
+    <string name="shizuku_not_bind">Shizuku未连接</string>
+    <string name="invalid_binder">无效Binder</string>
+    <string name="bind_shizuku">连接Shizuku</string>
+    <string name="shizuku_permission_denied">未授权</string>
 
     <!--System-->
     <string name="system_manage">系统</string>

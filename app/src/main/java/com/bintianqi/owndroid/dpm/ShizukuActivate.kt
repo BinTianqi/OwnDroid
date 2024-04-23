@@ -3,83 +3,87 @@ package com.bintianqi.owndroid.dpm
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
-import android.content.Context.MODE_PRIVATE
+import android.content.ServiceConnection
+import android.content.pm.PackageManager
 import android.os.Binder
 import android.os.Build.VERSION
+import android.os.IBinder
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.bintianqi.owndroid.IUserService
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.Receiver
-import kotlinx.coroutines.Dispatchers
+import com.bintianqi.owndroid.backToHome
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.apache.commons.io.IOUtils
-import java.io.*
+import rikka.shizuku.Shizuku
 
 @Composable
 fun ShizukuActivate(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext, Receiver::class.java)
-    val focusMgr = LocalFocusManager.current
-    val filesDir = myContext.filesDir
-    LaunchedEffect(Unit){ extractRish(myContext) }
     val coScope = rememberCoroutineScope()
-    val scrollState = rememberScrollState()
     val outputTextScrollState = rememberScrollState()
+    var enabled by remember{ mutableStateOf(false) }
+    var bindShizuku by remember{ mutableStateOf(false) }
+    var outputText by remember{mutableStateOf("")}
+    LaunchedEffect(Unit){
+        if(service==null){userServiceControl(myContext, true)}
+        while(true){
+            if(service==null){
+                enabled = false
+                bindShizuku = checkShizukuStatus()==1
+            }else{
+                enabled = true
+                bindShizuku = false
+            }
+            delay(200)
+        }
+    }
     Column(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(scrollState),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 8.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        var outputText by remember{mutableStateOf("")}
-        if(Binder.getCallingUid()/100000!=0){
-            Row{
-                Icon(imageVector = Icons.Rounded.Warning, contentDescription = null, tint = colorScheme.onErrorContainer)
-                Text(text = stringResource(R.string.not_primary_user_not_support_shizuku), color = colorScheme.onErrorContainer)
+        AnimatedVisibility(bindShizuku) {
+            Button(
+                onClick = {
+                    userServiceControl(myContext, true)
+                    outputText = ""
+                }
+            ){
+                Text(stringResource(R.string.bind_shizuku))
             }
         }
+
         Button(
             onClick = {
+                outputText = checkPermission(myContext)
                 coScope.launch {
-                    scrollState.animateScrollTo(scrollState.maxValue, scrollAnim())
                     outputTextScrollState.animateScrollTo(0, scrollAnim())
-                    val getUid = executeCommand(myContext, "sh rish.sh","id -u",null,filesDir)
-                    outputText = if(getUid.contains("2000")){
-                        myContext.getString(R.string.shizuku_activated_shell)
-                    }else if(getUid.contains("0")){
-                        myContext.getString(R.string.shizuku_activated_root)
-                    }else if(getUid.contains("Error: 1")){
-                        myContext.getString(R.string.shizuku_not_started)
-                    }else{
-                        getUid
-                    }
                 }
             }
         ) {
@@ -89,11 +93,11 @@ fun ShizukuActivate(){
         Button(
             onClick = {
                 coScope.launch{
-                    outputText= executeCommand(myContext, "sh rish.sh","dpm list-owners",null,filesDir)
-                    scrollState.animateScrollTo(scrollState.maxValue, scrollAnim())
+                    outputText = service!!.execute("dpm list-owners")
                     outputTextScrollState.animateScrollTo(0, scrollAnim())
                 }
-            }
+            },
+            enabled = enabled
         ) {
             Text(text = stringResource(R.string.list_owners))
         }
@@ -105,11 +109,13 @@ fun ShizukuActivate(){
                     Button(
                         onClick = {
                             coScope.launch{
-                                outputText = executeCommand(myContext, "sh rish.sh", myContext.getString(R.string.dpm_activate_da_command), null, filesDir)
-                                scrollState.animateScrollTo(scrollState.maxValue, scrollAnim())
+                                outputText = service!!.execute(myContext.getString(R.string.dpm_activate_da_command))
                                 outputTextScrollState.animateScrollTo(0, scrollAnim())
+                                delay(600)
+                                if(myDpm.isAdminActive(myComponent)){backToHome=true}
                             }
-                        }
+                        },
+                        enabled = enabled
                     ) {
                         Text(text = stringResource(R.string.activate_device_admin))
                     }
@@ -118,11 +124,13 @@ fun ShizukuActivate(){
                 Button(
                     onClick = {
                         coScope.launch{
-                            outputText = executeCommand(myContext, "sh rish.sh", myContext.getString(R.string.dpm_activate_po_command), null, filesDir)
-                            scrollState.animateScrollTo(scrollState.maxValue, scrollAnim())
+                            outputText = service!!.execute(myContext.getString(R.string.dpm_activate_po_command))
                             outputTextScrollState.animateScrollTo(0, scrollAnim())
+                            delay(600)
+                            if(isProfileOwner(myDpm)){backToHome=true}
                         }
-                    }
+                    },
+                    enabled = enabled
                 ) {
                     Text(text = stringResource(R.string.activate_profile_owner))
                 }
@@ -130,11 +138,13 @@ fun ShizukuActivate(){
                 Button(
                     onClick = {
                         coScope.launch{
-                            outputText = executeCommand(myContext, "sh rish.sh", myContext.getString(R.string.dpm_activate_do_command), null, filesDir)
-                            scrollState.animateScrollTo(scrollState.maxValue, scrollAnim())
+                            outputText = service!!.execute(myContext.getString(R.string.dpm_activate_do_command))
                             outputTextScrollState.animateScrollTo(0, scrollAnim())
+                            delay(600)
+                            if(isDeviceOwner(myDpm)){backToHome=true}
                         }
-                    }
+                    },
+                    enabled = enabled
                 ) {
                     Text(text = stringResource(R.string.activate_device_owner))
                 }
@@ -143,43 +153,29 @@ fun ShizukuActivate(){
         }
         
         if(
-            VERSION.SDK_INT>=30&&!isDeviceOwner(myDpm)&&!myDpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)&&
-            !myDpm.isOrganizationOwnedDeviceWithManagedProfile
+            VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)
         ){
             Column {
-                Text(text = stringResource(R.string.org_owned_work_profile), style = typography.titleLarge, color = colorScheme.onPrimaryContainer)
-                Text(text = stringResource(R.string.input_userid_of_work_profile))
-                var inputUserID by remember{mutableStateOf("")}
-                OutlinedTextField(
-                    value = inputUserID, onValueChange = {inputUserID=it},
-                    label = {Text("UserID")},
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                    modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp)
-                )
                 Button(
                     onClick = {
                         coScope.launch{
-                            focusMgr.clearFocus()
-                            outputText = executeCommand(
-                                myContext, "sh rish.sh", myContext.getString(R.string.activate_org_profile_command_with_user_id, inputUserID),
-                                null, filesDir
+                            val userID = Binder.getCallingUid() / 100000
+                            outputText = service!!.execute(
+                                "dpm mark-profile-owner-on-organization-owned-device --user $userID com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver"
                             )
-                            scrollState.animateScrollTo(scrollState.maxValue, scrollAnim())
                             outputTextScrollState.animateScrollTo(0, scrollAnim())
-                            if(myDpm.isOrganizationOwnedDeviceWithManagedProfile){
-                                Toast.makeText(myContext, myContext.getString(R.string.success),Toast.LENGTH_SHORT).show()
-                            }
                         }
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    enabled = enabled
                 ) {
-                    Text(text = stringResource(R.string.activate))
+                    Text(text = stringResource(R.string.activate_org_profile))
                 }
             }
         }
         
-        SelectionContainer(modifier = Modifier.align(Alignment.Start).horizontalScroll(outputTextScrollState)){
+        SelectionContainer(modifier = Modifier
+            .align(Alignment.Start)
+            .horizontalScroll(outputTextScrollState)){
             Text(text = outputText, softWrap = false, modifier = Modifier.padding(4.dp))
         }
         
@@ -194,48 +190,53 @@ fun <T> scrollAnim(
     visibilityThreshold: T? = null
 ): SpringSpec<T> = SpringSpec(dampingRatio, stiffness, visibilityThreshold)
 
-fun extractRish(myContext:Context){
-    val assetsMgr = myContext.assets
-    myContext.deleteFile("rish.sh")
-    myContext.deleteFile("rish_shizuku.dex")
-    val shInput = assetsMgr.open("rish.sh")
-    val shOutput = myContext.openFileOutput("rish.sh",MODE_PRIVATE)
-    IOUtils.copy(shInput,shOutput)
-    shOutput.close()
-    val dexInput = assetsMgr.open("rish_shizuku.dex")
-    val dexOutput = myContext.openFileOutput("rish_shizuku.dex",MODE_PRIVATE)
-    IOUtils.copy(dexInput,dexOutput)
-    dexOutput.close()
-    if(VERSION.SDK_INT>=34){ Runtime.getRuntime().exec("chmod 400 rish_shizuku.dex",null,myContext.filesDir) }
+private fun checkPermission(context: Context):String{
+    if(checkShizukuStatus()==-1){return context.getString(R.string.shizuku_not_started)}
+    val getUid = if(service==null){return context.getString(R.string.shizuku_not_bind)}else{service!!.uid}
+    return when(getUid){
+        "2000"->context.getString(R.string.shizuku_activated_shell)
+        "0"->context.getString(R.string.shizuku_activated_root)
+        else->context.getString(R.string.unknown_status)+"\nUID: $getUid"
+    }
 }
 
-suspend fun executeCommand(myContext: Context, command: String, subCommand:String, env: Array<String>?, dir:File?): String {
-    var result = ""
-    val tunnel:ByteArrayInputStream
-    val process:Process
-    val outputStream:OutputStream
-    try {
-        tunnel = ByteArrayInputStream(subCommand.toByteArray())
-        process = withContext(Dispatchers.IO){Runtime.getRuntime().exec(command, env, dir)}
-        outputStream = process.outputStream
-        IOUtils.copy(tunnel,outputStream)
-        withContext(Dispatchers.IO){ outputStream.close() }
-        val exitCode = withContext(Dispatchers.IO){ process.waitFor() }
-        if(exitCode!=0){ result+="Error: $exitCode" }
-    }catch(e:Exception){
-        e.printStackTrace()
-        return e.toString()
+fun checkShizukuStatus():Int{
+    val status = try {
+        if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) { 1 }
+        else if (Shizuku.shouldShowRequestPermissionRationale()) { 0 }
+        else { Shizuku.requestPermission(0); 0 }
+    }catch(e:Exception){ -1 }
+    Log.e("Shizuku",status.toString())
+    return status
+}
+
+fun userServiceControl(context:Context, status:Boolean){
+    if(checkShizukuStatus()!=1){ return }
+    val userServiceConnection = object : ServiceConnection {
+        override fun onServiceConnected(componentName: ComponentName, binder: IBinder) {
+            if (binder.pingBinder()) {
+                service = IUserService.Stub.asInterface(binder)
+            } else {
+                Toast.makeText(context,context.getString(R.string.invalid_binder),Toast.LENGTH_SHORT).show()
+            }
+        }
+        override fun onServiceDisconnected(componentName: ComponentName) {
+            service = null
+            Toast.makeText(context,context.getString(R.string.shizuku_service_disconnected),Toast.LENGTH_SHORT).show()
+        }
     }
-    try {
-        val outputReader = BufferedReader(InputStreamReader(process.inputStream))
-        var outputLine: String
-        while(withContext(Dispatchers.IO){ outputReader.readLine() }.also {outputLine = it}!=null) { result+="$outputLine\n" }
-        val errorReader = BufferedReader(InputStreamReader(process.errorStream))
-        var errorLine: String
-        while(withContext(Dispatchers.IO){ errorReader.readLine() }.also {errorLine = it}!=null) { result+="$errorLine\n" }
-    } catch(e: NullPointerException) {
-        e.printStackTrace()
+    val userServiceArgs  = Shizuku.UserServiceArgs(
+        ComponentName(
+            context.packageName,ShizukuService::class.java.name
+        )
+    )
+        .daemon(false)
+        .processNameSuffix("service")
+        .debuggable(true)
+        .version(26)
+    if(status){
+        Shizuku.bindUserService(userServiceArgs,userServiceConnection)
+    }else{
+        Shizuku.unbindUserService(userServiceArgs,userServiceConnection,false)
     }
-    if(result==""){ return myContext.getString(R.string.try_again) }
-    return result
 }

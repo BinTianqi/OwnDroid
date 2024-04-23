@@ -34,6 +34,7 @@ android {
     }
     buildFeatures {
         compose = true
+        aidl = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -56,4 +57,6 @@ dependencies {
     implementation("com.google.accompanist:accompanist-drawablepainter:0.35.0-alpha")
     implementation("androidx.compose.material3:material3:1.2.0")
     implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("dev.rikka.shizuku:provider:13.1.5")
+    implementation("dev.rikka.shizuku:api:13.1.5")
 }
