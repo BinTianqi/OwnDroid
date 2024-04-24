@@ -45,7 +45,9 @@ import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import com.bintianqi.owndroid.ui.theme.SetDarkTheme
 import com.bintianqi.owndroid.ui.theme.bgColor
+import kotlinx.coroutines.delay
 
+var backToHome = false
 lateinit var displayMetrics: DisplayMetrics
 @ExperimentalMaterial3Api
 class MainActivity : ComponentActivity() {
@@ -86,6 +88,12 @@ fun MyScaffold(){
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val focusMgr = LocalFocusManager.current
     SetDarkTheme()
+    LaunchedEffect(Unit){
+        while(true){
+            if(backToHome){ navCtrl.navigateUp(); backToHome=false }
+            delay(200)
+        }
+    }
     NavHost(
         navController = navCtrl,
         startDestination = "HomePage",
@@ -128,12 +136,13 @@ private fun HomePage(navCtrl:NavHostController){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,Receiver::class.java)
-    val activateType =
-        if(isDeviceOwner(myDpm)){"Device Owner"}
+    val activateType = stringResource(
+        if(isDeviceOwner(myDpm)){R.string.device_owner}
         else if(isProfileOwner(myDpm)){
-            stringResource(if(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)){R.string.work_profile_owner}else{R.string.profile_owner})
+            if(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)){R.string.work_profile_owner}else{R.string.profile_owner}
         }
-        else if(myDpm.isAdminActive(myComponent)){"Device Admin"}else{""}
+        else if(myDpm.isAdminActive(myComponent)){R.string.device_admin}else{R.string.click_to_activate}
+    )
     Column(modifier = Modifier.statusBarsPadding().verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 25.dp))
         Text(text = stringResource(R.string.app_name), style = typography.headlineLarge, modifier = Modifier.padding(start = 10.dp), color = colorScheme.onBackground)
@@ -144,7 +153,7 @@ private fun HomePage(navCtrl:NavHostController){
                 .padding(vertical = 8.dp, horizontal = 8.dp)
                 .clip(RoundedCornerShape(15))
                 .background(color = colorScheme.primary)
-                .clickable(onClick = { navCtrl.navigate("Permissions") })
+                .clickable(onClick = {navCtrl.navigate("Permissions")})
                 .padding(vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -162,7 +171,7 @@ private fun HomePage(navCtrl:NavHostController){
                     color = colorScheme.onPrimary,
                     modifier = Modifier.padding(bottom = 2.dp)
                 )
-                if(activateType!=""){ Text(text = activateType, color = colorScheme.onPrimary, modifier = Modifier.padding(start = 2.dp)) }
+                if(activateType!=""){ Text(text = activateType, color = colorScheme.onPrimary) }
             }
         }
         HomePageItem(R.string.system_manage, R.drawable.mobile_phone_fill0, "SystemManage", navCtrl)
@@ -192,7 +201,7 @@ fun HomePageItem(name:Int, imgVector:Int, navTo:String, myNav:NavHostController)
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(25))
-            .clickable(onClick = { myNav.navigate(navTo) })
+            .clickable(onClick = {myNav.navigate(navTo)})
             .padding(vertical = 13.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

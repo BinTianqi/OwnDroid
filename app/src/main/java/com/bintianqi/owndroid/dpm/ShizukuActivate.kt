@@ -8,7 +8,6 @@ import android.content.pm.PackageManager
 import android.os.Binder
 import android.os.Build.VERSION
 import android.os.IBinder
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
@@ -37,6 +36,8 @@ import com.bintianqi.owndroid.backToHome
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
+
+private var waitGrantPermission = false
 
 @Composable
 fun ShizukuActivate(){
@@ -202,11 +203,14 @@ private fun checkPermission(context: Context):String{
 
 fun checkShizukuStatus():Int{
     val status = try {
-        if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) { 1 }
-        else if (Shizuku.shouldShowRequestPermissionRationale()) { 0 }
-        else { Shizuku.requestPermission(0); 0 }
+        if(Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) { waitGrantPermission = false; 1 }
+        else if(Shizuku.shouldShowRequestPermissionRationale()) { 0 }
+        else{
+            if(!waitGrantPermission){Shizuku.requestPermission(0)}
+            waitGrantPermission = true
+            0
+        }
     }catch(e:Exception){ -1 }
-    Log.e("Shizuku",status.toString())
     return status
 }
 
