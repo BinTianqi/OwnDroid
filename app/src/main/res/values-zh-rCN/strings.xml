@@ -63,7 +63,7 @@
     <string name="account_types_management_disabled">不受管理的账号</string>
     <string name="account_types">账号类型</string>
     <string name="transform_ownership">转移所有权</string>
-    <string name="transform_ownership_desc">把Device owner或Profile owner权限转移到另一个应用。目标必须是Device admin</string>
+    <string name="transform_ownership_desc">把Device owner或Profile owner权限转移到另一个应用 (目标必须是Device admin)</string>
     <string name="target_package_name">目标包名</string>
     <string name="target_class_name">目标类名</string>
     <string name="device_owner_lock_screen_info">锁屏提示信息</string>
@@ -446,7 +446,7 @@
     <string name="password_quality_numeric_complex">复杂数字（无连续性）</string>
     <string name="required_password_quality">密码质量要求</string>
     <string name="password_complexity_instead_password_quality">设置密码复杂度将会取代密码质量</string>
-    <string name="password_quality_deprecated_desc">已弃用，请使用上面的”密码复杂度要求“。点击展开</string>
+    <string name="password_quality_deprecated_desc">已弃用，请使用上面的”密码复杂度要求“</string>
     <string name="activate_reset_password_token_here">在这里激活密码重置令牌</string>
 
     <!--Settings&About-->
