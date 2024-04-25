@@ -393,7 +393,7 @@ private fun SupportMsg(){
     var longMsg by remember{mutableStateOf(myDpm.getLongSupportMessage(myComponent)?.toString() ?: "")}
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
         Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.short_support_msg), style = typography.headlineLarge)
+        Text(text = stringResource(R.string.support_msg), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
             value = shortMsg,

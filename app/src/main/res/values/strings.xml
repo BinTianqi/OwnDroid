@@ -56,7 +56,7 @@
     <string name="activate_device_owner_command" translatable="false">adb shell dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="device_info">Device info</string>
     <string name="is_device_financed">Financed device: %1$s</string>
-    <string name="dpmrh">Device policy manager role holder：%1$s</string>
+    <string name="dpmrh">Device policy manager role holder: %1$s</string>
     <!--es: encryption status-->
     <string name="es_inactive">Inactive</string>
     <string name="es_active">Active</string>
@@ -76,7 +76,7 @@
     <string name="device_owner_lock_screen_info">Lockscreen info</string>
     <string name="support_msg">Support Message</string>
     <string name="short_support_msg">Short message</string>
-    <string name="support_msg_desc">When you try to use functions disabled by this app, the support message will show. </string>
+    <string name="support_msg_desc">When users try to use functions disabled by this app, the support message will show. (Multi-line allowed) </string>
     <string name="long_support_msg">Long message</string>
     <string name="transform">Transform</string>
     <string name="activate_device_admin_here">Activate Device admin here. </string>
@@ -409,9 +409,9 @@
     <string name="password_and_keyguard">Password and keyguard</string>
     <string name="password_info">Password Info</string>
     <string name="reset_pwd_desc">Keep empty to remove password</string>
-    <string name="max_pwd_fail">Max failed password</string>
-    <string name="max_pwd_fail_desc">When reach this limit, the device will factory reset</string>
-    <string name="max_pwd_fail_textfield">Max number of fail</string>
+    <string name="max_pwd_fail">Max password attempt limit</string>
+    <string name="max_pwd_fail_desc">When reach this limit, the device will be factory reset</string>
+    <string name="max_pwd_fail_textfield">Maximum failed attempts</string>
     <string name="pwd_timeout">Password timeout</string>
     <string name="max_time_to_lock">Screen timeout</string>
     <string name="max_time_to_lock_desc">Enter 0 to allow user decision, unit: millisecond</string>
@@ -452,15 +452,15 @@
     <string name="keyguard_disabled_features_biometrics">Disable biometrics</string>
     <string name="keyguard_disabled_features_shortcuts">Disable shortcuts</string>
     <string name="password_quality_unspecified">Unspecified</string>
-    <string name="password_quality_something">Require a password</string>
+    <string name="password_quality_something">Password required (No limitation for complexity)</string>
     <string name="password_quality_alphabetic">Alphabetic</string>
     <string name="password_quality_numeric">Numeric</string>
     <string name="password_quality_alphanumeric">Alphanumeric</string>
-    <string name="password_quality_biometrics_weak">Biometrics</string>
-    <string name="password_quality_numeric_complex">Numeric complex</string>
+    <string name="password_quality_biometrics_weak">Biometrics (Weak)</string>
+    <string name="password_quality_numeric_complex">Numeric complex (No repeating characters)</string>
     <string name="required_password_quality">Required password quality</string>
     <string name="password_complexity_instead_password_quality">Set password complexity will disable password quality settings. </string>
-    <string name="password_quality_deprecated_desc">Deprecated. Use required password complexity instead. </string>
+    <string name="password_quality_deprecated_desc">Deprecated. Use "Required password complexity" instead. </string>
     <string name="activate_reset_password_token_here">Activate reset password token here. </string>
 
     <!--Settings&About-->
