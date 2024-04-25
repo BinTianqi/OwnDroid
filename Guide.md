@@ -27,6 +27,8 @@
 
 9. [其他功能](#其他功能)
 
+10. [构建](#构建)
+
 ## 使用前须知
 
 1. device admin, profile owner和device owner有极高的特权，包括但不限于让你的设备丢失所有数据。所以，请谨慎使用
@@ -156,21 +158,13 @@ dpm remove-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver
 
 请自己学习如何启动[Shizuku](https://github.com/RikkaApps/Shizuku)
 
-如果Shizuku正在运行但是OwnDroid无法申请权限，请关闭Shizuku和OwnDroid的电池优化（这种情况在非原生系统中比较常见）
-
 功能：
 
-- 激活Device admin
-- 激活Profile owner
-- 激活Device admin
+- 激活[Device admin](#device-admin)
+- 激活[Profile owner](#profile-owner)
+- 激活[Device owner](#device-owner)
 - 激活[由组织拥有的工作资料](#由组织拥有的工作资料)
 - 列出所有Device owner和Profile owner
-
-Shizuku的本质是ADB。在安卓10或以下，你还是要连接电脑激活Shizuku
-
-不能在非主用户中使用
-
-因为作者懒得研究Shizuku-API，所以OwnDroid没有添加任何Shizuku相关依赖。以上功能均是通过rish实现。因为是套壳的rish，所以不支持Sui
 
 ### 设备唯一标识码
 
@@ -1117,3 +1111,15 @@ API31及以上弃用，请使用[密码复杂度要求](#密码复杂度要求)
 建议打开，因为自带的颜色方案不好看
 
 打开或关闭此功能都要重启OwnDroid
+
+
+## 构建
+
+建议使用Android Studio
+
+### testkey
+
+- 使用Gradle执行任务assembleRelease，生成未签名的release
+- 打开signature目录，运行signApk-testKey.bat或signApk-testKey.sh
+- Windows: apk在`app/build/outputs/apk/release`目录中
+- Linux: apk在`signature`目录中

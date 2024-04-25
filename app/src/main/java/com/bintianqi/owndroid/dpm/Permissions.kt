@@ -35,6 +35,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.Receiver
+import com.bintianqi.owndroid.backToHome
 import com.bintianqi.owndroid.ui.*
 import com.bintianqi.owndroid.ui.theme.bgColor
 import kotlinx.coroutines.delay
@@ -231,8 +232,12 @@ private fun ProfileOwner(){
         Text(stringResource(if(isProfileOwner(myDpm)){R.string.activated}else{R.string.deactivated}), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         if(isProfileOwner(myDpm)&&VERSION.SDK_INT>=24){
+            val co = rememberCoroutineScope()
             Button(
-                onClick = {myDpm.clearProfileOwner(myComponent)},
+                onClick = {
+                    myDpm.clearProfileOwner(myComponent)
+                    co.launch { delay(600); if(!isProfileOwner(myDpm)){ backToHome=true } }
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
             ) {
                 Text(stringResource(R.string.deactivate))
@@ -261,7 +266,7 @@ private fun DeviceOwner(navCtrl: NavHostController){
             Button(
                 onClick = {
                     myDpm.clearDeviceOwnerApp(myContext.packageName)
-                    co.launch{ delay(600); if(!isDeviceOwner(myDpm)){navCtrl.navigateUp()} }
+                    co.launch{ delay(600); if(!isDeviceOwner(myDpm)){ backToHome=true } }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
             ) {
@@ -308,7 +313,7 @@ fun DeviceInfo(){
         )
         if(VERSION.SDK_INT>=23){ encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY] = stringResource(R.string.es_active_default_key) }
         if(VERSION.SDK_INT>=24){ encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER] = stringResource(R.string.es_active_per_user) }
-        Text("加密状态：${encryptionStatus[myDpm.storageEncryptionStatus]}")
+        Text(stringResource(R.string.encrypt_status_is)+encryptionStatus[myDpm.storageEncryptionStatus])
         Spacer(Modifier.padding(vertical = 2.dp))
         val adminList = myDpm.activeAdmins
         if(adminList!=null){

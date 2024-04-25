@@ -38,14 +38,15 @@
     <string name="decide_by_user">Decide by user</string>
     <string name="unsupported">Unsupported</string>
     <string name="developing">Developing</string>
-    <string name="try_again">Try again</string>
     <string name="unknown_effect">Unknown effect</string>
     <string name="options">Options</string>
     <string name="copy_command">Copy Command</string>
     <string name="package_name">Package name</string>
     <string name="not_exist">Not exist</string>
+    <string name="unknown_status">Unknown status</string>
 
     <!--Permissions-->
+    <string name="click_to_activate">Click to activate</string>
     <string name="device_admin">Device admin</string>
     <string name="profile_owner">Profile owner</string>
     <string name="device_owner">Device owner</string>
@@ -82,14 +83,9 @@
 
     <!--Shizuku-->
     <string name="shizuku" translatable="false">Shizuku</string>
-    <string name="not_primary_user_not_support_shizuku">You can only use this feature in the primary user. </string>
     <string name="check_shizuku">Check permission</string>
-    <string name="input_userid_of_work_profile">Enter UserID of work profile</string>
     <string name="list_owners">List owners</string>
     <string name="shizuku_not_started">Shizuku not started. </string>
-    <string name="activate_org_profile_command_with_user_id" tools:ignore="TypographyDashes" translatable="false">
-        dpm mark-profile-owner-on-organization-owned-device --user %1$s com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver
-    </string>
     <string name="dpm_activate_do_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="dpm_activate_po_command" translatable="false">dpm set-profile-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="dpm_activate_da_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
@@ -97,6 +93,11 @@
     <string name="shizuku_activated_root">Permission granted (Root)</string>
     <string name="activate_profile_owner">Activate profile owner</string>
     <string name="activate_device_owner">Activate device owner</string>
+    <string name="activate_org_profile">Activate organization-owned work profile</string>
+    <string name="shizuku_service_disconnected">Shizuku service disconnected</string>
+    <string name="invalid_binder">Invalid binder</string>
+    <string name="bind_shizuku">Connect Shizuku</string>
+    <string name="shizuku_not_bind">Shizuku disconnected</string>
 
     <!--System-->
     <string name="system_manage">System manager</string>
@@ -155,6 +156,7 @@
     <string name="wipe_silently">Wipe silently</string>
     <string name="will_delete_work_profile">Work profile will be deleted. </string>
     <string name="api34_or_above_wipedata_cannot_in_system_user">You cannot use WipeData in system user. </string>
+    <string name="encrypt_status_is">Encrypt status: </string>
 
     <!--SystemUpdatePolicy-->
     <string name="is_security_patch">Security patch: %1$s</string>

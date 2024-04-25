@@ -37,12 +37,13 @@
     <string name="decide_by_user">由用户决定</string>
     <string name="unsupported">不支持</string>
     <string name="developing">功能开发中</string>
-    <string name="try_again">请再试一次</string>
     <string name="unknown_effect">效果未知</string>
     <string name="options">选项</string>
     <string name="copy_command">复制代码</string>
+    <string name="unknown_status">未知状态</string>
 
     <!--Permissions-->
+    <string name="click_to_activate">点击以激活</string>
     <string name="device_admin">Device admin</string>
     <string name="profile_owner">Profile owner</string>
     <string name="device_owner">Device owner</string>
@@ -74,15 +75,18 @@
     <string name="activate_device_admin_here">在这里激活Device admin</string>
 
     <!--Shizuku-->
-    <string name="not_primary_user_not_support_shizuku">暂不支持在非主用户中使用Shizuku</string>
     <string name="check_shizuku">检查Shizuku</string>
-    <string name="input_userid_of_work_profile">请输入工作资料的UserID</string>
     <string name="list_owners">列出Owners</string>
     <string name="shizuku_not_started">服务未启动</string>
     <string name="shizuku_activated_shell">已授权（Shell）</string>
     <string name="shizuku_activated_root">已授权（Root）</string>
     <string name="activate_profile_owner">激活Profile owner</string>
     <string name="activate_device_owner">激活Device owner</string>
+    <string name="activate_org_profile">激活由组织拥有的工作资料</string>
+    <string name="shizuku_service_disconnected">Shizuku服务断开连接</string>
+    <string name="shizuku_not_bind">Shizuku未连接</string>
+    <string name="invalid_binder">无效Binder</string>
+    <string name="bind_shizuku">连接Shizuku</string>
 
     <!--System-->
     <string name="system_manage">系统</string>
@@ -142,6 +146,7 @@
     <string name="wipe_silently">静默清除</string>
     <string name="will_delete_work_profile">将会删除工作资料</string>
     <string name="api34_or_above_wipedata_cannot_in_system_user">API34或以上将不能在系统用户中使用WipeData</string>
+    <string name="encrypt_status_is">加密状态：</string>
 
     <!--SystemUpdatePolicy-->
     <string name="is_security_patch">安全补丁: %1$s</string>
