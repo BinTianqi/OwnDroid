@@ -31,6 +31,7 @@
     <string name="unknown">Unknown</string>
     <string name="reset">Reset</string>
     <string name="time_unit_ms">Time(ms)</string>
+    <string name="length">Length</string>
     <string name="none">None</string>
     <string name="no_logs">No logs</string>
     <string name="default_stringres">Default</string>
@@ -417,6 +418,7 @@
     <string name="max_time_to_lock_desc">Enter 0 to allow user decision, unit: millisecond</string>
     <string name="pwd_timeout_desc">When reach this limit, user should set a new password. Enter 0 to allow user decision, unit: millisecond</string>
     <string name="pwd_history">Password history length</string>
+    <string name="pwd_history_desc">Historical passwords within the specified range cannot be set by user</string>
     <string name="password_complexity_none">None (No password allowed)</string>
     <string name="password_complexity_low">Low (Gesture password and characters repetition allowed)</string>
     <string name="password_complexity_medium">Medium (Repetition disallowed, 4 characters at least)</string>
@@ -468,7 +470,7 @@
     <string name="dynamic_color">Dynamic color</string>
     <string name="dynamic_color_desc">Android 12+</string>
     <string name="about">About</string>
-    <string name="about_desc">Use device admin, profile owner and device owner privilege to take full control of your device. </string>
+    <string name="about_desc">Use Device admin, Profile owner and Device owner privilege to take full control of your device. </string>
     <string name="user_guide">User guide</string>
     <string name="source_code">Source code</string>
     <string name="blackTheme">Black theme</string>

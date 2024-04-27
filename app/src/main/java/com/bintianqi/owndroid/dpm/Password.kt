@@ -449,13 +449,13 @@ private fun PasswordHistoryLength(){
     var ableToApply by remember{ mutableStateOf(inputContent!="") }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.pwd_timeout), style = typography.headlineLarge)
+        Text(text = stringResource(R.string.pwd_history), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text= stringResource(R.string.pwd_timeout_desc))
+        Text(text= stringResource(R.string.pwd_history_desc))
         Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
             value = inputContent,
-            label = { Text(stringResource(R.string.time_unit_ms))},
+            label = { Text(stringResource(R.string.length))},
             onValueChange = {
                 inputContent = it
                 ableToApply = inputContent!=""
