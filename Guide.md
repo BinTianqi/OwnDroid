@@ -31,7 +31,7 @@
 
 ## 使用前须知
 
-1. device admin, profile owner和device owner有极高的特权，包括但不限于让你的设备丢失所有数据。所以，请谨慎使用
+1. Device admin, Profile owner和Device owner有极高的特权，包括但不限于让你的设备丢失所有数据。所以，请谨慎使用
 2. 以下的所有命令都需要在`adb shell`中执行。请进入`adb shell`后执行，不要直接`adb shell xxx`，容易出问题
 3. ColorOS用户请在release页面下载testKey版，否则无法激活Device owner
 
@@ -668,9 +668,10 @@ pm list packages
 
 ### 禁止用户控制
 
-需要的权限：Device owner或Profile owner
+需要的权限： Device owner或Profile owner
 
-需要API30或以上
+如果是Device owner，需要API30或以上，如果是Profile owner，需要API33或以上
+（谷歌并没有在文档中说明Profile owner调用此功能所需的API等级，但是，[MinoriceOWO](https://github.com/MinoriceOwO)发现Profile owner在API33以下调用这个功能会导致OwnDroid崩溃[(issue #12)](https://github.com/BinTianqi/OwnDroid/issues/12)。[commit d4e8473](https://github.com/BinTianqi/OwnDroid/commit/d4e8473218a6d91bf3608133061f8e636e48cdbb)中已对API33以下的Profile owner隐藏该功能入口）
 
 用户无法清除这些应用的存储空间和缓存，但是可以在这里清除
 

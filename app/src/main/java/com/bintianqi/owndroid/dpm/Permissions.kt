@@ -112,10 +112,12 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState){
             R.string.device_admin, stringResource(if(myDpm.isAdminActive(myComponent)){R.string.activated}else{R.string.deactivated}),
             operation = {localNavCtrl.navigate("DeviceAdmin")}
         )
-        SubPageItem(
-            R.string.profile_owner, stringResource(if(isProfileOwner(myDpm)){R.string.activated}else{R.string.deactivated}),
-            operation = {localNavCtrl.navigate("ProfileOwner")}
-        )
+        if(!isDeviceOwner(myDpm)){
+            SubPageItem(
+                R.string.profile_owner, stringResource(if(isProfileOwner(myDpm)){R.string.activated}else{R.string.deactivated}),
+                operation = {localNavCtrl.navigate("ProfileOwner")}
+            )
+        }
         SubPageItem(
             R.string.device_owner, stringResource(if(isDeviceOwner(myDpm)){R.string.activated}else{R.string.deactivated}),
             operation = {localNavCtrl.navigate("DeviceOwner")}

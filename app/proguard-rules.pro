@@ -12,7 +12,6 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
--keep class com.bintianqi.owndroid.dpm.ShizukuService
 
 # Uncomment this to preserve the line number information for
 # debugging stack traces.
