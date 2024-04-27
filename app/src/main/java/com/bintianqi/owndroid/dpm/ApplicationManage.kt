@@ -196,7 +196,7 @@ private fun Home(navCtrl:NavHostController, pkgName: String){
         if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
             SubPageItem(R.string.block_uninstall,"",R.drawable.delete_forever_fill0){navCtrl.navigate("BlockUninstall")}
         }
-        if(VERSION.SDK_INT>=30&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
+        if((VERSION.SDK_INT>=30&&isDeviceOwner(myDpm))||(VERSION.SDK_INT>=33&&isProfileOwner(myDpm))){
             SubPageItem(R.string.ucd,"",R.drawable.do_not_touch_fill0){navCtrl.navigate("UserControlDisabled")}
         }
         if(VERSION.SDK_INT>=23&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
