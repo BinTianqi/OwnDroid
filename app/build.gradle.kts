@@ -4,6 +4,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        create("testkey") {
+            storeFile = file("testkey.jks")
+            storePassword = "testkey"
+            keyPassword = "testkey"
+            keyAlias = "testkey"
+        }
+    }
     namespace = "com.bintianqi.owndroid"
     compileSdk = 34
 
@@ -13,6 +21,8 @@ android {
         targetSdk = 34
         versionCode = 25
         versionName = "5.0"
+        multiDexEnabled = false
+        //signingConfig = signingConfigs.getByName("testkey")
     }
 
     buildTypes {
@@ -26,11 +36,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_20
+        targetCompatibility = JavaVersion.VERSION_20
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "20"
     }
     buildFeatures {
         compose = true
@@ -55,7 +65,7 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("com.google.accompanist:accompanist-drawablepainter:0.35.0-alpha")
-    implementation("androidx.compose.material3:material3:1.2.0")
+    implementation("androidx.compose.material3:material3:1.2.1")
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("dev.rikka.shizuku:provider:13.1.5")
     implementation("dev.rikka.shizuku:api:13.1.5")
