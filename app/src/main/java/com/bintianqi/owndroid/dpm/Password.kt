@@ -191,7 +191,7 @@ private fun ResetPasswordToken(){
                 if(!myDpm.isResetPasswordTokenActive(myComponent)){
                     try{ activateToken(myContext) }
                     catch(e:NullPointerException){ Toast.makeText(myContext, myContext.getString(R.string.please_set_a_token), Toast.LENGTH_SHORT).show() }
-                }else{ Toast.makeText(myContext, "已经激活", Toast.LENGTH_SHORT).show() }
+                }else{ Toast.makeText(myContext, myContext.getString(R.string.token_already_activated), Toast.LENGTH_SHORT).show() }
             },
             enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
             modifier = Modifier.fillMaxWidth()

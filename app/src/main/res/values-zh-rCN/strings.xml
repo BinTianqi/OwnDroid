@@ -420,6 +420,7 @@
     <string name="password_failed_attempts_is">密码已错误次数：%1$s</string>
     <string name="is_using_unified_password">个人与工作应用密码一致：%1$s</string>
     <string name="reset_password_token">密码重置令牌</string>
+    <string name="token_already_activated">令牌已经激活</string>
     <string name="clear">清除</string>
     <string name="set">设置</string>
     <string name="please_set_a_token">请先设置令牌</string>

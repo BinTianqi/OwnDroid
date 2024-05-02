@@ -733,9 +733,7 @@ private fun WipeData(){
                 value = reason, onValueChange = {reason=it},
                 label = {Text(stringResource(R.string.reason))},
                 enabled = !confirmed,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-                modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 3.dp)
+                modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
             )
         }
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -761,8 +759,11 @@ private fun WipeData(){
         }
         Button(
             onClick = {
-                if(VERSION.SDK_INT>=28){myDpm.wipeData(flag,reason)}
-                else{myDpm.wipeData(flag)}
+                if(VERSION.SDK_INT>=28&&reason!=""){
+                    myDpm.wipeData(flag,reason)
+                }else{
+                    myDpm.wipeData(flag)
+                }
             },
             colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
             enabled = confirmed&&(VERSION.SDK_INT<34||(VERSION.SDK_INT>=34&&!userManager.isSystemUser)),

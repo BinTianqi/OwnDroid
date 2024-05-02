@@ -434,6 +434,7 @@
     <string name="password_failed_attempts_is">Password failed attempts: %1$s</string>
     <string name="is_using_unified_password">Unified password: %1$s</string>
     <string name="reset_password_token">Reset password token</string>
+    <string name="token_already_activated">Token already activated</string>
     <string name="clear">Clear</string>
     <string name="set">Set</string>
     <string name="please_set_a_token">Please set a token</string>

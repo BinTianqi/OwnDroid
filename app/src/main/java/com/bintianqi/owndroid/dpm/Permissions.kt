@@ -88,9 +88,9 @@ fun DpmPermissions(navCtrl:NavHostController){
         ){
             composable(route = "Home"){Home(localNavCtrl,scrollState)}
             composable(route = "Shizuku"){ShizukuActivate()}
-            composable(route = "DeviceAdmin"){DeviceAdmin(navCtrl)}
+            composable(route = "DeviceAdmin"){DeviceAdmin()}
             composable(route = "ProfileOwner"){ProfileOwner()}
-            composable(route = "DeviceOwner"){DeviceOwner(navCtrl)}
+            composable(route = "DeviceOwner"){DeviceOwner()}
             composable(route = "DeviceInfo"){DeviceInfo()}
             composable(route = "SpecificID"){SpecificID()}
             composable(route = "OrgName"){OrgName()}
@@ -187,7 +187,7 @@ private fun LockScreenInfo(){
 }
 
 @Composable
-private fun DeviceAdmin(navCtrl: NavHostController){
+private fun DeviceAdmin(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,Receiver::class.java)
@@ -261,7 +261,7 @@ private fun ProfileOwner(){
 }
 
 @Composable
-private fun DeviceOwner(navCtrl: NavHostController){
+private fun DeviceOwner(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val co = rememberCoroutineScope()

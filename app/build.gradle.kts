@@ -19,8 +19,8 @@ android {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 21
         targetSdk = 34
-        versionCode = 25
-        versionName = "5.0"
+        versionCode = 26
+        versionName = "5.1"
         multiDexEnabled = false
         //signingConfig = signingConfigs.getByName("testkey")
     }
@@ -52,6 +52,10 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/**.version"
+            excludes += "kotlin/**"
+            excludes += "**.bin"
+            excludes += "kotlin-tooling-metadata.json"
         }
     }
     androidResources {
@@ -60,7 +64,6 @@ android {
 }
 
 dependencies {
-    implementation("org.apache.commons:commons-io:1.3.2")
     implementation("androidx.activity:activity-compose:1.8.2")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
