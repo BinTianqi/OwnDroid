@@ -49,6 +49,7 @@
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
     <string name="device_admin">Device admin</string>
+    <string name="activate_jump" tools:ignore="TypographyEllipsis">Activate...</string>
     <string name="profile_owner">Profile owner</string>
     <string name="device_owner">Device owner</string>
     <string name="activate_device_admin">Activate Device admin</string>
@@ -81,6 +82,11 @@
     <string name="long_support_msg">Long message</string>
     <string name="transform">Transform</string>
     <string name="activate_device_admin_here">Activate Device admin here. </string>
+
+    <!--Receiver-->
+    <string name="onEnabled">OwnDroid: Enabled</string>
+    <string name="onDisabled">OwnDroid: Disabled</string>
+    <string name="create_work_profile_success">OwnDroid: Create work profile success</string>
 
     <!--Shizuku-->
     <string name="shizuku" translatable="false">Shizuku</string>

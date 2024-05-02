@@ -46,6 +46,7 @@
     <!--Permissions-->
     <string name="click_to_activate">点击以激活</string>
     <string name="device_admin">Device admin</string>
+    <string name="activate_jump" tools:ignore="TypographyEllipsis">激活...</string>
     <string name="profile_owner">Profile owner</string>
     <string name="device_owner">Device owner</string>
     <string name="activate_device_admin">激活Device admin</string>
@@ -74,6 +75,11 @@
     <string name="long_support_msg">提供支持的长消息</string>
     <string name="transform">转移</string>
     <string name="activate_device_admin_here">在这里激活Device admin</string>
+
+    <!--Receiver-->
+    <string name="onEnabled">OwnDroid：已启用</string>
+    <string name="onDisabled">OwnDroid：已禁用</string>
+    <string name="create_work_profile_success">OwnDroid：创建工作资料成功</string>
 
     <!--Shizuku-->
     <string name="check_shizuku">检查Shizuku</string>

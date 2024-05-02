@@ -53,14 +53,6 @@ fun Set<Any>.toText():String{
 fun writeClipBoard(context: Context, string: String):Boolean{
     val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     try {
-        if(VERSION.SDK_INT>=23){
-            val hasPermission: Boolean = clipboardManager.hasPrimaryClip()
-            if(!hasPermission) {
-                val intent = Intent(android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS)
-                intent.setData(Uri.parse("package:"+context.packageName))
-                startActivity(context,intent,null)
-            }
-        }
         clipboardManager.setPrimaryClip(ClipData.newPlainText("", string))
     }catch(e:Exception){
         return false

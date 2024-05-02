@@ -9,6 +9,7 @@ import android.content.Intent
 import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
@@ -191,34 +192,34 @@ private fun DeviceAdmin(navCtrl: NavHostController){
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,Receiver::class.java)
     val co = rememberCoroutineScope()
+    var showDeactivateButton by remember{mutableStateOf(myDpm.isAdminActive(myComponent))}
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.device_admin), style = typography.headlineLarge)
         Text(text = stringResource(if(myDpm.isAdminActive(myComponent)) { R.string.activated } else { R.string.deactivated }), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(myDpm.isAdminActive(myComponent)) {
-            if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)) {
-                Button(
-                    onClick = {
-                        myDpm.removeActiveAdmin(myComponent)
-                        co.launch{ delay(600); if(!myDpm.isAdminActive(myComponent)){navCtrl.navigateUp()} }
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
-                ) {
-                    Text(stringResource(R.string.deactivate))
-                }
-            }
-        } else {
-            Button(onClick = {activateDeviceAdmin(myContext, myComponent)}, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.activate))
+        AnimatedVisibility(showDeactivateButton) {
+            Button(
+                onClick = {
+                    myDpm.removeActiveAdmin(myComponent)
+                    co.launch{ delay(400); showDeactivateButton=myDpm.isAdminActive(myComponent) }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
+            ) {
+                Text(stringResource(R.string.deactivate))
             }
         }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        if(!myDpm.isAdminActive(myComponent)) {
-            SelectionContainer {
-                Text(text = stringResource(R.string.activate_device_admin_command))
+        AnimatedVisibility(!showDeactivateButton) {
+            Column {
+                Button(onClick = {activateDeviceAdmin(myContext, myComponent)}, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.activate_jump))
+                }
+                Spacer(Modifier.padding(vertical = 5.dp))
+                SelectionContainer {
+                    Text(text = stringResource(R.string.activate_device_admin_command))
+                }
+                CopyTextButton(myContext, R.string.copy_command, stringResource(R.string.activate_device_admin_command))
             }
-            CopyTextButton(myContext, R.string.copy_command, stringResource(R.string.activate_device_admin_command))
         }
     }
 }
@@ -228,28 +229,33 @@ private fun ProfileOwner(){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,Receiver::class.java)
+    var showDeactivateButton by remember{mutableStateOf(isProfileOwner(myDpm))}
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.profile_owner), style = typography.headlineLarge)
         Text(stringResource(if(isProfileOwner(myDpm)){R.string.activated}else{R.string.deactivated}), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(isProfileOwner(myDpm)&&VERSION.SDK_INT>=24){
-            val co = rememberCoroutineScope()
-            Button(
-                onClick = {
-                    myDpm.clearProfileOwner(myComponent)
-                    co.launch { delay(600); if(!isProfileOwner(myDpm)){ backToHome=true } }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
-            ) {
-                Text(stringResource(R.string.deactivate))
+        if(VERSION.SDK_INT>=24){
+            AnimatedVisibility(showDeactivateButton) {
+                val co = rememberCoroutineScope()
+                Button(
+                    onClick = {
+                        myDpm.clearProfileOwner(myComponent)
+                        co.launch { delay(400); showDeactivateButton=isProfileOwner(myDpm) }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
+                ) {
+                    Text(stringResource(R.string.deactivate))
+                }
             }
         }
-        if(!isProfileOwner(myDpm)){
-            SelectionContainer{
-                Text(text = stringResource(R.string.activate_profile_owner_command))
+        AnimatedVisibility(!showDeactivateButton) {
+            Column {
+                SelectionContainer{
+                    Text(text = stringResource(R.string.activate_profile_owner_command))
+                }
+                CopyTextButton(myContext, R.string.copy_command, stringResource(R.string.activate_profile_owner_command))
             }
-            CopyTextButton(myContext, R.string.copy_command, stringResource(R.string.activate_profile_owner_command))
         }
     }
 }
@@ -259,27 +265,30 @@ private fun DeviceOwner(navCtrl: NavHostController){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val co = rememberCoroutineScope()
+    var showDeactivateButton by remember{mutableStateOf(isDeviceOwner(myDpm))}
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.device_owner), style = typography.headlineLarge)
         Text(text = stringResource(if(isDeviceOwner(myDpm)){R.string.activated}else{R.string.deactivated}), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(isDeviceOwner(myDpm)){
+        AnimatedVisibility(showDeactivateButton) {
             Button(
                 onClick = {
                     myDpm.clearDeviceOwnerApp(myContext.packageName)
-                    co.launch{ delay(600); if(!isDeviceOwner(myDpm)){ backToHome=true } }
+                    co.launch{ delay(400); showDeactivateButton=isDeviceOwner(myDpm) }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
             ) {
                 Text(text = stringResource(R.string.deactivate))
             }
         }
-        if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)){
-            SelectionContainer{
-                Text(text = stringResource(R.string.activate_device_owner_command))
+        AnimatedVisibility(!showDeactivateButton) {
+            Column {
+                SelectionContainer{
+                    Text(text = stringResource(R.string.activate_device_owner_command))
+                }
+                CopyTextButton(myContext, R.string.copy_command, stringResource(R.string.activate_device_owner_command))
             }
-            CopyTextButton(myContext, R.string.copy_command, stringResource(R.string.activate_device_owner_command))
         }
     }
 }

@@ -32,7 +32,6 @@ import androidx.compose.ui.unit.dp
 import com.bintianqi.owndroid.IUserService
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.Receiver
-import com.bintianqi.owndroid.backToHome
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
@@ -49,6 +48,10 @@ fun ShizukuActivate(){
     var enabled by remember{ mutableStateOf(false) }
     var bindShizuku by remember{ mutableStateOf(false) }
     var outputText by remember{mutableStateOf("")}
+    var showDeviceAdminButton by remember{mutableStateOf(!myDpm.isAdminActive(myComponent))}
+    var showProfileOwnerButton by remember{mutableStateOf(!isProfileOwner(myDpm))}
+    var showDeviceOwnerButton by remember{mutableStateOf(!isDeviceOwner(myDpm))}
+    var showOrgProfileOwnerButton by remember{mutableStateOf(true)}
     LaunchedEffect(Unit){
         if(service==null){userServiceControl(myContext, true)}
         while(true){
@@ -103,60 +106,59 @@ fun ShizukuActivate(){
             Text(text = stringResource(R.string.list_owners))
         }
         Spacer(Modifier.padding(vertical = 5.dp))
-        
-        if(!isDeviceOwner(myDpm)&&!isProfileOwner(myDpm)){
-            Column {
-                if(!myDpm.isAdminActive(myComponent)){
-                    Button(
-                        onClick = {
-                            coScope.launch{
-                                outputText = service!!.execute(myContext.getString(R.string.dpm_activate_da_command))
-                                outputTextScrollState.animateScrollTo(0, scrollAnim())
-                                delay(600)
-                                if(myDpm.isAdminActive(myComponent)){backToHome=true}
-                            }
-                        },
-                        enabled = enabled
-                    ) {
-                        Text(text = stringResource(R.string.activate_device_admin))
+
+        AnimatedVisibility(showDeviceAdminButton&&showProfileOwnerButton&&showDeviceOwnerButton) {
+            Button(
+                onClick = {
+                    coScope.launch{
+                        outputText = service!!.execute(myContext.getString(R.string.dpm_activate_da_command))
+                        outputTextScrollState.animateScrollTo(0, scrollAnim())
+                        delay(500)
+                        showDeviceAdminButton = !myDpm.isAdminActive(myComponent)
                     }
-                }
-                
-                Button(
-                    onClick = {
-                        coScope.launch{
-                            outputText = service!!.execute(myContext.getString(R.string.dpm_activate_po_command))
-                            outputTextScrollState.animateScrollTo(0, scrollAnim())
-                            delay(600)
-                            if(isProfileOwner(myDpm)){backToHome=true}
-                        }
-                    },
-                    enabled = enabled
-                ) {
-                    Text(text = stringResource(R.string.activate_profile_owner))
-                }
-                
-                Button(
-                    onClick = {
-                        coScope.launch{
-                            outputText = service!!.execute(myContext.getString(R.string.dpm_activate_do_command))
-                            outputTextScrollState.animateScrollTo(0, scrollAnim())
-                            delay(600)
-                            if(isDeviceOwner(myDpm)){backToHome=true}
-                        }
-                    },
-                    enabled = enabled
-                ) {
-                    Text(text = stringResource(R.string.activate_device_owner))
-                }
-                
+                },
+                enabled = enabled
+            ) {
+                Text(text = stringResource(R.string.activate_device_admin))
+            }
+        }
+
+        AnimatedVisibility(showProfileOwnerButton&&showDeviceOwnerButton) {
+            Button(
+                onClick = {
+                    coScope.launch{
+                        outputText = service!!.execute(myContext.getString(R.string.dpm_activate_po_command))
+                        outputTextScrollState.animateScrollTo(0, scrollAnim())
+                        delay(600)
+                        showProfileOwnerButton = !isProfileOwner(myDpm)
+                    }
+                },
+                enabled = enabled
+            ) {
+                Text(text = stringResource(R.string.activate_profile_owner))
+            }
+        }
+
+        AnimatedVisibility(showDeviceOwnerButton&&showProfileOwnerButton) {
+            Button(
+                onClick = {
+                    coScope.launch{
+                        outputText = service!!.execute(myContext.getString(R.string.dpm_activate_do_command))
+                        outputTextScrollState.animateScrollTo(0, scrollAnim())
+                        delay(500)
+                        showDeviceOwnerButton = !isDeviceOwner(myDpm)
+                    }
+                },
+                enabled = enabled
+            ) {
+                Text(text = stringResource(R.string.activate_device_owner))
             }
         }
         
         if(
-            VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)
+            VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)&&!myDpm.isOrganizationOwnedDeviceWithManagedProfile
         ){
-            Column {
+            AnimatedVisibility(showOrgProfileOwnerButton) {
                 Button(
                     onClick = {
                         coScope.launch{
@@ -165,6 +167,8 @@ fun ShizukuActivate(){
                                 "dpm mark-profile-owner-on-organization-owned-device --user $userID com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver"
                             )
                             outputTextScrollState.animateScrollTo(0, scrollAnim())
+                            delay(500)
+                            showOrgProfileOwnerButton = !myDpm.isOrganizationOwnedDeviceWithManagedProfile
                         }
                     },
                     enabled = enabled
