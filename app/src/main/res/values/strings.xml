@@ -45,6 +45,7 @@
     <string name="package_name">Package name</string>
     <string name="not_exist">Not exist</string>
     <string name="unknown_status">Unknown status</string>
+    <string name="copy">Copy</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>

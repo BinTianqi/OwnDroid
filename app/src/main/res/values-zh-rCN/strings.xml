@@ -42,6 +42,7 @@
     <string name="options">选项</string>
     <string name="copy_command">复制代码</string>
     <string name="unknown_status">未知状态</string>
+    <string name="copy">复制</string>
 
     <!--Permissions-->
     <string name="click_to_activate">点击以激活</string>

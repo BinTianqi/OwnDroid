@@ -119,10 +119,12 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState){
                 operation = {localNavCtrl.navigate("ProfileOwner")}
             )
         }
-        SubPageItem(
-            R.string.device_owner, stringResource(if(isDeviceOwner(myDpm)){R.string.activated}else{R.string.deactivated}),
-            operation = {localNavCtrl.navigate("DeviceOwner")}
-        )
+        if(!isProfileOwner(myDpm)){
+            SubPageItem(
+                R.string.device_owner, stringResource(if(isDeviceOwner(myDpm)){R.string.activated}else{R.string.deactivated}),
+                operation = {localNavCtrl.navigate("DeviceOwner")}
+            )
+        }
         SubPageItem(R.string.shizuku,""){localNavCtrl.navigate("Shizuku")}
         SubPageItem(R.string.device_info,"",R.drawable.perm_device_information_fill0){localNavCtrl.navigate("DeviceInfo")}
         if(VERSION.SDK_INT>=31&&(isProfileOwner(myDpm)|| isDeviceOwner(myDpm))){
@@ -204,6 +206,7 @@ private fun DeviceAdmin(){
                     myDpm.removeActiveAdmin(myComponent)
                     co.launch{ delay(400); showDeactivateButton=myDpm.isAdminActive(myComponent) }
                 },
+                enabled = !isProfileOwner(myDpm)&&!isDeviceOwner(myDpm),
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
             ) {
                 Text(stringResource(R.string.deactivate))
@@ -243,6 +246,7 @@ private fun ProfileOwner(){
                         myDpm.clearProfileOwner(myComponent)
                         co.launch { delay(400); showDeactivateButton=isProfileOwner(myDpm) }
                     },
+                    enabled = !myDpm.isManagedProfile(myComponent),
                     colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
                 ) {
                     Text(stringResource(R.string.deactivate))
@@ -355,6 +359,7 @@ private fun SpecificID(){
         Spacer(Modifier.padding(vertical = 5.dp))
         if(specificId!=""){
             SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState())){ Text(specificId) }
+            CopyTextButton(myContext, R.string.copy, specificId)
         }else{
             Text(stringResource(R.string.require_set_org_id))
         }
