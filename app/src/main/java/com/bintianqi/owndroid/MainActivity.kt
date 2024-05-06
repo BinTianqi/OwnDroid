@@ -48,7 +48,6 @@ import com.bintianqi.owndroid.ui.theme.bgColor
 import kotlinx.coroutines.delay
 
 var backToHome = false
-lateinit var displayMetrics: DisplayMetrics
 @ExperimentalMaterial3Api
 class MainActivity : ComponentActivity() {
     private fun registerActivityResult(){
@@ -75,7 +74,6 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         registerActivityResult()
-        displayMetrics = applicationContext.resources.displayMetrics
         setContent {
             OwnDroidTheme {
                 MyScaffold()
