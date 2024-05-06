@@ -139,8 +139,10 @@ private fun PasswordInfo(){
         if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
             Text(stringResource(R.string.is_password_sufficient, myDpm.isActivePasswordSufficient))
         }
-        val pwdFailedAttempts = myDpm.currentFailedPasswordAttempts
-        Text(text = stringResource(R.string.password_failed_attempts_is, pwdFailedAttempts))
+        if(myDpm.isAdminActive(myComponent)){
+            val pwdFailedAttempts = myDpm.currentFailedPasswordAttempts
+            Text(text = stringResource(R.string.password_failed_attempts_is, pwdFailedAttempts))
+        }
         if(VERSION.SDK_INT>=28&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
             val unifiedPwd = myDpm.isUsingUnifiedPassword(myComponent)
             Text(stringResource(R.string.is_using_unified_password, unifiedPwd))
