@@ -63,6 +63,12 @@ class MainActivity : ComponentActivity() {
         createManagedProfile = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if(it.resultCode==Activity.RESULT_CANCELED){Toast.makeText(applicationContext, "用户已取消", Toast.LENGTH_SHORT).show()}
         }
+        addDeviceAdmin = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            val myDpm = applicationContext.getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
+            if(myDpm.isAdminActive(ComponentName(applicationContext, Receiver::class.java))){
+                backToHome = true
+            }
+        }
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()

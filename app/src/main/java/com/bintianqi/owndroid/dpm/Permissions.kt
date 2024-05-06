@@ -28,7 +28,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -36,7 +35,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.Receiver
-import com.bintianqi.owndroid.backToHome
 import com.bintianqi.owndroid.ui.*
 import com.bintianqi.owndroid.ui.theme.bgColor
 import kotlinx.coroutines.delay
@@ -559,7 +557,7 @@ private fun activateDeviceAdmin(inputContext:Context,inputComponent:ComponentNam
         val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, inputComponent)
         intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, inputContext.getString(R.string.activate_device_admin_here))
-        startActivity(inputContext,intent,null)
+        addDeviceAdmin.launch(intent)
     }catch(e:ActivityNotFoundException){
         Toast.makeText(inputContext,inputContext.getString(R.string.unsupported),Toast.LENGTH_SHORT).show()
     }

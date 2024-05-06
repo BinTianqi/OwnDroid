@@ -19,7 +19,6 @@ class Receiver : DeviceAdminReceiver() {
         val myComponent = ComponentName(context, this::class.java)
         if(myDpm.isAdminActive(myComponent)||isProfileOwner(myDpm)||isDeviceOwner(myDpm)){
             Toast.makeText(context, context.getString(R.string.onEnabled), Toast.LENGTH_SHORT).show()
-            if(myDpm.isAdminActive(myComponent)&&!isProfileOwner(myDpm)&&!isDeviceOwner(myDpm)){ backToHome=true }
         }
     }
 
