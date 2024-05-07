@@ -547,7 +547,7 @@ private fun LockTaskFeatures(){
         }
         LaunchedEffect(Unit){refreshWhitelist()}
         Text(text = stringResource(R.string.whitelist_app), style = typography.titleLarge)
-        SelectionContainer(modifier = Modifier.animateContentSize(Animations().animateListSize)){
+        SelectionContainer(modifier = Modifier.animateContentSize()){
             Text(text = if(listText==""){ stringResource(R.string.none) }else{listText})
         }
         OutlinedTextField(

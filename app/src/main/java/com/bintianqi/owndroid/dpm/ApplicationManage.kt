@@ -253,7 +253,7 @@ private fun UserCtrlDisabledPkg(pkgName:String){
         Text(text = stringResource(R.string.ucd_desc))
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.app_list_is))
-        SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(Animations().animateListSize)){
+        SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize()){
             Text(text = if(listText==""){stringResource(R.string.none)}else{listText})
         }
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -437,7 +437,7 @@ private fun CrossProfilePkg(pkgName: String){
         }
         LaunchedEffect(Unit){refresh()}
         Text(text = stringResource(R.string.app_list_is))
-        SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(Animations().animateListSize)){
+        SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize()){
             Text(text = if(list==""){stringResource(R.string.none)}else{list})
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
@@ -485,7 +485,7 @@ private fun CrossProfileWidget(pkgName: String){
         Text(text = stringResource(R.string.cross_profile_widget), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.app_list_is))
-        SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(Animations().animateListSize)){
+        SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize()){
             Text(text = if(list==""){stringResource(R.string.none)}else{list})
         }
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -611,7 +611,7 @@ private fun PermittedAccessibility(pkgName: String){
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.app_list_is))
-        SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(Animations().animateListSize)){
+        SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize()){
             Text(text = if(listText==""){stringResource(R.string.none)}else{listText})
         }
         Spacer(Modifier.padding(vertical = 5.dp))
