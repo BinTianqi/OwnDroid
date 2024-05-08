@@ -6,7 +6,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.os.Build.VERSION
 import android.os.Bundle
-import android.util.DisplayMetrics
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -130,7 +129,7 @@ fun MyScaffold(){
         if(profileNotActivated){
             myDpm.setProfileEnabled(myComponent)
             sharedPref.edit().putBoolean("ManagedProfileActivated",true).apply()
-            Toast.makeText(myContext, myContext.getString(R.string.work_profile_activated), Toast.LENGTH_SHORT).show()
+            Toast.makeText(myContext, R.string.work_profile_activated, Toast.LENGTH_SHORT).show()
         }
     }
 }

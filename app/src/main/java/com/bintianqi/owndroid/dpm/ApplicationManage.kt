@@ -186,9 +186,9 @@ private fun Home(navCtrl:NavHostController, pkgName: String){
                     try {
                         myDpm.setAlwaysOnVpnPackage(myComponent, pkgName, it)
                     } catch(e: UnsupportedOperationException) {
-                        Toast.makeText(myContext, myContext.getString(R.string.unsupported), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, R.string.unsupported, Toast.LENGTH_SHORT).show()
                     } catch(e: NameNotFoundException) {
-                        Toast.makeText(myContext, myContext.getString(R.string.not_installed), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, R.string.not_installed, Toast.LENGTH_SHORT).show()
                     }
                 }
             )
@@ -196,7 +196,7 @@ private fun Home(navCtrl:NavHostController, pkgName: String){
         if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
             SubPageItem(R.string.block_uninstall,"",R.drawable.delete_forever_fill0){navCtrl.navigate("BlockUninstall")}
         }
-        if((VERSION.SDK_INT>=30&&isDeviceOwner(myDpm))||(VERSION.SDK_INT>=33&&isProfileOwner(myDpm))){
+        if((VERSION.SDK_INT>=33&&isProfileOwner(myDpm))||(VERSION.SDK_INT>=30&&isDeviceOwner(myDpm))){
             SubPageItem(R.string.ucd,"",R.drawable.do_not_touch_fill0){navCtrl.navigate("UserControlDisabled")}
         }
         if(VERSION.SDK_INT>=23&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
@@ -265,7 +265,7 @@ private fun UserCtrlDisabledPkg(pkgName:String){
                         myDpm.setUserControlDisabledPackages(myComponent,pkgList)
                         refresh()
                     }else{
-                        Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, R.string.fail, Toast.LENGTH_SHORT).show()
                     }
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
@@ -279,7 +279,7 @@ private fun UserCtrlDisabledPkg(pkgName:String){
                         myDpm.setUserControlDisabledPackages(myComponent,pkgList)
                         refresh()
                     }else{
-                        Toast.makeText(myContext, myContext.getString(R.string.not_exist), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, R.string.not_exist, Toast.LENGTH_SHORT).show()
                     }
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
@@ -317,7 +317,7 @@ private fun BlockUninstall(pkgName: String){
                 onClick = {
                     focusMgr.clearFocus()
                     myDpm.setUninstallBlocked(myComponent,pkgName,true)
-                    Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
                     state = myDpm.isUninstallBlocked(myComponent,pkgName)
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
@@ -328,7 +328,7 @@ private fun BlockUninstall(pkgName: String){
                 onClick = {
                     focusMgr.clearFocus()
                     myDpm.setUninstallBlocked(myComponent,pkgName,false)
-                    Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
                     state = myDpm.isUninstallBlocked(myComponent,pkgName)
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
@@ -578,9 +578,9 @@ private fun CredentialManagePolicy(pkgName: String){
                     }else{
                         myDpm.credentialManagerPolicy = null
                     }
-                    Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
                 }catch(e:java.lang.IllegalArgumentException){
-                    Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.fail, Toast.LENGTH_SHORT).show()
                 }finally {
                     refreshPolicy()
                     credentialListText = credentialList.toText()
@@ -745,7 +745,7 @@ private fun KeepUninstalledApp(pkgName: String){
                 val getList = myDpm.getKeepUninstalledPackages(myComponent)
                 if(getList!=null){ keepUninstallPkg = getList }
                 listText = keepUninstallPkg.toText()
-                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ){
@@ -875,9 +875,9 @@ private fun DefaultDialerApp(pkgName: String){
             onClick = {
                 try{
                     myDpm.setDefaultDialerApplication(pkgName)
-                    Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
                 }catch(e:IllegalArgumentException){
-                    Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.fail, Toast.LENGTH_SHORT).show()
                 }
             },
             enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),

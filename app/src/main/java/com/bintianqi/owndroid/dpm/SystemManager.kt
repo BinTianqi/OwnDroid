@@ -217,7 +217,7 @@ private fun Switches(){
                     if(myDpm.canUsbDataSignalingBeDisabled()){
                         myDpm.isUsbDataSignalingEnabled = it
                     }else{
-                        Toast.makeText(myContext,myContext.getString(R.string.unsupported),Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, R.string.unsupported, Toast.LENGTH_SHORT).show()
                     }
                 }
             )
@@ -238,8 +238,7 @@ private fun Keyguard(){
         if(VERSION.SDK_INT>=23){
             Button(
                 onClick = {
-                    Toast.makeText(myContext,
-                        myContext.getString(if(myDpm.setKeyguardDisabled(myComponent,true)){R.string.success}else{R.string.fail}), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, if(myDpm.setKeyguardDisabled(myComponent,true)){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
                 },
                 enabled = isDeviceOwner(myDpm)|| (VERSION.SDK_INT>=28&&isProfileOwner(myDpm)&&myDpm.isAffiliatedUser),
                 modifier = Modifier.fillMaxWidth()
@@ -248,8 +247,7 @@ private fun Keyguard(){
             }
             Button(
                 onClick = {
-                    Toast.makeText(myContext,
-                        myContext.getString(if(myDpm.setKeyguardDisabled(myComponent,false)){R.string.success}else{R.string.fail}), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, if(myDpm.setKeyguardDisabled(myComponent,false)){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
                 },
                 enabled = isDeviceOwner(myDpm)|| (VERSION.SDK_INT>=28&&isProfileOwner(myDpm)&&myDpm.isAffiliatedUser),
                 modifier = Modifier.fillMaxWidth()
@@ -370,7 +368,7 @@ private fun PermissionPolicy(){
         Button(
             onClick = {
                 myDpm.setPermissionPolicy(myComponent,selectedPolicy)
-                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -396,9 +394,9 @@ private fun MTEPolicy(){
             onClick = {
                 try {
                     myDpm.mtePolicy = selectedMtePolicy
-                    Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
                 }catch(e:java.lang.UnsupportedOperationException){
-                    Toast.makeText(myContext, myContext.getString(R.string.unsupported), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.unsupported, Toast.LENGTH_SHORT).show()
                 }
                 selectedMtePolicy = myDpm.mtePolicy
             },
@@ -448,7 +446,7 @@ private fun NearbyStreamingPolicy(){
         Button(
             onClick = {
                 myDpm.nearbyNotificationStreamingPolicy = notificationPolicy
-                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -531,7 +529,7 @@ private fun LockTaskFeatures(){
                 }
                 myDpm.setLockTaskFeatures(myComponent,result)
                 refreshFeature()
-                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             }
         ) {
             Text(stringResource(R.string.apply))
@@ -564,7 +562,7 @@ private fun LockTaskFeatures(){
                     focusMgr.clearFocus()
                     whitelist.add(inputPkg)
                     myDpm.setLockTaskPackages(myComponent,whitelist.toTypedArray())
-                    Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
                     refreshWhitelist()
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
@@ -577,9 +575,9 @@ private fun LockTaskFeatures(){
                     if(inputPkg in whitelist){
                         whitelist.remove(inputPkg)
                         myDpm.setLockTaskPackages(myComponent,whitelist.toTypedArray())
-                        Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
                     }else{
-                        Toast.makeText(myContext, myContext.getString(R.string.not_exist), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, R.string.not_exist, Toast.LENGTH_SHORT).show()
                     }
                     refreshWhitelist()
                 },
@@ -626,7 +624,7 @@ private fun CaCert(){
                 Button(
                     onClick = {
                         val result = myDpm.installCaCert(myComponent, caCert)
-                        Toast.makeText(myContext, myContext.getString(if(result){R.string.success}else{R.string.fail}), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, if(result){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
                         refresh()
                     },
                     modifier = Modifier.fillMaxWidth(0.49F)
@@ -638,8 +636,8 @@ private fun CaCert(){
                         if(exist){
                             myDpm.uninstallCaCert(myComponent, caCert)
                             exist = myDpm.hasCaCertInstalled(myComponent, caCert)
-                            Toast.makeText(myContext, myContext.getString(if(exist){R.string.fail}else{R.string.success}), Toast.LENGTH_SHORT).show()
-                        }else{ Toast.makeText(myContext, myContext.getString(R.string.not_exist), Toast.LENGTH_SHORT).show() }
+                            Toast.makeText(myContext, if(exist){R.string.fail}else{R.string.success}, Toast.LENGTH_SHORT).show()
+                        }else{ Toast.makeText(myContext, R.string.not_exist, Toast.LENGTH_SHORT).show() }
                     },
                     modifier = Modifier.fillMaxWidth(0.96F)
                 ) {
@@ -650,7 +648,7 @@ private fun CaCert(){
         Button(
             onClick = {
                 myDpm.uninstallAllUserCaCerts(myComponent)
-                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ){
@@ -676,10 +674,10 @@ private fun SecurityLogs(){
                 val log = myDpm.retrieveSecurityLogs(myComponent)
                 if(log!=null){
                     for(i in log){ Log.d("SecureLog",i.toString()) }
-                    Toast.makeText(myContext,myContext.getString(R.string.success),Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
                 }else{
                     Log.d("SecureLog",myContext.getString(R.string.none))
-                    Toast.makeText(myContext, myContext.getString(R.string.no_logs),Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.no_logs, Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -691,10 +689,10 @@ private fun SecurityLogs(){
                 val log = myDpm.retrievePreRebootSecurityLogs(myComponent)
                 if(log!=null){
                     for(i in log){ Log.d("SecureLog",i.toString()) }
-                    Toast.makeText(myContext,myContext.getString(R.string.success),Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
                 }else{
                     Log.d("SecureLog",myContext.getString(R.string.none))
-                    Toast.makeText(myContext,myContext.getString(R.string.no_logs),Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.no_logs, Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.fillMaxWidth()

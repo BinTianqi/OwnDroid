@@ -168,7 +168,8 @@ fun TopBar(
 }
 
 @Composable
-fun CopyTextButton(context: Context, @StringRes label: Int, content: String){
+fun CopyTextButton(@StringRes label: Int, content: String){
+    val context = LocalContext.current
     var ok by remember{mutableStateOf(false)}
     val scope = rememberCoroutineScope()
     Button(
@@ -176,7 +177,7 @@ fun CopyTextButton(context: Context, @StringRes label: Int, content: String){
             if(!ok){
                 scope.launch{
                     if(writeClipBoard(context,content)){ ok = true; delay(2000); ok = false }
-                    else{ Toast.makeText(context,context.getString(R.string.fail),Toast.LENGTH_SHORT).show() }
+                    else{ Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show() }
                 }
             }
         }

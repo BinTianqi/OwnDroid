@@ -163,8 +163,8 @@ private fun ResetPasswordToken(){
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                if(myDpm.clearResetPasswordToken(myComponent)){ Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
-                }else{ Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show() }
+                if(myDpm.clearResetPasswordToken(myComponent)){ Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                }else{ Toast.makeText(myContext, R.string.fail, Toast.LENGTH_SHORT).show() }
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
@@ -175,12 +175,12 @@ private fun ResetPasswordToken(){
             onClick = {
                 try {
                     if(myDpm.setResetPasswordToken(myComponent, myByteArray)){
-                        Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
                     }else{
-                        Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, R.string.fail, Toast.LENGTH_SHORT).show()
                     }
                 }catch(e:SecurityException){
-                    Toast.makeText(myContext, myContext.getString(R.string.security_exception), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.security_exception, Toast.LENGTH_SHORT).show()
                 }
             },
             enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
@@ -192,8 +192,8 @@ private fun ResetPasswordToken(){
             onClick = {
                 if(!myDpm.isResetPasswordTokenActive(myComponent)){
                     try{ activateToken(myContext) }
-                    catch(e:NullPointerException){ Toast.makeText(myContext, myContext.getString(R.string.please_set_a_token), Toast.LENGTH_SHORT).show() }
-                }else{ Toast.makeText(myContext, myContext.getString(R.string.token_already_activated), Toast.LENGTH_SHORT).show() }
+                    catch(e:NullPointerException){ Toast.makeText(myContext, R.string.please_set_a_token, Toast.LENGTH_SHORT).show() }
+                }else{ Toast.makeText(myContext, R.string.token_already_activated, Toast.LENGTH_SHORT).show() }
             },
             enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
             modifier = Modifier.fillMaxWidth()
@@ -243,7 +243,7 @@ private fun ResetPassword(){
         Button(
             onClick = {
                 if(newPwd.length>=4||newPwd.isEmpty()){ confirmed=!confirmed
-                }else{ Toast.makeText(myContext, myContext.getString(R.string.require_4_digit_password), Toast.LENGTH_SHORT).show() }
+                }else{ Toast.makeText(myContext, R.string.require_4_digit_password, Toast.LENGTH_SHORT).show() }
             },
             enabled = isDeviceOwner(myDpm) || isProfileOwner(myDpm) || myDpm.isAdminActive(myComponent),
             modifier = Modifier.fillMaxWidth(),
@@ -259,8 +259,8 @@ private fun ResetPassword(){
             Button(
                 onClick = {
                     val resetSuccess = myDpm.resetPasswordWithToken(myComponent,newPwd,myByteArray,resetPwdFlag)
-                    if(resetSuccess){ Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show();newPwd=""}
-                    else{ Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show() }
+                    if(resetSuccess){ Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show();newPwd=""}
+                    else{ Toast.makeText(myContext, R.string.fail, Toast.LENGTH_SHORT).show() }
                     confirmed=false
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
@@ -273,8 +273,8 @@ private fun ResetPassword(){
         Button(
             onClick = {
                 val resetSuccess = myDpm.resetPassword(newPwd,resetPwdFlag)
-                if(resetSuccess){ Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show(); newPwd=""}
-                else{ Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show() }
+                if(resetSuccess){ Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show(); newPwd=""}
+                else{ Toast.makeText(myContext, R.string.fail, Toast.LENGTH_SHORT).show() }
                 confirmed=false
             },
             enabled = confirmed,
@@ -315,7 +315,7 @@ private fun PasswordComplexity(){
         Button(
             onClick = {
                 myDpm.requiredPasswordComplexity = selectedItem
-                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm),
             modifier = Modifier.fillMaxWidth()
@@ -563,7 +563,7 @@ private fun KeyguardDisabledFeatures(){
                     if(widgets){result+=KEYGUARD_DISABLE_WIDGETS_ALL}
                 }
                 myDpm.setKeyguardDisabledFeatures(myComponent,result)
-                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
                 calculateCustomFeature()
             },
             enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
@@ -611,7 +611,7 @@ private fun PasswordQuality(){
         Button(
             onClick = {
                 myDpm.setPasswordQuality(myComponent,selectedItem)
-                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             enabled = isDeviceOwner(myDpm) || isProfileOwner(myDpm),
             modifier = Modifier.fillMaxWidth()
@@ -629,6 +629,6 @@ private fun activateToken(myContext: Context){
     if (confirmIntent != null) {
         startActivity(myContext,confirmIntent, null)
     } else {
-        Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show()
+        Toast.makeText(myContext, R.string.fail, Toast.LENGTH_SHORT).show()
     }
 }

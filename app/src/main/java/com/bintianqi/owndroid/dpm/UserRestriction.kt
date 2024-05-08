@@ -124,7 +124,7 @@ private fun Home(navCtrl:NavHostController,scrollState: ScrollState){
 @Composable
 private fun Internet(){
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
-        for(internetItem in RestrictionData().internet()){
+        for(internetItem in RestrictionData.internet()){
             UserRestrictionItem(internetItem.restriction,internetItem.name,internetItem.desc,internetItem.ico)
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -133,9 +133,8 @@ private fun Internet(){
 
 @Composable
 private fun Connectivity(){
-    val myContext = LocalContext.current
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
-        for(connectivityItem in RestrictionData().connectivity(myContext)){
+        for(connectivityItem in RestrictionData.connectivity()){
             UserRestrictionItem(connectivityItem.restriction,connectivityItem.name,connectivityItem.desc,connectivityItem.ico)
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -146,7 +145,7 @@ private fun Connectivity(){
 fun Application(){
     val myContext = LocalContext.current
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
-        for(applicationItem in RestrictionData().application(myContext)){
+        for(applicationItem in RestrictionData.application(myContext)){
             UserRestrictionItem(applicationItem.restriction,applicationItem.name,applicationItem.desc,applicationItem.ico)
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -156,7 +155,7 @@ fun Application(){
 @Composable
 private fun User(){
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
-        for(userItem in RestrictionData().user()){
+        for(userItem in RestrictionData.user()){
             UserRestrictionItem(userItem.restriction,userItem.name,userItem.desc,userItem.ico)
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -166,7 +165,7 @@ private fun User(){
 @Composable
 private fun Media(){
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
-        for(mediaItem in RestrictionData().media()){
+        for(mediaItem in RestrictionData.media()){
             UserRestrictionItem(mediaItem.restriction,mediaItem.name,mediaItem.desc,mediaItem.ico)
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -177,7 +176,7 @@ private fun Media(){
 private fun Other(){
     val myContext = LocalContext.current
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
-        for(otherItem in RestrictionData().other(myContext)){
+        for(otherItem in RestrictionData.other(myContext)){
             UserRestrictionItem(otherItem.restriction,otherItem.name,otherItem.desc,otherItem.ico)
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -206,7 +205,7 @@ private fun UserRestrictionItem(
                 }
             }catch(e:SecurityException){
                 if(isProfileOwner(myDpm)){
-                    Toast.makeText(myContext, myContext.getString(R.string.require_device_owner), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.require_device_owner, Toast.LENGTH_SHORT).show()
                 }
             }
         },
@@ -214,7 +213,7 @@ private fun UserRestrictionItem(
     )
 }
 
-private class RestrictionData{
+private object RestrictionData{
     fun internet():List<Restriction>{
         val list:MutableList<Restriction> = mutableListOf()
         list += Restriction(UserManager.DISALLOW_CONFIG_MOBILE_NETWORKS, R.string.config_mobile_network,"",R.drawable.signal_cellular_alt_fill0)
@@ -241,7 +240,7 @@ private class RestrictionData{
         list += Restriction(UserManager.DISALLOW_OUTGOING_CALLS,R.string.outgoing_calls,"",R.drawable.phone_forwarded_fill0)
         return list
     }
-    fun connectivity(myContext:Context):List<Restriction>{
+    fun connectivity():List<Restriction>{
         val list:MutableList<Restriction> = mutableListOf()
         if(VERSION.SDK_INT>=26){
             list += Restriction(UserManager.DISALLOW_BLUETOOTH,R.string.bluetooth,"",R.drawable.bluetooth_fill0)

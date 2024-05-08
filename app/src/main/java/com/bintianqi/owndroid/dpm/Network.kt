@@ -41,7 +41,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.bintianqi.owndroid.dpm.scrollAnim
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.toText
@@ -177,7 +176,7 @@ private fun WifiSecLevel(){
             enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile),
             onClick = {
                 myDpm.minimumRequiredWifiSecurityLevel=selectedWifiSecLevel
-                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ){
@@ -232,9 +231,9 @@ private fun WifiSsidPolicy(){
             Button(
                 onClick = {
                     if(inputSsid==""){
-                        Toast.makeText(myContext, myContext.getString(R.string.cannot_be_empty), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, R.string.cannot_be_empty, Toast.LENGTH_SHORT).show()
                     }else if(WifiSsid.fromBytes(inputSsid.toByteArray()) in ssidSet){
-                        Toast.makeText(myContext, myContext.getString(R.string.already_exist), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, R.string.already_exist, Toast.LENGTH_SHORT).show()
                     }else{
                         ssidSet.add(WifiSsid.fromBytes(inputSsid.toByteArray()))
                         ssidList = ssidSet.toText()
@@ -248,13 +247,13 @@ private fun WifiSsidPolicy(){
             Button(
                 onClick = {
                     if(inputSsid==""){
-                        Toast.makeText(myContext, myContext.getString(R.string.cannot_be_empty), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, R.string.cannot_be_empty, Toast.LENGTH_SHORT).show()
                     }else if(WifiSsid.fromBytes(inputSsid.toByteArray()) in ssidSet){
                         ssidSet.remove(WifiSsid.fromBytes(inputSsid.toByteArray()))
                         inputSsid = ""
                         ssidList = ssidSet.toText()
                     }else{
-                        Toast.makeText(myContext, myContext.getString(R.string.not_exist), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, R.string.not_exist, Toast.LENGTH_SHORT).show()
                     }
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
@@ -267,16 +266,16 @@ private fun WifiSsidPolicy(){
                 focusMgr.clearFocus()
                 if(selectedPolicyType==-1){
                     if(policy==null&&ssidSet.isNotEmpty()){
-                        Toast.makeText(myContext, myContext.getString(R.string.please_select_a_policy), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, R.string.please_select_a_policy, Toast.LENGTH_SHORT).show()
                     }else{
                         myDpm.wifiSsidPolicy = null
                         refreshPolicy()
-                        Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
                     }
                 }else{
                     myDpm.wifiSsidPolicy = if(ssidSet.size==0){ null }else{ WifiSsidPolicy(selectedPolicyType, ssidSet) }
                     refreshPolicy()
-                    Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -343,9 +342,9 @@ private fun PrivateDNS(){
                     result = myDpm.setGlobalPrivateDnsModeSpecifiedHost(myComponent,inputHost)
                     Toast.makeText(myContext, operationResult[result], Toast.LENGTH_SHORT).show()
                 }catch(e:IllegalArgumentException){
-                    Toast.makeText(myContext, myContext.getString(R.string.invalid_hostname), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.invalid_hostname, Toast.LENGTH_SHORT).show()
                 }catch(e:SecurityException){
-                    Toast.makeText(myContext, myContext.getString(R.string.security_exception), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.security_exception, Toast.LENGTH_SHORT).show()
                 }finally {
                     status = dnsStatus[myDpm.getGlobalPrivateDnsMode(myComponent)]
                 }
@@ -376,10 +375,10 @@ private fun NetLog(){
                 val log = myDpm.retrieveNetworkLogs(myComponent,1234567890)
                 if(log!=null){
                     for(i in log){ Log.d("NetLog",i.toString()) }
-                    Toast.makeText(myContext, myContext.getString(R.string.success),Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
                 }else{
                     Log.d("NetLog",myContext.getString(R.string.none))
-                    Toast.makeText(myContext, myContext.getString(R.string.none),Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.none, Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -416,7 +415,7 @@ private fun WifiKeypair(){
             Button(
                 onClick = {
                     val result = myDpm.grantKeyPairToWifiAuth(keyPair)
-                    Toast.makeText(myContext, myContext.getString(if(result){R.string.success}else{R.string.fail}), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, if(result){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) {
@@ -425,7 +424,7 @@ private fun WifiKeypair(){
             Button(
                 onClick = {
                     val result = myDpm.revokeKeyPairFromWifiAuth(keyPair)
-                    Toast.makeText(myContext, myContext.getString(if(result){R.string.success}else{R.string.fail}), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, if(result){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) {
@@ -784,7 +783,7 @@ private fun APN(){
                             Button(
                                 onClick = {
                                     val success = myDpm.updateOverrideApn(myComponent,id,result)
-                                    Toast.makeText(myContext, myContext.getString(if(success){R.string.success}else{R.string.fail}), Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(myContext, if(success){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
                                 },
                                 Modifier.fillMaxWidth(0.49F)
                             ){

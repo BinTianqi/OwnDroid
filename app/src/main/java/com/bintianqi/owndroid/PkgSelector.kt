@@ -77,59 +77,54 @@ fun PackageSelector(navCtrl:NavHostController){
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ){
-                        Text(text = stringResource(R.string.pkg_selector))
-                        Row {
-                            Icon(
-                                painter = painterResource(R.drawable.filter_alt_fill0),
-                                contentDescription = "filter",
-                                modifier = Modifier
-                                    .padding(horizontal = 6.dp)
-                                    .clip(RoundedCornerShape(50))
-                                    .combinedClickable(
-                                        onClick = {
-                                            when(filter){
-                                                "data"-> {
-                                                    filter = "system"; co.launch {scrollState.scrollToItem(0)}
-                                                    Toast.makeText(context, context.getString(R.string.show_system_app), Toast.LENGTH_SHORT).show()
-                                                }
-                                                "system"-> {
-                                                    filter = "priv"; co.launch {scrollState.scrollToItem(0)}
-                                                    Toast.makeText(context, context.getString(R.string.show_priv_app), Toast.LENGTH_SHORT).show()
-                                                }
-                                                else-> {
-                                                    filter = "data"; co.launch {scrollState.scrollToItem(0)}
-                                                    Toast.makeText(context, context.getString(R.string.show_user_app), Toast.LENGTH_SHORT).show()
-                                                }
-                                            }
-                                        },
-                                        onLongClick = {
-                                            filter = "apex"
-                                            Toast.makeText(context, context.getString(R.string.show_apex_app), Toast.LENGTH_SHORT).show()
+                actions = {
+                    Icon(
+                        painter = painterResource(R.drawable.filter_alt_fill0),
+                        contentDescription = "filter",
+                        modifier = Modifier
+                            .padding(horizontal = 6.dp)
+                            .clip(RoundedCornerShape(50))
+                            .combinedClickable(
+                                onClick = {
+                                    when(filter){
+                                        "data"-> {
+                                            filter = "system"; co.launch {scrollState.scrollToItem(0)}
+                                            Toast.makeText(context, R.string.show_system_app, Toast.LENGTH_SHORT).show()
                                         }
-                                    )
-                                    .padding(5.dp)
-                            )
-                            Icon(
-                                painter = painterResource(R.drawable.refresh_fill0),
-                                contentDescription = "refresh",
-                                modifier = Modifier
-                                    .padding(horizontal = 6.dp)
-                                    .clip(RoundedCornerShape(50))
-                                    .clickable{
-                                        co.launch{
-                                            delay(100)
-                                            getPkgList()
+                                        "system"-> {
+                                            filter = "priv"; co.launch {scrollState.scrollToItem(0)}
+                                            Toast.makeText(context, R.string.show_priv_app, Toast.LENGTH_SHORT).show()
+                                        }
+                                        else-> {
+                                            filter = "data"; co.launch {scrollState.scrollToItem(0)}
+                                            Toast.makeText(context, R.string.show_user_app, Toast.LENGTH_SHORT).show()
                                         }
                                     }
-                                    .padding(5.dp)
+                                },
+                                onLongClick = {
+                                    filter = "apex"
+                                    Toast.makeText(context, R.string.show_apex_app, Toast.LENGTH_SHORT).show()
+                                }
                             )
-                        }
-                    }
+                            .padding(5.dp)
+                    )
+                    Icon(
+                        painter = painterResource(R.drawable.refresh_fill0),
+                        contentDescription = "refresh",
+                        modifier = Modifier
+                            .padding(horizontal = 6.dp)
+                            .clip(RoundedCornerShape(50))
+                            .clickable{
+                                co.launch{
+                                    delay(100)
+                                    getPkgList()
+                                }
+                            }
+                            .padding(5.dp)
+                    )
+                },
+                title = {
+                    Text(text = stringResource(R.string.pkg_selector))
                 },
                 navigationIcon = {NavIcon{navCtrl.navigateUp()}},
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = bgColor)

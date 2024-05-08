@@ -129,7 +129,7 @@ private fun CreateWorkProfile(){
                     if(VERSION.SDK_INT>=33){intent.putExtra(EXTRA_PROVISIONING_ALLOW_OFFLINE,true)}
                     createManagedProfile.launch(intent)
                 }catch(e:ActivityNotFoundException){
-                    Toast.makeText(myContext,myContext.getString(R.string.unsupported),Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.unsupported, Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -157,7 +157,7 @@ private fun OrgOwnedProfile(){
                     color = colorScheme.onTertiaryContainer
                 )
             }
-            CopyTextButton(myContext, R.string.copy_command, stringResource(R.string.activate_org_profile_command, Binder.getCallingUid()/100000))
+            CopyTextButton(R.string.copy_command, stringResource(R.string.activate_org_profile_command, Binder.getCallingUid()/100000))
         }
     }
 }
@@ -188,7 +188,7 @@ private fun OrgID(){
         Button(
             onClick = {
                 myDpm.setOrganizationId(orgId)
-                Toast.makeText(myContext, myContext.getString(R.string.success),Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success,Toast.LENGTH_SHORT).show()
             },
             enabled = orgId.length in 6..64,
             modifier = Modifier.fillMaxWidth()
@@ -229,7 +229,7 @@ private fun SuspendPersonalApp(){
         Button(
             onClick = {
                 myDpm.setManagedProfileMaximumTimeOff(myComponent,time.toLong())
-                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -260,7 +260,7 @@ private fun IntentFilter(){
         Button(
             onClick = {
                 myDpm.addCrossProfileIntentFilter(myComponent, IntentFilter(action), FLAG_PARENT_CAN_ACCESS_MANAGED)
-                Toast.makeText(myContext, myContext.getString(R.string.success),Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -269,7 +269,7 @@ private fun IntentFilter(){
         Button(
             onClick = {
                 myDpm.addCrossProfileIntentFilter(myComponent, IntentFilter(action), FLAG_MANAGED_CAN_ACCESS_PARENT)
-                Toast.makeText(myContext, myContext.getString(R.string.success),Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success,Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -279,7 +279,7 @@ private fun IntentFilter(){
         Button(
             onClick = {
                 myDpm.clearCrossProfileIntentFilters(myComponent)
-                Toast.makeText(myContext, myContext.getString(R.string.success),Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ){

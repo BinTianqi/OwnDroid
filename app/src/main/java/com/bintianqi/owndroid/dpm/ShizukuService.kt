@@ -1,6 +1,5 @@
 package com.bintianqi.owndroid.dpm
 
-import android.os.IBinder
 import android.system.Os
 import androidx.annotation.Keep
 import com.bintianqi.owndroid.IUserService
@@ -11,10 +10,6 @@ var service:IUserService? = null
 
 @Keep
 class ShizukuService: IUserService.Stub() {
-    override fun asBinder(): IBinder {
-        TODO("Not yet implemented")
-    }
-
     override fun destroy(){ }
 
     override fun execute(command: String?): String {

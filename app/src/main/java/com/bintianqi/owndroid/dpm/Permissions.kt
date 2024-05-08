@@ -167,7 +167,7 @@ private fun LockScreenInfo(){
             onClick = {
                 focusMgr.clearFocus()
                 myDpm.setDeviceOwnerLockScreenInfo(myComponent,infoText)
-                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -177,7 +177,7 @@ private fun LockScreenInfo(){
             onClick = {
                 focusMgr.clearFocus()
                 myDpm.setDeviceOwnerLockScreenInfo(myComponent,null)
-                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -219,7 +219,7 @@ private fun DeviceAdmin(){
                 SelectionContainer {
                     Text(text = stringResource(R.string.activate_device_admin_command))
                 }
-                CopyTextButton(myContext, R.string.copy_command, stringResource(R.string.activate_device_admin_command))
+                CopyTextButton(R.string.copy_command, stringResource(R.string.activate_device_admin_command))
             }
         }
     }
@@ -256,7 +256,7 @@ private fun ProfileOwner(){
                 SelectionContainer{
                     Text(text = stringResource(R.string.activate_profile_owner_command))
                 }
-                CopyTextButton(myContext, R.string.copy_command, stringResource(R.string.activate_profile_owner_command))
+                CopyTextButton(R.string.copy_command, stringResource(R.string.activate_profile_owner_command))
             }
         }
     }
@@ -289,7 +289,7 @@ private fun DeviceOwner(){
                 SelectionContainer{
                     Text(text = stringResource(R.string.activate_device_owner_command))
                 }
-                CopyTextButton(myContext, R.string.copy_command, stringResource(R.string.activate_device_owner_command))
+                CopyTextButton(R.string.copy_command, stringResource(R.string.activate_device_owner_command))
             }
         }
     }
@@ -357,7 +357,7 @@ private fun SpecificID(){
         Spacer(Modifier.padding(vertical = 5.dp))
         if(specificId!=""){
             SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState())){ Text(specificId) }
-            CopyTextButton(myContext, R.string.copy, specificId)
+            CopyTextButton(R.string.copy, specificId)
         }else{
             Text(stringResource(R.string.require_set_org_id))
         }
@@ -387,7 +387,7 @@ private fun OrgName(){
             onClick = {
                 focusMgr.clearFocus()
                 myDpm.setOrganizationName(myComponent,orgName)
-                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ){
@@ -428,7 +428,7 @@ private fun SupportMsg(){
                 focusMgr.clearFocus()
                 myDpm.setShortSupportMessage(myComponent, shortMsg)
                 myDpm.setLongSupportMessage(myComponent, longMsg)
-                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -440,7 +440,7 @@ private fun SupportMsg(){
                 focusMgr.clearFocus()
                 myDpm.setShortSupportMessage(myComponent, null)
                 myDpm.setLongSupportMessage(myComponent, null)
-                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -539,9 +539,9 @@ private fun TransformOwnership(){
             onClick = {
                 try {
                     myDpm.transferOwnership(myComponent,ComponentName(pkg, cls),null)
-                    Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
                 }catch(e:IllegalArgumentException){
-                    Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.fail, Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -559,6 +559,6 @@ private fun activateDeviceAdmin(inputContext:Context,inputComponent:ComponentNam
         intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, inputContext.getString(R.string.activate_device_admin_here))
         addDeviceAdmin.launch(intent)
     }catch(e:ActivityNotFoundException){
-        Toast.makeText(inputContext,inputContext.getString(R.string.unsupported),Toast.LENGTH_SHORT).show()
+        Toast.makeText(inputContext, R.string.unsupported, Toast.LENGTH_SHORT).show()
     }
 }

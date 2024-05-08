@@ -24,12 +24,12 @@ class Receiver : DeviceAdminReceiver() {
 
     override fun onDisabled(context: Context, intent: Intent) {
         super.onDisabled(context, intent)
-        Toast.makeText(context, context.getString(R.string.onDisabled), Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, R.string.onDisabled, Toast.LENGTH_SHORT).show()
     }
 
     override fun onProfileProvisioningComplete(context: Context, intent: Intent) {
         super.onProfileProvisioningComplete(context, intent)
-        Toast.makeText(context, context.getString(R.string.create_work_profile_success), Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, R.string.create_work_profile_success, Toast.LENGTH_SHORT).show()
     }
 
 }

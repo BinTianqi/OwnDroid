@@ -225,12 +225,12 @@ fun userServiceControl(context:Context, status:Boolean){
             if (binder.pingBinder()) {
                 service = IUserService.Stub.asInterface(binder)
             } else {
-                Toast.makeText(context,context.getString(R.string.invalid_binder),Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.invalid_binder, Toast.LENGTH_SHORT).show()
             }
         }
         override fun onServiceDisconnected(componentName: ComponentName) {
             service = null
-            Toast.makeText(context,context.getString(R.string.shizuku_service_disconnected),Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, R.string.shizuku_service_disconnected, Toast.LENGTH_SHORT).show()
         }
     }
     val userServiceArgs  = Shizuku.UserServiceArgs(

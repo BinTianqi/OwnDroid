@@ -224,10 +224,7 @@ private fun UserOperation(){
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                Toast.makeText(
-                    myContext,
-                    myContext.getString(if(myDpm.switchUser(myComponent,userHandleById)) { R.string.success }else{ R.string.fail }), Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(myContext, if(myDpm.switchUser(myComponent,userHandleById)) { R.string.success }else{ R.string.fail }, Toast.LENGTH_SHORT).show()
             },
             enabled = isDeviceOwner(myDpm),
             modifier = Modifier.fillMaxWidth()
@@ -242,7 +239,7 @@ private fun UserOperation(){
                         val result = myDpm.stopUser(myComponent,userHandleById)
                         Toast.makeText(myContext, userOperationResultCode(result,myContext), Toast.LENGTH_SHORT).show()
                     }catch(e:IllegalArgumentException){
-                        Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, R.string.fail, Toast.LENGTH_SHORT).show()
                     }
                 },
                 enabled = isDeviceOwner(myDpm),
@@ -255,10 +252,10 @@ private fun UserOperation(){
             onClick = {
                 focusMgr.clearFocus()
                 if(myDpm.removeUser(myComponent,userHandleById)){
-                    Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
                     idInput=""
                 }else{
-                    Toast.makeText(myContext, myContext.getString(R.string.fail), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.fail, Toast.LENGTH_SHORT).show()
                 }
             },
             enabled = isDeviceOwner(myDpm),
@@ -369,14 +366,14 @@ private fun AffiliationID(){
         Button(
             onClick = {
                 if("" in affiliationID) {
-                    Toast.makeText(myContext, myContext.getString(R.string.include_empty_string), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.include_empty_string, Toast.LENGTH_SHORT).show()
                 }else if(affiliationID.isEmpty()){
-                    Toast.makeText(myContext, myContext.getString(R.string.cannot_be_empty), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.cannot_be_empty, Toast.LENGTH_SHORT).show()
                 }else{
                     myDpm.setAffiliationIds(myComponent, affiliationID)
                     affiliationID = myDpm.getAffiliationIds(myComponent)
                     list = affiliationID.toText()
-                    Toast.makeText(myContext,myContext.getString(R.string.success),Toast.LENGTH_SHORT).show()
+                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -411,7 +408,7 @@ private fun Username(){
         Button(
             onClick = {
                 myDpm.setProfileName(myComponent,inputUsername)
-                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
             modifier = Modifier.fillMaxWidth()
@@ -469,7 +466,7 @@ private fun UserSessionMessage(){
             onClick = {
                 myDpm.setStartUserSessionMessage(myComponent,start)
                 myDpm.setEndUserSessionMessage(myComponent,end)
-                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
             modifier = Modifier.fillMaxWidth()
@@ -480,7 +477,7 @@ private fun UserSessionMessage(){
             onClick = {
                 myDpm.setStartUserSessionMessage(myComponent,null)
                 myDpm.setEndUserSessionMessage(myComponent,null)
-                Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
             modifier = Modifier.fillMaxWidth()
@@ -525,7 +522,7 @@ private fun UserIcon(){
                     uriToStream(myContext, userIconUri){stream ->
                         val bitmap = BitmapFactory.decodeStream(stream)
                         myDpm.setUserIcon(myComponent,bitmap)
-                        Toast.makeText(myContext, myContext.getString(R.string.success), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
