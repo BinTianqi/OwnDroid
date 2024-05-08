@@ -106,10 +106,10 @@ fun MyScaffold(){
             .background(bgColor)
             .imePadding()
             .pointerInput(Unit) {detectTapGestures(onTap = {focusMgr.clearFocus()})},
-        enterTransition = Animations().navHostEnterTransition,
-        exitTransition = Animations().navHostExitTransition,
-        popEnterTransition = Animations().navHostPopEnterTransition,
-        popExitTransition = Animations().navHostPopExitTransition
+        enterTransition = Animations.navHostEnterTransition,
+        exitTransition = Animations.navHostExitTransition,
+        popEnterTransition = Animations.navHostPopEnterTransition,
+        popExitTransition = Animations.navHostPopExitTransition
     ){
         composable(route = "HomePage", content = { HomePage(navCtrl)})
         composable(route = "SystemManage", content = { SystemManage(navCtrl) })

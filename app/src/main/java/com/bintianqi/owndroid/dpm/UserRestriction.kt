@@ -80,10 +80,10 @@ fun UserRestriction(navCtrl: NavHostController){
     ){
         NavHost(
             navController = localNavCtrl, startDestination = "Home",
-            enterTransition = Animations().navHostEnterTransition,
-            exitTransition = Animations().navHostExitTransition,
-            popEnterTransition = Animations().navHostPopEnterTransition,
-            popExitTransition = Animations().navHostPopExitTransition,
+            enterTransition = Animations.navHostEnterTransition,
+            exitTransition = Animations.navHostExitTransition,
+            popEnterTransition = Animations.navHostPopEnterTransition,
+            popExitTransition = Animations.navHostPopExitTransition,
             modifier = Modifier.background(bgColor).padding(top = it.calculateTopPadding())
         ){
             composable(route = "Internet"){Internet()}

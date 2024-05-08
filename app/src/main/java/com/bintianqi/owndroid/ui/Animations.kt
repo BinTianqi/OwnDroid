@@ -5,20 +5,20 @@ import androidx.compose.animation.core.*
 import androidx.compose.ui.unit.IntOffset
 import androidx.navigation.NavBackStackEntry
 
-class Animations{
-    private val initialOffsetValue = 96
-    private val targetOffsetValue = 96
+object Animations{
+    private const val INITIAL_OFFSET_VALUE = 96
+    private const val TARGET_OFFSET_VALUE = 96
 
     private val bezier = CubicBezierEasing(0.4f, 0f, 0f, 1f)
 
-    private val tween: FiniteAnimationSpec<IntOffset> = tween(400, easing = bezier)
+    private val tween: FiniteAnimationSpec<IntOffset> = tween(450, easing = bezier)
     
     val navHostEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
         fadeIn(tween(83, easing = LinearEasing)) +
         slideIntoContainer(
             animationSpec = tween,
             towards = AnimatedContentTransitionScope.SlideDirection.End,
-            initialOffset = {initialOffsetValue}
+            initialOffset = {INITIAL_OFFSET_VALUE}
         )
     }
     
@@ -27,7 +27,7 @@ class Animations{
         slideOutOfContainer(
             animationSpec = tween,
             towards = AnimatedContentTransitionScope.SlideDirection.Start,
-            targetOffset = {-targetOffsetValue}
+            targetOffset = {-TARGET_OFFSET_VALUE}
         )
     }
     
@@ -36,7 +36,7 @@ class Animations{
         slideIntoContainer(
             animationSpec = tween,
             towards = AnimatedContentTransitionScope.SlideDirection.End,
-            initialOffset = {-initialOffsetValue}
+            initialOffset = {-INITIAL_OFFSET_VALUE}
         )
     }
     
@@ -45,7 +45,7 @@ class Animations{
         slideOutOfContainer(
             animationSpec = tween,
             towards = AnimatedContentTransitionScope.SlideDirection.Start,
-            targetOffset = {targetOffsetValue}
+            targetOffset = {TARGET_OFFSET_VALUE}
         )
     }
     
