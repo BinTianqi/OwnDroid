@@ -88,10 +88,10 @@ fun SystemManage(navCtrl:NavHostController){
     ){
         NavHost(
             navController = localNavCtrl, startDestination = "Home",
-            enterTransition = Animations().navHostEnterTransition,
-            exitTransition = Animations().navHostExitTransition,
-            popEnterTransition = Animations().navHostPopEnterTransition,
-            popExitTransition = Animations().navHostPopExitTransition,
+            enterTransition = Animations.navHostEnterTransition,
+            exitTransition = Animations.navHostExitTransition,
+            popEnterTransition = Animations.navHostPopEnterTransition,
+            popExitTransition = Animations.navHostPopExitTransition,
             modifier = Modifier.background(bgColor).padding(top = it.calculateTopPadding())
         ){
             composable(route = "Home"){Home(localNavCtrl,scrollState)}
@@ -547,7 +547,7 @@ private fun LockTaskFeatures(){
         }
         LaunchedEffect(Unit){refreshWhitelist()}
         Text(text = stringResource(R.string.whitelist_app), style = typography.titleLarge)
-        SelectionContainer(modifier = Modifier.animateContentSize(Animations().animateListSize)){
+        SelectionContainer(modifier = Modifier.animateContentSize()){
             Text(text = if(listText==""){ stringResource(R.string.none) }else{listText})
         }
         OutlinedTextField(
