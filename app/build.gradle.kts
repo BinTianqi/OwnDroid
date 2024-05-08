@@ -27,6 +27,7 @@ android {
 
     buildTypes {
         release {
+            project.gradle.startParameter.excludedTaskNames.add("lint")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
