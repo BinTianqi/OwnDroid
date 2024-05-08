@@ -67,11 +67,7 @@
         <receiver
         android:name=".PackageInstallerReceiver"
         android:description="@string/app_name"
-        android:permission="android.permission.BIND_DEVICE_ADMIN"
-        android:exported="true">
-            <intent-filter>
-                <action android:name="com.bintianqi.owndroid.PKG_INSTALL_RESULT"/>
-            </intent-filter>
+        android:permission="android.permission.BIND_DEVICE_ADMIN">
         </receiver>
         <provider
             android:name="rikka.shizuku.ShizukuProvider"

@@ -632,7 +632,11 @@ private fun PermittedAccessibility(pkgName: String){
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                Toast.makeText(myContext, if(myDpm.setPermittedAccessibilityServices(myComponent, permittedAccessibility)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    myContext,
+                    if(myDpm.setPermittedAccessibilityServices(myComponent, permittedAccessibility)){R.string.success}else{R.string.fail},
+                    Toast.LENGTH_SHORT
+                ).show()
                 val getList = myDpm.getPermittedAccessibilityServices(myComponent)
                 if(getList!=null){ permittedAccessibility = getList }
                 listText = permittedAccessibility.toText()
@@ -683,7 +687,11 @@ private fun PermittedIME(pkgName: String){
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                Toast.makeText(myContext, if(myDpm.setPermittedInputMethods(myComponent, permittedIme)){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    myContext,
+                    if(myDpm.setPermittedInputMethods(myComponent, permittedIme)){R.string.success}else{R.string.fail},
+                    Toast.LENGTH_SHORT
+                ).show()
                 val getList = myDpm.getPermittedInputMethods(myComponent)
                 if(getList!=null){ permittedIme = getList }
                 imeListText = permittedIme.toText()
@@ -901,6 +909,7 @@ private fun installPackage(context: Context, inputStream: InputStream){
     session.fsync(out)
     inputStream.close()
     out.close()
-    val pendingIntent = PendingIntent.getBroadcast(context, sessionId, Intent(context, PackageInstallerReceiver::class.java), PendingIntent.FLAG_IMMUTABLE).intentSender
+    val intent = Intent(context, PackageInstallerReceiver::class.java)
+    val pendingIntent = PendingIntent.getBroadcast(context, sessionId, intent, PendingIntent.FLAG_IMMUTABLE).intentSender
     session.commit(pendingIntent)
 }

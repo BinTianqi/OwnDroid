@@ -46,6 +46,9 @@
     <string name="not_exist">Not exist</string>
     <string name="unknown_status">Unknown status</string>
     <string name="copy">Copy</string>
+    <string name="file_too_large">File too large</string>
+    <string name="file_not_exist">File not exist</string>
+    <string name="io_exception">IO Exception</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
@@ -291,6 +294,16 @@
     <string name="select_apk" tools:ignore="TypographyEllipsis">Select APK...</string>
     <string name="silent_install">Silent install</string>
     <string name="request_install">Request install</string>
+    <!--App install session status-->
+    <string name="app_installer_status">App installer:</string>
+    <string name="status_pending_action">Pending user action</string>
+    <string name="status_fail_blocked">Fail: blocked</string>
+    <string name="status_fail_aborted">Fail: aborted</string>
+    <string name="status_fail_invalid">Fail: invalid APK</string>
+    <string name="status_fail_conflict">Fail: conflict</string>
+    <string name="status_fail_storage">Fail: no space</string>
+    <string name="status_fail_incompatible">Fail: incompatible</string>
+    <string name="status_fail_timeout">Fail: timeout</string>
 
     <!--UserRestriction-->
     <string name="user_restrict">User restriction</string>

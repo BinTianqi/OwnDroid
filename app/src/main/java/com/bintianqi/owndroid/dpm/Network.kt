@@ -792,7 +792,7 @@ private fun APN(){
                             Button(
                                 onClick = {
                                     val success = myDpm.removeOverrideApn(myComponent,id)
-                                    Toast.makeText(myContext, if(success){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(myContext, if(success){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
                                 },
                                 Modifier.fillMaxWidth(0.96F)
                             ){

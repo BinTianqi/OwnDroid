@@ -18,12 +18,11 @@ fun uriToStream(
         try{
             val stream = context.contentResolver.openInputStream(uri)
             if(stream!=null) { operation(stream) }
-            else{ Toast.makeText(context, "空的流", Toast.LENGTH_SHORT).show() }
             stream?.close()
         }
-        catch(e: FileNotFoundException){ Toast.makeText(context, "文件不存在", Toast.LENGTH_SHORT).show() }
-        catch(e: IOException){ Toast.makeText(context, "IO异常", Toast.LENGTH_SHORT).show() }
-    }else{ Toast.makeText(context, "空URI", Toast.LENGTH_SHORT).show() }
+        catch(e: FileNotFoundException){ Toast.makeText(context, R.string.file_not_exist, Toast.LENGTH_SHORT).show() }
+        catch(e: IOException){ Toast.makeText(context, R.string.io_exception, Toast.LENGTH_SHORT).show() }
+    }
 }
 
 fun List<Any>.toText():String{

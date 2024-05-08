@@ -55,12 +55,10 @@ class MainActivity : ComponentActivity() {
         getCaCert = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             uriToStream(applicationContext,it.data?.data){stream->
                 caCert = stream.readBytes()
-                if(caCert.size>50000){ Toast.makeText(applicationContext, "太大了", Toast.LENGTH_SHORT).show(); caCert = byteArrayOf() }
+                if(caCert.size>5000){ Toast.makeText(applicationContext, R.string.file_too_large, Toast.LENGTH_SHORT).show(); caCert = byteArrayOf() }
             }
         }
-        createManagedProfile = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if(it.resultCode==Activity.RESULT_CANCELED){Toast.makeText(applicationContext, "用户已取消", Toast.LENGTH_SHORT).show()}
-        }
+        createManagedProfile = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
         addDeviceAdmin = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             val myDpm = applicationContext.getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
             if(myDpm.isAdminActive(ComponentName(applicationContext, Receiver::class.java))){

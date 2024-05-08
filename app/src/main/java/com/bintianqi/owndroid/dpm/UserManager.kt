@@ -302,7 +302,7 @@ private fun CreateUser(){
             onClick = {
                 newUserHandle=myDpm.createAndManageUser(myComponent,userName,myComponent,null,selectedFlag)
                 focusMgr.clearFocus()
-                Toast.makeText(myContext, if(newUserHandle!=null){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, if(newUserHandle!=null){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
             },
             enabled = isDeviceOwner(myDpm),
             modifier = Modifier.fillMaxWidth()

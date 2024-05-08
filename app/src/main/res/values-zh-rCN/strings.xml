@@ -43,6 +43,9 @@
     <string name="copy_command">复制代码</string>
     <string name="unknown_status">未知状态</string>
     <string name="copy">复制</string>
+    <string name="file_too_large">文件太大了</string>
+    <string name="file_not_exist">文件不存在</string>
+    <string name="io_exception">IO异常</string>
 
     <!--Permissions-->
     <string name="click_to_activate">点击以激活</string>
@@ -277,6 +280,15 @@
     <string name="select_apk" tools:ignore="TypographyEllipsis">选择APK...</string>
     <string name="silent_install">静默安装</string>
     <string name="request_install">请求安装</string>
+    <string name="app_installer_status">应用安装器：</string>
+    <string name="status_pending_action">等待用户操作</string>
+    <string name="status_fail_blocked">被阻止</string>
+    <string name="status_fail_aborted">被打断</string>
+    <string name="status_fail_invalid">无效APK</string>
+    <string name="status_fail_conflict">冲突</string>
+    <string name="status_fail_storage">空间不足</string>
+    <string name="status_fail_incompatible">不兼容</string>
+    <string name="status_fail_timeout">超时</string>
 
     <!--UserRestriction-->
     <string name="user_restrict">用户限制</string>

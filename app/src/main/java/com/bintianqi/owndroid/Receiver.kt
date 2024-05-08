@@ -7,6 +7,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller.*
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import com.bintianqi.owndroid.dpm.isDeviceOwner
@@ -36,19 +37,20 @@ class Receiver : DeviceAdminReceiver() {
 
 class PackageInstallerReceiver:BroadcastReceiver(){
     override fun onReceive(context: Context, intent: Intent) {
-        val toastText = when(intent.getIntExtra(EXTRA_STATUS,666)){
-            STATUS_PENDING_USER_ACTION->"等待用户交互"
-            STATUS_SUCCESS->context.getString(R.string.success)
-            STATUS_FAILURE->context.getString(R.string.fail)
-            STATUS_FAILURE_BLOCKED->"失败：被阻止"
-            STATUS_FAILURE_ABORTED->"失败：被打断"
-            STATUS_FAILURE_INVALID->"失败：无效"
-            STATUS_FAILURE_CONFLICT->"失败：冲突"
-            STATUS_FAILURE_STORAGE->"失败：空间不足"
-            STATUS_FAILURE_INCOMPATIBLE->"失败：不兼容"
-            STATUS_FAILURE_TIMEOUT->"失败：超时"
-            else->context.getString(R.string.unknown)
+        val toastText = when(intent.getIntExtra(EXTRA_STATUS,999)){
+            STATUS_PENDING_USER_ACTION->R.string.status_pending_action
+            STATUS_SUCCESS->R.string.success
+            STATUS_FAILURE->R.string.fail
+            STATUS_FAILURE_BLOCKED->R.string.status_fail_blocked
+            STATUS_FAILURE_ABORTED->R.string.status_fail_aborted
+            STATUS_FAILURE_INVALID->R.string.status_fail_invalid
+            STATUS_FAILURE_CONFLICT->R.string.status_fail_conflict
+            STATUS_FAILURE_STORAGE->R.string.status_fail_storage
+            STATUS_FAILURE_INCOMPATIBLE->R.string.status_fail_incompatible
+            STATUS_FAILURE_TIMEOUT->R.string.status_fail_timeout
+            else->R.string.unknown
         }
-        Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
+        Log.e("OwnDroid", intent.getIntExtra(EXTRA_STATUS,999).toString())
+        if(toastText!=999){Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()}
     }
 }

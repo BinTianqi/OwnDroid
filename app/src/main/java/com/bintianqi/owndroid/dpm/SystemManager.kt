@@ -282,7 +282,7 @@ private fun BugReport(){
         Button(
             onClick = {
                 val result = myDpm.requestBugreport(myComponent)
-                Toast.makeText(myContext, if(result){"成功"}else{"失败"}, Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, if(result){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = isDeviceOwner(myDpm)
@@ -428,7 +428,7 @@ private fun NearbyStreamingPolicy(){
         Button(
             onClick = {
                 myDpm.nearbyAppStreamingPolicy = appPolicy
-                Toast.makeText(myContext, "成功", Toast.LENGTH_SHORT).show()
+                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -844,7 +844,7 @@ private fun SysUpdatePolicy(){
                                 else->null
                             }
                         myDpm.setSystemUpdatePolicy(myComponent,policy)
-                        Toast.makeText(myContext, "成功！", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
                     },
                     enabled = isDeviceOwner(myDpm),
                     modifier = Modifier.fillMaxWidth()
