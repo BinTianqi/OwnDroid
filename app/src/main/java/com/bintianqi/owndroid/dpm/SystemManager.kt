@@ -41,9 +41,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.bintianqi.owndroid.*
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.Receiver
-import com.bintianqi.owndroid.toText
 import com.bintianqi.owndroid.ui.*
 import com.bintianqi.owndroid.ui.theme.bgColor
 import kotlinx.coroutines.delay
@@ -152,7 +151,7 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState){
         }
         SubPageItem(R.string.wipe_data,"",R.drawable.warning_fill0){navCtrl.navigate("WipeData")}
         Spacer(Modifier.padding(vertical = 30.dp))
-        LaunchedEffect(Unit){caCert =byteArrayOf()}
+        LaunchedEffect(Unit){fileUri=null}
     }
 }
 
@@ -596,34 +595,52 @@ private fun CaCert(){
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,Receiver::class.java)
     var exist by remember{mutableStateOf(false)}
-    var isEmpty by remember{mutableStateOf(true)}
+    var uriPath by remember{mutableStateOf("")}
+    var caCertByteArray = byteArrayOf()
     val refresh = {
-        isEmpty = caCert.isEmpty()
-        exist = if(!isEmpty){ myDpm.hasCaCertInstalled(myComponent, caCert) }else{ false }
+        if(uriPath!=fileUri?.path){
+            if(caCertByteArray.isEmpty()){
+                uriToStream(myContext, fileUri){
+                    val array = it.readBytes()
+                    caCertByteArray = if(array.size<10000){
+                        array
+                    }else{
+                        byteArrayOf()
+                    }
+                }
+                exist = myDpm.hasCaCertInstalled(myComponent, caCertByteArray)
+            }
+        }
     }
-    LaunchedEffect(exist){ while(true){ refresh();delay(600) } }
+    LaunchedEffect(exist){ while(true){ refresh();delay(500) } }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.ca_cert), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text = if(isEmpty){stringResource(R.string.please_select_ca_cert)}else{stringResource(R.string.cacert_installed, exist)}, modifier = Modifier.animateContentSize())
+        AnimatedVisibility(uriPath!="") {
+            Text(text = uriPath)
+        }
+        Text(
+            text = if(uriPath==""){stringResource(R.string.please_select_ca_cert)}else{stringResource(R.string.cacert_installed, exist)},
+            modifier = Modifier.animateContentSize()
+        )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 val caCertIntent = Intent(Intent.ACTION_GET_CONTENT)
                 caCertIntent.setType("*/*")
                 caCertIntent.addCategory(Intent.CATEGORY_OPENABLE)
-                getCaCert.launch(caCertIntent)
+                getFile.launch(caCertIntent)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.select_ca_cert))
         }
-        AnimatedVisibility(!isEmpty) {
+        AnimatedVisibility(uriPath!="") {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                 Button(
                     onClick = {
-                        val result = myDpm.installCaCert(myComponent, caCert)
+                        val result = myDpm.installCaCert(myComponent, caCertByteArray)
                         Toast.makeText(myContext, if(result){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
                         refresh()
                     },
@@ -634,8 +651,8 @@ private fun CaCert(){
                 Button(
                     onClick = {
                         if(exist){
-                            myDpm.uninstallCaCert(myComponent, caCert)
-                            exist = myDpm.hasCaCertInstalled(myComponent, caCert)
+                            myDpm.uninstallCaCert(myComponent, caCertByteArray)
+                            exist = myDpm.hasCaCertInstalled(myComponent, caCertByteArray)
                             Toast.makeText(myContext, if(exist){R.string.fail}else{R.string.success}, Toast.LENGTH_SHORT).show()
                         }else{ Toast.makeText(myContext, R.string.not_exist, Toast.LENGTH_SHORT).show() }
                     },

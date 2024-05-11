@@ -40,12 +40,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.bintianqi.owndroid.*
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.Receiver
-import com.bintianqi.owndroid.toText
 import com.bintianqi.owndroid.ui.*
 import com.bintianqi.owndroid.ui.theme.bgColor
-import com.bintianqi.owndroid.uriToStream
 import kotlinx.coroutines.delay
 
 var affiliationID = mutableSetOf<String>()
@@ -122,6 +120,9 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState){
             SubPageItem(R.string.affiliation_id,"",R.drawable.id_card_fill0){navCtrl.navigate("AffiliationID")}
         }
         Spacer(Modifier.padding(vertical = 30.dp))
+        LaunchedEffect(Unit) {
+            fileUri = null
+        }
     }
 }
 
@@ -509,17 +510,17 @@ private fun UserIcon(){
                 val intent = Intent(if(getContent){Intent.ACTION_GET_CONTENT}else{Intent.ACTION_PICK})
                 if(getContent){intent.addCategory(Intent.CATEGORY_OPENABLE)}
                 intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*")
-                getUserIcon.launch(intent)
+                getFile.launch(intent)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.select_picture))
         }
-        LaunchedEffect(Unit){ delay(600); canApply = userIconUri!=null }
+        LaunchedEffect(Unit){ delay(600); canApply = fileUri!=null }
         AnimatedVisibility(canApply) {
             Button(
                 onClick = {
-                    uriToStream(myContext, userIconUri){stream ->
+                    uriToStream(myContext, fileUri){stream ->
                         val bitmap = BitmapFactory.decodeStream(stream)
                         myDpm.setUserIcon(myComponent,bitmap)
                         Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()

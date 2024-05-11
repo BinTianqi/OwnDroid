@@ -1,13 +1,19 @@
 package com.bintianqi.owndroid
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
+import android.app.admin.DevicePolicyManager
+import android.content.*
 import android.net.Uri
 import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import com.bintianqi.owndroid.dpm.*
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
+
+lateinit var getFile: ActivityResultLauncher<Intent>
+var fileUri: Uri? = null
 
 fun uriToStream(
     context: Context,
@@ -53,4 +59,24 @@ fun writeClipBoard(context: Context, string: String):Boolean{
         return false
     }
     return true
+}
+
+
+fun registerActivityResult(context: ComponentActivity){
+    getFile = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {activityResult ->
+        activityResult.data.let {
+            if(it==null){
+                Toast.makeText(context.applicationContext, R.string.file_not_exist, Toast.LENGTH_SHORT).show()
+            }else{
+                fileUri = it.data
+            }
+        }
+    }
+    createManagedProfile = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
+    addDeviceAdmin = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        val myDpm = context.applicationContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        if(myDpm.isAdminActive(ComponentName(context.applicationContext, Receiver::class.java))){
+            backToHome = true
+        }
+    }
 }

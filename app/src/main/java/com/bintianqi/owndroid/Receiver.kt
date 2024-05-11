@@ -51,6 +51,7 @@ class PackageInstallerReceiver:BroadcastReceiver(){
             else->R.string.unknown
         }
         Log.e("OwnDroid", intent.getIntExtra(EXTRA_STATUS,999).toString())
-        if(toastText!=999){Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()}
+        val text = context.getString(R.string.app_installer_status) + context.getString(toastText)
+        if(toastText!=999){Toast.makeText(context, text, Toast.LENGTH_SHORT).show()}
     }
 }

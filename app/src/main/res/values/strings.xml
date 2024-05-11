@@ -46,7 +46,6 @@
     <string name="not_exist">Not exist</string>
     <string name="unknown_status">Unknown status</string>
     <string name="copy">Copy</string>
-    <string name="file_too_large">File too large</string>
     <string name="file_not_exist">File not exist</string>
     <string name="io_exception">IO Exception</string>
 

@@ -321,8 +321,7 @@ fun DeviceInfo(){
         val encryptionStatus = mutableMapOf(
             DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE to stringResource(R.string.es_inactive),
             DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE to stringResource(R.string.es_active),
-            DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED to stringResource(R.string.es_unsupported),
-            DevicePolicyManager.ENCRYPTION_STATUS_ACTIVATING to stringResource(R.string.unknown)
+            DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED to stringResource(R.string.es_unsupported)
         )
         if(VERSION.SDK_INT>=23){ encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY] = stringResource(R.string.es_active_default_key) }
         if(VERSION.SDK_INT>=24){ encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER] = stringResource(R.string.es_active_per_user) }
@@ -428,6 +427,8 @@ private fun SupportMsg(){
                 focusMgr.clearFocus()
                 myDpm.setShortSupportMessage(myComponent, shortMsg)
                 myDpm.setLongSupportMessage(myComponent, longMsg)
+                shortMsg = myDpm.getShortSupportMessage(myComponent)?.toString() ?: ""
+                longMsg = myDpm.getLongSupportMessage(myComponent)?.toString() ?: ""
                 Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
@@ -440,6 +441,8 @@ private fun SupportMsg(){
                 focusMgr.clearFocus()
                 myDpm.setShortSupportMessage(myComponent, null)
                 myDpm.setLongSupportMessage(myComponent, null)
+                shortMsg = myDpm.getShortSupportMessage(myComponent)?.toString() ?: ""
+                longMsg = myDpm.getLongSupportMessage(myComponent)?.toString() ?: ""
                 Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()

@@ -229,6 +229,9 @@ private fun Home(navCtrl:NavHostController, pkgName: String){
             SubPageItem(R.string.set_default_dialer,"",R.drawable.call_fill0){navCtrl.navigate("DefaultDialer")}
         }
         Spacer(Modifier.padding(vertical = 30.dp))
+        LaunchedEffect(Unit) {
+            fileUri = null
+        }
     }
 }
 
@@ -810,19 +813,19 @@ private fun InstallApp(){
                 val installApkIntent = Intent(Intent.ACTION_GET_CONTENT)
                 installApkIntent.setType("application/vnd.android.package-archive")
                 installApkIntent.addCategory(Intent.CATEGORY_OPENABLE)
-                getApk.launch(installApkIntent)
+                getFile.launch(installApkIntent)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.select_apk))
         }
         var selected by remember{mutableStateOf(false)}
-        LaunchedEffect(selected){while(true){ delay(800); selected = apkUri!=null}}
+        LaunchedEffect(selected){while(true){ delay(800); selected = fileUri!=null}}
         AnimatedVisibility(selected) {
             Spacer(Modifier.padding(vertical = 3.dp))
             Column(modifier = Modifier.fillMaxWidth()){
                 Button(
-                    onClick = { uriToStream(myContext, apkUri){stream -> installPackage(myContext,stream)} },
+                    onClick = { uriToStream(myContext, fileUri){stream -> installPackage(myContext,stream)} },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(stringResource(R.string.silent_install))
@@ -830,7 +833,7 @@ private fun InstallApp(){
                 Button(
                     onClick = {
                         val intent = Intent(Intent.ACTION_INSTALL_PACKAGE)
-                        intent.setData(apkUri)
+                        intent.setData(fileUri)
                         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         myContext.startActivity(intent)
                     },

@@ -14,7 +14,7 @@ object Animations{
     private val tween: FiniteAnimationSpec<IntOffset> = tween(450, easing = bezier)
     
     val navHostEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
-        fadeIn(tween(83, easing = LinearEasing)) +
+        fadeIn(tween(150, easing = LinearEasing)) +
         slideIntoContainer(
             animationSpec = tween,
             towards = AnimatedContentTransitionScope.SlideDirection.End,

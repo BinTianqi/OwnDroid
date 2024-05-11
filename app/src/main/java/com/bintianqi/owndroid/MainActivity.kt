@@ -1,6 +1,5 @@
 package com.bintianqi.owndroid
 
-import android.app.Activity
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
@@ -10,7 +9,6 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -49,28 +47,11 @@ import kotlinx.coroutines.delay
 var backToHome = false
 @ExperimentalMaterial3Api
 class MainActivity : ComponentActivity() {
-    private fun registerActivityResult(){
-        getUserIcon = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { userIconUri = it.data?.data }
-        getApk = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { apkUri = it.data?.data }
-        getCaCert = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            uriToStream(applicationContext,it.data?.data){stream->
-                caCert = stream.readBytes()
-                if(caCert.size>5000){ Toast.makeText(applicationContext, R.string.file_too_large, Toast.LENGTH_SHORT).show(); caCert = byteArrayOf() }
-            }
-        }
-        createManagedProfile = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
-        addDeviceAdmin = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            val myDpm = applicationContext.getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
-            if(myDpm.isAdminActive(ComponentName(applicationContext, Receiver::class.java))){
-                backToHome = true
-            }
-        }
-    }
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
-        registerActivityResult()
+        registerActivityResult(this)
         setContent {
             OwnDroidTheme {
                 MyScaffold()
