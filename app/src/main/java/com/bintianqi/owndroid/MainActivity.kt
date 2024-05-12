@@ -41,6 +41,7 @@ import com.bintianqi.owndroid.dpm.*
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import kotlinx.coroutines.delay
+import java.util.Locale
 
 var backToHome = false
 @ExperimentalMaterial3Api
@@ -51,6 +52,8 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         registerActivityResult(this)
+        val locale = applicationContext.resources.configuration.locale
+        zhCN = locale==Locale.SIMPLIFIED_CHINESE||locale==Locale.CHINESE||locale==Locale.CHINA
         val sharedPref = applicationContext.getSharedPreferences("data", Context.MODE_PRIVATE)
         setContent {
             val materialYou = mutableStateOf(sharedPref.getBoolean("material_you",true))
@@ -130,7 +133,7 @@ private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>){
         else if(myDpm.isAdminActive(myComponent)){R.string.device_admin}else{R.string.click_to_activate}
     )
     LaunchedEffect(Unit){ pkgName.value = "" }
-    Column(modifier = Modifier.statusBarsPadding().verticalScroll(rememberScrollState())) {
+    Column(modifier = Modifier.background(colorScheme.background).statusBarsPadding().verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 25.dp))
         Text(
             text = stringResource(R.string.app_name), style = typography.headlineLarge,
@@ -202,13 +205,11 @@ fun HomePageItem(name:Int, imgVector:Int, navTo:String, myNav:NavHostController)
             tint = colorScheme.onBackground
         )
         Spacer(Modifier.padding(start = 15.dp))
-        Column {
-            Text(
-                text = stringResource(name),
-                style = typography.headlineSmall,
-                color = colorScheme.onBackground,
-                modifier = Modifier.padding(bottom = 2.dp)
-            )
-        }
+        Text(
+            text = stringResource(name),
+            style = typography.headlineSmall,
+            color = colorScheme.onBackground,
+            modifier = Modifier.padding(bottom = if(zhCN){2}else{0}.dp)
+        )
     }
 }

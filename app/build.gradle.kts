@@ -19,8 +19,8 @@ android {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 21
         targetSdk = 34
-        versionCode = 26
-        versionName = "5.1"
+        versionCode = 27
+        versionName = "5.2"
         multiDexEnabled = false
         signingConfig = signingConfigs.getByName("testkey")
     }

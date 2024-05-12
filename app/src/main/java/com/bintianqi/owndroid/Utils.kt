@@ -7,13 +7,16 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import com.bintianqi.owndroid.dpm.*
+import com.bintianqi.owndroid.dpm.addDeviceAdmin
+import com.bintianqi.owndroid.dpm.createManagedProfile
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
 
 lateinit var getFile: ActivityResultLauncher<Intent>
 var fileUri: Uri? = null
+
+var zhCN = true
 
 fun uriToStream(
     context: Context,

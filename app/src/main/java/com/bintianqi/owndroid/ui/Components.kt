@@ -1,6 +1,5 @@
 package com.bintianqi.owndroid.ui
 
-import android.content.Context
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -24,6 +23,7 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.writeClipBoard
+import com.bintianqi.owndroid.zhCN
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -44,7 +44,7 @@ fun SubPageItem(
             Spacer(Modifier.padding(start = 15.dp))
         }
         Column {
-            Text(text = stringResource(title), style = typography.titleLarge, modifier = Modifier.padding(bottom = 1.dp))
+            Text(text = stringResource(title), style = typography.titleLarge, modifier = Modifier.padding(bottom = if(zhCN){2}else{0}.dp))
             if(desc!=""){Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F))}
         }
     }
@@ -82,17 +82,13 @@ fun RadioButtonItem(
     operation:()->Unit,
     textColor: Color = colorScheme.onBackground
 ){
-    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    val isWear = sharedPref.getBoolean("isWear",false)
     Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
         .fillMaxWidth()
-        .padding(vertical = if(isWear){3.dp}else{0.dp})
         .clip(RoundedCornerShape(25))
         .clickable(onClick = operation)
     ) {
-        RadioButton(selected = selected(), onClick = operation,modifier=if(isWear){Modifier.size(28.dp)}else{Modifier})
-        Text(text = text, style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium}, color = textColor,
-            modifier = Modifier.padding(bottom = 2.dp))
+        RadioButton(selected = selected(), onClick = operation)
+        Text(text = text, color = textColor, modifier = Modifier.padding(bottom = if(zhCN){2}else{0}.dp))
     }
 }
 
@@ -103,20 +99,16 @@ fun CheckBoxItem(
     operation:()->Unit,
     textColor:Color = colorScheme.onBackground
 ){
-    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    val isWear = sharedPref.getBoolean("isWear",false)
     Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
         .fillMaxWidth()
-        .padding(vertical = if(isWear){3.dp}else{0.dp})
         .clip(RoundedCornerShape(25))
         .clickable(onClick = operation)
     ) {
         Checkbox(
             checked = checked(),
-            onCheckedChange = {operation()},
-            modifier=if(isWear){Modifier.size(28.dp)}else{Modifier}
+            onCheckedChange = {operation()}
         )
-        Text(text = text, style = if(!isWear){typography.bodyLarge}else{typography.bodyMedium}, color = textColor, modifier = Modifier.padding(bottom = 2.dp))
+        Text(text = text, color = textColor, modifier = Modifier.padding(bottom = if(zhCN){2}else{0}.dp))
     }
 }
 
@@ -149,7 +141,10 @@ fun SwitchItem(
             }
             Column(modifier = Modifier.padding(end = 60.dp)){
                 Text(text = stringResource(title), style = typography.titleLarge)
-                if(desc!=""){Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F))}else{Spacer(Modifier.padding(vertical = 1.dp))}
+                if(desc!=""){
+                    Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F))
+                }
+                if(zhCN){ Spacer(Modifier.padding(vertical = 1.dp)) }
             }
         }
         Switch(
