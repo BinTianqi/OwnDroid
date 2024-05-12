@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,7 +23,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.ui.NavIcon
-import com.bintianqi.owndroid.ui.theme.bgColor
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -124,14 +124,14 @@ fun PackageSelector(navCtrl:NavHostController, pkgName: MutableState<String>){
                 title = {
                     Text(text = stringResource(R.string.pkg_selector))
                 },
-                navigationIcon = {NavIcon{navCtrl.navigateUp()}},
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = bgColor)
+                navigationIcon = { NavIcon{navCtrl.navigateUp()} },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.background)
             )
         }
     ){paddingValues->
         LazyColumn(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize().background(bgColor).padding(top = paddingValues.calculateTopPadding()),
+            modifier = Modifier.fillMaxSize().padding(top = paddingValues.calculateTopPadding()),
             state = scrollState
         ){
             items(1){

@@ -43,7 +43,6 @@ import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.*
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.*
-import com.bintianqi.owndroid.ui.theme.bgColor
 import kotlinx.coroutines.delay
 
 var affiliationID = mutableSetOf<String>()
@@ -84,7 +83,7 @@ fun UserManage(navCtrl:NavHostController) {
             exitTransition = Animations.navHostExitTransition,
             popEnterTransition = Animations.navHostPopEnterTransition,
             popExitTransition = Animations.navHostPopExitTransition,
-            modifier = Modifier.background(bgColor).padding(top = it.calculateTopPadding())
+            modifier = Modifier.padding(top = it.calculateTopPadding())
         ){
             composable(route = "Home"){Home(localNavCtrl,scrollState)}
             composable(route = "UserInfo"){CurrentUserInfo()}

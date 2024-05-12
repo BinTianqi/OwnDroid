@@ -11,7 +11,6 @@ import androidx.activity.ComponentActivity
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,7 +38,6 @@ import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.TopBar
-import com.bintianqi.owndroid.ui.theme.bgColor
 
 private data class Restriction(
     val restriction:String,
@@ -84,7 +82,7 @@ fun UserRestriction(navCtrl: NavHostController){
             exitTransition = Animations.navHostExitTransition,
             popEnterTransition = Animations.navHostPopEnterTransition,
             popExitTransition = Animations.navHostPopExitTransition,
-            modifier = Modifier.background(bgColor).padding(top = it.calculateTopPadding())
+            modifier = Modifier.padding(top = it.calculateTopPadding())
         ){
             composable(route = "Internet"){Internet()}
             composable(route = "Home"){Home(localNavCtrl,scrollState)}

@@ -5,9 +5,7 @@ import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -25,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.ui.theme.bgColor
 import com.bintianqi.owndroid.writeClipBoard
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -173,8 +170,12 @@ fun TopBar(
     TopAppBar(
         //Text(text = stringResource(titleMap[backStackEntry?.destination?.route]?:R.string.user_restrict))
         title = title,
-        navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = bgColor)
+        navigationIcon = {
+            NavIcon{
+                if(backStackEntry?.destination?.route=="Home"){ navCtrl.navigateUp() }else{ localNavCtrl.navigateUp() }
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.background)
     )
 }
 

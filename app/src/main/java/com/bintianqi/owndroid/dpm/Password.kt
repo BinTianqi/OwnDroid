@@ -36,7 +36,6 @@ import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.ui.*
-import com.bintianqi.owndroid.ui.theme.bgColor
 
 @Composable
 fun Password(navCtrl: NavHostController){
@@ -78,7 +77,7 @@ fun Password(navCtrl: NavHostController){
             exitTransition = Animations.navHostExitTransition,
             popEnterTransition = Animations.navHostPopEnterTransition,
             popExitTransition = Animations.navHostPopExitTransition,
-            modifier = Modifier.background(bgColor).padding(top = it.calculateTopPadding())
+            modifier = Modifier.padding(top = it.calculateTopPadding())
         ){
             composable(route = "Home"){Home(localNavCtrl,scrollState)}
             composable(route = "PasswordInfo"){PasswordInfo()}

@@ -3,19 +3,21 @@ package com.bintianqi.owndroid
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import android.os.Build.VERSION
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -24,12 +26,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.bintianqi.owndroid.ui.*
-import com.bintianqi.owndroid.ui.theme.SetDarkTheme
-import com.bintianqi.owndroid.ui.theme.bgColor
+import com.bintianqi.owndroid.ui.Animations
+import com.bintianqi.owndroid.ui.SubPageItem
+import com.bintianqi.owndroid.ui.SwitchItem
+import com.bintianqi.owndroid.ui.TopBar
 
 @Composable
-fun AppSetting(navCtrl:NavHostController){
+fun AppSetting(navCtrl:NavHostController, materialYou: MutableState<Boolean>, blackTheme: MutableState<Boolean>){
     val localNavCtrl = rememberNavController()
     val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
     /*val titleMap = mapOf(
@@ -51,10 +54,10 @@ fun AppSetting(navCtrl:NavHostController){
             exitTransition = Animations.navHostExitTransition,
             popEnterTransition = Animations.navHostPopEnterTransition,
             popExitTransition = Animations.navHostPopExitTransition,
-            modifier = Modifier.background(bgColor).padding(top = it.calculateTopPadding())
+            modifier = Modifier.padding(top = it.calculateTopPadding())
         ){
             composable(route = "Home"){Home(localNavCtrl)}
-            composable(route = "Settings"){Settings()}
+            composable(route = "Settings"){Settings(materialYou, blackTheme)}
             composable(route = "About"){About()}
         }
     }
@@ -69,24 +72,28 @@ private fun Home(navCtrl: NavHostController){
 }
 
 @Composable
-private fun Settings(){
+private fun Settings(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>){
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    SetDarkTheme()
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        SwitchItem(
-            R.string.dynamic_color, stringResource(R.string.dynamic_color_desc),null,
-            {sharedPref.getBoolean("dynamicColor",false)},{sharedPref.edit().putBoolean("dynamicColor",it).apply()}
-        )
-        if(colorScheme.background.toArgb()!=Color(0xFF000000).toArgb()){
+        if(VERSION.SDK_INT>=31){
             SwitchItem(
-                R.string.blackTheme, stringResource(R.string.blackTheme_desc),null,
-                {sharedPref.getBoolean("blackTheme",false)},{sharedPref.edit().putBoolean("blackTheme",it).apply()}
+                R.string.material_you_color, stringResource(R.string.dynamic_color_desc), null,
+                { sharedPref.getBoolean("material_you",true) },
+                {
+                    sharedPref.edit().putBoolean("material_you",it).apply()
+                    materialYou.value = it
+                }
             )
         }
-        Box(modifier = Modifier.padding(10.dp)){
-            Information {
-                Text(text = stringResource(R.string.need_relaunch))
-            }
+        if(isSystemInDarkTheme()){
+            SwitchItem(
+                R.string.amoled_black, stringResource(R.string.blackTheme_desc), null,
+                { sharedPref.getBoolean("black_theme",false) },
+                {
+                    sharedPref.edit().putBoolean("black_theme",it).apply()
+                    blackTheme.value = it
+                }
+            )
         }
     }
 }

@@ -40,21 +40,23 @@ import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.dpm.*
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
-import com.bintianqi.owndroid.ui.theme.SetDarkTheme
-import com.bintianqi.owndroid.ui.theme.bgColor
 import kotlinx.coroutines.delay
 
 var backToHome = false
 @ExperimentalMaterial3Api
 class MainActivity : ComponentActivity() {
+    @SuppressLint("UnrememberedMutableState")
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         registerActivityResult(this)
+        val sharedPref = applicationContext.getSharedPreferences("data", Context.MODE_PRIVATE)
         setContent {
-            OwnDroidTheme {
-                MyScaffold()
+            val materialYou = mutableStateOf(sharedPref.getBoolean("material_you",true))
+            val blackTheme = mutableStateOf(sharedPref.getBoolean("black_theme", false))
+            OwnDroidTheme(materialYou.value, blackTheme.value){
+                MyScaffold(materialYou, blackTheme)
             }
         }
     }
@@ -63,7 +65,7 @@ class MainActivity : ComponentActivity() {
 @SuppressLint("UnrememberedMutableState")
 @ExperimentalMaterial3Api
 @Composable
-fun MyScaffold(){
+fun MyScaffold(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>){
     val navCtrl = rememberNavController()
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
@@ -72,7 +74,6 @@ fun MyScaffold(){
     val focusMgr = LocalFocusManager.current
     val pkgName = mutableStateOf("")
     val dialogStatus = mutableIntStateOf(0)
-    SetDarkTheme()
     LaunchedEffect(Unit){
         while(true){
             if(backToHome){ navCtrl.navigateUp(); backToHome=false }
@@ -84,7 +85,7 @@ fun MyScaffold(){
         startDestination = "HomePage",
         modifier = Modifier
             .fillMaxSize()
-            .background(bgColor)
+            .background(colorScheme.background)
             .imePadding()
             .pointerInput(Unit) {detectTapGestures(onTap = {focusMgr.clearFocus()})},
         enterTransition = Animations.navHostEnterTransition,
@@ -100,7 +101,7 @@ fun MyScaffold(){
         composable(route = "UserRestriction", content = { UserRestriction(navCtrl)})
         composable(route = "UserManage", content = { UserManage(navCtrl)})
         composable(route = "Password", content = { Password(navCtrl)})
-        composable(route = "AppSetting", content = { AppSetting(navCtrl)})
+        composable(route = "AppSetting", content = { AppSetting(navCtrl, materialYou, blackTheme)})
         composable(route = "Network", content = {Network(navCtrl)})
         composable(route = "PackageSelector"){PackageSelector(navCtrl, pkgName)}
         composable(route = "PermissionPicker"){PermissionPicker(navCtrl)}
@@ -131,7 +132,10 @@ private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>){
     LaunchedEffect(Unit){ pkgName.value = "" }
     Column(modifier = Modifier.statusBarsPadding().verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 25.dp))
-        Text(text = stringResource(R.string.app_name), style = typography.headlineLarge, modifier = Modifier.padding(start = 10.dp), color = colorScheme.onBackground)
+        Text(
+            text = stringResource(R.string.app_name), style = typography.headlineLarge,
+            modifier = Modifier.padding(start = 10.dp), color = colorScheme.onBackground
+        )
         Spacer(Modifier.padding(vertical = 8.dp))
         Row(
             modifier = Modifier

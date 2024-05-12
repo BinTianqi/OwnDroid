@@ -44,7 +44,6 @@ import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.*
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.*
-import com.bintianqi.owndroid.ui.theme.bgColor
 import kotlinx.coroutines.delay
 import java.util.Date
 
@@ -91,7 +90,7 @@ fun SystemManage(navCtrl:NavHostController){
             exitTransition = Animations.navHostExitTransition,
             popEnterTransition = Animations.navHostPopEnterTransition,
             popExitTransition = Animations.navHostPopExitTransition,
-            modifier = Modifier.background(bgColor).padding(top = it.calculateTopPadding())
+            modifier = Modifier.padding(top = it.calculateTopPadding())
         ){
             composable(route = "Home"){Home(localNavCtrl,scrollState)}
             composable(route = "Switches"){Switches()}
@@ -610,6 +609,7 @@ private fun CaCert(){
                 }
                 exist = myDpm.hasCaCertInstalled(myComponent, caCertByteArray)
             }
+            uriPath = fileUri?.path?:""
         }
     }
     LaunchedEffect(exist){ while(true){ refresh();delay(500) } }

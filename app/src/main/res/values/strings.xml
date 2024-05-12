@@ -487,15 +487,14 @@
 
     <!--Settings&About-->
     <string name="setting">Settings</string>
-    <string name="dynamic_color">Dynamic color</string>
+    <string name="material_you_color">Material you color</string>
     <string name="dynamic_color_desc">Android 12+</string>
     <string name="about">About</string>
     <string name="about_desc">Use Device admin, Profile owner and Device owner privilege to take full control of your device. </string>
     <string name="user_guide">User guide</string>
     <string name="source_code">Source code</string>
-    <string name="blackTheme">Black theme</string>
+    <string name="amoled_black">Black theme</string>
     <string name="blackTheme_desc">Require dark mode on</string>
-    <string name="need_relaunch">Require restart this app</string>
 
     <!--AndroidPermission-->
     <string name="permission_READ_EXTERNAL_STORAGE">Read external storage</string>

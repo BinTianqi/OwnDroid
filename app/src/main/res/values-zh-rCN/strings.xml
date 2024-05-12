@@ -472,15 +472,14 @@
 
     <!--Settings&About-->
     <string name="setting">设置</string>
-    <string name="dynamic_color">动态取色</string>
+    <string name="material_you_color">Material you 颜色</string>
     <string name="dynamic_color_desc">安卓12+</string>
     <string name="about">关于</string>
     <string name="about_desc">使用安卓的Device admin、Device owner、Profile owner，全方位掌控你的设备</string>
     <string name="user_guide">使用教程</string>
     <string name="source_code">源代码</string>
-    <string name="blackTheme">纯黑夜间主题</string>
+    <string name="amoled_black">纯黑夜间主题</string>
     <string name="blackTheme_desc">需要打开夜间模式</string>
-    <string name="need_relaunch">需要重启应用</string>
 
     <!--AndroidPermission-->
     <string name="permission_READ_EXTERNAL_STORAGE">读取外部存储</string>

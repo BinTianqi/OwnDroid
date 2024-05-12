@@ -2,11 +2,9 @@ package com.bintianqi.owndroid.ui.theme
 
 import android.app.Activity
 import android.content.Context
-import android.os.Build
 import android.os.Build.VERSION
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
@@ -79,40 +77,30 @@ private val LightColorScheme = lightColorScheme(
     scrim = md_theme_light_scrim
 )
 
-var bgColor = Color(0xFF000000)
-
-@Composable
-fun SetDarkTheme(){
-    val dark = isSystemInDarkTheme()
-    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    val bg = colorScheme.background
-    val lightBg = colorScheme.primary.copy(alpha = 0.05F)
-    bgColor = if(dark){
-        if(sharedPref.getBoolean("blackTheme",true)){ Color(0xFF000000) }else{ bg }
-    }else{
-        lightBg
-    }
-}
-
 @Composable
 fun OwnDroidTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    materialYou: Boolean,
+    blackTheme: Boolean,
     content: @Composable () -> Unit
 ) {
-    SetDarkTheme()
+    val darkTheme = isSystemInDarkTheme()
     val context = LocalContext.current
     val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     if(!sharedPref.contains("dynamicColor")&&VERSION.SDK_INT>=32){
         sharedPref.edit().putBoolean("dynamicColor",true).apply()
     }
-    val dynamicColor = sharedPref.getBoolean("dynamicColor",false)
-    val colorScheme = when {
-        dynamicColor && VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    var colorScheme = when {
+        materialYou && VERSION.SDK_INT>=31 -> {
+            if(darkTheme){ dynamicDarkColorScheme(context) }else{ dynamicLightColorScheme(context) }
         }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
+    }
+    if(darkTheme&&blackTheme){
+        colorScheme = colorScheme.copy(background = Color.Black)
+    }
+    if(!darkTheme){
+        colorScheme = colorScheme.copy(background = colorScheme.primary.copy(alpha = 0.05f))
     }
     val view = LocalView.current
     SideEffect {

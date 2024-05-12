@@ -2,7 +2,6 @@ package com.bintianqi.owndroid
 
 import android.Manifest
 import android.os.Build.VERSION
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,7 +16,6 @@ import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.dpm.applySelectedPermission
 import com.bintianqi.owndroid.dpm.selectedPermission
 import com.bintianqi.owndroid.ui.NavIcon
-import com.bintianqi.owndroid.ui.theme.bgColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,12 +25,12 @@ fun PermissionPicker(navCtrl: NavHostController){
             TopAppBar(
                 title = {Text(text = stringResource(R.string.permission_picker))},
                 navigationIcon = {NavIcon{navCtrl.navigateUp()}},
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = bgColor)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         }
     ){ paddingValues->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(top = paddingValues.calculateTopPadding()).background(bgColor)
+            modifier = Modifier.fillMaxSize().padding(top = paddingValues.calculateTopPadding())
         ){
             items(permissionList()){
                 Column(

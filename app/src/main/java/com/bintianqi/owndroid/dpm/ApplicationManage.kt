@@ -52,7 +52,6 @@ import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.*
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.*
-import com.bintianqi.owndroid.ui.theme.bgColor
 import kotlinx.coroutines.delay
 import java.io.IOException
 import java.io.InputStream
@@ -122,8 +121,7 @@ fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, 
                 enterTransition = Animations.navHostEnterTransition,
                 exitTransition = Animations.navHostExitTransition,
                 popEnterTransition = Animations.navHostPopEnterTransition,
-                popExitTransition = Animations.navHostPopExitTransition,
-                modifier = Modifier.background(bgColor)
+                popExitTransition = Animations.navHostPopExitTransition
             ){
                 composable(route = "Home"){Home(localNavCtrl, pkgName.value, dialogStatus)}
                 composable(route = "UserControlDisabled"){UserCtrlDisabledPkg(pkgName.value)}
