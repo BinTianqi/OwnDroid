@@ -22,7 +22,7 @@ android {
         versionCode = 26
         versionName = "5.1"
         multiDexEnabled = false
-        //signingConfig = signingConfigs.getByName("testkey")
+        signingConfig = signingConfigs.getByName("testkey")
     }
 
     buildTypes {

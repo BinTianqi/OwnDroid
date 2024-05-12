@@ -5,8 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.result.ActivityResultLauncher
 
-var selectedPackage = ""
-var applySelectedPackage = false
 var selectedPermission = ""
 var applySelectedPermission = false
 lateinit var createManagedProfile: ActivityResultLauncher<Intent>

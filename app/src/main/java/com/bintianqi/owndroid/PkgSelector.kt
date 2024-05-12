@@ -21,8 +21,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.bintianqi.owndroid.dpm.applySelectedPackage
-import com.bintianqi.owndroid.dpm.selectedPackage
 import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.theme.bgColor
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
@@ -40,7 +38,7 @@ private val pkgs = mutableListOf<PkgInfo>()
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun PackageSelector(navCtrl:NavHostController){
+fun PackageSelector(navCtrl:NavHostController, pkgName: MutableState<String>){
     val context = LocalContext.current
     val pm = context.packageManager
     val apps = pm.getInstalledApplications(0)
@@ -144,7 +142,7 @@ fun PackageSelector(navCtrl:NavHostController){
             if(show) {
                 items(pkgs) {
                     if(filter==it.type){
-                        PackageItem(it, navCtrl)
+                        PackageItem(it, navCtrl, pkgName)
                     }
                 }
                 items(1){Spacer(Modifier.padding(vertical = 30.dp))}
@@ -163,12 +161,12 @@ fun PackageSelector(navCtrl:NavHostController){
 }
 
 @Composable
-private fun PackageItem(pkg: PkgInfo, navCtrl: NavHostController){
+private fun PackageItem(pkg: PkgInfo, navCtrl: NavHostController, pkgName: MutableState<String>){
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable{selectedPackage =pkg.pkgName;applySelectedPackage =true;navCtrl.navigateUp()}
+            .clickable{ pkgName.value = pkg.pkgName; navCtrl.navigateUp()}
             .padding(vertical = 3.dp)
     ){
         Spacer(Modifier.padding(start = 15.dp))

@@ -5,7 +5,9 @@ import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -128,12 +130,21 @@ fun SwitchItem(
     @DrawableRes icon: Int?,
     getState: ()->Boolean,
     onCheckedChange: (Boolean)->Unit,
-    enable:Boolean=true
+    enable:Boolean = true,
+    onClickBlank: (() -> Unit)? = null
 ){
     var checked by remember{mutableStateOf(false)}
     checked = getState()
-    Box(modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.align(Alignment.CenterStart)){
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = onClickBlank!=null, onClick = onClickBlank?:{})
+            .padding(vertical = 5.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.align(Alignment.CenterStart)
+        ){
             Spacer(Modifier.padding(start = 30.dp))
             if(icon!=null){
                 Icon(painter = painterResource(icon),contentDescription = null)

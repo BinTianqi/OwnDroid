@@ -1,5 +1,6 @@
 package com.bintianqi.owndroid
 
+import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
@@ -21,8 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,6 +60,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@SuppressLint("UnrememberedMutableState")
 @ExperimentalMaterial3Api
 @Composable
 fun MyScaffold(){
@@ -69,6 +70,8 @@ fun MyScaffold(){
     val myComponent = ComponentName(myContext,Receiver::class.java)
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val focusMgr = LocalFocusManager.current
+    val pkgName = mutableStateOf("")
+    val dialogStatus = mutableIntStateOf(0)
     SetDarkTheme()
     LaunchedEffect(Unit){
         while(true){
@@ -89,17 +92,17 @@ fun MyScaffold(){
         popEnterTransition = Animations.navHostPopEnterTransition,
         popExitTransition = Animations.navHostPopExitTransition
     ){
-        composable(route = "HomePage", content = { HomePage(navCtrl)})
+        composable(route = "HomePage", content = { HomePage(navCtrl, pkgName)})
         composable(route = "SystemManage", content = { SystemManage(navCtrl) })
         composable(route = "ManagedProfile", content = {ManagedProfile(navCtrl)})
         composable(route = "Permissions", content = { DpmPermissions(navCtrl)})
-        composable(route = "ApplicationManage", content = { ApplicationManage(navCtrl)})
+        composable(route = "ApplicationManage", content = { ApplicationManage(navCtrl, pkgName, dialogStatus)})
         composable(route = "UserRestriction", content = { UserRestriction(navCtrl)})
         composable(route = "UserManage", content = { UserManage(navCtrl)})
         composable(route = "Password", content = { Password(navCtrl)})
         composable(route = "AppSetting", content = { AppSetting(navCtrl)})
         composable(route = "Network", content = {Network(navCtrl)})
-        composable(route = "PackageSelector"){PackageSelector(navCtrl)}
+        composable(route = "PackageSelector"){PackageSelector(navCtrl, pkgName)}
         composable(route = "PermissionPicker"){PermissionPicker(navCtrl)}
     }
     LaunchedEffect(Unit){
@@ -114,7 +117,7 @@ fun MyScaffold(){
 }
 
 @Composable
-private fun HomePage(navCtrl:NavHostController){
+private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>){
     val myContext = LocalContext.current
     val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val myComponent = ComponentName(myContext,Receiver::class.java)
@@ -125,6 +128,7 @@ private fun HomePage(navCtrl:NavHostController){
         }
         else if(myDpm.isAdminActive(myComponent)){R.string.device_admin}else{R.string.click_to_activate}
     )
+    LaunchedEffect(Unit){ pkgName.value = "" }
     Column(modifier = Modifier.statusBarsPadding().verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 25.dp))
         Text(text = stringResource(R.string.app_name), style = typography.headlineLarge, modifier = Modifier.padding(start = 10.dp), color = colorScheme.onBackground)

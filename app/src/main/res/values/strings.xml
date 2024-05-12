@@ -48,6 +48,7 @@
     <string name="copy">Copy</string>
     <string name="file_not_exist">File not exist</string>
     <string name="io_exception">IO Exception</string>
+    <string name="current_status_is">Current status:&#160;</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
@@ -269,7 +270,6 @@
     <string name="app_info">App info</string>
     <string name="not_installed">Not installed</string>
     <string name="block_uninstall">Block uninstall</string>
-    <string name="sometimes_get_wrong_block_uninstall_state">Sometimes it shows a wrong status</string>
     <!--ucd: user control disabled-->
     <string name="ucd">Disable user control</string>
     <string name="ucd_desc">If you set this, you cannot clear storage or cache of the app. </string>

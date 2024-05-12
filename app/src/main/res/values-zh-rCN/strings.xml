@@ -45,6 +45,7 @@
     <string name="copy">复制</string>
     <string name="file_not_exist">文件不存在</string>
     <string name="io_exception">IO异常</string>
+    <string name="current_status_is">当前状态：</string>
 
     <!--Permissions-->
     <string name="click_to_activate">点击以激活</string>
@@ -256,7 +257,6 @@
     <string name="app_info">应用详情</string>
     <string name="not_installed">未安装</string>
     <string name="block_uninstall">防卸载</string>
-    <string name="sometimes_get_wrong_block_uninstall_state">有时候无法正确获取防卸载状态</string>
     <string name="ucd">禁止用户控制</string>
     <string name="ucd_desc">用户将无法清除应用的存储空间和缓存</string>
     <string name="app_list_is">应用列表：</string>
