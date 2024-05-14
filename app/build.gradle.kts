@@ -15,6 +15,8 @@ android {
     namespace = "com.bintianqi.owndroid"
     compileSdk = 34
 
+    lint.checkReleaseBuilds = false
+
     defaultConfig {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 21
