@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.os.Build.VERSION
 import android.os.Bundle
 import android.widget.Toast
@@ -33,6 +34,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -45,9 +47,13 @@ import java.util.Locale
 
 var backToHome = false
 @ExperimentalMaterial3Api
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     @SuppressLint("UnrememberedMutableState")
     override fun onCreate(savedInstanceState: Bundle?) {
+        if(!authenticated){
+            startActivity(Intent(applicationContext, AuthActivity::class.java))
+            finish()
+        }
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
@@ -96,18 +102,18 @@ fun MyScaffold(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolea
         popEnterTransition = Animations.navHostPopEnterTransition,
         popExitTransition = Animations.navHostPopExitTransition
     ){
-        composable(route = "HomePage", content = { HomePage(navCtrl, pkgName)})
-        composable(route = "SystemManage", content = { SystemManage(navCtrl) })
-        composable(route = "ManagedProfile", content = {ManagedProfile(navCtrl)})
-        composable(route = "Permissions", content = { DpmPermissions(navCtrl)})
-        composable(route = "ApplicationManage", content = { ApplicationManage(navCtrl, pkgName, dialogStatus)})
-        composable(route = "UserRestriction", content = { UserRestriction(navCtrl)})
-        composable(route = "UserManage", content = { UserManage(navCtrl)})
-        composable(route = "Password", content = { Password(navCtrl)})
-        composable(route = "AppSetting", content = { AppSetting(navCtrl, materialYou, blackTheme)})
-        composable(route = "Network", content = {Network(navCtrl)})
-        composable(route = "PackageSelector"){PackageSelector(navCtrl, pkgName)}
-        composable(route = "PermissionPicker"){PermissionPicker(navCtrl)}
+        composable(route = "HomePage"){ HomePage(navCtrl, pkgName) }
+        composable(route = "SystemManage"){ SystemManage(navCtrl) }
+        composable(route = "ManagedProfile"){ ManagedProfile(navCtrl) }
+        composable(route = "Permissions"){ DpmPermissions(navCtrl) }
+        composable(route = "ApplicationManage"){ ApplicationManage(navCtrl, pkgName, dialogStatus)}
+        composable(route = "UserRestriction"){ UserRestriction(navCtrl) }
+        composable(route = "UserManage"){ UserManage(navCtrl) }
+        composable(route = "Password"){ Password(navCtrl) }
+        composable(route = "AppSetting"){ AppSetting(navCtrl, materialYou, blackTheme) }
+        composable(route = "Network"){ Network(navCtrl) }
+        composable(route = "PackageSelector"){ PackageSelector(navCtrl, pkgName) }
+        composable(route = "PermissionPicker"){ PermissionPicker(navCtrl) }
     }
     LaunchedEffect(Unit){
         val profileInited = sharedPref.getBoolean("ManagedProfileActivated",false)
