@@ -45,10 +45,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".AuthActivity"
-            android:theme="@style/Theme.OwnDroid">
-        </activity>
         <receiver
             android:name=".Receiver"
             android:description="@string/app_name"

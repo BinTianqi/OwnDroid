@@ -4,12 +4,13 @@ import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.os.Build.VERSION
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,12 +29,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -45,27 +48,39 @@ import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import kotlinx.coroutines.delay
 import java.util.Locale
 
+val homeFragment = HomeFragment()
+
 var backToHome = false
 @ExperimentalMaterial3Api
 class MainActivity : FragmentActivity() {
     @SuppressLint("UnrememberedMutableState")
     override fun onCreate(savedInstanceState: Bundle?) {
-        if(!authenticated){
-            startActivity(Intent(applicationContext, AuthActivity::class.java))
-            finish()
-        }
+        registerActivityResult(this)
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
-        registerActivityResult(this)
-        val locale = applicationContext.resources.configuration.locale
+        setContentView(R.layout.base)
+        val fragmentManager = supportFragmentManager
+        val transaction = fragmentManager.beginTransaction()
+        transaction.add(R.id.base, AuthFragment(), "auth")
+        transaction.commit()
+        val locale = applicationContext.resources?.configuration?.locale
         zhCN = locale==Locale.SIMPLIFIED_CHINESE||locale==Locale.CHINESE||locale==Locale.CHINA
-        val sharedPref = applicationContext.getSharedPreferences("data", Context.MODE_PRIVATE)
-        setContent {
-            val materialYou = mutableStateOf(sharedPref.getBoolean("material_you",true))
-            val blackTheme = mutableStateOf(sharedPref.getBoolean("black_theme", false))
-            OwnDroidTheme(materialYou.value, blackTheme.value){
-                MyScaffold(materialYou, blackTheme)
+    }
+}
+
+class HomeFragment: Fragment() {
+    @OptIn(ExperimentalMaterial3Api::class)
+    @SuppressLint("UnrememberedMutableState")
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        val sharedPref = context?.getSharedPreferences("data", Context.MODE_PRIVATE)!!
+        return ComposeView(requireContext()).apply {
+            setContent {
+                val materialYou = mutableStateOf(sharedPref.getBoolean("material_you",true))
+                val blackTheme = mutableStateOf(sharedPref.getBoolean("black_theme", false))
+                OwnDroidTheme(materialYou.value, blackTheme.value){
+                    MyScaffold(materialYou, blackTheme)
+                }
             }
         }
     }

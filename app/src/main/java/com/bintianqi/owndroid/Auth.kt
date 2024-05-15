@@ -2,60 +2,63 @@ package com.bintianqi.owndroid
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.biometric.BiometricPrompt.AuthenticationCallback
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.content.ContextCompat
-import androidx.core.view.WindowCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 
-var authenticated = false
-
-class AuthActivity: FragmentActivity(){
+class AuthFragment: Fragment() {
     @SuppressLint("UnrememberedMutableState")
-    @OptIn(ExperimentalMaterial3Api::class)
-    override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        super.onCreate(savedInstanceState)
-        val mainActivityIntent = Intent(applicationContext, MainActivity::class.java)
-        val sharedPref = applicationContext.getSharedPreferences("data", Context.MODE_PRIVATE)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        val sharedPref = context?.getSharedPreferences("data", Context.MODE_PRIVATE)!!
+        val onAuthSucceed = {
+            val fragmentManager = this.parentFragmentManager
+            val fragment = fragmentManager.findFragmentByTag("auth")
+            if(fragment != null) {
+                val fragmentTransaction = fragmentManager.beginTransaction()
+                fragmentTransaction.replace(R.id.base, homeFragment)
+                fragmentTransaction.commit()
+            }
+        }
         val callback = object: AuthenticationCallback() {
             override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                 super.onAuthenticationSucceeded(result)
-                authenticated = true
-                startActivity(mainActivityIntent)
-                finish()
+                onAuthSucceed()
             }
             override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                 super.onAuthenticationError(errorCode, errString)
-                Toast.makeText(applicationContext, errString, Toast.LENGTH_SHORT).show()
-                /*if (errString.toString().isNotEmpty()) {
-                }*/
+                if(errorCode == BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL) onAuthSucceed()
+                if(errorCode == BiometricPrompt.ERROR_CANCELED) return
+                Toast.makeText(context, errString, Toast.LENGTH_SHORT).show()
             }
         }
-        setContent {
-            val materialYou = mutableStateOf(sharedPref.getBoolean("material_you",true))
-            val blackTheme = mutableStateOf(sharedPref.getBoolean("black_theme", false))
-            OwnDroidTheme(materialYou.value, blackTheme.value) {
-                Auth(this, callback)
+        return ComposeView(requireContext()).apply {
+            setContent {
+                val materialYou = mutableStateOf(sharedPref.getBoolean("material_you",true))
+                val blackTheme = mutableStateOf(sharedPref.getBoolean("black_theme", false))
+                OwnDroidTheme(materialYou.value, blackTheme.value) {
+                    Auth(this@AuthFragment.requireActivity(), callback)
+                }
             }
         }
     }
@@ -66,9 +69,9 @@ fun Auth(activity: FragmentActivity, callback: AuthenticationCallback) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
     ){
-        Text(text = "Authenticate", style = MaterialTheme.typography.headlineLarge)
+        Text(text = "Authenticate", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.onBackground)
         Button(
             onClick = {
                 authWithBiometricPrompt(activity, callback)
