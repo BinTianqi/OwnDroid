@@ -101,16 +101,21 @@ fun Auth(activity: FragmentActivity, callback: AuthenticationCallback, promptInf
         Button(
             onClick = {
                 val bioManager = BiometricManager.from(context)
-                when(BiometricManager.BIOMETRIC_SUCCESS){
-                    bioManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) ->
-                        promptInfo
-                            .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
-                            .setNegativeButtonText("Use password")
-                    bioManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK) ->
-                        promptInfo
-                            .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK)
-                            .setNegativeButtonText("Use password")
-                    else -> promptInfo.setAllowedAuthenticators(BiometricManager.Authenticators.DEVICE_CREDENTIAL)
+                val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+                if(sharedPref.getBoolean("bio_auth", false)){
+                    when(BiometricManager.BIOMETRIC_SUCCESS){
+                        bioManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) ->
+                            promptInfo
+                                .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
+                                .setNegativeButtonText("Use password")
+                        bioManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK) ->
+                            promptInfo
+                                .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK)
+                                .setNegativeButtonText("Use password")
+                        else -> promptInfo.setAllowedAuthenticators(BiometricManager.Authenticators.DEVICE_CREDENTIAL)
+                    }
+                }else{
+                    promptInfo.setAllowedAuthenticators(BiometricManager.Authenticators.DEVICE_CREDENTIAL)
                 }
                 authWithBiometricPrompt(activity, promptInfo.build(), callback)
             }

@@ -60,9 +60,14 @@ class MainActivity : FragmentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.base)
+        val sharedPref = applicationContext.getSharedPreferences("data", Context.MODE_PRIVATE)
         val fragmentManager = supportFragmentManager
         val transaction = fragmentManager.beginTransaction()
-        transaction.add(R.id.base, AuthFragment(), "auth")
+        if(sharedPref.getBoolean("auth", false)){
+            transaction.add(R.id.base, AuthFragment(), "auth")
+        }else{
+            transaction.add(R.id.base, homeFragment, "home")
+        }
         transaction.commit()
         val locale = applicationContext.resources?.configuration?.locale
         zhCN = locale==Locale.SIMPLIFIED_CHINESE||locale==Locale.CHINESE||locale==Locale.CHINA

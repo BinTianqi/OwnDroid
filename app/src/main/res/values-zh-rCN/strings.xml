@@ -480,6 +480,9 @@
     <string name="source_code">源代码</string>
     <string name="amoled_black">纯黑夜间主题</string>
     <string name="blackTheme_desc">需要打开夜间模式</string>
+    <string name="security">安全</string>
+    <string name="lock_owndroid">锁定OwnDroid</string>
+    <string name="enable_bio_auth">使用生物识别</string>
 
     <!--AndroidPermission-->
     <string name="permission_READ_EXTERNAL_STORAGE">读取外部存储</string>

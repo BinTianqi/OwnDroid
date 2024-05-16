@@ -14,9 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -56,9 +54,10 @@ fun AppSetting(navCtrl:NavHostController, materialYou: MutableState<Boolean>, bl
             popExitTransition = Animations.navHostPopExitTransition,
             modifier = Modifier.padding(top = it.calculateTopPadding())
         ){
-            composable(route = "Home"){Home(localNavCtrl)}
-            composable(route = "Settings"){Settings(materialYou, blackTheme)}
-            composable(route = "About"){About()}
+            composable(route = "Home"){ Home(localNavCtrl) }
+            composable(route = "Theme"){ ThemeSettings(materialYou, blackTheme) }
+            composable(route = "Auth"){ AuthSettings() }
+            composable(route = "About"){ About() }
         }
     }
 }
@@ -66,13 +65,14 @@ fun AppSetting(navCtrl:NavHostController, materialYou: MutableState<Boolean>, bl
 @Composable
 private fun Home(navCtrl: NavHostController){
     Column(modifier = Modifier.fillMaxSize()){
-        SubPageItem(R.string.setting,"",R.drawable.settings_fill0){navCtrl.navigate("Settings")}
+        SubPageItem(R.string.setting,"",R.drawable.settings_fill0){navCtrl.navigate("Theme")}
+        SubPageItem(R.string.security,"",R.drawable.settings_fill0){navCtrl.navigate("Auth")}
         SubPageItem(R.string.about,"",R.drawable.info_fill0){navCtrl.navigate("About")}
     }
 }
 
 @Composable
-private fun Settings(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>){
+private fun ThemeSettings(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>){
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         if(VERSION.SDK_INT>=31){
@@ -93,6 +93,31 @@ private fun Settings(materialYou:MutableState<Boolean>, blackTheme:MutableState<
                     sharedPref.edit().putBoolean("black_theme",it).apply()
                     blackTheme.value = it
                 }
+            )
+        }
+    }
+}
+
+@Composable
+private fun AuthSettings(){
+    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    var auth by remember{ mutableStateOf(sharedPref.getBoolean("auth",false)) }
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        if(VERSION.SDK_INT>=30){
+            SwitchItem(
+                R.string.lock_owndroid, "", null,
+                { auth },
+                {
+                    sharedPref.edit().putBoolean("auth",it).apply()
+                    auth = sharedPref.getBoolean("auth",false)
+                }
+            )
+        }
+        if(auth){
+            SwitchItem(
+                R.string.enable_bio_auth, "", null,
+                { sharedPref.getBoolean("bio_auth",false) },
+                { sharedPref.edit().putBoolean("bio_auth",it).apply() }
             )
         }
     }
