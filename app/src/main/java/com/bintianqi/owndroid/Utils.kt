@@ -77,8 +77,8 @@ fun registerActivityResult(context: ComponentActivity){
     }
     createManagedProfile = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
     addDeviceAdmin = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        val myDpm = context.applicationContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        if(myDpm.isAdminActive(ComponentName(context.applicationContext, Receiver::class.java))){
+        val dpm = context.applicationContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        if(dpm.isAdminActive(ComponentName(context.applicationContext, Receiver::class.java))){
             backToHome = true
         }
     }

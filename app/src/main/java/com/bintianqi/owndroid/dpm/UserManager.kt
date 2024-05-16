@@ -99,23 +99,23 @@ fun UserManage(navCtrl:NavHostController) {
 
 @Composable
 private fun Home(navCtrl: NavHostController,scrollState: ScrollState){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)){
         Text(text = stringResource(R.string.user_manager), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
         SubPageItem(R.string.user_info,"",R.drawable.person_fill0){navCtrl.navigate("UserInfo")}
         SubPageItem(R.string.user_operation,"",R.drawable.sync_alt_fill0){navCtrl.navigate("UserOperation")}
-        if(VERSION.SDK_INT>=24&&isDeviceOwner(myDpm)){
+        if(VERSION.SDK_INT>=24&&isDeviceOwner(dpm)){
             SubPageItem(R.string.create_user,"",R.drawable.person_add_fill0){navCtrl.navigate("CreateUser")}
         }
         SubPageItem(R.string.edit_username,"",R.drawable.edit_fill0){navCtrl.navigate("EditUsername")}
-        if(VERSION.SDK_INT>=23&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
+        if(VERSION.SDK_INT>=23&&(isDeviceOwner(dpm)||isProfileOwner(dpm))){
             SubPageItem(R.string.change_user_icon,"",R.drawable.account_circle_fill0){navCtrl.navigate("ChangeUserIcon")}
         }
-        if(VERSION.SDK_INT>=28&&isDeviceOwner(myDpm)){
+        if(VERSION.SDK_INT>=28&&isDeviceOwner(dpm)){
             SubPageItem(R.string.user_session_msg,"",R.drawable.notifications_fill0){navCtrl.navigate("UserSessionMessage")}
         }
-        if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
+        if(VERSION.SDK_INT>=26&&(isDeviceOwner(dpm)||isProfileOwner(dpm))){
             SubPageItem(R.string.affiliation_id,"",R.drawable.id_card_fill0){navCtrl.navigate("AffiliationID")}
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -127,28 +127,28 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState){
 
 @Composable
 private fun CurrentUserInfo(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext, Receiver::class.java)
-    val userManager = myContext.getSystemService(Context.USER_SERVICE) as UserManager
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context, Receiver::class.java)
+    val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.user_info), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        Text(stringResource(R.string.is_user_unlocked, UserManagerCompat.isUserUnlocked(myContext)))
+        Text(stringResource(R.string.is_user_unlocked, UserManagerCompat.isUserUnlocked(context)))
         if(VERSION.SDK_INT>=24){ Text(stringResource(R.string.is_support_multi_user, UserManager.supportsMultipleUsers())) }
         if(VERSION.SDK_INT>=23){ Text(text = stringResource(R.string.is_system_user, userManager.isSystemUser)) }
         if(VERSION.SDK_INT>=34){ Text(text = stringResource(R.string.is_admin_user, userManager.isAdminUser)) }
         if(VERSION.SDK_INT>=31){ Text(text = stringResource(R.string.is_headless_system_user, UserManager.isHeadlessSystemUserMode())) }
         Spacer(Modifier.padding(vertical = 5.dp))
         if (VERSION.SDK_INT >= 28) {
-            val logoutable = myDpm.isLogoutEnabled
+            val logoutable = dpm.isLogoutEnabled
             Text(text = stringResource(R.string.user_can_logout, logoutable))
-            if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
-                val ephemeralUser = myDpm.isEphemeralUser(myComponent)
+            if(isDeviceOwner(dpm)|| isProfileOwner(dpm)){
+                val ephemeralUser = dpm.isEphemeralUser(receiver)
                 Text(text = stringResource(R.string.is_ephemeral_user, ephemeralUser))
             }
-            Text(text = stringResource(R.string.is_affiliated_user, myDpm.isAffiliatedUser))
+            Text(text = stringResource(R.string.is_affiliated_user, dpm.isAffiliatedUser))
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.user_id_is, Binder.getCallingUid()/100000))
@@ -158,10 +158,10 @@ private fun CurrentUserInfo(){
 
 @Composable
 private fun UserOperation(){
-    val myContext = LocalContext.current
-    val userManager = myContext.getSystemService(Context.USER_SERVICE) as UserManager
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -184,7 +184,7 @@ private fun UserOperation(){
                 }
             },
             label = {Text(if(useUid){"UID"}else{ stringResource(R.string.serial_number) })},
-            enabled = isDeviceOwner(myDpm),
+            enabled = isDeviceOwner(dpm),
             modifier = Modifier.focusable().fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
@@ -195,13 +195,13 @@ private fun UserOperation(){
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT>28){
-            if(isProfileOwner(myDpm)&&myDpm.isAffiliatedUser){
+            if(isProfileOwner(dpm)&&dpm.isAffiliatedUser){
                 Button(
                     onClick = {
-                        val result = myDpm.logoutUser(myComponent)
-                        Toast.makeText(myContext, userOperationResultCode(result,myContext), Toast.LENGTH_SHORT).show()
+                        val result = dpm.logoutUser(receiver)
+                        Toast.makeText(context, userOperationResultCode(result,context), Toast.LENGTH_SHORT).show()
                     },
-                    enabled = isProfileOwner(myDpm),
+                    enabled = isProfileOwner(dpm),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(stringResource(R.string.logout_current_user))
@@ -212,10 +212,10 @@ private fun UserOperation(){
             Button(
                 onClick = {
                     focusMgr.clearFocus()
-                    val result = myDpm.startUserInBackground(myComponent,userHandleById)
-                    Toast.makeText(myContext, userOperationResultCode(result,myContext), Toast.LENGTH_SHORT).show()
+                    val result = dpm.startUserInBackground(receiver,userHandleById)
+                    Toast.makeText(context, userOperationResultCode(result,context), Toast.LENGTH_SHORT).show()
                 },
-                enabled = isDeviceOwner(myDpm),
+                enabled = isDeviceOwner(dpm),
                 modifier = Modifier.fillMaxWidth()
             ){
                 Text(stringResource(R.string.start_in_background))
@@ -224,9 +224,9 @@ private fun UserOperation(){
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                Toast.makeText(myContext, if(myDpm.switchUser(myComponent,userHandleById)) { R.string.success }else{ R.string.fail }, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, if(dpm.switchUser(receiver,userHandleById)) { R.string.success }else{ R.string.fail }, Toast.LENGTH_SHORT).show()
             },
-            enabled = isDeviceOwner(myDpm),
+            enabled = isDeviceOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.user_operation_switch))
@@ -236,13 +236,13 @@ private fun UserOperation(){
                 onClick = {
                     focusMgr.clearFocus()
                     try{
-                        val result = myDpm.stopUser(myComponent,userHandleById)
-                        Toast.makeText(myContext, userOperationResultCode(result,myContext), Toast.LENGTH_SHORT).show()
+                        val result = dpm.stopUser(receiver,userHandleById)
+                        Toast.makeText(context, userOperationResultCode(result,context), Toast.LENGTH_SHORT).show()
                     }catch(e:IllegalArgumentException){
-                        Toast.makeText(myContext, R.string.fail, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show()
                     }
                 },
-                enabled = isDeviceOwner(myDpm),
+                enabled = isDeviceOwner(dpm),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.user_operation_stop))
@@ -251,14 +251,14 @@ private fun UserOperation(){
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                if(myDpm.removeUser(myComponent,userHandleById)){
-                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                if(dpm.removeUser(receiver,userHandleById)){
+                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                     idInput=""
                 }else{
-                    Toast.makeText(myContext, R.string.fail, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show()
                 }
             },
-            enabled = isDeviceOwner(myDpm),
+            enabled = isDeviceOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.user_operation_remove))
@@ -270,10 +270,10 @@ private fun UserOperation(){
 @SuppressLint("NewApi")
 @Composable
 private fun CreateUser(){
-    val myContext = LocalContext.current
-    val userManager = myContext.getSystemService(Context.USER_SERVICE) as UserManager
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     var userName by remember{ mutableStateOf("") }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
@@ -300,11 +300,11 @@ private fun CreateUser(){
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                newUserHandle=myDpm.createAndManageUser(myComponent,userName,myComponent,null,selectedFlag)
+                newUserHandle=dpm.createAndManageUser(receiver,userName,receiver,null,selectedFlag)
                 focusMgr.clearFocus()
-                Toast.makeText(myContext, if(newUserHandle!=null){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, if(newUserHandle!=null){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
             },
-            enabled = isDeviceOwner(myDpm),
+            enabled = isDeviceOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.create))
@@ -318,14 +318,14 @@ private fun CreateUser(){
 @SuppressLint("NewApi")
 @Composable
 private fun AffiliationID(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     var input by remember{mutableStateOf("")}
     var list by remember{mutableStateOf("")}
     LaunchedEffect(Unit){
-        affiliationID = myDpm.getAffiliationIds(myComponent)
+        affiliationID = dpm.getAffiliationIds(receiver)
         list = affiliationID.toText()
     }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
@@ -366,14 +366,14 @@ private fun AffiliationID(){
         Button(
             onClick = {
                 if("" in affiliationID) {
-                    Toast.makeText(myContext, R.string.include_empty_string, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.include_empty_string, Toast.LENGTH_SHORT).show()
                 }else if(affiliationID.isEmpty()){
-                    Toast.makeText(myContext, R.string.cannot_be_empty, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.cannot_be_empty, Toast.LENGTH_SHORT).show()
                 }else{
-                    myDpm.setAffiliationIds(myComponent, affiliationID)
-                    affiliationID = myDpm.getAffiliationIds(myComponent)
+                    dpm.setAffiliationIds(receiver, affiliationID)
+                    affiliationID = dpm.getAffiliationIds(receiver)
                     list = affiliationID.toText()
-                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -386,9 +386,9 @@ private fun AffiliationID(){
 
 @Composable
 private fun Username(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     var inputUsername by remember{mutableStateOf("")}
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
@@ -402,24 +402,24 @@ private fun Username(){
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
             modifier = Modifier.focusable().fillMaxWidth(),
-            enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
+            enabled = isDeviceOwner(dpm)||isProfileOwner(dpm)
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                myDpm.setProfileName(myComponent,inputUsername)
-                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                dpm.setProfileName(receiver,inputUsername)
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             },
-            enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
+            enabled = isDeviceOwner(dpm)||isProfileOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.apply))
         }
         Button(
             onClick = {
-                myDpm.setProfileName(myComponent,null)
+                dpm.setProfileName(receiver,null)
             },
-            enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
+            enabled = isDeviceOwner(dpm)||isProfileOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.reset))
@@ -430,12 +430,12 @@ private fun Username(){
 @SuppressLint("NewApi")
 @Composable
 private fun UserSessionMessage(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
-    val getStart = myDpm.getStartUserSessionMessage(myComponent)?:""
-    val getEnd = myDpm.getEndUserSessionMessage(myComponent)?:""
+    val getStart = dpm.getStartUserSessionMessage(receiver)?:""
+    val getEnd = dpm.getEndUserSessionMessage(receiver)?:""
     var start by remember{mutableStateOf(getStart.toString())}
     var end by remember{mutableStateOf(getEnd.toString())}
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
@@ -449,7 +449,7 @@ private fun UserSessionMessage(){
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
             modifier = Modifier.focusable().fillMaxWidth(),
-            enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
+            enabled = isDeviceOwner(dpm)||isProfileOwner(dpm)
         )
         Spacer(Modifier.padding(vertical = 2.dp))
         OutlinedTextField(
@@ -459,27 +459,27 @@ private fun UserSessionMessage(){
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
             modifier = Modifier.focusable().fillMaxWidth(),
-            enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
+            enabled = isDeviceOwner(dpm)||isProfileOwner(dpm)
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                myDpm.setStartUserSessionMessage(myComponent,start)
-                myDpm.setEndUserSessionMessage(myComponent,end)
-                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                dpm.setStartUserSessionMessage(receiver,start)
+                dpm.setEndUserSessionMessage(receiver,end)
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             },
-            enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
+            enabled = isDeviceOwner(dpm)||isProfileOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.apply))
         }
         Button(
             onClick = {
-                myDpm.setStartUserSessionMessage(myComponent,null)
-                myDpm.setEndUserSessionMessage(myComponent,null)
-                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                dpm.setStartUserSessionMessage(receiver,null)
+                dpm.setEndUserSessionMessage(receiver,null)
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             },
-            enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
+            enabled = isDeviceOwner(dpm)||isProfileOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.reset))
@@ -491,9 +491,9 @@ private fun UserSessionMessage(){
 @SuppressLint("NewApi")
 @Composable
 private fun UserIcon(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     var getContent by remember{mutableStateOf(false)}
     var canApply by remember{mutableStateOf(false)}
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
@@ -519,10 +519,10 @@ private fun UserIcon(){
         AnimatedVisibility(canApply) {
             Button(
                 onClick = {
-                    uriToStream(myContext, fileUri){stream ->
+                    uriToStream(context, fileUri){stream ->
                         val bitmap = BitmapFactory.decodeStream(stream)
-                        myDpm.setUserIcon(myComponent,bitmap)
-                        Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                        dpm.setUserIcon(receiver,bitmap)
+                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -533,12 +533,12 @@ private fun UserIcon(){
     }
 }
 
-private fun userOperationResultCode(result:Int, myContext: Context): String {
+private fun userOperationResultCode(result:Int, context: Context): String {
     return when(result){
-        UserManager.USER_OPERATION_SUCCESS->myContext.getString(R.string.success)
-        UserManager.USER_OPERATION_ERROR_UNKNOWN-> myContext.getString(R.string.unknown_result)
-        UserManager.USER_OPERATION_ERROR_MANAGED_PROFILE-> myContext.getString(R.string.fail_managed_profile)
-        UserManager.USER_OPERATION_ERROR_CURRENT_USER-> myContext.getString(R.string.fail_current_user)
+        UserManager.USER_OPERATION_SUCCESS->context.getString(R.string.success)
+        UserManager.USER_OPERATION_ERROR_UNKNOWN-> context.getString(R.string.unknown_result)
+        UserManager.USER_OPERATION_ERROR_MANAGED_PROFILE-> context.getString(R.string.fail_managed_profile)
+        UserManager.USER_OPERATION_ERROR_CURRENT_USER-> context.getString(R.string.fail_current_user)
         else->"未知"
     }
 }

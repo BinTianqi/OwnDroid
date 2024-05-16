@@ -112,11 +112,11 @@ fun SystemManage(navCtrl:NavHostController){
 
 @Composable
 private fun Home(navCtrl: NavHostController,scrollState: ScrollState){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)){
         Text(text = stringResource(R.string.system_manage), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
-        if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
+        if(isDeviceOwner(dpm)||isProfileOwner(dpm)){
             SubPageItem(R.string.options,"",R.drawable.tune_fill0){navCtrl.navigate("Switches")}
         }
         SubPageItem(R.string.keyguard,"",R.drawable.screen_lock_portrait_fill0){navCtrl.navigate("Keyguard")}
@@ -127,25 +127,25 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState){
         if(VERSION.SDK_INT>=28){
             SubPageItem(R.string.edit_time,"",R.drawable.schedule_fill0){navCtrl.navigate("EditTime")}
         }
-        if(VERSION.SDK_INT>=23&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
+        if(VERSION.SDK_INT>=23&&(isDeviceOwner(dpm)||isProfileOwner(dpm))){
             SubPageItem(R.string.permission_policy,"",R.drawable.key_fill0){navCtrl.navigate("PermissionPolicy")}
         }
-        if(VERSION.SDK_INT>=34&&isDeviceOwner(myDpm)){
+        if(VERSION.SDK_INT>=34&&isDeviceOwner(dpm)){
             SubPageItem(R.string.mte_policy,"",R.drawable.memory_fill0){navCtrl.navigate("MTEPolicy")}
         }
-        if(VERSION.SDK_INT>=31&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
+        if(VERSION.SDK_INT>=31&&(isDeviceOwner(dpm)||isProfileOwner(dpm))){
             SubPageItem(R.string.nearby_streaming_policy,"",R.drawable.share_fill0){navCtrl.navigate("NearbyStreamingPolicy")}
         }
-        if(VERSION.SDK_INT>=28&&isDeviceOwner(myDpm)){
+        if(VERSION.SDK_INT>=28&&isDeviceOwner(dpm)){
             SubPageItem(R.string.lock_task_feature,"",R.drawable.lock_fill0){navCtrl.navigate("LockTaskFeatures")}
         }
-        if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
+        if(isDeviceOwner(dpm)||isProfileOwner(dpm)){
             SubPageItem(R.string.ca_cert,"",R.drawable.license_fill0){navCtrl.navigate("CaCert")}
         }
-        if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))){
+        if(VERSION.SDK_INT>=26&&(isDeviceOwner(dpm)||(VERSION.SDK_INT>=30&&isProfileOwner(dpm)&&dpm.isOrganizationOwnedDeviceWithManagedProfile))){
             SubPageItem(R.string.security_logs,"",R.drawable.description_fill0){navCtrl.navigate("SecurityLogs")}
         }
-        if(VERSION.SDK_INT>=23&&isDeviceOwner(myDpm)){
+        if(VERSION.SDK_INT>=23&&isDeviceOwner(dpm)){
             SubPageItem(R.string.system_update_policy,"",R.drawable.system_update_fill0){navCtrl.navigate("SystemUpdatePolicy")}
         }
         SubPageItem(R.string.wipe_data,"",R.drawable.warning_fill0){navCtrl.navigate("WipeData")}
@@ -156,66 +156,66 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState){
 
 @Composable
 private fun Switches(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext, Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context, Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
-        if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
+        if(isDeviceOwner(dpm)||isProfileOwner(dpm)){
             SwitchItem(R.string.disable_cam,"", R.drawable.photo_camera_fill0,
-                {myDpm.getCameraDisabled(null)},{myDpm.setCameraDisabled(myComponent,it)}
+                {dpm.getCameraDisabled(null)},{dpm.setCameraDisabled(receiver,it)}
             )
         }
-        if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){
+        if(isDeviceOwner(dpm)||isProfileOwner(dpm)){
             SwitchItem(R.string.disable_screenshot, stringResource(R.string.also_disable_aosp_screen_record),R.drawable.screenshot_fill0,
-                {myDpm.getScreenCaptureDisabled(null)},{myDpm.setScreenCaptureDisabled(myComponent,it) }
+                {dpm.getScreenCaptureDisabled(null)},{dpm.setScreenCaptureDisabled(receiver,it) }
             )
         }
-        if(VERSION.SDK_INT>=34&&(isDeviceOwner(myDpm)|| (isProfileOwner(myDpm)&&myDpm.isAffiliatedUser))){
+        if(VERSION.SDK_INT>=34&&(isDeviceOwner(dpm)|| (isProfileOwner(dpm)&&dpm.isAffiliatedUser))){
             SwitchItem(R.string.disable_status_bar,"",R.drawable.notifications_fill0,
-                {myDpm.isStatusBarDisabled},{myDpm.setStatusBarDisabled(myComponent,it) }
+                {dpm.isStatusBarDisabled},{dpm.setStatusBarDisabled(receiver,it) }
             )
         }
-        if(isDeviceOwner(myDpm)||(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile)){
+        if(isDeviceOwner(dpm)||(VERSION.SDK_INT>=30&&isProfileOwner(dpm)&&dpm.isOrganizationOwnedDeviceWithManagedProfile)){
             if(VERSION.SDK_INT>=30){
                 SwitchItem(R.string.auto_time,"",R.drawable.schedule_fill0,
-                    {myDpm.getAutoTimeEnabled(myComponent)},{myDpm.setAutoTimeEnabled(myComponent,it) }
+                    {dpm.getAutoTimeEnabled(receiver)},{dpm.setAutoTimeEnabled(receiver,it) }
                 )
                 SwitchItem(R.string.auto_timezone,"",R.drawable.globe_fill0,
-                    {myDpm.getAutoTimeZoneEnabled(myComponent)},{myDpm.setAutoTimeZoneEnabled(myComponent,it) }
+                    {dpm.getAutoTimeZoneEnabled(receiver)},{dpm.setAutoTimeZoneEnabled(receiver,it) }
                 )
             }else{
-                SwitchItem(R.string.auto_time,"",R.drawable.schedule_fill0,{myDpm.autoTimeRequired},{myDpm.setAutoTimeRequired(myComponent,it)})
+                SwitchItem(R.string.auto_time,"",R.drawable.schedule_fill0,{dpm.autoTimeRequired},{dpm.setAutoTimeRequired(receiver,it)})
             }
         }
-        if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
+        if(isDeviceOwner(dpm)|| isProfileOwner(dpm)){
             SwitchItem(R.string.master_mute,"",R.drawable.volume_up_fill0,
-                {myDpm.isMasterVolumeMuted(myComponent)},{myDpm.setMasterVolumeMuted(myComponent,it) }
+                {dpm.isMasterVolumeMuted(receiver)},{dpm.setMasterVolumeMuted(receiver,it) }
             )
         }
-        if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)|| isProfileOwner(myDpm))){
+        if(VERSION.SDK_INT>=26&&(isDeviceOwner(dpm)|| isProfileOwner(dpm))){
             SwitchItem(R.string.backup_service,"",R.drawable.backup_fill0,
-                {myDpm.isBackupServiceEnabled(myComponent)},{myDpm.setBackupServiceEnabled(myComponent,it) }
+                {dpm.isBackupServiceEnabled(receiver)},{dpm.setBackupServiceEnabled(receiver,it) }
             )
         }
-        if(VERSION.SDK_INT>=23&&(isDeviceOwner(myDpm)|| isProfileOwner(myDpm))){
+        if(VERSION.SDK_INT>=23&&(isDeviceOwner(dpm)|| isProfileOwner(dpm))){
             SwitchItem(R.string.disable_bt_contact_share,"",R.drawable.account_circle_fill0,
-                {myDpm.getBluetoothContactSharingDisabled(myComponent)},{myDpm.setBluetoothContactSharingDisabled(myComponent,it)}
+                {dpm.getBluetoothContactSharingDisabled(receiver)},{dpm.setBluetoothContactSharingDisabled(receiver,it)}
             )
         }
-        if(VERSION.SDK_INT>=30&&isDeviceOwner(myDpm)){
+        if(VERSION.SDK_INT>=30&&isDeviceOwner(dpm)){
             SwitchItem(R.string.common_criteria_mode, stringResource(R.string.common_criteria_mode_desc),R.drawable.security_fill0,
-                {myDpm.isCommonCriteriaModeEnabled(myComponent)},{myDpm.setCommonCriteriaModeEnabled(myComponent,it)}
+                {dpm.isCommonCriteriaModeEnabled(receiver)},{dpm.setCommonCriteriaModeEnabled(receiver,it)}
             )
         }
-        if(VERSION.SDK_INT>=31&&(isDeviceOwner(myDpm)||(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))){
+        if(VERSION.SDK_INT>=31&&(isDeviceOwner(dpm)||(VERSION.SDK_INT>=30&&isProfileOwner(dpm)&&dpm.isOrganizationOwnedDeviceWithManagedProfile))){
             SwitchItem(
-                R.string.usb_signal,"",R.drawable.usb_fill0, {myDpm.isUsbDataSignalingEnabled},
+                R.string.usb_signal,"",R.drawable.usb_fill0, {dpm.isUsbDataSignalingEnabled},
                 {
-                    if(myDpm.canUsbDataSignalingBeDisabled()){
-                        myDpm.isUsbDataSignalingEnabled = it
+                    if(dpm.canUsbDataSignalingBeDisabled()){
+                        dpm.isUsbDataSignalingEnabled = it
                     }else{
-                        Toast.makeText(myContext, R.string.unsupported, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.unsupported, Toast.LENGTH_SHORT).show()
                     }
                 }
             )
@@ -226,9 +226,9 @@ private fun Switches(){
 
 @Composable
 private fun Keyguard(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.keyguard), style = typography.headlineLarge)
@@ -236,18 +236,18 @@ private fun Keyguard(){
         if(VERSION.SDK_INT>=23){
             Button(
                 onClick = {
-                    Toast.makeText(myContext, if(myDpm.setKeyguardDisabled(myComponent,true)){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, if(dpm.setKeyguardDisabled(receiver,true)){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
                 },
-                enabled = isDeviceOwner(myDpm)|| (VERSION.SDK_INT>=28&&isProfileOwner(myDpm)&&myDpm.isAffiliatedUser),
+                enabled = isDeviceOwner(dpm)|| (VERSION.SDK_INT>=28&&isProfileOwner(dpm)&&dpm.isAffiliatedUser),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.disable))
             }
             Button(
                 onClick = {
-                    Toast.makeText(myContext, if(myDpm.setKeyguardDisabled(myComponent,false)){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, if(dpm.setKeyguardDisabled(receiver,false)){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
                 },
-                enabled = isDeviceOwner(myDpm)|| (VERSION.SDK_INT>=28&&isProfileOwner(myDpm)&&myDpm.isAffiliatedUser),
+                enabled = isDeviceOwner(dpm)|| (VERSION.SDK_INT>=28&&isProfileOwner(dpm)&&dpm.isAffiliatedUser),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.enable))
@@ -258,8 +258,8 @@ private fun Keyguard(){
         }
         var flag by remember{mutableIntStateOf(0)}
         Button(
-            onClick = {myDpm.lockNow()},
-            enabled = myDpm.isAdminActive(myComponent),
+            onClick = {dpm.lockNow()},
+            enabled = dpm.isAdminActive(receiver),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.lock_now))
@@ -272,18 +272,18 @@ private fun Keyguard(){
 @SuppressLint("NewApi")
 @Composable
 private fun BugReport(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp)){
         Spacer(Modifier.padding(vertical = 10.dp))
         Button(
             onClick = {
-                val result = myDpm.requestBugreport(myComponent)
-                Toast.makeText(myContext, if(result){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
+                val result = dpm.requestBugreport(receiver)
+                Toast.makeText(context, if(result){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = isDeviceOwner(myDpm)
+            enabled = isDeviceOwner(dpm)
         ) {
             Text(stringResource(R.string.request_bug_report))
         }
@@ -293,14 +293,14 @@ private fun BugReport(){
 @SuppressLint("NewApi")
 @Composable
 private fun Reboot(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp)){
         Spacer(Modifier.padding(vertical = 10.dp))
         Button(
-            onClick = {myDpm.reboot(myComponent)},
-            enabled = isDeviceOwner(myDpm),
+            onClick = {dpm.reboot(receiver)},
+            enabled = isDeviceOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.reboot))
@@ -311,9 +311,9 @@ private fun Reboot(){
 @SuppressLint("NewApi")
 @Composable
 private fun EditTime(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -328,14 +328,14 @@ private fun EditTime(){
             onValueChange = {inputTime = it},
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-            enabled = isDeviceOwner(myDpm)||(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile),
+            enabled = isDeviceOwner(dpm)||(VERSION.SDK_INT>=30&&isProfileOwner(dpm)&&dpm.isOrganizationOwnedDeviceWithManagedProfile),
             modifier = Modifier.focusable().fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
-            onClick = {myDpm.setTime(myComponent,inputTime.toLong())},
+            onClick = {dpm.setTime(receiver,inputTime.toLong())},
             modifier = Modifier.fillMaxWidth(),
-            enabled = inputTime!=""&&(isDeviceOwner(myDpm)||(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))
+            enabled = inputTime!=""&&(isDeviceOwner(dpm)||(VERSION.SDK_INT>=30&&isProfileOwner(dpm)&&dpm.isOrganizationOwnedDeviceWithManagedProfile))
         ) {
             Text("应用")
         }
@@ -351,11 +351,11 @@ private fun EditTime(){
 @SuppressLint("NewApi")
 @Composable
 private fun PermissionPolicy(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
-        var selectedPolicy by remember{mutableIntStateOf(myDpm.getPermissionPolicy(myComponent))}
+        var selectedPolicy by remember{mutableIntStateOf(dpm.getPermissionPolicy(receiver))}
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.permission_policy), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -365,8 +365,8 @@ private fun PermissionPolicy(){
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                myDpm.setPermissionPolicy(myComponent,selectedPolicy)
-                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                dpm.setPermissionPolicy(receiver,selectedPolicy)
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -378,25 +378,25 @@ private fun PermissionPolicy(){
 @SuppressLint("NewApi")
 @Composable
 private fun MTEPolicy(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.mte_policy), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        var selectedMtePolicy by remember{mutableIntStateOf(myDpm.mtePolicy)}
+        var selectedMtePolicy by remember{mutableIntStateOf(dpm.mtePolicy)}
         RadioButtonItem(stringResource(R.string.decide_by_user), {selectedMtePolicy==MTE_NOT_CONTROLLED_BY_POLICY}, {selectedMtePolicy= MTE_NOT_CONTROLLED_BY_POLICY})
         RadioButtonItem(stringResource(R.string.enabled), {selectedMtePolicy==MTE_ENABLED}, {selectedMtePolicy=MTE_ENABLED})
         RadioButtonItem(stringResource(R.string.disabled), {selectedMtePolicy==MTE_DISABLED}, {selectedMtePolicy=MTE_DISABLED})
         Button(
             onClick = {
                 try {
-                    myDpm.mtePolicy = selectedMtePolicy
-                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                    dpm.mtePolicy = selectedMtePolicy
+                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                 }catch(e:java.lang.UnsupportedOperationException){
-                    Toast.makeText(myContext, R.string.unsupported, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.unsupported, Toast.LENGTH_SHORT).show()
                 }
-                selectedMtePolicy = myDpm.mtePolicy
+                selectedMtePolicy = dpm.mtePolicy
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -411,10 +411,10 @@ private fun MTEPolicy(){
 @SuppressLint("NewApi")
 @Composable
 private fun NearbyStreamingPolicy(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
-        var appPolicy by remember{mutableIntStateOf(myDpm.nearbyAppStreamingPolicy)}
+        var appPolicy by remember{mutableIntStateOf(dpm.nearbyAppStreamingPolicy)}
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.nearby_app_streaming), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 3.dp))
@@ -425,14 +425,14 @@ private fun NearbyStreamingPolicy(){
         Spacer(Modifier.padding(vertical = 3.dp))
         Button(
             onClick = {
-                myDpm.nearbyAppStreamingPolicy = appPolicy
-                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                dpm.nearbyAppStreamingPolicy = appPolicy
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("应用")
         }
-        var notificationPolicy by remember{mutableIntStateOf(myDpm.nearbyNotificationStreamingPolicy)}
+        var notificationPolicy by remember{mutableIntStateOf(dpm.nearbyNotificationStreamingPolicy)}
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.nearby_notification_streaming), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 3.dp))
@@ -443,8 +443,8 @@ private fun NearbyStreamingPolicy(){
         Spacer(Modifier.padding(vertical = 3.dp))
         Button(
             onClick = {
-                myDpm.nearbyNotificationStreamingPolicy = notificationPolicy
-                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                dpm.nearbyNotificationStreamingPolicy = notificationPolicy
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -457,9 +457,9 @@ private fun NearbyStreamingPolicy(){
 @SuppressLint("NewApi")
 @Composable
 private fun LockTaskFeatures(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         val lockTaskPolicyList = mutableListOf(
@@ -482,7 +482,7 @@ private fun LockTaskFeatures(){
         var inited by remember{mutableStateOf(false)}
         var custom by remember{mutableStateOf(false)}
         val refreshFeature = {
-            var calculate = myDpm.getLockTaskFeatures(myComponent)
+            var calculate = dpm.getLockTaskFeatures(receiver)
             if(calculate!=0){
                 if(VERSION.SDK_INT>=30&&calculate-lockTaskPolicyList[7]>=0){blockAct=true;calculate-=lockTaskPolicyList[7]}
                 if(calculate-lockTaskPolicyList[6]>=0){keyGuard=true;calculate-=lockTaskPolicyList[6]}
@@ -498,7 +498,7 @@ private fun LockTaskFeatures(){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.lock_task_feature), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(!inited){ refreshFeature();custom=myDpm.getLockTaskFeatures(myComponent)!=0;inited=true }
+        if(!inited){ refreshFeature();custom=dpm.getLockTaskFeatures(receiver)!=0;inited=true }
         RadioButtonItem(stringResource(R.string.disable_all),{!custom},{custom=false})
         RadioButtonItem(stringResource(R.string.custom),{custom},{custom=true})
         AnimatedVisibility(custom) {
@@ -525,15 +525,15 @@ private fun LockTaskFeatures(){
                     if(notifications){result+=lockTaskPolicyList[2]}
                     if(sysInfo){result+=lockTaskPolicyList[1]}
                 }
-                myDpm.setLockTaskFeatures(myComponent,result)
+                dpm.setLockTaskFeatures(receiver,result)
                 refreshFeature()
-                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             }
         ) {
             Text(stringResource(R.string.apply))
         }
         Spacer(Modifier.padding(vertical = 5.dp))
-        val whitelist = myDpm.getLockTaskPackages(myComponent).toMutableList()
+        val whitelist = dpm.getLockTaskPackages(receiver).toMutableList()
         var listText by remember{mutableStateOf("")}
         var inputPkg by remember{mutableStateOf("")}
         val refreshWhitelist = {
@@ -559,8 +559,8 @@ private fun LockTaskFeatures(){
                 onClick = {
                     focusMgr.clearFocus()
                     whitelist.add(inputPkg)
-                    myDpm.setLockTaskPackages(myComponent,whitelist.toTypedArray())
-                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                    dpm.setLockTaskPackages(receiver,whitelist.toTypedArray())
+                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                     refreshWhitelist()
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
@@ -572,10 +572,10 @@ private fun LockTaskFeatures(){
                     focusMgr.clearFocus()
                     if(inputPkg in whitelist){
                         whitelist.remove(inputPkg)
-                        myDpm.setLockTaskPackages(myComponent,whitelist.toTypedArray())
-                        Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                        dpm.setLockTaskPackages(receiver,whitelist.toTypedArray())
+                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                     }else{
-                        Toast.makeText(myContext, R.string.not_exist, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.not_exist, Toast.LENGTH_SHORT).show()
                     }
                     refreshWhitelist()
                 },
@@ -590,16 +590,16 @@ private fun LockTaskFeatures(){
 
 @Composable
 private fun CaCert(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     var exist by remember{mutableStateOf(false)}
     var uriPath by remember{mutableStateOf("")}
     var caCertByteArray = byteArrayOf()
     val refresh = {
         if(uriPath!=fileUri?.path){
             if(caCertByteArray.isEmpty()){
-                uriToStream(myContext, fileUri){
+                uriToStream(context, fileUri){
                     val array = it.readBytes()
                     caCertByteArray = if(array.size<10000){
                         array
@@ -607,7 +607,7 @@ private fun CaCert(){
                         byteArrayOf()
                     }
                 }
-                exist = myDpm.hasCaCertInstalled(myComponent, caCertByteArray)
+                exist = dpm.hasCaCertInstalled(receiver, caCertByteArray)
             }
             uriPath = fileUri?.path?:""
         }
@@ -640,8 +640,8 @@ private fun CaCert(){
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                 Button(
                     onClick = {
-                        val result = myDpm.installCaCert(myComponent, caCertByteArray)
-                        Toast.makeText(myContext, if(result){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
+                        val result = dpm.installCaCert(receiver, caCertByteArray)
+                        Toast.makeText(context, if(result){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
                         refresh()
                     },
                     modifier = Modifier.fillMaxWidth(0.49F)
@@ -651,10 +651,10 @@ private fun CaCert(){
                 Button(
                     onClick = {
                         if(exist){
-                            myDpm.uninstallCaCert(myComponent, caCertByteArray)
-                            exist = myDpm.hasCaCertInstalled(myComponent, caCertByteArray)
-                            Toast.makeText(myContext, if(exist){R.string.fail}else{R.string.success}, Toast.LENGTH_SHORT).show()
-                        }else{ Toast.makeText(myContext, R.string.not_exist, Toast.LENGTH_SHORT).show() }
+                            dpm.uninstallCaCert(receiver, caCertByteArray)
+                            exist = dpm.hasCaCertInstalled(receiver, caCertByteArray)
+                            Toast.makeText(context, if(exist){R.string.fail}else{R.string.success}, Toast.LENGTH_SHORT).show()
+                        }else{ Toast.makeText(context, R.string.not_exist, Toast.LENGTH_SHORT).show() }
                     },
                     modifier = Modifier.fillMaxWidth(0.96F)
                 ) {
@@ -664,8 +664,8 @@ private fun CaCert(){
         }
         Button(
             onClick = {
-                myDpm.uninstallAllUserCaCerts(myComponent)
-                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                dpm.uninstallAllUserCaCerts(receiver)
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ){
@@ -677,24 +677,24 @@ private fun CaCert(){
 @SuppressLint("NewApi")
 @Composable
 private fun SecurityLogs(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.security_logs), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.developing))
-        SwitchItem(R.string.enable,"",null,{myDpm.isSecurityLoggingEnabled(myComponent)},{myDpm.setSecurityLoggingEnabled(myComponent,it)})
+        SwitchItem(R.string.enable,"",null,{dpm.isSecurityLoggingEnabled(receiver)},{dpm.setSecurityLoggingEnabled(receiver,it)})
         Button(
             onClick = {
-                val log = myDpm.retrieveSecurityLogs(myComponent)
+                val log = dpm.retrieveSecurityLogs(receiver)
                 if(log!=null){
                     for(i in log){ Log.d("SecureLog",i.toString()) }
-                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                 }else{
-                    Log.d("SecureLog",myContext.getString(R.string.none))
-                    Toast.makeText(myContext, R.string.no_logs, Toast.LENGTH_SHORT).show()
+                    Log.d("SecureLog",context.getString(R.string.none))
+                    Toast.makeText(context, R.string.no_logs, Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -703,13 +703,13 @@ private fun SecurityLogs(){
         }
         Button(
             onClick = {
-                val log = myDpm.retrievePreRebootSecurityLogs(myComponent)
+                val log = dpm.retrievePreRebootSecurityLogs(receiver)
                 if(log!=null){
                     for(i in log){ Log.d("SecureLog",i.toString()) }
-                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                 }else{
-                    Log.d("SecureLog",myContext.getString(R.string.none))
-                    Toast.makeText(myContext, R.string.no_logs, Toast.LENGTH_SHORT).show()
+                    Log.d("SecureLog",context.getString(R.string.none))
+                    Toast.makeText(context, R.string.no_logs, Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -721,10 +721,10 @@ private fun SecurityLogs(){
 
 @Composable
 private fun WipeData(){
-    val myContext = LocalContext.current
-    val userManager = myContext.getSystemService(Context.USER_SERVICE) as UserManager
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         var flag by remember{ mutableIntStateOf(0) }
@@ -738,7 +738,7 @@ private fun WipeData(){
         Text(text = stringResource(R.string.wipe_data),style = typography.headlineLarge,modifier = Modifier.padding(6.dp),color = colorScheme.error)
         Spacer(Modifier.padding(vertical = 5.dp))
         CheckBoxItem(stringResource(R.string.wipe_external_storage),{externalStorage},{externalStorage=!externalStorage;confirmed=false})
-        if(VERSION.SDK_INT>=22&&isDeviceOwner(myDpm)){
+        if(VERSION.SDK_INT>=22&&isDeviceOwner(dpm)){
             CheckBoxItem(stringResource(R.string.wipe_reset_protection_data),{protectionData},{protectionData=!protectionData;confirmed=false})
         }
         if(VERSION.SDK_INT>=28){ CheckBoxItem(stringResource(R.string.wipe_euicc),{euicc},{euicc=!euicc;confirmed=false}) }
@@ -767,7 +767,7 @@ private fun WipeData(){
                 containerColor = if(confirmed){ colorScheme.primary }else{ colorScheme.error },
                 contentColor = if(confirmed){ colorScheme.onPrimary }else{ colorScheme.onError }
             ),
-            enabled = myDpm.isAdminActive(myComponent),
+            enabled = dpm.isAdminActive(receiver),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = stringResource(if(confirmed){ R.string.cancel }else{ R.string.confirm }))
@@ -775,9 +775,9 @@ private fun WipeData(){
         Button(
             onClick = {
                 if(VERSION.SDK_INT>=28&&reason!=""){
-                    myDpm.wipeData(flag,reason)
+                    dpm.wipeData(flag,reason)
                 }else{
-                    myDpm.wipeData(flag)
+                    dpm.wipeData(flag)
                 }
             },
             colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
@@ -786,9 +786,9 @@ private fun WipeData(){
         ) {
             Text("WipeData")
         }
-        if (VERSION.SDK_INT >= 34&&(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))) {
+        if (VERSION.SDK_INT >= 34&&(isDeviceOwner(dpm)||(isProfileOwner(dpm)&&dpm.isOrganizationOwnedDeviceWithManagedProfile))) {
             Button(
-                onClick = {myDpm.wipeDevice(flag)},
+                onClick = {dpm.wipeDevice(flag)},
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
                 enabled = confirmed,
                 modifier = Modifier.fillMaxWidth()
@@ -797,7 +797,7 @@ private fun WipeData(){
             }
         }
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT>=24&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
+        if(VERSION.SDK_INT>=24&&isProfileOwner(dpm)&&dpm.isManagedProfile(receiver)){
             Information{Text(text = stringResource(R.string.will_delete_work_profile))}
         }
         if(VERSION.SDK_INT>=34&&Binder.getCallingUid()/100000==0){
@@ -809,18 +809,18 @@ private fun WipeData(){
 
 @Composable
 private fun SysUpdatePolicy(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
-    val sharedPref = myContext.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     val isWear = sharedPref.getBoolean("isWear",false)
     val bodyTextStyle = if(isWear){ typography.bodyMedium}else{typography.bodyLarge}
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         if(VERSION.SDK_INT>=23){
             Column {
-                var selectedPolicy by remember{ mutableStateOf(myDpm.systemUpdatePolicy?.policyType) }
+                var selectedPolicy by remember{ mutableStateOf(dpm.systemUpdatePolicy?.policyType) }
                 Text(text = stringResource(R.string.system_update_policy), style = typography.headlineLarge)
                 Spacer(Modifier.padding(vertical = 5.dp))
                 RadioButtonItem(stringResource(R.string.system_update_policy_automatic),{selectedPolicy==TYPE_INSTALL_AUTOMATIC},{selectedPolicy= TYPE_INSTALL_AUTOMATIC})
@@ -860,10 +860,10 @@ private fun SysUpdatePolicy(){
                                 TYPE_POSTPONE-> SystemUpdatePolicy.createPostponeInstallPolicy()
                                 else->null
                             }
-                        myDpm.setSystemUpdatePolicy(myComponent,policy)
-                        Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                        dpm.setSystemUpdatePolicy(receiver,policy)
+                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                     },
-                    enabled = isDeviceOwner(myDpm),
+                    enabled = isDeviceOwner(dpm),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(stringResource(R.string.apply))
@@ -872,7 +872,7 @@ private fun SysUpdatePolicy(){
         }
         if(VERSION.SDK_INT>=26){
             Spacer(Modifier.padding(vertical = 10.dp))
-            val sysUpdateInfo = myDpm.getPendingSystemUpdate(myComponent)
+            val sysUpdateInfo = dpm.getPendingSystemUpdate(receiver)
             Column {
                 if(sysUpdateInfo!=null){
                     Text(text = stringResource(R.string.update_received_time, Date(sysUpdateInfo.receivedTime)), style = bodyTextStyle)
@@ -900,14 +900,14 @@ private fun SysUpdatePolicy(){
                         getOtaPackage.launch(getUri)
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
+                    enabled = isDeviceOwner(dpm)||isProfileOwner(dpm)
                 ) {
                     Text("选择OTA包")
                 }
                 Button(
                     onClick = {resultUri = otaUri},
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
+                    enabled = isDeviceOwner(dpm)||isProfileOwner(dpm)
                 ) {
                     Text("查看OTA包详情")
                 }
@@ -917,9 +917,9 @@ private fun SysUpdatePolicy(){
                         onClick = {
                             val sysUpdateExecutor = Executors.newCachedThreadPool()
                             val sysUpdateCallback:InstallSystemUpdateCallback = InstallSystemUpdateCallback
-                            myDpm.installSystemUpdate(myComponent,resultUri,sysUpdateExecutor,sysUpdateCallback)
+                            dpm.installSystemUpdate(receiver,resultUri,sysUpdateExecutor,sysUpdateCallback)
                         },
-                        enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
+                        enabled = isDeviceOwner(dpm)||isProfileOwner(dpm)
                     ){
                         Text("安装")
                     }

@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
             val materialYou = mutableStateOf(sharedPref.getBoolean("material_you",true))
             val blackTheme = mutableStateOf(sharedPref.getBoolean("black_theme", false))
             OwnDroidTheme(materialYou.value, blackTheme.value){
-                MyScaffold(materialYou, blackTheme)
+                Home(materialYou, blackTheme)
             }
         }
     }
@@ -68,11 +68,11 @@ class MainActivity : ComponentActivity() {
 @SuppressLint("UnrememberedMutableState")
 @ExperimentalMaterial3Api
 @Composable
-fun MyScaffold(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>){
+fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>){
     val navCtrl = rememberNavController()
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val focusMgr = LocalFocusManager.current
     val pkgName = mutableStateOf("")
@@ -111,26 +111,26 @@ fun MyScaffold(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolea
     }
     LaunchedEffect(Unit){
         val profileInited = sharedPref.getBoolean("ManagedProfileActivated",false)
-        val profileNotActivated = !profileInited&&isProfileOwner(myDpm)&&(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)))
+        val profileNotActivated = !profileInited&&isProfileOwner(dpm)&&(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&dpm.isManagedProfile(receiver)))
         if(profileNotActivated){
-            myDpm.setProfileEnabled(myComponent)
+            dpm.setProfileEnabled(receiver)
             sharedPref.edit().putBoolean("ManagedProfileActivated",true).apply()
-            Toast.makeText(myContext, R.string.work_profile_activated, Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, R.string.work_profile_activated, Toast.LENGTH_SHORT).show()
         }
     }
 }
 
 @Composable
 private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val activateType = stringResource(
-        if(isDeviceOwner(myDpm)){R.string.device_owner}
-        else if(isProfileOwner(myDpm)){
-            if(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)){R.string.work_profile_owner}else{R.string.profile_owner}
+        if(isDeviceOwner(dpm)){R.string.device_owner}
+        else if(isProfileOwner(dpm)){
+            if(VERSION.SDK_INT>=24&&dpm.isManagedProfile(receiver)){R.string.work_profile_owner}else{R.string.profile_owner}
         }
-        else if(myDpm.isAdminActive(myComponent)){R.string.device_admin}else{R.string.click_to_activate}
+        else if(dpm.isAdminActive(receiver)){R.string.device_admin}else{R.string.click_to_activate}
     )
     LaunchedEffect(Unit){ pkgName.value = "" }
     Column(modifier = Modifier.background(colorScheme.background).statusBarsPadding().verticalScroll(rememberScrollState())) {
@@ -152,14 +152,14 @@ private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>){
         ) {
             Spacer(modifier = Modifier.padding(start = 22.dp))
             Icon(
-                painter = painterResource(if(myDpm.isAdminActive(myComponent)){ R.drawable.check_circle_fill1 }else{ R.drawable.block_fill0 }),
+                painter = painterResource(if(dpm.isAdminActive(receiver)){ R.drawable.check_circle_fill1 }else{ R.drawable.block_fill0 }),
                 contentDescription = null,
                 tint = colorScheme.onPrimary
             )
             Spacer(modifier = Modifier.padding(start = 10.dp))
             Column {
                 Text(
-                    text = stringResource(if(myDpm.isAdminActive(myComponent)){R.string.activated}else{R.string.deactivated}),
+                    text = stringResource(if(dpm.isAdminActive(receiver)){R.string.activated}else{R.string.deactivated}),
                     style = typography.headlineSmall,
                     color = colorScheme.onPrimary,
                     modifier = Modifier.padding(bottom = 2.dp)
@@ -168,11 +168,11 @@ private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>){
             }
         }
         HomePageItem(R.string.system_manage, R.drawable.mobile_phone_fill0, "SystemManage", navCtrl)
-        if(VERSION.SDK_INT>=24&&(isDeviceOwner(myDpm))||isProfileOwner(myDpm)){ HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network",navCtrl) }
+        if(VERSION.SDK_INT>=24&&(isDeviceOwner(dpm))||isProfileOwner(dpm)){ HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network",navCtrl) }
         if(
-            (VERSION.SDK_INT<24&&!isDeviceOwner(myDpm))||(
-                    VERSION.SDK_INT>=24&&(myDpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)||
-                            (isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)))
+            (VERSION.SDK_INT<24&&!isDeviceOwner(dpm))||(
+                    VERSION.SDK_INT>=24&&(dpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)||
+                            (isProfileOwner(dpm)&&dpm.isManagedProfile(receiver)))
             )
         ){
             HomePageItem(R.string.work_profile, R.drawable.work_fill0, "ManagedProfile",navCtrl)
@@ -189,12 +189,12 @@ private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>){
 }
 
 @Composable
-fun HomePageItem(name:Int, imgVector:Int, navTo:String, myNav:NavHostController){
+fun HomePageItem(name:Int, imgVector:Int, navTo:String, navCtrl:NavHostController){
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(25))
-            .clickable(onClick = {myNav.navigate(navTo)})
+            .clickable(onClick = {navCtrl.navigate(navTo)})
             .padding(vertical = 13.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

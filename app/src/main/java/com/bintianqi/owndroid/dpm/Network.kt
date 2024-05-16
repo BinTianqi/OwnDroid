@@ -100,13 +100,13 @@ fun Network(navCtrl: NavHostController){
 
 @Composable
 private fun Home(navCtrl:NavHostController,scrollState: ScrollState){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext, Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context, Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)){
         Text(text = stringResource(R.string.network), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
-        if(VERSION.SDK_INT>=24&&isDeviceOwner(myDpm)){
-            val wifimac = myDpm.getWifiMacAddress(myComponent)
+        if(VERSION.SDK_INT>=24&&isDeviceOwner(dpm)){
+            val wifimac = dpm.getWifiMacAddress(receiver)
             Text(text = "WiFi MAC: $wifimac", modifier = Modifier.padding(start = 15.dp))
         }
         Spacer(Modifier.padding(vertical = 3.dp))
@@ -116,19 +116,19 @@ private fun Home(navCtrl:NavHostController,scrollState: ScrollState){
         if(VERSION.SDK_INT>=33){
             SubPageItem(R.string.min_wifi_security_level,"",R.drawable.wifi_password_fill0){navCtrl.navigate("MinWifiSecurityLevel")}
         }
-        if(VERSION.SDK_INT>=33&&(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))){
+        if(VERSION.SDK_INT>=33&&(isDeviceOwner(dpm)||(isProfileOwner(dpm)&&dpm.isOrganizationOwnedDeviceWithManagedProfile))){
             SubPageItem(R.string.wifi_ssid_policy,"",R.drawable.wifi_fill0){navCtrl.navigate("WifiSsidPolicy")}
         }
-        if(VERSION.SDK_INT>=29&&isDeviceOwner(myDpm)){
+        if(VERSION.SDK_INT>=29&&isDeviceOwner(dpm)){
             SubPageItem(R.string.private_dns,"",R.drawable.dns_fill0){navCtrl.navigate("PrivateDNS")}
         }
-        if(VERSION.SDK_INT>=26&&(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)))){
+        if(VERSION.SDK_INT>=26&&(isDeviceOwner(dpm)||(isProfileOwner(dpm)&&dpm.isManagedProfile(receiver)))){
             SubPageItem(R.string.retrieve_net_logs,"",R.drawable.description_fill0){navCtrl.navigate("NetLog")}
         }
-        if(VERSION.SDK_INT>=31&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm))){
+        if(VERSION.SDK_INT>=31&&(isDeviceOwner(dpm)||isProfileOwner(dpm))){
             SubPageItem(R.string.wifi_keypair,"",R.drawable.key_fill0){navCtrl.navigate("WifiKeypair")}
         }
-        if(VERSION.SDK_INT>=28&&isDeviceOwner(myDpm)){
+        if(VERSION.SDK_INT>=28&&isDeviceOwner(dpm)){
             SubPageItem(R.string.apn_settings,"",R.drawable.cell_tower_fill0){navCtrl.navigate("APN")}
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -137,20 +137,20 @@ private fun Home(navCtrl:NavHostController,scrollState: ScrollState){
 
 @Composable
 private fun Switches(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize()){
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT>=33&&isDeviceOwner(myDpm)){
+        if(VERSION.SDK_INT>=33&&isDeviceOwner(dpm)){
             SwitchItem(
                 R.string.preferential_network_service, stringResource(R.string.developing),R.drawable.globe_fill0,
-                {myDpm.isPreferentialNetworkServiceEnabled},{myDpm.isPreferentialNetworkServiceEnabled = it}
+                {dpm.isPreferentialNetworkServiceEnabled},{dpm.isPreferentialNetworkServiceEnabled = it}
             )
         }
-        if(VERSION.SDK_INT>=30&&(isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile))){
+        if(VERSION.SDK_INT>=30&&(isDeviceOwner(dpm)||(isProfileOwner(dpm)&&dpm.isOrganizationOwnedDeviceWithManagedProfile))){
             SwitchItem(R.string.wifi_lockdown,"",R.drawable.wifi_password_fill0,
-                {myDpm.hasLockdownAdminConfiguredNetworks(myComponent)},{myDpm.setConfiguredNetworksLockdownState(myComponent,it)}
+                {dpm.hasLockdownAdminConfiguredNetworks(receiver)},{dpm.setConfiguredNetworksLockdownState(receiver,it)}
             )
         }
     }
@@ -159,10 +159,10 @@ private fun Switches(){
 @SuppressLint("NewApi")
 @Composable
 private fun WifiSecLevel(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
-        var selectedWifiSecLevel by remember{mutableIntStateOf(myDpm.minimumRequiredWifiSecurityLevel)}
+        var selectedWifiSecLevel by remember{mutableIntStateOf(dpm.minimumRequiredWifiSecurityLevel)}
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.min_wifi_security_level), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -172,10 +172,10 @@ private fun WifiSecLevel(){
         RadioButtonItem("WPA3-192bit", {selectedWifiSecLevel==WIFI_SECURITY_ENTERPRISE_192}, {selectedWifiSecLevel= WIFI_SECURITY_ENTERPRISE_192})
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
-            enabled = isDeviceOwner(myDpm)||(isProfileOwner(myDpm)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile),
+            enabled = isDeviceOwner(dpm)||(isProfileOwner(dpm)&&dpm.isOrganizationOwnedDeviceWithManagedProfile),
             onClick = {
-                myDpm.minimumRequiredWifiSecurityLevel=selectedWifiSecLevel
-                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                dpm.minimumRequiredWifiSecurityLevel=selectedWifiSecLevel
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ){
@@ -187,16 +187,16 @@ private fun WifiSecLevel(){
 @SuppressLint("NewApi")
 @Composable
 private fun WifiSsidPolicy(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
-        var policy = myDpm.wifiSsidPolicy
+        var policy = dpm.wifiSsidPolicy
         var selectedPolicyType by remember{mutableIntStateOf(policy?.policyType ?: -1)}
         var inputSsid by remember{mutableStateOf("")}
         var ssidList by remember{mutableStateOf("")}
         val refreshPolicy = {
-            policy = myDpm.wifiSsidPolicy
+            policy = dpm.wifiSsidPolicy
             selectedPolicyType = policy?.policyType ?: -1
             ssidSet = policy?.ssids ?: mutableSetOf()
         }
@@ -230,9 +230,9 @@ private fun WifiSsidPolicy(){
             Button(
                 onClick = {
                     if(inputSsid==""){
-                        Toast.makeText(myContext, R.string.cannot_be_empty, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.cannot_be_empty, Toast.LENGTH_SHORT).show()
                     }else if(WifiSsid.fromBytes(inputSsid.toByteArray()) in ssidSet){
-                        Toast.makeText(myContext, R.string.already_exist, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.already_exist, Toast.LENGTH_SHORT).show()
                     }else{
                         ssidSet.add(WifiSsid.fromBytes(inputSsid.toByteArray()))
                         ssidList = ssidSet.toText()
@@ -246,13 +246,13 @@ private fun WifiSsidPolicy(){
             Button(
                 onClick = {
                     if(inputSsid==""){
-                        Toast.makeText(myContext, R.string.cannot_be_empty, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.cannot_be_empty, Toast.LENGTH_SHORT).show()
                     }else if(WifiSsid.fromBytes(inputSsid.toByteArray()) in ssidSet){
                         ssidSet.remove(WifiSsid.fromBytes(inputSsid.toByteArray()))
                         inputSsid = ""
                         ssidList = ssidSet.toText()
                     }else{
-                        Toast.makeText(myContext, R.string.not_exist, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.not_exist, Toast.LENGTH_SHORT).show()
                     }
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
@@ -265,16 +265,16 @@ private fun WifiSsidPolicy(){
                 focusMgr.clearFocus()
                 if(selectedPolicyType==-1){
                     if(policy==null&&ssidSet.isNotEmpty()){
-                        Toast.makeText(myContext, R.string.please_select_a_policy, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.please_select_a_policy, Toast.LENGTH_SHORT).show()
                     }else{
-                        myDpm.wifiSsidPolicy = null
+                        dpm.wifiSsidPolicy = null
                         refreshPolicy()
-                        Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                     }
                 }else{
-                    myDpm.wifiSsidPolicy = if(ssidSet.size==0){ null }else{ WifiSsidPolicy(selectedPolicyType, ssidSet) }
+                    dpm.wifiSsidPolicy = if(ssidSet.size==0){ null }else{ WifiSsidPolicy(selectedPolicyType, ssidSet) }
                     refreshPolicy()
-                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -288,9 +288,9 @@ private fun WifiSsidPolicy(){
 @SuppressLint("NewApi")
 @Composable
 private fun PrivateDNS(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -306,16 +306,16 @@ private fun PrivateDNS(){
             PRIVATE_DNS_SET_ERROR_HOST_NOT_SERVING to stringResource(R.string.host_not_serving_dns_tls),
             PRIVATE_DNS_SET_ERROR_FAILURE_SETTING to stringResource(R.string.fail)
         )
-        var status by remember{mutableStateOf(dnsStatus[myDpm.getGlobalPrivateDnsMode(myComponent)])}
+        var status by remember{mutableStateOf(dnsStatus[dpm.getGlobalPrivateDnsMode(receiver)])}
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.current_state, status?:stringResource(R.string.unknown)))
-        AnimatedVisibility(visible = myDpm.getGlobalPrivateDnsMode(myComponent)!=PRIVATE_DNS_MODE_OPPORTUNISTIC) {
+        AnimatedVisibility(visible = dpm.getGlobalPrivateDnsMode(receiver)!=PRIVATE_DNS_MODE_OPPORTUNISTIC) {
             Spacer(Modifier.padding(vertical = 5.dp))
             Button(
                 onClick = {
-                    val result = myDpm.setGlobalPrivateDnsModeOpportunistic(myComponent)
-                    Toast.makeText(myContext, operationResult[result], Toast.LENGTH_SHORT).show()
-                    status = dnsStatus[myDpm.getGlobalPrivateDnsMode(myComponent)]
+                    val result = dpm.setGlobalPrivateDnsModeOpportunistic(receiver)
+                    Toast.makeText(context, operationResult[result], Toast.LENGTH_SHORT).show()
+                    status = dnsStatus[dpm.getGlobalPrivateDnsMode(receiver)]
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -323,7 +323,7 @@ private fun PrivateDNS(){
             }
         }
         Spacer(Modifier.padding(vertical = 10.dp))
-        var inputHost by remember{mutableStateOf(myDpm.getGlobalPrivateDnsHost(myComponent) ?: "")}
+        var inputHost by remember{mutableStateOf(dpm.getGlobalPrivateDnsHost(receiver) ?: "")}
         OutlinedTextField(
             value = inputHost,
             onValueChange = {inputHost=it},
@@ -338,14 +338,14 @@ private fun PrivateDNS(){
                 focusMgr.clearFocus()
                 val result: Int
                 try{
-                    result = myDpm.setGlobalPrivateDnsModeSpecifiedHost(myComponent,inputHost)
-                    Toast.makeText(myContext, operationResult[result], Toast.LENGTH_SHORT).show()
+                    result = dpm.setGlobalPrivateDnsModeSpecifiedHost(receiver,inputHost)
+                    Toast.makeText(context, operationResult[result], Toast.LENGTH_SHORT).show()
                 }catch(e:IllegalArgumentException){
-                    Toast.makeText(myContext, R.string.invalid_hostname, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.invalid_hostname, Toast.LENGTH_SHORT).show()
                 }catch(e:SecurityException){
-                    Toast.makeText(myContext, R.string.security_exception, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.security_exception, Toast.LENGTH_SHORT).show()
                 }finally {
-                    status = dnsStatus[myDpm.getGlobalPrivateDnsMode(myComponent)]
+                    status = dnsStatus[dpm.getGlobalPrivateDnsMode(receiver)]
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -358,26 +358,26 @@ private fun PrivateDNS(){
 @SuppressLint("NewApi")
 @Composable
 private fun NetLog(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.retrieve_net_logs), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.developing))
         Spacer(Modifier.padding(vertical = 5.dp))
-        SwitchItem(R.string.enable,"",null,{myDpm.isNetworkLoggingEnabled(myComponent)},{myDpm.setNetworkLoggingEnabled(myComponent,it)})
+        SwitchItem(R.string.enable,"",null,{dpm.isNetworkLoggingEnabled(receiver)},{dpm.setNetworkLoggingEnabled(receiver,it)})
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                val log = myDpm.retrieveNetworkLogs(myComponent,1234567890)
+                val log = dpm.retrieveNetworkLogs(receiver,1234567890)
                 if(log!=null){
                     for(i in log){ Log.d("NetLog",i.toString()) }
-                    Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                 }else{
-                    Log.d("NetLog",myContext.getString(R.string.none))
-                    Toast.makeText(myContext, R.string.none, Toast.LENGTH_SHORT).show()
+                    Log.d("NetLog",context.getString(R.string.none))
+                    Toast.makeText(context, R.string.none, Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -390,8 +390,8 @@ private fun NetLog(){
 @SuppressLint("NewApi")
 @Composable
 private fun WifiKeypair(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         var keyPair by remember{mutableStateOf("")}
@@ -407,14 +407,14 @@ private fun WifiKeypair(){
             modifier = Modifier.focusable().fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
-        val isExist = try{myDpm.isKeyPairGrantedToWifiAuth(keyPair)}catch(e:java.lang.IllegalArgumentException){false}
+        val isExist = try{dpm.isKeyPairGrantedToWifiAuth(keyPair)}catch(e:java.lang.IllegalArgumentException){false}
         Text(stringResource(R.string.already_exist)+"：$isExist")
         Spacer(Modifier.padding(vertical = 5.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
             Button(
                 onClick = {
-                    val result = myDpm.grantKeyPairToWifiAuth(keyPair)
-                    Toast.makeText(myContext, if(result){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
+                    val result = dpm.grantKeyPairToWifiAuth(keyPair)
+                    Toast.makeText(context, if(result){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) {
@@ -422,8 +422,8 @@ private fun WifiKeypair(){
             }
             Button(
                 onClick = {
-                    val result = myDpm.revokeKeyPairFromWifiAuth(keyPair)
-                    Toast.makeText(myContext, if(result){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
+                    val result = dpm.revokeKeyPairFromWifiAuth(keyPair)
+                    Toast.makeText(context, if(result){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) {
@@ -436,12 +436,12 @@ private fun WifiKeypair(){
 @SuppressLint("NewApi")
 @Composable
 private fun APN(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
-        val setting = myDpm.getOverrideApns(myComponent)
+        val setting = dpm.getOverrideApns(receiver)
         var inputNum by remember{mutableStateOf("0")}
         var nextStep by remember{mutableStateOf(false)}
         val builder = Builder()
@@ -450,7 +450,7 @@ private fun APN(){
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(id = R.string.developing))
         Spacer(Modifier.padding(vertical = 5.dp))
-        SwitchItem(R.string.enable,"",null,{myDpm.isOverrideApnEnabled(myComponent)},{myDpm.setOverrideApnsEnabled(myComponent,it)})
+        SwitchItem(R.string.enable,"",null,{dpm.isOverrideApnEnabled(receiver)},{dpm.setOverrideApnsEnabled(receiver,it)})
         Text(text = stringResource(R.string.total_apn_amount, setting.size))
         if(setting.size>0){
             Text(text = stringResource(R.string.select_a_apn_or_create, setting.size))
@@ -569,7 +569,7 @@ private fun APN(){
                 RadioButtonItem("PAP/CHAP",{selectedAuthType==AUTH_TYPE_PAP_OR_CHAP},{selectedAuthType=AUTH_TYPE_PAP_OR_CHAP})
                 
                 if(VERSION.SDK_INT>=29){
-                    val ts = myContext.getSystemService(ComponentActivity.TELEPHONY_SERVICE) as TelephonyManager
+                    val ts = context.getSystemService(ComponentActivity.TELEPHONY_SERVICE) as TelephonyManager
                     carrierId = ts.simCarrierId.toString()
                     Text(text = "CarrierID", style = typography.titleLarge)
                     TextField(
@@ -772,7 +772,7 @@ private fun APN(){
                 AnimatedVisibility(finalStep) {
                     if(inputNum=="0"){
                         Button(
-                            onClick = {myDpm.addOverrideApn(myComponent,result)},
+                            onClick = {dpm.addOverrideApn(receiver,result)},
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(stringResource(R.string.create))
@@ -781,8 +781,8 @@ private fun APN(){
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
                             Button(
                                 onClick = {
-                                    val success = myDpm.updateOverrideApn(myComponent,id,result)
-                                    Toast.makeText(myContext, if(success){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
+                                    val success = dpm.updateOverrideApn(receiver,id,result)
+                                    Toast.makeText(context, if(success){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
                                 },
                                 Modifier.fillMaxWidth(0.49F)
                             ){
@@ -790,8 +790,8 @@ private fun APN(){
                             }
                             Button(
                                 onClick = {
-                                    val success = myDpm.removeOverrideApn(myComponent,id)
-                                    Toast.makeText(myContext, if(success){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
+                                    val success = dpm.removeOverrideApn(receiver,id)
+                                    Toast.makeText(context, if(success){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
                                 },
                                 Modifier.fillMaxWidth(0.96F)
                             ){

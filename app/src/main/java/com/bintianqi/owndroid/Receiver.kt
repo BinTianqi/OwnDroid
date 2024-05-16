@@ -16,9 +16,9 @@ import com.bintianqi.owndroid.dpm.isProfileOwner
 class Receiver : DeviceAdminReceiver() {
     override fun onEnabled(context: Context, intent: Intent) {
         super.onEnabled(context, intent)
-        val myDpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        val myComponent = ComponentName(context, this::class.java)
-        if(myDpm.isAdminActive(myComponent)||isProfileOwner(myDpm)||isDeviceOwner(myDpm)){
+        val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        val receiver = ComponentName(context, this::class.java)
+        if(dpm.isAdminActive(receiver)||isProfileOwner(dpm)||isDeviceOwner(dpm)){
             Toast.makeText(context, context.getString(R.string.onEnabled), Toast.LENGTH_SHORT).show()
         }
     }

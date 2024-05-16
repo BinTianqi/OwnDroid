@@ -80,24 +80,24 @@ fun ManagedProfile(navCtrl: NavHostController) {
 
 @Composable
 private fun Home(navCtrl: NavHostController){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext, Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context, Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
         Text(text = stringResource(R.string.work_profile), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
-        if(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
+        if(VERSION.SDK_INT>=30&&isProfileOwner(dpm)&&dpm.isManagedProfile(receiver)){
             SubPageItem(R.string.org_owned_work_profile,"",R.drawable.corporate_fare_fill0){navCtrl.navigate("OrgOwnedWorkProfile")}
         }
-        if(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE))){
+        if(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&dpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE))){
             SubPageItem(R.string.create_work_profile,"",R.drawable.work_fill0){navCtrl.navigate("CreateWorkProfile")}
         }
-        if(VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)&&myDpm.isOrganizationOwnedDeviceWithManagedProfile){
+        if(VERSION.SDK_INT>=30&&isProfileOwner(dpm)&&dpm.isManagedProfile(receiver)&&dpm.isOrganizationOwnedDeviceWithManagedProfile){
             SubPageItem(R.string.suspend_personal_app,"",R.drawable.block_fill0){navCtrl.navigate("SuspendPersonalApp")}
         }
-        if(isProfileOwner(myDpm)&&(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)))){
+        if(isProfileOwner(dpm)&&(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&dpm.isManagedProfile(receiver)))){
             SubPageItem(R.string.intent_filter,"",R.drawable.filter_alt_fill0){navCtrl.navigate("IntentFilter")}
         }
-        if(VERSION.SDK_INT>=31&&(isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent))){
+        if(VERSION.SDK_INT>=31&&(isProfileOwner(dpm)&&dpm.isManagedProfile(receiver))){
             SubPageItem(R.string.org_id,"",R.drawable.corporate_fare_fill0){navCtrl.navigate("OrgID")}
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -106,8 +106,8 @@ private fun Home(navCtrl: NavHostController){
 
 @Composable
 private fun CreateWorkProfile(){
-    val myContext = LocalContext.current
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val receiver = ComponentName(context,Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.create_work_profile), style = typography.headlineLarge)
@@ -122,15 +122,15 @@ private fun CreateWorkProfile(){
                 try {
                     val intent = Intent(ACTION_PROVISION_MANAGED_PROFILE)
                     if(VERSION.SDK_INT>=23){
-                        intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME,myComponent)
+                        intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME,receiver)
                     }else{
-                        intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME, myContext.packageName)
+                        intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME, context.packageName)
                     }
                     if(VERSION.SDK_INT>=24){intent.putExtra(EXTRA_PROVISIONING_SKIP_ENCRYPTION,skipEncrypt)}
                     if(VERSION.SDK_INT>=33){intent.putExtra(EXTRA_PROVISIONING_ALLOW_OFFLINE,true)}
                     createManagedProfile.launch(intent)
                 }catch(e:ActivityNotFoundException){
-                    Toast.makeText(myContext, R.string.unsupported, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.unsupported, Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -143,15 +143,15 @@ private fun CreateWorkProfile(){
 @SuppressLint("NewApi")
 @Composable
 private fun OrgOwnedProfile(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.org_owned_work_profile), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text = stringResource(R.string.is_org_owned_profile,myDpm.isOrganizationOwnedDeviceWithManagedProfile))
+        Text(text = stringResource(R.string.is_org_owned_profile,dpm.isOrganizationOwnedDeviceWithManagedProfile))
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(!myDpm.isOrganizationOwnedDeviceWithManagedProfile){
+        if(!dpm.isOrganizationOwnedDeviceWithManagedProfile){
             SelectionContainer {
                 Text(
                     text = stringResource(R.string.activate_org_profile_command, Binder.getCallingUid()/100000),
@@ -166,8 +166,8 @@ private fun OrgOwnedProfile(){
 @SuppressLint("NewApi")
 @Composable
 private fun OrgID(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         var orgId by remember{mutableStateOf("")}
@@ -188,8 +188,8 @@ private fun OrgID(){
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                myDpm.setOrganizationId(orgId)
-                Toast.makeText(myContext, R.string.success,Toast.LENGTH_SHORT).show()
+                dpm.setOrganizationId(orgId)
+                Toast.makeText(context, R.string.success,Toast.LENGTH_SHORT).show()
             },
             enabled = orgId.length in 6..64,
             modifier = Modifier.fillMaxWidth()
@@ -204,22 +204,22 @@ private fun OrgID(){
 @SuppressLint("NewApi")
 @Composable
 private fun SuspendPersonalApp(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         SwitchItem(
-            R.string.suspend_personal_app,"",null,{myDpm.getPersonalAppsSuspendedReasons(myComponent)!=PERSONAL_APPS_NOT_SUSPENDED},
-            {myDpm.setPersonalAppsSuspended(myComponent,it)}
+            R.string.suspend_personal_app,"",null,{dpm.getPersonalAppsSuspendedReasons(receiver)!=PERSONAL_APPS_NOT_SUSPENDED},
+            {dpm.setPersonalAppsSuspended(receiver,it)}
         )
         var time by remember{mutableStateOf("")}
-        time = myDpm.getManagedProfileMaximumTimeOff(myComponent).toString()
+        time = dpm.getManagedProfileMaximumTimeOff(receiver).toString()
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.profile_max_time_off), style = typography.titleLarge)
         Text(text = stringResource(R.string.profile_max_time_out_desc))
-        Text(text = stringResource(R.string.personal_app_suspended_because_timeout, myDpm.getPersonalAppsSuspendedReasons(myComponent)==PERSONAL_APPS_SUSPENDED_PROFILE_TIMEOUT))
+        Text(text = stringResource(R.string.personal_app_suspended_because_timeout, dpm.getPersonalAppsSuspendedReasons(receiver)==PERSONAL_APPS_SUSPENDED_PROFILE_TIMEOUT))
         OutlinedTextField(
             value = time, onValueChange = {time=it}, modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp),
             label = {Text(stringResource(R.string.time_unit_ms))},
@@ -229,8 +229,8 @@ private fun SuspendPersonalApp(){
         Text(text = stringResource(R.string.cannot_less_than_72_hours))
         Button(
             onClick = {
-                myDpm.setManagedProfileMaximumTimeOff(myComponent,time.toLong())
-                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                dpm.setManagedProfileMaximumTimeOff(receiver,time.toLong())
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -241,9 +241,9 @@ private fun SuspendPersonalApp(){
 
 @Composable
 private fun IntentFilter(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         var action by remember{mutableStateOf("")}
@@ -260,8 +260,8 @@ private fun IntentFilter(){
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                myDpm.addCrossProfileIntentFilter(myComponent, IntentFilter(action), FLAG_PARENT_CAN_ACCESS_MANAGED)
-                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                dpm.addCrossProfileIntentFilter(receiver, IntentFilter(action), FLAG_PARENT_CAN_ACCESS_MANAGED)
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -269,8 +269,8 @@ private fun IntentFilter(){
         }
         Button(
             onClick = {
-                myDpm.addCrossProfileIntentFilter(myComponent, IntentFilter(action), FLAG_MANAGED_CAN_ACCESS_PARENT)
-                Toast.makeText(myContext, R.string.success,Toast.LENGTH_SHORT).show()
+                dpm.addCrossProfileIntentFilter(receiver, IntentFilter(action), FLAG_MANAGED_CAN_ACCESS_PARENT)
+                Toast.makeText(context, R.string.success,Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -279,8 +279,8 @@ private fun IntentFilter(){
         Spacer(Modifier.padding(vertical = 2.dp))
         Button(
             onClick = {
-                myDpm.clearCrossProfileIntentFilters(myComponent)
-                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                dpm.clearCrossProfileIntentFilters(receiver)
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ){

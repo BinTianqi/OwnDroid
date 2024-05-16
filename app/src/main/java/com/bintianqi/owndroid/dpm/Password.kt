@@ -118,9 +118,9 @@ private fun Home(navCtrl:NavHostController,scrollState: ScrollState){
 
 @Composable
 private fun PasswordInfo(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext, Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context, Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.password_info), style = typography.headlineLarge)
@@ -132,18 +132,18 @@ private fun PasswordInfo(){
                 PASSWORD_COMPLEXITY_MEDIUM to stringResource(R.string.password_complexity_medium),
                 PASSWORD_COMPLEXITY_HIGH to stringResource(R.string.password_complexity_high)
             )
-            val pwdComplex = passwordComplexity[myDpm.passwordComplexity]
+            val pwdComplex = passwordComplexity[dpm.passwordComplexity]
             Text(text = stringResource(R.string.current_password_complexity_is, pwdComplex?:stringResource(R.string.unknown)))
         }
-        if(isDeviceOwner(myDpm)|| isProfileOwner(myDpm)){
-            Text(stringResource(R.string.is_password_sufficient, myDpm.isActivePasswordSufficient))
+        if(isDeviceOwner(dpm)|| isProfileOwner(dpm)){
+            Text(stringResource(R.string.is_password_sufficient, dpm.isActivePasswordSufficient))
         }
-        if(myDpm.isAdminActive(myComponent)){
-            val pwdFailedAttempts = myDpm.currentFailedPasswordAttempts
+        if(dpm.isAdminActive(receiver)){
+            val pwdFailedAttempts = dpm.currentFailedPasswordAttempts
             Text(text = stringResource(R.string.password_failed_attempts_is, pwdFailedAttempts))
         }
-        if(VERSION.SDK_INT>=28&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)){
-            val unifiedPwd = myDpm.isUsingUnifiedPassword(myComponent)
+        if(VERSION.SDK_INT>=28&&isProfileOwner(dpm)&&dpm.isManagedProfile(receiver)){
+            val unifiedPwd = dpm.isUsingUnifiedPassword(receiver)
             Text(stringResource(R.string.is_using_unified_password, unifiedPwd))
         }
     }
@@ -152,49 +152,49 @@ private fun PasswordInfo(){
 @SuppressLint("NewApi")
 @Composable
 private fun ResetPasswordToken(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
-    val myByteArray by remember{ mutableStateOf(byteArrayOf(1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0)) }
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
+    val tokenByteArray by remember{ mutableStateOf(byteArrayOf(1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0)) }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.reset_password_token), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                if(myDpm.clearResetPasswordToken(myComponent)){ Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
-                }else{ Toast.makeText(myContext, R.string.fail, Toast.LENGTH_SHORT).show() }
+                if(dpm.clearResetPasswordToken(receiver)){ Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                }else{ Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show() }
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm)
+            enabled = isDeviceOwner(dpm)||isProfileOwner(dpm)
         ) {
             Text(stringResource(R.string.clear))
         }
         Button(
             onClick = {
                 try {
-                    if(myDpm.setResetPasswordToken(myComponent, myByteArray)){
-                        Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                    if(dpm.setResetPasswordToken(receiver, tokenByteArray)){
+                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                     }else{
-                        Toast.makeText(myContext, R.string.fail, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show()
                     }
                 }catch(e:SecurityException){
-                    Toast.makeText(myContext, R.string.security_exception, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.security_exception, Toast.LENGTH_SHORT).show()
                 }
             },
-            enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
+            enabled = isDeviceOwner(dpm)||isProfileOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.set))
         }
         Button(
             onClick = {
-                if(!myDpm.isResetPasswordTokenActive(myComponent)){
-                    try{ activateToken(myContext) }
-                    catch(e:NullPointerException){ Toast.makeText(myContext, R.string.please_set_a_token, Toast.LENGTH_SHORT).show() }
-                }else{ Toast.makeText(myContext, R.string.token_already_activated, Toast.LENGTH_SHORT).show() }
+                if(!dpm.isResetPasswordTokenActive(receiver)){
+                    try{ activateToken(context) }
+                    catch(e:NullPointerException){ Toast.makeText(context, R.string.please_set_a_token, Toast.LENGTH_SHORT).show() }
+                }else{ Toast.makeText(context, R.string.token_already_activated, Toast.LENGTH_SHORT).show() }
             },
-            enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
+            enabled = isDeviceOwner(dpm)||isProfileOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.activate))
@@ -206,12 +206,12 @@ private fun ResetPasswordToken(){
 
 @Composable
 private fun ResetPassword(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     var newPwd by remember{ mutableStateOf("") }
-    val myByteArray by remember{ mutableStateOf(byteArrayOf(1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0)) }
+    val tokenByteArray by remember{ mutableStateOf(byteArrayOf(1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0)) }
     var confirmed by remember{ mutableStateOf(false) }
     var resetPwdFlag by remember{ mutableIntStateOf(0) }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
@@ -221,7 +221,7 @@ private fun ResetPassword(){
         OutlinedTextField(
             value = newPwd,
             onValueChange = {newPwd=it},
-            enabled = !confirmed&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm)||myDpm.isAdminActive(myComponent)),
+            enabled = !confirmed&&(isDeviceOwner(dpm)||isProfileOwner(dpm)||dpm.isAdminActive(receiver)),
             label = { Text(stringResource(R.string.password))},
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
@@ -242,9 +242,9 @@ private fun ResetPassword(){
         Button(
             onClick = {
                 if(newPwd.length>=4||newPwd.isEmpty()){ confirmed=!confirmed
-                }else{ Toast.makeText(myContext, R.string.require_4_digit_password, Toast.LENGTH_SHORT).show() }
+                }else{ Toast.makeText(context, R.string.require_4_digit_password, Toast.LENGTH_SHORT).show() }
             },
-            enabled = isDeviceOwner(myDpm) || isProfileOwner(myDpm) || myDpm.isAdminActive(myComponent),
+            enabled = isDeviceOwner(dpm) || isProfileOwner(dpm) || dpm.isAdminActive(receiver),
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
                 containerColor = if(confirmed){ colorScheme.primary }else{ colorScheme.error },
@@ -257,13 +257,13 @@ private fun ResetPassword(){
         if(VERSION.SDK_INT>=26){
             Button(
                 onClick = {
-                    val resetSuccess = myDpm.resetPasswordWithToken(myComponent,newPwd,myByteArray,resetPwdFlag)
-                    if(resetSuccess){ Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show();newPwd=""}
-                    else{ Toast.makeText(myContext, R.string.fail, Toast.LENGTH_SHORT).show() }
+                    val resetSuccess = dpm.resetPasswordWithToken(receiver,newPwd,tokenByteArray,resetPwdFlag)
+                    if(resetSuccess){ Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show();newPwd=""}
+                    else{ Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show() }
                     confirmed=false
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
-                enabled = confirmed&&(isDeviceOwner(myDpm)||isProfileOwner(myDpm)),
+                enabled = confirmed&&(isDeviceOwner(dpm)||isProfileOwner(dpm)),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.reset_password_with_token))
@@ -271,9 +271,9 @@ private fun ResetPassword(){
         }
         Button(
             onClick = {
-                val resetSuccess = myDpm.resetPassword(newPwd,resetPwdFlag)
-                if(resetSuccess){ Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show(); newPwd=""}
-                else{ Toast.makeText(myContext, R.string.fail, Toast.LENGTH_SHORT).show() }
+                val resetSuccess = dpm.resetPassword(newPwd,resetPwdFlag)
+                if(resetSuccess){ Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show(); newPwd=""}
+                else{ Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show() }
                 confirmed=false
             },
             enabled = confirmed,
@@ -289,8 +289,8 @@ private fun ResetPassword(){
 @SuppressLint("NewApi")
 @Composable
 private fun PasswordComplexity(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val passwordComplexity = mapOf(
         PASSWORD_COMPLEXITY_NONE to stringResource(R.string.password_complexity_none),
         PASSWORD_COMPLEXITY_LOW to stringResource(R.string.password_complexity_low),
@@ -298,8 +298,8 @@ private fun PasswordComplexity(){
         PASSWORD_COMPLEXITY_HIGH to stringResource(R.string.password_complexity_high)
     ).toList()
     var selectedItem by remember{ mutableIntStateOf(passwordComplexity[0].first) }
-    if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){
-        selectedItem=myDpm.requiredPasswordComplexity
+    if(isDeviceOwner(dpm) || isProfileOwner(dpm)){
+        selectedItem=dpm.requiredPasswordComplexity
     }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -313,17 +313,17 @@ private fun PasswordComplexity(){
         
         Button(
             onClick = {
-                myDpm.requiredPasswordComplexity = selectedItem
-                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                dpm.requiredPasswordComplexity = selectedItem
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             },
-            enabled = isDeviceOwner(myDpm)|| isProfileOwner(myDpm),
+            enabled = isDeviceOwner(dpm)|| isProfileOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = stringResource(R.string.apply))
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
-            onClick = {myContext.startActivity(Intent(ACTION_SET_NEW_PASSWORD))},
+            onClick = {context.startActivity(Intent(ACTION_SET_NEW_PASSWORD))},
             modifier = Modifier.fillMaxWidth()
         ){
             Text(stringResource(R.string.require_set_new_password))
@@ -334,11 +334,11 @@ private fun PasswordComplexity(){
 
 @Composable
 private fun ScreenTimeout(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
-    var inputContent by remember{ mutableStateOf(if(isDeviceOwner(myDpm)){myDpm.getMaximumTimeToLock(myComponent).toString()}else{""}) }
+    var inputContent by remember{ mutableStateOf(if(isDeviceOwner(dpm)){dpm.getMaximumTimeToLock(receiver).toString()}else{""}) }
     var ableToApply by remember{ mutableStateOf(inputContent!="") }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -355,12 +355,12 @@ private fun ScreenTimeout(){
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-            enabled = isDeviceOwner(myDpm),
+            enabled = isDeviceOwner(dpm),
             modifier = Modifier.focusable().fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
-            onClick = {focusMgr.clearFocus() ; myDpm.setMaximumTimeToLock(myComponent,inputContent.toLong())},
+            onClick = {focusMgr.clearFocus() ; dpm.setMaximumTimeToLock(receiver,inputContent.toLong())},
             modifier = Modifier.fillMaxWidth()
         ){
             Text(stringResource(R.string.apply))
@@ -370,11 +370,11 @@ private fun ScreenTimeout(){
 
 @Composable
 private fun MaxFailedPasswordForWipe(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
-    var inputContent by remember{ mutableStateOf(if(isDeviceOwner(myDpm)){myDpm.getMaximumFailedPasswordsForWipe(myComponent).toString()}else{""}) }
+    var inputContent by remember{ mutableStateOf(if(isDeviceOwner(dpm)){dpm.getMaximumFailedPasswordsForWipe(receiver).toString()}else{""}) }
     var ableToApply by remember{ mutableStateOf(inputContent!=""&&inputContent!="0") }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -391,12 +391,12 @@ private fun MaxFailedPasswordForWipe(){
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-            enabled = isDeviceOwner(myDpm),
+            enabled = isDeviceOwner(dpm),
             modifier = Modifier.focusable().fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
-            onClick = {focusMgr.clearFocus() ; myDpm.setMaximumFailedPasswordsForWipe(myComponent,inputContent.toInt())},
+            onClick = {focusMgr.clearFocus() ; dpm.setMaximumFailedPasswordsForWipe(receiver,inputContent.toInt())},
             modifier = Modifier.fillMaxWidth()
         ){
             Text(stringResource(R.string.apply))
@@ -406,11 +406,11 @@ private fun MaxFailedPasswordForWipe(){
 
 @Composable
 private fun PasswordExpiration(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
-    var inputContent by remember{ mutableStateOf(if(isDeviceOwner(myDpm)){myDpm.getPasswordExpirationTimeout(myComponent).toString()}else{""}) }
+    var inputContent by remember{ mutableStateOf(if(isDeviceOwner(dpm)){dpm.getPasswordExpirationTimeout(receiver).toString()}else{""}) }
     var ableToApply by remember{ mutableStateOf(inputContent!="") }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -427,12 +427,12 @@ private fun PasswordExpiration(){
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-            enabled = isDeviceOwner(myDpm),
+            enabled = isDeviceOwner(dpm),
             modifier = Modifier.focusable().fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
-            onClick = {focusMgr.clearFocus() ; myDpm.setPasswordExpirationTimeout(myComponent,inputContent.toLong())},
+            onClick = {focusMgr.clearFocus() ; dpm.setPasswordExpirationTimeout(receiver,inputContent.toLong())},
             modifier = Modifier.fillMaxWidth()
         ){
             Text(stringResource(R.string.apply))
@@ -442,11 +442,11 @@ private fun PasswordExpiration(){
 
 @Composable
 private fun PasswordHistoryLength(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
-    var inputContent by remember{ mutableStateOf(if(isDeviceOwner(myDpm)){myDpm.getPasswordHistoryLength(myComponent).toString()}else{""}) }
+    var inputContent by remember{ mutableStateOf(if(isDeviceOwner(dpm)){dpm.getPasswordHistoryLength(receiver).toString()}else{""}) }
     var ableToApply by remember{ mutableStateOf(inputContent!="") }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -463,12 +463,12 @@ private fun PasswordHistoryLength(){
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
-            enabled = isDeviceOwner(myDpm),
+            enabled = isDeviceOwner(dpm),
             modifier = Modifier.focusable().fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
-            onClick = {focusMgr.clearFocus() ; myDpm.setPasswordHistoryLength(myComponent,inputContent.toInt())},
+            onClick = {focusMgr.clearFocus() ; dpm.setPasswordHistoryLength(receiver,inputContent.toInt())},
             modifier = Modifier.fillMaxWidth()
         ){
             Text(stringResource(R.string.apply))
@@ -478,9 +478,9 @@ private fun PasswordHistoryLength(){
 
 @Composable
 private fun KeyguardDisabledFeatures(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     var state by remember{mutableIntStateOf(-1)}
     var shortcuts by remember{mutableStateOf(false)}
     var biometrics by remember{mutableStateOf(false)}
@@ -494,7 +494,7 @@ private fun KeyguardDisabledFeatures(){
     var camera by remember{mutableStateOf(false)}
     var widgets by remember{mutableStateOf(false)}
     val calculateCustomFeature = {
-        var calculate = myDpm.getKeyguardDisabledFeatures(myComponent)
+        var calculate = dpm.getKeyguardDisabledFeatures(receiver)
         if(calculate==0){state=0}
         else{
             if(calculate-KEYGUARD_DISABLE_SHORTCUTS_ALL>=0 && VERSION.SDK_INT>=34){shortcuts=true;calculate-= KEYGUARD_DISABLE_SHORTCUTS_ALL }
@@ -511,7 +511,7 @@ private fun KeyguardDisabledFeatures(){
         }
     }
     if(state==-1){
-        state = when(myDpm.getKeyguardDisabledFeatures(myComponent)){
+        state = when(dpm.getKeyguardDisabledFeatures(receiver)){
             KEYGUARD_DISABLE_FEATURES_NONE->0
             KEYGUARD_DISABLE_FEATURES_ALL->1
             else->2
@@ -561,11 +561,11 @@ private fun KeyguardDisabledFeatures(){
                     if(camera){result+=KEYGUARD_DISABLE_SECURE_CAMERA}
                     if(widgets){result+=KEYGUARD_DISABLE_WIDGETS_ALL}
                 }
-                myDpm.setKeyguardDisabledFeatures(myComponent,result)
-                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                dpm.setKeyguardDisabledFeatures(receiver,result)
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                 calculateCustomFeature()
             },
-            enabled = isDeviceOwner(myDpm)||isProfileOwner(myDpm),
+            enabled = isDeviceOwner(dpm)||isProfileOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = stringResource(R.string.apply))
@@ -576,9 +576,9 @@ private fun KeyguardDisabledFeatures(){
 
 @Composable
 private fun PasswordQuality(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     val passwordQuality = mapOf(
         PASSWORD_QUALITY_UNSPECIFIED to stringResource(R.string.password_quality_unspecified),
         PASSWORD_QUALITY_SOMETHING to stringResource(R.string.password_quality_something),
@@ -590,7 +590,7 @@ private fun PasswordQuality(){
         PASSWORD_QUALITY_COMPLEX to stringResource(R.string.custom)+"（${stringResource(R.string.unsupported)}）",
     ).toList()
     var selectedItem by remember{ mutableIntStateOf(passwordQuality[0].first) }
-    if(isDeviceOwner(myDpm) || isProfileOwner(myDpm)){ selectedItem=myDpm.getPasswordQuality(myComponent) }
+    if(isDeviceOwner(dpm) || isProfileOwner(dpm)){ selectedItem=dpm.getPasswordQuality(receiver) }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.required_password_quality), style = typography.headlineLarge)
@@ -609,10 +609,10 @@ private fun PasswordQuality(){
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                myDpm.setPasswordQuality(myComponent,selectedItem)
-                Toast.makeText(myContext, R.string.success, Toast.LENGTH_SHORT).show()
+                dpm.setPasswordQuality(receiver,selectedItem)
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             },
-            enabled = isDeviceOwner(myDpm) || isProfileOwner(myDpm),
+            enabled = isDeviceOwner(dpm) || isProfileOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.apply))
@@ -621,13 +621,13 @@ private fun PasswordQuality(){
     }
 }
 
-private fun activateToken(myContext: Context){
-    val desc = myContext.getString(R.string.activate_reset_password_token_here)
-    val keyguardManager = myContext.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
-    val confirmIntent = keyguardManager.createConfirmDeviceCredentialIntent(myContext.getString(R.string.app_name), desc)
+private fun activateToken(context: Context){
+    val desc = context.getString(R.string.activate_reset_password_token_here)
+    val keyguardManager = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+    val confirmIntent = keyguardManager.createConfirmDeviceCredentialIntent(context.getString(R.string.app_name), desc)
     if (confirmIntent != null) {
-        startActivity(myContext,confirmIntent, null)
+        startActivity(context,confirmIntent, null)
     } else {
-        Toast.makeText(myContext, R.string.fail, Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show()
     }
 }

@@ -97,14 +97,14 @@ fun UserRestriction(navCtrl: NavHostController){
 
 @Composable
 private fun Home(navCtrl:NavHostController,scrollState: ScrollState){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext, Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context, Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)){
         Text(text = stringResource(R.string.user_restrict), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 7.dp, start = 15.dp))
         Text(text = stringResource(R.string.switch_to_disable_feature), modifier = Modifier.padding(start = 15.dp))
-        if(isProfileOwner(myDpm)){ Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.padding(start = 15.dp)) }
-        if(isProfileOwner(myDpm)&&(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&myDpm.isManagedProfile(myComponent)))){
+        if(isProfileOwner(dpm)){ Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.padding(start = 15.dp)) }
+        if(isProfileOwner(dpm)&&(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&dpm.isManagedProfile(receiver)))){
             Text(text = stringResource(R.string.some_features_invalid_in_work_profile), modifier = Modifier.padding(start = 15.dp))
         }
         Spacer(Modifier.padding(vertical = 2.dp))
@@ -141,9 +141,9 @@ private fun Connectivity(){
 
 @Composable
 fun Application(){
-    val myContext = LocalContext.current
+    val context = LocalContext.current
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
-        for(applicationItem in RestrictionData.application(myContext)){
+        for(applicationItem in RestrictionData.application(context)){
             UserRestrictionItem(applicationItem.restriction,applicationItem.name,applicationItem.desc,applicationItem.ico)
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -172,9 +172,9 @@ private fun Media(){
 
 @Composable
 private fun Other(){
-    val myContext = LocalContext.current
+    val context = LocalContext.current
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
-        for(otherItem in RestrictionData.other(myContext)){
+        for(otherItem in RestrictionData.other(context)){
             UserRestrictionItem(otherItem.restriction,otherItem.name,otherItem.desc,otherItem.ico)
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -188,26 +188,26 @@ private fun UserRestrictionItem(
     restrictionDescription:String,
     leadIcon:Int
 ){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext,Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     SwitchItem(
         itemName,restrictionDescription,leadIcon,
-        { if(isDeviceOwner(myDpm)||isProfileOwner(myDpm)){ myDpm.getUserRestrictions(myComponent).getBoolean(restriction) }else{ false } },
+        { if(isDeviceOwner(dpm)||isProfileOwner(dpm)){ dpm.getUserRestrictions(receiver).getBoolean(restriction) }else{ false } },
         {
             try{
                 if(it){
-                    myDpm.addUserRestriction(myComponent,restriction)
+                    dpm.addUserRestriction(receiver,restriction)
                 }else{
-                    myDpm.clearUserRestriction(myComponent,restriction)
+                    dpm.clearUserRestriction(receiver,restriction)
                 }
             }catch(e:SecurityException){
-                if(isProfileOwner(myDpm)){
-                    Toast.makeText(myContext, R.string.require_device_owner, Toast.LENGTH_SHORT).show()
+                if(isProfileOwner(dpm)){
+                    Toast.makeText(context, R.string.require_device_owner, Toast.LENGTH_SHORT).show()
                 }
             }
         },
-        isDeviceOwner(myDpm)||isProfileOwner(myDpm)
+        isDeviceOwner(dpm)||isProfileOwner(dpm)
     )
 }
 
@@ -252,13 +252,13 @@ private object RestrictionData{
         if(VERSION.SDK_INT>=28){list += Restriction(UserManager.DISALLOW_PRINTING,R.string.printing,"",R.drawable.print_fill0)}
         return list
     }
-    fun application(myContext: Context):List<Restriction>{
+    fun application(context: Context):List<Restriction>{
         val list:MutableList<Restriction> = mutableListOf()
         list += Restriction(UserManager.DISALLOW_INSTALL_APPS,R.string.install_app,"",R.drawable.android_fill0)
         if(VERSION.SDK_INT>=29){list += Restriction(UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY,R.string.install_unknown_src_globally,"",R.drawable.android_fill0)}
         list += Restriction(UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES,R.string.inst_unknown_src,"",R.drawable.android_fill0)
         list += Restriction(UserManager.DISALLOW_UNINSTALL_APPS,R.string.uninstall_app,"",R.drawable.delete_fill0)
-        list += Restriction(UserManager.DISALLOW_APPS_CONTROL,R.string.apps_ctrl, myContext.getString(R.string.apps_control_desc),R.drawable.apps_fill0)
+        list += Restriction(UserManager.DISALLOW_APPS_CONTROL,R.string.apps_ctrl, context.getString(R.string.apps_control_desc),R.drawable.apps_fill0)
         if(VERSION.SDK_INT>=34){ list += Restriction(UserManager.DISALLOW_CONFIG_DEFAULT_APPS,R.string.config_default_apps,"",R.drawable.apps_fill0) }
         return list
     }
@@ -290,7 +290,7 @@ private object RestrictionData{
         }
         return list
     }
-    fun other(myContext: Context):List<Restriction>{
+    fun other(context: Context):List<Restriction>{
         val list:MutableList<Restriction> = mutableListOf()
         if(VERSION.SDK_INT>=26){ list += Restriction(UserManager.DISALLOW_AUTOFILL,R.string.autofill, "",R.drawable.password_fill0) }
         list += Restriction(UserManager.DISALLOW_CONFIG_CREDENTIALS,R.string.config_credentials,"",R.drawable.android_fill0)
@@ -298,10 +298,10 @@ private object RestrictionData{
             list += Restriction(UserManager.DISALLOW_CONTENT_CAPTURE,R.string.content_capture,"",R.drawable.screenshot_fill0)
             list += Restriction(UserManager.DISALLOW_CONTENT_SUGGESTIONS,R.string.content_suggestions,"",R.drawable.sms_fill0)
         }
-        list += Restriction(UserManager.DISALLOW_CREATE_WINDOWS,R.string.create_windows, myContext.getString(R.string.create_windows_desc),R.drawable.web_asset)
+        list += Restriction(UserManager.DISALLOW_CREATE_WINDOWS,R.string.create_windows, context.getString(R.string.create_windows_desc),R.drawable.web_asset)
         if(VERSION.SDK_INT>=24){list += Restriction(UserManager.DISALLOW_SET_WALLPAPER,R.string.set_wallpaper,"",R.drawable.wallpaper_fill0)}
         if(VERSION.SDK_INT>=34){ list += Restriction(UserManager.DISALLOW_GRANT_ADMIN,R.string.grant_admin,"",R.drawable.security_fill0) }
-        if(VERSION.SDK_INT>=23){ list += Restriction(UserManager.DISALLOW_FUN,R.string.`fun`, myContext.getString(R.string.fun_desc),R.drawable.stadia_controller_fill0) }
+        if(VERSION.SDK_INT>=23){ list += Restriction(UserManager.DISALLOW_FUN,R.string.`fun`, context.getString(R.string.fun_desc),R.drawable.stadia_controller_fill0) }
         list += Restriction(UserManager.DISALLOW_MODIFY_ACCOUNTS,R.string.modify_accounts,"",R.drawable.manage_accounts_fill0)
         if(VERSION.SDK_INT>=28){
             list += Restriction(UserManager.DISALLOW_CONFIG_LOCALE,R.string.config_locale,"",R.drawable.language_fill0)

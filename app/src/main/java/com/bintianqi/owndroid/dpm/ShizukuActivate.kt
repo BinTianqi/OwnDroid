@@ -40,20 +40,20 @@ private var waitGrantPermission = false
 
 @Composable
 fun ShizukuActivate(){
-    val myContext = LocalContext.current
-    val myDpm = myContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val myComponent = ComponentName(myContext, Receiver::class.java)
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context, Receiver::class.java)
     val coScope = rememberCoroutineScope()
     val outputTextScrollState = rememberScrollState()
     var enabled by remember{ mutableStateOf(false) }
     var bindShizuku by remember{ mutableStateOf(false) }
     var outputText by remember{mutableStateOf("")}
-    var showDeviceAdminButton by remember{mutableStateOf(!myDpm.isAdminActive(myComponent))}
-    var showProfileOwnerButton by remember{mutableStateOf(!isProfileOwner(myDpm))}
-    var showDeviceOwnerButton by remember{mutableStateOf(!isDeviceOwner(myDpm))}
+    var showDeviceAdminButton by remember{mutableStateOf(!dpm.isAdminActive(receiver))}
+    var showProfileOwnerButton by remember{mutableStateOf(!isProfileOwner(dpm))}
+    var showDeviceOwnerButton by remember{mutableStateOf(!isDeviceOwner(dpm))}
     var showOrgProfileOwnerButton by remember{mutableStateOf(true)}
     LaunchedEffect(Unit){
-        if(service==null){userServiceControl(myContext, true)}
+        if(service==null){userServiceControl(context, true)}
         while(true){
             if(service==null){
                 enabled = false
@@ -75,7 +75,7 @@ fun ShizukuActivate(){
         AnimatedVisibility(bindShizuku) {
             Button(
                 onClick = {
-                    userServiceControl(myContext, true)
+                    userServiceControl(context, true)
                     outputText = ""
                 }
             ){
@@ -85,7 +85,7 @@ fun ShizukuActivate(){
 
         Button(
             onClick = {
-                outputText = checkPermission(myContext)
+                outputText = checkPermission(context)
                 coScope.launch {
                     outputTextScrollState.animateScrollTo(0, scrollAnim())
                 }
@@ -111,10 +111,10 @@ fun ShizukuActivate(){
             Button(
                 onClick = {
                     coScope.launch{
-                        outputText = service!!.execute(myContext.getString(R.string.dpm_activate_da_command))
+                        outputText = service!!.execute(context.getString(R.string.dpm_activate_da_command))
                         outputTextScrollState.animateScrollTo(0, scrollAnim())
                         delay(500)
-                        showDeviceAdminButton = !myDpm.isAdminActive(myComponent)
+                        showDeviceAdminButton = !dpm.isAdminActive(receiver)
                     }
                 },
                 enabled = enabled
@@ -127,10 +127,10 @@ fun ShizukuActivate(){
             Button(
                 onClick = {
                     coScope.launch{
-                        outputText = service!!.execute(myContext.getString(R.string.dpm_activate_po_command))
+                        outputText = service!!.execute(context.getString(R.string.dpm_activate_po_command))
                         outputTextScrollState.animateScrollTo(0, scrollAnim())
                         delay(600)
-                        showProfileOwnerButton = !isProfileOwner(myDpm)
+                        showProfileOwnerButton = !isProfileOwner(dpm)
                     }
                 },
                 enabled = enabled
@@ -143,10 +143,10 @@ fun ShizukuActivate(){
             Button(
                 onClick = {
                     coScope.launch{
-                        outputText = service!!.execute(myContext.getString(R.string.dpm_activate_do_command))
+                        outputText = service!!.execute(context.getString(R.string.dpm_activate_do_command))
                         outputTextScrollState.animateScrollTo(0, scrollAnim())
                         delay(500)
-                        showDeviceOwnerButton = !isDeviceOwner(myDpm)
+                        showDeviceOwnerButton = !isDeviceOwner(dpm)
                     }
                 },
                 enabled = enabled
@@ -156,7 +156,7 @@ fun ShizukuActivate(){
         }
         
         if(
-            VERSION.SDK_INT>=30&&isProfileOwner(myDpm)&&myDpm.isManagedProfile(myComponent)&&!myDpm.isOrganizationOwnedDeviceWithManagedProfile
+            VERSION.SDK_INT>=30&&isProfileOwner(dpm)&&dpm.isManagedProfile(receiver)&&!dpm.isOrganizationOwnedDeviceWithManagedProfile
         ){
             AnimatedVisibility(showOrgProfileOwnerButton) {
                 Button(
@@ -168,7 +168,7 @@ fun ShizukuActivate(){
                             )
                             outputTextScrollState.animateScrollTo(0, scrollAnim())
                             delay(500)
-                            showOrgProfileOwnerButton = !myDpm.isOrganizationOwnedDeviceWithManagedProfile
+                            showOrgProfileOwnerButton = !dpm.isOrganizationOwnedDeviceWithManagedProfile
                         }
                     },
                     enabled = enabled
