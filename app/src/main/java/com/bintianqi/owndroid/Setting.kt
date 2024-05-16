@@ -5,10 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build.VERSION
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme.typography
@@ -24,10 +21,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.bintianqi.owndroid.ui.Animations
-import com.bintianqi.owndroid.ui.SubPageItem
-import com.bintianqi.owndroid.ui.SwitchItem
-import com.bintianqi.owndroid.ui.TopBar
+import com.bintianqi.owndroid.ui.*
 
 @Composable
 fun AppSetting(navCtrl:NavHostController, materialYou: MutableState<Boolean>, blackTheme: MutableState<Boolean>){
@@ -65,8 +59,8 @@ fun AppSetting(navCtrl:NavHostController, materialYou: MutableState<Boolean>, bl
 @Composable
 private fun Home(navCtrl: NavHostController){
     Column(modifier = Modifier.fillMaxSize()){
-        SubPageItem(R.string.setting,"",R.drawable.settings_fill0){navCtrl.navigate("Theme")}
-        SubPageItem(R.string.security,"",R.drawable.settings_fill0){navCtrl.navigate("Auth")}
+        SubPageItem(R.string.theme,"",R.drawable.format_paint_fill0){navCtrl.navigate("Theme")}
+        SubPageItem(R.string.security,"",R.drawable.lock_fill0){navCtrl.navigate("Auth")}
         SubPageItem(R.string.about,"",R.drawable.info_fill0){navCtrl.navigate("About")}
     }
 }
@@ -103,22 +97,25 @@ private fun AuthSettings(){
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     var auth by remember{ mutableStateOf(sharedPref.getBoolean("auth",false)) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        if(VERSION.SDK_INT>=30){
-            SwitchItem(
-                R.string.lock_owndroid, "", null,
-                { auth },
-                {
-                    sharedPref.edit().putBoolean("auth",it).apply()
-                    auth = sharedPref.getBoolean("auth",false)
-                }
-            )
-        }
+        SwitchItem(
+            R.string.lock_owndroid, "", null,
+            { auth },
+            {
+                sharedPref.edit().putBoolean("auth",it).apply()
+                auth = sharedPref.getBoolean("auth",false)
+            }
+        )
         if(auth){
             SwitchItem(
                 R.string.enable_bio_auth, "", null,
                 { sharedPref.getBoolean("bio_auth",false) },
                 { sharedPref.edit().putBoolean("bio_auth",it).apply() }
             )
+        }
+        Box(modifier = Modifier.padding(horizontal = 8.dp)){
+            Information {
+                Text(text = stringResource(R.string.auth_on_start))
+            }
         }
     }
 }

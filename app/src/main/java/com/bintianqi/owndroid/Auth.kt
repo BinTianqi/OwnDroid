@@ -3,14 +3,15 @@ package com.bintianqi.owndroid
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import android.widget.FrameLayout
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.biometric.BiometricPrompt.AuthenticationCallback
-import androidx.biometric.BiometricPrompt.PromptInfo
+import androidx.biometric.BiometricPrompt.PromptInfo.Builder
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,35 +19,38 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import kotlinx.coroutines.*
 
 class AuthFragment: Fragment() {
-    @OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("UnrememberedMutableState")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val sharedPref = context?.getSharedPreferences("data", Context.MODE_PRIVATE)!!
+        val context = requireContext()
+        val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)!!
+        val canStartAuth = mutableStateOf(true)
         val onAuthSucceed = {
             val fragmentManager = this.parentFragmentManager
-            val fragment = fragmentManager.findFragmentByTag("auth")
-            if(fragment != null) {
-                val fragmentTransaction = fragmentManager.beginTransaction()
-                fragmentTransaction.replace(R.id.base, homeFragment)
-                fragmentTransaction.commit()
+            val transaction = fragmentManager.beginTransaction()
+            transaction.setCustomAnimations(R.anim.enter, R.anim.exit)
+            transaction.add(R.id.base, homeFragment)
+            requireActivity().findViewById<FrameLayout>(R.id.base).bringChildToFront(homeFragment.view)
+            transaction.commit()
+            lifecycleScope.launch {
+                delay(500)
+                fragmentManager.beginTransaction().remove(this@AuthFragment).commit()
             }
         }
-        val promptInfo = PromptInfo.Builder()
-            .setTitle("Auth")
-            .setSubtitle("Auth OwnDroid with password or biometric")
+        val promptInfo = Builder()
+            .setTitle(context.getText(R.string.authenticate))
+            .setSubtitle(context.getText(R.string.auth_with_bio))
             .setConfirmationRequired(true)
         var fallback = false
         val callback = object: AuthenticationCallback() {
@@ -56,22 +60,26 @@ class AuthFragment: Fragment() {
             }
             override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                 super.onAuthenticationError(errorCode, errString)
-                if(errorCode == BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL) onAuthSucceed()
-                if(errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON) fallback = true
-                if(errorCode == BiometricPrompt.ERROR_CANCELED) return
-                Toast.makeText(context, errString, Toast.LENGTH_SHORT).show()
+                when(errorCode){
+                    BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL -> onAuthSucceed()
+                    BiometricPrompt.ERROR_NEGATIVE_BUTTON -> fallback = true
+                    else -> canStartAuth.value = true
+                }
+                Log.e("OwnDroid", errString.toString())
             }
         }
-        GlobalScope.launch(Dispatchers.Main) {
+        lifecycleScope.launch(Dispatchers.Main) {
             while(true){
                 if(fallback){
-                    val fallbackPromptInfo = PromptInfo.Builder()
+                    val fallbackPromptInfo = Builder()
                         .setAllowedAuthenticators(BiometricManager.Authenticators.DEVICE_CREDENTIAL)
-                        .setTitle("Auth")
-                        .setSubtitle("Auth OwnDroid with password")
+                        .setTitle(context.getText(R.string.authenticate))
+                        .setSubtitle(context.getText(R.string.auth_with_password))
                         .setConfirmationRequired(true)
                         .build()
-                    authWithBiometricPrompt(requireActivity(), fallbackPromptInfo, callback)
+                    val executor = ContextCompat.getMainExecutor(requireContext())
+                    val biometricPrompt = BiometricPrompt(requireActivity(), executor, callback)
+                    biometricPrompt.authenticate(fallbackPromptInfo)
                     break
                 }
                 delay(50)
@@ -82,7 +90,7 @@ class AuthFragment: Fragment() {
                 val materialYou = mutableStateOf(sharedPref.getBoolean("material_you",true))
                 val blackTheme = mutableStateOf(sharedPref.getBoolean("black_theme", false))
                 OwnDroidTheme(materialYou.value, blackTheme.value) {
-                    Auth(this@AuthFragment.requireActivity(), callback, promptInfo)
+                    Auth(this@AuthFragment, promptInfo, callback, canStartAuth)
                 }
             }
         }
@@ -90,43 +98,57 @@ class AuthFragment: Fragment() {
 }
 
 @Composable
-fun Auth(activity: FragmentActivity, callback: AuthenticationCallback, promptInfo: PromptInfo.Builder) {
-    val context = LocalContext.current
+fun Auth(activity: Fragment, promptInfo: Builder, callback: AuthenticationCallback, canStartAuth: MutableState<Boolean>) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
     ){
-        Text(text = "Authenticate", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.onBackground)
+        Text(
+            text = stringResource(R.string.authenticate),
+            style = MaterialTheme.typography.headlineLarge,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        LaunchedEffect(Unit){
+            startAuth(activity, promptInfo, callback)
+            canStartAuth.value = false
+        }
         Button(
             onClick = {
-                val bioManager = BiometricManager.from(context)
-                val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
-                if(sharedPref.getBoolean("bio_auth", false)){
-                    when(BiometricManager.BIOMETRIC_SUCCESS){
-                        bioManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) ->
-                            promptInfo
-                                .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
-                                .setNegativeButtonText("Use password")
-                        bioManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK) ->
-                            promptInfo
-                                .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK)
-                                .setNegativeButtonText("Use password")
-                        else -> promptInfo.setAllowedAuthenticators(BiometricManager.Authenticators.DEVICE_CREDENTIAL)
-                    }
-                }else{
-                    promptInfo.setAllowedAuthenticators(BiometricManager.Authenticators.DEVICE_CREDENTIAL)
-                }
-                authWithBiometricPrompt(activity, promptInfo.build(), callback)
-            }
+                startAuth(activity, promptInfo, callback)
+                canStartAuth.value = false
+            },
+            enabled = canStartAuth.value
         ){
-            Text(text = "Start")
+            Text(text = stringResource(R.string.start))
         }
     }
 }
 
-private fun authWithBiometricPrompt(activity: FragmentActivity, promptInfo: PromptInfo, callback: AuthenticationCallback) {
-    val executor = ContextCompat.getMainExecutor(activity.applicationContext)
+private fun startAuth(activity: Fragment, promptInfo: Builder, callback: AuthenticationCallback){
+    val context = activity.requireContext()
+    val bioManager = BiometricManager.from(context)
+    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    if(sharedPref.getBoolean("bio_auth", false)){
+        when(BiometricManager.BIOMETRIC_SUCCESS){
+            bioManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) ->
+                promptInfo
+                    .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
+                    .setNegativeButtonText(context.getText(R.string.use_password))
+            bioManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK) ->
+                promptInfo
+                    .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK)
+                    .setNegativeButtonText(context.getText(R.string.use_password))
+            else -> promptInfo
+                .setAllowedAuthenticators(BiometricManager.Authenticators.DEVICE_CREDENTIAL)
+                .setSubtitle(context.getText(R.string.auth_with_password))
+        }
+    }else{
+        promptInfo
+            .setAllowedAuthenticators(BiometricManager.Authenticators.DEVICE_CREDENTIAL)
+            .setSubtitle(context.getText(R.string.auth_with_password))
+    }
+    val executor = ContextCompat.getMainExecutor(context)
     val biometricPrompt = BiometricPrompt(activity, executor, callback)
-    biometricPrompt.authenticate(promptInfo)
+    biometricPrompt.authenticate(promptInfo.build())
 }

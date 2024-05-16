@@ -49,6 +49,7 @@
     <string name="file_not_exist">File not exist</string>
     <string name="io_exception">IO Exception</string>
     <string name="current_status_is">Current status:&#160;</string>
+    <string name="start">Start</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
@@ -493,11 +494,18 @@
     <string name="about_desc">Use Device admin, Profile owner and Device owner privilege to take full control of your device. </string>
     <string name="user_guide">User guide</string>
     <string name="source_code">Source code</string>
+    <string name="theme">Theme</string>
     <string name="amoled_black">Black theme</string>
     <string name="blackTheme_desc">Require dark mode on</string>
+
     <string name="security">Security</string>
     <string name="lock_owndroid">Lock OwnDroid</string>
     <string name="enable_bio_auth">Auth with biometrics</string>
+    <string name="authenticate">Authenticate</string>
+    <string name="auth_on_start">Authenticating with keyguard password or biometrics when OwnDroid launch</string>
+    <string name="use_password">Use password</string>
+    <string name="auth_with_password">Authenticate OwnDroid with password</string>
+    <string name="auth_with_bio">Authenticate OwnDroid with biometrics</string>
 
     <!--AndroidPermission-->
     <string name="permission_READ_EXTERNAL_STORAGE">Read external storage</string>
