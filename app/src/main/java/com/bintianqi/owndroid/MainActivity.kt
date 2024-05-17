@@ -48,11 +48,10 @@ import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import kotlinx.coroutines.delay
 import java.util.Locale
 
-val homeFragment = HomeFragment()
-
 var backToHome = false
 @ExperimentalMaterial3Api
 class MainActivity : FragmentActivity() {
+    private var auth = false
     @SuppressLint("UnrememberedMutableState")
     override fun onCreate(savedInstanceState: Bundle?) {
         registerActivityResult(this)
@@ -63,14 +62,38 @@ class MainActivity : FragmentActivity() {
         val sharedPref = applicationContext.getSharedPreferences("data", Context.MODE_PRIVATE)
         val fragmentManager = supportFragmentManager
         val transaction = fragmentManager.beginTransaction()
+        transaction.add(R.id.base, HomeFragment(), "home")
         if(sharedPref.getBoolean("auth", false)){
             transaction.add(R.id.base, AuthFragment(), "auth")
-        }else{
-            transaction.add(R.id.base, homeFragment, "home")
         }
         transaction.commit()
         val locale = applicationContext.resources?.configuration?.locale
         zhCN = locale==Locale.SIMPLIFIED_CHINESE||locale==Locale.CHINESE||locale==Locale.CHINA
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if(auth){
+            val sharedPref = applicationContext.getSharedPreferences("data", Context.MODE_PRIVATE)
+            if(
+                sharedPref.getBoolean("auth", false) &&
+                sharedPref.getBoolean("lock_in_background", false)
+            ){
+                val fragmentManager = supportFragmentManager
+                val fragment = fragmentManager.findFragmentByTag("auth")
+                if(fragment == null){
+                    val transaction = fragmentManager.beginTransaction()
+                    transaction.setCustomAnimations(R.anim.enter, R.anim.exit)
+                    transaction.add(R.id.base, AuthFragment(), "auth").commit()
+                }
+            }
+            auth = false
+        }
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        auth = true
     }
 }
 

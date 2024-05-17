@@ -491,6 +491,7 @@
     <string name="use_password">使用密码</string>
     <string name="auth_with_password">使用密码进行验证</string>
     <string name="auth_with_bio">使用生物识别进行验证</string>
+    <string name="lock_in_background">处于后台时锁定</string>
 
     <!--AndroidPermission-->
     <string name="permission_READ_EXTERNAL_STORAGE">读取外部存储</string>

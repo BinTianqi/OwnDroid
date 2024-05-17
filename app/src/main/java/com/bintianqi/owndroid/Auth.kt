@@ -7,7 +7,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.biometric.BiometricPrompt.AuthenticationCallback
@@ -19,7 +18,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -28,7 +30,9 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class AuthFragment: Fragment() {
     @SuppressLint("UnrememberedMutableState")
@@ -40,13 +44,7 @@ class AuthFragment: Fragment() {
             val fragmentManager = this.parentFragmentManager
             val transaction = fragmentManager.beginTransaction()
             transaction.setCustomAnimations(R.anim.enter, R.anim.exit)
-            transaction.add(R.id.base, homeFragment)
-            requireActivity().findViewById<FrameLayout>(R.id.base).bringChildToFront(homeFragment.view)
-            transaction.commit()
-            lifecycleScope.launch {
-                delay(500)
-                fragmentManager.beginTransaction().remove(this@AuthFragment).commit()
-            }
+            transaction.remove(this@AuthFragment).commit()
         }
         val promptInfo = Builder()
             .setTitle(context.getText(R.string.authenticate))
@@ -110,6 +108,7 @@ fun Auth(activity: Fragment, promptInfo: Builder, callback: AuthenticationCallba
             color = MaterialTheme.colorScheme.onBackground
         )
         LaunchedEffect(Unit){
+            delay(300)
             startAuth(activity, promptInfo, callback)
             canStartAuth.value = false
         }

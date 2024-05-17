@@ -111,6 +111,11 @@ private fun AuthSettings(){
                 { sharedPref.getBoolean("bio_auth",false) },
                 { sharedPref.edit().putBoolean("bio_auth",it).apply() }
             )
+            SwitchItem(
+                R.string.lock_in_background, "", null,
+                { sharedPref.getBoolean("lock_in_background",false) },
+                { sharedPref.edit().putBoolean("lock_in_background",it).apply() }
+            )
         }
         Box(modifier = Modifier.padding(horizontal = 8.dp)){
             Information {
