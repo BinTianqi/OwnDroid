@@ -46,6 +46,7 @@
     <string name="file_not_exist">文件不存在</string>
     <string name="io_exception">IO异常</string>
     <string name="current_status_is">当前状态：</string>
+    <string name="start">开始</string>
 
     <!--Permissions-->
     <string name="click_to_activate">点击以激活</string>
@@ -478,8 +479,19 @@
     <string name="about_desc">使用安卓的Device admin、Device owner、Profile owner，全方位掌控你的设备</string>
     <string name="user_guide">使用教程</string>
     <string name="source_code">源代码</string>
+    <string name="theme">主题</string>
     <string name="amoled_black">纯黑夜间主题</string>
     <string name="blackTheme_desc">需要打开夜间模式</string>
+
+    <string name="security">安全</string>
+    <string name="lock_owndroid">锁定OwnDroid</string>
+    <string name="enable_bio_auth">使用生物识别</string>
+    <string name="authenticate">验证</string>
+    <string name="auth_on_start">在OwnDroid启动时使用锁屏密码或生物识别进行验证</string>
+    <string name="use_password">使用密码</string>
+    <string name="auth_with_password">使用密码进行验证</string>
+    <string name="auth_with_bio">使用生物识别进行验证</string>
+    <string name="lock_in_background">处于后台时锁定</string>
 
     <!--AndroidPermission-->
     <string name="permission_READ_EXTERNAL_STORAGE">读取外部存储</string>

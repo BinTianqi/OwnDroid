@@ -21,21 +21,24 @@ android {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 21
         targetSdk = 34
-        versionCode = 27
-        versionName = "5.2"
+        versionCode = 28
+        versionName = "5.3"
         multiDexEnabled = false
-        signingConfig = signingConfigs.getByName("testkey")
     }
 
     buildTypes {
         release {
-            project.gradle.startParameter.excludedTaskNames.add("lint")
+            //project.gradle.startParameter.excludedTaskNames.add("lint")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("testkey")
+        }
+        debug {
+            signingConfig = signingConfigs.getByName("testkey")
         }
     }
     compileOptions {
@@ -75,4 +78,5 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.shizuku.provider)
     implementation(libs.shizuku.api)
+    implementation(libs.androidx.biometric)
 }

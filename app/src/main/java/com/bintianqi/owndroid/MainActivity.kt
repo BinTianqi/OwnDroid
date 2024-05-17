@@ -6,9 +6,11 @@ import android.content.ComponentName
 import android.content.Context
 import android.os.Build.VERSION
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,12 +29,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -45,21 +50,65 @@ import java.util.Locale
 
 var backToHome = false
 @ExperimentalMaterial3Api
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
+    private var auth = false
     @SuppressLint("UnrememberedMutableState")
     override fun onCreate(savedInstanceState: Bundle?) {
+        registerActivityResult(this)
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
-        registerActivityResult(this)
-        val locale = applicationContext.resources.configuration.locale
-        zhCN = locale==Locale.SIMPLIFIED_CHINESE||locale==Locale.CHINESE||locale==Locale.CHINA
+        setContentView(R.layout.base)
         val sharedPref = applicationContext.getSharedPreferences("data", Context.MODE_PRIVATE)
-        setContent {
-            val materialYou = mutableStateOf(sharedPref.getBoolean("material_you",true))
-            val blackTheme = mutableStateOf(sharedPref.getBoolean("black_theme", false))
-            OwnDroidTheme(materialYou.value, blackTheme.value){
-                Home(materialYou, blackTheme)
+        val fragmentManager = supportFragmentManager
+        val transaction = fragmentManager.beginTransaction()
+        transaction.add(R.id.base, HomeFragment(), "home")
+        if(sharedPref.getBoolean("auth", false)){
+            transaction.add(R.id.base, AuthFragment(), "auth")
+        }
+        transaction.commit()
+        val locale = applicationContext.resources?.configuration?.locale
+        zhCN = locale==Locale.SIMPLIFIED_CHINESE||locale==Locale.CHINESE||locale==Locale.CHINA
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if(auth){
+            val sharedPref = applicationContext.getSharedPreferences("data", Context.MODE_PRIVATE)
+            if(
+                sharedPref.getBoolean("auth", false) &&
+                sharedPref.getBoolean("lock_in_background", false)
+            ){
+                val fragmentManager = supportFragmentManager
+                val fragment = fragmentManager.findFragmentByTag("auth")
+                if(fragment == null){
+                    val transaction = fragmentManager.beginTransaction()
+                    transaction.setCustomAnimations(R.anim.enter, R.anim.exit)
+                    transaction.add(R.id.base, AuthFragment(), "auth").commit()
+                }
+            }
+            auth = false
+        }
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        auth = true
+    }
+}
+
+class HomeFragment: Fragment() {
+    @OptIn(ExperimentalMaterial3Api::class)
+    @SuppressLint("UnrememberedMutableState")
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        val sharedPref = context?.getSharedPreferences("data", Context.MODE_PRIVATE)!!
+        return ComposeView(requireContext()).apply {
+            setContent {
+                val materialYou = mutableStateOf(sharedPref.getBoolean("material_you",true))
+                val blackTheme = mutableStateOf(sharedPref.getBoolean("black_theme", false))
+                OwnDroidTheme(materialYou.value, blackTheme.value){
+                    Home(materialYou, blackTheme)
+                }
             }
         }
     }
@@ -96,18 +145,18 @@ fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>){
         popEnterTransition = Animations.navHostPopEnterTransition,
         popExitTransition = Animations.navHostPopExitTransition
     ){
-        composable(route = "HomePage", content = { HomePage(navCtrl, pkgName)})
-        composable(route = "SystemManage", content = { SystemManage(navCtrl) })
-        composable(route = "ManagedProfile", content = {ManagedProfile(navCtrl)})
-        composable(route = "Permissions", content = { DpmPermissions(navCtrl)})
-        composable(route = "ApplicationManage", content = { ApplicationManage(navCtrl, pkgName, dialogStatus)})
-        composable(route = "UserRestriction", content = { UserRestriction(navCtrl)})
-        composable(route = "UserManage", content = { UserManage(navCtrl)})
-        composable(route = "Password", content = { Password(navCtrl)})
-        composable(route = "AppSetting", content = { AppSetting(navCtrl, materialYou, blackTheme)})
-        composable(route = "Network", content = {Network(navCtrl)})
-        composable(route = "PackageSelector"){PackageSelector(navCtrl, pkgName)}
-        composable(route = "PermissionPicker"){PermissionPicker(navCtrl)}
+        composable(route = "HomePage"){ HomePage(navCtrl, pkgName) }
+        composable(route = "SystemManage"){ SystemManage(navCtrl) }
+        composable(route = "ManagedProfile"){ ManagedProfile(navCtrl) }
+        composable(route = "Permissions"){ DpmPermissions(navCtrl) }
+        composable(route = "ApplicationManage"){ ApplicationManage(navCtrl, pkgName, dialogStatus)}
+        composable(route = "UserRestriction"){ UserRestriction(navCtrl) }
+        composable(route = "UserManage"){ UserManage(navCtrl) }
+        composable(route = "Password"){ Password(navCtrl) }
+        composable(route = "AppSetting"){ AppSetting(navCtrl, materialYou, blackTheme) }
+        composable(route = "Network"){ Network(navCtrl) }
+        composable(route = "PackageSelector"){ PackageSelector(navCtrl, pkgName) }
+        composable(route = "PermissionPicker"){ PermissionPicker(navCtrl) }
     }
     LaunchedEffect(Unit){
         val profileInited = sharedPref.getBoolean("ManagedProfileActivated",false)
