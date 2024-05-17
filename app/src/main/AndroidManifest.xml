@@ -29,6 +29,7 @@
         android:theme="@style/Theme.OwnDroid"
         android:enableOnBackInvokedCallback="true"
         android:testOnly="false"
+        android:manageSpaceActivity=".ManageSpaceActivity"
         tools:targetApi="34">
         <activity
             android:name=".MainActivity"
@@ -44,6 +45,11 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".ManageSpaceActivity"
+            android:windowSoftInputMode="adjustResize|stateHidden"
+            android:theme="@style/Theme.OwnDroid">
         </activity>
         <receiver
             android:name=".Receiver"

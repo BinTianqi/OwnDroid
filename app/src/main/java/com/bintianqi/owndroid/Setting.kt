@@ -117,6 +117,11 @@ private fun AuthSettings(){
                 { sharedPref.edit().putBoolean("lock_in_background",it).apply() }
             )
         }
+        SwitchItem(
+            R.string.protect_storage, "", null,
+            { sharedPref.getBoolean("protect_storage",false) },
+            { sharedPref.edit().putBoolean("protect_storage",it).apply() }
+        )
         Box(modifier = Modifier.padding(horizontal = 8.dp)){
             Information {
                 Text(text = stringResource(R.string.auth_on_start))

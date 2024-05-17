@@ -507,6 +507,11 @@
     <string name="auth_with_password">Authenticate OwnDroid with password</string>
     <string name="auth_with_bio">Authenticate OwnDroid with biometrics</string>
     <string name="lock_in_background">Lock when switch to background</string>
+    <string name="protect_storage">Protect storage</string>
+    <string name="storage_is_protected">Storage is protected</string>
+    <string name="you_cant_clear_storage">You can\'t clear storage of OwnDroid</string>
+    <string name="clear_storage">Clear storage</string>
+    <string name="clear_storage_success">Clear storage success\nApplication will exit</string>
 
     <!--AndroidPermission-->
     <string name="permission_READ_EXTERNAL_STORAGE">Read external storage</string>
