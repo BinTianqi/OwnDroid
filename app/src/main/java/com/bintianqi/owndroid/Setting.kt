@@ -112,7 +112,7 @@ private fun AuthSettings(){
                 { sharedPref.edit().putBoolean("bio_auth",it).apply() }
             )
             SwitchItem(
-                R.string.lock_in_background, "", null,
+                R.string.lock_in_background, stringResource(R.string.developing), null,
                 { sharedPref.getBoolean("lock_in_background",false) },
                 { sharedPref.edit().putBoolean("lock_in_background",it).apply() }
             )

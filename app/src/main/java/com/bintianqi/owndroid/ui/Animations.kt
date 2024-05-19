@@ -11,8 +11,10 @@ object Animations{
 
     private val bezier = CubicBezierEasing(0.20f, 0.85f, 0.0f, 1f)
 
-    private val tween: FiniteAnimationSpec<IntOffset> = tween(durationMillis = 650, easing = bezier, delayMillis = 50)
-    
+    private val tween: FiniteAnimationSpec<IntOffset> = tween(durationMillis = 550, easing = bezier, delayMillis = 50)
+
+    val authScreenFade: FiniteAnimationSpec<Float> = tween(durationMillis = 200, easing = LinearEasing)
+
     val navHostEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
         fadeIn(tween(100, easing = LinearEasing)) +
         slideIntoContainer(
