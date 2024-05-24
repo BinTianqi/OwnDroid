@@ -1,0 +1,75 @@
+name: Build OwnDroid CI APK
+
+on:
+  pull_request:
+    branches-ignore:
+      - '*'
+  push:
+    tags:
+      - '*'
+    branches-ignore:
+      - 'official'
+  workflow_dispatch:
+
+jobs:
+  ReleaseBuild:
+    strategy:
+      fail-fast: false
+    name: Build Release APK
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get short commit SHA
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      - name: Set up JDK 20
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'oracle'
+          java-version: 20
+
+      - name: Build Release APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: OwnDroid-CI-${{ env.SHORT_SHA }}-release-TestKey-universal
+          if-no-files-found: error
+          path: app/build/outputs/apk/release/*.apk
+
+  DebugBuild:
+    name: Build Debug APK
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get short commit SHA
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+  
+      - name: Set up JDK 20
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'oracle'
+          java-version: 20
+
+      - name: Build Debug APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: OwnDroid-CI-${{ env.SHORT_SHA }}-debug-NoKey-universal
+          if-no-files-found: error
+          path: app/build/outputs/apk/debug/*.apk
