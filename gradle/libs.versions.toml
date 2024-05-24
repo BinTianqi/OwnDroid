@@ -8,6 +8,7 @@ material3 = "1.2.1"
 accompanist-drawablepainter = "0.35.0-alpha"
 shizuku = "13.1.5"
 biometric = "1.2.0-alpha05"
+fragment = "1.8.0-beta01"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
@@ -21,6 +22,7 @@ androidx-biometric = { group = "androidx.biometric", name = "biometric", version
 
 shizuku-provider = { module = "dev.rikka.shizuku:provider", version.ref = "shizuku" }
 shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
+androidx-fragment = { group = "androidx.fragment", name = "fragment", version.ref = "fragment" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
