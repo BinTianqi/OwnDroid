@@ -9,11 +9,11 @@ var keyAlias: String? = null
 
 android {
     signingConfigs {
-        create("testkey") {
+        create("defaultSignature") {
             storeFile = file("signature.jks")
-            storePassword = keystorePassword ?: "testkey"
-            keyPassword = keyPassword ?: "testkey"
-            keyAlias = keyAlias ?: "testkey"
+            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "testkey"
+            keyPassword = System.getenv("KEY_PASSWORD") ?: "testkey"
+            keyAlias = System.getenv("KEY_ALIAS") ?: "testkey"
         }
     }
     namespace = "com.bintianqi.owndroid"
@@ -39,10 +39,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("testkey")
+            signingConfig = signingConfigs.getByName("defaultSignature")
         }
         debug {
-            signingConfig = signingConfigs.getByName("testkey")
+            signingConfig = signingConfigs.getByName("defaultSignature")
         }
     }
     compileOptions {
@@ -86,9 +86,6 @@ tasks.register("prepareSignature") {
         file("signature.jks").let {
             if(!it.exists()) file("testkey.jks").copyTo(it)
         }
-        keystorePassword = System.getenv("KEYSTORE_PASSWORD")
-        keyAlias = System.getenv("KEY_ALIAS")
-        keyPassword = System.getenv("KEY_PASSWORD")
     }
 }
 
