@@ -41,7 +41,7 @@ jobs:
       - name: Export key
         env:
           KEY_BASE64: ${{ secrets.KEY_BASE64 }}
-        run: echo $KEY_BASE64 | base64 --decode - > app/signature.jks
+        run: echo "$KEY_BASE64" | base64 --decode - > app/signature.jks
 
       - name: Build APK
         env:
