@@ -2,11 +2,11 @@ package com.bintianqi.owndroid.dpm
 
 import android.app.admin.DevicePolicyManager
 import android.content.Intent
-import android.net.Uri
 import androidx.activity.result.ActivityResultLauncher
+import kotlinx.coroutines.flow.MutableStateFlow
 
 var selectedPermission = ""
-var applySelectedPermission = false
+var applySelectedPermission = MutableStateFlow(false)
 lateinit var createManagedProfile: ActivityResultLauncher<Intent>
 lateinit var addDeviceAdmin: ActivityResultLauncher<Intent>
 

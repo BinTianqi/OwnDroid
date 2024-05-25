@@ -52,7 +52,6 @@ import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.*
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.*
-import kotlinx.coroutines.delay
 import java.io.IOException
 import java.io.InputStream
 import java.util.concurrent.Executors
@@ -263,9 +262,7 @@ private fun Home(navCtrl:NavHostController, pkgName: String, dialogStatus: Mutab
             SubPageItem(R.string.set_default_dialer,"",R.drawable.call_fill0){navCtrl.navigate("DefaultDialer")}
         }
         Spacer(Modifier.padding(vertical = 30.dp))
-        LaunchedEffect(Unit) {
-            fileUri = null
-        }
+        LaunchedEffect(Unit) { fileUriFlow.value = Uri.parse("") }
     }
 }
 
@@ -348,10 +345,10 @@ private fun PermissionManage(pkgName: String, navCtrl: NavHostController){
         PERMISSION_GRANT_STATE_GRANTED to stringResource(R.string.granted),
         PERMISSION_GRANT_STATE_DENIED to stringResource(R.string.denied)
     )
-    LaunchedEffect(Unit) {
-        while(true){
-            if(applySelectedPermission){inputPermission = selectedPermission; applySelectedPermission = false}
-            delay(100)
+    LaunchedEffect(applySelectedPermission.collectAsState()) {
+        if(applySelectedPermission.value) {
+            inputPermission = selectedPermission
+            applySelectedPermission.value = false
         }
     }
     LaunchedEffect(pkgName) {
@@ -794,6 +791,7 @@ private fun UninstallApp(pkgName: String){
 private fun InstallApp(){
     val context = LocalContext.current
     val focusMgr = LocalFocusManager.current
+    val selected = fileUriFlow.collectAsState().value != Uri.parse("")
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.install_app), style = typography.headlineLarge)
@@ -810,13 +808,11 @@ private fun InstallApp(){
         ) {
             Text(stringResource(R.string.select_apk))
         }
-        var selected by remember{mutableStateOf(false)}
-        LaunchedEffect(selected){while(true){ delay(800); selected = fileUri!=null}}
         AnimatedVisibility(selected) {
             Spacer(Modifier.padding(vertical = 3.dp))
             Column(modifier = Modifier.fillMaxWidth()){
                 Button(
-                    onClick = { uriToStream(context, fileUri){stream -> installPackage(context,stream)} },
+                    onClick = { uriToStream(context, fileUriFlow.value){stream -> installPackage(context,stream)} },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(stringResource(R.string.silent_install))
@@ -824,7 +820,7 @@ private fun InstallApp(){
                 Button(
                     onClick = {
                         val intent = Intent(Intent.ACTION_INSTALL_PACKAGE)
-                        intent.setData(fileUri)
+                        intent.setData(fileUriFlow.value)
                         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         context.startActivity(intent)
                     },

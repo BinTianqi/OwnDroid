@@ -6,6 +6,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Binder
 import android.os.Build.VERSION
 import android.os.Process
@@ -119,9 +120,7 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState){
             SubPageItem(R.string.affiliation_id,"",R.drawable.id_card_fill0){navCtrl.navigate("AffiliationID")}
         }
         Spacer(Modifier.padding(vertical = 30.dp))
-        LaunchedEffect(Unit) {
-            fileUri = null
-        }
+        LaunchedEffect(Unit) { fileUriFlow.value = Uri.parse("") }
     }
 }
 
@@ -495,7 +494,7 @@ private fun UserIcon(){
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
     var getContent by remember{mutableStateOf(false)}
-    var canApply by remember{mutableStateOf(false)}
+    val canApply = fileUriFlow.collectAsState().value != Uri.parse("")
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.change_user_icon), style = typography.headlineLarge)
@@ -515,11 +514,10 @@ private fun UserIcon(){
         ) {
             Text(stringResource(R.string.select_picture))
         }
-        LaunchedEffect(Unit){ delay(600); canApply = fileUri!=null }
         AnimatedVisibility(canApply) {
             Button(
                 onClick = {
-                    uriToStream(context, fileUri){stream ->
+                    uriToStream(context, fileUriFlow.value){stream ->
                         val bitmap = BitmapFactory.decodeStream(stream)
                         dpm.setUserIcon(receiver,bitmap)
                         Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()

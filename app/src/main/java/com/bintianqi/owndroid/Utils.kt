@@ -9,12 +9,13 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import com.bintianqi.owndroid.dpm.addDeviceAdmin
 import com.bintianqi.owndroid.dpm.createManagedProfile
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
 
 lateinit var getFile: ActivityResultLauncher<Intent>
-var fileUri: Uri? = null
+val fileUriFlow = MutableStateFlow(Uri.parse(""))
 
 var zhCN = true
 
@@ -71,7 +72,7 @@ fun registerActivityResult(context: ComponentActivity){
             if(it==null){
                 Toast.makeText(context.applicationContext, R.string.file_not_exist, Toast.LENGTH_SHORT).show()
             }else{
-                fileUri = it.data
+                fileUriFlow.value = it.data
             }
         }
     }
@@ -79,7 +80,7 @@ fun registerActivityResult(context: ComponentActivity){
     addDeviceAdmin = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         val dpm = context.applicationContext.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         if(dpm.isAdminActive(ComponentName(context.applicationContext, Receiver::class.java))){
-            backToHome = true
+            backToHomeStateFlow.value = true
         }
     }
 }

@@ -3,7 +3,10 @@ package com.bintianqi.owndroid
 import android.graphics.drawable.Drawable
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,8 +27,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.ui.NavIcon
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private data class PkgInfo(
     val pkgName: String,
@@ -48,7 +53,7 @@ fun PackageSelector(navCtrl:NavHostController, pkgName: MutableState<String>){
     var filter by remember{mutableStateOf("data")}
     val scrollState = rememberLazyListState()
     val co = rememberCoroutineScope()
-    val getPkgList:suspend ()->Unit = {
+    val getPkgList: suspend ()->Unit = {
         show = false
         progress = 0
         hideProgress = false
@@ -65,11 +70,10 @@ fun PackageSelector(navCtrl:NavHostController, pkgName: MutableState<String>){
                 else if(srcDir.contains("apex")){"apex"}
                 else{"system"}
             )
-            progress+=1
-            delay(1)
+            withContext(Dispatchers.Main) { progress += 1 }
         }
         show = true
-        delay(300)
+        delay(500)
         hideProgress = true
     }
     Scaffold(
@@ -114,7 +118,6 @@ fun PackageSelector(navCtrl:NavHostController, pkgName: MutableState<String>){
                             .clip(RoundedCornerShape(50))
                             .clickable{
                                 co.launch{
-                                    delay(100)
                                     getPkgList()
                                 }
                             }
@@ -153,9 +156,8 @@ fun PackageSelector(navCtrl:NavHostController, pkgName: MutableState<String>){
                 }
             }
         }
-        LaunchedEffect(Unit){
-            delay(250)
-            if(pkgs.size==0){getPkgList()}
+        LaunchedEffect(Unit) {
+            if(pkgs.size==0) { getPkgList() }
         }
     }
 }

@@ -38,7 +38,7 @@ fun PermissionPicker(navCtrl: NavHostController){
                         .fillMaxWidth()
                         .clickable{
                             selectedPermission = it.first
-                            applySelectedPermission = true
+                            applySelectedPermission.value = true
                             navCtrl.navigateUp()
                         }
                         .padding(vertical = 6.dp, horizontal = 8.dp)

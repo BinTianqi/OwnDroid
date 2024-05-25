@@ -11,6 +11,7 @@ import android.app.admin.SystemUpdatePolicy.TYPE_POSTPONE
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Binder
 import android.os.Build.VERSION
 import android.os.UserManager
@@ -19,11 +20,14 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.*
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -44,7 +48,6 @@ import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.*
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.*
-import kotlinx.coroutines.delay
 import java.util.Date
 
 @Composable
@@ -150,7 +153,7 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState){
         }
         SubPageItem(R.string.wipe_data,"",R.drawable.warning_fill0){navCtrl.navigate("WipeData")}
         Spacer(Modifier.padding(vertical = 30.dp))
-        LaunchedEffect(Unit){fileUri=null}
+        LaunchedEffect(Unit){ fileUriFlow.value = Uri.parse("") }
     }
 }
 
@@ -593,26 +596,23 @@ private fun CaCert(){
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
+    val uri by fileUriFlow.collectAsState()
     var exist by remember{mutableStateOf(false)}
-    var uriPath by remember{mutableStateOf("")}
-    var caCertByteArray = byteArrayOf()
-    val refresh = {
-        if(uriPath!=fileUri?.path){
-            if(caCertByteArray.isEmpty()){
-                uriToStream(context, fileUri){
-                    val array = it.readBytes()
-                    caCertByteArray = if(array.size<10000){
-                        array
-                    }else{
-                        byteArrayOf()
-                    }
+    val uriPath = uri.path ?: ""
+    var caCertByteArray by remember{ mutableStateOf(byteArrayOf()) }
+    LaunchedEffect(uri) {
+        if(uri != Uri.parse("")) {
+            uriToStream(context, uri){
+                val array = it.readBytes()
+                caCertByteArray = if(array.size<10000){
+                    array
+                }else{
+                    byteArrayOf()
                 }
-                exist = dpm.hasCaCertInstalled(receiver, caCertByteArray)
             }
-            uriPath = fileUri?.path?:""
+            exist = dpm.hasCaCertInstalled(receiver, caCertByteArray)
         }
     }
-    LaunchedEffect(exist){ while(true){ refresh();delay(500) } }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.ca_cert), style = typography.headlineLarge)
@@ -642,7 +642,7 @@ private fun CaCert(){
                     onClick = {
                         val result = dpm.installCaCert(receiver, caCertByteArray)
                         Toast.makeText(context, if(result){R.string.success}else{R.string.fail}, Toast.LENGTH_SHORT).show()
-                        refresh()
+                        exist = dpm.hasCaCertInstalled(receiver, caCertByteArray)
                     },
                     modifier = Modifier.fillMaxWidth(0.49F)
                 ) {

@@ -42,9 +42,10 @@ import com.bintianqi.owndroid.dpm.*
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.Locale
 
-var backToHome = false
+var backToHomeStateFlow = MutableStateFlow(false)
 @ExperimentalMaterial3Api
 class MainActivity : FragmentActivity() {
     private val showAuth = mutableStateOf(false)
@@ -98,11 +99,9 @@ fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>){
     val focusMgr = LocalFocusManager.current
     val pkgName = mutableStateOf("")
     val dialogStatus = mutableIntStateOf(0)
+    val backToHome by backToHomeStateFlow.collectAsState()
     LaunchedEffect(Unit){
-        while(true){
-            if(backToHome){ navCtrl.navigateUp(); backToHome=false }
-            delay(200)
-        }
+        if(backToHome) { navCtrl.navigateUp(); backToHomeStateFlow.value = false }
     }
     NavHost(
         navController = navCtrl,
