@@ -10,4 +10,5 @@ captures
 app/build
 app/release
 app/debug
+app/signature.jks
 .androidide

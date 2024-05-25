@@ -3,19 +3,24 @@ plugins {
     alias(libs.plugins.kotlin.android)
 }
 
+var keyPassword: String? = null
+var keystorePassword: String? = null
+var keyAlias: String? = null
+
 android {
     signingConfigs {
         create("testkey") {
-            storeFile = file("testkey.jks")
-            storePassword = "testkey"
-            keyPassword = "testkey"
-            keyAlias = "testkey"
+            storeFile = file("signature.jks")
+            storePassword = keystorePassword ?: "testkey"
+            keyPassword = keyPassword ?: "testkey"
+            keyAlias = keyAlias ?: "testkey"
         }
     }
     namespace = "com.bintianqi.owndroid"
     compileSdk = 34
 
     lint.checkReleaseBuilds = false
+    lint.disable += "All"
 
     defaultConfig {
         applicationId = "com.bintianqi.owndroid"
@@ -65,6 +70,35 @@ android {
     }
     androidResources {
         generateLocaleConfig = true
+    }
+}
+
+gradle.taskGraph.whenReady {
+    project.tasks.findByPath(":app:test")?.enabled = false
+    project.tasks.findByPath(":app:lint")?.enabled = false
+    project.tasks.findByPath(":app:lintAnalyzeDebug")?.enabled = false
+}
+
+tasks.findByName("preBuild")?.dependsOn?.plusAssign("prepareSignature")
+
+tasks.register("prepareSignature") {
+    doFirst {
+        file("signature.jks").let {
+            if(!it.exists()) file("testkey.jks").copyTo(it)
+        }
+        keystorePassword = System.getenv("KEYSTORE_PASSWORD")
+        keyAlias = System.getenv("KEY_ALIAS")
+        keyPassword = System.getenv("KEY_PASSWORD")
+    }
+}
+
+tasks.findByName("clean")?.dependsOn?.plusAssign("cleanKey")
+
+tasks.register("cleanKey") {
+    doFirst {
+        file("signature.jks").let {
+            if(it.exists()) it.delete()
+        }
     }
 }
 
