@@ -50,6 +50,7 @@
     <string name="io_exception">IO Exception</string>
     <string name="current_status_is">Current status:&#160;</string>
     <string name="start">Start</string>
+    <string name="unknown_error">Unknown error</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
@@ -181,6 +182,15 @@
     <string name="end_time">End time</string>
     <string name="minutes_in_one_day">Please enter minutes in a day(0~1440)</string>
     <string name="update_received_time">Update received time: %1$s</string>
+
+    <string name="install_system_update">Install system update</string>
+    <string name="select_ota_package" tools:ignore="TypographyEllipsis">Select OTA package...</string>
+    <string name="start_install_system_update">Start installing system update</string>
+    <string name="install_system_update_failed">Install system update failed: </string>
+    <string name="battery_low">Battery is low</string>
+    <string name="update_file_invalid">Update file is invalid</string>
+    <string name="incorrect_os_ver">Incorrect OS version</string>
+    <string name="auto_reboot_after_install_succeed">Your device will reboot automatically when system update install succeed.</string>
 
     <!--Network-->
     <string name="network">Network</string>

@@ -2,7 +2,30 @@ package com.bintianqi.owndroid.dpm
 
 import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
-import android.app.admin.DevicePolicyManager.*
+import android.app.admin.DevicePolicyManager.FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY
+import android.app.admin.DevicePolicyManager.InstallSystemUpdateCallback
+import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK
+import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_GLOBAL_ACTIONS
+import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_HOME
+import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_KEYGUARD
+import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_NONE
+import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_NOTIFICATIONS
+import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_OVERVIEW
+import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_SYSTEM_INFO
+import android.app.admin.DevicePolicyManager.MTE_DISABLED
+import android.app.admin.DevicePolicyManager.MTE_ENABLED
+import android.app.admin.DevicePolicyManager.MTE_NOT_CONTROLLED_BY_POLICY
+import android.app.admin.DevicePolicyManager.NEARBY_STREAMING_DISABLED
+import android.app.admin.DevicePolicyManager.NEARBY_STREAMING_ENABLED
+import android.app.admin.DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY
+import android.app.admin.DevicePolicyManager.NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY
+import android.app.admin.DevicePolicyManager.PERMISSION_POLICY_AUTO_DENY
+import android.app.admin.DevicePolicyManager.PERMISSION_POLICY_AUTO_GRANT
+import android.app.admin.DevicePolicyManager.PERMISSION_POLICY_PROMPT
+import android.app.admin.DevicePolicyManager.WIPE_EUICC
+import android.app.admin.DevicePolicyManager.WIPE_EXTERNAL_STORAGE
+import android.app.admin.DevicePolicyManager.WIPE_RESET_PROTECTION_DATA
+import android.app.admin.DevicePolicyManager.WIPE_SILENTLY
 import android.app.admin.SystemUpdateInfo
 import android.app.admin.SystemUpdatePolicy
 import android.app.admin.SystemUpdatePolicy.TYPE_INSTALL_AUTOMATIC
@@ -22,16 +45,33 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.runtime.*
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
@@ -45,9 +85,19 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.bintianqi.owndroid.*
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.ui.*
+import com.bintianqi.owndroid.Receiver
+import com.bintianqi.owndroid.fileUriFlow
+import com.bintianqi.owndroid.getFile
+import com.bintianqi.owndroid.toText
+import com.bintianqi.owndroid.ui.Animations
+import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.Information
+import com.bintianqi.owndroid.ui.RadioButtonItem
+import com.bintianqi.owndroid.ui.SubPageItem
+import com.bintianqi.owndroid.ui.SwitchItem
+import com.bintianqi.owndroid.ui.TopBar
+import com.bintianqi.owndroid.uriToStream
 import java.util.Date
 
 @Composable
@@ -88,6 +138,7 @@ fun SystemManage(navCtrl:NavHostController) {
             composable(route = "CaCert") { CaCert() }
             composable(route = "SecurityLogs") { SecurityLogs() }
             composable(route = "SystemUpdatePolicy") { SysUpdatePolicy() }
+            composable(route = "InstallSystemUpdate") { InstallSystemUpdate() }
             composable(route = "WipeData") { WipeData() }
         }
     }
@@ -97,6 +148,7 @@ fun SystemManage(navCtrl:NavHostController) {
 private fun Home(navCtrl: NavHostController, scrollState: ScrollState) {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context, Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
             text = stringResource(R.string.system_manage),
@@ -134,6 +186,13 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState) {
         }
         if(VERSION.SDK_INT >= 23 && isDeviceOwner(dpm)) {
             SubPageItem(R.string.system_update_policy, "", R.drawable.system_update_fill0) { navCtrl.navigate("SystemUpdatePolicy") }
+        }
+        if(
+            VERSION.SDK_INT >= 29 &&
+            (isDeviceOwner(dpm) ||
+                    (VERSION.SDK_INT >= 30 && isProfileOwner(dpm) && dpm.isManagedProfile(receiver) && dpm.isOrganizationOwnedDeviceWithManagedProfile))
+        ) {
+            SubPageItem(R.string.install_system_update, "", R.drawable.system_update_fill0) { navCtrl.navigate("InstallSystemUpdate") }
         }
         SubPageItem(R.string.wipe_data, "", R.drawable.warning_fill0) { navCtrl.navigate("WipeData") }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -937,5 +996,67 @@ private fun SysUpdatePolicy() {
             }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
+    }
+}
+
+@SuppressLint("NewApi")
+@Composable
+fun InstallSystemUpdate() {
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
+    val callback = object: InstallSystemUpdateCallback() {
+        override fun onInstallUpdateError(errorCode: Int, errorMessage: String) {
+            super.onInstallUpdateError(errorCode, errorMessage)
+            val errDetail = when(errorCode) {
+                UPDATE_ERROR_BATTERY_LOW -> R.string.battery_low
+                UPDATE_ERROR_UPDATE_FILE_INVALID -> R.string.update_file_invalid
+                UPDATE_ERROR_INCORRECT_OS_VERSION -> R.string.incorrect_os_ver
+                UPDATE_ERROR_FILE_NOT_FOUND -> R.string.file_not_exist
+                else -> R.string.unknown
+            }
+            val errMsg = context.getString(R.string.install_system_update_failed) + context.getString(errDetail)
+            Toast.makeText(context, errMsg, Toast.LENGTH_SHORT).show()
+        }
+    }
+    val uri by fileUriFlow.collectAsState()
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.install_system_update), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Button(
+            onClick = {
+                val intent = Intent(Intent.ACTION_GET_CONTENT)
+                intent.setType("application/zip")
+                intent.addCategory(Intent.CATEGORY_OPENABLE)
+                getFile.launch(intent)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.select_ota_package))
+        }
+        AnimatedVisibility(uri != Uri.parse("")) {
+            Button(
+                onClick = {
+                    try {
+                        dpm.installSystemUpdate(receiver, uri, { it.run() }, callback)
+                        Toast.makeText(context, R.string.start_install_system_update, Toast.LENGTH_SHORT).show()
+                    }catch(e: Exception) {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.install_system_update_failed) + e.cause.toString(),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.install_system_update))
+            }
+        }
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Information {
+            Text(stringResource(R.string.auto_reboot_after_install_succeed))
+        }
     }
 }

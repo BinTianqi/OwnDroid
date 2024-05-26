@@ -410,6 +410,14 @@ MTE: Memory Tagging Extension（内存标记拓展）[安卓开发者：MTE](htt
 - 延迟30天
 - 默认（由用户决定）
 
+### 安装系统更新
+
+需要的权限：Device owner或由组织拥有的工作资料
+
+可能会出现`DeadSystemException`
+
+能否安装成功完全取决于系统
+
 ### 恢复出厂设置
 
 **谨慎使用**

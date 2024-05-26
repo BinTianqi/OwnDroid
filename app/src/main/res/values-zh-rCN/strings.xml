@@ -47,6 +47,7 @@
     <string name="io_exception">IO异常</string>
     <string name="current_status_is">当前状态：</string>
     <string name="start">开始</string>
+    <string name="unknown_error">未知错误</string>
 
     <!--Permissions-->
     <string name="click_to_activate">点击以激活</string>
@@ -171,6 +172,14 @@
     <string name="end_time">结束时间</string>
     <string name="minutes_in_one_day">请输入一天中的分钟（0~1440）</string>
     <string name="update_received_time">系统更新接收时间: %1$s</string>
+    <string name="install_system_update">安装系统更新</string>
+    <string name="select_ota_package" tools:ignore="TypographyEllipsis">选择OTA包...</string>
+    <string name="start_install_system_update">开始安装系统更新</string>
+    <string name="install_system_update_failed">安装系统更新失败：</string>
+    <string name="battery_low">电量低</string>
+    <string name="update_file_invalid">OTA包无效</string>
+    <string name="incorrect_os_ver">系统版本错误</string>
+    <string name="auto_reboot_after_install_succeed">安装系统更新成功后，你的设备会自动重启。</string>
 
     <!--Network-->
     <string name="network">网络</string>
