@@ -5,7 +5,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.ui.unit.IntOffset
 import androidx.navigation.NavBackStackEntry
 
-object Animations{
+object Animations {
     private const val INITIAL_OFFSET_VALUE = 96
     private const val TARGET_OFFSET_VALUE = 96
 
@@ -20,7 +20,7 @@ object Animations{
         slideIntoContainer(
             animationSpec = tween,
             towards = AnimatedContentTransitionScope.SlideDirection.End,
-            initialOffset = {INITIAL_OFFSET_VALUE}
+            initialOffset = { INITIAL_OFFSET_VALUE }
         )
     }
     
@@ -29,7 +29,7 @@ object Animations{
         slideOutOfContainer(
             animationSpec = tween,
             towards = AnimatedContentTransitionScope.SlideDirection.Start,
-            targetOffset = {-TARGET_OFFSET_VALUE}
+            targetOffset = { -TARGET_OFFSET_VALUE }
         )
     }
     
@@ -38,7 +38,7 @@ object Animations{
         slideIntoContainer(
             animationSpec = tween,
             towards = AnimatedContentTransitionScope.SlideDirection.End,
-            initialOffset = {-INITIAL_OFFSET_VALUE}
+            initialOffset = { -INITIAL_OFFSET_VALUE }
         )
     }
     
@@ -47,7 +47,7 @@ object Animations{
         slideOutOfContainer(
             animationSpec = tween,
             towards = AnimatedContentTransitionScope.SlideDirection.Start,
-            targetOffset = {TARGET_OFFSET_VALUE}
+            targetOffset = { TARGET_OFFSET_VALUE }
         )
     }
     

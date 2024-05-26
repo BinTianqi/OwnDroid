@@ -10,16 +10,16 @@ var service:IUserService? = null
 
 @Keep
 class ShizukuService: IUserService.Stub() {
-    override fun destroy(){ }
+    override fun destroy() { }
 
     override fun execute(command: String?): String {
         var result = ""
-        val process:Process
+        val process: Process
         try {
             process = Runtime.getRuntime().exec(command)
             val exitCode = process.waitFor()
             if(exitCode!=0){ result+="Error: $exitCode" }
-        }catch(e:Exception){
+        } catch(e:Exception) {
             e.printStackTrace()
             return e.toString()
         }
@@ -33,7 +33,7 @@ class ShizukuService: IUserService.Stub() {
         } catch(e: NullPointerException) {
             e.printStackTrace()
         }
-        if(result==""){ return "No result" }
+        if(result=="") { return "No result" }
         return result
     }
 

@@ -32,7 +32,7 @@ class ManageSpaceActivity: FragmentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         val sharedPref = applicationContext.getSharedPreferences("data", Context.MODE_PRIVATE)
-        val materialYou = sharedPref.getBoolean("material_you",true)
+        val materialYou = sharedPref.getBoolean("material_you", true)
         val blackTheme = sharedPref.getBoolean("black_theme", false)
         setContent {
             OwnDroidTheme(materialYou, blackTheme) {

@@ -28,12 +28,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun AuthScreen(activity: FragmentActivity, showAuth: MutableState<Boolean>){
+fun AuthScreen(activity: FragmentActivity, showAuth: MutableState<Boolean>) {
     val context = activity.applicationContext
     val coroutineScope = rememberCoroutineScope()
-    var canStartAuth by remember{ mutableStateOf(true) }
-    var fallback by remember{ mutableStateOf(false) }
-    var startFade by remember{ mutableStateOf(false) }
+    var canStartAuth by remember { mutableStateOf(true) }
+    var fallback by remember { mutableStateOf(false) }
+    var startFade by remember { mutableStateOf(false) }
     val alpha by animateFloatAsState(
         targetValue = if(startFade) 0F else 1F,
         label = "AuthScreenFade",
@@ -57,7 +57,7 @@ fun AuthScreen(activity: FragmentActivity, showAuth: MutableState<Boolean>){
         }
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
             super.onAuthenticationError(errorCode, errString)
-            when(errorCode){
+            when(errorCode) {
                 BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL -> onAuthSucceed()
                 BiometricPrompt.ERROR_NEGATIVE_BUTTON -> fallback = true
                 else -> canStartAuth = true
@@ -65,7 +65,7 @@ fun AuthScreen(activity: FragmentActivity, showAuth: MutableState<Boolean>){
         }
     }
     LaunchedEffect(fallback) {
-        if(fallback){
+        if(fallback) {
             val fallbackPromptInfo = promptInfo
                 .setAllowedAuthenticators(BiometricManager.Authenticators.DEVICE_CREDENTIAL)
                 .setSubtitle(context.getText(R.string.auth_with_password))
@@ -85,8 +85,8 @@ fun AuthScreen(activity: FragmentActivity, showAuth: MutableState<Boolean>){
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
-        ){
-            LaunchedEffect(Unit){
+        ) {
+            LaunchedEffect(Unit) {
                 delay(300)
                 startAuth(activity, promptInfo, callback)
                 canStartAuth = false
@@ -102,20 +102,20 @@ fun AuthScreen(activity: FragmentActivity, showAuth: MutableState<Boolean>){
                     canStartAuth = false
                 },
                 enabled = canStartAuth
-            ){
+            ) {
                 Text(text = stringResource(R.string.start))
             }
         }
     }
 }
 
-private fun startAuth(activity: FragmentActivity, basicPromptInfo: Builder, callback: AuthenticationCallback){
+private fun startAuth(activity: FragmentActivity, basicPromptInfo: Builder, callback: AuthenticationCallback) {
     val context = activity.applicationContext
     val promptInfo = basicPromptInfo
     val bioManager = BiometricManager.from(context)
     val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
-    if(sharedPref.getBoolean("bio_auth", false)){
-        when(BiometricManager.BIOMETRIC_SUCCESS){
+    if(sharedPref.getBoolean("bio_auth", false)) {
+        when(BiometricManager.BIOMETRIC_SUCCESS) {
             bioManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) ->
                 promptInfo
                     .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)

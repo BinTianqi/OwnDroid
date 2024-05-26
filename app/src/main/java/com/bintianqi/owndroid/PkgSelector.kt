@@ -43,14 +43,14 @@ private val pkgs = mutableListOf<PkgInfo>()
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun PackageSelector(navCtrl:NavHostController, pkgName: MutableState<String>){
+fun PackageSelector(navCtrl: NavHostController, pkgName: MutableState<String>) {
     val context = LocalContext.current
     val pm = context.packageManager
     val apps = pm.getInstalledApplications(0)
-    var progress by remember{mutableIntStateOf(0)}
-    var show by remember{mutableStateOf(true)}
-    var hideProgress by remember{mutableStateOf(true)}
-    var filter by remember{mutableStateOf("data")}
+    var progress by remember { mutableIntStateOf(0) }
+    var show by remember { mutableStateOf(true) }
+    var hideProgress by remember { mutableStateOf(true) }
+    var filter by remember { mutableStateOf("data") }
     val scrollState = rememberLazyListState()
     val co = rememberCoroutineScope()
     val getPkgList: suspend ()->Unit = {
@@ -58,16 +58,16 @@ fun PackageSelector(navCtrl:NavHostController, pkgName: MutableState<String>){
         progress = 0
         hideProgress = false
         pkgs.clear()
-        for(pkg in apps){
+        for(pkg in apps) {
             val srcDir = pkg.sourceDir
             pkgs += PkgInfo(
                 pkg.packageName, pkg.loadLabel(pm).toString(), pkg.loadIcon(pm),
-                if(srcDir.contains("/data/")){ "data" }
+                if(srcDir.contains("/data/")) { "data" }
                 else if(
                     srcDir.contains("system/priv-app")||srcDir.contains("product/priv-app")||
                     srcDir.contains("ext/priv-app")||srcDir.contains("vendor/priv-app")
-                ){"priv"}
-                else if(srcDir.contains("apex")){"apex"}
+                ) {"priv"}
+                else if(srcDir.contains("apex")) {"apex"}
                 else{"system"}
             )
             withContext(Dispatchers.Main) { progress += 1 }
@@ -88,17 +88,17 @@ fun PackageSelector(navCtrl:NavHostController, pkgName: MutableState<String>){
                             .clip(RoundedCornerShape(50))
                             .combinedClickable(
                                 onClick = {
-                                    when(filter){
+                                    when(filter) {
                                         "data"-> {
-                                            filter = "system"; co.launch {scrollState.scrollToItem(0)}
+                                            filter = "system"; co.launch {scrollState.scrollToItem(0) }
                                             Toast.makeText(context, R.string.show_system_app, Toast.LENGTH_SHORT).show()
                                         }
                                         "system"-> {
-                                            filter = "priv"; co.launch {scrollState.scrollToItem(0)}
+                                            filter = "priv"; co.launch {scrollState.scrollToItem(0) }
                                             Toast.makeText(context, R.string.show_priv_app, Toast.LENGTH_SHORT).show()
                                         }
                                         else-> {
-                                            filter = "data"; co.launch {scrollState.scrollToItem(0)}
+                                            filter = "data"; co.launch {scrollState.scrollToItem(0) }
                                             Toast.makeText(context, R.string.show_user_app, Toast.LENGTH_SHORT).show()
                                         }
                                     }
@@ -127,30 +127,30 @@ fun PackageSelector(navCtrl:NavHostController, pkgName: MutableState<String>){
                 title = {
                     Text(text = stringResource(R.string.pkg_selector))
                 },
-                navigationIcon = { NavIcon{navCtrl.navigateUp()} },
+                navigationIcon = { NavIcon{navCtrl.navigateUp() } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.background)
             )
         }
-    ){paddingValues->
+    ) { paddingValues->
         LazyColumn(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxSize().padding(top = paddingValues.calculateTopPadding()),
             state = scrollState
-        ){
-            items(1){
+        ) {
+            items(1) {
                 AnimatedVisibility(!hideProgress) {
-                    LinearProgressIndicator(progress = {progress.toFloat()/apps.size}, modifier = Modifier.fillMaxWidth())
+                    LinearProgressIndicator(progress = { progress.toFloat()/apps.size }, modifier = Modifier.fillMaxWidth())
                 }
             }
             if(show) {
                 items(pkgs) {
-                    if(filter==it.type){
+                    if(filter == it.type) {
                         PackageItem(it, navCtrl, pkgName)
                     }
                 }
-                items(1){Spacer(Modifier.padding(vertical = 30.dp))}
+                items(1) { Spacer(Modifier.padding(vertical = 30.dp)) }
             }else{
-                items(1){
+                items(1) {
                     Spacer(Modifier.padding(top = 5.dp))
                     Text(text = stringResource(R.string.loading), modifier = Modifier.alpha(0.8F))
                 }
@@ -163,14 +163,14 @@ fun PackageSelector(navCtrl:NavHostController, pkgName: MutableState<String>){
 }
 
 @Composable
-private fun PackageItem(pkg: PkgInfo, navCtrl: NavHostController, pkgName: MutableState<String>){
+private fun PackageItem(pkg: PkgInfo, navCtrl: NavHostController, pkgName: MutableState<String>) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable{ pkgName.value = pkg.pkgName; navCtrl.navigateUp()}
+            .clickable{ pkgName.value = pkg.pkgName; navCtrl.navigateUp() }
             .padding(vertical = 3.dp)
-    ){
+    ) {
         Spacer(Modifier.padding(start = 15.dp))
         Image(
             painter = rememberDrawablePainter(pkg.icon), contentDescription = "App icon",

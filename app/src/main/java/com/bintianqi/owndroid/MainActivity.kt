@@ -57,17 +57,17 @@ class MainActivity : FragmentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         val sharedPref = applicationContext.getSharedPreferences("data", Context.MODE_PRIVATE)
-        if(sharedPref.getBoolean("auth", false)){
+        if(sharedPref.getBoolean("auth", false)) {
             showAuth.value = true
         }
         val locale = applicationContext.resources?.configuration?.locale
-        zhCN = locale==Locale.SIMPLIFIED_CHINESE||locale==Locale.CHINESE||locale==Locale.CHINA
+        zhCN = locale == Locale.SIMPLIFIED_CHINESE || locale == Locale.CHINESE || locale == Locale.CHINA
         setContent {
-            val materialYou = mutableStateOf(sharedPref.getBoolean("material_you",true))
+            val materialYou = mutableStateOf(sharedPref.getBoolean("material_you", true))
             val blackTheme = mutableStateOf(sharedPref.getBoolean("black_theme", false))
-            OwnDroidTheme(materialYou.value, blackTheme.value){
+            OwnDroidTheme(materialYou.value, blackTheme.value) {
                 Home(materialYou, blackTheme)
-                if(showAuth.value){
+                if(showAuth.value) {
                     AuthScreen(this, showAuth)
                 }
             }
@@ -80,7 +80,7 @@ class MainActivity : FragmentActivity() {
         if(
             sharedPref.getBoolean("auth", false) &&
             sharedPref.getBoolean("lock_in_background", false)
-        ){
+        ) {
             showAuth.value = true
         }
     }
@@ -90,7 +90,7 @@ class MainActivity : FragmentActivity() {
 @SuppressLint("UnrememberedMutableState")
 @ExperimentalMaterial3Api
 @Composable
-fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>){
+fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>) {
     val navCtrl = rememberNavController()
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
@@ -100,7 +100,7 @@ fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>){
     val pkgName = mutableStateOf("")
     val dialogStatus = mutableIntStateOf(0)
     val backToHome by backToHomeStateFlow.collectAsState()
-    LaunchedEffect(Unit){
+    LaunchedEffect(Unit) {
         if(backToHome) { navCtrl.navigateUp(); backToHomeStateFlow.value = false }
     }
     NavHost(
@@ -110,49 +110,49 @@ fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>){
             .fillMaxSize()
             .background(colorScheme.background)
             .imePadding()
-            .pointerInput(Unit) {detectTapGestures(onTap = {focusMgr.clearFocus()})},
+            .pointerInput(Unit) { detectTapGestures(onTap = { focusMgr.clearFocus() }) },
         enterTransition = Animations.navHostEnterTransition,
         exitTransition = Animations.navHostExitTransition,
         popEnterTransition = Animations.navHostPopEnterTransition,
         popExitTransition = Animations.navHostPopExitTransition
-    ){
-        composable(route = "HomePage"){ HomePage(navCtrl, pkgName) }
-        composable(route = "SystemManage"){ SystemManage(navCtrl) }
-        composable(route = "ManagedProfile"){ ManagedProfile(navCtrl) }
-        composable(route = "Permissions"){ DpmPermissions(navCtrl) }
-        composable(route = "ApplicationManage"){ ApplicationManage(navCtrl, pkgName, dialogStatus)}
-        composable(route = "UserRestriction"){ UserRestriction(navCtrl) }
-        composable(route = "UserManage"){ UserManage(navCtrl) }
-        composable(route = "Password"){ Password(navCtrl) }
-        composable(route = "AppSetting"){ AppSetting(navCtrl, materialYou, blackTheme) }
-        composable(route = "Network"){ Network(navCtrl) }
-        composable(route = "PackageSelector"){ PackageSelector(navCtrl, pkgName) }
-        composable(route = "PermissionPicker"){ PermissionPicker(navCtrl) }
+    ) {
+        composable(route = "HomePage") { HomePage(navCtrl, pkgName) }
+        composable(route = "SystemManage") { SystemManage(navCtrl) }
+        composable(route = "ManagedProfile") { ManagedProfile(navCtrl) }
+        composable(route = "Permissions") { DpmPermissions(navCtrl) }
+        composable(route = "ApplicationManage") { ApplicationManage(navCtrl, pkgName, dialogStatus) }
+        composable(route = "UserRestriction") { UserRestriction(navCtrl) }
+        composable(route = "UserManage") { UserManage(navCtrl) }
+        composable(route = "Password") { Password(navCtrl) }
+        composable(route = "AppSetting") { AppSetting(navCtrl, materialYou, blackTheme) }
+        composable(route = "Network") { Network(navCtrl) }
+        composable(route = "PackageSelector") { PackageSelector(navCtrl, pkgName) }
+        composable(route = "PermissionPicker") { PermissionPicker(navCtrl) }
     }
-    LaunchedEffect(Unit){
-        val profileInited = sharedPref.getBoolean("ManagedProfileActivated",false)
-        val profileNotActivated = !profileInited&&isProfileOwner(dpm)&&(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&dpm.isManagedProfile(receiver)))
-        if(profileNotActivated){
+    LaunchedEffect(Unit) {
+        val profileInited = sharedPref.getBoolean("ManagedProfileActivated", false)
+        val profileNotActivated = !profileInited && isProfileOwner(dpm) && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))
+        if(profileNotActivated) {
             dpm.setProfileEnabled(receiver)
-            sharedPref.edit().putBoolean("ManagedProfileActivated",true).apply()
+            sharedPref.edit().putBoolean("ManagedProfileActivated", true).apply()
             Toast.makeText(context, R.string.work_profile_activated, Toast.LENGTH_SHORT).show()
         }
     }
 }
 
 @Composable
-private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>){
+private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>) {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
     val activateType = stringResource(
-        if(isDeviceOwner(dpm)){R.string.device_owner}
-        else if(isProfileOwner(dpm)){
-            if(VERSION.SDK_INT>=24&&dpm.isManagedProfile(receiver)){R.string.work_profile_owner}else{R.string.profile_owner}
+        if(isDeviceOwner(dpm)) { R.string.device_owner }
+        else if(isProfileOwner(dpm)) {
+            if(VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)) R.string.work_profile_owner else R.string.profile_owner
         }
-        else if(dpm.isAdminActive(receiver)){R.string.device_admin}else{R.string.click_to_activate}
+        else if(dpm.isAdminActive(receiver)) R.string.device_admin else R.string.click_to_activate
     )
-    LaunchedEffect(Unit){ pkgName.value = "" }
+    LaunchedEffect(Unit) { pkgName.value = "" }
     Column(modifier = Modifier.background(colorScheme.background).statusBarsPadding().verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 25.dp))
         Text(
@@ -166,55 +166,55 @@ private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>){
                 .padding(vertical = 8.dp, horizontal = 8.dp)
                 .clip(RoundedCornerShape(15))
                 .background(color = colorScheme.primary)
-                .clickable(onClick = {navCtrl.navigate("Permissions")})
+                .clickable(onClick = { navCtrl.navigate("Permissions") })
                 .padding(vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Spacer(modifier = Modifier.padding(start = 22.dp))
             Icon(
-                painter = painterResource(if(dpm.isAdminActive(receiver)){ R.drawable.check_circle_fill1 }else{ R.drawable.block_fill0 }),
+                painter = painterResource(if(dpm.isAdminActive(receiver)) R.drawable.check_circle_fill1 else R.drawable.block_fill0),
                 contentDescription = null,
                 tint = colorScheme.onPrimary
             )
             Spacer(modifier = Modifier.padding(start = 10.dp))
             Column {
                 Text(
-                    text = stringResource(if(dpm.isAdminActive(receiver)){R.string.activated}else{R.string.deactivated}),
+                    text = stringResource(if(dpm.isAdminActive(receiver)) R.string.activated else R.string.deactivated),
                     style = typography.headlineSmall,
                     color = colorScheme.onPrimary,
                     modifier = Modifier.padding(bottom = 2.dp)
                 )
-                if(activateType!=""){ Text(text = activateType, color = colorScheme.onPrimary) }
+                if(activateType != "") { Text(text = activateType, color = colorScheme.onPrimary) }
             }
         }
         HomePageItem(R.string.system_manage, R.drawable.mobile_phone_fill0, "SystemManage", navCtrl)
-        if(VERSION.SDK_INT>=24&&(isDeviceOwner(dpm))||isProfileOwner(dpm)){ HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network",navCtrl) }
+        if(VERSION.SDK_INT >= 24 && (isDeviceOwner(dpm)) || isProfileOwner(dpm)) { HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network", navCtrl) }
         if(
-            (VERSION.SDK_INT<24&&!isDeviceOwner(dpm))||(
-                    VERSION.SDK_INT>=24&&(dpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)||
-                            (isProfileOwner(dpm)&&dpm.isManagedProfile(receiver)))
+            (VERSION.SDK_INT < 24 && !isDeviceOwner(dpm)) || (
+                    VERSION.SDK_INT >= 24 && (dpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE) ||
+                            (isProfileOwner(dpm) && dpm.isManagedProfile(receiver)))
             )
-        ){
-            HomePageItem(R.string.work_profile, R.drawable.work_fill0, "ManagedProfile",navCtrl)
+        ) {
+            HomePageItem(R.string.work_profile, R.drawable.work_fill0, "ManagedProfile", navCtrl)
         }
         HomePageItem(R.string.app_manager, R.drawable.apps_fill0, "ApplicationManage", navCtrl)
-        if(VERSION.SDK_INT>=24){
+        if(VERSION.SDK_INT>=24) {
             HomePageItem(R.string.user_restrict, R.drawable.person_off, "UserRestriction", navCtrl)
         }
-        HomePageItem(R.string.user_manager,R.drawable.manage_accounts_fill0,"UserManage",navCtrl)
-        HomePageItem(R.string.password_and_keyguard, R.drawable.password_fill0, "Password",navCtrl)
-        HomePageItem(R.string.setting, R.drawable.settings_fill0, "AppSetting",navCtrl)
+        HomePageItem(R.string.user_manager,R.drawable.manage_accounts_fill0,"UserManage", navCtrl)
+        HomePageItem(R.string.password_and_keyguard, R.drawable.password_fill0, "Password", navCtrl)
+        HomePageItem(R.string.setting, R.drawable.settings_fill0, "AppSetting", navCtrl)
         Spacer(Modifier.padding(vertical = 20.dp))
     }
 }
 
 @Composable
-fun HomePageItem(name:Int, imgVector:Int, navTo:String, navCtrl:NavHostController){
+fun HomePageItem(name: Int, imgVector: Int, navTo: String, navCtrl: NavHostController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(25))
-            .clickable(onClick = {navCtrl.navigate(navTo)})
+            .clickable(onClick = { navCtrl.navigate(navTo) })
             .padding(vertical = 13.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -229,7 +229,7 @@ fun HomePageItem(name:Int, imgVector:Int, navTo:String, navCtrl:NavHostControlle
             text = stringResource(name),
             style = typography.headlineSmall,
             color = colorScheme.onBackground,
-            modifier = Modifier.padding(bottom = if(zhCN){2}else{0}.dp)
+            modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp)
         )
     }
 }

@@ -39,7 +39,7 @@ import rikka.shizuku.Shizuku
 private var waitGrantPermission = false
 
 @Composable
-fun ShizukuActivate(){
+fun ShizukuActivate() {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context, Receiver::class.java)
@@ -47,15 +47,15 @@ fun ShizukuActivate(){
     val outputTextScrollState = rememberScrollState()
     var enabled by remember{ mutableStateOf(false) }
     var bindShizuku by remember{ mutableStateOf(false) }
-    var outputText by remember{mutableStateOf("")}
-    var showDeviceAdminButton by remember{mutableStateOf(!dpm.isAdminActive(receiver))}
-    var showProfileOwnerButton by remember{mutableStateOf(!isProfileOwner(dpm))}
-    var showDeviceOwnerButton by remember{mutableStateOf(!isDeviceOwner(dpm))}
-    var showOrgProfileOwnerButton by remember{mutableStateOf(true)}
-    LaunchedEffect(Unit){
-        if(service==null){userServiceControl(context, true)}
-        while(true){
-            if(service==null){
+    var outputText by remember { mutableStateOf("") }
+    var showDeviceAdminButton by remember { mutableStateOf(!dpm.isAdminActive(receiver)) }
+    var showProfileOwnerButton by remember { mutableStateOf(!isProfileOwner(dpm)) }
+    var showDeviceOwnerButton by remember { mutableStateOf(!isDeviceOwner(dpm)) }
+    var showOrgProfileOwnerButton by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+        if(service == null) { userServiceControl(context, true) }
+        while(true) {
+            if(service == null) {
                 enabled = false
                 bindShizuku = checkShizukuStatus()==1
             }else{
@@ -71,14 +71,14 @@ fun ShizukuActivate(){
             .padding(horizontal = 8.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
-    ){
+    ) {
         AnimatedVisibility(bindShizuku) {
             Button(
                 onClick = {
                     userServiceControl(context, true)
                     outputText = ""
                 }
-            ){
+            ) {
                 Text(stringResource(R.string.bind_shizuku))
             }
         }
@@ -107,7 +107,7 @@ fun ShizukuActivate(){
         }
         Spacer(Modifier.padding(vertical = 5.dp))
 
-        AnimatedVisibility(showDeviceAdminButton&&showProfileOwnerButton&&showDeviceOwnerButton) {
+        AnimatedVisibility(showDeviceAdminButton && showProfileOwnerButton && showDeviceOwnerButton) {
             Button(
                 onClick = {
                     coScope.launch{
@@ -139,7 +139,7 @@ fun ShizukuActivate(){
             }
         }
 
-        AnimatedVisibility(showDeviceOwnerButton&&showProfileOwnerButton) {
+        AnimatedVisibility(showDeviceOwnerButton && showProfileOwnerButton) {
             Button(
                 onClick = {
                     coScope.launch{
@@ -156,8 +156,8 @@ fun ShizukuActivate(){
         }
         
         if(
-            VERSION.SDK_INT>=30&&isProfileOwner(dpm)&&dpm.isManagedProfile(receiver)&&!dpm.isOrganizationOwnedDeviceWithManagedProfile
-        ){
+            VERSION.SDK_INT >= 30 && isProfileOwner(dpm) && dpm.isManagedProfile(receiver) && !dpm.isOrganizationOwnedDeviceWithManagedProfile
+        ) {
             AnimatedVisibility(showOrgProfileOwnerButton) {
                 Button(
                     onClick = {
@@ -180,7 +180,7 @@ fun ShizukuActivate(){
         
         SelectionContainer(modifier = Modifier
             .align(Alignment.Start)
-            .horizontalScroll(outputTextScrollState)){
+            .horizontalScroll(outputTextScrollState)) {
             Text(text = outputText, softWrap = false, modifier = Modifier.padding(4.dp))
         }
         
@@ -196,12 +196,12 @@ fun <T> scrollAnim(
 ): SpringSpec<T> = SpringSpec(dampingRatio, stiffness, visibilityThreshold)
 
 private fun checkPermission(context: Context):String{
-    if(checkShizukuStatus()==-1){return context.getString(R.string.shizuku_not_started)}
-    val getUid = if(service==null){return context.getString(R.string.shizuku_not_bind)}else{service!!.uid}
-    return when(getUid){
+    if(checkShizukuStatus()==-1) { return context.getString(R.string.shizuku_not_started) }
+    val getUid = if(service==null) { return context.getString(R.string.shizuku_not_bind) } else { service!!.uid }
+    return when(getUid) {
         "2000"->context.getString(R.string.shizuku_activated_shell)
         "0"->context.getString(R.string.shizuku_activated_root)
-        else->context.getString(R.string.unknown_status)+"\nUID: $getUid"
+        else->context.getString(R.string.unknown_status) + "\nUID: $getUid"
     }
 }
 
@@ -210,16 +210,16 @@ fun checkShizukuStatus():Int{
         if(Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) { waitGrantPermission = false; 1 }
         else if(Shizuku.shouldShowRequestPermissionRationale()) { 0 }
         else{
-            if(!waitGrantPermission){Shizuku.requestPermission(0)}
+            if(!waitGrantPermission) {Shizuku.requestPermission(0) }
             waitGrantPermission = true
             0
         }
-    }catch(e:Exception){ -1 }
+    } catch(e:Exception) { -1 }
     return status
 }
 
-fun userServiceControl(context:Context, status:Boolean){
-    if(checkShizukuStatus()!=1){ return }
+fun userServiceControl(context:Context, status:Boolean) {
+    if(checkShizukuStatus()!=1) { return }
     val userServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(componentName: ComponentName, binder: IBinder) {
             if (binder.pingBinder()) {
@@ -233,7 +233,7 @@ fun userServiceControl(context:Context, status:Boolean){
             Toast.makeText(context, R.string.shizuku_service_disconnected, Toast.LENGTH_SHORT).show()
         }
     }
-    val userServiceArgs  = Shizuku.UserServiceArgs(
+    val userServiceArgs = Shizuku.UserServiceArgs(
         ComponentName(
             context.packageName,ShizukuService::class.java.name
         )
@@ -242,9 +242,9 @@ fun userServiceControl(context:Context, status:Boolean){
         .processNameSuffix("service")
         .debuggable(true)
         .version(26)
-    if(status){
-        Shizuku.bindUserService(userServiceArgs,userServiceConnection)
+    if(status) {
+        Shizuku.bindUserService(userServiceArgs, userServiceConnection)
     }else{
-        Shizuku.unbindUserService(userServiceArgs,userServiceConnection,false)
+        Shizuku.unbindUserService(userServiceArgs, userServiceConnection, false)
     }
 }

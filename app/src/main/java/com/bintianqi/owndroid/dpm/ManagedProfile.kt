@@ -43,23 +43,11 @@ import com.bintianqi.owndroid.ui.*
 fun ManagedProfile(navCtrl: NavHostController) {
     val localNavCtrl = rememberNavController()
     val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
-    /*val titleMap = mapOf(
-        "OrgOwnedWorkProfile" to R.string.org_owned_work_profile,
-        "CreateWorkProfile" to R.string.create_work_profile,
-        "SuspendPersonalApp" to R.string.suspend_personal_app,
-        "IntentFilter" to R.string.intent_filter,
-        "OrgID" to R.string.org_id
-    )*/
     Scaffold(
         topBar = {
-            /*TopAppBar(
-                title = {Text(text = stringResource(titleMap[backStackEntry?.destination?.route]?:R.string.work_profile))},
-                navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
-            )*/
-            TopBar(backStackEntry,navCtrl, localNavCtrl)
+            TopBar(backStackEntry, navCtrl, localNavCtrl)
         }
-    ){
+    ) {
         NavHost(
             navController = localNavCtrl, startDestination = "Home",
             enterTransition = Animations.navHostEnterTransition,
@@ -67,69 +55,75 @@ fun ManagedProfile(navCtrl: NavHostController) {
             popEnterTransition = Animations.navHostPopEnterTransition,
             popExitTransition = Animations.navHostPopExitTransition,
             modifier = Modifier.padding(top = it.calculateTopPadding())
-        ){
-            composable(route = "Home"){Home(localNavCtrl)}
-            composable(route = "OrgOwnedWorkProfile"){OrgOwnedProfile()}
-            composable(route = "CreateWorkProfile"){CreateWorkProfile()}
-            composable(route = "SuspendPersonalApp"){SuspendPersonalApp()}
-            composable(route = "IntentFilter"){IntentFilter()}
-            composable(route = "OrgID"){OrgID()}
+        ) {
+            composable(route = "Home") { Home(localNavCtrl) }
+            composable(route = "OrgOwnedWorkProfile") { OrgOwnedProfile() }
+            composable(route = "CreateWorkProfile") { CreateWorkProfile() }
+            composable(route = "SuspendPersonalApp") { SuspendPersonalApp() }
+            composable(route = "IntentFilter") { IntentFilter() }
+            composable(route = "OrgID") { OrgID() }
         }
     }
 }
 
 @Composable
-private fun Home(navCtrl: NavHostController){
+private fun Home(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context, Receiver::class.java)
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
-        Text(text = stringResource(R.string.work_profile), style = typography.headlineLarge, modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp))
-        if(VERSION.SDK_INT>=30&&isProfileOwner(dpm)&&dpm.isManagedProfile(receiver)){
-            SubPageItem(R.string.org_owned_work_profile,"",R.drawable.corporate_fare_fill0){navCtrl.navigate("OrgOwnedWorkProfile")}
+    Column(
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+    ) {
+        Text(
+            text = stringResource(R.string.work_profile),
+            style = typography.headlineLarge,
+            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp)
+        )
+        if(VERSION.SDK_INT >= 30&&isProfileOwner(dpm) && dpm.isManagedProfile(receiver)) {
+            SubPageItem(R.string.org_owned_work_profile, "", R.drawable.corporate_fare_fill0) { navCtrl.navigate("OrgOwnedWorkProfile") }
         }
-        if(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&dpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE))){
-            SubPageItem(R.string.create_work_profile,"",R.drawable.work_fill0){navCtrl.navigate("CreateWorkProfile")}
+        if(VERSION.SDK_INT<24 || (VERSION.SDK_INT>=24 && dpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE))) {
+            SubPageItem(R.string.create_work_profile, "", R.drawable.work_fill0) { navCtrl.navigate("CreateWorkProfile") }
         }
-        if(VERSION.SDK_INT>=30&&isProfileOwner(dpm)&&dpm.isManagedProfile(receiver)&&dpm.isOrganizationOwnedDeviceWithManagedProfile){
-            SubPageItem(R.string.suspend_personal_app,"",R.drawable.block_fill0){navCtrl.navigate("SuspendPersonalApp")}
+        if(VERSION.SDK_INT >= 30&&isProfileOwner(dpm) && dpm.isManagedProfile(receiver) && dpm.isOrganizationOwnedDeviceWithManagedProfile) {
+            SubPageItem(R.string.suspend_personal_app, "", R.drawable.block_fill0) { navCtrl.navigate("SuspendPersonalApp") }
         }
-        if(isProfileOwner(dpm)&&(VERSION.SDK_INT<24||(VERSION.SDK_INT>=24&&dpm.isManagedProfile(receiver)))){
-            SubPageItem(R.string.intent_filter,"",R.drawable.filter_alt_fill0){navCtrl.navigate("IntentFilter")}
+        if(isProfileOwner(dpm) && (VERSION.SDK_INT<24 || (VERSION.SDK_INT>=24 && dpm.isManagedProfile(receiver)))) {
+            SubPageItem(R.string.intent_filter, "", R.drawable.filter_alt_fill0) { navCtrl.navigate("IntentFilter") }
         }
-        if(VERSION.SDK_INT>=31&&(isProfileOwner(dpm)&&dpm.isManagedProfile(receiver))){
-            SubPageItem(R.string.org_id,"",R.drawable.corporate_fare_fill0){navCtrl.navigate("OrgID")}
+        if(VERSION.SDK_INT>=31 && (isProfileOwner(dpm) && dpm.isManagedProfile(receiver))) {
+            SubPageItem(R.string.org_id, "", R.drawable.corporate_fare_fill0) { navCtrl.navigate("OrgID") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
 @Composable
-private fun CreateWorkProfile(){
+private fun CreateWorkProfile() {
     val context = LocalContext.current
     val receiver = ComponentName(context,Receiver::class.java)
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.create_work_profile), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        var skipEncrypt by remember{mutableStateOf(false)}
-        if(VERSION.SDK_INT>=24){
-            CheckBoxItem(stringResource(R.string.skip_encryption),{skipEncrypt},{skipEncrypt=!skipEncrypt})
+        var skipEncrypt by remember { mutableStateOf(false) }
+        if(VERSION.SDK_INT>=24) {
+            CheckBoxItem(stringResource(R.string.skip_encryption), { skipEncrypt }, { skipEncrypt=!skipEncrypt })
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 try {
                     val intent = Intent(ACTION_PROVISION_MANAGED_PROFILE)
-                    if(VERSION.SDK_INT>=23){
+                    if(VERSION.SDK_INT>=23) {
                         intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME,receiver)
                     }else{
                         intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME, context.packageName)
                     }
-                    if(VERSION.SDK_INT>=24){intent.putExtra(EXTRA_PROVISIONING_SKIP_ENCRYPTION,skipEncrypt)}
-                    if(VERSION.SDK_INT>=33){intent.putExtra(EXTRA_PROVISIONING_ALLOW_OFFLINE,true)}
+                    if(VERSION.SDK_INT>=24) { intent.putExtra(EXTRA_PROVISIONING_SKIP_ENCRYPTION,skipEncrypt) }
+                    if(VERSION.SDK_INT>=33) { intent.putExtra(EXTRA_PROVISIONING_ALLOW_OFFLINE,true) }
                     createManagedProfile.launch(intent)
-                }catch(e:ActivityNotFoundException){
+                }catch(e:ActivityNotFoundException) {
                     Toast.makeText(context, R.string.unsupported, Toast.LENGTH_SHORT).show()
                 }
             },
@@ -142,16 +136,16 @@ private fun CreateWorkProfile(){
 
 @SuppressLint("NewApi")
 @Composable
-private fun OrgOwnedProfile(){
+private fun OrgOwnedProfile() {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.org_owned_work_profile), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.is_org_owned_profile,dpm.isOrganizationOwnedDeviceWithManagedProfile))
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(!dpm.isOrganizationOwnedDeviceWithManagedProfile){
+        if(!dpm.isOrganizationOwnedDeviceWithManagedProfile) {
             SelectionContainer {
                 Text(
                     text = stringResource(R.string.activate_org_profile_command, Binder.getCallingUid()/100000),
@@ -165,20 +159,20 @@ private fun OrgOwnedProfile(){
 
 @SuppressLint("NewApi")
 @Composable
-private fun OrgID(){
+private fun OrgID() {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
-        var orgId by remember{mutableStateOf("")}
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
+        var orgId by remember { mutableStateOf("") }
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.org_id), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
             value = orgId, onValueChange = {orgId=it},
-            label = {Text(stringResource(R.string.org_id))},
+            label = { Text(stringResource(R.string.org_id)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
             modifier = Modifier.focusable().fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 2.dp))
@@ -193,38 +187,44 @@ private fun OrgID(){
             },
             enabled = orgId.length in 6..64,
             modifier = Modifier.fillMaxWidth()
-        ){
+        ) {
             Text(stringResource(R.string.apply))
         }
         Spacer(Modifier.padding(vertical = 5.dp))
-        Information{Text(text = stringResource(R.string.get_specific_id_after_set_org_id))}
+        Information{ Text(text = stringResource(R.string.get_specific_id_after_set_org_id)) }
     }
 }
 
 @SuppressLint("NewApi")
 @Composable
-private fun SuspendPersonalApp(){
+private fun SuspendPersonalApp() {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         SwitchItem(
-            R.string.suspend_personal_app,"",null,{dpm.getPersonalAppsSuspendedReasons(receiver)!=PERSONAL_APPS_NOT_SUSPENDED},
-            {dpm.setPersonalAppsSuspended(receiver,it)}
+            R.string.suspend_personal_app, "", null,
+            { dpm.getPersonalAppsSuspendedReasons(receiver)!=PERSONAL_APPS_NOT_SUSPENDED },
+            { dpm.setPersonalAppsSuspended(receiver,it) }
         )
-        var time by remember{mutableStateOf("")}
+        var time by remember { mutableStateOf("") }
         time = dpm.getManagedProfileMaximumTimeOff(receiver).toString()
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.profile_max_time_off), style = typography.titleLarge)
         Text(text = stringResource(R.string.profile_max_time_out_desc))
-        Text(text = stringResource(R.string.personal_app_suspended_because_timeout, dpm.getPersonalAppsSuspendedReasons(receiver)==PERSONAL_APPS_SUSPENDED_PROFILE_TIMEOUT))
+        Text(
+            text = stringResource(
+                R.string.personal_app_suspended_because_timeout,
+                dpm.getPersonalAppsSuspendedReasons(receiver) == PERSONAL_APPS_SUSPENDED_PROFILE_TIMEOUT
+            )
+        )
         OutlinedTextField(
-            value = time, onValueChange = {time=it}, modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp),
-            label = {Text(stringResource(R.string.time_unit_ms))},
+            value = time, onValueChange = { time=it }, modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp),
+            label = { Text(stringResource(R.string.time_unit_ms)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()})
+            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() })
         )
         Text(text = stringResource(R.string.cannot_less_than_72_hours))
         Button(
@@ -240,21 +240,21 @@ private fun SuspendPersonalApp(){
 }
 
 @Composable
-private fun IntentFilter(){
+private fun IntentFilter() {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())){
-        var action by remember{mutableStateOf("")}
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
+        var action by remember { mutableStateOf("") }
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.intent_filter), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
-            value = action, onValueChange = {action = it},
-            label = {Text("Action")},
+            value = action, onValueChange = { action = it },
+            label = { Text("Action") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus()}),
+            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
             modifier = Modifier.focusable().fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -283,7 +283,7 @@ private fun IntentFilter(){
                 Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
-        ){
+        ) {
             Text(stringResource(R.string.clear_cross_profile_filters))
         }
     }

@@ -86,20 +86,20 @@ fun OwnDroidTheme(
     val darkTheme = isSystemInDarkTheme()
     val context = LocalContext.current
     val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
-    if(!sharedPref.contains("dynamicColor")&&VERSION.SDK_INT>=32){
-        sharedPref.edit().putBoolean("dynamicColor",true).apply()
+    if(!sharedPref.contains("dynamicColor") && VERSION.SDK_INT >= 32) {
+        sharedPref.edit().putBoolean("dynamicColor", true).apply()
     }
     var colorScheme = when {
         materialYou && VERSION.SDK_INT>=31 -> {
-            if(darkTheme){ dynamicDarkColorScheme(context) }else{ dynamicLightColorScheme(context) }
+            if(darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
-    if(darkTheme&&blackTheme){
+    if(darkTheme&&blackTheme) {
         colorScheme = colorScheme.copy(background = Color.Black)
     }
-    if(!darkTheme){
+    if(!darkTheme) {
         colorScheme = colorScheme.copy(background = colorScheme.primary.copy(alpha = 0.05f))
     }
     val view = LocalView.current

@@ -33,25 +33,25 @@ fun SubPageItem(
     desc:String,
     @DrawableRes icon: Int? = null,
     operation: () -> Unit
-){
+) {
     Row(
         modifier = Modifier.fillMaxWidth().clickable(onClick = operation).padding(vertical = 15.dp),
         verticalAlignment = Alignment.CenterVertically
-    ){
+    ) {
         Spacer(Modifier.padding(start = 30.dp))
-        if(icon!=null){
+        if(icon!=null) {
             Icon(painter = painterResource(icon), contentDescription = stringResource(title), modifier = Modifier.padding(top = 1.dp))
             Spacer(Modifier.padding(start = 15.dp))
         }
         Column {
-            Text(text = stringResource(title), style = typography.titleLarge, modifier = Modifier.padding(bottom = if(zhCN){2}else{0}.dp))
-            if(desc!=""){Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F))}
+            Text(text = stringResource(title), style = typography.titleLarge, modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
+            if(desc!="") { Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F)) }
         }
     }
 }
 
 @Composable
-fun NavIcon(operation: () -> Unit){
+fun NavIcon(operation: () -> Unit) {
     Icon(
         painter = painterResource(R.drawable.arrow_back_fill0),
         contentDescription = "Back arrow",
@@ -64,9 +64,13 @@ fun NavIcon(operation: () -> Unit){
 }
 
 @Composable
-fun Information(content: @Composable ()->Unit){
-    Column(modifier = Modifier.fillMaxWidth().padding(start = 5.dp)){
-        Icon(painter = painterResource(R.drawable.info_fill0),contentDescription = "info", tint = colorScheme.onBackground.copy(alpha = 0.8F))
+fun Information(content: @Composable ()->Unit) {
+    Column(modifier = Modifier.fillMaxWidth().padding(start = 5.dp)) {
+        Icon(
+            painter = painterResource(R.drawable.info_fill0),
+            contentDescription = "info",
+            tint = colorScheme.onBackground.copy(alpha = 0.8F)
+        )
         Spacer(Modifier.padding(vertical = 1.dp))
         Row {
             Spacer(Modifier.padding(horizontal = 1.dp))
@@ -77,28 +81,28 @@ fun Information(content: @Composable ()->Unit){
 
 @Composable
 fun RadioButtonItem(
-    text:String,
-    selected:()->Boolean,
-    operation:()->Unit,
+    text: String,
+    selected: ()->Boolean,
+    operation: ()->Unit,
     textColor: Color = colorScheme.onBackground
-){
+) {
     Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
         .fillMaxWidth()
         .clip(RoundedCornerShape(25))
         .clickable(onClick = operation)
     ) {
         RadioButton(selected = selected(), onClick = operation)
-        Text(text = text, color = textColor, modifier = Modifier.padding(bottom = if(zhCN){2}else{0}.dp))
+        Text(text = text, color = textColor, modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
     }
 }
 
 @Composable
 fun CheckBoxItem(
-    text:String,
-    checked:()->Boolean,
-    operation:()->Unit,
-    textColor:Color = colorScheme.onBackground
-){
+    text: String,
+    checked: ()->Boolean,
+    operation: ()->Unit,
+    textColor: Color = colorScheme.onBackground
+) {
     Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
         .fillMaxWidth()
         .clip(RoundedCornerShape(25))
@@ -106,9 +110,9 @@ fun CheckBoxItem(
     ) {
         Checkbox(
             checked = checked(),
-            onCheckedChange = {operation()}
+            onCheckedChange = { operation() }
         )
-        Text(text = text, color = textColor, modifier = Modifier.padding(bottom = if(zhCN){2}else{0}.dp))
+        Text(text = text, color = textColor, modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
     }
 }
 
@@ -119,36 +123,36 @@ fun SwitchItem(
     @DrawableRes icon: Int?,
     getState: ()->Boolean,
     onCheckedChange: (Boolean)->Unit,
-    enable:Boolean = true,
+    enable: Boolean = true,
     onClickBlank: (() -> Unit)? = null
-){
-    var checked by remember{mutableStateOf(false)}
+) {
+    var checked by remember { mutableStateOf(false) }
     checked = getState()
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(enabled = onClickBlank!=null, onClick = onClickBlank?:{})
+            .clickable(enabled = onClickBlank != null, onClick = onClickBlank?:{})
             .padding(vertical = 5.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.align(Alignment.CenterStart)
-        ){
+        ) {
             Spacer(Modifier.padding(start = 30.dp))
-            if(icon!=null){
+            if(icon!=null) {
                 Icon(painter = painterResource(icon),contentDescription = null)
                 Spacer(Modifier.padding(start = 15.dp))
             }
-            Column(modifier = Modifier.padding(end = 60.dp)){
+            Column(modifier = Modifier.padding(end = 60.dp)) {
                 Text(text = stringResource(title), style = typography.titleLarge)
-                if(desc!=""){
+                if(desc!="") {
                     Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F))
                 }
-                if(zhCN){ Spacer(Modifier.padding(vertical = 1.dp)) }
+                if(zhCN) { Spacer(Modifier.padding(vertical = 1.dp)) }
             }
         }
         Switch(
-            checked = checked, onCheckedChange = {onCheckedChange(it);checked=getState()},
+            checked = checked, onCheckedChange = {onCheckedChange(it);checked=getState() },
             modifier = Modifier.align(Alignment.CenterEnd).padding(end = 12.dp), enabled = enable
         )
     }
@@ -157,17 +161,16 @@ fun SwitchItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(
-    backStackEntry:NavBackStackEntry?,
-    navCtrl:NavHostController,
-    localNavCtrl:NavHostController,
-    title:@Composable ()->Unit = {}
-){
+    backStackEntry: NavBackStackEntry?,
+    navCtrl: NavHostController,
+    localNavCtrl: NavHostController,
+    title: @Composable ()->Unit = {}
+) {
     TopAppBar(
-        //Text(text = stringResource(titleMap[backStackEntry?.destination?.route]?:R.string.user_restrict))
         title = title,
         navigationIcon = {
             NavIcon{
-                if(backStackEntry?.destination?.route=="Home"){ navCtrl.navigateUp() }else{ localNavCtrl.navigateUp() }
+                if(backStackEntry?.destination?.route == "Home") { navCtrl.navigateUp() } else { localNavCtrl.navigateUp() }
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.background)
@@ -175,26 +178,26 @@ fun TopBar(
 }
 
 @Composable
-fun CopyTextButton(@StringRes label: Int, content: String){
+fun CopyTextButton(@StringRes label: Int, content: String) {
     val context = LocalContext.current
-    var ok by remember{mutableStateOf(false)}
+    var ok by remember{ mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     Button(
         onClick = {
-            if(!ok){
-                scope.launch{
-                    if(writeClipBoard(context,content)){ ok = true; delay(2000); ok = false }
+            if(!ok) {
+                scope.launch {
+                    if(writeClipBoard(context,content)) { ok = true; delay(2000); ok = false }
                     else{ Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show() }
                 }
             }
         }
-    ){
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically, modifier = Modifier.animateContentSize()
-        ){
-            Icon(painter = painterResource(if(ok){R.drawable.check_fill0}else{R.drawable.content_copy_fill0}),contentDescription = null)
+        ) {
+            Icon(painter = painterResource(if(ok) R.drawable.check_fill0 else R.drawable.content_copy_fill0), contentDescription = null)
             Spacer(modifier = Modifier.padding(horizontal = 2.dp))
-            Text(text = stringResource(if(ok){R.string.success}else{label}))
+            Text(text = stringResource(if(ok) R.string.success else label))
         }
     }
 }

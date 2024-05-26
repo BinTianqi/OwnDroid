@@ -22,16 +22,16 @@ var zhCN = true
 fun uriToStream(
     context: Context,
     uri: Uri?,
-    operation:(stream: InputStream)->Unit
+    operation: (stream: InputStream)->Unit
 ){
     if(uri!=null){
         try{
             val stream = context.contentResolver.openInputStream(uri)
-            if(stream!=null) { operation(stream) }
+            if(stream != null) { operation(stream) }
             stream?.close()
         }
-        catch(e: FileNotFoundException){ Toast.makeText(context, R.string.file_not_exist, Toast.LENGTH_SHORT).show() }
-        catch(e: IOException){ Toast.makeText(context, R.string.io_exception, Toast.LENGTH_SHORT).show() }
+        catch(e: FileNotFoundException) { Toast.makeText(context, R.string.file_not_exist, Toast.LENGTH_SHORT).show() }
+        catch(e: IOException) { Toast.makeText(context, R.string.io_exception, Toast.LENGTH_SHORT).show() }
     }
 }
 
@@ -39,18 +39,18 @@ fun List<Any>.toText():String{
     var output = ""
     var isFirst = true
     for(each in listIterator()){
-        if(isFirst){isFirst=false}else{output+="\n"}
+        if(isFirst) { isFirst = false } else { output+="\n" }
         output+=each
     }
     return output
 }
 
-fun Set<Any>.toText():String{
+fun Set<Any>.toText(): String{
     var output = ""
     var isFirst = true
     for(each in iterator()){
-        if(isFirst){isFirst=false}else{output+="\n"}
-        output+=each
+        if(isFirst) { isFirst = false } else { output+="\n" }
+        output += each
     }
     return output
 }
@@ -67,7 +67,7 @@ fun writeClipBoard(context: Context, string: String):Boolean{
 
 
 fun registerActivityResult(context: ComponentActivity){
-    getFile = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {activityResult ->
+    getFile = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
         activityResult.data.let {
             if(it==null){
                 Toast.makeText(context.applicationContext, R.string.file_not_exist, Toast.LENGTH_SHORT).show()

@@ -24,22 +24,14 @@ import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.ui.*
 
 @Composable
-fun AppSetting(navCtrl:NavHostController, materialYou: MutableState<Boolean>, blackTheme: MutableState<Boolean>){
+fun AppSetting(navCtrl:NavHostController, materialYou: MutableState<Boolean>, blackTheme: MutableState<Boolean>) {
     val localNavCtrl = rememberNavController()
     val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
-    /*val titleMap = mapOf(
-        "About" to R.string.about
-    )*/
     Scaffold(
         topBar = {
-            /*TopAppBar(
-                title = {Text(text = stringResource(titleMap[backStackEntry?.destination?.route]?:R.string.setting))},
-                navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
-            )*/
             TopBar(backStackEntry, navCtrl, localNavCtrl)
         }
-    ){
+    ) {
         NavHost(
             navController = localNavCtrl, startDestination = "Home",
             enterTransition = Animations.navHostEnterTransition,
@@ -47,44 +39,44 @@ fun AppSetting(navCtrl:NavHostController, materialYou: MutableState<Boolean>, bl
             popEnterTransition = Animations.navHostPopEnterTransition,
             popExitTransition = Animations.navHostPopExitTransition,
             modifier = Modifier.padding(top = it.calculateTopPadding())
-        ){
-            composable(route = "Home"){ Home(localNavCtrl) }
-            composable(route = "Theme"){ ThemeSettings(materialYou, blackTheme) }
-            composable(route = "Auth"){ AuthSettings() }
-            composable(route = "About"){ About() }
+        ) {
+            composable(route = "Home") { Home(localNavCtrl) }
+            composable(route = "Theme") { ThemeSettings(materialYou, blackTheme) }
+            composable(route = "Auth") { AuthSettings() }
+            composable(route = "About") { About() }
         }
     }
 }
 
 @Composable
-private fun Home(navCtrl: NavHostController){
-    Column(modifier = Modifier.fillMaxSize()){
-        SubPageItem(R.string.theme,"",R.drawable.format_paint_fill0){navCtrl.navigate("Theme")}
-        SubPageItem(R.string.security,"",R.drawable.lock_fill0){navCtrl.navigate("Auth")}
-        SubPageItem(R.string.about,"",R.drawable.info_fill0){navCtrl.navigate("About")}
+private fun Home(navCtrl: NavHostController) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        SubPageItem(R.string.theme, "", R.drawable.format_paint_fill0) { navCtrl.navigate("Theme") }
+        SubPageItem(R.string.security, "", R.drawable.lock_fill0) { navCtrl.navigate("Auth") }
+        SubPageItem(R.string.about, "", R.drawable.info_fill0) { navCtrl.navigate("About") }
     }
 }
 
 @Composable
-private fun ThemeSettings(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>){
+private fun ThemeSettings(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>) {
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        if(VERSION.SDK_INT>=31){
+        if(VERSION.SDK_INT>=31) {
             SwitchItem(
                 R.string.material_you_color, stringResource(R.string.dynamic_color_desc), null,
                 { sharedPref.getBoolean("material_you",true) },
                 {
-                    sharedPref.edit().putBoolean("material_you",it).apply()
+                    sharedPref.edit().putBoolean("material_you", it).apply()
                     materialYou.value = it
                 }
             )
         }
-        if(isSystemInDarkTheme()){
+        if(isSystemInDarkTheme()) {
             SwitchItem(
                 R.string.amoled_black, stringResource(R.string.blackTheme_desc), null,
                 { sharedPref.getBoolean("black_theme",false) },
                 {
-                    sharedPref.edit().putBoolean("black_theme",it).apply()
+                    sharedPref.edit().putBoolean("black_theme", it).apply()
                     blackTheme.value = it
                 }
             )
@@ -93,7 +85,7 @@ private fun ThemeSettings(materialYou:MutableState<Boolean>, blackTheme:MutableS
 }
 
 @Composable
-private fun AuthSettings(){
+private fun AuthSettings() {
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     var auth by remember{ mutableStateOf(sharedPref.getBoolean("auth",false)) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
@@ -101,28 +93,28 @@ private fun AuthSettings(){
             R.string.lock_owndroid, "", null,
             { auth },
             {
-                sharedPref.edit().putBoolean("auth",it).apply()
-                auth = sharedPref.getBoolean("auth",false)
+                sharedPref.edit().putBoolean("auth", it).apply()
+                auth = sharedPref.getBoolean("auth", false)
             }
         )
-        if(auth){
+        if(auth) {
             SwitchItem(
                 R.string.enable_bio_auth, "", null,
-                { sharedPref.getBoolean("bio_auth",false) },
-                { sharedPref.edit().putBoolean("bio_auth",it).apply() }
+                { sharedPref.getBoolean("bio_auth", false) },
+                { sharedPref.edit().putBoolean("bio_auth", it).apply() }
             )
             SwitchItem(
                 R.string.lock_in_background, stringResource(R.string.developing), null,
-                { sharedPref.getBoolean("lock_in_background",false) },
-                { sharedPref.edit().putBoolean("lock_in_background",it).apply() }
+                { sharedPref.getBoolean("lock_in_background", false) },
+                { sharedPref.edit().putBoolean("lock_in_background", it).apply() }
             )
         }
         SwitchItem(
             R.string.protect_storage, "", null,
-            { sharedPref.getBoolean("protect_storage",false) },
-            { sharedPref.edit().putBoolean("protect_storage",it).apply() }
+            { sharedPref.getBoolean("protect_storage", false) },
+            { sharedPref.edit().putBoolean("protect_storage", it).apply() }
         )
-        Box(modifier = Modifier.padding(horizontal = 8.dp)){
+        Box(modifier = Modifier.padding(horizontal = 8.dp)) {
             Information {
                 Text(text = stringResource(R.string.auth_on_start))
             }
@@ -131,26 +123,26 @@ private fun AuthSettings(){
 }
 
 @Composable
-private fun About(){
+private fun About() {
     val context = LocalContext.current
     val pkgInfo = context.packageManager.getPackageInfo(context.packageName,0)
     val verCode = pkgInfo.versionCode
     val verName = pkgInfo.versionName
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
-        Column(modifier = Modifier.padding(horizontal = 8.dp)){
+        Column(modifier = Modifier.padding(horizontal = 8.dp)) {
             Text(text = stringResource(R.string.about), style = typography.headlineLarge)
             Spacer(Modifier.padding(vertical = 5.dp))
             Text(text = stringResource(R.string.app_name)+" v$verName ($verCode)")
             Text(text = stringResource(R.string.about_desc))
             Spacer(Modifier.padding(vertical = 5.dp))
         }
-        SubPageItem(R.string.user_guide,"",R.drawable.open_in_new){shareLink(context, "https://github.com/BinTianqi/AndroidOwner/blob/master/Guide.md")}
-        SubPageItem(R.string.source_code,"",R.drawable.open_in_new){shareLink(context, "https://github.com/BinTianqi/AndroidOwner")}
+        SubPageItem(R.string.user_guide, "", R.drawable.open_in_new) { shareLink(context, "https://github.com/BinTianqi/AndroidOwner/blob/master/Guide.md") }
+        SubPageItem(R.string.source_code, "", R.drawable.open_in_new) { shareLink(context, "https://github.com/BinTianqi/AndroidOwner") }
     }
 }
 
-fun shareLink(inputContext:Context,link:String){
+fun shareLink(inputContext:Context,link:String) {
     val uri = Uri.parse(link)
     val intent = Intent(Intent.ACTION_VIEW, uri)
     inputContext.startActivity(Intent.createChooser(intent, "Open in browser"),null)
