@@ -280,7 +280,8 @@
     <string name="permitted_ime">许可的输入法</string>
     <string name="keep_uninstalled_pkgs">保持卸载的应用</string>
     <string name="clear_data">数据清除</string>
-    <string name="clear_app_data">清除应用存储</string>
+    <string name="clear_app_storage">清除应用存储</string>
+    <string name="following_app_storage_will_clear">以下应用的存储空间将被清空</string>
     <string name="set_default_dialer">设为默认拨号应用</string>
     <string name="uninstall_app">卸载应用</string>
     <string name="silent_uninstall">静默卸载</string>

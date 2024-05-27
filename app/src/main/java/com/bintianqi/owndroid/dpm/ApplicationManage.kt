@@ -83,9 +83,10 @@ fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, 
         "KeepUninstalled" to R.string.keep_uninstalled_pkgs,
         "InstallApp" to R.string.install_app,
         "UninstallApp" to R.string.uninstall_app,
-        "ClearAppData" to R.string.clear_app_data,
+        "ClearAppData" to R.string.clear_app_storage,
         "DefaultDialer" to R.string.set_default_dialer,
     )
+    val clearAppDataDialog = remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopBar(backStackEntry, navCtrl, localNavCtrl) {
@@ -121,7 +122,7 @@ fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, 
                 popEnterTransition = Animations.navHostPopEnterTransition,
                 popExitTransition = Animations.navHostPopExitTransition
             ) { 
-                composable(route = "Home") { Home(localNavCtrl, pkgName.value, dialogStatus) }
+                composable(route = "Home") { Home(localNavCtrl, pkgName.value, dialogStatus, clearAppDataDialog) }
                 composable(route = "UserControlDisabled") { UserCtrlDisabledPkg(pkgName.value) }
                 composable(route = "PermissionManage") { PermissionManage(pkgName.value, navCtrl) }
                 composable(route = "CrossProfilePackage") { CrossProfilePkg(pkgName.value) }
@@ -132,7 +133,6 @@ fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, 
                 composable(route = "KeepUninstalled") { KeepUninstalledApp(pkgName.value) }
                 composable(route = "InstallApp") { InstallApp() }
                 composable(route = "UninstallApp") { UninstallApp(pkgName.value) }
-                composable(route = "ClearAppData") { ClearAppData(pkgName.value) }
                 composable(route = "DefaultDialer") { DefaultDialerApp(pkgName.value) }
             }
         }
@@ -141,10 +141,13 @@ fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, 
         LocalFocusManager.current.clearFocus()
         AppControlDialog(dialogStatus)
     }
+    if(clearAppDataDialog.value) {
+        ClearAppDataDialog(clearAppDataDialog, pkgName.value)
+    }
 }
 
 @Composable
-private fun Home(navCtrl:NavHostController, pkgName: String, dialogStatus: MutableIntState) { 
+private fun Home(navCtrl:NavHostController, pkgName: String, dialogStatus: MutableIntState, clearAppDataDialog: MutableState<Boolean>) {
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
     ) {
@@ -251,7 +254,9 @@ private fun Home(navCtrl:NavHostController, pkgName: String, dialogStatus: Mutab
             SubPageItem(R.string.keep_uninstalled_pkgs, "", R.drawable.delete_fill0) { navCtrl.navigate("KeepUninstalled") }
         }
         if(VERSION.SDK_INT>=28) { 
-            SubPageItem(R.string.clear_app_data, "", R.drawable.mop_fill0) { navCtrl.navigate("ClearAppData") }
+            SubPageItem(R.string.clear_app_storage, "", R.drawable.mop_fill0) {
+                if(pkgName != "") { clearAppDataDialog.value = true }
+            }
         }
         SubPageItem(R.string.install_app, "", R.drawable.install_mobile_fill0) { navCtrl.navigate("InstallApp") }
         SubPageItem(R.string.uninstall_app, "", R.drawable.delete_fill0) { navCtrl.navigate("UninstallApp") }
@@ -843,34 +848,49 @@ private fun InstallApp() {
 
 @SuppressLint("NewApi")
 @Composable
-private fun ClearAppData(pkgName: String) { 
+fun ClearAppDataDialog(status: MutableState<Boolean>, pkgName: String) {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
-    val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Button(
-            onClick = {
-                val executor = Executors.newCachedThreadPool()
-                val onClear = DevicePolicyManager.OnClearApplicationUserDataListener { pkg: String, succeed: Boolean ->
-                    Looper.prepare()
-                    focusMgr.clearFocus()
-                    val toastText =
-                        if(pkg!="") { "$pkg\n" }else{ "" } +
-                        context.getString(R.string.clear_data) +
-                        context.getString(if(succeed) { R.string.success } else { R.string.fail })
-                    Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
-                    Looper.loop()
+    AlertDialog(
+        title = {
+            Text(text = stringResource(R.string.clear_app_storage))
+        },
+        text = {
+            Text(text = stringResource(R.string.following_app_storage_will_clear) + "\n" + pkgName)
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val executor = Executors.newCachedThreadPool()
+                    val onClear = DevicePolicyManager.OnClearApplicationUserDataListener { pkg: String, succeed: Boolean ->
+                        Looper.prepare()
+                        val toastText =
+                            if(pkg!="") { "$pkg\n" }else{ "" } +
+                                    context.getString(R.string.clear_data) +
+                                    context.getString(if(succeed) R.string.success else R.string.fail )
+                        Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
+                        Looper.loop()
+                    }
+                    dpm.clearApplicationUserData(receiver, pkgName, executor, onClear)
+                    status.value = false
                 }
-                dpm.clearApplicationUserData(receiver, pkgName, executor, onClear)
-            },
-            enabled = isDeviceOwner(dpm) || isProfileOwner(dpm),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp)
-        ) {
-            Text(stringResource(R.string.clear_app_data))
-        }
-    }
+            ) {
+                Text(text = stringResource(R.string.clear))
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = { status.value = false }
+            ) {
+                Text(text = stringResource(R.string.cancel))
+            }
+        },
+        onDismissRequest = {
+            status.value = false
+        },
+        modifier = Modifier.fillMaxWidth()
+    )
 }
 
 @SuppressLint("NewApi")
