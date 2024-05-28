@@ -30,6 +30,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -67,7 +68,7 @@ private var dialogDismissButtonAction = {}
 private var dialogGetStatus = { false }
 
 @Composable
-fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, dialogStatus: MutableIntState) { 
+fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, dialogStatus: MutableIntState) {
     val focusMgr = LocalFocusManager.current
     val localNavCtrl = rememberNavController()
     val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
@@ -87,6 +88,7 @@ fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, 
         "DefaultDialer" to R.string.set_default_dialer,
     )
     val clearAppDataDialog = remember { mutableStateOf(false) }
+    val defaultDialerAppDialog = remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopBar(backStackEntry, navCtrl, localNavCtrl) {
@@ -122,7 +124,7 @@ fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, 
                 popEnterTransition = Animations.navHostPopEnterTransition,
                 popExitTransition = Animations.navHostPopExitTransition
             ) { 
-                composable(route = "Home") { Home(localNavCtrl, pkgName.value, dialogStatus, clearAppDataDialog) }
+                composable(route = "Home") { Home(localNavCtrl, pkgName.value, dialogStatus, clearAppDataDialog, defaultDialerAppDialog) }
                 composable(route = "UserControlDisabled") { UserCtrlDisabledPkg(pkgName.value) }
                 composable(route = "PermissionManage") { PermissionManage(pkgName.value, navCtrl) }
                 composable(route = "CrossProfilePackage") { CrossProfilePkg(pkgName.value) }
@@ -133,7 +135,6 @@ fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, 
                 composable(route = "KeepUninstalled") { KeepUninstalledApp(pkgName.value) }
                 composable(route = "InstallApp") { InstallApp() }
                 composable(route = "UninstallApp") { UninstallApp(pkgName.value) }
-                composable(route = "DefaultDialer") { DefaultDialerApp(pkgName.value) }
             }
         }
     }
@@ -144,10 +145,19 @@ fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, 
     if(clearAppDataDialog.value) {
         ClearAppDataDialog(clearAppDataDialog, pkgName.value)
     }
+    if(defaultDialerAppDialog.value) {
+        DefaultDialerAppDialog(defaultDialerAppDialog, pkgName.value)
+    }
 }
 
 @Composable
-private fun Home(navCtrl:NavHostController, pkgName: String, dialogStatus: MutableIntState, clearAppDataDialog: MutableState<Boolean>) {
+private fun Home(
+    navCtrl:NavHostController,
+    pkgName: String,
+    dialogStatus: MutableIntState,
+    clearAppDataDialog: MutableState<Boolean>,
+    defaultDialerAppDialog: MutableState<Boolean>
+) {
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
     ) {
@@ -260,8 +270,8 @@ private fun Home(navCtrl:NavHostController, pkgName: String, dialogStatus: Mutab
         }
         SubPageItem(R.string.install_app, "", R.drawable.install_mobile_fill0) { navCtrl.navigate("InstallApp") }
         SubPageItem(R.string.uninstall_app, "", R.drawable.delete_fill0) { navCtrl.navigate("UninstallApp") }
-        if(VERSION.SDK_INT>=34) { 
-            SubPageItem(R.string.set_default_dialer, "", R.drawable.call_fill0) { navCtrl.navigate("DefaultDialer") }
+        if(VERSION.SDK_INT >= 34 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
+            SubPageItem(R.string.set_default_dialer, "", R.drawable.call_fill0) { defaultDialerAppDialog.value = true }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
         LaunchedEffect(Unit) { fileUriFlow.value = Uri.parse("") }
@@ -857,7 +867,7 @@ fun ClearAppDataDialog(status: MutableState<Boolean>, pkgName: String) {
             Text(text = stringResource(R.string.clear_app_storage))
         },
         text = {
-            Text(text = stringResource(R.string.following_app_storage_will_clear) + "\n" + pkgName)
+            Text(stringResource(R.string.app_storage_will_be_cleared) + "\n" + pkgName)
         },
         confirmButton = {
             TextButton(
@@ -874,7 +884,8 @@ fun ClearAppDataDialog(status: MutableState<Boolean>, pkgName: String) {
                     }
                     dpm.clearApplicationUserData(receiver, pkgName, executor, onClear)
                     status.value = false
-                }
+                },
+                colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
             ) {
                 Text(text = stringResource(R.string.clear))
             }
@@ -886,35 +897,46 @@ fun ClearAppDataDialog(status: MutableState<Boolean>, pkgName: String) {
                 Text(text = stringResource(R.string.cancel))
             }
         },
-        onDismissRequest = {
-            status.value = false
-        },
+        onDismissRequest = { status.value = false },
         modifier = Modifier.fillMaxWidth()
     )
 }
 
 @SuppressLint("NewApi")
 @Composable
-private fun DefaultDialerApp(pkgName: String) { 
+fun DefaultDialerAppDialog(status: MutableState<Boolean>, pkgName: String) {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Button(
-            onClick = {
-                try{
-                    dpm.setDefaultDialerApplication(pkgName)
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                }catch(e:IllegalArgumentException) { 
-                    Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show()
-                }
-            },
-            enabled = isDeviceOwner(dpm) || isProfileOwner(dpm),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp)
-        ) {
+    AlertDialog(
+        title = {
             Text(stringResource(R.string.set_default_dialer))
-        }
-    }
+        },
+        text = {
+            Text(stringResource(R.string.app_will_be_default_dialer) + "\n" + pkgName)
+        },
+        onDismissRequest = { status.value = false },
+        dismissButton = {
+            TextButton(onClick = { status.value = false }) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    try{
+                        dpm.setDefaultDialerApplication(pkgName)
+                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    }catch(e:IllegalArgumentException) {
+                        Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show()
+                    }
+                    status.value = false
+                }
+            ) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        modifier = Modifier.fillMaxWidth()
+    )
 }
 
 @Composable

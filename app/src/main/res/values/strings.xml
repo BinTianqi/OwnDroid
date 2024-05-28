@@ -296,8 +296,9 @@
     <string name="keep_uninstalled_pkgs">Keep uninstalled packages</string>
     <string name="clear_data">Clear data</string>
     <string name="clear_app_storage">Clear app storage</string>
-    <string name="following_app_storage_will_clear">The following app\'s storage will be cleared</string>
+    <string name="app_storage_will_be_cleared">This app\'s storage will be cleared</string>
     <string name="set_default_dialer">Set default dialer</string>
+    <string name="app_will_be_default_dialer">This app will be set as the default dialer application.</string>
     <string name="uninstall_app">Uninstall app</string>
     <string name="silent_uninstall">Silent uninstall</string>
     <string name="request_uninstall">Request uninstall</string>
