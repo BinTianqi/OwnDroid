@@ -681,7 +681,7 @@ pm list packages
 如果是Device owner，需要API30或以上，如果是Profile owner，需要API33或以上
 （谷歌并没有在文档中说明Profile owner调用此功能所需的API等级，但是，[MinoriceOWO](https://github.com/MinoriceOwO)发现Profile owner在API33以下调用这个功能会导致OwnDroid崩溃[(issue #12)](https://github.com/BinTianqi/OwnDroid/issues/12)。[commit d4e8473](https://github.com/BinTianqi/OwnDroid/commit/d4e8473218a6d91bf3608133061f8e636e48cdbb)中已对API33以下的Profile owner隐藏该功能入口）
 
-用户无法清除这些应用的存储空间和缓存，但是可以在这里清除
+用户无法清除这些应用的存储空间，也无法强制停止应用，OwnDroid中的[清除应用存储](#清除应用存储)不受影响
 
 ### 权限管理
 
@@ -729,21 +729,22 @@ pm list permissions
 
 作用未知
 
-### 许可的无障碍应用&输入法
+### 许可的无障碍服务&输入法
 
 需要的权限：Device owner或Profile owner
 
-无障碍应用：强制启用无障碍应用
+- 允许所有
+- 允许指定app
 
-输入法：强制启用输入法，但是不强制用户使用输入法
+无论如何，系统的无障碍服务和输入法都是允许的
 
-### 保持卸载的应用
+### 卸载后保留的应用
 
 需要Device owner
 
 需要API28或以上
 
-作用未知
+这个列表中的应用的APK将会一直保留，即使没有任何用户安装这个应用
 
 ### 清除应用存储
 

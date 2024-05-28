@@ -33,6 +33,7 @@ import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
@@ -57,12 +58,6 @@ import java.io.IOException
 import java.io.InputStream
 import java.util.concurrent.Executors
 
-private var credentialList = mutableSetOf<String>()
-private var crossProfilePkg = mutableSetOf<String>()
-private var keepUninstallPkg = mutableListOf<String>()
-private var permittedIme = mutableListOf<String>()
-private var permittedAccessibility = mutableListOf<String>()
-
 private var dialogConfirmButtonAction = {}
 private var dialogDismissButtonAction = {}
 private var dialogGetStatus = { false }
@@ -79,9 +74,9 @@ fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, 
         "CrossProfilePackage" to R.string.cross_profile_package,
         "CrossProfileWidget" to R.string.cross_profile_widget,
         "CredentialManagePolicy" to R.string.credential_manage_policy,
-        "Accessibility" to R.string.permitted_accessibility_app,
+        "Accessibility" to R.string.permitted_accessibility_services,
         "IME" to R.string.permitted_ime,
-        "KeepUninstalled" to R.string.keep_uninstalled_pkgs,
+        "KeepUninstalled" to R.string.keep_uninstalled_packages,
         "InstallApp" to R.string.install_app,
         "UninstallApp" to R.string.uninstall_app,
         "ClearAppData" to R.string.clear_app_storage,
@@ -255,13 +250,13 @@ private fun Home(
             SubPageItem(R.string.credential_manage_policy, "", R.drawable.license_fill0) { navCtrl.navigate("CredentialManagePolicy") }
         }
         if(isProfileOwner(dpm)||isDeviceOwner(dpm)) { 
-            SubPageItem(R.string.permitted_accessibility_app, "", R.drawable.settings_accessibility_fill0) { navCtrl.navigate("Accessibility") }
+            SubPageItem(R.string.permitted_accessibility_services, "", R.drawable.settings_accessibility_fill0) { navCtrl.navigate("Accessibility") }
         }
         if(isDeviceOwner(dpm)||isProfileOwner(dpm)) { 
             SubPageItem(R.string.permitted_ime, "", R.drawable.keyboard_fill0) { navCtrl.navigate("IME") }
         }
         if(VERSION.SDK_INT>=28&&isDeviceOwner(dpm)) { 
-            SubPageItem(R.string.keep_uninstalled_pkgs, "", R.drawable.delete_fill0) { navCtrl.navigate("KeepUninstalled") }
+            SubPageItem(R.string.keep_uninstalled_packages, "", R.drawable.delete_fill0) { navCtrl.navigate("KeepUninstalled") }
         }
         if(VERSION.SDK_INT>=28) { 
             SubPageItem(R.string.clear_app_storage, "", R.drawable.mop_fill0) {
@@ -284,13 +279,13 @@ private fun UserCtrlDisabledPkg(pkgName:String) {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
-        var pkgList = dpm.getUserControlDisabledPackages(receiver)
-        var listText by remember{mutableStateOf("")}
+    val pkgList = remember { mutableStateListOf<String>() }
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         val refresh = {
-            pkgList = dpm.getUserControlDisabledPackages(receiver)
-            listText = pkgList.toText()
+            pkgList.clear()
+            dpm.getUserControlDisabledPackages(receiver).forEach { pkgList.add(it) }
         }
+        LaunchedEffect(Unit) { refresh() }
         var inited by remember{mutableStateOf(false)}
         if(!inited) { refresh();inited=true }
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -300,19 +295,15 @@ private fun UserCtrlDisabledPkg(pkgName:String) {
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.app_list_is))
         SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize()) { 
-            Text(text = if(listText=="") { stringResource(R.string.none)}else{listText})
+            Text(text = if(pkgList.isEmpty()) stringResource(R.string.none) else pkgList.toText())
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { 
             Button(
                 onClick = {
-                    if(pkgName!="") { 
-                        pkgList.add(pkgName)
-                        dpm.setUserControlDisabledPackages(receiver,pkgList)
-                        refresh()
-                    }else{
-                        Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show()
-                    }
+                    pkgList.add(pkgName)
+                    dpm.setUserControlDisabledPackages(receiver, pkgList)
+                    refresh()
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) { 
@@ -320,13 +311,9 @@ private fun UserCtrlDisabledPkg(pkgName:String) {
             }
             Button(
                 onClick = {
-                    val result = if(pkgName!="") { pkgList.remove(pkgName)}else{false}
-                    if(result) { 
-                        dpm.setUserControlDisabledPackages(receiver,pkgList)
-                        refresh()
-                    }else{
-                        Toast.makeText(context, R.string.not_exist, Toast.LENGTH_SHORT).show()
-                    }
+                    pkgList.remove(pkgName)
+                    dpm.setUserControlDisabledPackages(receiver,pkgList)
+                    refresh()
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) { 
@@ -429,25 +416,25 @@ private fun PermissionManage(pkgName: String, navCtrl: NavHostController) {
 private fun CrossProfilePkg(pkgName: String) { 
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val receiver = ComponentName(context, Receiver::class.java)
+    val crossProfilePkg = remember { mutableStateListOf<String>() }
+    val refresh = {
+        crossProfilePkg.clear()
+        dpm.getCrossProfilePackages(receiver).forEach { crossProfilePkg += it }
+    }
+    LaunchedEffect(Unit) { refresh() }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.cross_profile_package), style = typography.headlineLarge)
-        var list by remember{mutableStateOf("")}
-        val refresh = {
-            crossProfilePkg = dpm.getCrossProfilePackages(receiver)
-            list = crossProfilePkg.toText()
-        }
-        LaunchedEffect(Unit) { refresh() }
         Text(text = stringResource(R.string.app_list_is))
         SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize()) { 
-            Text(text = if(list=="") stringResource(R.string.none) else list)
+            Text(text = if(crossProfilePkg.isEmpty()) stringResource(R.string.none) else crossProfilePkg.toText())
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { 
             Button(
                 onClick = {
-                    if(pkgName!="") { crossProfilePkg.add(pkgName) }
-                    dpm.setCrossProfilePackages(receiver, crossProfilePkg)
+                    crossProfilePkg.add(pkgName)
+                    dpm.setCrossProfilePackages(receiver, crossProfilePkg.toSet())
                     refresh()
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
@@ -456,14 +443,24 @@ private fun CrossProfilePkg(pkgName: String) {
             }
             Button(
                 onClick = {
-                    if(pkgName!="") { crossProfilePkg.remove(pkgName) }
-                    dpm.setCrossProfilePackages(receiver, crossProfilePkg)
+                    crossProfilePkg.remove(pkgName)
+                    dpm.setCrossProfilePackages(receiver, crossProfilePkg.toSet())
                     refresh()
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) {
                 Text(stringResource(R.string.remove))
             }
+        }
+        Button(
+            onClick = {
+                crossProfilePkg.clear()
+                dpm.setCrossProfilePackages(receiver, crossProfilePkg.toSet())
+                refresh()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.clear_list))
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
@@ -474,26 +471,27 @@ private fun CrossProfileWidget(pkgName: String) {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
-        var pkgList: MutableList<String>
-        var list by remember{mutableStateOf("")}
-        val refresh = {
-            pkgList = dpm.getCrossProfileWidgetProviders(receiver)
-            list = pkgList.toText()
+    val pkgList = remember { mutableStateListOf<String>() }
+    val refresh = {
+        pkgList.clear()
+        dpm.getCrossProfileWidgetProviders(receiver).forEach {
+            pkgList += it
         }
-        LaunchedEffect(Unit) { refresh()}
+    }
+    LaunchedEffect(Unit) { refresh() }
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.cross_profile_widget), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.app_list_is))
         SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize()) { 
-            Text(text = if(list=="") stringResource(R.string.none) else list)
+            Text(text = if(pkgList.isEmpty()) stringResource(R.string.none) else pkgList.toText())
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { 
             Button(
                 onClick = {
-                    if(pkgName!="") { dpm.addCrossProfileWidgetProvider(receiver,pkgName) }
+                    if(pkgName != "") { dpm.addCrossProfileWidgetProvider(receiver, pkgName) }
                     refresh()
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
@@ -502,13 +500,23 @@ private fun CrossProfileWidget(pkgName: String) {
             }
             Button(
                 onClick = {
-                    if(pkgName!="") { dpm.removeCrossProfileWidgetProvider(receiver,pkgName) }
+                    if(pkgName != "") { dpm.removeCrossProfileWidgetProvider(receiver, pkgName) }
                     refresh()
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) { 
                 Text(stringResource(R.string.remove))
             }
+        }
+        Button(
+            onClick = {
+                pkgList.forEach {
+                    dpm.removeCrossProfileWidgetProvider(receiver, it)
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.clear_list))
         }
         Spacer(Modifier.padding(vertical = 10.dp))
     }
@@ -519,17 +527,29 @@ private fun CrossProfileWidget(pkgName: String) {
 private fun CredentialManagePolicy(pkgName: String) { 
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val focusMgr = LocalFocusManager.current
-    var policy:PackagePolicy?
-    var policyType by remember{mutableIntStateOf(-1)}
-    var credentialListText by remember{mutableStateOf("")}
+    var policy: PackagePolicy?
+    var policyType by remember{ mutableIntStateOf(-1) }
+    val credentialList = remember { mutableStateListOf<String>() }
     val refreshPolicy = {
         policy = dpm.credentialManagerPolicy
         policyType = policy?.policyType ?: -1
-        credentialList = policy?.packageNames ?: mutableSetOf()
-        credentialList = credentialList.toMutableSet()
+        (policy?.packageNames ?: mutableSetOf()).forEach { credentialList += it }
     }
-    LaunchedEffect(Unit) { refreshPolicy(); credentialListText = credentialList.toText() }
+    val apply = {
+        try {
+            if(policyType != -1 && credentialList.isNotEmpty()) {
+                dpm.credentialManagerPolicy = PackagePolicy(policyType, credentialList.toSet())
+            }else{
+                dpm.credentialManagerPolicy = null
+            }
+            Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+        } catch(e:java.lang.IllegalArgumentException) {
+            Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show()
+        } finally {
+            refreshPolicy()
+        }
+    }
+    LaunchedEffect(Unit) { refreshPolicy() }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.credential_manage_policy), style = typography.headlineLarge)
@@ -545,8 +565,8 @@ private fun CredentialManagePolicy(pkgName: String) {
         )
         RadioButtonItem(
             stringResource(R.string.whitelist),
-            {policyType==PACKAGE_POLICY_ALLOWLIST},
-            {policyType=PACKAGE_POLICY_ALLOWLIST}
+            { policyType==PACKAGE_POLICY_ALLOWLIST },
+            { policyType=PACKAGE_POLICY_ALLOWLIST }
         )
         RadioButtonItem(
             stringResource(R.string.whitelist_and_system_app),
@@ -554,18 +574,18 @@ private fun CredentialManagePolicy(pkgName: String) {
             { policyType=PACKAGE_POLICY_ALLOWLIST_AND_SYSTEM }
         )
         Spacer(Modifier.padding(vertical = 5.dp))
-        AnimatedVisibility(policyType!=-1) {
+        AnimatedVisibility(policyType != -1) {
             Column {
                 Text(stringResource(R.string.app_list_is))
                 SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())) { 
-                    Text(text = if(credentialListText!="") credentialListText else stringResource(R.string.none))
+                    Text(text = if(credentialList.isEmpty()) stringResource(R.string.none) else credentialList.toText())
                 }
                 Spacer(Modifier.padding(vertical = 10.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { 
                     Button(
                         onClick = {
-                            if(pkgName!="") { credentialList.add(pkgName) }
-                            credentialListText = credentialList.toText()
+                            credentialList.add(pkgName)
+                            apply()
                         },
                         modifier = Modifier.fillMaxWidth(0.49F)
                     ) {
@@ -573,36 +593,24 @@ private fun CredentialManagePolicy(pkgName: String) {
                     }
                     Button(
                         onClick = {
-                            if(pkgName!="") { credentialList.remove(pkgName) }
-                            credentialListText = credentialList.toText()
+                            credentialList.remove(pkgName)
+                            apply()
                         },
                         modifier = Modifier.fillMaxWidth(0.96F)
                     ) {
                         Text(stringResource(R.string.remove))
                     }
                 }
-            }
-        }
-        Button(
-            onClick = {
-                focusMgr.clearFocus()
-                try{
-                    if(policyType!=-1&&credentialList.isNotEmpty()) { 
-                        dpm.credentialManagerPolicy = PackagePolicy(policyType, credentialList)
-                    }else{
-                        dpm.credentialManagerPolicy = null
-                    }
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                }catch(e:java.lang.IllegalArgumentException) { 
-                    Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show()
-                }finally {
-                    refreshPolicy()
-                    credentialListText = credentialList.toText()
+                Button(
+                    onClick = {
+                        credentialList.clear()
+                        apply()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.clear_list))
                 }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.apply))
+            }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
@@ -613,51 +621,82 @@ private fun PermittedAccessibility(pkgName: String) {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
-    val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
+    val pkgList = remember { mutableStateListOf<String>() }
+    var allowAll by remember { mutableStateOf(false) }
+    val refresh = {
+        pkgList.clear()
+        val getList = dpm.getPermittedAccessibilityServices(receiver)
+        if(getList != null) {
+            allowAll = false
+            getList.forEach { pkgList += it }
+        } else {
+            allowAll = true
+        }
+    }
+    LaunchedEffect(Unit) { refresh() }
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.permitted_accessibility_app), style = typography.headlineLarge)
-        var listText by remember{ mutableStateOf("") }
-        LaunchedEffect(Unit) { 
-            val getList = dpm.getPermittedAccessibilityServices(receiver)
-            if(getList!=null) { permittedAccessibility = getList }
-            listText = permittedAccessibility.toText()
-        }
+        Text(text = stringResource(R.string.permitted_accessibility_services), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text = stringResource(R.string.app_list_is))
-        SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize()) { 
-            Text(text = if(listText=="") stringResource(R.string.none) else listText)
-        }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween) { 
-            Button(
-                onClick = { permittedAccessibility.add(pkgName); listText = permittedAccessibility.toText() },
-                modifier = Modifier.fillMaxWidth(0.49F)
-            ) {
-                Text(stringResource(R.string.add))
-            }
-            Button(
-                onClick = { permittedAccessibility.remove(pkgName); listText = permittedAccessibility.toText() },
-                modifier = Modifier.fillMaxWidth(0.96F)
-            ) {
-                Text(stringResource(R.string.remove))
-            }
-        }
-        Button(
-            onClick = {
-                focusMgr.clearFocus()
-                Toast.makeText(
-                    context,
-                    if(dpm.setPermittedAccessibilityServices(receiver, permittedAccessibility)) R.string.success else R.string.fail ,
-                    Toast.LENGTH_SHORT
-                ).show()
-                val getList = dpm.getPermittedAccessibilityServices(receiver)
-                if(getList!=null) {  permittedAccessibility = getList }
-                listText = permittedAccessibility.toText()
-            },
-            modifier = Modifier.fillMaxWidth()
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 8.dp)
         ) {
-            Text(text = stringResource(R.string.apply))
+            Text(stringResource(R.string.allow_all), style = typography.titleLarge)
+            Switch(
+                checked = allowAll,
+                onCheckedChange = {
+                    dpm.setPermittedAccessibilityServices(receiver, if(it) null else listOf())
+                    refresh()
+                }
+            )
+        }
+        AnimatedVisibility(!allowAll) {
+            Column {
+                SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize()) {
+                    if (pkgList.isEmpty()) {
+                        Text(stringResource(R.string.only_system_accessibility_allowed))
+                    } else {
+                        Text(stringResource(R.string.permitted_packages_is) + pkgList.toText())
+                    }
+                }
+                Spacer(Modifier.padding(vertical = 5.dp))
+                Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween) {
+                    Button(
+                        onClick = {
+                            pkgList.add(pkgName)
+                            dpm.setPermittedAccessibilityServices(receiver, pkgList)
+                            refresh()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.49F)
+                    ) {
+                        Text(stringResource(R.string.add))
+                    }
+                    Button(
+                        onClick = {
+                            pkgList.remove(pkgName)
+                            dpm.setPermittedAccessibilityServices(receiver, pkgList)
+                            refresh()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.96F)
+                    ) {
+                        Text(stringResource(R.string.remove))
+                    }
+                }
+                Button(
+                    onClick = {
+                        pkgList.clear()
+                        dpm.setPermittedAccessibilityServices(receiver, pkgList)
+                        refresh()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.clear_list))
+                }
+            }
+        }
+        Information {
+            Text(stringResource(R.string.system_accessibility_always_allowed))
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
@@ -668,51 +707,82 @@ private fun PermittedIME(pkgName: String) {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
-    val focusMgr = LocalFocusManager.current
+    val permittedIme = remember { mutableStateListOf<String>() }
+    var allowAll by remember { mutableStateOf(false) }
+    val refresh = {
+        permittedIme.clear()
+        val getList = dpm.getPermittedInputMethods(receiver)
+        if(getList != null) {
+            allowAll = false
+            getList.forEach { permittedIme += it }
+        } else {
+            allowAll = true
+        }
+    }
+    LaunchedEffect(Unit) { refresh() }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.permitted_ime), style = typography.headlineLarge)
-        var imeListText by remember{ mutableStateOf("") }
-        LaunchedEffect(Unit) { 
-            val getList = dpm.getPermittedInputMethods(receiver)
-            if(getList!=null) { permittedIme = getList }
-            imeListText = permittedIme.toText()
-        }
         Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text = stringResource(R.string.app_list_is))
-        SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())) { 
-            Text(text = if(imeListText=="") stringResource(R.string.none) else imeListText)
-        }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween) { 
-            Button(
-                onClick = { permittedIme.add(pkgName); imeListText = permittedIme.toText() },
-                modifier = Modifier.fillMaxWidth(0.49F)
-            ) {
-                Text(stringResource(R.string.add))
-            }
-            Button(
-                onClick = { permittedIme.remove(pkgName); imeListText = permittedIme.toText() },
-                modifier = Modifier.fillMaxWidth(0.96F)
-            ) {
-                Text(stringResource(R.string.remove))
-            }
-        }
-        Button(
-            onClick = {
-                focusMgr.clearFocus()
-                Toast.makeText(
-                    context,
-                    if(dpm.setPermittedInputMethods(receiver, permittedIme)) R.string.success else R.string.fail,
-                    Toast.LENGTH_SHORT
-                ).show()
-                val getList = dpm.getPermittedInputMethods(receiver)
-                if(getList!=null) { permittedIme = getList }
-                imeListText = permittedIme.toText()
-            },
-            modifier = Modifier.fillMaxWidth()
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 8.dp)
         ) {
-            Text(stringResource(R.string.apply))
+            Text(stringResource(R.string.allow_all), style = typography.titleLarge)
+            Switch(
+                checked = allowAll,
+                onCheckedChange = {
+                    dpm.setPermittedInputMethods(receiver, if(it) null else listOf())
+                    refresh()
+                }
+            )
+        }
+        AnimatedVisibility(!allowAll) {
+            Column {
+                SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())) {
+                    if(permittedIme.isEmpty()) {
+                        Text(stringResource(R.string.only_system_ime_allowed))
+                    } else {
+                        Text(stringResource(R.string.permitted_packages_is) + permittedIme.toText())
+                    }
+                }
+                Spacer(Modifier.padding(vertical = 5.dp))
+                Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween) {
+                    Button(
+                        onClick = {
+                            permittedIme.add(pkgName)
+                            dpm.setPermittedInputMethods(receiver, permittedIme)
+                            refresh()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.49F)
+                    ) {
+                        Text(stringResource(R.string.add))
+                    }
+                    Button(
+                        onClick = {
+                            permittedIme.remove(pkgName)
+                            dpm.setPermittedInputMethods(receiver, permittedIme)
+                            refresh()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.96F)
+                    ) {
+                        Text(stringResource(R.string.remove))
+                    }
+                }
+                Button(
+                    onClick = {
+                        permittedIme.clear()
+                        dpm.setPermittedInputMethods(receiver, permittedIme)
+                        refresh()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.clear_list))
+                }
+            }
+        }
+        Information {
+            Text(stringResource(R.string.system_ime_always_allowed))
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
@@ -724,27 +794,27 @@ private fun KeepUninstalledApp(pkgName: String) {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
-    val focusMgr = LocalFocusManager.current
+    val pkgList = remember { mutableStateListOf<String>() }
+    val refresh = {
+        pkgList.clear()
+        dpm.getKeepUninstalledPackages(receiver)?.forEach { pkgList += it }
+    }
+    LaunchedEffect(Unit) { refresh() }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
         Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.keep_uninstalled_pkgs), style = typography.headlineLarge)
-        var listText by remember{ mutableStateOf("") }
-        LaunchedEffect(Unit) { 
-            val getList = dpm.getKeepUninstalledPackages(receiver)
-            if(getList!=null) {  keepUninstallPkg = getList }
-            listText = keepUninstallPkg.toText()
-        }
+        Text(text = stringResource(R.string.keep_uninstalled_packages), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.app_list_is))
         SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())) { 
-            Text(text = if(listText=="") stringResource(R.string.none) else listText)
+            Text(text = if(pkgList.isEmpty()) stringResource(R.string.none) else pkgList.toText())
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { 
             Button(
                 onClick = {
-                    keepUninstallPkg.add(pkgName)
-                    listText = keepUninstallPkg.toText()
+                    pkgList.add(pkgName)
+                    dpm.setKeepUninstalledPackages(receiver, pkgList)
+                    refresh()
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) { 
@@ -752,8 +822,9 @@ private fun KeepUninstalledApp(pkgName: String) {
             }
             Button(
                 onClick = {
-                    keepUninstallPkg.remove(pkgName)
-                    listText = keepUninstallPkg.toText()
+                    pkgList.remove(pkgName)
+                    dpm.setKeepUninstalledPackages(receiver, pkgList)
+                    refresh()
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) { 
@@ -762,16 +833,13 @@ private fun KeepUninstalledApp(pkgName: String) {
         }
         Button(
             onClick = {
-                focusMgr.clearFocus()
-                dpm.setKeepUninstalledPackages(receiver, keepUninstallPkg)
-                val getList = dpm.getKeepUninstalledPackages(receiver)
-                if(getList!=null) { keepUninstallPkg = getList }
-                listText = keepUninstallPkg.toText()
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                pkgList.clear()
+                dpm.setKeepUninstalledPackages(receiver, pkgList)
+                refresh()
             },
             modifier = Modifier.fillMaxWidth()
-        ) { 
-            Text(stringResource(R.string.apply))
+        ) {
+            Text(stringResource(R.string.clear_list))
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }

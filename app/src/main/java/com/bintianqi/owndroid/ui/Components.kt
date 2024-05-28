@@ -65,15 +65,14 @@ fun NavIcon(operation: () -> Unit) {
 
 @Composable
 fun Information(content: @Composable ()->Unit) {
-    Column(modifier = Modifier.fillMaxWidth().padding(start = 5.dp)) {
+    Column(modifier = Modifier.fillMaxWidth().padding(start = 5.dp, top = 20.dp)) {
         Icon(
             painter = painterResource(R.drawable.info_fill0),
             contentDescription = "info",
             tint = colorScheme.onBackground.copy(alpha = 0.8F)
         )
         Spacer(Modifier.padding(vertical = 1.dp))
-        Row {
-            Spacer(Modifier.padding(horizontal = 1.dp))
+        Column(modifier = Modifier.padding(start = 2.dp)) {
             content()
         }
     }

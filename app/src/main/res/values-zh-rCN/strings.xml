@@ -48,6 +48,7 @@
     <string name="current_status_is">当前状态：</string>
     <string name="start">开始</string>
     <string name="unknown_error">未知错误</string>
+    <string name="allow_all">允许全部</string>
 
     <!--Permissions-->
     <string name="click_to_activate">点击以激活</string>
@@ -268,7 +269,7 @@
     <string name="not_installed">未安装</string>
     <string name="block_uninstall">防卸载</string>
     <string name="ucd">禁止用户控制</string>
-    <string name="ucd_desc">用户将无法清除应用的存储空间和缓存</string>
+    <string name="ucd_desc">用户将无法清除这些应用的存储空间或强制停止这些应用</string>
     <string name="app_list_is">应用列表：</string>
     <string name="clear_list">清空列表</string>
     <string name="permission_manage">权限管理</string>
@@ -276,9 +277,14 @@
     <string name="cross_profile_widget">跨资料微件</string>
     <string name="credential_manage_policy">凭据管理策略</string>
     <string name="whitelist_and_system_app">白名单和系统应用</string>
-    <string name="permitted_accessibility_app">许可的无障碍应用</string>
+    <string name="permitted_packages_is">许可的应用：\n</string>
+    <string name="permitted_accessibility_services">许可的无障碍服务</string>
+    <string name="only_system_accessibility_allowed">只允许系统无障碍服务</string>
+    <string name="system_accessibility_always_allowed">系统的无障碍服务不受影响</string>
+    <string name="only_system_ime_allowed">只允许系统输入法</string>
+    <string name="system_ime_always_allowed">系统输入法不受影响</string>
     <string name="permitted_ime">许可的输入法</string>
-    <string name="keep_uninstalled_pkgs">保持卸载的应用</string>
+    <string name="keep_uninstalled_packages">卸载后保留的应用</string>
     <string name="clear_data">数据清除</string>
     <string name="clear_app_storage">清除应用存储</string>
     <string name="app_storage_will_be_cleared">这个应用的存储空间将被清空</string>
