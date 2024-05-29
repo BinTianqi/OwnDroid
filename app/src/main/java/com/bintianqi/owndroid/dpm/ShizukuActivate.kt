@@ -11,8 +11,6 @@ import android.os.IBinder
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.SpringSpec
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -23,7 +21,14 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -45,25 +50,26 @@ fun ShizukuActivate() {
     val receiver = ComponentName(context, Receiver::class.java)
     val coScope = rememberCoroutineScope()
     val outputTextScrollState = rememberScrollState()
-    var enabled by remember{ mutableStateOf(false) }
-    var bindShizuku by remember{ mutableStateOf(false) }
+    var enabled by remember { mutableStateOf(false) }
+    var bindShizuku by remember { mutableStateOf(false) }
     var outputText by remember { mutableStateOf("") }
     var showDeviceAdminButton by remember { mutableStateOf(!dpm.isAdminActive(receiver)) }
     var showProfileOwnerButton by remember { mutableStateOf(!isProfileOwner(dpm)) }
     var showDeviceOwnerButton by remember { mutableStateOf(!isDeviceOwner(dpm)) }
     var showOrgProfileOwnerButton by remember { mutableStateOf(true) }
-    LaunchedEffect(Unit) {
-        if(service == null) { userServiceControl(context, true) }
-        while(true) {
-            if(service == null) {
-                enabled = false
-                bindShizuku = checkShizukuStatus()==1
-            }else{
-                enabled = true
-                bindShizuku = false
-            }
-            delay(200)
+    val service by shizukuService.collectAsState()
+    LaunchedEffect(service) {
+        if(service == null) {
+            enabled = false
+            bindShizuku = checkShizukuStatus() == 1
+        } else {
+            enabled = true
+            bindShizuku = false
         }
+    }
+    LaunchedEffect(Unit) {
+        shizukuService.value = null
+        userServiceControl(context, true)
     }
     Column(
         modifier = Modifier
@@ -86,8 +92,15 @@ fun ShizukuActivate() {
         Button(
             onClick = {
                 outputText = checkPermission(context)
+                if(service != null) {
+                    enabled = true
+                    bindShizuku = false
+                } else {
+                    enabled = false
+                    bindShizuku = checkShizukuStatus() == 1
+                }
                 coScope.launch {
-                    outputTextScrollState.animateScrollTo(0, scrollAnim())
+                    outputTextScrollState.animateScrollTo(0)
                 }
             }
         ) {
@@ -98,7 +111,7 @@ fun ShizukuActivate() {
             onClick = {
                 coScope.launch{
                     outputText = service!!.execute("dpm list-owners")
-                    outputTextScrollState.animateScrollTo(0, scrollAnim())
+                    outputTextScrollState.animateScrollTo(0)
                 }
             },
             enabled = enabled
@@ -112,7 +125,7 @@ fun ShizukuActivate() {
                 onClick = {
                     coScope.launch{
                         outputText = service!!.execute(context.getString(R.string.dpm_activate_da_command))
-                        outputTextScrollState.animateScrollTo(0, scrollAnim())
+                        outputTextScrollState.animateScrollTo(0)
                         delay(500)
                         showDeviceAdminButton = !dpm.isAdminActive(receiver)
                     }
@@ -128,7 +141,7 @@ fun ShizukuActivate() {
                 onClick = {
                     coScope.launch{
                         outputText = service!!.execute(context.getString(R.string.dpm_activate_po_command))
-                        outputTextScrollState.animateScrollTo(0, scrollAnim())
+                        outputTextScrollState.animateScrollTo(0)
                         delay(500)
                         showProfileOwnerButton = !isProfileOwner(dpm)
                     }
@@ -144,7 +157,7 @@ fun ShizukuActivate() {
                 onClick = {
                     coScope.launch{
                         outputText = service!!.execute(context.getString(R.string.dpm_activate_do_command))
-                        outputTextScrollState.animateScrollTo(0, scrollAnim())
+                        outputTextScrollState.animateScrollTo(0)
                         delay(500)
                         showDeviceOwnerButton = !isDeviceOwner(dpm)
                     }
@@ -166,7 +179,7 @@ fun ShizukuActivate() {
                             outputText = service!!.execute(
                                 "dpm mark-profile-owner-on-organization-owned-device --user $userID com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver"
                             )
-                            outputTextScrollState.animateScrollTo(0, scrollAnim())
+                            outputTextScrollState.animateScrollTo(0)
                             delay(500)
                             showOrgProfileOwnerButton = !dpm.isOrganizationOwnedDeviceWithManagedProfile
                         }
@@ -188,16 +201,9 @@ fun ShizukuActivate() {
     }
 }
 
-@Stable
-fun <T> scrollAnim(
-    dampingRatio: Float = Spring.DampingRatioNoBouncy,
-    stiffness: Float = Spring.StiffnessMedium,
-    visibilityThreshold: T? = null
-): SpringSpec<T> = SpringSpec(dampingRatio, stiffness, visibilityThreshold)
-
-private fun checkPermission(context: Context):String{
-    if(checkShizukuStatus()==-1) { return context.getString(R.string.shizuku_not_started) }
-    val getUid = if(service==null) { return context.getString(R.string.shizuku_not_bind) } else { service!!.uid }
+private fun checkPermission(context: Context): String {
+    if(checkShizukuStatus() == -1) { return context.getString(R.string.shizuku_not_started) }
+    val getUid = if(shizukuService.value == null) { return context.getString(R.string.shizuku_not_bind) } else { shizukuService.value!!.uid }
     return when(getUid) {
         "2000"->context.getString(R.string.shizuku_activated_shell)
         "0"->context.getString(R.string.shizuku_activated_root)
@@ -205,12 +211,12 @@ private fun checkPermission(context: Context):String{
     }
 }
 
-fun checkShizukuStatus():Int{
+fun checkShizukuStatus(): Int {
     val status = try {
         if(Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) { waitGrantPermission = false; 1 }
         else if(Shizuku.shouldShowRequestPermissionRationale()) { 0 }
         else{
-            if(!waitGrantPermission) {Shizuku.requestPermission(0) }
+            if(!waitGrantPermission) { Shizuku.requestPermission(0) }
             waitGrantPermission = true
             0
         }
@@ -219,17 +225,17 @@ fun checkShizukuStatus():Int{
 }
 
 fun userServiceControl(context:Context, status:Boolean) {
-    if(checkShizukuStatus()!=1) { return }
+    if(checkShizukuStatus() != 1) { return }
     val userServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(componentName: ComponentName, binder: IBinder) {
             if (binder.pingBinder()) {
-                service = IUserService.Stub.asInterface(binder)
+                shizukuService.value = IUserService.Stub.asInterface(binder)
             } else {
                 Toast.makeText(context, R.string.invalid_binder, Toast.LENGTH_SHORT).show()
             }
         }
         override fun onServiceDisconnected(componentName: ComponentName) {
-            service = null
+            shizukuService.value = null
             Toast.makeText(context, R.string.shizuku_service_disconnected, Toast.LENGTH_SHORT).show()
         }
     }
@@ -242,9 +248,11 @@ fun userServiceControl(context:Context, status:Boolean) {
         .processNameSuffix("service")
         .debuggable(true)
         .version(26)
-    if(status) {
-        Shizuku.bindUserService(userServiceArgs, userServiceConnection)
-    }else{
-        Shizuku.unbindUserService(userServiceArgs, userServiceConnection, false)
-    }
+    try {
+        if(status) {
+            Shizuku.bindUserService(userServiceArgs, userServiceConnection)
+        }else{
+            Shizuku.unbindUserService(userServiceArgs, userServiceConnection, false)
+        }
+    } catch(_: Exception) { }
 }

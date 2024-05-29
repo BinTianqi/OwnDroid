@@ -3,17 +3,25 @@ package com.bintianqi.owndroid
 import android.Manifest
 import android.os.Build.VERSION
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.bintianqi.owndroid.dpm.applySelectedPermission
 import com.bintianqi.owndroid.dpm.selectedPermission
 import com.bintianqi.owndroid.ui.NavIcon
 
@@ -37,8 +45,7 @@ fun PermissionPicker(navCtrl: NavHostController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable{
-                            selectedPermission = it.first
-                            applySelectedPermission.value = true
+                            selectedPermission.value = it.first
                             navCtrl.navigateUp()
                         }
                         .padding(vertical = 6.dp, horizontal = 8.dp)

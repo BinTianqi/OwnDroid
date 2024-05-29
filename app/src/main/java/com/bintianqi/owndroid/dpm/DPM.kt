@@ -5,8 +5,7 @@ import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
 import kotlinx.coroutines.flow.MutableStateFlow
 
-var selectedPermission = ""
-var applySelectedPermission = MutableStateFlow(false)
+var selectedPermission = MutableStateFlow("")
 lateinit var createManagedProfile: ActivityResultLauncher<Intent>
 lateinit var addDeviceAdmin: ActivityResultLauncher<Intent>
 

@@ -337,17 +337,18 @@ private fun PermissionManage(pkgName: String, navCtrl: NavHostController) {
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
-    var inputPermission by remember{mutableStateOf(selectedPermission)}
-    var currentState by remember{mutableStateOf(context.getString(R.string.unknown))}
+    var inputPermission by remember { mutableStateOf("") }
+    var currentState by remember { mutableStateOf(context.getString(R.string.unknown)) }
     val grantState = mapOf(
         PERMISSION_GRANT_STATE_DEFAULT to stringResource(R.string.decide_by_user),
         PERMISSION_GRANT_STATE_GRANTED to stringResource(R.string.granted),
         PERMISSION_GRANT_STATE_DENIED to stringResource(R.string.denied)
     )
-    LaunchedEffect(applySelectedPermission.collectAsState()) {
-        if(applySelectedPermission.value) {
-            inputPermission = selectedPermission
-            applySelectedPermission.value = false
+    val applyPermission by selectedPermission.collectAsState()
+    LaunchedEffect(applyPermission) {
+        if(applyPermission != "") {
+            inputPermission = applyPermission
+            selectedPermission.value = ""
         }
     }
     LaunchedEffect(pkgName) {
@@ -361,7 +362,7 @@ private fun PermissionManage(pkgName: String, navCtrl: NavHostController) {
             value = inputPermission,
             label = { Text(stringResource(R.string.permission)) },
             onValueChange = {
-                inputPermission = it; selectedPermission = inputPermission
+                inputPermission = it
                 currentState = grantState[dpm.getPermissionGrantState(receiver,pkgName,inputPermission)]!!
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
@@ -577,7 +578,7 @@ private fun CredentialManagePolicy(pkgName: String) {
         AnimatedVisibility(policyType != -1) {
             Column {
                 Text(stringResource(R.string.app_list_is))
-                SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())) { 
+                SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize()) {
                     Text(text = if(credentialList.isEmpty()) stringResource(R.string.none) else credentialList.toText())
                 }
                 Spacer(Modifier.padding(vertical = 10.dp))
@@ -739,7 +740,7 @@ private fun PermittedIME(pkgName: String) {
         }
         AnimatedVisibility(!allowAll) {
             Column {
-                SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())) {
+                SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize()) {
                     if(permittedIme.isEmpty()) {
                         Text(stringResource(R.string.only_system_ime_allowed))
                     } else {
@@ -805,7 +806,7 @@ private fun KeepUninstalledApp(pkgName: String) {
         Text(text = stringResource(R.string.keep_uninstalled_packages), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.app_list_is))
-        SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize(scrollAnim())) { 
+        SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize()) {
             Text(text = if(pkgList.isEmpty()) stringResource(R.string.none) else pkgList.toText())
         }
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -926,7 +927,7 @@ private fun InstallApp() {
 
 @SuppressLint("NewApi")
 @Composable
-fun ClearAppDataDialog(status: MutableState<Boolean>, pkgName: String) {
+private fun ClearAppDataDialog(status: MutableState<Boolean>, pkgName: String) {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
@@ -972,7 +973,7 @@ fun ClearAppDataDialog(status: MutableState<Boolean>, pkgName: String) {
 
 @SuppressLint("NewApi")
 @Composable
-fun DefaultDialerAppDialog(status: MutableState<Boolean>, pkgName: String) {
+private fun DefaultDialerAppDialog(status: MutableState<Boolean>, pkgName: String) {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     AlertDialog(
@@ -1008,7 +1009,7 @@ fun DefaultDialerAppDialog(status: MutableState<Boolean>, pkgName: String) {
 }
 
 @Composable
-fun AppControlDialog(status: MutableIntState) { 
+private fun AppControlDialog(status: MutableIntState) {
     val enabled = dialogGetStatus()
     Dialog(
         onDismissRequest = { status.intValue = 0 }

@@ -3,10 +3,11 @@ package com.bintianqi.owndroid.dpm
 import android.system.Os
 import androidx.annotation.Keep
 import com.bintianqi.owndroid.IUserService
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
-var service:IUserService? = null
+val shizukuService = MutableStateFlow<IUserService?>(null)
 
 @Keep
 class ShizukuService: IUserService.Stub() {

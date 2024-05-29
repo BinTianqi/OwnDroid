@@ -2,7 +2,17 @@ package com.bintianqi.owndroid.dpm
 
 import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
-import android.app.admin.DevicePolicyManager.*
+import android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_OFF
+import android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_OPPORTUNISTIC
+import android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_PROVIDER_HOSTNAME
+import android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_UNKNOWN
+import android.app.admin.DevicePolicyManager.PRIVATE_DNS_SET_ERROR_FAILURE_SETTING
+import android.app.admin.DevicePolicyManager.PRIVATE_DNS_SET_ERROR_HOST_NOT_SERVING
+import android.app.admin.DevicePolicyManager.PRIVATE_DNS_SET_NO_ERROR
+import android.app.admin.DevicePolicyManager.WIFI_SECURITY_ENTERPRISE_192
+import android.app.admin.DevicePolicyManager.WIFI_SECURITY_ENTERPRISE_EAP
+import android.app.admin.DevicePolicyManager.WIFI_SECURITY_OPEN
+import android.app.admin.DevicePolicyManager.WIFI_SECURITY_PERSONAL
 import android.app.admin.WifiSsidPolicy
 import android.app.admin.WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_ALLOWLIST
 import android.app.admin.WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_DENYLIST
@@ -11,21 +21,56 @@ import android.net.wifi.WifiSsid
 import android.os.Build.VERSION
 import android.telephony.TelephonyManager
 import android.telephony.TelephonyManager.UNKNOWN_CARRIER_ID
-import android.telephony.data.ApnSetting.*
+import android.telephony.data.ApnSetting.AUTH_TYPE_CHAP
+import android.telephony.data.ApnSetting.AUTH_TYPE_NONE
+import android.telephony.data.ApnSetting.AUTH_TYPE_PAP
+import android.telephony.data.ApnSetting.AUTH_TYPE_PAP_OR_CHAP
+import android.telephony.data.ApnSetting.Builder
+import android.telephony.data.ApnSetting.MVNO_TYPE_GID
+import android.telephony.data.ApnSetting.MVNO_TYPE_ICCID
+import android.telephony.data.ApnSetting.MVNO_TYPE_IMSI
+import android.telephony.data.ApnSetting.MVNO_TYPE_SPN
+import android.telephony.data.ApnSetting.PROTOCOL_IP
+import android.telephony.data.ApnSetting.PROTOCOL_IPV4V6
+import android.telephony.data.ApnSetting.PROTOCOL_IPV6
+import android.telephony.data.ApnSetting.PROTOCOL_NON_IP
+import android.telephony.data.ApnSetting.PROTOCOL_PPP
+import android.telephony.data.ApnSetting.PROTOCOL_UNSTRUCTURED
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material3.*
-import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.runtime.*
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -44,9 +89,12 @@ import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.toText
-import com.bintianqi.owndroid.ui.*
+import com.bintianqi.owndroid.ui.Animations
+import com.bintianqi.owndroid.ui.RadioButtonItem
+import com.bintianqi.owndroid.ui.SubPageItem
+import com.bintianqi.owndroid.ui.SwitchItem
+import com.bintianqi.owndroid.ui.TopBar
 
-var ssidSet = mutableSetOf<WifiSsid>()
 @Composable
 fun Network(navCtrl: NavHostController) {
     val localNavCtrl = rememberNavController()
@@ -197,16 +245,15 @@ private fun WifiSsidPolicy() {
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        var policy = dpm.wifiSsidPolicy
-        var selectedPolicyType by remember { mutableIntStateOf(policy?.policyType ?: -1) }
-        var inputSsid by remember { mutableStateOf("") }
-        var ssidList by remember { mutableStateOf("") }
+        var selectedPolicyType by remember { mutableIntStateOf(-1) }
+        val ssidList = remember { mutableStateListOf<WifiSsid>() }
         val refreshPolicy = {
-            policy = dpm.wifiSsidPolicy
+            val policy = dpm.wifiSsidPolicy
+            ssidList.clear()
             selectedPolicyType = policy?.policyType ?: -1
-            ssidSet = policy?.ssids ?: mutableSetOf()
+            (policy?.ssids ?: mutableSetOf()).forEach { ssidList.add(it) }
         }
-        LaunchedEffect(Unit) { refreshPolicy(); ssidList= ssidSet.toText() }
+        LaunchedEffect(Unit) { refreshPolicy() }
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.wifi_ssid_policy), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -225,72 +272,68 @@ private fun WifiSsidPolicy() {
             { selectedPolicyType == WIFI_SSID_POLICY_TYPE_DENYLIST },
             { selectedPolicyType = WIFI_SSID_POLICY_TYPE_DENYLIST }
         )
-        Column(modifier = Modifier.animateContentSize(scrollAnim()).horizontalScroll(rememberScrollState())) {
-            if(ssidList!="") {
-                Spacer(Modifier.padding(vertical = 5.dp))
-                Text(stringResource(R.string.ssid_list_is))
-                SelectionContainer{
-                    Text(text = ssidList, color = colorScheme.onPrimaryContainer)
+        AnimatedVisibility(selectedPolicyType != -1) {
+            var inputSsid by remember { mutableStateOf("") }
+            Column {
+                Column {
+                    Spacer(Modifier.padding(vertical = 5.dp))
+                    Text(stringResource(R.string.ssid_list_is))
+                    SelectionContainer(modifier = Modifier.animateContentSize().horizontalScroll(rememberScrollState())) {
+                        Text(if(ssidList.isEmpty()) stringResource(R.string.none) else ssidList.toText())
+                    }
                 }
-            }
-        }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        OutlinedTextField(
-            value = inputSsid,
-            label = { Text("SSID") },
-            onValueChange = {inputSsid = it },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.focusable().fillMaxWidth()
-        )
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Button(
-                onClick = {
-                    if(inputSsid=="") {
-                        Toast.makeText(context, R.string.cannot_be_empty, Toast.LENGTH_SHORT).show()
-                    } else if (WifiSsid.fromBytes(inputSsid.toByteArray()) in ssidSet) {
-                        Toast.makeText(context, R.string.already_exist, Toast.LENGTH_SHORT).show()
-                    } else {
-                        ssidSet.add(WifiSsid.fromBytes(inputSsid.toByteArray()))
-                        ssidList = ssidSet.toText()
+                Spacer(Modifier.padding(vertical = 5.dp))
+                OutlinedTextField(
+                    value = inputSsid,
+                    label = { Text("SSID") },
+                    onValueChange = {inputSsid = it },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+                    modifier = Modifier.focusable().fillMaxWidth()
+                )
+                Spacer(Modifier.padding(vertical = 5.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Button(
+                        onClick = {
+                            if(inputSsid == "") {
+                                Toast.makeText(context, R.string.cannot_be_empty, Toast.LENGTH_SHORT).show()
+                            } else if (WifiSsid.fromBytes(inputSsid.toByteArray()) in ssidList) {
+                                Toast.makeText(context, R.string.already_exist, Toast.LENGTH_SHORT).show()
+                            } else {
+                                ssidList.add(WifiSsid.fromBytes(inputSsid.toByteArray()))
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(0.49F)
+                    ) {
+                        Text(stringResource(R.string.add))
                     }
-                    inputSsid = ""
-                },
-                modifier = Modifier.fillMaxWidth(0.49F)
-            ) {
-                Text(stringResource(R.string.add))
-            }
-            Button(
-                onClick = {
-                    if(inputSsid=="") {
-                        Toast.makeText(context, R.string.cannot_be_empty, Toast.LENGTH_SHORT).show()
-                    } else if (WifiSsid.fromBytes(inputSsid.toByteArray()) in ssidSet) {
-                        ssidSet.remove(WifiSsid.fromBytes(inputSsid.toByteArray()))
-                        inputSsid = ""
-                        ssidList = ssidSet.toText()
-                    } else {
-                        Toast.makeText(context, R.string.not_exist, Toast.LENGTH_SHORT).show()
+                    Button(
+                        onClick = {
+                            if(inputSsid == "") {
+                                Toast.makeText(context, R.string.cannot_be_empty, Toast.LENGTH_SHORT).show()
+                            } else if (WifiSsid.fromBytes(inputSsid.toByteArray()) in ssidList) {
+                                ssidList.remove(WifiSsid.fromBytes(inputSsid.toByteArray()))
+                            } else {
+                                Toast.makeText(context, R.string.not_exist, Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(0.96F)
+                    ) {
+                        Text(stringResource(R.string.remove))
                     }
-                },
-                modifier = Modifier.fillMaxWidth(0.96F)
-            ) {
-                Text(stringResource(R.string.remove))
+                }
+                Spacer(Modifier.padding(vertical = 10.dp))
             }
         }
         Button(
             onClick = {
                 focusMgr.clearFocus()
                 if(selectedPolicyType == -1) {
-                    if(policy==null && ssidSet.isNotEmpty()) {
-                        Toast.makeText(context, R.string.please_select_a_policy, Toast.LENGTH_SHORT).show()
-                    }else{
-                        dpm.wifiSsidPolicy = null
-                        refreshPolicy()
-                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                    }
+                    dpm.wifiSsidPolicy = null
+                    refreshPolicy()
+                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                 }else{
-                    dpm.wifiSsidPolicy = if(ssidSet.size==0) { null }else{ WifiSsidPolicy(selectedPolicyType, ssidSet) }
+                    dpm.wifiSsidPolicy = if(ssidList.isEmpty()) { null }else{ WifiSsidPolicy(selectedPolicyType, ssidList.toSet()) }
                     refreshPolicy()
                     Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                 }
