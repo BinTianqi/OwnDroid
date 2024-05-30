@@ -125,6 +125,11 @@
     <string name="reboot">重启</string>
     <string name="confirm_reboot">确定重启？</string>
     <string name="edit_time">修改时间</string>
+    <string name="edit_timezone">修改时区</string>
+    <string name="view_all_timezones">显示所有时区ID</string>
+    <string name="hide_all_timezones">隐藏所有时区ID</string>
+    <string name="timezone_id">时区ID</string>
+    <string name="disable_auto_time_zone_before_set">在设置时区前需要关闭自动时区</string>
     <string name="from_epoch_to_target_time">从Epoch(1970/1/1 00:00:00 UTC)到你想设置的时间(毫秒)</string>
     <string name="get_current_time">获取当前时间</string>
     <string name="permission_policy">权限策略</string>

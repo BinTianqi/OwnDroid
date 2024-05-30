@@ -136,6 +136,11 @@
     <string name="reboot">Reboot</string>
     <string name="confirm_reboot">Confirm reboot?</string>
     <string name="edit_time">Edit time</string>
+    <string name="edit_timezone">Edit timezone</string>
+    <string name="view_all_timezones">View all timezones IDs</string>
+    <string name="hide_all_timezones">Hide all timezones IDs</string>
+    <string name="timezone_id">Timezone ID</string>
+    <string name="disable_auto_time_zone_before_set">Auto timezone should be disabled before set a custom timezone. </string>
     <string name="from_epoch_to_target_time">From Epoch(1970/1/1 00:00:00 UTC) to the time you want to set(ms)</string>
     <string name="get_current_time">Current time</string>
     <string name="permission_policy">Permission policy</string>

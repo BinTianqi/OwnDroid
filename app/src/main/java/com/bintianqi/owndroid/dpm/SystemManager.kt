@@ -52,6 +52,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -75,6 +76,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
@@ -102,6 +104,7 @@ import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.TopBar
 import com.bintianqi.owndroid.uriToStream
 import java.util.Date
+import java.util.TimeZone
 
 @Composable
 fun SystemManage(navCtrl:NavHostController) {
@@ -134,6 +137,7 @@ fun SystemManage(navCtrl:NavHostController) {
             composable(route = "Switches") { Switches() }
             composable(route = "Keyguard") { Keyguard() }
             composable(route = "EditTime") { EditTime() }
+            composable(route = "EditTimeZone") { EditTimeZone() }
             composable(route = "PermissionPolicy") { PermissionPolicy() }
             composable(route = "MTEPolicy") { MTEPolicy() }
             composable(route = "NearbyStreamingPolicy") { NearbyStreamingPolicy() }
@@ -174,6 +178,7 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
         }
         if(VERSION.SDK_INT >= 28) {
             SubPageItem(R.string.edit_time, "", R.drawable.schedule_fill0) { navCtrl.navigate("EditTime") }
+            SubPageItem(R.string.edit_timezone, "", R.drawable.schedule_fill0) { navCtrl.navigate("EditTimeZone") }
         }
         if(VERSION.SDK_INT >= 23 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
             SubPageItem(R.string.permission_policy, "", R.drawable.key_fill0) { navCtrl.navigate("PermissionPolicy") }
@@ -332,7 +337,7 @@ private fun Keyguard() {
 
 @SuppressLint("NewApi")
 @Composable
-fun BugReportDialog(status: MutableState<Boolean>) {
+private fun BugReportDialog(status: MutableState<Boolean>) {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
@@ -361,7 +366,7 @@ fun BugReportDialog(status: MutableState<Boolean>) {
 
 @SuppressLint("NewApi")
 @Composable
-fun RebootDialog(status: MutableState<Boolean>) {
+private fun RebootDialog(status: MutableState<Boolean>) {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
@@ -425,6 +430,58 @@ private fun EditTime() {
         }
     }
 }
+@SuppressLint("NewApi")
+@Composable
+private fun EditTimeZone() {
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val focusMgr = LocalFocusManager.current
+    val receiver = ComponentName(context,Receiver::class.java)
+    var expanded by remember { mutableStateOf(false) }
+    var inputTimezone by remember { mutableStateOf("") }
+    Column(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.edit_timezone), style = typography.headlineLarge, modifier = Modifier.align(Alignment.Start))
+        Spacer(Modifier.padding(vertical = 5.dp))
+        OutlinedTextField(
+            value = inputTimezone,
+            label = { Text(stringResource(R.string.timezone_id)) },
+            onValueChange = { inputTimezone = it },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Button(
+            onClick = {
+                val result = dpm.setTimeZone(receiver, inputTimezone)
+                Toast.makeText(context, if(result) R.string.success else R.string.fail, Toast.LENGTH_SHORT).show()
+            },
+            modifier = Modifier.width(100.dp)
+        ) {
+            Text(stringResource(R.string.apply))
+        }
+        Spacer(Modifier.padding(vertical = 7.dp))
+        Button(onClick = { expanded = !expanded }) {
+            Text(stringResource(if(expanded) R.string.hide_all_timezones else R.string.view_all_timezones))
+        }
+        AnimatedVisibility(expanded) {
+            var ids = ""
+            TimeZone.getAvailableIDs().forEach { ids += "$it\n" }
+            SelectionContainer {
+                Text(ids)
+            }
+        }
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Information {
+            Text(stringResource(R.string.disable_auto_time_zone_before_set))
+        }
+        Spacer(Modifier.padding(vertical = 30.dp))
+    }
+}
 
 @SuppressLint("NewApi")
 @Composable
@@ -437,9 +494,9 @@ private fun PermissionPolicy() {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.permission_policy), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        RadioButtonItem(stringResource(R.string.default_stringres), { selectedPolicy==PERMISSION_POLICY_PROMPT}, { selectedPolicy= PERMISSION_POLICY_PROMPT})
-        RadioButtonItem(stringResource(R.string.auto_grant), { selectedPolicy==PERMISSION_POLICY_AUTO_GRANT}, { selectedPolicy= PERMISSION_POLICY_AUTO_GRANT})
-        RadioButtonItem(stringResource(R.string.auto_deny), { selectedPolicy==PERMISSION_POLICY_AUTO_DENY}, { selectedPolicy= PERMISSION_POLICY_AUTO_DENY})
+        RadioButtonItem(stringResource(R.string.default_stringres), { selectedPolicy==PERMISSION_POLICY_PROMPT }, { selectedPolicy= PERMISSION_POLICY_PROMPT })
+        RadioButtonItem(stringResource(R.string.auto_grant), { selectedPolicy==PERMISSION_POLICY_AUTO_GRANT }, { selectedPolicy= PERMISSION_POLICY_AUTO_GRANT })
+        RadioButtonItem(stringResource(R.string.auto_deny), { selectedPolicy==PERMISSION_POLICY_AUTO_DENY }, { selectedPolicy= PERMISSION_POLICY_AUTO_DENY })
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
