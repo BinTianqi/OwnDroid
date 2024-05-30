@@ -289,6 +289,8 @@
     <string name="app_info">App info</string>
     <string name="not_installed">Not installed</string>
     <string name="block_uninstall">Block uninstall</string>
+    <string name="enable_system_app">Enable system app</string>
+    <string name="enable_system_app_desc">Re-enable a system app that was disabled by default</string>
     <!--ucd: user control disabled-->
     <string name="ucd">Disable user control</string>
     <string name="ucd_desc">If you set this, you cannot clear these apps\' storage or force stop them. </string>

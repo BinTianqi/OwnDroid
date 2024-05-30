@@ -105,6 +105,7 @@ import com.bintianqi.owndroid.ui.TopBar
 import com.bintianqi.owndroid.uriToStream
 import java.util.Date
 import java.util.TimeZone
+import java.util.concurrent.Executors
 
 @Composable
 fun SystemManage(navCtrl:NavHostController) {
@@ -1121,8 +1122,9 @@ fun InstallSystemUpdate() {
         AnimatedVisibility(uri != Uri.parse("")) {
             Button(
                 onClick = {
+                    val executor = Executors.newCachedThreadPool()
                     try {
-                        dpm.installSystemUpdate(receiver, uri, { it.run() }, callback)
+                        dpm.installSystemUpdate(receiver, uri, executor, callback)
                         Toast.makeText(context, R.string.start_install_system_update, Toast.LENGTH_SHORT).show()
                     }catch(e: Exception) {
                         Toast.makeText(

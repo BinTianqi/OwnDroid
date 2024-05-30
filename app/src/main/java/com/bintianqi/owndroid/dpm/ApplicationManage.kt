@@ -84,6 +84,7 @@ fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, 
     )
     val clearAppDataDialog = remember { mutableStateOf(false) }
     val defaultDialerAppDialog = remember { mutableStateOf(false) }
+    val enableSystemAppDialog = remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopBar(backStackEntry, navCtrl, localNavCtrl) {
@@ -119,7 +120,9 @@ fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, 
                 popEnterTransition = Animations.navHostPopEnterTransition,
                 popExitTransition = Animations.navHostPopExitTransition
             ) { 
-                composable(route = "Home") { Home(localNavCtrl, pkgName.value, dialogStatus, clearAppDataDialog, defaultDialerAppDialog) }
+                composable(route = "Home") {
+                    Home(localNavCtrl, pkgName.value, dialogStatus, clearAppDataDialog, defaultDialerAppDialog, enableSystemAppDialog)
+                }
                 composable(route = "UserControlDisabled") { UserCtrlDisabledPkg(pkgName.value) }
                 composable(route = "PermissionManage") { PermissionManage(pkgName.value, navCtrl) }
                 composable(route = "CrossProfilePackage") { CrossProfilePkg(pkgName.value) }
@@ -143,6 +146,9 @@ fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, 
     if(defaultDialerAppDialog.value) {
         DefaultDialerAppDialog(defaultDialerAppDialog, pkgName.value)
     }
+    if(enableSystemAppDialog.value) {
+        EnableSystemAppDialog(enableSystemAppDialog, pkgName.value)
+    }
 }
 
 @Composable
@@ -151,7 +157,8 @@ private fun Home(
     pkgName: String,
     dialogStatus: MutableIntState,
     clearAppDataDialog: MutableState<Boolean>,
-    defaultDialerAppDialog: MutableState<Boolean>
+    defaultDialerAppDialog: MutableState<Boolean>,
+    enableSystemAppDialog: MutableState<Boolean>
 ) {
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
@@ -254,6 +261,9 @@ private fun Home(
         }
         if(isDeviceOwner(dpm)||isProfileOwner(dpm)) { 
             SubPageItem(R.string.permitted_ime, "", R.drawable.keyboard_fill0) { navCtrl.navigate("IME") }
+        }
+        if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
+            SubPageItem(R.string.enable_system_app, "", R.drawable.enable_fill0) { enableSystemAppDialog.value = true }
         }
         if(VERSION.SDK_INT>=28&&isDeviceOwner(dpm)) { 
             SubPageItem(R.string.keep_uninstalled_packages, "", R.drawable.delete_fill0) { navCtrl.navigate("KeepUninstalled") }
@@ -932,9 +942,7 @@ private fun ClearAppDataDialog(status: MutableState<Boolean>, pkgName: String) {
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
     AlertDialog(
-        title = {
-            Text(text = stringResource(R.string.clear_app_storage))
-        },
+        title = { Text(text = stringResource(R.string.clear_app_storage)) },
         text = {
             Text(stringResource(R.string.app_storage_will_be_cleared) + "\n" + pkgName)
         },
@@ -977,9 +985,7 @@ private fun DefaultDialerAppDialog(status: MutableState<Boolean>, pkgName: Strin
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     AlertDialog(
-        title = {
-            Text(stringResource(R.string.set_default_dialer))
-        },
+        title = { Text(stringResource(R.string.set_default_dialer)) },
         text = {
             Text(stringResource(R.string.app_will_be_default_dialer) + "\n" + pkgName)
         },
@@ -996,6 +1002,41 @@ private fun DefaultDialerAppDialog(status: MutableState<Boolean>, pkgName: Strin
                         dpm.setDefaultDialerApplication(pkgName)
                         Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                     }catch(e:IllegalArgumentException) {
+                        Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show()
+                    }
+                    status.value = false
+                }
+            ) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        modifier = Modifier.fillMaxWidth()
+    )
+}
+
+@Composable
+private fun EnableSystemAppDialog(status: MutableState<Boolean>, pkgName: String) {
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
+    AlertDialog(
+        title = { Text(stringResource(R.string.enable_system_app)) },
+        text = {
+            Text(stringResource(R.string.enable_system_app_desc) + "\n" + pkgName)
+        },
+        onDismissRequest = { status.value = false },
+        dismissButton = {
+            TextButton(onClick = { status.value = false }) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    try {
+                        dpm.enableSystemApp(receiver, pkgName)
+                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    } catch(e: IllegalArgumentException) {
                         Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show()
                     }
                     status.value = false

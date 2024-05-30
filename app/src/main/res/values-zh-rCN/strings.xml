@@ -304,6 +304,8 @@
     <string name="select_apk" tools:ignore="TypographyEllipsis">选择APK...</string>
     <string name="silent_install">静默安装</string>
     <string name="request_install">请求安装</string>
+    <string name="enable_system_app">启用系统应用</string>
+    <string name="enable_system_app_desc">重新启用一个默认被禁用的系统应用</string>
     <string name="app_installer_status">应用安装器：</string>
     <string name="status_pending_action">等待用户操作</string>
     <string name="status_fail_blocked">被阻止</string>
