@@ -120,8 +120,10 @@
     <string name="require_no_password_to_disable">禁用需要无密码</string>
     <string name="lock_now">立即锁屏</string>
     <string name="require_enter_password_again">需要重新输入密码</string>
-    <string name="request_bug_report">请求错误报告</string>
+    <string name="bug_report">错误报告</string>
+    <string name="confirm_bug_report">请求错误报告？</string>
     <string name="reboot">重启</string>
+    <string name="confirm_reboot">确定重启？</string>
     <string name="edit_time">修改时间</string>
     <string name="from_epoch_to_target_time">从Epoch(1970/1/1 00:00:00 UTC)到你想设置的时间(毫秒)</string>
     <string name="get_current_time">获取当前时间</string>

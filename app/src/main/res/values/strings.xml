@@ -131,8 +131,10 @@
     <string name="require_no_password_to_disable">Disable keyguard require no password is set. </string>
     <string name="lock_now">Lock screen now</string>
     <string name="require_enter_password_again">Require re-enter password</string>
-    <string name="request_bug_report">Request bug report</string>
+    <string name="bug_report">Bug report</string>
+    <string name="confirm_bug_report">Request bug report?</string>
     <string name="reboot">Reboot</string>
+    <string name="confirm_reboot">Confirm reboot?</string>
     <string name="edit_time">Edit time</string>
     <string name="from_epoch_to_target_time">From Epoch(1970/1/1 00:00:00 UTC) to the time you want to set(ms)</string>
     <string name="get_current_time">Current time</string>

@@ -57,6 +57,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -64,8 +65,10 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -105,6 +108,8 @@ fun SystemManage(navCtrl:NavHostController) {
     val localNavCtrl = rememberNavController()
     val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
     val scrollState = rememberScrollState()
+    val rebootDialog = remember { mutableStateOf(false) }
+    val bugReportDialog = remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopBar(backStackEntry,navCtrl,localNavCtrl) {
@@ -125,11 +130,9 @@ fun SystemManage(navCtrl:NavHostController) {
             popExitTransition = Animations.navHostPopExitTransition,
             modifier = Modifier.padding(top = it.calculateTopPadding())
         ) {
-            composable(route = "Home") { Home(localNavCtrl,scrollState) }
+            composable(route = "Home") { Home(localNavCtrl, scrollState, rebootDialog, bugReportDialog) }
             composable(route = "Switches") { Switches() }
             composable(route = "Keyguard") { Keyguard() }
-            composable(route = "BugReport") { BugReport() }
-            composable(route = "Reboot") { Reboot() }
             composable(route = "EditTime") { EditTime() }
             composable(route = "PermissionPolicy") { PermissionPolicy() }
             composable(route = "MTEPolicy") { MTEPolicy() }
@@ -142,10 +145,16 @@ fun SystemManage(navCtrl:NavHostController) {
             composable(route = "WipeData") { WipeData() }
         }
     }
+    if(rebootDialog.value) {
+        RebootDialog(rebootDialog)
+    }
+    if(bugReportDialog.value) {
+        BugReportDialog(bugReportDialog)
+    }
 }
 
 @Composable
-private fun Home(navCtrl: NavHostController, scrollState: ScrollState) {
+private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDialog: MutableState<Boolean>, bugReportDialog: MutableState<Boolean>) {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context, Receiver::class.java)
@@ -160,8 +169,8 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState) {
         }
         SubPageItem(R.string.keyguard, "", R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("Keyguard") }
         if(VERSION.SDK_INT >= 24) {
-            SubPageItem(R.string.request_bug_report, "", R.drawable.bug_report_fill0) { navCtrl.navigate("BugReport") }
-            SubPageItem(R.string.reboot, "", R.drawable.restart_alt_fill0) { navCtrl.navigate("Reboot") }
+            SubPageItem(R.string.bug_report, "", R.drawable.bug_report_fill0) { bugReportDialog.value = true }
+            SubPageItem(R.string.reboot, "", R.drawable.restart_alt_fill0) { rebootDialog.value = true }
         }
         if(VERSION.SDK_INT >= 28) {
             SubPageItem(R.string.edit_time, "", R.drawable.schedule_fill0) { navCtrl.navigate("EditTime") }
@@ -323,41 +332,58 @@ private fun Keyguard() {
 
 @SuppressLint("NewApi")
 @Composable
-private fun BugReport() {
+fun BugReportDialog(status: MutableState<Boolean>) {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp)) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Button(
-            onClick = {
-                val result = dpm.requestBugreport(receiver)
-                Toast.makeText(context, if(result) R.string.success else R.string.fail, Toast.LENGTH_SHORT).show()
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = isDeviceOwner(dpm)
-        ) {
-            Text(stringResource(R.string.request_bug_report))
-        }
-    }
+    AlertDialog(
+        onDismissRequest = { status.value = false },
+        title = { Text(stringResource(R.string.bug_report)) },
+        text = { Text(stringResource(R.string.confirm_bug_report)) },
+        dismissButton = {
+            TextButton(onClick = { status.value = false }) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val result = dpm.requestBugreport(receiver)
+                    Toast.makeText(context, if(result) R.string.success else R.string.fail, Toast.LENGTH_SHORT).show()
+                }
+            ) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        modifier = Modifier.fillMaxWidth()
+    )
 }
 
 @SuppressLint("NewApi")
 @Composable
-private fun Reboot() {
+fun RebootDialog(status: MutableState<Boolean>) {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp)) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Button(
-            onClick = { dpm.reboot(receiver) },
-            enabled = isDeviceOwner(dpm),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.reboot))
-        }
-    }
+    AlertDialog(
+        onDismissRequest = { status.value = false },
+        title = { Text(stringResource(R.string.reboot)) },
+        text = { Text(stringResource(R.string.confirm_reboot)) },
+        dismissButton = {
+            TextButton(onClick = { status.value = false }) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { dpm.reboot(receiver) },
+                colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
+            ) {
+                Text(stringResource(R.string.reboot))
+            }
+        },
+        modifier = Modifier.fillMaxWidth()
+    )
 }
 
 @SuppressLint("NewApi")
