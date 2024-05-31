@@ -49,6 +49,8 @@
     <string name="start">开始</string>
     <string name="unknown_error">未知错误</string>
     <string name="allow_all">允许全部</string>
+    <string name="use_policy">使用策略</string>
+    <string name="account">账户</string>
 
     <!--Permissions-->
     <string name="click_to_activate">点击以激活</string>
@@ -168,6 +170,11 @@
     <string name="will_delete_work_profile">将会删除工作资料</string>
     <string name="api34_or_above_wipedata_cannot_in_system_user">API34或以上将不能在系统用户中使用WipeData</string>
     <string name="encrypt_status_is">加密状态：</string>
+    <string name="frp_policy">FRP策略</string>
+    <string name="factory_reset_protection_policy">恢复出厂设置保护策略</string>
+    <string name="frp_policy_not_supported">这个设备不支持恢复出厂设置保护策略</string>
+    <string name="enable_frp">启用FRP</string>
+    <string name="account_list_is">账户列表：</string>
 
     <!--SystemUpdatePolicy-->
     <string name="is_security_patch">安全补丁: %1$s</string>

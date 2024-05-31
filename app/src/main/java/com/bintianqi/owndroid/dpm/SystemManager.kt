@@ -26,6 +26,7 @@ import android.app.admin.DevicePolicyManager.WIPE_EUICC
 import android.app.admin.DevicePolicyManager.WIPE_EXTERNAL_STORAGE
 import android.app.admin.DevicePolicyManager.WIPE_RESET_PROTECTION_DATA
 import android.app.admin.DevicePolicyManager.WIPE_SILENTLY
+import android.app.admin.FactoryResetProtectionPolicy
 import android.app.admin.SystemUpdateInfo
 import android.app.admin.SystemUpdatePolicy
 import android.app.admin.SystemUpdatePolicy.TYPE_INSTALL_AUTOMATIC
@@ -65,6 +66,7 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -73,6 +75,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -148,6 +151,7 @@ fun SystemManage(navCtrl:NavHostController) {
             composable(route = "SystemUpdatePolicy") { SysUpdatePolicy() }
             composable(route = "InstallSystemUpdate") { InstallSystemUpdate() }
             composable(route = "WipeData") { WipeData() }
+            composable(route = "FRP") { FactoryResetProtection() }
         }
     }
     if(rebootDialog.value) {
@@ -208,6 +212,12 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
                     (VERSION.SDK_INT >= 30 && isProfileOwner(dpm) && dpm.isManagedProfile(receiver) && dpm.isOrganizationOwnedDeviceWithManagedProfile))
         ) {
             SubPageItem(R.string.install_system_update, "", R.drawable.system_update_fill0) { navCtrl.navigate("InstallSystemUpdate") }
+        }
+        if(
+            VERSION.SDK_INT >= 30 &&
+            (isDeviceOwner(dpm) || (isProfileOwner(dpm) && dpm.isManagedProfile(receiver) && dpm.isOrganizationOwnedDeviceWithManagedProfile))
+        ) {
+            SubPageItem(R.string.frp_policy, "", R.drawable.device_reset_fill0) { navCtrl.navigate("FRP") }
         }
         SubPageItem(R.string.wipe_data, "", R.drawable.warning_fill0) { navCtrl.navigate("WipeData") }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -893,6 +903,108 @@ private fun SecurityLogs() {
         ) {
             Text(stringResource(R.string.pre_reboot_security_logs))
         }
+    }
+}
+
+@SuppressLint("NewApi")
+@Composable
+fun FactoryResetProtection() {
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val focusMgr = LocalFocusManager.current
+    val receiver = ComponentName(context,Receiver::class.java)
+    var usePolicy by remember { mutableStateOf(false) }
+    var enabled by remember { mutableStateOf(false) }
+    var unsupported by remember { mutableStateOf(false) }
+    val accountList = remember { mutableStateListOf<String>() }
+    var inputAccount by remember { mutableStateOf("") }
+    LaunchedEffect(Unit) {
+        var policy: FactoryResetProtectionPolicy? = FactoryResetProtectionPolicy.Builder().build()
+        try {
+            policy = dpm.getFactoryResetProtectionPolicy(receiver)
+        } catch(e: UnsupportedOperationException) {
+            unsupported = true
+            policy = null
+        } finally {
+            if(policy == null) {
+                usePolicy = false
+            } else {
+                usePolicy = true
+                enabled = policy.isFactoryResetProtectionEnabled
+            }
+        }
+    }
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.frp_policy), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 3.dp))
+        Text(stringResource(R.string.factory_reset_protection_policy))
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 8.dp)
+        ) {
+            Text(stringResource(R.string.use_policy), style = typography.titleLarge)
+            Switch(checked = usePolicy, onCheckedChange = { usePolicy = it })
+        }
+        AnimatedVisibility(usePolicy) {
+            Column {
+                CheckBoxItem(stringResource(R.string.enable_frp), { enabled }, { enabled = !enabled })
+                Text(stringResource(R.string.account_list_is))
+                Text(
+                    text = if(accountList.isEmpty()) stringResource(R.string.none) else accountList.toText(),
+                    modifier = Modifier.animateContentSize()
+                )
+                OutlinedTextField(
+                    value = inputAccount,
+                    label = { Text(stringResource(R.string.account)) },
+                    onValueChange = { inputAccount = it },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.padding(vertical = 2.dp))
+                Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween) {
+                    Button(
+                        onClick = { accountList.add(inputAccount) },
+                        modifier = Modifier.fillMaxWidth(0.49F)
+                    ) {
+                        Text(stringResource(R.string.add))
+                    }
+                    Button(
+                        onClick = { accountList.remove(inputAccount) },
+                        modifier = Modifier.fillMaxWidth(0.96F)
+                    ) {
+                        Text(stringResource(R.string.remove))
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Button(
+            onClick = {
+                focusMgr.clearFocus()
+                if(unsupported) {
+                    Toast.makeText(context, R.string.unsupported, Toast.LENGTH_SHORT).show()
+                } else {
+                    val policy = FactoryResetProtectionPolicy.Builder()
+                        .setFactoryResetProtectionEnabled(enabled)
+                        .setFactoryResetProtectionAccounts(accountList)
+                        .build()
+                    dpm.setFactoryResetProtectionPolicy(receiver, policy)
+                }
+            },
+            modifier = Modifier.width(100.dp).align(Alignment.CenterHorizontally)
+        ) {
+            Text(stringResource(R.string.apply))
+        }
+        Spacer(Modifier.padding(vertical = 10.dp))
+        if(unsupported) {
+            Information {
+                Text(stringResource(R.string.frp_policy_not_supported))
+            }
+        }
+        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
