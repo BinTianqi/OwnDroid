@@ -366,6 +366,7 @@ private fun BugReportDialog(status: MutableState<Boolean>) {
                 onClick = {
                     val result = dpm.requestBugreport(receiver)
                     Toast.makeText(context, if(result) R.string.success else R.string.fail, Toast.LENGTH_SHORT).show()
+                    status.value = false
                 }
             ) {
                 Text(stringResource(R.string.confirm))
@@ -1255,5 +1256,6 @@ fun InstallSystemUpdate() {
         Information {
             Text(stringResource(R.string.auto_reboot_after_install_succeed))
         }
+        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }

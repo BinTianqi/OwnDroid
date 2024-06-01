@@ -8,10 +8,14 @@ Use Device admin and Device owner privilege to take full control of your device.
 
 This app is renamed to "OwnDroid" from "Android Owner".
 
+### Docs
+
+I'm preparing new docs. For now, you can go to [User guide (Chinese)](Guide.md)
+
 ### Advantage
 
 - Open source. Device owner privilege could be more dangerous than root, close-source software's security is not guaranteed. 
-- Easy to use. You can use this utility easily. A [chinese user guide](Guide.md) is also provided. 
+- Easy to use. You can use this utility easily. A chinese [User guide](Guide.md) is also provided. 
 - Modern. This app is built with Kotlin and Jetpack Compose, designed with Material Design 3. And some new features on Android 14 is adapted. 
 - Maintaining. This project is updating. Any Issue and PR is welcome. 
 
@@ -28,11 +32,6 @@ This software may not have as many features as Google's official [TestDPC](https
 - User restrictions
 - User manage
 - Password and keyguard
-
-### Implementing features
-
-- User manage: user picker
-- Security logs and network logs
 
 ### License
 
