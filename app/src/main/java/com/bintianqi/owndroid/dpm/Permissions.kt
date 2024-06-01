@@ -311,6 +311,14 @@ fun DeviceInfo() {
         if(VERSION.SDK_INT >= 24) { encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER] = stringResource(R.string.es_active_per_user) }
         Text(stringResource(R.string.encrypt_status_is)+encryptionStatus[dpm.storageEncryptionStatus])
         Spacer(Modifier.padding(vertical = 2.dp))
+        if(VERSION.SDK_INT >= 28) {
+            Text(stringResource(R.string.support_device_id_attestation) + dpm.isDeviceIdAttestationSupported)
+        }
+        Spacer(Modifier.padding(vertical = 2.dp))
+        if (VERSION.SDK_INT >= 30) {
+            Text(stringResource(R.string.support_unique_device_attestation) + dpm.isUniqueDeviceAttestationSupported)
+        }
+        Spacer(Modifier.padding(vertical = 2.dp))
         val adminList = dpm.activeAdmins
         if(adminList!=null) {
             var adminListText = ""
@@ -318,7 +326,7 @@ fun DeviceInfo() {
             var count = adminList.size
             for(each in adminList) {
                 count -= 1
-                adminListText += "$each"
+                adminListText += "${each.packageName}/${each.className}"
                 if(count>0) {adminListText += "\n"}
             }
             SelectionContainer(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp).horizontalScroll(rememberScrollState())) {

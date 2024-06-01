@@ -60,6 +60,8 @@
     <string name="device_owner">Device owner</string>
     <string name="activate_device_admin">激活Device admin</string>
     <string name="device_info">设备信息</string>
+    <string name="support_device_id_attestation">支持设备ID认证：</string>
+    <string name="support_unique_device_attestation">支持唯一设备认证：</string>
     <string name="is_device_financed">Financed device: %1$s</string>
     <string name="dpmrh">设备策略管理器角色(DPMRH)：%1$s</string>
     <string name="es_inactive">未使用</string>
@@ -198,6 +200,7 @@
 
     <!--Network-->
     <string name="network">网络</string>
+    <string name="wifi_mac_addr">Wi-Fi Mac地址</string>
     <string name="min_wifi_security_level">最小WiFi安全等级</string>
     <string name="wifi_security_level_open">开放</string>
     <string name="preferential_network_service">优先网络服务</string>

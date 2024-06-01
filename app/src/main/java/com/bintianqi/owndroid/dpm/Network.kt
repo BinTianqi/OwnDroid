@@ -56,15 +56,18 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -100,6 +103,7 @@ fun Network(navCtrl: NavHostController) {
     val localNavCtrl = rememberNavController()
     val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
     val scrollState = rememberScrollState()
+    val wifiMacDialog = remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopBar(backStackEntry,navCtrl,localNavCtrl) {
@@ -120,7 +124,7 @@ fun Network(navCtrl: NavHostController) {
             popExitTransition = Animations.navHostPopExitTransition,
             modifier = Modifier.padding(top = it.calculateTopPadding())
         ) {
-            composable(route = "Home") { Home(localNavCtrl,scrollState) }
+            composable(route = "Home") { Home(localNavCtrl, scrollState, wifiMacDialog) }
             composable(route = "Switches") { Switches() }
             composable(route = "MinWifiSecurityLevel") { WifiSecLevel() }
             composable(route = "WifiSsidPolicy") { WifiSsidPolicy() }
@@ -130,10 +134,22 @@ fun Network(navCtrl: NavHostController) {
             composable(route = "APN") { APN() }
         }
     }
+    if(wifiMacDialog.value && VERSION.SDK_INT >= 24) {
+        val context = LocalContext.current
+        val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        val receiver = ComponentName(context, Receiver::class.java)
+        AlertDialog(
+            onDismissRequest = { wifiMacDialog.value = false },
+            confirmButton = { TextButton(onClick = { wifiMacDialog.value = false }) { Text(stringResource(R.string.confirm)) } },
+            title = { Text(stringResource(R.string.wifi_mac_addr)) },
+            text = { SelectionContainer { Text(dpm.getWifiMacAddress(receiver)?: stringResource(R.string.none)) } },
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
 }
 
 @Composable
-private fun Home(navCtrl:NavHostController,scrollState: ScrollState) {
+private fun Home(navCtrl:NavHostController, scrollState: ScrollState, wifiMacDialog: MutableState<Boolean>) {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context, Receiver::class.java)
@@ -143,11 +159,9 @@ private fun Home(navCtrl:NavHostController,scrollState: ScrollState) {
             style = typography.headlineLarge,
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp)
         )
-        if(VERSION.SDK_INT>=24&&isDeviceOwner(dpm)) {
-            val wifimac = dpm.getWifiMacAddress(receiver)
-            Text(text = "WiFi MAC: $wifimac", modifier = Modifier.padding(start = 15.dp))
+        if(VERSION.SDK_INT >= 24 && (isDeviceOwner(dpm) || (VERSION.SDK_INT >= 30 && isProfileOwner(dpm) && dpm.isManagedProfile(receiver) && dpm.isOrganizationOwnedDeviceWithManagedProfile))) {
+            SubPageItem(R.string.wifi_mac_addr, "", R.drawable.wifi_fill0) { wifiMacDialog.value = true }
         }
-        Spacer(Modifier.padding(vertical = 3.dp))
         if(VERSION.SDK_INT >= 30) {
             SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Switches") }
         }

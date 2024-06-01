@@ -66,6 +66,8 @@
     <string name="activate_profile_owner_command" translatable="false">adb shell dpm set-profile-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="activate_device_owner_command" translatable="false">adb shell dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="device_info">Device info</string>
+    <string name="support_device_id_attestation">Support Device ID attestation: </string>
+    <string name="support_unique_device_attestation">Support unique device attestation: </string>
     <string name="is_device_financed">Financed device: %1$s</string>
     <string name="dpmrh">Device policy manager role holder: %1$s</string>
     <!--es: encryption status-->
@@ -209,6 +211,7 @@
 
     <!--Network-->
     <string name="network">Network</string>
+    <string name="wifi_mac_addr">Wi-Fi Mac address</string>
     <string name="min_wifi_security_level">Min WiFi security level</string>
     <string name="wifi_security_level_open">Open</string>
     <string name="preferential_network_service">Preferential network service</string>
