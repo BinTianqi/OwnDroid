@@ -456,6 +456,8 @@
     <string name="max_pwd_fail_textfield">错误次数</string>
     <string name="pwd_timeout">密码失效超时时间</string>
     <string name="max_time_to_lock">屏幕超时</string>
+    <string name="required_strong_auth_timeout">要求强验证超时</string>
+    <string name="zero_means_no_control">值为0表示OwnDroid不参与控制超时</string>
     <string name="max_time_to_lock_desc">超时后锁屏(毫秒)，0为由用户决定</string>
     <string name="pwd_timeout_desc">超时后用户需重新设置密码（毫秒），0为无限制</string>
     <string name="pwd_history">密码历史记录长度</string>

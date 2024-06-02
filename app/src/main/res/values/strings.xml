@@ -472,6 +472,8 @@
     <string name="max_pwd_fail_textfield">Maximum failed attempts</string>
     <string name="pwd_timeout">Password timeout</string>
     <string name="max_time_to_lock">Screen timeout</string>
+    <string name="required_strong_auth_timeout">Required strong auth timeout</string>
+    <string name="zero_means_no_control">A value of 0 means the admin is not participating in controlling the timeout</string>
     <string name="max_time_to_lock_desc">Enter 0 to allow user decision, unit: millisecond</string>
     <string name="pwd_timeout_desc">When reach this limit, user should set a new password. Enter 0 to allow user decision, unit: millisecond</string>
     <string name="pwd_history">Password history length</string>
