@@ -45,7 +45,6 @@ import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -424,7 +423,7 @@ private fun EditTime() {
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
             enabled = isDeviceOwner(dpm) || (VERSION.SDK_INT >= 30 && isProfileOwner(dpm) && dpm.isOrganizationOwnedDeviceWithManagedProfile),
-            modifier = Modifier.focusable().fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
@@ -743,7 +742,7 @@ private fun LockTaskFeatures() {
             label = { Text(stringResource(R.string.package_name)) },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 3.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Button(
@@ -1142,7 +1141,7 @@ private fun SysUpdatePolicy() {
                         onValueChange = { windowedPolicyStart = it },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                        modifier = Modifier.focusable().fillMaxWidth(0.5F)
+                        modifier = Modifier.fillMaxWidth(0.5F)
                     )
                     Spacer(Modifier.padding(horizontal = 3.dp))
                     OutlinedTextField(
@@ -1151,7 +1150,7 @@ private fun SysUpdatePolicy() {
                         label = { Text(stringResource(R.string.end_time)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                        modifier = Modifier.focusable().fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(Modifier.padding(vertical = 3.dp))
                     Text(text = stringResource(R.string.minutes_in_one_day))

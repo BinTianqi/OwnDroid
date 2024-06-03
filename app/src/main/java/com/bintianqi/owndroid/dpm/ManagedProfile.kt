@@ -2,15 +2,26 @@ package com.bintianqi.owndroid.dpm
 
 import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
-import android.app.admin.DevicePolicyManager.*
+import android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE
+import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ALLOW_OFFLINE
+import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME
+import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME
+import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_SKIP_ENCRYPTION
+import android.app.admin.DevicePolicyManager.FLAG_MANAGED_CAN_ACCESS_PARENT
+import android.app.admin.DevicePolicyManager.FLAG_PARENT_CAN_ACCESS_MANAGED
+import android.app.admin.DevicePolicyManager.PERSONAL_APPS_NOT_SUSPENDED
+import android.app.admin.DevicePolicyManager.PERSONAL_APPS_SUSPENDED_PROFILE_TIMEOUT
 import android.content.*
 import android.os.Binder
 import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.focusable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -22,7 +33,11 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -37,7 +52,13 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.Receiver
-import com.bintianqi.owndroid.ui.*
+import com.bintianqi.owndroid.ui.Animations
+import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.CopyTextButton
+import com.bintianqi.owndroid.ui.Information
+import com.bintianqi.owndroid.ui.SubPageItem
+import com.bintianqi.owndroid.ui.SwitchItem
+import com.bintianqi.owndroid.ui.TopBar
 
 @Composable
 fun ManagedProfile(navCtrl: NavHostController) {
@@ -173,7 +194,7 @@ private fun OrgID() {
             label = { Text(stringResource(R.string.org_id)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
-            modifier = Modifier.focusable().fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 2.dp))
         AnimatedVisibility(orgId.length !in 6..64) {
@@ -221,7 +242,7 @@ private fun SuspendPersonalApp() {
             )
         )
         OutlinedTextField(
-            value = time, onValueChange = { time=it }, modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp),
+            value = time, onValueChange = { time=it }, modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
             label = { Text(stringResource(R.string.time_unit_ms)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() })
@@ -255,7 +276,7 @@ private fun IntentFilter() {
             label = { Text("Action") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
-            modifier = Modifier.focusable().fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(

@@ -377,7 +377,7 @@ private fun PermissionManage(pkgName: String, navCtrl: NavHostController) {
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.focusable().fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             trailingIcon = {
                 Icon(painter = painterResource(R.drawable.checklist_fill0), contentDescription = null,
                     modifier = Modifier

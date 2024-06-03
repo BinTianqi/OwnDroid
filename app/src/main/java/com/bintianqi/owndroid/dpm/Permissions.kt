@@ -145,7 +145,7 @@ private fun LockScreenInfo() {
             value = infoText,
             label = { Text(stringResource(R.string.device_owner_lock_screen_info)) },
             onValueChange = { infoText = it },
-            modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 4.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
         )
         Button(
             onClick = {
@@ -368,7 +368,7 @@ private fun OrgName() {
         Text(text = stringResource(R.string.org_name), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
-            value = orgName, onValueChange = { orgName = it }, modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 3.dp),
+            value = orgName, onValueChange = { orgName = it }, modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
             label = { Text(stringResource(R.string.org_name)) },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() })
@@ -404,14 +404,14 @@ private fun SupportMsg() {
             value = shortMsg,
             label = { Text(stringResource(R.string.short_support_msg)) },
             onValueChange = { shortMsg = it },
-            modifier = Modifier.focusable().fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 2.dp))
         OutlinedTextField(
             value = longMsg,
             label = { Text(stringResource(R.string.long_support_msg)) },
             onValueChange = { longMsg = it },
-            modifier = Modifier.focusable().fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
@@ -475,7 +475,7 @@ private fun NoManageAccount() {
             value = inputText,
             onValueChange = { inputText = it },
             label = { Text(stringResource(R.string.account_types)) },
-            modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 4.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() })
         )

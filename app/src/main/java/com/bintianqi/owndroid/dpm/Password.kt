@@ -223,7 +223,7 @@ private fun ResetPassword() {
             label = { Text(stringResource(R.string.password)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.focusable().fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 3.dp))
         Text(text = stringResource(R.string.reset_pwd_desc))
@@ -371,7 +371,7 @@ private fun ScreenTimeout() {
             onValueChange = { inputContent = it },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.focusable().fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
@@ -439,7 +439,7 @@ private fun MaxFailedPasswordForWipe() {
             onValueChange = { inputContent = it },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.focusable().fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
@@ -472,7 +472,7 @@ private fun PasswordExpiration() {
             onValueChange = { inputContent = it },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.focusable().fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
@@ -505,7 +505,7 @@ private fun PasswordHistoryLength() {
             onValueChange = { inputContent = it },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.focusable().fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(

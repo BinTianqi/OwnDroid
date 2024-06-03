@@ -42,7 +42,6 @@ import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -303,7 +302,7 @@ private fun WifiSsidPolicy() {
                     onValueChange = {inputSsid = it },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.focusable().fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.padding(vertical = 5.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -405,7 +404,7 @@ private fun PrivateDNS() {
             label = { Text(stringResource(R.string.dns_hostname)) },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.focusable().fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 3.dp))
         Button(
@@ -479,7 +478,7 @@ private fun WifiKeypair() {
             onValueChange = { keyPair = it },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.focusable().fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         val isExist = try{ dpm.isKeyPairGrantedToWifiAuth(keyPair) }catch(e:java.lang.IllegalArgumentException) { false }
@@ -535,7 +534,7 @@ private fun APN() {
                 onValueChange = { inputNum = it },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
                 enabled = !nextStep
             )
         }else{
@@ -608,7 +607,7 @@ private fun APN() {
                     label = { Text(stringResource(R.string.name)) },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -626,7 +625,7 @@ private fun APN() {
                     label = { Text(stringResource(R.string.user_name)) },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                 )
                 
                 if(VERSION.SDK_INT>=33) {
@@ -637,7 +636,7 @@ private fun APN() {
                         label = { Text("ID") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                        modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                        modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                     )
                 }
                 
@@ -657,7 +656,7 @@ private fun APN() {
                         label = { Text("ID") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                        modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                        modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                     )
                 }
                 
@@ -668,7 +667,7 @@ private fun APN() {
                     label = { Text(stringResource(R.string.bitmask)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                 )
                 
                 Text(text = stringResource(R.string.description), style = typography.titleLarge)
@@ -678,7 +677,7 @@ private fun APN() {
                     label = { Text(stringResource(R.string.description)) },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                 )
                 
                 Text(text = stringResource(R.string.mms_proxy), style = typography.titleLarge)
@@ -689,7 +688,7 @@ private fun APN() {
                         label = { Text(stringResource(R.string.address)) },
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                        modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                        modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                     )
                 }
                 TextField(
@@ -698,7 +697,7 @@ private fun APN() {
                     label = { Text(stringResource(R.string.port)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                 )
                 
                 Text(text = stringResource(R.string.proxy), style = typography.titleLarge)
@@ -709,7 +708,7 @@ private fun APN() {
                         label = { Text(stringResource(R.string.address)) },
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                        modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                        modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                     )
                 }
                 TextField(
@@ -718,7 +717,7 @@ private fun APN() {
                     label = { Text(stringResource(R.string.port)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                 )
                 
                 Text(text = "MMSC", style = typography.titleLarge)
@@ -728,7 +727,7 @@ private fun APN() {
                     label = { Text("Uri") },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                 )
                 
                 if(VERSION.SDK_INT>=33) {
@@ -739,7 +738,7 @@ private fun APN() {
                         label = { Text("IPV4") },
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                        modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                        modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                     )
                     TextField(
                         value = mtuV6,
@@ -747,7 +746,7 @@ private fun APN() {
                         label = { Text("IPV6") },
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                        modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                        modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                     )
                 }
                 
@@ -764,7 +763,7 @@ private fun APN() {
                     label = { Text(stringResource(R.string.bitmask)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                 )
                 
                 Text(text = "OperatorNumeric", style = typography.titleLarge)
@@ -774,7 +773,7 @@ private fun APN() {
                     label = { Text("ID") },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                 )
                 
                 Text(text = stringResource(R.string.password), style = typography.titleLarge)
@@ -784,7 +783,7 @@ private fun APN() {
                     label = { Text(stringResource(R.string.password)) },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.focusable().fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
+                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
                 )
                 
                 if(VERSION.SDK_INT>=33) {

@@ -17,8 +17,13 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.focusable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -29,7 +34,14 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
@@ -44,9 +56,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.bintianqi.owndroid.*
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.ui.*
+import com.bintianqi.owndroid.Receiver
+import com.bintianqi.owndroid.fileUriFlow
+import com.bintianqi.owndroid.getFile
+import com.bintianqi.owndroid.toText
+import com.bintianqi.owndroid.ui.Animations
+import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.RadioButtonItem
+import com.bintianqi.owndroid.ui.SubPageItem
+import com.bintianqi.owndroid.ui.TopBar
+import com.bintianqi.owndroid.uriToStream
 
 var affiliationID = mutableSetOf<String>()
 @Composable
@@ -176,7 +196,7 @@ private fun UserOperation() {
             },
             label = { Text(if(useUid) "UID" else stringResource(R.string.serial_number)) },
             enabled = isDeviceOwner(dpm),
-            modifier = Modifier.focusable().fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() })
         )
@@ -275,7 +295,7 @@ private fun CreateUser() {
             value = userName,
             onValueChange = { userName= it },
             label = { Text(stringResource(R.string.username)) },
-            modifier = Modifier.focusable().fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() })
         )
@@ -345,7 +365,7 @@ private fun AffiliationID() {
             value = input,
             onValueChange = {input = it},
             label = { Text("ID") },
-            modifier = Modifier.focusable().fillMaxWidth().padding(vertical = 2.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() })
         )
@@ -402,7 +422,7 @@ private fun Username() {
             label = { Text(stringResource(R.string.username)) },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.focusable().fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             enabled = isDeviceOwner(dpm) || isProfileOwner(dpm)
         )
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -447,7 +467,7 @@ private fun UserSessionMessage() {
             label = { Text(stringResource(R.string.start_user_session_msg)) },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
-            modifier = Modifier.focusable().fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             enabled = isDeviceOwner(dpm) || isProfileOwner(dpm)
         )
         Spacer(Modifier.padding(vertical = 2.dp))
@@ -457,7 +477,7 @@ private fun UserSessionMessage() {
             label = { Text(stringResource(R.string.end_user_session_msg)) },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.focusable().fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             enabled = isDeviceOwner(dpm) || isProfileOwner(dpm)
         )
         Spacer(Modifier.padding(vertical = 5.dp))
