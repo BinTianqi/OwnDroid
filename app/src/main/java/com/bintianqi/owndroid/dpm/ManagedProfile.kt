@@ -129,7 +129,7 @@ private fun CreateWorkProfile() {
         Spacer(Modifier.padding(vertical = 5.dp))
         var skipEncrypt by remember { mutableStateOf(false) }
         if(VERSION.SDK_INT>=24) {
-            CheckBoxItem(stringResource(R.string.skip_encryption), { skipEncrypt }, { skipEncrypt=!skipEncrypt })
+            CheckBoxItem(stringResource(R.string.skip_encryption), skipEncrypt, { skipEncrypt = it })
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(

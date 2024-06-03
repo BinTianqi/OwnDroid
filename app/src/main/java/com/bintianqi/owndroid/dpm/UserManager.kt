@@ -202,7 +202,7 @@ private fun UserOperation() {
         )
         Spacer(Modifier.padding(vertical = 3.dp))
         if(VERSION.SDK_INT >= 24) {
-            CheckBoxItem(text = stringResource(R.string.use_uid), checked = { useUid }, operation = { idInput=""; useUid = !useUid})
+            CheckBoxItem(text = stringResource(R.string.use_uid), checked = useUid, operation = { idInput=""; useUid = it })
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT > 28) {
@@ -301,21 +301,21 @@ private fun CreateUser() {
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         var selectedFlag by remember { mutableIntStateOf(0) }
-        RadioButtonItem(stringResource(R.string.none), { selectedFlag == 0 }, { selectedFlag = 0 })
+        RadioButtonItem(stringResource(R.string.none), selectedFlag == 0, { selectedFlag = 0 })
         RadioButtonItem(
             stringResource(R.string.create_user_skip_wizard),
-            { selectedFlag == DevicePolicyManager.SKIP_SETUP_WIZARD },
+            selectedFlag == DevicePolicyManager.SKIP_SETUP_WIZARD,
             { selectedFlag = DevicePolicyManager.SKIP_SETUP_WIZARD }
         )
         if(VERSION.SDK_INT >= 28) {
             RadioButtonItem(
                 stringResource(R.string.create_user_ephemeral_user),
-                { selectedFlag == DevicePolicyManager.MAKE_USER_EPHEMERAL },
+                selectedFlag == DevicePolicyManager.MAKE_USER_EPHEMERAL,
                 { selectedFlag = DevicePolicyManager.MAKE_USER_EPHEMERAL }
             )
             RadioButtonItem(
                 stringResource(R.string.create_user_enable_all_system_app),
-                { selectedFlag == DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED },
+                selectedFlag == DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED,
                 { selectedFlag = DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED }
             )
         }
@@ -521,7 +521,7 @@ private fun UserIcon() {
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.pick_a_square_image))
         Spacer(Modifier.padding(vertical = 5.dp))
-        CheckBoxItem(stringResource(R.string.file_picker_instead_gallery), {getContent}, {getContent=!getContent})
+        CheckBoxItem(stringResource(R.string.file_picker_instead_gallery), getContent, { getContent = it })
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {

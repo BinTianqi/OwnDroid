@@ -212,29 +212,30 @@ private fun Switches() {
 private fun WifiSecLevel() {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    var selectedWifiSecLevel by remember { mutableIntStateOf(0) }
+    LaunchedEffect(Unit) { selectedWifiSecLevel = dpm.minimumRequiredWifiSecurityLevel }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        var selectedWifiSecLevel by remember { mutableIntStateOf(dpm.minimumRequiredWifiSecurityLevel) }
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.min_wifi_security_level), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         RadioButtonItem(
             stringResource(R.string.wifi_security_level_open),
-            { selectedWifiSecLevel == WIFI_SECURITY_OPEN },
+            selectedWifiSecLevel == WIFI_SECURITY_OPEN,
             { selectedWifiSecLevel = WIFI_SECURITY_OPEN }
         )
         RadioButtonItem(
             "WEP, WPA(2)-PSK",
-            { selectedWifiSecLevel == WIFI_SECURITY_PERSONAL },
+            selectedWifiSecLevel == WIFI_SECURITY_PERSONAL,
             { selectedWifiSecLevel = WIFI_SECURITY_PERSONAL }
         )
         RadioButtonItem(
             "WPA-EAP",
-            { selectedWifiSecLevel == WIFI_SECURITY_ENTERPRISE_EAP },
+            selectedWifiSecLevel == WIFI_SECURITY_ENTERPRISE_EAP,
             { selectedWifiSecLevel = WIFI_SECURITY_ENTERPRISE_EAP }
         )
         RadioButtonItem(
             "WPA3-192bit",
-            { selectedWifiSecLevel == WIFI_SECURITY_ENTERPRISE_192 },
+            selectedWifiSecLevel == WIFI_SECURITY_ENTERPRISE_192,
             { selectedWifiSecLevel = WIFI_SECURITY_ENTERPRISE_192 }
         )
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -272,17 +273,17 @@ private fun WifiSsidPolicy() {
         Spacer(Modifier.padding(vertical = 5.dp))
         RadioButtonItem(
             stringResource(R.string.none),
-            { selectedPolicyType == -1 },
+            selectedPolicyType == -1,
             { selectedPolicyType = -1 }
         )
         RadioButtonItem(
             stringResource(R.string.whitelist),
-            { selectedPolicyType == WIFI_SSID_POLICY_TYPE_ALLOWLIST },
+            selectedPolicyType == WIFI_SSID_POLICY_TYPE_ALLOWLIST,
             { selectedPolicyType = WIFI_SSID_POLICY_TYPE_ALLOWLIST }
         )
         RadioButtonItem(
             stringResource(R.string.blacklist),
-            { selectedPolicyType == WIFI_SSID_POLICY_TYPE_DENYLIST },
+            selectedPolicyType == WIFI_SSID_POLICY_TYPE_DENYLIST,
             { selectedPolicyType = WIFI_SSID_POLICY_TYPE_DENYLIST }
         )
         AnimatedVisibility(selectedPolicyType != -1) {
@@ -641,10 +642,10 @@ private fun APN() {
                 }
                 
                 Text(text = stringResource(R.string.auth_type), style = typography.titleLarge)
-                RadioButtonItem(stringResource(R.string.none), { selectedAuthType==AUTH_TYPE_NONE }, { selectedAuthType=AUTH_TYPE_NONE })
-                RadioButtonItem("CHAP", { selectedAuthType==AUTH_TYPE_CHAP }, { selectedAuthType=AUTH_TYPE_CHAP })
-                RadioButtonItem("PAP", { selectedAuthType==AUTH_TYPE_PAP}, { selectedAuthType=AUTH_TYPE_PAP })
-                RadioButtonItem("PAP/CHAP", { selectedAuthType==AUTH_TYPE_PAP_OR_CHAP}, { selectedAuthType=AUTH_TYPE_PAP_OR_CHAP })
+                RadioButtonItem(stringResource(R.string.none), selectedAuthType==AUTH_TYPE_NONE , { selectedAuthType=AUTH_TYPE_NONE })
+                RadioButtonItem("CHAP", selectedAuthType == AUTH_TYPE_CHAP , { selectedAuthType = AUTH_TYPE_CHAP })
+                RadioButtonItem("PAP", selectedAuthType == AUTH_TYPE_PAP, { selectedAuthType = AUTH_TYPE_PAP })
+                RadioButtonItem("PAP/CHAP", selectedAuthType == AUTH_TYPE_PAP_OR_CHAP, { selectedAuthType = AUTH_TYPE_PAP_OR_CHAP })
                 
                 if(VERSION.SDK_INT>=29) {
                     val ts = context.getSystemService(ComponentActivity.TELEPHONY_SERVICE) as TelephonyManager
@@ -751,10 +752,10 @@ private fun APN() {
                 }
                 
                 Text(text = "MVNO", style = typography.titleLarge)
-                RadioButtonItem("SPN", { mvnoType == MVNO_TYPE_SPN }, { mvnoType = MVNO_TYPE_SPN })
-                RadioButtonItem("IMSI", { mvnoType == MVNO_TYPE_IMSI }, { mvnoType = MVNO_TYPE_IMSI })
-                RadioButtonItem("GID", { mvnoType == MVNO_TYPE_GID }, { mvnoType = MVNO_TYPE_GID })
-                RadioButtonItem("ICCID", { mvnoType == MVNO_TYPE_ICCID }, { mvnoType = MVNO_TYPE_ICCID })
+                RadioButtonItem("SPN", mvnoType == MVNO_TYPE_SPN, { mvnoType = MVNO_TYPE_SPN })
+                RadioButtonItem("IMSI", mvnoType == MVNO_TYPE_IMSI, { mvnoType = MVNO_TYPE_IMSI })
+                RadioButtonItem("GID", mvnoType == MVNO_TYPE_GID, { mvnoType = MVNO_TYPE_GID })
+                RadioButtonItem("ICCID", mvnoType == MVNO_TYPE_ICCID, { mvnoType = MVNO_TYPE_ICCID })
                 
                 Text(text = stringResource(R.string.network_type), style = typography.titleLarge)
                 TextField(
@@ -798,23 +799,23 @@ private fun APN() {
                 }
                 
                 Text(text = stringResource(R.string.protocol), style = typography.titleLarge)
-                RadioButtonItem("IPV4", { protocol == PROTOCOL_IP }, { protocol = PROTOCOL_IP })
-                RadioButtonItem("IPV6", { protocol == PROTOCOL_IPV6 }, { protocol = PROTOCOL_IPV6 })
-                RadioButtonItem("IPV4/IPV6", { protocol == PROTOCOL_IPV4V6 }, { protocol = PROTOCOL_IPV4V6 })
-                RadioButtonItem("PPP", { protocol == PROTOCOL_PPP }, { protocol = PROTOCOL_PPP })
+                RadioButtonItem("IPV4", protocol == PROTOCOL_IP, { protocol = PROTOCOL_IP })
+                RadioButtonItem("IPV6", protocol == PROTOCOL_IPV6, { protocol = PROTOCOL_IPV6 })
+                RadioButtonItem("IPV4/IPV6", protocol == PROTOCOL_IPV4V6, { protocol = PROTOCOL_IPV4V6 })
+                RadioButtonItem("PPP", protocol == PROTOCOL_PPP, { protocol = PROTOCOL_PPP })
                 if(VERSION.SDK_INT>=29) {
-                    RadioButtonItem("non-IP", { protocol == PROTOCOL_NON_IP }, { protocol = PROTOCOL_NON_IP })
-                    RadioButtonItem("Unstructured", { protocol == PROTOCOL_UNSTRUCTURED }, { protocol = PROTOCOL_UNSTRUCTURED })
+                    RadioButtonItem("non-IP", protocol == PROTOCOL_NON_IP, { protocol = PROTOCOL_NON_IP })
+                    RadioButtonItem("Unstructured", protocol == PROTOCOL_UNSTRUCTURED, { protocol = PROTOCOL_UNSTRUCTURED })
                 }
                 
                 Text(text = stringResource(R.string.roaming_protocol), style = typography.titleLarge)
-                RadioButtonItem("IPV4", { roamingProtocol == PROTOCOL_IP }, { roamingProtocol = PROTOCOL_IP })
-                RadioButtonItem("IPV6", { roamingProtocol == PROTOCOL_IPV6 }, { roamingProtocol = PROTOCOL_IPV6 })
-                RadioButtonItem("IPV4/IPV6", { roamingProtocol == PROTOCOL_IPV4V6 }, { roamingProtocol = PROTOCOL_IPV4V6 })
-                RadioButtonItem("PPP", { roamingProtocol == PROTOCOL_PPP }, { roamingProtocol = PROTOCOL_PPP})
+                RadioButtonItem("IPV4", roamingProtocol == PROTOCOL_IP, { roamingProtocol = PROTOCOL_IP })
+                RadioButtonItem("IPV6", roamingProtocol == PROTOCOL_IPV6, { roamingProtocol = PROTOCOL_IPV6 })
+                RadioButtonItem("IPV4/IPV6", roamingProtocol == PROTOCOL_IPV4V6, { roamingProtocol = PROTOCOL_IPV4V6 })
+                RadioButtonItem("PPP", roamingProtocol == PROTOCOL_PPP, { roamingProtocol = PROTOCOL_PPP})
                 if(VERSION.SDK_INT>=29) {
-                    RadioButtonItem("non-IP", { roamingProtocol == PROTOCOL_NON_IP }, { roamingProtocol = PROTOCOL_NON_IP })
-                    RadioButtonItem("Unstructured", { roamingProtocol == PROTOCOL_UNSTRUCTURED }, { roamingProtocol = PROTOCOL_UNSTRUCTURED })
+                    RadioButtonItem("non-IP", roamingProtocol == PROTOCOL_NON_IP, { roamingProtocol = PROTOCOL_NON_IP })
+                    RadioButtonItem("Unstructured", roamingProtocol == PROTOCOL_UNSTRUCTURED, { roamingProtocol = PROTOCOL_UNSTRUCTURED })
                 }
                 
                 var finalStep by remember { mutableStateOf(false) }

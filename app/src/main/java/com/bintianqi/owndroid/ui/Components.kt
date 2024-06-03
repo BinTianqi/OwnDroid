@@ -81,8 +81,8 @@ fun Information(content: @Composable ()->Unit) {
 @Composable
 fun RadioButtonItem(
     text: String,
-    selected: ()->Boolean,
-    operation: ()->Unit,
+    selected: Boolean,
+    operation: () -> Unit,
     textColor: Color = colorScheme.onBackground
 ) {
     Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
@@ -90,7 +90,7 @@ fun RadioButtonItem(
         .clip(RoundedCornerShape(25))
         .clickable(onClick = operation)
     ) {
-        RadioButton(selected = selected(), onClick = operation)
+        RadioButton(selected = selected, onClick = operation)
         Text(text = text, color = textColor, modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
     }
 }
@@ -98,18 +98,18 @@ fun RadioButtonItem(
 @Composable
 fun CheckBoxItem(
     text: String,
-    checked: ()->Boolean,
-    operation: ()->Unit,
+    checked: Boolean,
+    operation: (Boolean) -> Unit,
     textColor: Color = colorScheme.onBackground
 ) {
     Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
         .fillMaxWidth()
         .clip(RoundedCornerShape(25))
-        .clickable(onClick = operation)
+        .clickable { operation(!checked) }
     ) {
         Checkbox(
-            checked = checked(),
-            onCheckedChange = { operation() }
+            checked = checked,
+            onCheckedChange = operation
         )
         Text(text = text, color = textColor, modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
     }

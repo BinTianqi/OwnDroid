@@ -231,16 +231,16 @@ private fun ResetPassword() {
         if(VERSION.SDK_INT >= 23) {
             RadioButtonItem(
                 stringResource(R.string.do_not_ask_credentials_on_boot),
-                { resetPwdFlag == RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT },
+                resetPwdFlag == RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT,
                 { resetPwdFlag = RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT }
             )
         }
         RadioButtonItem(
             stringResource(R.string.reset_password_require_entry),
-            { resetPwdFlag==RESET_PASSWORD_REQUIRE_ENTRY },
-            { resetPwdFlag=RESET_PASSWORD_REQUIRE_ENTRY }
+            resetPwdFlag == RESET_PASSWORD_REQUIRE_ENTRY,
+            { resetPwdFlag = RESET_PASSWORD_REQUIRE_ENTRY }
         )
-        RadioButtonItem(stringResource(R.string.none), { resetPwdFlag==0 }, { resetPwdFlag=0 })
+        RadioButtonItem(stringResource(R.string.none), resetPwdFlag == 0, { resetPwdFlag = 0 })
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
@@ -310,22 +310,22 @@ private fun PasswordComplexity() {
         Spacer(Modifier.padding(vertical = 5.dp))
         RadioButtonItem(
             passwordComplexity[0].second,
-            { selectedItem == passwordComplexity[0].first },
+            selectedItem == passwordComplexity[0].first,
             { selectedItem = passwordComplexity[0].first }
         )
         RadioButtonItem(
             passwordComplexity[1].second,
-            { selectedItem == passwordComplexity[1].first },
+            selectedItem == passwordComplexity[1].first,
             { selectedItem = passwordComplexity[1].first }
         )
         RadioButtonItem(
             passwordComplexity[2].second,
-            { selectedItem == passwordComplexity[2].first },
+            selectedItem == passwordComplexity[2].first,
             { selectedItem = passwordComplexity[2].first }
         )
         RadioButtonItem(
             passwordComplexity[3].second,
-            { selectedItem == passwordComplexity[3].first },
+            selectedItem == passwordComplexity[3].first,
             { selectedItem = passwordComplexity[3].first }
         )
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -564,24 +564,24 @@ private fun KeyguardDisabledFeatures() {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.keyguard_disabled_features), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        RadioButtonItem(stringResource(R.string.enable_all), { state==0 }, { state=0 })
-        RadioButtonItem(stringResource(R.string.disable_all), { state==1 }, { state=1 })
-        RadioButtonItem(stringResource(R.string.custom), { state==2 }, { state=2 })
+        RadioButtonItem(stringResource(R.string.enable_all), state == 0, { state = 0 })
+        RadioButtonItem(stringResource(R.string.disable_all), state == 1, { state = 1 })
+        RadioButtonItem(stringResource(R.string.custom), state == 2 , { state = 2 })
         AnimatedVisibility(state==2) {
             Column {
-                CheckBoxItem(stringResource(R.string.keyguard_disabled_features_widgets), { widgets }, { widgets=!widgets })
-                CheckBoxItem(stringResource(R.string.keyguard_disabled_features_camera), { camera }, { camera=!camera })
-                CheckBoxItem(stringResource(R.string.keyguard_disabled_features_notification), { notification }, { notification=!notification })
-                CheckBoxItem(stringResource(R.string.keyguard_disabled_features_unredacted_notification), { unredacted }, { unredacted=!unredacted })
-                CheckBoxItem(stringResource(R.string.keyguard_disabled_features_trust_agents), { agents }, { agents=!agents })
-                CheckBoxItem(stringResource(R.string.keyguard_disabled_features_fingerprint), { fingerprint }, { fingerprint=!fingerprint })
-                if(VERSION.SDK_INT >= 24) { CheckBoxItem(stringResource(R.string.keyguard_disabled_features_remote_input), { remote} , { remote=!remote }) }
+                CheckBoxItem(stringResource(R.string.keyguard_disabled_features_widgets), widgets, { widgets = it })
+                CheckBoxItem(stringResource(R.string.keyguard_disabled_features_camera), camera, { camera = it })
+                CheckBoxItem(stringResource(R.string.keyguard_disabled_features_notification), notification, { notification = it })
+                CheckBoxItem(stringResource(R.string.keyguard_disabled_features_unredacted_notification), unredacted, { unredacted = it })
+                CheckBoxItem(stringResource(R.string.keyguard_disabled_features_trust_agents), agents, { agents = it })
+                CheckBoxItem(stringResource(R.string.keyguard_disabled_features_fingerprint), fingerprint, { fingerprint = it })
+                if(VERSION.SDK_INT >= 24) { CheckBoxItem(stringResource(R.string.keyguard_disabled_features_remote_input), remote , { remote = it }) }
                 if(VERSION.SDK_INT >= 28) {
-                    CheckBoxItem(stringResource(R.string.keyguard_disabled_features_face), { face }, { face=!face })
-                    CheckBoxItem(stringResource(R.string.keyguard_disabled_features_iris), { iris }, { iris=!iris })
-                    CheckBoxItem(stringResource(R.string.keyguard_disabled_features_biometrics), { biometrics }, { biometrics=!biometrics })
+                    CheckBoxItem(stringResource(R.string.keyguard_disabled_features_face), face, { face = it })
+                    CheckBoxItem(stringResource(R.string.keyguard_disabled_features_iris), iris, { iris = it })
+                    CheckBoxItem(stringResource(R.string.keyguard_disabled_features_biometrics), biometrics, { biometrics = it })
                 }
-                if(VERSION.SDK_INT >= 34) { CheckBoxItem(stringResource(R.string.keyguard_disabled_features_shortcuts), { shortcuts }, { shortcuts=!shortcuts }) }
+                if(VERSION.SDK_INT >= 34) { CheckBoxItem(stringResource(R.string.keyguard_disabled_features_shortcuts), shortcuts, { shortcuts = it }) }
             }
         }
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -640,14 +640,14 @@ private fun PasswordQuality() {
         Text(text = stringResource(R.string.password_complexity_instead_password_quality))
         if(VERSION.SDK_INT >= 31) { Text(text = stringResource(R.string.password_quality_deprecated_desc), color = colorScheme.error) }
         Spacer(Modifier.padding(vertical = 5.dp))
-        RadioButtonItem(passwordQuality[0].second, { selectedItem == passwordQuality[0].first }, { selectedItem = passwordQuality[0].first })
-        RadioButtonItem(passwordQuality[1].second, { selectedItem == passwordQuality[1].first }, { selectedItem = passwordQuality[1].first })
-        RadioButtonItem(passwordQuality[2].second, { selectedItem == passwordQuality[2].first }, { selectedItem = passwordQuality[2].first })
-        RadioButtonItem(passwordQuality[3].second, { selectedItem == passwordQuality[3].first }, { selectedItem = passwordQuality[3].first })
-        RadioButtonItem(passwordQuality[4].second, { selectedItem == passwordQuality[4].first }, { selectedItem = passwordQuality[4].first })
-        RadioButtonItem(passwordQuality[5].second, { selectedItem == passwordQuality[5].first }, { selectedItem = passwordQuality[5].first })
-        RadioButtonItem(passwordQuality[6].second, { selectedItem == passwordQuality[6].first }, { selectedItem = passwordQuality[6].first })
-        RadioButtonItem(passwordQuality[7].second, { selectedItem == passwordQuality[7].first }, { selectedItem = passwordQuality[7].first })
+        RadioButtonItem(passwordQuality[0].second, selectedItem == passwordQuality[0].first, { selectedItem = passwordQuality[0].first })
+        RadioButtonItem(passwordQuality[1].second, selectedItem == passwordQuality[1].first, { selectedItem = passwordQuality[1].first })
+        RadioButtonItem(passwordQuality[2].second, selectedItem == passwordQuality[2].first, { selectedItem = passwordQuality[2].first })
+        RadioButtonItem(passwordQuality[3].second, selectedItem == passwordQuality[3].first, { selectedItem = passwordQuality[3].first })
+        RadioButtonItem(passwordQuality[4].second, selectedItem == passwordQuality[4].first, { selectedItem = passwordQuality[4].first })
+        RadioButtonItem(passwordQuality[5].second, selectedItem == passwordQuality[5].first, { selectedItem = passwordQuality[5].first })
+        RadioButtonItem(passwordQuality[6].second, selectedItem == passwordQuality[6].first, { selectedItem = passwordQuality[6].first })
+        RadioButtonItem(passwordQuality[7].second, selectedItem == passwordQuality[7].first, { selectedItem = passwordQuality[7].first })
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
