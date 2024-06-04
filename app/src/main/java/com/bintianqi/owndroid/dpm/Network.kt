@@ -158,16 +158,16 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState, wifiMacDia
             style = typography.headlineLarge,
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp)
         )
-        if(VERSION.SDK_INT >= 24 && (isDeviceOwner(dpm) || (VERSION.SDK_INT >= 30 && isProfileOwner(dpm) && dpm.isManagedProfile(receiver) && dpm.isOrganizationOwnedDeviceWithManagedProfile))) {
+        if(VERSION.SDK_INT >= 24 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.wifi_mac_addr, "", R.drawable.wifi_fill0) { wifiMacDialog.value = true }
         }
         if(VERSION.SDK_INT >= 30) {
             SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Switches") }
         }
-        if(VERSION.SDK_INT >= 33) {
+        if(VERSION.SDK_INT >= 33 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.min_wifi_security_level, "", R.drawable.wifi_password_fill0) { navCtrl.navigate("MinWifiSecurityLevel") }
         }
-        if(VERSION.SDK_INT >= 33 && (isDeviceOwner(dpm) || (isProfileOwner(dpm) && dpm.isOrganizationOwnedDeviceWithManagedProfile))) {
+        if(VERSION.SDK_INT >= 33 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.wifi_ssid_policy, "", R.drawable.wifi_fill0) { navCtrl.navigate("WifiSsidPolicy") }
         }
         if(VERSION.SDK_INT >= 29 && isDeviceOwner(dpm)) {
@@ -199,7 +199,7 @@ private fun Switches() {
                 { dpm.isPreferentialNetworkServiceEnabled }, { dpm.isPreferentialNetworkServiceEnabled = it }
             )
         }
-        if(VERSION.SDK_INT>=30&&(isDeviceOwner(dpm)||(isProfileOwner(dpm)&&dpm.isOrganizationOwnedDeviceWithManagedProfile))) {
+        if(VERSION.SDK_INT>=30 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
             SwitchItem(R.string.wifi_lockdown, "", R.drawable.wifi_password_fill0,
                 { dpm.hasLockdownAdminConfiguredNetworks(receiver) }, { dpm.setConfiguredNetworksLockdownState(receiver,it) }
             )
@@ -240,7 +240,6 @@ private fun WifiSecLevel() {
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
-            enabled = isDeviceOwner(dpm) || (isProfileOwner(dpm) && dpm.isOrganizationOwnedDeviceWithManagedProfile),
             onClick = {
                 dpm.minimumRequiredWifiSecurityLevel = selectedWifiSecLevel
                 Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()

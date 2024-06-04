@@ -82,6 +82,7 @@ fun Password(navCtrl: NavHostController) {
 private fun Home(navCtrl:NavHostController,scrollState: ScrollState) {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context, Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
             text = stringResource(R.string.password_and_keyguard),
@@ -89,14 +90,18 @@ private fun Home(navCtrl:NavHostController,scrollState: ScrollState) {
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp)
         )
         SubPageItem(R.string.password_info, "", R.drawable.info_fill0) { navCtrl.navigate("PasswordInfo") }
-        if(VERSION.SDK_INT >= 26) {
+        if(VERSION.SDK_INT >= 26 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
             SubPageItem(R.string.reset_password_token, "", R.drawable.key_vertical_fill0) { navCtrl.navigate("ResetPasswordToken") }
         }
-        SubPageItem(R.string.reset_password, "", R.drawable.lock_reset_fill0) { navCtrl.navigate("ResetPassword") }
-        if(VERSION.SDK_INT >= 31) {
+        if(dpm.isAdminActive(receiver) || isDeviceOwner(dpm) || isProfileOwner(dpm)) {
+            SubPageItem(R.string.reset_password, "", R.drawable.lock_reset_fill0) { navCtrl.navigate("ResetPassword") }
+        }
+        if(VERSION.SDK_INT >= 31 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
             SubPageItem(R.string.required_password_complexity, "", R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordComplexity") }
         }
-        SubPageItem(R.string.keyguard_disabled_features, "", R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("KeyguardDisabledFeatures") }
+        if(isDeviceOwner(dpm)) {
+            SubPageItem(R.string.keyguard_disabled_features, "", R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("KeyguardDisabledFeatures") }
+        }
         if(isDeviceOwner(dpm)) {
             SubPageItem(R.string.max_time_to_lock, "", R.drawable.schedule_fill0) { navCtrl.navigate("MaxTimeToLock") }
             SubPageItem(R.string.pwd_timeout, "", R.drawable.lock_clock_fill0) { navCtrl.navigate("PasswordTimeout") }
@@ -106,7 +111,9 @@ private fun Home(navCtrl:NavHostController,scrollState: ScrollState) {
         if(VERSION.SDK_INT >= 26 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
             SubPageItem(R.string.required_strong_auth_timeout, "", R.drawable.fingerprint_off_fill0) { navCtrl.navigate("RequiredStrongAuthTimeout") }
         }
-        SubPageItem(R.string.required_password_quality, "", R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordQuality") }
+        if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
+            SubPageItem(R.string.required_password_quality, "", R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordQuality") }
+        }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
@@ -163,8 +170,7 @@ private fun ResetPasswordToken() {
                     Toast.LENGTH_SHORT
                 ).show()
             },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = isDeviceOwner(dpm) || isProfileOwner(dpm)
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.clear))
         }
@@ -180,7 +186,6 @@ private fun ResetPasswordToken() {
                     Toast.makeText(context, R.string.security_exception, Toast.LENGTH_SHORT).show()
                 }
             },
-            enabled = isDeviceOwner(dpm) || isProfileOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.set))
@@ -192,7 +197,6 @@ private fun ResetPasswordToken() {
                     catch(e:NullPointerException) { Toast.makeText(context, R.string.please_set_a_token, Toast.LENGTH_SHORT).show() }
                 } else { Toast.makeText(context, R.string.token_already_activated, Toast.LENGTH_SHORT).show() }
             },
-            enabled = isDeviceOwner(dpm)||isProfileOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.activate))
@@ -219,7 +223,7 @@ private fun ResetPassword() {
         OutlinedTextField(
             value = newPwd,
             onValueChange = { newPwd=it },
-            enabled = !confirmed && (isDeviceOwner(dpm) || isProfileOwner(dpm) || dpm.isAdminActive(receiver)),
+            enabled = !confirmed,
             label = { Text(stringResource(R.string.password)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
@@ -247,7 +251,6 @@ private fun ResetPassword() {
                 if(newPwd.length>=4 || newPwd.isEmpty()) { confirmed=!confirmed }
                 else { Toast.makeText(context, R.string.require_4_digit_password, Toast.LENGTH_SHORT).show() }
             },
-            enabled = isDeviceOwner(dpm) || isProfileOwner(dpm) || dpm.isAdminActive(receiver),
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
                 containerColor = if(confirmed) colorScheme.primary else colorScheme.error,
@@ -301,9 +304,7 @@ private fun PasswordComplexity() {
         PASSWORD_COMPLEXITY_HIGH to stringResource(R.string.password_complexity_high)
     ).toList()
     var selectedItem by remember { mutableIntStateOf(passwordComplexity[0].first) }
-    if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
-        selectedItem=dpm.requiredPasswordComplexity
-    }
+    LaunchedEffect(Unit) { selectedItem = dpm.requiredPasswordComplexity }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.required_password_complexity), style = typography.headlineLarge)
@@ -335,7 +336,6 @@ private fun PasswordComplexity() {
                 dpm.requiredPasswordComplexity = selectedItem
                 Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             },
-            enabled = isDeviceOwner(dpm) || isProfileOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = stringResource(R.string.apply))
@@ -607,7 +607,6 @@ private fun KeyguardDisabledFeatures() {
                 Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                 calculateCustomFeature()
             },
-            enabled = isDeviceOwner(dpm) || isProfileOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = stringResource(R.string.apply))
@@ -632,7 +631,7 @@ private fun PasswordQuality() {
         PASSWORD_QUALITY_COMPLEX to stringResource(R.string.custom) + "（${stringResource(R.string.unsupported) }）",
     ).toList()
     var selectedItem by remember { mutableIntStateOf(passwordQuality[0].first) }
-    if(isDeviceOwner(dpm) || isProfileOwner(dpm)) { selectedItem=dpm.getPasswordQuality(receiver) }
+    LaunchedEffect(Unit) { selectedItem=dpm.getPasswordQuality(receiver) }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.required_password_quality), style = typography.headlineLarge)
@@ -654,7 +653,6 @@ private fun PasswordQuality() {
                 dpm.setPasswordQuality(receiver,selectedItem)
                 Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             },
-            enabled = isDeviceOwner(dpm) || isProfileOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.apply))

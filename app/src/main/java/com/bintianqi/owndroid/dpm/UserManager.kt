@@ -117,11 +117,15 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState) {
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp)
         )
         SubPageItem(R.string.user_info, "", R.drawable.person_fill0) { navCtrl.navigate("UserInfo") }
-        SubPageItem(R.string.user_operation, "", R.drawable.sync_alt_fill0) { navCtrl.navigate("UserOperation") }
+        if(isDeviceOwner(dpm)) {
+            SubPageItem(R.string.user_operation, "", R.drawable.sync_alt_fill0) { navCtrl.navigate("UserOperation") }
+        }
         if(VERSION.SDK_INT >= 24 && isDeviceOwner(dpm)) {
             SubPageItem(R.string.create_user, "", R.drawable.person_add_fill0) { navCtrl.navigate("CreateUser") }
         }
-        SubPageItem(R.string.edit_username, "", R.drawable.edit_fill0) { navCtrl.navigate("EditUsername") }
+        if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
+            SubPageItem(R.string.edit_username, "", R.drawable.edit_fill0) { navCtrl.navigate("EditUsername") }
+        }
         if(VERSION.SDK_INT >= 23 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
             SubPageItem(R.string.change_user_icon, "", R.drawable.account_circle_fill0) { navCtrl.navigate("ChangeUserIcon") }
         }
@@ -195,7 +199,6 @@ private fun UserOperation() {
                 }
             },
             label = { Text(if(useUid) "UID" else stringResource(R.string.serial_number)) },
-            enabled = isDeviceOwner(dpm),
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() })
@@ -212,7 +215,6 @@ private fun UserOperation() {
                         val result = dpm.logoutUser(receiver)
                         Toast.makeText(context, userOperationResultCode(result, context), Toast.LENGTH_SHORT).show()
                     },
-                    enabled = isProfileOwner(dpm),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(stringResource(R.string.logout_current_user))
@@ -226,7 +228,6 @@ private fun UserOperation() {
                     val result = dpm.startUserInBackground(receiver, userHandleById)
                     Toast.makeText(context, userOperationResultCode(result, context), Toast.LENGTH_SHORT).show()
                 },
-                enabled = isDeviceOwner(dpm),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.start_in_background))
@@ -237,7 +238,6 @@ private fun UserOperation() {
                 focusMgr.clearFocus()
                 Toast.makeText(context, if(dpm.switchUser(receiver,userHandleById)) R.string.success else R.string.fail, Toast.LENGTH_SHORT).show()
             },
-            enabled = isDeviceOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.user_operation_switch))
@@ -253,7 +253,6 @@ private fun UserOperation() {
                         Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show()
                     }
                 },
-                enabled = isDeviceOwner(dpm),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.user_operation_stop))
@@ -269,7 +268,6 @@ private fun UserOperation() {
                     Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show()
                 }
             },
-            enabled = isDeviceOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.user_operation_remove))
@@ -327,7 +325,6 @@ private fun CreateUser() {
                 focusMgr.clearFocus()
                 Toast.makeText(context, if(newUserHandle!=null) R.string.success else R.string.fail, Toast.LENGTH_SHORT).show()
             },
-            enabled = isDeviceOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.create))
@@ -422,8 +419,7 @@ private fun Username() {
             label = { Text(stringResource(R.string.username)) },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.fillMaxWidth(),
-            enabled = isDeviceOwner(dpm) || isProfileOwner(dpm)
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
@@ -431,14 +427,12 @@ private fun Username() {
                 dpm.setProfileName(receiver, inputUsername)
                 Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             },
-            enabled = isDeviceOwner(dpm) || isProfileOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.apply))
         }
         Button(
             onClick = { dpm.setProfileName(receiver,null) },
-            enabled = isDeviceOwner(dpm) || isProfileOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.reset))
@@ -467,8 +461,7 @@ private fun UserSessionMessage() {
             label = { Text(stringResource(R.string.start_user_session_msg)) },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
-            modifier = Modifier.fillMaxWidth(),
-            enabled = isDeviceOwner(dpm) || isProfileOwner(dpm)
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 2.dp))
         OutlinedTextField(
@@ -477,8 +470,7 @@ private fun UserSessionMessage() {
             label = { Text(stringResource(R.string.end_user_session_msg)) },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.fillMaxWidth(),
-            enabled = isDeviceOwner(dpm) || isProfileOwner(dpm)
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
@@ -487,7 +479,6 @@ private fun UserSessionMessage() {
                 dpm.setEndUserSessionMessage(receiver,end)
                 Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             },
-            enabled = isDeviceOwner(dpm) || isProfileOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.apply))
@@ -498,7 +489,6 @@ private fun UserSessionMessage() {
                 dpm.setEndUserSessionMessage(receiver,null)
                 Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             },
-            enabled = isDeviceOwner(dpm) || isProfileOwner(dpm),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.reset))

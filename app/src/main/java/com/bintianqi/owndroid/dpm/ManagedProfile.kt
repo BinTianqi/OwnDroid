@@ -106,7 +106,7 @@ private fun Home(navCtrl: NavHostController) {
         if(VERSION.SDK_INT<24 || (VERSION.SDK_INT>=24 && dpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE))) {
             SubPageItem(R.string.create_work_profile, "", R.drawable.work_fill0) { navCtrl.navigate("CreateWorkProfile") }
         }
-        if(VERSION.SDK_INT >= 30&&isProfileOwner(dpm) && dpm.isManagedProfile(receiver) && dpm.isOrganizationOwnedDeviceWithManagedProfile) {
+        if(dpm.isOrgProfile(receiver)) {
             SubPageItem(R.string.suspend_personal_app, "", R.drawable.block_fill0) { navCtrl.navigate("SuspendPersonalApp") }
         }
         if(isProfileOwner(dpm) && (VERSION.SDK_INT<24 || (VERSION.SDK_INT>=24 && dpm.isManagedProfile(receiver)))) {

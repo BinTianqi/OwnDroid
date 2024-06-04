@@ -268,7 +268,7 @@ private fun Home(
         if(VERSION.SDK_INT>=28&&isDeviceOwner(dpm)) { 
             SubPageItem(R.string.keep_uninstalled_packages, "", R.drawable.delete_fill0) { navCtrl.navigate("KeepUninstalled") }
         }
-        if(VERSION.SDK_INT>=28) { 
+        if(VERSION.SDK_INT>=28 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
             SubPageItem(R.string.clear_app_storage, "", R.drawable.mop_fill0) {
                 if(pkgName != "") { clearAppDataDialog.value = true }
             }

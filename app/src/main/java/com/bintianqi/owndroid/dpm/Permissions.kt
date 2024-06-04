@@ -283,11 +283,12 @@ private fun DeviceOwner() {
 fun DeviceInfo() {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.device_info), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT>=34 && (isDeviceOwner(dpm) || (isProfileOwner(dpm) && dpm.isOrganizationOwnedDeviceWithManagedProfile))) {
+        if(VERSION.SDK_INT>=34 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
             val financed = dpm.isDeviceFinanced
             Text(stringResource(R.string.is_device_financed, financed))
         }

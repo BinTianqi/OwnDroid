@@ -176,11 +176,13 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
             SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Switches") }
         }
         SubPageItem(R.string.keyguard, "", R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("Keyguard") }
-        if(VERSION.SDK_INT >= 24) {
-            SubPageItem(R.string.bug_report, "", R.drawable.bug_report_fill0) { bugReportDialog.value = true }
+        if(VERSION.SDK_INT >= 24 && isDeviceOwner(dpm)) {
             SubPageItem(R.string.reboot, "", R.drawable.restart_alt_fill0) { rebootDialog.value = true }
         }
-        if(VERSION.SDK_INT >= 28) {
+        if(isDeviceOwner(dpm) && ((VERSION.SDK_INT >= 28 && dpm.isAffiliatedUser) || VERSION.SDK_INT >= 24)) {
+            SubPageItem(R.string.bug_report, "", R.drawable.bug_report_fill0) { bugReportDialog.value = true }
+        }
+        if(VERSION.SDK_INT >= 28 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.edit_time, "", R.drawable.schedule_fill0) { navCtrl.navigate("EditTime") }
             SubPageItem(R.string.edit_timezone, "", R.drawable.schedule_fill0) { navCtrl.navigate("EditTimeZone") }
         }
@@ -199,26 +201,21 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
         if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
             SubPageItem(R.string.ca_cert, "", R.drawable.license_fill0) { navCtrl.navigate("CaCert") }
         }
-        if(VERSION.SDK_INT >= 26 && (isDeviceOwner(dpm) || (VERSION.SDK_INT >= 30 && isProfileOwner(dpm) && dpm.isOrganizationOwnedDeviceWithManagedProfile))) {
+        if(VERSION.SDK_INT >= 26 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.security_logs, "", R.drawable.description_fill0) { navCtrl.navigate("SecurityLogs") }
         }
-        if(VERSION.SDK_INT >= 23 && isDeviceOwner(dpm)) {
+        if(VERSION.SDK_INT >= 23 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.system_update_policy, "", R.drawable.system_update_fill0) { navCtrl.navigate("SystemUpdatePolicy") }
         }
-        if(
-            VERSION.SDK_INT >= 29 &&
-            (isDeviceOwner(dpm) ||
-                    (VERSION.SDK_INT >= 30 && isProfileOwner(dpm) && dpm.isManagedProfile(receiver) && dpm.isOrganizationOwnedDeviceWithManagedProfile))
-        ) {
+        if(VERSION.SDK_INT >= 29 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.install_system_update, "", R.drawable.system_update_fill0) { navCtrl.navigate("InstallSystemUpdate") }
         }
-        if(
-            VERSION.SDK_INT >= 30 &&
-            (isDeviceOwner(dpm) || (isProfileOwner(dpm) && dpm.isManagedProfile(receiver) && dpm.isOrganizationOwnedDeviceWithManagedProfile))
-        ) {
+        if(VERSION.SDK_INT >= 30 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.frp_policy, "", R.drawable.device_reset_fill0) { navCtrl.navigate("FRP") }
         }
-        SubPageItem(R.string.wipe_data, "", R.drawable.warning_fill0) { navCtrl.navigate("WipeData") }
+        if(dpm.isAdminActive(receiver)) {
+            SubPageItem(R.string.wipe_data, "", R.drawable.warning_fill0) { navCtrl.navigate("WipeData") }
+        }
         Spacer(Modifier.padding(vertical = 30.dp))
         LaunchedEffect(Unit) { fileUriFlow.value = Uri.parse("") }
     }
@@ -246,7 +243,7 @@ private fun Switches() {
                 { dpm.isStatusBarDisabled}, { dpm.setStatusBarDisabled(receiver,it) }
             )
         }
-        if(isDeviceOwner(dpm) || (VERSION.SDK_INT >= 30 && isProfileOwner(dpm) && dpm.isOrganizationOwnedDeviceWithManagedProfile)) {
+        if(isDeviceOwner(dpm) || dpm.isOrgProfile(receiver)) {
             if(VERSION.SDK_INT >= 30) {
                 SwitchItem(R.string.auto_time, "", R.drawable.schedule_fill0,
                     { dpm.getAutoTimeEnabled(receiver) }, { dpm.setAutoTimeEnabled(receiver,it) }
@@ -278,7 +275,7 @@ private fun Switches() {
                 { dpm.isCommonCriteriaModeEnabled(receiver) }, { dpm.setCommonCriteriaModeEnabled(receiver,it) }
             )
         }
-        if(VERSION.SDK_INT >= 31 && (isDeviceOwner(dpm) || (VERSION.SDK_INT >= 30 && isProfileOwner(dpm) && dpm.isOrganizationOwnedDeviceWithManagedProfile))) {
+        if(VERSION.SDK_INT >= 31 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
             SwitchItem(
                 R.string.usb_signal, "", R.drawable.usb_fill0, { dpm.isUsbDataSignalingEnabled },
                 {
@@ -422,14 +419,13 @@ private fun EditTime() {
             onValueChange = { inputTime = it},
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
-            enabled = isDeviceOwner(dpm) || (VERSION.SDK_INT >= 30 && isProfileOwner(dpm) && dpm.isOrganizationOwnedDeviceWithManagedProfile),
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = { dpm.setTime(receiver,inputTime.toLong()) },
             modifier = Modifier.fillMaxWidth(),
-            enabled = inputTime!="" && (isDeviceOwner(dpm) || (VERSION.SDK_INT >= 30 && isProfileOwner(dpm) && dpm.isOrganizationOwnedDeviceWithManagedProfile))
+            enabled = inputTime != ""
         ) {
             Text(stringResource(R.string.apply))
         }
@@ -1065,7 +1061,6 @@ private fun WipeData() {
                 containerColor = if(confirmed) colorScheme.primary else colorScheme.error ,
                 contentColor = if(confirmed) colorScheme.onPrimary else colorScheme.onError 
             ),
-            enabled = dpm.isAdminActive(receiver),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = stringResource(if(confirmed) R.string.cancel else R.string.confirm))
@@ -1084,7 +1079,7 @@ private fun WipeData() {
         ) {
             Text("WipeData")
         }
-        if (VERSION.SDK_INT >= 34 && (isDeviceOwner(dpm) || (isProfileOwner(dpm) && dpm.isOrganizationOwnedDeviceWithManagedProfile))) {
+        if (VERSION.SDK_INT >= 34 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
             Button(
                 onClick = { dpm.wipeDevice(flag) },
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
@@ -1167,7 +1162,6 @@ private fun SysUpdatePolicy() {
                         dpm.setSystemUpdatePolicy(receiver,policy)
                         Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                     },
-                    enabled = isDeviceOwner(dpm),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(stringResource(R.string.apply))
