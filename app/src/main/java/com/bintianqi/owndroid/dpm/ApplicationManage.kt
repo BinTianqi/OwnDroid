@@ -11,9 +11,7 @@ import android.app.admin.PackagePolicy.PACKAGE_POLICY_ALLOWLIST
 import android.app.admin.PackagePolicy.PACKAGE_POLICY_ALLOWLIST_AND_SYSTEM
 import android.app.admin.PackagePolicy.PACKAGE_POLICY_BLOCKLIST
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager.NameNotFoundException
 import android.net.Uri
 import android.os.Build.VERSION
@@ -23,16 +21,45 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material3.*
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.runtime.*
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableIntState
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,11 +78,19 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.bintianqi.owndroid.*
+import com.bintianqi.owndroid.PackageInstallerReceiver
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.ui.*
-import java.io.IOException
-import java.io.InputStream
+import com.bintianqi.owndroid.Receiver
+import com.bintianqi.owndroid.fileUriFlow
+import com.bintianqi.owndroid.getFile
+import com.bintianqi.owndroid.toText
+import com.bintianqi.owndroid.ui.Animations
+import com.bintianqi.owndroid.ui.Information
+import com.bintianqi.owndroid.ui.RadioButtonItem
+import com.bintianqi.owndroid.ui.SubPageItem
+import com.bintianqi.owndroid.ui.SwitchItem
+import com.bintianqi.owndroid.ui.TopBar
+import com.bintianqi.owndroid.uriToStream
 import java.util.concurrent.Executors
 
 private var dialogConfirmButtonAction = {}
@@ -1103,22 +1138,4 @@ private fun AppControlDialog(status: MutableIntState) {
             }
         }
     }
-}
-
-@Throws(IOException::class)
-private fun installPackage(context: Context, inputStream: InputStream) { 
-    val packageInstaller = context.packageManager.packageInstaller
-    val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
-    val sessionId = packageInstaller.createSession(params)
-    val session = packageInstaller.openSession(sessionId)
-    val out = session.openWrite("COSU", 0, -1)
-    val buffer = ByteArray(65536)
-    var c: Int
-    while(inputStream.read(buffer).also{c = it}!=-1) { out.write(buffer, 0, c) }
-    session.fsync(out)
-    inputStream.close()
-    out.close()
-    val intent = Intent(context, PackageInstallerReceiver::class.java)
-    val pendingIntent = PendingIntent.getBroadcast(context, sessionId, intent, PendingIntent.FLAG_IMMUTABLE).intentSender
-    session.commit(pendingIntent)
 }

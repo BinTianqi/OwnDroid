@@ -51,6 +51,22 @@
             android:windowSoftInputMode="adjustResize|stateHidden"
             android:theme="@style/Theme.OwnDroid">
         </activity>
+        <activity
+            android:name=".InstallAppActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize|stateHidden"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.OwnDroidAppInstaller">
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.INSTALL_PACKAGE"/>
+                <data android:scheme="content"/>
+                <data android:scheme="file"/>
+                <data android:mimeType="application/vnd.android.package-archive"/>
+            </intent-filter>
+        </activity>
         <receiver
             android:name=".Receiver"
             android:description="@string/app_name"
