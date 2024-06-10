@@ -168,7 +168,7 @@ fun ShizukuActivate() {
             }
         }
         
-        if(VERSION.SDK_INT >= 30 && !dpm.isOrgProfile(receiver)) {
+        if(VERSION.SDK_INT >= 30 && isProfileOwner(dpm) && dpm.isManagedProfile(receiver) && !dpm.isOrganizationOwnedDeviceWithManagedProfile) {
             AnimatedVisibility(showOrgProfileOwnerButton) {
                 Button(
                     onClick = {
