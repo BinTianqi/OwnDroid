@@ -67,7 +67,7 @@ fun Password(navCtrl: NavHostController) {
             composable(route = "ResetPasswordToken") { ResetPasswordToken() }
             composable(route = "ResetPassword") { ResetPassword() }
             composable(route = "RequirePasswordComplexity") { PasswordComplexity() }
-            composable(route = "KeyguardDisabledFeatures") { KeyguardDisabledFeatures() }
+            composable(route = "DisableKeyguardFeatures") { DisableKeyguardFeatures() }
             composable(route = "MaxTimeToLock") { ScreenTimeout() }
             composable(route = "PasswordTimeout") { PasswordExpiration() }
             composable(route = "MaxPasswordFail") { MaxFailedPasswordForWipe() }
@@ -99,13 +99,15 @@ private fun Home(navCtrl:NavHostController,scrollState: ScrollState) {
         if(VERSION.SDK_INT >= 31 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
             SubPageItem(R.string.required_password_complexity, "", R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordComplexity") }
         }
-        if(isDeviceOwner(dpm)) {
-            SubPageItem(R.string.keyguard_disabled_features, "", R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("KeyguardDisabledFeatures") }
+        if(dpm.isAdminActive(receiver)) {
+            SubPageItem(R.string.disable_keyguard_features, "", R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("DisableKeyguardFeatures") }
         }
         if(isDeviceOwner(dpm)) {
             SubPageItem(R.string.max_time_to_lock, "", R.drawable.schedule_fill0) { navCtrl.navigate("MaxTimeToLock") }
             SubPageItem(R.string.pwd_timeout, "", R.drawable.lock_clock_fill0) { navCtrl.navigate("PasswordTimeout") }
             SubPageItem(R.string.max_pwd_fail, "", R.drawable.no_encryption_fill0) { navCtrl.navigate("MaxPasswordFail") }
+        }
+        if(dpm.isAdminActive(receiver)){
             SubPageItem(R.string.pwd_history, "", R.drawable.history_fill0) { navCtrl.navigate("PasswordHistoryLength") }
         }
         if(VERSION.SDK_INT >= 26 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
@@ -519,7 +521,7 @@ private fun PasswordHistoryLength() {
 }
 
 @Composable
-private fun KeyguardDisabledFeatures() {
+private fun DisableKeyguardFeatures() {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
@@ -562,26 +564,26 @@ private fun KeyguardDisabledFeatures() {
     }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.keyguard_disabled_features), style = typography.headlineLarge)
+        Text(text = stringResource(R.string.disable_keyguard_features), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         RadioButtonItem(stringResource(R.string.enable_all), state == 0, { state = 0 })
         RadioButtonItem(stringResource(R.string.disable_all), state == 1, { state = 1 })
         RadioButtonItem(stringResource(R.string.custom), state == 2 , { state = 2 })
         AnimatedVisibility(state==2) {
             Column {
-                CheckBoxItem(stringResource(R.string.keyguard_disabled_features_widgets), widgets, { widgets = it })
-                CheckBoxItem(stringResource(R.string.keyguard_disabled_features_camera), camera, { camera = it })
-                CheckBoxItem(stringResource(R.string.keyguard_disabled_features_notification), notification, { notification = it })
-                CheckBoxItem(stringResource(R.string.keyguard_disabled_features_unredacted_notification), unredacted, { unredacted = it })
-                CheckBoxItem(stringResource(R.string.keyguard_disabled_features_trust_agents), agents, { agents = it })
-                CheckBoxItem(stringResource(R.string.keyguard_disabled_features_fingerprint), fingerprint, { fingerprint = it })
-                if(VERSION.SDK_INT >= 24) { CheckBoxItem(stringResource(R.string.keyguard_disabled_features_remote_input), remote , { remote = it }) }
+                CheckBoxItem(stringResource(R.string.disable_keyguard_features_widgets), widgets, { widgets = it })
+                CheckBoxItem(stringResource(R.string.disable_keyguard_features_camera), camera, { camera = it })
+                CheckBoxItem(stringResource(R.string.disable_keyguard_features_notification), notification, { notification = it })
+                CheckBoxItem(stringResource(R.string.disable_keyguard_features_unredacted_notification), unredacted, { unredacted = it })
+                CheckBoxItem(stringResource(R.string.disable_keyguard_features_trust_agents), agents, { agents = it })
+                CheckBoxItem(stringResource(R.string.disable_keyguard_features_fingerprint), fingerprint, { fingerprint = it })
+                if(VERSION.SDK_INT >= 24) { CheckBoxItem(stringResource(R.string.disable_keyguard_features_remote_input), remote , { remote = it }) }
                 if(VERSION.SDK_INT >= 28) {
-                    CheckBoxItem(stringResource(R.string.keyguard_disabled_features_face), face, { face = it })
-                    CheckBoxItem(stringResource(R.string.keyguard_disabled_features_iris), iris, { iris = it })
-                    CheckBoxItem(stringResource(R.string.keyguard_disabled_features_biometrics), biometrics, { biometrics = it })
+                    CheckBoxItem(stringResource(R.string.disable_keyguard_features_face), face, { face = it })
+                    CheckBoxItem(stringResource(R.string.disable_keyguard_features_iris), iris, { iris = it })
+                    CheckBoxItem(stringResource(R.string.disable_keyguard_features_biometrics), biometrics, { biometrics = it })
                 }
-                if(VERSION.SDK_INT >= 34) { CheckBoxItem(stringResource(R.string.keyguard_disabled_features_shortcuts), shortcuts, { shortcuts = it }) }
+                if(VERSION.SDK_INT >= 34) { CheckBoxItem(stringResource(R.string.disable_keyguard_features_shortcuts), shortcuts, { shortcuts = it }) }
             }
         }
         Spacer(Modifier.padding(vertical = 5.dp))

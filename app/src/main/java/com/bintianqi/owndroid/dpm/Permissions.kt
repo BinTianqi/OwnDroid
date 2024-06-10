@@ -72,7 +72,7 @@ fun DpmPermissions(navCtrl:NavHostController) {
             composable(route = "DeviceInfo") { DeviceInfo() }
             composable(route = "SpecificID") { SpecificID() }
             composable(route = "OrgName") { OrgName() }
-            composable(route = "NoManagementAccount") { NoManageAccount() }
+            composable(route = "DisableAccountManagement") { DisableAccountManagement() }
             composable(route = "LockScreenInfo") { LockScreenInfo() }
             composable(route = "SupportMsg") { SupportMsg() }
             composable(route = "TransformOwnership") { TransformOwnership() }
@@ -116,7 +116,7 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
             SubPageItem(R.string.org_name, "", R.drawable.corporate_fare_fill0) { localNavCtrl.navigate("OrgName") }
         }
         if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
-            SubPageItem(R.string.account_types_management_disabled, "", R.drawable.account_circle_fill0) { localNavCtrl.navigate("NoManagementAccount") }
+            SubPageItem(R.string.disable_account_management, "", R.drawable.account_circle_fill0) { localNavCtrl.navigate("NoManagementAccount") }
         }
         if(VERSION.SDK_INT >= 24&&isDeviceOwner(dpm)) {
             SubPageItem(R.string.device_owner_lock_screen_info, "", R.drawable.screen_lock_portrait_fill0) { localNavCtrl.navigate("LockScreenInfo") }
@@ -449,14 +449,14 @@ private fun SupportMsg() {
 }
 
 @Composable
-private fun NoManageAccount() {
+private fun DisableAccountManagement() {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.account_types_management_disabled), style = typography.headlineLarge)
+        Text(text = stringResource(R.string.disable_account_management), style = typography.headlineLarge)
         Text(stringResource(R.string.unknown_effect))
         var accountList by remember{ mutableStateOf("") }
         val refreshList = {
@@ -475,7 +475,7 @@ private fun NoManageAccount() {
         OutlinedTextField(
             value = inputText,
             onValueChange = { inputText = it },
-            label = { Text(stringResource(R.string.account_types)) },
+            label = { Text(stringResource(R.string.account_types_is)) },
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() })

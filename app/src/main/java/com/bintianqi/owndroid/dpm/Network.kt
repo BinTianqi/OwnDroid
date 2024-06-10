@@ -128,8 +128,8 @@ fun Network(navCtrl: NavHostController) {
             composable(route = "MinWifiSecurityLevel") { WifiSecLevel() }
             composable(route = "WifiSsidPolicy") { WifiSsidPolicy() }
             composable(route = "PrivateDNS") { PrivateDNS() }
-            composable(route = "NetLog") { NetLog() }
-            composable(route = "WifiKeypair") { WifiKeypair() }
+            composable(route = "NetworkLog") { NetworkLog() }
+            composable(route = "WifiAuthKeypair") { WifiAuthKeypair() }
             composable(route = "APN") { APN() }
         }
     }
@@ -174,10 +174,10 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState, wifiMacDia
             SubPageItem(R.string.private_dns, "", R.drawable.dns_fill0) { navCtrl.navigate("PrivateDNS") }
         }
         if(VERSION.SDK_INT >= 26&&(isDeviceOwner(dpm) || (isProfileOwner(dpm) && dpm.isManagedProfile(receiver)))) {
-            SubPageItem(R.string.retrieve_net_logs, "", R.drawable.description_fill0) { navCtrl.navigate("NetLog") }
+            SubPageItem(R.string.retrieve_net_logs, "", R.drawable.description_fill0) { navCtrl.navigate("NetworkLog") }
         }
         if(VERSION.SDK_INT >= 31 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
-            SubPageItem(R.string.wifi_keypair, "", R.drawable.key_fill0) { navCtrl.navigate("WifiKeypair") }
+            SubPageItem(R.string.wifi_auth_keypair, "", R.drawable.key_fill0) { navCtrl.navigate("WifiAuthKeypair") }
         }
         if(VERSION.SDK_INT >= 28 && isDeviceOwner(dpm)) {
             SubPageItem(R.string.apn_settings, "", R.drawable.cell_tower_fill0) { navCtrl.navigate("APN") }
@@ -200,7 +200,7 @@ private fun Switches() {
             )
         }
         if(VERSION.SDK_INT>=30 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
-            SwitchItem(R.string.wifi_lockdown, "", R.drawable.wifi_password_fill0,
+            SwitchItem(R.string.lockdown_admin_configured_network, "", R.drawable.wifi_password_fill0,
                 { dpm.hasLockdownAdminConfiguredNetworks(receiver) }, { dpm.setConfiguredNetworksLockdownState(receiver,it) }
             )
         }
@@ -431,7 +431,7 @@ private fun PrivateDNS() {
 
 @SuppressLint("NewApi")
 @Composable
-private fun NetLog() {
+private fun NetworkLog() {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
@@ -447,10 +447,10 @@ private fun NetLog() {
             onClick = {
                 val log = dpm.retrieveNetworkLogs(receiver,1234567890)
                 if(log != null) {
-                    for(i in log) { Log.d("NetLog",i.toString()) }
+                    for(i in log) { Log.d("NetworkLog",i.toString()) }
                     Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                 }else{
-                    Log.d("NetLog",context.getString(R.string.none))
+                    Log.d("NetworkLog",context.getString(R.string.none))
                     Toast.makeText(context, R.string.none, Toast.LENGTH_SHORT).show()
                 }
             },
@@ -463,14 +463,14 @@ private fun NetLog() {
 
 @SuppressLint("NewApi")
 @Composable
-private fun WifiKeypair() {
+private fun WifiAuthKeypair() {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         var keyPair by remember { mutableStateOf("") }
         Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.wifi_keypair), style = typography.headlineLarge)
+        Text(text = stringResource(R.string.wifi_auth_keypair), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
             value = keyPair,
