@@ -13,6 +13,7 @@ import android.app.admin.DevicePolicyManager.WIFI_SECURITY_ENTERPRISE_192
 import android.app.admin.DevicePolicyManager.WIFI_SECURITY_ENTERPRISE_EAP
 import android.app.admin.DevicePolicyManager.WIFI_SECURITY_OPEN
 import android.app.admin.DevicePolicyManager.WIFI_SECURITY_PERSONAL
+import android.app.admin.WifiSsidPolicy
 import android.app.admin.WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_ALLOWLIST
 import android.app.admin.WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_DENYLIST
 import android.content.ComponentName
