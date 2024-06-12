@@ -118,14 +118,14 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
         if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
             SubPageItem(R.string.disable_account_management, "", R.drawable.account_circle_fill0) { localNavCtrl.navigate("NoManagementAccount") }
         }
-        if(VERSION.SDK_INT >= 24&&isDeviceOwner(dpm)) {
+        if(VERSION.SDK_INT >= 24 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.device_owner_lock_screen_info, "", R.drawable.screen_lock_portrait_fill0) { localNavCtrl.navigate("LockScreenInfo") }
         }
-        if(VERSION.SDK_INT >= 24 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
+        if(VERSION.SDK_INT >= 24 && dpm.isAdminActive(receiver)) {
             SubPageItem(R.string.support_msg, "", R.drawable.chat_fill0) { localNavCtrl.navigate("SupportMsg") }
         }
         if(VERSION.SDK_INT >= 28 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
-            SubPageItem(R.string.transform_ownership, "", R.drawable.admin_panel_settings_fill0) { localNavCtrl.navigate("TransformOwnership") }
+            SubPageItem(R.string.transfer_ownership, "", R.drawable.admin_panel_settings_fill0) { localNavCtrl.navigate("TransformOwnership") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
@@ -475,7 +475,7 @@ private fun DisableAccountManagement() {
         OutlinedTextField(
             value = inputText,
             onValueChange = { inputText = it },
-            label = { Text(stringResource(R.string.account_types_is)) },
+            label = { Text(stringResource(R.string.account_types_are)) },
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() })
@@ -513,9 +513,9 @@ private fun TransformOwnership() {
         var pkg by remember { mutableStateOf("") }
         var cls by remember { mutableStateOf("") }
         Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.transform_ownership), style = typography.headlineLarge)
+        Text(text = stringResource(R.string.transfer_ownership), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text = stringResource(R.string.transform_ownership_desc))
+        Text(text = stringResource(R.string.transfer_ownership_desc))
         Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
             value = pkg, onValueChange = { pkg = it }, label = { Text(stringResource(R.string.target_package_name)) },
@@ -537,12 +537,12 @@ private fun TransformOwnership() {
                     dpm.transferOwnership(receiver,ComponentName(pkg, cls),null)
                     Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                 }catch(e:IllegalArgumentException) {
-                    Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(stringResource(R.string.transform))
+            Text(stringResource(R.string.transfer))
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }

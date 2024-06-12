@@ -168,7 +168,7 @@ private fun ResetPasswordToken() {
             onClick = {
                 Toast.makeText(
                     context,
-                    if(dpm.clearResetPasswordToken(receiver)) R.string.success else R.string.fail,
+                    if(dpm.clearResetPasswordToken(receiver)) R.string.success else R.string.failed,
                     Toast.LENGTH_SHORT
                 ).show()
             },
@@ -181,7 +181,7 @@ private fun ResetPasswordToken() {
                 try {
                     Toast.makeText(
                         context,
-                        if(dpm.setResetPasswordToken(receiver, tokenByteArray)) R.string.success else R.string.fail,
+                        if(dpm.setResetPasswordToken(receiver, tokenByteArray)) R.string.success else R.string.failed,
                         Toast.LENGTH_SHORT
                     ).show()
                 }catch(e:SecurityException) {
@@ -267,7 +267,7 @@ private fun ResetPassword() {
                 onClick = {
                     val resetSuccess = dpm.resetPasswordWithToken(receiver,newPwd,tokenByteArray,resetPwdFlag)
                     if(resetSuccess) { Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show(); newPwd=""}
-                    else{ Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show() }
+                    else{ Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show() }
                     confirmed=false
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
@@ -281,7 +281,7 @@ private fun ResetPassword() {
             onClick = {
                 val resetSuccess = dpm.resetPassword(newPwd,resetPwdFlag)
                 if(resetSuccess) { Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show(); newPwd="" }
-                else{ Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show() }
+                else{ Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show() }
                 confirmed=false
             },
             enabled = confirmed,
@@ -670,6 +670,6 @@ private fun activateToken(context: Context) {
     if (confirmIntent != null) {
         startActivity(context,confirmIntent, null)
     } else {
-        Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
     }
 }

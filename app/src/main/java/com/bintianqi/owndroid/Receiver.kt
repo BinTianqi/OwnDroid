@@ -40,7 +40,7 @@ class PackageInstallerReceiver:BroadcastReceiver(){
         val toastText = when(intent.getIntExtra(EXTRA_STATUS,999)){
             STATUS_PENDING_USER_ACTION->R.string.status_pending_action
             STATUS_SUCCESS->R.string.success
-            STATUS_FAILURE->R.string.fail
+            STATUS_FAILURE->R.string.failed
             STATUS_FAILURE_BLOCKED->R.string.status_fail_blocked
             STATUS_FAILURE_ABORTED->R.string.status_fail_aborted
             STATUS_FAILURE_INVALID->R.string.status_fail_invalid

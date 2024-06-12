@@ -310,7 +310,7 @@ private fun Home(
         }
         SubPageItem(R.string.install_app, "", R.drawable.install_mobile_fill0) { navCtrl.navigate("InstallApp") }
         SubPageItem(R.string.uninstall_app, "", R.drawable.delete_fill0) { navCtrl.navigate("UninstallApp") }
-        if(VERSION.SDK_INT >= 34 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
+        if(VERSION.SDK_INT >= 34 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.set_default_dialer, "", R.drawable.call_fill0) { defaultDialerAppDialog.value = true }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -385,7 +385,7 @@ private fun PermissionManage(pkgName: String, navCtrl: NavHostController) {
     var inputPermission by remember { mutableStateOf("") }
     var currentState by remember { mutableStateOf(context.getString(R.string.unknown)) }
     val grantState = mapOf(
-        PERMISSION_GRANT_STATE_DEFAULT to stringResource(R.string.decide_by_user),
+        PERMISSION_GRANT_STATE_DEFAULT to stringResource(R.string.default_stringres),
         PERMISSION_GRANT_STATE_GRANTED to stringResource(R.string.granted),
         PERMISSION_GRANT_STATE_DENIED to stringResource(R.string.denied)
     )
@@ -451,7 +451,7 @@ private fun PermissionManage(pkgName: String, navCtrl: NavHostController) {
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(stringResource(R.string.decide_by_user))
+            Text(stringResource(R.string.default_stringres))
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
@@ -590,7 +590,7 @@ private fun CredentialManagePolicy(pkgName: String) {
             }
             Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
         } catch(e:java.lang.IllegalArgumentException) {
-            Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
         } finally {
             refreshPolicy()
         }
@@ -990,7 +990,7 @@ private fun ClearAppDataDialog(status: MutableState<Boolean>, pkgName: String) {
                         val toastText =
                             if(pkg!="") { "$pkg\n" }else{ "" } +
                                     context.getString(R.string.clear_data) +
-                                    context.getString(if(succeed) R.string.success else R.string.fail )
+                                    context.getString(if(succeed) R.string.success else R.string.failed )
                         Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
                         Looper.loop()
                     }
@@ -1037,7 +1037,7 @@ private fun DefaultDialerAppDialog(status: MutableState<Boolean>, pkgName: Strin
                         dpm.setDefaultDialerApplication(pkgName)
                         Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                     }catch(e:IllegalArgumentException) {
-                        Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
                     }
                     status.value = false
                 }
@@ -1072,7 +1072,7 @@ private fun EnableSystemAppDialog(status: MutableState<Boolean>, pkgName: String
                         dpm.enableSystemApp(receiver, pkgName)
                         Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                     } catch(e: IllegalArgumentException) {
-                        Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
                     }
                     status.value = false
                 }

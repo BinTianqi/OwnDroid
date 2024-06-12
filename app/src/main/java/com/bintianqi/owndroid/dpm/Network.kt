@@ -13,7 +13,6 @@ import android.app.admin.DevicePolicyManager.WIFI_SECURITY_ENTERPRISE_192
 import android.app.admin.DevicePolicyManager.WIFI_SECURITY_ENTERPRISE_EAP
 import android.app.admin.DevicePolicyManager.WIFI_SECURITY_OPEN
 import android.app.admin.DevicePolicyManager.WIFI_SECURITY_PERSONAL
-import android.app.admin.WifiSsidPolicy
 import android.app.admin.WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_ALLOWLIST
 import android.app.admin.WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_DENYLIST
 import android.content.ComponentName
@@ -378,7 +377,7 @@ private fun PrivateDNS() {
         val operationResult = mapOf(
             PRIVATE_DNS_SET_NO_ERROR to stringResource(R.string.success),
             PRIVATE_DNS_SET_ERROR_HOST_NOT_SERVING to stringResource(R.string.host_not_serving_dns_tls),
-            PRIVATE_DNS_SET_ERROR_FAILURE_SETTING to stringResource(R.string.fail)
+            PRIVATE_DNS_SET_ERROR_FAILURE_SETTING to stringResource(R.string.failed)
         )
         var status by remember { mutableStateOf(dnsStatus[dpm.getGlobalPrivateDnsMode(receiver)]) }
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -488,7 +487,7 @@ private fun WifiAuthKeypair() {
             Button(
                 onClick = {
                     val result = dpm.grantKeyPairToWifiAuth(keyPair)
-                    Toast.makeText(context, if(result) R.string.success else R.string.fail, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, if(result) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) {
@@ -497,7 +496,7 @@ private fun WifiAuthKeypair() {
             Button(
                 onClick = {
                     val result = dpm.revokeKeyPairFromWifiAuth(keyPair)
-                    Toast.makeText(context, if(result) R.string.success else R.string.fail, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, if(result) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) {
@@ -863,7 +862,7 @@ private fun APN() {
                             Button(
                                 onClick = {
                                     val success = dpm.updateOverrideApn(receiver,id,result)
-                                    Toast.makeText(context, if(success) R.string.success else R.string.fail, Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
                                 },
                                 Modifier.fillMaxWidth(0.49F)
                             ) {
@@ -872,7 +871,7 @@ private fun APN() {
                             Button(
                                 onClick = {
                                     val success = dpm.removeOverrideApn(receiver,id)
-                                    Toast.makeText(context, if(success) R.string.success else R.string.fail, Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
                                 },
                                 Modifier.fillMaxWidth(0.96F)
                             ) {

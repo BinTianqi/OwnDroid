@@ -303,7 +303,7 @@ private fun Keyguard() {
         if(VERSION.SDK_INT >= 23) {
             Button(
                 onClick = {
-                    Toast.makeText(context, if(dpm.setKeyguardDisabled(receiver,true)) R.string.success else R.string.fail, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, if(dpm.setKeyguardDisabled(receiver,true)) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
                 },
                 enabled = isDeviceOwner(dpm) || (VERSION.SDK_INT >= 28 && isProfileOwner(dpm) && dpm.isAffiliatedUser),
                 modifier = Modifier.fillMaxWidth()
@@ -312,7 +312,7 @@ private fun Keyguard() {
             }
             Button(
                 onClick = {
-                    Toast.makeText(context, if(dpm.setKeyguardDisabled(receiver,false)) R.string.success else R.string.fail, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, if(dpm.setKeyguardDisabled(receiver,false)) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
                 },
                 enabled = isDeviceOwner(dpm) || (VERSION.SDK_INT >= 28 && isProfileOwner(dpm) && dpm.isAffiliatedUser),
                 modifier = Modifier.fillMaxWidth()
@@ -361,7 +361,7 @@ private fun BugReportDialog(status: MutableState<Boolean>) {
             TextButton(
                 onClick = {
                     val result = dpm.requestBugreport(receiver)
-                    Toast.makeText(context, if(result) R.string.success else R.string.fail, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, if(result) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
                     status.value = false
                 }
             ) {
@@ -465,7 +465,7 @@ private fun EditTimeZone() {
         Button(
             onClick = {
                 val result = dpm.setTimeZone(receiver, inputTimezone)
-                Toast.makeText(context, if(result) R.string.success else R.string.fail, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, if(result) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.width(100.dp)
         ) {
@@ -824,7 +824,7 @@ private fun CaCert() {
                 Button(
                     onClick = {
                         val result = dpm.installCaCert(receiver, caCertByteArray)
-                        Toast.makeText(context, if(result) R.string.success else R.string.fail, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, if(result) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
                         exist = dpm.hasCaCertInstalled(receiver, caCertByteArray)
                     },
                     modifier = Modifier.fillMaxWidth(0.49F)
@@ -836,7 +836,7 @@ private fun CaCert() {
                         if(exist) {
                             dpm.uninstallCaCert(receiver, caCertByteArray)
                             exist = dpm.hasCaCertInstalled(receiver, caCertByteArray)
-                            Toast.makeText(context, if(exist) R.string.fail else R.string.success, Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, if(exist) R.string.failed else R.string.success, Toast.LENGTH_SHORT).show()
                         } else { Toast.makeText(context, R.string.not_exist, Toast.LENGTH_SHORT).show() }
                     },
                     modifier = Modifier.fillMaxWidth(0.96F)

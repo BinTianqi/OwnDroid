@@ -236,7 +236,7 @@ private fun UserOperation() {
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                Toast.makeText(context, if(dpm.switchUser(receiver,userHandleById)) R.string.success else R.string.fail, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, if(dpm.switchUser(receiver,userHandleById)) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -250,7 +250,7 @@ private fun UserOperation() {
                         val result = dpm.stopUser(receiver,userHandleById)
                         Toast.makeText(context, userOperationResultCode(result,context), Toast.LENGTH_SHORT).show()
                     }catch(e:IllegalArgumentException) {
-                        Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -265,7 +265,7 @@ private fun UserOperation() {
                     Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                     idInput = ""
                 }else{
-                    Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -323,7 +323,7 @@ private fun CreateUser() {
             onClick = {
                 newUserHandle = dpm.createAndManageUser(receiver, userName, receiver, null, selectedFlag)
                 focusMgr.clearFocus()
-                Toast.makeText(context, if(newUserHandle!=null) R.string.success else R.string.fail, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, if(newUserHandle!=null) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {

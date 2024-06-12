@@ -21,7 +21,8 @@
 
 ### 缺点
 
-功能没有谷歌官方的 [TestDPC](https://github.com/googlesamples/android-testdpc) 那么全
+- 功能没有谷歌官方的 [TestDPC](https://github.com/googlesamples/android-testdpc) 那么全
+- 在我中考完之前这个项目可能不会更新，因为电脑被没收了
 
 ### 功能
 

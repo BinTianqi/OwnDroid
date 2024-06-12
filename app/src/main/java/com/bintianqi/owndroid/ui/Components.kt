@@ -186,7 +186,7 @@ fun CopyTextButton(@StringRes label: Int, content: String) {
             if(!ok) {
                 scope.launch {
                     if(writeClipBoard(context,content)) { ok = true; delay(2000); ok = false }
-                    else{ Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show() }
+                    else{ Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show() }
                 }
             }
         }

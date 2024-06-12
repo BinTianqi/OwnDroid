@@ -5,7 +5,7 @@
     <string name="disable">禁用</string>
     <string name="enable">启用</string>
     <string name="success">成功</string>
-    <string name="fail">失败</string>
+    <string name="failed">失败</string>
     <string name="add">添加</string>
     <string name="remove">移除</string>
     <string name="install">安装</string>
@@ -73,10 +73,10 @@
     <string name="enrollment_specific_id">设备唯一标识码</string>
     <string name="require_set_org_id">需要设置组织ID</string>
     <string name="org_name">组织名称</string>
-    <string name="disable_account_management">不受管理的账号</string>
-    <string name="account_types_is">账号类型</string>
-    <string name="transform_ownership">转移所有权</string>
-    <string name="transform_ownership_desc">把Device owner或Profile owner权限转移到另一个应用 (目标必须是Device admin)</string>
+    <string name="disable_account_management">禁用账号管理</string>
+    <string name="account_types_are">账号类型：</string>
+    <string name="transfer_ownership">转移所有权</string>
+    <string name="transfer_ownership_desc">把Device owner或Profile owner权限转移到另一个应用 (目标必须是Device admin)</string>
     <string name="target_package_name">目标包名</string>
     <string name="target_class_name">目标类名</string>
     <string name="device_owner_lock_screen_info">锁屏提示信息</string>
@@ -84,7 +84,7 @@
     <string name="short_support_msg">提供支持的短消息</string>
     <string name="support_msg_desc">如果你禁用了某个功能，用户尝试使用这个功能时会看见这个消息（可多行）</string>
     <string name="long_support_msg">提供支持的长消息</string>
-    <string name="transform">转移</string>
+    <string name="transfer">转移</string>
     <string name="activate_device_admin_here">在这里激活Device admin</string>
 
     <!--Receiver-->

@@ -6,7 +6,7 @@
     <string name="disable">Disable</string>
     <string name="enable">Enable</string>
     <string name="success">Success</string>
-    <string name="fail">Fail</string>
+    <string name="failed">Failed</string>
     <string name="add">Add</string>
     <string name="remove">Remove</string>
     <string name="install">Install</string>
@@ -48,7 +48,7 @@
     <string name="copy">Copy</string>
     <string name="file_not_exist">File not exist</string>
     <string name="io_exception">IO Exception</string>
-    <string name="current_status_is">Current status:&#160;</string>
+    <string name="current_status_is">Current status: </string>
     <string name="start">Start</string>
     <string name="unknown_error">Unknown error</string>
     <string name="allow_all">Allow all</string>
@@ -62,14 +62,14 @@
     <string name="profile_owner">Profile owner</string>
     <string name="device_owner">Device owner</string>
     <string name="activate_device_admin">Activate Device admin</string>
-    <string name="activate_device_admin_command" translatable="false">adb shell dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
-    <string name="activate_profile_owner_command" translatable="false">adb shell dpm set-profile-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
-    <string name="activate_device_owner_command" translatable="false">adb shell dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
+    <string name="activate_device_admin_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
+    <string name="activate_profile_owner_command" translatable="false">dpm set-profile-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
+    <string name="activate_device_owner_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="device_info">Device info</string>
     <string name="support_device_id_attestation">Support Device ID attestation: </string>
     <string name="support_unique_device_attestation">Support unique device attestation: </string>
     <string name="is_device_financed">Financed device: %1$s</string>
-    <string name="dpmrh">Device policy manager role holder: %1$s</string>
+    <string name="dpmrh">Device policy management role holder: %1$s</string>
     <!--es: encryption status-->
     <string name="es_inactive">Inactive</string>
     <string name="es_active">Active</string>
@@ -80,10 +80,10 @@
     <string name="enrollment_specific_id">Enrollment specific ID</string>
     <string name="require_set_org_id">Require organization ID</string>
     <string name="org_name">Organization name</string>
-    <string name="disable_account_management">Account types with management disabled</string>
-    <string name="account_types_is">Account types: </string>
-    <string name="transform_ownership">Transform Ownership</string>
-    <string name="transform_ownership_desc">Transform device owner or profile owner privilege to another app. The target app must be a device admin. </string>
+    <string name="disable_account_management">Disable account management</string>
+    <string name="account_types_are">Account types: </string>
+    <string name="transfer_ownership">Transfer Ownership</string>
+    <string name="transfer_ownership_desc">Transfer device owner or profile owner privilege to another app. The target app must be a device admin. </string>
     <string name="target_package_name">Target package name</string>
     <string name="target_class_name">Target class name</string>
     <string name="device_owner_lock_screen_info">Lockscreen info</string>
@@ -91,8 +91,8 @@
     <string name="short_support_msg">Short message</string>
     <string name="support_msg_desc">When users try to use functions disabled by this app, the support message will show. (Multi-line allowed) </string>
     <string name="long_support_msg">Long message</string>
-    <string name="transform">Transform</string>
-    <string name="activate_device_admin_here">Activate Device admin here. </string>
+    <string name="transfer">Transfer</string>
+    <string name="activate_device_admin_here">Activate Device admin here.</string>
 
     <!--Receiver-->
     <string name="onEnabled">OwnDroid: Enabled</string>
@@ -212,7 +212,7 @@
     <!--Network-->
     <string name="network">Network</string>
     <string name="wifi_mac_addr">Wi-Fi Mac address</string>
-    <string name="min_wifi_security_level">Min WiFi security level</string>
+    <string name="min_wifi_security_level">Min Wi-Fi security level</string>
     <string name="wifi_security_level_open">Open</string>
     <string name="preferential_network_service">Preferential network service</string>
     <string name="lockdown_admin_configured_network">Lockdown admin configured network</string>
@@ -235,7 +235,7 @@
     <string name="keypair">Keypair</string>
     <string name="apn_settings">APN settings</string>
     <string name="total_apn_amount">APN settings amount: %1$s</string>
-    <string name="select_a_apn_or_create">Select a APN setting you want to edit (1~%1$s) or enter 0 to create a new APN setting. </string>
+    <string name="select_a_apn_or_create">Select an APN setting you want to edit (1~%1$s) or enter 0 to create a new APN setting. </string>
     <string name="no_apn_you_should_create_one">No APN settings. Will create a new one. </string>
     <string name="previous_step">Previous step</string>
     <string name="next_step">Next step</string>
@@ -264,7 +264,7 @@
     <string name="is_org_owned_profile">Organization owned work profile: %1$s</string>
     <string name="org_owned_work_profile">Organization work profile</string>
     <string name="activate_org_profile_command" tools:ignore="TypographyDashes" translatable="false">
-        adb shell \"dpm mark-profile-owner-on-organization-owned-device --user %1$s com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver\"
+        dpm mark-profile-owner-on-organization-owned-device --user %1$s com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver
     </string>
     <string name="skip_encryption">Skip encryption</string>
     <string name="create">Create</string>
