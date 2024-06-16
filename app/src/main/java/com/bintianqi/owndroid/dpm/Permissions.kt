@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -70,6 +71,7 @@ fun DpmPermissions(navCtrl:NavHostController) {
             composable(route = "ProfileOwner") { ProfileOwner() }
             composable(route = "DeviceOwner") { DeviceOwner() }
             composable(route = "DeviceInfo") { DeviceInfo() }
+            composable(route = "OrgID") { OrgID() }
             composable(route = "SpecificID") { SpecificID() }
             composable(route = "OrgName") { OrgName() }
             composable(route = "DisableAccountManagement") { DisableAccountManagement() }
@@ -109,11 +111,12 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
         }
         SubPageItem(R.string.shizuku,"") { localNavCtrl.navigate("Shizuku") }
         SubPageItem(R.string.device_info, "", R.drawable.perm_device_information_fill0) { localNavCtrl.navigate("DeviceInfo") }
-        if(VERSION.SDK_INT >= 31 && (isProfileOwner(dpm) || isDeviceOwner(dpm))) {
-            SubPageItem(R.string.enrollment_specific_id, "", R.drawable.id_card_fill0) { localNavCtrl.navigate("SpecificID") }
-        }
         if((VERSION.SDK_INT >= 26 && isDeviceOwner(dpm)) || (VERSION.SDK_INT>=24 && isProfileOwner(dpm))) {
             SubPageItem(R.string.org_name, "", R.drawable.corporate_fare_fill0) { localNavCtrl.navigate("OrgName") }
+        }
+        if(VERSION.SDK_INT >= 31 && (isProfileOwner(dpm) || isDeviceOwner(dpm))) {
+            SubPageItem(R.string.org_id, "", R.drawable.corporate_fare_fill0) { localNavCtrl.navigate("OrgID") }
+            SubPageItem(R.string.enrollment_specific_id, "", R.drawable.id_card_fill0) { localNavCtrl.navigate("SpecificID") }
         }
         if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
             SubPageItem(R.string.disable_account_management, "", R.drawable.account_circle_fill0) { localNavCtrl.navigate("NoManagementAccount") }
@@ -334,6 +337,44 @@ fun DeviceInfo() {
                 Text(text = adminListText)
             }
         }
+    }
+}
+
+@SuppressLint("NewApi")
+@Composable
+private fun OrgID() {
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val focusMgr = LocalFocusManager.current
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
+        var orgId by remember { mutableStateOf("") }
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.org_id), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
+        OutlinedTextField(
+            value = orgId, onValueChange = {orgId=it},
+            label = { Text(stringResource(R.string.org_id)) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.padding(vertical = 2.dp))
+        AnimatedVisibility(orgId.length !in 6..64) {
+            Text(text = stringResource(R.string.length_6_to_64))
+        }
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Button(
+            onClick = {
+                dpm.setOrganizationId(orgId)
+                Toast.makeText(context, R.string.success,Toast.LENGTH_SHORT).show()
+            },
+            enabled = orgId.length in 6..64,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.apply))
+        }
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Information{ Text(text = stringResource(R.string.get_specific_id_after_set_org_id)) }
     }
 }
 

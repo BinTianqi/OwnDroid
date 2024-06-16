@@ -16,7 +16,6 @@ import android.os.Binder
 import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -55,7 +54,6 @@ import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.CopyTextButton
-import com.bintianqi.owndroid.ui.Information
 import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.TopBar
@@ -82,7 +80,6 @@ fun ManagedProfile(navCtrl: NavHostController) {
             composable(route = "CreateWorkProfile") { CreateWorkProfile() }
             composable(route = "SuspendPersonalApp") { SuspendPersonalApp() }
             composable(route = "IntentFilter") { IntentFilter() }
-            composable(route = "OrgID") { OrgID() }
         }
     }
 }
@@ -111,9 +108,6 @@ private fun Home(navCtrl: NavHostController) {
         }
         if(isProfileOwner(dpm) && (VERSION.SDK_INT<24 || (VERSION.SDK_INT>=24 && dpm.isManagedProfile(receiver)))) {
             SubPageItem(R.string.intent_filter, "", R.drawable.filter_alt_fill0) { navCtrl.navigate("IntentFilter") }
-        }
-        if(VERSION.SDK_INT>=31 && (isProfileOwner(dpm) && dpm.isManagedProfile(receiver))) {
-            SubPageItem(R.string.org_id, "", R.drawable.corporate_fare_fill0) { navCtrl.navigate("OrgID") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
@@ -175,44 +169,6 @@ private fun OrgOwnedProfile() {
             }
             CopyTextButton(R.string.copy_command, stringResource(R.string.activate_org_profile_command, Binder.getCallingUid()/100000))
         }
-    }
-}
-
-@SuppressLint("NewApi")
-@Composable
-private fun OrgID() {
-    val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        var orgId by remember { mutableStateOf("") }
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.org_id), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        OutlinedTextField(
-            value = orgId, onValueChange = {orgId=it},
-            label = { Text(stringResource(R.string.org_id)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(Modifier.padding(vertical = 2.dp))
-        AnimatedVisibility(orgId.length !in 6..64) {
-            Text(text = stringResource(R.string.length_6_to_64))
-        }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = {
-                dpm.setOrganizationId(orgId)
-                Toast.makeText(context, R.string.success,Toast.LENGTH_SHORT).show()
-            },
-            enabled = orgId.length in 6..64,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.apply))
-        }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Information{ Text(text = stringResource(R.string.get_specific_id_after_set_org_id)) }
     }
 }
 
