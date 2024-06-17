@@ -137,8 +137,8 @@ private fun About() {
             Text(text = stringResource(R.string.about_desc))
             Spacer(Modifier.padding(vertical = 5.dp))
         }
-        SubPageItem(R.string.user_guide, "", R.drawable.open_in_new) { shareLink(context, "https://github.com/BinTianqi/AndroidOwner/blob/master/Guide.md") }
-        SubPageItem(R.string.source_code, "", R.drawable.open_in_new) { shareLink(context, "https://github.com/BinTianqi/AndroidOwner") }
+        SubPageItem(R.string.user_guide, "", R.drawable.open_in_new) { shareLink(context, "https://owndroid.pages.dev") }
+        SubPageItem(R.string.source_code, "", R.drawable.open_in_new) { shareLink(context, "https://github.com/BinTianqi/OwnDroid") }
     }
 }
 

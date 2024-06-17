@@ -10,12 +10,12 @@ This app is renamed to "OwnDroid" from "Android Owner".
 
 ### Docs
 
-I'm preparing new docs. For now, you can go to [User guide (Chinese)](Guide.md)
+A renewed OwnDroid docs are available on [owndroid.pages.dev](https://owndroid.pages.dev)
 
 ### Advantage
 
 - Open source. Device owner privilege could be more dangerous than root, close-source software's security is not guaranteed. 
-- Easy to use. You can use this utility easily. A chinese [User guide](Guide.md) is also provided. 
+- Easy to use. You can use this utility easily. English docs are also provided.
 - Modern. This app is built with Kotlin and Jetpack Compose, designed with Material Design 3. And some new features on Android 14 is adapted. 
 - Maintaining. This project is updating. Any Issue and PR is welcome. 
 

@@ -10,12 +10,12 @@
 
 ### 文档
 
-我正在准备一个全新的文档，现在你可以去看[使用指南](Guide.md)
+全新的OwnDroid文档：[owndroid.pages.dev](https://owndroid.pages.dev)
 
 ### 优点
 
 - 开源。Device owner权限可能比root权限更危险，闭源软件的安全性没有保证
-- 易于使用。应用中的功能清晰明了，并且在Github上有在线的 [使用指南](Guide.md)
+- 易于使用。应用中的功能清晰明了，并且有在线的文档
 - 现代化。使用 Kotlin + Jetpack Compose，使用Material Design 3，适配安卓14的一些新功能
 - 维护中。这个项目正在不断更新。欢迎 Issue 和 Pull request
 
