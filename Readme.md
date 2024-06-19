@@ -10,7 +10,7 @@
 
 ### 文档
 
-全新的OwnDroid文档：[owndroid.pages.dev](https://owndroid.pages.dev)
+全新的OwnDroid文档：[owndroid.pages.dev](https://owndroid.pages.dev/zh_CN)
 
 ### 优点
 
@@ -22,7 +22,7 @@
 ### 缺点
 
 - 功能没有谷歌官方的 [TestDPC](https://github.com/googlesamples/android-testdpc) 那么全
-- 在我中考完之前这个项目可能不会更新，因为电脑被没收了
+- 在我中考完(2024/7/2)之前这个项目可能不会更新，因为电脑被没收了
 
 ### 功能
 

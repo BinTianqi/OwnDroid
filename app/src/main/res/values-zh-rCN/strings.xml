@@ -70,7 +70,7 @@
     <string name="es_active_default_key">使用默认密钥</string>
     <string name="es_active_per_user">每个用户分别加密</string>
     <string name="activated_device_admin">激活的Device admin: %1$s</string>
-    <string name="enrollment_specific_id">设备唯一标识码</string>
+    <string name="enrollment_specific_id">设备注册专用ID</string>
     <string name="require_set_org_id">需要设置组织ID</string>
     <string name="org_name">组织名称</string>
     <string name="disable_account_management">禁用账号管理</string>
@@ -109,11 +109,12 @@
     <!--System-->
     <string name="system_manage">系统</string>
     <string name="disable_cam">禁用相机</string>
-    <string name="disable_screenshot">禁止截屏</string>
+    <string name="disable_screen_capture">禁止屏幕捕获</string>
     <string name="disable_status_bar">禁用状态栏</string>
     <string name="also_disable_aosp_screen_record">对AOSP的录屏也起作用</string>
     <string name="auto_time">自动设置时间</string>
     <string name="auto_timezone">自动设置时区</string>
+    <string name="require_auto_time">要求自动时间</string>
     <string name="master_mute">全局静音</string>
     <string name="backup_service">备份服务</string>
     <string name="disable_bt_contact_share">禁止蓝牙分享联系人</string>
@@ -123,7 +124,7 @@
     <string name="keyguard">锁屏</string>
     <string name="require_no_password_to_disable">禁用需要无密码</string>
     <string name="lock_now">立即锁屏</string>
-    <string name="require_enter_password_again">需要重新输入密码</string>
+    <string name="evict_credential_encryptoon_key">移除凭证加密密钥</string>
     <string name="bug_report">错误报告</string>
     <string name="confirm_bug_report">请求错误报告？</string>
     <string name="reboot">重启</string>
@@ -201,7 +202,7 @@
     <!--Network-->
     <string name="network">网络</string>
     <string name="wifi_mac_addr">Wi-Fi Mac地址</string>
-    <string name="min_wifi_security_level">最小WiFi安全等级</string>
+    <string name="min_wifi_security_level">最低WiFi安全等级</string>
     <string name="wifi_security_level_open">开放</string>
     <string name="preferential_network_service">优先网络服务</string>
     <string name="lockdown_admin_configured_network">锁定由管理员配置的网络</string>
@@ -213,7 +214,7 @@
     <string name="private_dns">私人DNS</string>
     <string name="dns_provide_hostname">指定主机名</string>
     <string name="host_not_serving_dns_tls">主机不支持</string>
-    <string name="set_to_auto">设为自动</string>
+    <string name="set_to_opportunistic">设为自动</string>
     <string name="dns_hostname">DNS主机名</string>
     <string name="invalid_hostname">无效主机名</string>
     <string name="security_exception">安全错误</string>
@@ -222,7 +223,7 @@
     <string name="retrieve">收集</string>
     <string name="wifi_auth_keypair">WiFi密钥对</string>
     <string name="keypair">密钥对</string>
-    <string name="apn_settings">APN设置</string>
+    <string name="override_apn_settings">APN设置</string>
     <string name="total_apn_amount">一共有%1$s个APN设置</string>
     <string name="select_a_apn_or_create">选择一个你要修改的APN设置(1~%1$s)或者输入0以新建APN设置</string>
     <string name="no_apn_you_should_create_one">当前没有APN设置，你可以新建一个APN设置</string>
@@ -454,13 +455,12 @@
     <string name="max_pwd_fail">最大密码错误次数</string>
     <string name="max_pwd_fail_desc">达到该限制会恢复出厂设置，0为无限制</string>
     <string name="max_pwd_fail_textfield">错误次数</string>
-    <string name="pwd_timeout">密码失效超时时间</string>
+    <string name="pwd_expiration_timeout">密码失效超时时间</string>
     <string name="max_time_to_lock">屏幕超时</string>
     <string name="required_strong_auth_timeout">要求强验证超时</string>
     <string name="zero_means_no_control">值为0表示OwnDroid不参与控制超时</string>
     <string name="max_time_to_lock_desc">超时后锁屏(毫秒)，0为由用户决定</string>
-    <string name="pwd_timeout_desc">超时后用户需重新设置密码（毫秒），0为无限制</string>
-    <string name="pwd_history">密码历史记录长度</string>
+    <string name="pwd_history">密码历史长度</string>
     <string name="pwd_history_desc">用户无法设置指定历史范围内之前曾设置过的密码</string>
     <string name="password_complexity_none">无（允许不设密码）</string>
     <string name="password_complexity_low">低（允许图案和连续性）</string>

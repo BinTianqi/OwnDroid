@@ -76,7 +76,7 @@
     <string name="es_unsupported">Unsupported</string>
     <string name="es_active_default_key">Active(default key)</string>
     <string name="es_active_per_user">Active(per-user)</string>
-    <string name="activated_device_admin">Activated device admin: %1$s</string>
+    <string name="activated_device_admin">Active device admins: %1$s</string>
     <string name="enrollment_specific_id">Enrollment specific ID</string>
     <string name="require_set_org_id">Require organization ID</string>
     <string name="org_name">Organization name</string>
@@ -120,12 +120,13 @@
     <!--System-->
     <string name="system_manage">System manager</string>
     <string name="disable_cam">Disable camera</string>
-    <string name="disable_screenshot">Disable screenshot</string>
+    <string name="disable_screen_capture">Disable screen capture</string>
     <string name="disable_status_bar">Disable status bar</string>
     <string name="also_disable_aosp_screen_record">Also disable screen record in AOSP. </string>
     <string name="auto_time">Auto time</string>
+    <string name="require_auto_time">Require auto time</string>
     <string name="auto_timezone">Auto timezone</string>
-    <string name="master_mute">Master mute</string>
+    <string name="master_mute">Master volume mute</string>
     <string name="backup_service">Backup service</string>
     <string name="disable_bt_contact_share">Disable bluetooth contact sharing</string>
     <string name="common_criteria_mode">Common criteria mode</string>
@@ -134,7 +135,7 @@
     <string name="keyguard">Keyguard</string>
     <string name="require_no_password_to_disable">Disable keyguard require no password is set. </string>
     <string name="lock_now">Lock screen now</string>
-    <string name="require_enter_password_again">Require re-enter password</string>
+    <string name="evict_credential_encryptoon_key">Evict credential encryption key</string>
     <string name="bug_report">Bug report</string>
     <string name="confirm_bug_report">Request bug report?</string>
     <string name="reboot">Reboot</string>
@@ -224,7 +225,7 @@
     <string name="private_dns">PrivateDNS</string>
     <string name="dns_provide_hostname">Provide hostname</string>
     <string name="host_not_serving_dns_tls">Host not serving</string>
-    <string name="set_to_auto">Set to auto</string>
+    <string name="set_to_opportunistic">Set to opportunistic</string>
     <string name="dns_hostname">DNS hostname</string>
     <string name="invalid_hostname">Invalid hostname</string>
     <string name="security_exception">Security Exception</string>
@@ -233,7 +234,7 @@
     <string name="retrieve">Retrieve</string>
     <string name="wifi_auth_keypair">WiFi keypair</string>
     <string name="keypair">Keypair</string>
-    <string name="apn_settings">APN settings</string>
+    <string name="override_apn_settings">APN settings</string>
     <string name="total_apn_amount">APN settings amount: %1$s</string>
     <string name="select_a_apn_or_create">Select an APN setting you want to edit (1~%1$s) or enter 0 to create a new APN setting. </string>
     <string name="no_apn_you_should_create_one">No APN settings. Will create a new one. </string>
@@ -467,15 +468,14 @@
     <string name="password_and_keyguard">Password and keyguard</string>
     <string name="password_info">Password Info</string>
     <string name="reset_pwd_desc">Keep empty to remove password</string>
-    <string name="max_pwd_fail">Max password attempt limit</string>
+    <string name="max_pwd_fail">Max failed passwords</string>
     <string name="max_pwd_fail_desc">When reach this limit, the device will be factory reset</string>
     <string name="max_pwd_fail_textfield">Maximum failed attempts</string>
-    <string name="pwd_timeout">Password timeout</string>
+    <string name="pwd_expiration_timeout">Password expiration timeout</string>
     <string name="max_time_to_lock">Screen timeout</string>
     <string name="required_strong_auth_timeout">Required strong auth timeout</string>
     <string name="zero_means_no_control">A value of 0 means the admin is not participating in controlling the timeout</string>
     <string name="max_time_to_lock_desc">Enter 0 to allow user decision, unit: millisecond</string>
-    <string name="pwd_timeout_desc">When reach this limit, user should set a new password. Enter 0 to allow user decision, unit: millisecond</string>
     <string name="pwd_history">Password history length</string>
     <string name="pwd_history_desc">Historical passwords within the specified range cannot be set by user</string>
     <string name="password_complexity_none">None (No password allowed)</string>

@@ -180,7 +180,7 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState, wifiMacDia
             SubPageItem(R.string.wifi_auth_keypair, "", R.drawable.key_fill0) { navCtrl.navigate("WifiAuthKeypair") }
         }
         if(VERSION.SDK_INT >= 28 && isDeviceOwner(dpm)) {
-            SubPageItem(R.string.apn_settings, "", R.drawable.cell_tower_fill0) { navCtrl.navigate("APN") }
+            SubPageItem(R.string.override_apn_settings, "", R.drawable.cell_tower_fill0) { navCtrl.navigate("APN") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
@@ -393,7 +393,7 @@ private fun PrivateDNS() {
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(stringResource(R.string.set_to_auto))
+                Text(stringResource(R.string.set_to_opportunistic))
             }
         }
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -520,7 +520,7 @@ private fun APN() {
         var nextStep by remember { mutableStateOf(false) }
         val builder = Builder()
         Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.apn_settings), style = typography.headlineLarge)
+        Text(text = stringResource(R.string.override_apn_settings), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(id = R.string.developing))
         Spacer(Modifier.padding(vertical = 5.dp))

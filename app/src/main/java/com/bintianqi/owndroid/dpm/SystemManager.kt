@@ -234,7 +234,7 @@ private fun Switches() {
             )
         }
         if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
-            SwitchItem(R.string.disable_screenshot, stringResource(R.string.also_disable_aosp_screen_record), R.drawable.screenshot_fill0,
+            SwitchItem(R.string.disable_screen_capture, stringResource(R.string.also_disable_aosp_screen_record), R.drawable.screenshot_fill0,
                 { dpm.getScreenCaptureDisabled(null) }, { dpm.setScreenCaptureDisabled(receiver,it) }
             )
         }
@@ -252,7 +252,7 @@ private fun Switches() {
                     { dpm.getAutoTimeZoneEnabled(receiver) }, { dpm.setAutoTimeZoneEnabled(receiver,it) }
                 )
             }else{
-                SwitchItem(R.string.auto_time, "", R.drawable.schedule_fill0, { dpm.autoTimeRequired}, { dpm.setAutoTimeRequired(receiver,it) })
+                SwitchItem(R.string.require_auto_time, "", R.drawable.schedule_fill0, { dpm.autoTimeRequired}, { dpm.setAutoTimeRequired(receiver,it) })
             }
         }
         if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
@@ -333,7 +333,7 @@ private fun Keyguard() {
         }
         if(VERSION.SDK_INT >= 26) {
             CheckBoxItem(
-                stringResource(R.string.require_enter_password_again),
+                stringResource(R.string.evict_credential_encryptoon_key),
                 flag == FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY,
                 { flag = if(flag==0) {1}else{0} }
             )

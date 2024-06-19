@@ -104,7 +104,7 @@ private fun Home(navCtrl:NavHostController,scrollState: ScrollState) {
         }
         if(isDeviceOwner(dpm)) {
             SubPageItem(R.string.max_time_to_lock, "", R.drawable.schedule_fill0) { navCtrl.navigate("MaxTimeToLock") }
-            SubPageItem(R.string.pwd_timeout, "", R.drawable.lock_clock_fill0) { navCtrl.navigate("PasswordTimeout") }
+            SubPageItem(R.string.pwd_expiration_timeout, "", R.drawable.lock_clock_fill0) { navCtrl.navigate("PasswordTimeout") }
             SubPageItem(R.string.max_pwd_fail, "", R.drawable.no_encryption_fill0) { navCtrl.navigate("MaxPasswordFail") }
         }
         if(dpm.isAdminActive(receiver)){
@@ -464,9 +464,7 @@ private fun PasswordExpiration() {
     LaunchedEffect(Unit) { inputContent = dpm.getPasswordExpirationTimeout(receiver).toString() }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.pwd_timeout), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text= stringResource(R.string.pwd_timeout_desc))
+        Text(text = stringResource(R.string.pwd_expiration_timeout), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
             value = inputContent,
