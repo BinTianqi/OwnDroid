@@ -8,9 +8,11 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -43,6 +45,7 @@ fun AppSetting(navCtrl:NavHostController, materialYou: MutableState<Boolean>, bl
             composable(route = "Home") { Home(localNavCtrl) }
             composable(route = "Theme") { ThemeSettings(materialYou, blackTheme) }
             composable(route = "Auth") { AuthSettings() }
+            composable(route = "Automation") { Automation() }
             composable(route = "About") { About() }
         }
     }
@@ -53,6 +56,7 @@ private fun Home(navCtrl: NavHostController) {
     Column(modifier = Modifier.fillMaxSize()) {
         SubPageItem(R.string.theme, "", R.drawable.format_paint_fill0) { navCtrl.navigate("Theme") }
         SubPageItem(R.string.security, "", R.drawable.lock_fill0) { navCtrl.navigate("Auth") }
+        SubPageItem(R.string.automation, "", R.drawable.apps_fill0) { navCtrl.navigate("Automation") }
         SubPageItem(R.string.about, "", R.drawable.info_fill0) { navCtrl.navigate("About") }
     }
 }
@@ -118,6 +122,21 @@ private fun AuthSettings() {
             Information {
                 Text(text = stringResource(R.string.auth_on_start))
             }
+        }
+    }
+}
+
+@Composable
+private fun Automation() {
+    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        var pkgName by remember { mutableStateOf("") }
+        LaunchedEffect(Unit) {
+            pkgName = sharedPref.getString("AutomationApp", "")?: ""
+        }
+        TextField(value = pkgName, onValueChange = { pkgName = it }, label = { Text("Package name")})
+        Button(onClick = {sharedPref.edit().putString("AutomationApp", pkgName).apply()}) {
+            Text("apply")
         }
     }
 }

@@ -551,6 +551,7 @@
     <string name="you_cant_clear_storage">You can\'t clear storage of OwnDroid</string>
     <string name="clear_storage">Clear storage</string>
     <string name="clear_storage_success">Clear storage success\nApplication will exit</string>
+    <string name="automation">Automation</string>
 
     <!--AndroidPermission-->
     <string name="permission_READ_EXTERNAL_STORAGE">Read external storage</string>

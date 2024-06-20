@@ -90,6 +90,13 @@
         android:description="@string/app_name"
         android:permission="android.permission.BIND_DEVICE_ADMIN">
         </receiver>
+        <receiver
+                android:name=".TaskReceiver"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+            </intent-filter>
+        </receiver>
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
             android:authorities="${applicationId}.shizuku"
