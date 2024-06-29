@@ -11,28 +11,16 @@ import androidx.activity.ComponentActivity
 
 class TaskReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d("OwnDroid", ("TaskReceiver: pkgName: " + intent.component?.packageName))
-        Log.d("OwnDroid", ("TaskReceiver: pkg: " + intent.`package`))
-        val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
-        if(sharedPref.getString("AutomationApp", "") != intent.component?.packageName) return
-        val category = intent.getStringExtra("category")
-        if(category == "app") {
-            val action = intent.getStringExtra("action")
-            if(action == "suspend") {
-                val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-                val receiver = ComponentName(context,Receiver::class.java)
-                val app = intent.getStringExtra("app")
-                val mode = intent.getBooleanExtra("mode", false)
-                if(VERSION.SDK_INT >= 24) {
-                    dpm.setPackagesSuspended(receiver, arrayOf(app), mode)
-                } else {
-                    Log.d("OwnDroid", "unsupported")
-                }
-            } else {
-                Log.d("OwnDroid", "unknown action")
-            }
+        val action = intent.getStringExtra("action")
+        val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        val receiver = ComponentName(context,Receiver::class.java)
+        val app = intent.getStringExtra("app")
+        if(action == "suspend") {
+            dpm.setPackagesSuspended(receiver, arrayOf(app), true)
+        } else if(action == "unsuspend") {
+            dpm.setPackagesSuspended(receiver, arrayOf(app), false)
         } else {
-            Log.d("OwnDroid", "unknown category")
+            Log.d("OwnDroid", "unknown action")
         }
     }
 }

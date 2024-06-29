@@ -4,6 +4,7 @@ on:
   push:
     paths-ignore:
       - '**.md'
+    branches: [ "master" ]
 
 jobs:
   build:
