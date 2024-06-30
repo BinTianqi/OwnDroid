@@ -1,0 +1,584 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!--Global-->
+    <string name="app_name" translatable="false">OwnDroid</string>
+    <string name="disabled">Devre Dışı</string>
+    <string name="enabled">Etkin</string>
+    <string name="disable">Devre Dışı Bırak</string>
+    <string name="enable">Etkinleştir</string>
+    <string name="success">Başarılı</string>
+    <string name="failed">Başarısız</string>
+    <string name="add">Ekle</string>
+    <string name="remove">Kaldır</string>
+    <string name="install">Yükle</string>
+    <string name="uninstall">Kaldır</string>
+    <string name="cancel">İptal</string>
+    <string name="confirm">Onayla</string>
+    <string name="activated">Aktif</string>
+    <string name="deactivated">Devre Dışı</string>
+    <string name="activate">Aktif Et</string>
+    <string name="deactivate">Devre Dışı Bırak</string>
+    <string name="blacklist">Kara Liste</string>
+    <string name="whitelist">Beyaz Liste</string>
+    <string name="granted">Verildi</string>
+    <string name="denied">Reddedildi</string>
+    <string name="grant">Ver</string>
+    <string name="deny">Reddet</string>
+    <string name="current_state">Mevcut Durum: %1$s</string>
+    <string name="auto">Otomatik</string>
+    <string name="password">Şifre</string>
+    <string name="reason">Sebep</string>
+    <string name="custom">Özel</string>
+    <string name="unknown">Bilinmeyen</string>
+    <string name="reset">Sıfırla</string>
+    <string name="time_unit_ms">Zaman(ms)</string>
+    <string name="length">Uzunluk</string>
+    <string name="none">Hiçbiri</string>
+    <string name="no_logs">Kayıt Yok</string>
+    <string name="default_stringres">Varsayılan</string>
+    <string name="apply">Uygula</string>
+    <string name="decide_by_user">Kullanıcı Tarafından Karar Ver</string>
+    <string name="unsupported">Desteklenmiyor</string>
+    <string name="developing">Geliştirilen İşlev</string>
+    <string name="unknown_effect">Bilinmeyen Etki</string>
+    <string name="options">Seçenekler</string>
+    <string name="copy_command">Komutu Kopyala</string>
+    <string name="package_name">Paket Adı</string>
+    <string name="not_exist">Mevcut Değil</string>
+    <string name="unknown_status">Bilinmeyen Durum</string>
+    <string name="copy">Kopyala</string>
+    <string name="file_not_exist">Dosya Mevcut Değil</string>
+    <string name="io_exception">G/Ç Hatası</string>
+    <string name="current_status_is">Mevcut Durum: </string>
+    <string name="start">Başlat</string>
+    <string name="unknown_error">Bilinmeyen Hata</string>
+    <string name="allow_all">Tümünü İzin Ver</string>
+    <string name="use_policy">Politika Kullan</string>
+    <string name="account">Hesap</string>
+
+    <!--Permissions-->
+    <string name="click_to_activate">Etkinleştirmek İçin Tıklayın</string>
+    <string name="device_admin">Cihaz Yöneticisi</string>
+    <string name="activate_jump" tools:ignore="TypographyEllipsis">Etkinleştir...</string>
+    <string name="profile_owner">Profil Sahibi</string>
+    <string name="device_owner">Cihaz Sahibi</string>
+    <string name="activate_device_admin">Cihaz Yöneticisini Etkinleştir</string>
+    <string name="activate_device_admin_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
+    <string name="activate_profile_owner_command" translatable="false">dpm set-profile-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
+    <string name="activate_device_owner_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
+    <string name="device_info">Cihaz Bilgisi</string>
+    <string name="support_device_id_attestation">Cihaz Kimliği Doğrulama Desteği: </string>
+    <string name="support_unique_device_attestation">Benzersiz Cihaz Doğrulama Desteği: </string>
+    <string name="is_device_financed">Finansmanlı Cihaz: %1$s</string>
+    <string name="dpmrh">Cihaz Politikası Yönetim Rolü: %1$s</string>
+
+    <!--es: encryption status-->
+    <string name="es_inactive">Devre Dışı</string>
+    <string name="es_active">Aktif</string>
+    <string name="es_unsupported">Desteklenmiyor</string>
+    <string name="es_active_default_key">Aktif(Varsayılan Anahtar)</string>
+    <string name="es_active_per_user">Aktif(Kullanıcı Başına)</string>
+    <string name="activated_device_admin">Aktif Cihaz Yöneticileri: %1$s</string>
+    <string name="enrollment_specific_id">Kayıt Özel Kimliği</string>
+    <string name="require_set_org_id">Organizasyon Kimliği Gerekli</string>
+    <string name="org_name">Organizasyon Adı</string>
+    <string name="disable_account_management">Hesap Yönetimini Devre Dışı Bırak</string>
+    <string name="account_types_are">Hesap Türleri: </string>
+    <string name="transfer_ownership">Sahipliği Devret</string>
+    <string name="transfer_ownership_desc">Cihaz sahibi veya profil sahibi ayrıcalığını başka bir uygulamaya devredin. Hedef uygulama cihaz yöneticisi olmalıdır. </string>
+    <string name="target_package_name">Hedef Paket Adı</string>
+    <string name="target_class_name">Hedef Sınıf Adı</string>
+    <string name="device_owner_lock_screen_info">Ekran Kilidi Bilgisi</string>
+    <string name="support_msg">Destek Mesajı</string>
+    <string name="short_support_msg">Kısa Mesaj</string>
+    <string name="support_msg_desc">Bu uygulama tarafından devre dışı bırakılan işlevleri kullanmaya çalışan kullanıcılara destek mesajı gösterilir. (Çok satırlı izin verilir) </string>
+    <string name="long_support_msg">Uzun Mesaj</string>
+    <string name="transfer">Transfer</string>
+    <string name="activate_device_admin_here">Cihaz Yöneticisini Burada Etkinleştir.</string>
+
+    <!--Receiver-->
+    <string name="onEnabled">OwnDroid: Etkin</string>
+    <string name="onDisabled">OwnDroid: Devre Dışı</string>
+    <string name="create_work_profile_success">OwnDroid: İş Profili Başarıyla Oluşturuldu</string>
+
+    <!--Shizuku-->
+    <string name="shizuku" translatable="false">Shizuku</string>
+    <string name="check_shizuku">İzni Kontrol Et</string>
+    <string name="list_owners">Sahipleri Listele</string>
+    <string name="shizuku_not_started">Shizuku Başlatılmadı. </string>
+    <string name="dpm_activate_do_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
+    <string name="dpm_activate_po_command" translatable="false">dpm set-profile-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
+    <string name="dpm_activate_da_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
+    <string name="shizuku_activated_shell">İzin Verildi (Kabuk)</string>
+    <string name="shizuku_activated_root">İzin Verildi (Root)</string>
+    <string name="activate_profile_owner">Profil Sahibini Etkinleştir</string>
+    <string name="activate_device_owner">Cihaz Sahibini Etkinleştir</string>
+    <string name="activate_org_profile">Kuruluş Profili Sahibini Etkinleştir</string>
+    <string name="shizuku_service_disconnected">Shizuku Hizmeti Bağlantısı Kesildi</string>
+    <string name="invalid_binder">Geçersiz Bağlayıcı</string>
+    <string name="bind_shizuku">Shizuku'ya Bağlan</string>
+    <string name="shizuku_not_bind">Shizuku Bağlantısı Kesildi</string>
+
+    <!--System-->
+    <string name="system_manage">Sistem yöneticisi</string>
+    <string name="disable_cam">Kamerayı devre dışı bırak</string>
+    <string name="disable_screen_capture">Ekran görüntüsünü devre dışı bırak</string>
+    <string name="disable_status_bar">Durum çubuğunu devre dışı bırak</string>
+    <string name="also_disable_aosp_screen_record">AOSP'de ekran kaydını da devre dışı bırak</string>
+    <string name="auto_time">Otomatik saat</string>
+    <string name="require_auto_time">Otomatik saat gerektir</string>
+    <string name="auto_timezone">Otomatik saat dilimi</string>
+    <string name="master_mute">Ana ses kapatma</string>
+    <string name="backup_service">Yedekleme servisi</string>
+    <string name="disable_bt_contact_share">Bluetooth kişi paylaşımını devre dışı bırak</string>
+    <string name="common_criteria_mode">Ortak kriter modu</string>
+    <string name="common_criteria_mode_desc">Bilinmeyen etki</string>
+    <string name="usb_signal">USB sinyali</string>
+    <string name="keyguard">Ekran kilidi</string>
+    <string name="require_no_password_to_disable">Ekran kilidini devre dışı bırakmak için parola ayarlanmamış olmalıdır</string>
+    <string name="lock_now">Ekranı şimdi kilitle</string>
+    <string name="evict_credential_encryptoon_key">Kimlik doğrulama şifreleme anahtarını çıkar</string>
+    <string name="bug_report">Hata raporu</string>
+    <string name="confirm_bug_report">Hata raporu iste?</string>
+    <string name="reboot">Yeniden başlat</string>
+    <string name="confirm_reboot">Yeniden başlatmayı onayla?</string>
+    <string name="edit_time">Zamanı düzenle</string>
+    <string name="edit_timezone">Saat dilimini düzenle</string>
+    <string name="view_all_timezones">Tüm saat dilimi kimliklerini görüntüle</string>
+    <string name="hide_all_timezones">Tüm saat dilimi kimliklerini gizle</string>
+    <string name="timezone_id">Saat dilimi kimliği</string>
+    <string name="disable_auto_time_zone_before_set">Özel bir saat dilimi ayarlamadan önce otomatik saat dilimi devre dışı bırakılmalıdır</string>
+    <string name="from_epoch_to_target_time">Epoch'tan (1970/1/1 00:00:00 UTC) ayarlanmak istenen zamana kadar (ms)</string>
+    <string name="get_current_time">Geçerli saat</string>
+    <string name="permission_policy">İzin politikası</string>
+    <string name="auto_grant">Otomatik ver</string>
+    <string name="auto_deny">Otomatik reddet</string>
+    <string name="mte_policy">MTE politikası</string>
+    <string name="mte_policy_desc">MTE: Bellek Etiketleme Uzantısı, Android 14 ve ARMv9 gerektirir</string>
+    <string name="nearby_app_streaming">Yakındaki uygulama akış politikası</string>
+    <string name="nearby_streaming_policy">Yakındaki akış politikası</string>
+    <string name="nearby_notification_streaming">Yakındaki bildirim akış politikası</string>
+    <string name="enable_if_secure_enough">Yalnızca aynı yönetilen hesap</string>
+    <string name="lock_task_feature">Görev kilitleme özelliği</string>
+    <string name="disable_all">Hepsini devre dışı bırak</string>
+
+    <!--ltf: lock task feature-->
+    <string name="ltf_sys_info">Sistem bilgisine izin ver</string>
+    <string name="ltf_notifications">Bildirimlere izin ver</string>
+    <string name="ltf_home">Ana ekrana izin ver</string>
+    <string name="ltf_overview">Genel bakışa izin ver</string>
+    <string name="ltf_global_actions">Küresel eylemlere izin ver</string>
+    <string name="ltf_keyguard">Ekran kilidine izin ver</string>
+    <string name="ltf_block_activity_start_in_task">Görevde etkinlik başlatmayı engelle</string>
+    <string name="whitelist_app">Beyaz listeye alınan uygulama</string>
+    <string name="ca_cert">CA sertifikası</string>
+    <string name="please_select_ca_cert">Lütfen bir sertifika seçin</string>
+    <string name="cacert_installed">Yüklenen sertifika: %1$s</string>
+    <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Sertifika seç...</string>
+    <string name="uninstall_all_user_ca_cert">Tüm kullanıcı sertifikalarını kaldır</string>
+    <string name="security_logs">Güvenlik kayıtları</string>
+    <string name="pre_reboot_security_logs">Yeniden başlatmadan önce güvenlik kayıtları</string>
+    <string name="wipe_data">Verileri sil</string>
+    <string name="wipe_external_storage">Harici depolamayı sil</string>
+    <string name="wipe_reset_protection_data">Korumalı verileri sil</string>
+    <string name="wipe_euicc">eUICC (eSIM) sil</string>
+    <string name="wipe_silently">Sessizce sil</string>
+    <string name="will_delete_work_profile">Çalışma profili silinecek</string>
+    <string name="api34_or_above_wipedata_cannot_in_system_user">System user'da WipeData kullanamazsınız</string>
+    <string name="encrypt_status_is">Şifreleme durumu: </string>
+    <string name="frp_policy">FRP politikası</string>
+    <string name="factory_reset_protection_policy">Fabrika ayarlarına sıfırlama koruma politikası</string>
+    <string name="frp_policy_not_supported">FRP politikası bu cihazda desteklenmiyor</string>
+    <string name="enable_frp">FRP'yi etkinleştir</string>
+    <string name="account_list_is">Hesap listesi: </string>
+
+    <!--SystemUpdatePolicy-->
+    <string name="is_security_patch">Güvenlik yaması: %1$s</string>
+    <string name="no_system_update">Sistem güncellemesi yok</string>
+    <string name="system_update_policy">Sistem güncelleme politikası</string>
+    <string name="system_update_policy_automatic">Otomatik</string>
+    <string name="system_update_policy_install_windowed">Zamanlı kurulum</string>
+    <string name="system_update_policy_postpone">30 gün ertele</string>
+    <string name="start_time">Başlangıç saati</string>
+    <string name="end_time">Bitiş saati</string>
+    <string name="minutes_in_one_day">Lütfen bir günde geçen dakika sayısını girin (0~1440)</string>
+    <string name="update_received_time">Güncelleme alınma saati: %1$s</string>
+    <string name="install_system_update">Sistem güncellemesini yükle</string>
+    <string name="select_ota_package" tools:ignore="TypographyEllipsis">OTA paketini seç...</string>
+    <string name="start_install_system_update">Sistem güncellemesi yüklemeye başla</string>
+    <string name="install_system_update_failed">Sistem güncellemesi yükleme başarısız: </string>
+    <string name="battery_low">Pil zayıf</string>
+    <string name="update_file_invalid">Güncelleme dosyası geçersiz</string>
+    <string name="incorrect_os_ver">Yanlış işletim sistemi sürümü</string>
+    <string name="auto_reboot_after_install_succeed">Sistem güncellemesi başarılı olduğunda cihazınız otomatik olarak yeniden başlatılacaktır.</string>
+
+    <!--Network-->
+    <string name="network">Ağ</string>
+    <string name="wifi_mac_addr">Wi-Fi MAC adresi</string>
+    <string name="min_wifi_security_level">Minimum Wi-Fi güvenlik seviyesi</string>
+    <string name="wifi_security_level_open">Açık</string>
+    <string name="preferential_network_service">Tercihli ağ hizmeti</string>
+    <string name="lockdown_admin_configured_network">Yönetici tarafından yapılandırılmış ağı kilitle</string>
+    <string name="wifi_ssid_policy">WiFi SSID politikası</string>
+    <string name="ssid_list_is">SSID listesi: </string>
+    <string name="cannot_be_empty">Boş olamaz</string>
+    <string name="already_exist">Zaten mevcut</string>
+    <string name="please_select_a_policy">Lütfen bir politika seçin</string>
+    <string name="private_dns">Özel DNS</string>
+    <string name="dns_provide_hostname">Ana bilgisayar adı sağlayın</string>
+    <string name="host_not_serving_dns_tls">Ana bilgisayar hizmet vermiyor</string>
+    <string name="set_to_opportunistic">Fırsatçı olarak ayarla</string>
+    <string name="dns_hostname">DNS ana bilgisayar adı</string>
+    <string name="invalid_hostname">Geçersiz ana bilgisayar adı</string>
+    <string name="security_exception">Güvenlik İstisnası</string>
+    <string name="set_dns_host">DNS ana bilgisayarını ayarla</string>
+    <string name="retrieve_net_logs">Ağ kayıtları</string>
+    <string name="retrieve">Geri al</string>
+    <string name="wifi_auth_keypair">WiFi anahtar çifti</string>
+    <string name="keypair">Anahtar çifti</string>
+    <string name="override_apn_settings">APN ayarlarını geçersiz kıl</string>
+    <string name="total_apn_amount">APN ayarlarının toplamı: %1$s</string>
+    <string name="select_a_apn_or_create">Düzenlemek istediğiniz APN ayarını seçin (1~%1$s) veya yeni bir APN ayarı oluşturmak için 0 girin.</string>
+    <string name="no_apn_you_should_create_one">APN ayarı yok. Yeni bir tane oluşturulacak.</string>
+    <string name="previous_step">Önceki adım</string>
+    <string name="next_step">Sonraki adım</string>
+    <string name="name">İsim</string>
+    <string name="user_name">Kullanıcı adı</string>
+    <string name="profile_id">Profil Kimliği</string>
+    <string name="auth_type">Kimlik doğrulama türü</string>
+    <string name="apn_type">APN türü</string>
+    <string name="bitmask">Bitmask</string>
+    <string name="description">Açıklama</string>
+    <string name="mms_proxy">MMS proxy</string>
+    <string name="address">Adres</string>
+    <string name="port">Port</string>
+    <string name="proxy">Proxy</string>
+    <string name="network_type">Ağ türü</string>
+    <string name="persistent">Kalıcı</string>
+    <string name="protocol">Protokol</string>
+    <string name="roaming_protocol">Dolaşım protokolü</string>
+    <string name="update">Güncelle</string>
+
+    <!--WorkProfile-->
+    <string name="work_profile">İş Profili</string>
+    <string name="work_profile_owner">Profil sahibi (İş profili)</string>
+    <string name="work_profile_activated">İş profili etkinleştirildi</string>
+    <string name="create_work_profile">İş profili oluştur</string>
+    <string name="is_org_owned_profile">Kuruluşa ait iş profili: %1$s</string>
+    <string name="org_owned_work_profile">Kuruluş iş profili</string>
+    <string name="activate_org_profile_command" tools:ignore="TypographyDashes" translatable="false">dpm mark-profile-owner-on-organization-owned-device --user %1$s com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
+    <string name="skip_encryption">Şifrelemeyi atla</string>
+    <string name="create">Oluştur</string>
+    <string name="suspend_personal_app">Kişisel uygulamayı askıya al</string>
+    <string name="profile_max_time_off">Maksimum süre kapalı</string>
+    <string name="profile_max_time_out_desc">İş profili kapatıldıktan sonra kişisel uygulamalar bu süre sonunda askıya alınacaktır. 0 sınırsızdır. </string>
+    <string name="personal_app_suspended_because_timeout">Bu nedenle kişisel uygulama askıya alındı: %1$s</string>
+    <string name="cannot_less_than_72_hours">72 saatten az olamaz</string>
+    <string name="intent_filter">Niyet filtresi</string>
+    <string name="add_intent_filter_work_to_personal">Ekle (işten kişisele)</string>
+    <string name="add_intent_filter_personal_to_work">Ekle (kişiselden işe)</string>
+    <string name="clear_cross_profile_filters">Tüm filtreleri temizle</string>
+    <string name="org_id">Kuruluş Kimliği</string>
+    <string name="length_6_to_64">Uzunluk 6 ile 64 karakter arasında olmalıdır</string>
+    <string name="get_specific_id_after_set_org_id">Bunu ayarladıktan sonra cihaz spesifik Kimlik alabilirsiniz. </string>
+
+    <!--AppManager-->
+    <string name="app_manager">Uygulama yöneticisi</string>
+    <string name="pkg_selector">Paket seçici</string>
+    <string name="loading">Yükleniyor</string>
+    <string name="show_user_app">Kullanıcı uygulamalarını göster</string>
+    <string name="show_system_app">Sistem uygulamalarını göster</string>
+    <string name="show_priv_app">Priv uygulamalarını göster</string>
+    <string name="show_apex_app">Apex uygulamalarını göster</string>
+    <string name="permission_picker">İzin seçici</string>
+    <string name="suspend">Askıya al</string>
+    <string name="hide">Gizle</string>
+    <string name="isapphidden_desc">Mevcut olmayan uygulamalar gizlidir</string>
+    <string name="always_on_vpn">Her zaman açık VPN</string>
+    <string name="permission">İzin</string>
+    <string name="scope_is_work_profile">Kapsam: iş profili</string>
+    <string name="app_info">Uygulama bilgisi</string>
+    <string name="not_installed">Yüklü değil</string>
+    <string name="block_uninstall">Kaldırmayı engelle</string>
+    <string name="enable_system_app">Sistem uygulamasını etkinleştir</string>
+    <string name="enable_system_app_desc">Varsayılan olarak devre dışı bırakılmış bir sistem uygulamasını yeniden etkinleştir</string>
+
+    <!--ucd: user control disabled-->
+    <string name="ucd">Kullanıcı kontrolünü devre dışı bırak</string>
+    <string name="ucd_desc">Bunu ayarlarsanız, bu uygulamaların depolama alanını temizleyemez veya zorla durduramazsınız. </string>
+    <string name="app_list_is">Uygulama listesi: </string>
+    <string name="clear_list">Listeyi temizle</string>
+    <string name="permission_manage">İzin yönetimi</string>
+    <string name="cross_profile_package">Profil geçişli paket</string>
+    <string name="cross_profile_widget">Profil geçişli widget</string>
+    <string name="credential_manage_policy">Kimlik bilgisi yönetimi politikası</string>
+    <string name="whitelist_and_system_app">Beyaz liste ve sistem uygulaması</string>
+    <string name="permitted_packages_is">İzin verilen paketler: \n</string>
+    <string name="permitted_accessibility_services">İzin verilen erişilebilirlik hizmetleri</string>
+    <string name="only_system_accessibility_allowed">Yalnızca sistem erişilebilirlik hizmetlerine izin verilir</string>
+    <string name="system_accessibility_always_allowed">Sistem erişilebilirlik hizmetlerine her zaman izin verilir.</string>
+    <string name="only_system_ime_allowed">Yalnızca sistem giriş yöntemlerine izin verilir</string>
+    <string name="system_ime_always_allowed">Sistem giriş yöntemlerine her zaman izin verilir.</string>
+    <string name="permitted_ime">İzin verilen IME</string>
+    <string name="keep_uninstalled_packages">Kaldırılmış paketleri sakla</string>
+    <string name="clear_data">Verileri temizle</string>
+    <string name="clear_app_storage">Uygulama depolamasını temizle</string>
+    <string name="app_storage_will_be_cleared">Bu uygulamanın depolama alanı temizlenecek</string>
+    <string name="set_default_dialer">Varsayılan arama uygulaması olarak ayarla</string>
+    <string name="app_will_be_default_dialer">Bu uygulama varsayılan arama uygulaması olarak ayarlanacak.</string>
+    <string name="uninstall_app">Uygulamayı kaldır</string>
+    <string name="silent_uninstall">Sessiz kaldırma</string>
+    <string name="request_uninstall">Kaldırma isteği</string>
+    <string name="install_app">Uygulamayı yükle</string>
+    <string name="select_apk" tools:ignore="TypographyEllipsis">APK seç...</string>
+    <string name="silent_install">Sessiz yükleme</string>
+    <string name="request_install">Yükleme isteği</string>
+
+    <!--App install session status-->
+    <string name="app_installer_status">Uygulama yükleyici:</string>
+    <string name="status_pending_action">Bekleyen kullanıcı işlemi</string>
+    <string name="status_fail_blocked">Başarısız: engellendi</string>
+    <string name="status_fail_aborted">Başarısız: iptal edildi</string>
+    <string name="status_fail_invalid">Başarısız: geçersiz APK</string>
+    <string name="status_fail_conflict">Başarısız: çakışma</string>
+    <string name="status_fail_storage">Başarısız: boş alan yok</string>
+    <string name="status_fail_incompatible">Başarısız: uyumsuz</string>
+    <string name="status_fail_timeout">Başarısız: zaman aşımı</string>
+
+    <!--UserRestriction-->
+    <string name="user_restrict">Kullanıcı kısıtlaması</string>
+    <string name="profile_owner_is_restricted">Profil sahibi sınırlı işlev kullanabilir</string>
+    <string name="switch_to_disable_feature">Bu işlevi devre dışı bırakmak için bir anahtar açın. </string>
+    <string name="some_features_invalid_in_work_profile">İş profilindeki işlevler sınırlıdır. </string>
+    <string name="network_internet">Ağ</string>
+    <string name="more_connectivity">Diğer bağlantı</string>
+    <string name="applications">Uygulamalar</string>
+    <string name="users">Kullanıcı</string>
+    <string name="media">Medya</string>
+    <string name="other">Diğer</string>
+    <string name="require_device_owner">Cihaz sahibi gerektirir</string>
+    <string name="config_mobile_network">Mobil ağı yapılandır</string>
+    <string name="config_wifi">WiFi'yi yapılandır</string>
+    <string name="data_roaming">Veri dolaşımı</string>
+    <string name="cellular_2g">2G hücresel</string>
+    <string name="ultra_wideband_radio">Ultra geniş bant radyo</string>
+    <string name="add_wifi_conf">WiFi yapılandırması ekle</string>
+    <string name="change_wifi_state">WiFi durumunu değiştir</string>
+    <string name="wifi_direct">WiFi direct</string>
+    <string name="wifi_tethering">WiFi tethering</string>
+    <string name="share_admin_wifi">Yönetici yapılandırılmış WiFi paylaş</string>
+    <string name="network_reset">Ağ sıfırlama</string>
+    <string name="config_tethering">Tethering yapılandır</string>
+    <string name="config_vpn">VPN yapılandır</string>
+    <string name="config_private_dns">Özel DNS yapılandır</string>
+    <string name="airplane_mode">Uçak modu</string>
+    <string name="config_cell_broadcasts">Hücre yayınlarını yapılandır</string>
+    <string name="sms">SMS</string>
+    <string name="outgoing_calls">Giden aramalar</string>
+
+    <string name="bluetooth">Bluetooth</string>
+    <string name="bt_share">Bluetooth paylaşımı</string>
+    <string name="share_location">Konum paylaş</string>
+    <string name="config_location">Konumu yapılandır</string>
+    <string name="outgoing_beam">Giden Beam</string>
+    <string name="usb_file_transfer">USB dosya transferi</string>
+    <string name="mount_physical_media">Fiziksel medyayı bağla</string>
+    <string name="printing">Yazdırma</string>
+
+    <string name="install_unknown_src_globally">Bilinmeyen kaynakları global olarak yükle</string>
+    <string name="inst_unknown_src">Bilinmeyen kaynakları yükle</string>
+    <string name="apps_ctrl">Uygulama kontrolü</string>
+    <string name="apps_control_desc">Uygulama verilerini veya önbelleği temizle</string>
+    <string name="config_default_apps">Varsayılan uygulamaları yapılandır</string>
+
+    <string name="config_brightness">Parlaklığı yapılandır</string>
+    <string name="config_scr_timeout">Ekran zaman aşımını yapılandır</string>
+    <string name="ambient_display">Ambiyans ekranı</string>
+    <string name="adjust_volume">Sesi ayarla</string>
+    <string name="unmute_microphone">Mikrofonu sessizden çıkar</string>
+    <string name="camera_toggle">Kamera geçişi</string>
+    <string name="microphone_toggle">Mikrofon geçişi</string>
+
+    <string name="add_user">Kullanıcı ekle</string>
+    <string name="remove_user">Kullanıcıyı kaldır</string>
+    <string name="switch_user">Kullanıcıyı değiştir</string>
+    <string name="set_user_icon">Kullanıcı simgesini ayarla</string>
+    <string name="cross_profile_copy">Profil geçişli kopyalama</string>
+    <string name="share_into_managed_profile">Yönetilen profile paylaş</string>
+    <string name="unified_pwd">Birleşik şifre</string>
+
+    <string name="autofill">Otomatik doldurma</string>
+    <string name="config_credentials">Kimlik bilgilerini yapılandır</string>
+    <string name="content_capture">İçerik yakalama</string>
+    <string name="content_suggestions">İçerik önerileri</string>
+    <string name="create_windows">Pencere oluştur</string>
+    <string name="create_windows_desc">ör. tostlar, bildirim afişi</string>
+    <string name="set_wallpaper">Duvar kağıdı ayarla</string>
+    <string name="grant_admin">Cihaz yöneticisi yetkisi ver</string>
+    <string name="fun">Eğlence</string>
+    <string name="fun_desc">Oyunları devre dışı bırakabilir</string>
+    <string name="modify_accounts">Hesapları değiştir</string>
+    <string name="config_locale">Yerel ayarları yapılandır</string>
+    <string name="config_date_time">Tarihi veya saati yapılandır</string>
+    <string name="sys_err_dialog">Sistem hata diyaloğu</string>
+    <string name="factory_reset">Fabrika ayarlarına döndür</string>
+    <string name="safe_boot">Güvenli başlangıç</string>
+    <string name="debug_features">Hata ayıklama özellikleri</string>
+
+    <!--UserManage-->
+    <string name="user_manager">Kullanıcı yöneticisi</string>
+    <string name="edit_username">Kullanıcı adını düzenle</string>
+    <string name="start_user_session_msg">Kullanıcı oturumunu başlat mesajı</string>
+    <string name="end_user_session_msg">Kullanıcı oturumunu sonlandır mesajı</string>
+    <string name="user_info">Kullanıcı bilgisi</string>
+    <string name="is_user_unlocked">Kullanıcı kilidi açıldı: %1$s</string>
+    <string name="is_support_multi_user">Çoklu kullanıcı desteği: %1$s</string>
+    <string name="is_system_user">Sistem kullanıcısı: %1$s</string>
+    <string name="is_admin_user">Yönetici kullanıcısı: %1$s</string>
+    <string name="is_headless_system_user">Başsız sistem kullanıcısı: %1$s</string>
+    <string name="user_can_logout">Kullanıcı çıkış yapabilir: %1$s</string>
+    <string name="is_ephemeral_user">Geçici kullanıcı: %1$s</string>
+    <string name="is_affiliated_user">Bağlı kullanıcı: %1$s</string>
+    <string name="user_id_is">Kullanıcı ID: %1$s</string>
+    <string name="user_serial_number_is">Kullanıcı seri numarası: %1$s</string>
+    <string name="user_operation">Kullanıcı işlemi</string>
+    <string name="serial_number">Seri numarası</string>
+    <string name="use_uid">UID kullan</string>
+    <string name="logout_current_user">Mevcut kullanıcıyı çıkış yap</string>
+    <string name="start_in_background">Arka planda başlat</string>
+    <string name="user_operation_switch">Değiştir</string>
+    <string name="user_operation_stop">Durdur</string>
+    <string name="user_operation_remove">Kaldır</string>
+    <string name="create_user">Kullanıcı oluştur</string>
+    <string name="username">Kullanıcı adı</string>
+    <string name="create_user_skip_wizard">Sihirbazı atla</string>
+    <string name="create_user_ephemeral_user">Geçici kullanıcı</string>
+    <string name="create_user_enable_all_system_app">Tüm sistem uygulamalarını etkinleştir</string>
+    <string name="serial_number_of_new_user_is">Bu kullanıcının seri numarası: %1$s</string>
+    <string name="affiliation_id">Bağlılık ID</string>
+    <string name="include_empty_string">Boş string dahil et</string>
+    <string name="change_user_icon">Kullanıcı simgesini değiştir</string>
+    <string name="pick_a_square_image">Kare bir resim seçmelisiniz</string>
+    <string name="file_picker_instead_gallery">Galeri yerine dosya seçici kullan</string>
+    <string name="select_picture">Resim seç...</string>
+    <string name="unknown_result">Bilinmeyen sonuç (başarısız olabilir)</string>
+    <string name="fail_managed_profile">Başarısız: yönetilen profil</string>
+    <string name="fail_current_user">Başarısız: mevcut kullanıcı</string>
+    <string name="user_session_msg">Kullanıcı oturum mesajı</string>
+
+    <!--Password&Keyguard-->
+    <string name="password_and_keyguard">Şifre ve kilit ekranı</string>
+    <string name="password_info">Şifre Bilgisi</string>
+    <string name="reset_pwd_desc">Şifreyi kaldırmak için boş bırakın</string>
+    <string name="max_pwd_fail">Maksimum hatalı şifre</string>
+    <string name="max_pwd_fail_desc">Bu sınıra ulaşıldığında, cihaz fabrika ayarlarına sıfırlanacaktır</string>
+    <string name="max_pwd_fail_textfield">Maksimum hatalı deneme</string>
+    <string name="pwd_expiration_timeout">Şifre geçerlilik süresi</string>
+    <string name="max_time_to_lock">Ekran zaman aşımı</string>
+    <string name="required_strong_auth_timeout">Gereken güçlü doğrulama zaman aşımı</string>
+    <string name="zero_means_no_control">0 değeri, yöneticinin zaman aşımını kontrol etmediği anlamına gelir</string>
+    <string name="max_time_to_lock_desc">Kullanıcı kararına izin vermek için 0 girin, birim: milisaniye</string>
+    <string name="pwd_history">Şifre geçmişi uzunluğu</string>
+    <string name="pwd_history_desc">Belirtilen aralıktaki geçmiş şifreler kullanıcı tarafından ayarlanamaz</string>
+    <string name="password_complexity_none">Yok (Şifreye izin verilmez)</string>
+    <string name="password_complexity_low">Düşük (Hareket şifresi ve karakter tekrarı izinli)</string>
+    <string name="password_complexity_medium">Orta (Tekrar yasak, en az 4 karakter)</string>
+    <string name="password_complexity_high">Yüksek (Tekrar yasak, en az 6 karakter)</string>
+    <string name="current_password_complexity_is">Mevcut şifre karmaşıklığı: %1$s</string>
+    <string name="is_password_sufficient">Şifre karmaşıklığı yeterli mi: %1$s</string>
+    <string name="password_failed_attempts_is">Başarısız şifre denemeleri: %1$s</string>
+    <string name="is_using_unified_password">Birleşik şifre: %1$s</string>
+    <string name="reset_password_token">Şifre sıfırlama jetonu</string>
+    <string name="token_already_activated">Jeton zaten etkinleştirildi</string>
+    <string name="clear">Temizle</string>
+    <string name="set">Ayarla</string>
+    <string name="please_set_a_token">Lütfen bir jeton ayarlayın</string>
+    <string name="activate_token_not_required_when_no_password">Şifre ayarlanmadığında jeton otomatik olarak etkinleştirilecektir.</string>
+    <string name="reset_password">Şifreyi sıfırla</string>
+    <string name="do_not_ask_credentials_on_boot">Başlangıçta kimlik bilgilerini sorma</string>
+    <string name="reset_password_require_entry">Giriş gerektir</string>
+    <string name="require_4_digit_password">En az 4 haneli şifre gerektir</string>
+    <string name="reset_password_with_token">Jeton ile şifreyi sıfırla</string>
+    <string name="reset_password_deprecated">Şifreyi sıfırla</string>
+    <string name="required_password_complexity">Gereken şifre karmaşıklığı</string>
+    <string name="require_set_new_password">Yeni şifre ayarlanmasını iste</string>
+    <string name="disable_keyguard_features">Kilit ekranı özellikleri</string>
+    <string name="enable_all">Tümünü etkinleştir</string>
+    <string name="disable_keyguard_features_widgets">Widget'ı devre dışı bırak</string>
+    <string name="disable_keyguard_features_camera">Kamerayı devre dışı bırak</string>
+    <string name="disable_keyguard_features_notification">Bildirimleri devre dışı bırak</string>
+    <string name="disable_keyguard_features_unredacted_notification">Sansürsüz bildirimleri devre dışı bırak</string>
+    <string name="disable_keyguard_features_trust_agents">Güvenilir ajanları devre dışı bırak</string>
+    <string name="disable_keyguard_features_fingerprint">Parmak izini devre dışı bırak</string>
+    <string name="disable_keyguard_features_remote_input">Uzaktan girişleri devre dışı bırak</string>
+    <string name="disable_keyguard_features_face">Yüz tanımayı devre dışı bırak</string>
+    <string name="disable_keyguard_features_iris">İris tarayıcısını devre dışı bırak</string>
+    <string name="disable_keyguard_features_biometrics">Biyometrikleri devre dışı bırak</string>
+    <string name="disable_keyguard_features_shortcuts">Kısayolları devre dışı bırak</string>
+    <string name="password_quality_unspecified">Belirtilmemiş</string>
+    <string name="password_quality_something">Şifre gerekli (Karmaşıklık için sınırlama yok)</string>
+    <string name="password_quality_alphabetic">Alfabetik</string>
+    <string name="password_quality_numeric">Sayısal</string>
+    <string name="password_quality_alphanumeric">Alfanümerik</string>
+    <string name="password_quality_biometrics_weak">Biyometrik (Zayıf)</string>
+    <string name="password_quality_numeric_complex">Sayısal karmaşık (Tekrar eden karakter yok)</string>
+    <string name="required_password_quality">Gereken şifre kalitesi</string>
+    <string name="password_complexity_instead_password_quality">Şifre karmaşıklığı ayarlamak şifre kalitesi ayarlarını devre dışı bırakacaktır.</string>
+    <string name="password_quality_deprecated_desc">Kullanım dışı. Bunun yerine "Gereken şifre karmaşıklığı" kullanın.</string>
+    <string name="activate_reset_password_token_here">Şifre sıfırlama jetonunu burada etkinleştirin.</string>
+
+    <!--Settings&About-->
+    <string name="setting">Ayarlar</string>
+    <string name="material_you_color">Material You rengi</string>
+    <string name="dynamic_color_desc">Android 12+</string>
+    <string name="about">Hakkında</string>
+    <string name="about_desc">Cihazınızı tam kontrol altına almak için Cihaz yöneticisi, Profil sahibi ve Cihaz sahibi ayrıcalıklarını kullanın.</string>
+    <string name="user_guide">Kullanıcı rehberi</string>
+    <string name="source_code">Kaynak kodu</string>
+    <string name="theme">Tema</string>
+    <string name="amoled_black">Siyah tema</string>
+    <string name="blackTheme_desc">Karanlık modun açık olmasını gerektirir</string>
+
+    <string name="security">Güvenlik</string>
+    <string name="lock_owndroid">OwnDroid'u kilitle</string>
+    <string name="enable_bio_auth">Biyometri ile doğrulama</string>
+    <string name="authenticate">Doğrula</string>
+    <string name="auth_on_start">OwnDroid başlatıldığında ana ekran şifresi veya biyometri ile doğrulama</string>
+    <string name="use_password">Şifre kullan</string>
+    <string name="auth_with_password">OwnDroid'u şifre ile doğrula</string>
+    <string name="auth_with_bio">OwnDroid'u biyometri ile doğrula</string>
+    <string name="lock_in_background">Arka plana geçince kilitle</string>
+    <string name="protect_storage">Depolamayı koru</string>
+    <string name="storage_is_protected">Depolama korunuyor</string>
+    <string name="you_cant_clear_storage">OwnDroid'un depolamasını temizleyemezsiniz</string>
+    <string name="clear_storage">Depolamayı temizle</string>
+    <string name="clear_storage_success">Depolama başarıyla temizlendi\nUygulama kapanacak</string>
+
+    <!--AndroidPermission-->
+    <string name="permission_READ_EXTERNAL_STORAGE">Harici depolamayı oku</string>
+    <string name="permission_WRITE_EXTERNAL_STORAGE">Harici depolamaya yaz</string>
+    <string name="permission_READ_MEDIA_AUDIO">Medya oku (ses)</string>
+    <string name="permission_READ_MEDIA_VIDEO">Medya oku (video)</string>
+    <string name="permission_READ_MEDIA_IMAGES">Medya oku (görseller)</string>
+    <string name="permission_CAMERA">Kamera</string>
+    <string name="permission_RECORD_AUDIO">Mikrofon</string>
+    <string name="permission_READ_CONTACTS">Kişileri oku</string>
+    <string name="permission_WRITE_CONTACTS">Kişilere yaz</string>
+    <string name="permission_READ_CALENDAR">Takvimi oku</string>
+    <string name="permission_WRITE_CALENDAR">Takvime yaz</string>
+    <string name="permission_ACCESS_COARSE_LOCATION">Yaklaşık konuma eriş</string>
+    <string name="permission_ACCESS_FINE_LOCATION">Kesin konuma eriş</string>
+    <string name="permission_ACCESS_BACKGROUND_LOCATION">Arka planda konuma eriş</string>
+    <string name="permission_CALL_PHONE">Telefonla arama yap</string>
+    <string name="permission_READ_PHONE_STATE">Telefon durumunu oku</string>
+    <string name="permission_READ_SMS">SMS oku</string>
+    <string name="permission_RECEIVE_SMS">SMS al</string>
+    <string name="permission_SEND_SMS">SMS gönder</string>
+    <string name="permission_READ_CALL_LOG">Arama kaydını oku</string>
+    <string name="permission_WRITE_CALL_LOG">Arama kaydına yaz</string>
+    <string name="permission_BODY_SENSORS">Vücut sensörlerine eriş</string>
+    <string name="permission_BODY_SENSORS_BACKGROUND">Arka planda vücut sensörlerine eriş</string>
+    <string name="permission_ACTIVITY_RECOGNITION">Aktivite tanıma</string>
+    <string name="permission_POST_NOTIFICATIONS">Bildirim gönder</string>
+    
+</resources>
