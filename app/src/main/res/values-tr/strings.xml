@@ -1,7 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <!--Global-->
-    <string name="app_name" translatable="false">OwnDroid</string>
     <string name="disabled">Devre Dışı</string>
     <string name="enabled">Etkin</string>
     <string name="disable">Devre Dışı Bırak</string>
@@ -63,9 +62,6 @@
     <string name="profile_owner">Profil Sahibi</string>
     <string name="device_owner">Cihaz Sahibi</string>
     <string name="activate_device_admin">Cihaz Yöneticisini Etkinleştir</string>
-    <string name="activate_device_admin_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
-    <string name="activate_profile_owner_command" translatable="false">dpm set-profile-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
-    <string name="activate_device_owner_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="device_info">Cihaz Bilgisi</string>
     <string name="support_device_id_attestation">Cihaz Kimliği Doğrulama Desteği: </string>
     <string name="support_unique_device_attestation">Benzersiz Cihaz Doğrulama Desteği: </string>
@@ -102,13 +98,9 @@
     <string name="create_work_profile_success">OwnDroid: İş Profili Başarıyla Oluşturuldu</string>
 
     <!--Shizuku-->
-    <string name="shizuku" translatable="false">Shizuku</string>
     <string name="check_shizuku">İzni Kontrol Et</string>
     <string name="list_owners">Sahipleri Listele</string>
     <string name="shizuku_not_started">Shizuku Başlatılmadı. </string>
-    <string name="dpm_activate_do_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
-    <string name="dpm_activate_po_command" translatable="false">dpm set-profile-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
-    <string name="dpm_activate_da_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="shizuku_activated_shell">İzin Verildi (Kabuk)</string>
     <string name="shizuku_activated_root">İzin Verildi (Root)</string>
     <string name="activate_profile_owner">Profil Sahibini Etkinleştir</string>
@@ -116,7 +108,7 @@
     <string name="activate_org_profile">Kuruluş Profili Sahibini Etkinleştir</string>
     <string name="shizuku_service_disconnected">Shizuku Hizmeti Bağlantısı Kesildi</string>
     <string name="invalid_binder">Geçersiz Bağlayıcı</string>
-    <string name="bind_shizuku">Shizuku'ya Bağlan</string>
+    <string name="bind_shizuku">Shizuku\'ya Bağlan</string>
     <string name="shizuku_not_bind">Shizuku Bağlantısı Kesildi</string>
 
     <!--System-->
@@ -124,7 +116,7 @@
     <string name="disable_cam">Kamerayı devre dışı bırak</string>
     <string name="disable_screen_capture">Ekran görüntüsünü devre dışı bırak</string>
     <string name="disable_status_bar">Durum çubuğunu devre dışı bırak</string>
-    <string name="also_disable_aosp_screen_record">AOSP'de ekran kaydını da devre dışı bırak</string>
+    <string name="also_disable_aosp_screen_record">AOSP\'de ekran kaydını da devre dışı bırak</string>
     <string name="auto_time">Otomatik saat</string>
     <string name="require_auto_time">Otomatik saat gerektir</string>
     <string name="auto_timezone">Otomatik saat dilimi</string>
@@ -148,7 +140,7 @@
     <string name="hide_all_timezones">Tüm saat dilimi kimliklerini gizle</string>
     <string name="timezone_id">Saat dilimi kimliği</string>
     <string name="disable_auto_time_zone_before_set">Özel bir saat dilimi ayarlamadan önce otomatik saat dilimi devre dışı bırakılmalıdır</string>
-    <string name="from_epoch_to_target_time">Epoch'tan (1970/1/1 00:00:00 UTC) ayarlanmak istenen zamana kadar (ms)</string>
+    <string name="from_epoch_to_target_time">Epoch\'tan (1970/1/1 00:00:00 UTC) ayarlanmak istenen zamana kadar (ms)</string>
     <string name="get_current_time">Geçerli saat</string>
     <string name="permission_policy">İzin politikası</string>
     <string name="auto_grant">Otomatik ver</string>
@@ -184,12 +176,12 @@
     <string name="wipe_euicc">eUICC (eSIM) sil</string>
     <string name="wipe_silently">Sessizce sil</string>
     <string name="will_delete_work_profile">Çalışma profili silinecek</string>
-    <string name="api34_or_above_wipedata_cannot_in_system_user">System user'da WipeData kullanamazsınız</string>
+    <string name="api34_or_above_wipedata_cannot_in_system_user">System user\'da WipeData kullanamazsınız</string>
     <string name="encrypt_status_is">Şifreleme durumu: </string>
     <string name="frp_policy">FRP politikası</string>
     <string name="factory_reset_protection_policy">Fabrika ayarlarına sıfırlama koruma politikası</string>
     <string name="frp_policy_not_supported">FRP politikası bu cihazda desteklenmiyor</string>
-    <string name="enable_frp">FRP'yi etkinleştir</string>
+    <string name="enable_frp">FRP\'yi etkinleştir</string>
     <string name="account_list_is">Hesap listesi: </string>
 
     <!--SystemUpdatePolicy-->
@@ -266,7 +258,6 @@
     <string name="create_work_profile">İş profili oluştur</string>
     <string name="is_org_owned_profile">Kuruluşa ait iş profili: %1$s</string>
     <string name="org_owned_work_profile">Kuruluş iş profili</string>
-    <string name="activate_org_profile_command" tools:ignore="TypographyDashes" translatable="false">dpm mark-profile-owner-on-organization-owned-device --user %1$s com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="skip_encryption">Şifrelemeyi atla</string>
     <string name="create">Oluştur</string>
     <string name="suspend_personal_app">Kişisel uygulamayı askıya al</string>
@@ -358,7 +349,7 @@
     <string name="other">Diğer</string>
     <string name="require_device_owner">Cihaz sahibi gerektirir</string>
     <string name="config_mobile_network">Mobil ağı yapılandır</string>
-    <string name="config_wifi">WiFi'yi yapılandır</string>
+    <string name="config_wifi">WiFi\'yi yapılandır</string>
     <string name="data_roaming">Veri dolaşımı</string>
     <string name="cellular_2g">2G hücresel</string>
     <string name="ultra_wideband_radio">Ultra geniş bant radyo</string>
@@ -504,7 +495,7 @@
     <string name="require_set_new_password">Yeni şifre ayarlanmasını iste</string>
     <string name="disable_keyguard_features">Kilit ekranı özellikleri</string>
     <string name="enable_all">Tümünü etkinleştir</string>
-    <string name="disable_keyguard_features_widgets">Widget'ı devre dışı bırak</string>
+    <string name="disable_keyguard_features_widgets">Widget\'ı devre dışı bırak</string>
     <string name="disable_keyguard_features_camera">Kamerayı devre dışı bırak</string>
     <string name="disable_keyguard_features_notification">Bildirimleri devre dışı bırak</string>
     <string name="disable_keyguard_features_unredacted_notification">Sansürsüz bildirimleri devre dışı bırak</string>
@@ -540,17 +531,17 @@
     <string name="blackTheme_desc">Karanlık modun açık olmasını gerektirir</string>
 
     <string name="security">Güvenlik</string>
-    <string name="lock_owndroid">OwnDroid'u kilitle</string>
+    <string name="lock_owndroid">OwnDroid\'u kilitle</string>
     <string name="enable_bio_auth">Biyometri ile doğrulama</string>
     <string name="authenticate">Doğrula</string>
     <string name="auth_on_start">OwnDroid başlatıldığında ana ekran şifresi veya biyometri ile doğrulama</string>
     <string name="use_password">Şifre kullan</string>
-    <string name="auth_with_password">OwnDroid'u şifre ile doğrula</string>
-    <string name="auth_with_bio">OwnDroid'u biyometri ile doğrula</string>
+    <string name="auth_with_password">OwnDroid\'u şifre ile doğrula</string>
+    <string name="auth_with_bio">OwnDroid\'u biyometri ile doğrula</string>
     <string name="lock_in_background">Arka plana geçince kilitle</string>
     <string name="protect_storage">Depolamayı koru</string>
     <string name="storage_is_protected">Depolama korunuyor</string>
-    <string name="you_cant_clear_storage">OwnDroid'un depolamasını temizleyemezsiniz</string>
+    <string name="you_cant_clear_storage">OwnDroid\'un depolamasını temizleyemezsiniz</string>
     <string name="clear_storage">Depolamayı temizle</string>
     <string name="clear_storage_success">Depolama başarıyla temizlendi\nUygulama kapanacak</string>
 
