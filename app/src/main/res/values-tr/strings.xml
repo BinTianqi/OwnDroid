@@ -1,4 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+
     <!--Global-->
     <string name="app_name" translatable="false">OwnDroid</string>
     <string name="disabled">Devre Dışı</string>
@@ -70,6 +71,7 @@
     <string name="support_unique_device_attestation">Benzersiz Cihaz Doğrulama Desteği: </string>
     <string name="is_device_financed">Finansmanlı Cihaz: %1$s</string>
     <string name="dpmrh">Cihaz Politikası Yönetim Rolü: %1$s</string>
+
     <!--es: encryption status-->
     <string name="es_inactive">Devre Dışı</string>
     <string name="es_active">Aktif</string>
@@ -159,6 +161,7 @@
     <string name="enable_if_secure_enough">Yalnızca aynı yönetilen hesap</string>
     <string name="lock_task_feature">Görev kilitleme özelliği</string>
     <string name="disable_all">Hepsini devre dışı bırak</string>
+
     <!--ltf: lock task feature-->
     <string name="ltf_sys_info">Sistem bilgisine izin ver</string>
     <string name="ltf_notifications">Bildirimlere izin ver</string>
@@ -188,6 +191,7 @@
     <string name="frp_policy_not_supported">FRP politikası bu cihazda desteklenmiyor</string>
     <string name="enable_frp">FRP'yi etkinleştir</string>
     <string name="account_list_is">Hesap listesi: </string>
+
     <!--SystemUpdatePolicy-->
     <string name="is_security_patch">Güvenlik yaması: %1$s</string>
     <string name="no_system_update">Sistem güncellemesi yok</string>
@@ -254,6 +258,7 @@
     <string name="protocol">Protokol</string>
     <string name="roaming_protocol">Dolaşım protokolü</string>
     <string name="update">Güncelle</string>
+
     <!--WorkProfile-->
     <string name="work_profile">İş Profili</string>
     <string name="work_profile_owner">Profil sahibi (İş profili)</string>
@@ -297,6 +302,7 @@
     <string name="block_uninstall">Kaldırmayı engelle</string>
     <string name="enable_system_app">Sistem uygulamasını etkinleştir</string>
     <string name="enable_system_app_desc">Varsayılan olarak devre dışı bırakılmış bir sistem uygulamasını yeniden etkinleştir</string>
+
     <!--ucd: user control disabled-->
     <string name="ucd">Kullanıcı kontrolünü devre dışı bırak</string>
     <string name="ucd_desc">Bunu ayarlarsanız, bu uygulamaların depolama alanını temizleyemez veya zorla durduramazsınız. </string>
@@ -327,6 +333,7 @@
     <string name="select_apk" tools:ignore="TypographyEllipsis">APK seç...</string>
     <string name="silent_install">Sessiz yükleme</string>
     <string name="request_install">Yükleme isteği</string>
+
     <!--App install session status-->
     <string name="app_installer_status">Uygulama yükleyici:</string>
     <string name="status_pending_action">Bekleyen kullanıcı işlemi</string>
@@ -417,6 +424,7 @@
     <string name="factory_reset">Fabrika ayarlarına döndür</string>
     <string name="safe_boot">Güvenli başlangıç</string>
     <string name="debug_features">Hata ayıklama özellikleri</string>
+
     <!--UserManage-->
     <string name="user_manager">Kullanıcı yöneticisi</string>
     <string name="edit_username">Kullanıcı adını düzenle</string>
@@ -457,6 +465,7 @@
     <string name="fail_managed_profile">Başarısız: yönetilen profil</string>
     <string name="fail_current_user">Başarısız: mevcut kullanıcı</string>
     <string name="user_session_msg">Kullanıcı oturum mesajı</string>
+
     <!--Password&Keyguard-->
     <string name="password_and_keyguard">Şifre ve kilit ekranı</string>
     <string name="password_info">Şifre Bilgisi</string>
@@ -517,6 +526,7 @@
     <string name="password_complexity_instead_password_quality">Şifre karmaşıklığı ayarlamak şifre kalitesi ayarlarını devre dışı bırakacaktır.</string>
     <string name="password_quality_deprecated_desc">Kullanım dışı. Bunun yerine "Gereken şifre karmaşıklığı" kullanın.</string>
     <string name="activate_reset_password_token_here">Şifre sıfırlama jetonunu burada etkinleştirin.</string>
+
     <!--Settings&About-->
     <string name="setting">Ayarlar</string>
     <string name="material_you_color">Material You rengi</string>
@@ -570,4 +580,5 @@
     <string name="permission_BODY_SENSORS_BACKGROUND">Arka planda vücut sensörlerine eriş</string>
     <string name="permission_ACTIVITY_RECOGNITION">Aktivite tanıma</string>
     <string name="permission_POST_NOTIFICATIONS">Bildirim gönder</string>
+    
 </resources>
