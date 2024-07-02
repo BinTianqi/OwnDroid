@@ -52,6 +52,16 @@
             android:theme="@style/Theme.OwnDroid">
         </activity>
         <activity
+            android:name=".AutomationActivity"
+            android:exported="true"
+            android:launchMode="singleInstance"
+            android:windowSoftInputMode="adjustResize|stateHidden"
+            android:theme="@style/Theme.OwnDroid">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".InstallAppActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize|stateHidden"
@@ -91,7 +101,7 @@
         android:permission="android.permission.BIND_DEVICE_ADMIN">
         </receiver>
         <receiver
-                android:name=".TaskReceiver"
+                android:name=".AutomationReceiver"
                 android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

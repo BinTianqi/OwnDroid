@@ -1,0 +1,44 @@
+package com.bintianqi.owndroid
+
+import android.app.admin.DevicePolicyManager
+import android.content.BroadcastReceiver
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.util.Log
+import androidx.activity.ComponentActivity
+
+class AutomationReceiver: BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        handleTask(context, intent)
+    }
+}
+
+fun handleTask(context: Context, intent: Intent): String {
+    val sharedPrefs = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val key = sharedPrefs.getString("automation_key", "") ?: ""
+    if(key.length < 6) {
+        return "Key length must longer than 6"
+    }
+    if(key != intent.getStringExtra("key")) {
+        return "Wrong key"
+    }
+    val operation = intent.getStringExtra("operation")
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
+    val app = intent.getStringExtra("app")
+    try {
+        when(operation) {
+            "suspend" -> dpm.setPackagesSuspended(receiver, arrayOf(app), true)
+            "unsuspend" -> dpm.setPackagesSuspended(receiver, arrayOf(app), false)
+            "hide" -> dpm.setApplicationHidden(receiver, app, true)
+            "unhide" -> dpm.setApplicationHidden(receiver, app, false)
+            "lock" -> dpm.lockNow()
+            "reboot" -> dpm.reboot(receiver)
+            else -> return "Operation not defined"
+        }
+    } catch(e: Exception) {
+        return e.message ?: "Failed to get error message"
+    }
+    return "No error, or error is unhandled"
+}

@@ -535,7 +535,9 @@
     <string name="you_cant_clear_storage">你不能清除OwnDroid的存储空间</string>
     <string name="clear_storage">清除存储空间</string>
     <string name="clear_storage_success">清除存储空间成功\n应用即将退出</string>
+
     <string name="automation">自动化</string>
+    <string name="automation_debug">调试模式</string>
 
     <!--AndroidPermission-->
     <string name="permission_READ_EXTERNAL_STORAGE">读取外部存储</string>

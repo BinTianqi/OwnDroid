@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build.VERSION
+import android.widget.Toast
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -128,16 +129,31 @@ private fun AuthSettings() {
 
 @Composable
 private fun Automation() {
-    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        var pkgName by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
+        var key by remember { mutableStateOf("") }
         LaunchedEffect(Unit) {
-            pkgName = sharedPref.getString("AutomationApp", "")?: ""
+            key = sharedPref.getString("automation_key", "")?: ""
         }
-        TextField(value = pkgName, onValueChange = { pkgName = it }, label = { Text("Package name")})
-        Button(onClick = {sharedPref.edit().putString("AutomationApp", pkgName).apply()}) {
-            Text("apply")
+        TextField(
+            value = key, onValueChange = { key = it }, label = { Text("Key")},
+            modifier = Modifier.fillMaxWidth()
+        )
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = {
+                sharedPref.edit().putString("automation_key", key).apply()
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+            }
+        ) {
+            Text(stringResource(R.string.apply))
         }
+        SwitchItem(
+            R.string.automation_debug, "", null,
+            { sharedPref.getBoolean("automation_debug", false) },
+            { sharedPref.edit().putBoolean("automation_debug", it).apply() }
+        )
     }
 }
 
