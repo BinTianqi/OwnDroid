@@ -78,6 +78,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.bintianqi.owndroid.InstallAppActivity
 import com.bintianqi.owndroid.PackageInstallerReceiver
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.Receiver
@@ -90,7 +91,6 @@ import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.TopBar
-import com.bintianqi.owndroid.uriToStream
 import java.util.concurrent.Executors
 
 private var dialogConfirmButtonAction = {}
@@ -949,7 +949,11 @@ private fun InstallApp() {
             Spacer(Modifier.padding(vertical = 3.dp))
             Column(modifier = Modifier.fillMaxWidth()) { 
                 Button(
-                    onClick = { uriToStream(context, fileUriFlow.value) { stream -> installPackage(context,stream)} },
+                    onClick = {
+                        val intent = Intent(context, InstallAppActivity::class.java)
+                        intent.data = fileUriFlow.value
+                        context.startActivity(intent)
+                    },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(stringResource(R.string.silent_install))

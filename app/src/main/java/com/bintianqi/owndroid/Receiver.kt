@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import com.bintianqi.owndroid.dpm.isDeviceOwner
 import com.bintianqi.owndroid.dpm.isProfileOwner
+import kotlinx.coroutines.flow.MutableStateFlow
 
 class Receiver : DeviceAdminReceiver() {
     override fun onEnabled(context: Context, intent: Intent) {
@@ -35,23 +36,28 @@ class Receiver : DeviceAdminReceiver() {
 
 }
 
+val installAppDone = MutableStateFlow(false)
+
 class PackageInstallerReceiver:BroadcastReceiver(){
     override fun onReceive(context: Context, intent: Intent) {
-        val toastText = when(intent.getIntExtra(EXTRA_STATUS,999)){
-            STATUS_PENDING_USER_ACTION->R.string.status_pending_action
-            STATUS_SUCCESS->R.string.success
-            STATUS_FAILURE->R.string.failed
-            STATUS_FAILURE_BLOCKED->R.string.status_fail_blocked
-            STATUS_FAILURE_ABORTED->R.string.status_fail_aborted
-            STATUS_FAILURE_INVALID->R.string.status_fail_invalid
-            STATUS_FAILURE_CONFLICT->R.string.status_fail_conflict
-            STATUS_FAILURE_STORAGE->R.string.status_fail_storage
-            STATUS_FAILURE_INCOMPATIBLE->R.string.status_fail_incompatible
-            STATUS_FAILURE_TIMEOUT->R.string.status_fail_timeout
-            else->R.string.unknown
+        val toastText = when(intent.getIntExtra(EXTRA_STATUS, 999)){
+            STATUS_PENDING_USER_ACTION -> R.string.status_pending_action
+            STATUS_SUCCESS -> R.string.success
+            STATUS_FAILURE -> R.string.failed
+            STATUS_FAILURE_BLOCKED -> R.string.status_fail_blocked
+            STATUS_FAILURE_ABORTED -> R.string.status_fail_aborted
+            STATUS_FAILURE_INVALID -> R.string.status_fail_invalid
+            STATUS_FAILURE_CONFLICT -> R.string.status_fail_conflict
+            STATUS_FAILURE_STORAGE -> R.string.status_fail_storage
+            STATUS_FAILURE_INCOMPATIBLE -> R.string.status_fail_incompatible
+            STATUS_FAILURE_TIMEOUT -> R.string.status_fail_timeout
+            else -> 999
         }
-        Log.e("OwnDroid", intent.getIntExtra(EXTRA_STATUS,999).toString())
-        val text = context.getString(R.string.app_installer_status) + context.getString(toastText)
-        if(toastText!=999){Toast.makeText(context, text, Toast.LENGTH_SHORT).show()}
+        Log.e("OwnDroid", intent.getIntExtra(EXTRA_STATUS, 999).toString())
+        installAppDone.value = true
+        if(toastText != 999){
+            val text = context.getString(R.string.app_installer_status) + context.getString(toastText)
+            Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
+        }
     }
 }
