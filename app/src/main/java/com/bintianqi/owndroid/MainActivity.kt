@@ -100,7 +100,7 @@ fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>) {
     val pkgName = mutableStateOf("")
     val dialogStatus = mutableIntStateOf(0)
     val backToHome by backToHomeStateFlow.collectAsState()
-    LaunchedEffect(Unit) {
+    LaunchedEffect(backToHome) {
         if(backToHome) { navCtrl.navigateUp(); backToHomeStateFlow.value = false }
     }
     NavHost(
