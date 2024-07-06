@@ -574,5 +574,6 @@
 
     <string name="version_name">Version name</string> <!--TODO-->
     <string name="version_code">Version code</string> <!--TODO-->
+    <string name="update_using_system_installer">Please update OwnDroid with system installer.</string> <!--TODO-->
     <string name="parsing_apk_info" tools:ignore="TypographyEllipsis">Parsing APK info...</string>
 </resources>

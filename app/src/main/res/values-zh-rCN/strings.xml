@@ -565,5 +565,6 @@
 
     <string name="version_name">版本名</string>
     <string name="version_code">版本号</string>
+    <string name="update_using_system_installer">请使用系统的应用安装器更新OwnDroid。</string>
     <string name="parsing_apk_info" tools:ignore="TypographyEllipsis">解析APK信息中...</string>
 </resources>
