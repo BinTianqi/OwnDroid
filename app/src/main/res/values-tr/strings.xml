@@ -571,5 +571,8 @@
     <string name="permission_BODY_SENSORS_BACKGROUND">Arka planda vücut sensörlerine eriş</string>
     <string name="permission_ACTIVITY_RECOGNITION">Aktivite tanıma</string>
     <string name="permission_POST_NOTIFICATIONS">Bildirim gönder</string>
-    
+
+    <string name="version_name">Version name</string> <!--TODO-->
+    <string name="version_code">Version code</string> <!--TODO-->
+    <string name="parsing_apk_info" tools:ignore="TypographyEllipsis">Parsing APK info...</string>
 </resources>

@@ -563,4 +563,7 @@
     <string name="permission_ACTIVITY_RECOGNITION">查看使用情况</string>
     <string name="permission_POST_NOTIFICATIONS">发送通知</string>
 
+    <string name="version_name">版本名</string>
+    <string name="version_code">版本号</string>
+    <string name="parsing_apk_info" tools:ignore="TypographyEllipsis">解析APK信息中...</string>
 </resources>

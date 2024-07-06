@@ -579,4 +579,7 @@
     <string name="permission_ACTIVITY_RECOGNITION">Activity recognition</string>
     <string name="permission_POST_NOTIFICATIONS">Post notifications</string>
 
+    <string name="version_name">Version name</string>
+    <string name="version_code">Version code</string>
+    <string name="parsing_apk_info" tools:ignore="TypographyEllipsis">Parsing APK info...</string>
 </resources>
