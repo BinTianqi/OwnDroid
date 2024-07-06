@@ -286,6 +286,9 @@
     <string name="hide">Gizle</string>
     <string name="isapphidden_desc">Mevcut olmayan uygulamalar gizlidir</string>
     <string name="always_on_vpn">Her zaman açık VPN</string>
+    <string name="enable_lockdown">Enable lockdown</string> <!--TODO-->
+    <string name="current_app_is">Current app: </string> <!--TODO-->
+    <string name="clear_current_config">Clear current config</string> <!--TODO-->
     <string name="permission">İzin</string>
     <string name="scope_is_work_profile">Kapsam: iş profili</string>
     <string name="app_info">Uygulama bilgisi</string>

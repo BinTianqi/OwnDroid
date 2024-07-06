@@ -158,6 +158,7 @@ fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, 
                 composable(route = "Home") {
                     Home(localNavCtrl, pkgName.value, dialogStatus, clearAppDataDialog, defaultDialerAppDialog, enableSystemAppDialog)
                 }
+                composable(route = "AlwaysOnVpn") { AlwaysOnVPNPackage(pkgName.value) }
                 composable(route = "UserControlDisabled") { UserCtrlDisabledPkg(pkgName.value) }
                 composable(route = "PermissionManage") { PermissionManage(pkgName.value, navCtrl) }
                 composable(route = "CrossProfilePackage") { CrossProfilePkg(pkgName.value) }
@@ -213,8 +214,8 @@ private fun Home(
         if(VERSION.SDK_INT>=24 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) { 
             val getSuspendStatus = {
                 try{ dpm.isPackageSuspended(receiver, pkgName) }
-                catch(e:NameNotFoundException) {  false }
-                catch(e:IllegalArgumentException) {  false }
+                catch(e:NameNotFoundException) { false }
+                catch(e:IllegalArgumentException) { false }
             }
             SwitchItem(
                 title = R.string.suspend, desc = "", icon = R.drawable.block_fill0,
@@ -255,26 +256,7 @@ private fun Home(
             )
         }
         if(VERSION.SDK_INT>=24 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
-            val setAlwaysOnVpn: (Boolean)->Unit = {
-                try {
-                    dpm.setAlwaysOnVpnPackage(receiver, pkgName, it)
-                } catch(e: UnsupportedOperationException) {
-                    Toast.makeText(context, R.string.unsupported, Toast.LENGTH_SHORT).show()
-                } catch(e: NameNotFoundException) {
-                    Toast.makeText(context, R.string.not_installed, Toast.LENGTH_SHORT).show()
-                }
-            }
-            SwitchItem(
-                title = R.string.always_on_vpn, desc = "", icon = R.drawable.vpn_key_fill0,
-                getState = { pkgName == dpm.getAlwaysOnVpnPackage(receiver) },
-                onCheckedChange = setAlwaysOnVpn,
-                onClickBlank = {
-                    dialogGetStatus = { pkgName == dpm.getAlwaysOnVpnPackage(receiver) }
-                    dialogConfirmButtonAction = { setAlwaysOnVpn(true) }
-                    dialogDismissButtonAction = { setAlwaysOnVpn(false) }
-                    dialogStatus.intValue = 4
-                }
-            )
+            SubPageItem(R.string.always_on_vpn, "", R.drawable.vpn_key_fill0) { navCtrl.navigate("AlwaysOnVpn") }
         }
         if((VERSION.SDK_INT>=33&&isProfileOwner(dpm))||(VERSION.SDK_INT>=30&&isDeviceOwner(dpm))) { 
             SubPageItem(R.string.ucd, "", R.drawable.do_not_touch_fill0) { navCtrl.navigate("UserControlDisabled") }
@@ -315,6 +297,50 @@ private fun Home(
         }
         Spacer(Modifier.padding(vertical = 30.dp))
         LaunchedEffect(Unit) { fileUriFlow.value = Uri.parse("") }
+    }
+}
+
+@SuppressLint("NewApi")
+@Composable
+fun AlwaysOnVPNPackage(pkgName: String) {
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val receiver = ComponentName(context,Receiver::class.java)
+    var lockdown by remember { mutableStateOf(false) }
+    var pkg by remember { mutableStateOf<String?>("") }
+    val refresh = { pkg = dpm.getAlwaysOnVpnPackage(receiver) }
+    LaunchedEffect(Unit) { refresh() }
+    val setAlwaysOnVpn: (String?, Boolean)->Unit = { vpnPkg: String?, lockdownEnabled: Boolean ->
+        try {
+            dpm.setAlwaysOnVpnPackage(receiver, vpnPkg, lockdownEnabled)
+            Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+        } catch(e: UnsupportedOperationException) {
+            Toast.makeText(context, R.string.unsupported, Toast.LENGTH_SHORT).show()
+        } catch(e: NameNotFoundException) {
+            Toast.makeText(context, R.string.not_installed, Toast.LENGTH_SHORT).show()
+        }
+    }
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.always_on_vpn), style = typography.headlineLarge, modifier = Modifier.padding(8.dp))
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Text(text = stringResource(R.string.current_app_is) + pkg, modifier = Modifier.padding(8.dp))
+        SwitchItem(R.string.enable_lockdown, "", null, { lockdown }, { lockdown = it })
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Button(
+            onClick = { setAlwaysOnVpn(pkgName, lockdown); refresh() },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+        ) {
+            Text(stringResource(R.string.apply))
+        }
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Button(
+            onClick = { setAlwaysOnVpn(null, false); refresh() },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+        ) {
+            Text(stringResource(R.string.clear_current_config))
+        }
+        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 

@@ -295,6 +295,9 @@
     <string name="hide">Hide</string>
     <string name="isapphidden_desc">Non-existent apps is hidden</string>
     <string name="always_on_vpn">Always-on VPN</string>
+    <string name="enable_lockdown">Enable lockdown</string>
+    <string name="current_app_is">Current app: </string>
+    <string name="clear_current_config">Clear current config</string>
     <string name="permission">Permission</string>
     <string name="scope_is_work_profile">Scope: work profile</string>
     <string name="app_info">App info</string>
