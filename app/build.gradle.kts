@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.cc)
 }
 
 var keyPassword: String? = null
@@ -55,9 +56,6 @@ android {
     buildFeatures {
         compose = true
         aidl = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.13"
     }
     packaging {
         resources {

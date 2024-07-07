@@ -120,7 +120,7 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
             SubPageItem(R.string.enrollment_specific_id, "", R.drawable.id_card_fill0) { localNavCtrl.navigate("SpecificID") }
         }
         if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
-            SubPageItem(R.string.disable_account_management, "", R.drawable.account_circle_fill0) { localNavCtrl.navigate("NoManagementAccount") }
+            SubPageItem(R.string.disable_account_management, "", R.drawable.account_circle_fill0) { localNavCtrl.navigate("DisableAccountManagement") }
         }
         if(VERSION.SDK_INT >= 24 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.device_owner_lock_screen_info, "", R.drawable.screen_lock_portrait_fill0) { localNavCtrl.navigate("LockScreenInfo") }
