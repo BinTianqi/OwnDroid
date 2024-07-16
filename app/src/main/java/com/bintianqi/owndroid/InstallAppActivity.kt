@@ -115,7 +115,10 @@ class InstallAppActivity: FragmentActivity() {
             }
             val installDone by installAppDone.collectAsState()
             LaunchedEffect(installDone) {
-                if(installDone) finish()
+                if(installDone) {
+                    installAppDone.value = false
+                    finish()
+                }
             }
         }
     }
