@@ -57,7 +57,7 @@ private fun Home(navCtrl: NavHostController) {
     Column(modifier = Modifier.fillMaxSize()) {
         SubPageItem(R.string.theme, "", R.drawable.format_paint_fill0) { navCtrl.navigate("Theme") }
         SubPageItem(R.string.security, "", R.drawable.lock_fill0) { navCtrl.navigate("Auth") }
-        SubPageItem(R.string.automation, "", R.drawable.apps_fill0) { navCtrl.navigate("Automation") }
+        SubPageItem(R.string.automation_api, "", R.drawable.apps_fill0) { navCtrl.navigate("Automation") }
         SubPageItem(R.string.about, "", R.drawable.info_fill0) { navCtrl.navigate("About") }
     }
 }
@@ -132,10 +132,10 @@ private fun Automation() {
     val context = LocalContext.current
     val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.automation_api), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
         var key by remember { mutableStateOf("") }
-        LaunchedEffect(Unit) {
-            key = sharedPref.getString("automation_key", "")?: ""
-        }
         TextField(
             value = key, onValueChange = { key = it }, label = { Text("Key")},
             modifier = Modifier.fillMaxWidth()

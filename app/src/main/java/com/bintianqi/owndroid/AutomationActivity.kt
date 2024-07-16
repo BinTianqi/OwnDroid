@@ -1,11 +1,11 @@
 package com.bintianqi.owndroid
 
+import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material3.Text
+import androidx.compose.ui.platform.LocalContext
 
 class AutomationActivity: ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -14,9 +14,11 @@ class AutomationActivity: ComponentActivity() {
         val sharedPrefs = applicationContext.getSharedPreferences("data", Context.MODE_PRIVATE)
         if(sharedPrefs.getBoolean("automation_debug", false)) {
             setContent {
-                SelectionContainer {
-                    Text(result)
-                }
+                AlertDialog.Builder(LocalContext.current)
+                    .setMessage(result)
+                    .setOnDismissListener { finish() }
+                    .setPositiveButton(R.string.confirm) { _, _ -> finish() }
+                    .show()
             }
         } else {
             finish()

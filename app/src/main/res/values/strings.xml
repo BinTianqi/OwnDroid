@@ -552,7 +552,7 @@
     <string name="clear_storage">Clear storage</string>
     <string name="clear_storage_success">Clear storage success\nApplication will exit</string>
 
-    <string name="automation">Automation</string>
+    <string name="automation_api">Automation API</string>
     <string name="automation_debug">Debug mode</string>
 
     <!--AndroidPermission-->

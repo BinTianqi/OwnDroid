@@ -55,8 +55,9 @@
             android:name=".AutomationActivity"
             android:exported="true"
             android:launchMode="singleInstance"
+            android:excludeFromRecents="true"
             android:windowSoftInputMode="adjustResize|stateHidden"
-            android:theme="@style/Theme.OwnDroid">
+            android:theme="@style/Theme.Transparent">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
             </intent-filter>
@@ -67,7 +68,7 @@
             android:windowSoftInputMode="adjustResize|stateHidden"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
-            android:theme="@style/Theme.OwnDroidAppInstaller">
+            android:theme="@style/Theme.Transparent">
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <action android:name="android.intent.action.VIEW"/>

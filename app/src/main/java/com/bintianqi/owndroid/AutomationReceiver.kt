@@ -1,11 +1,11 @@
 package com.bintianqi.owndroid
 
+import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.activity.ComponentActivity
 
 class AutomationReceiver: BroadcastReceiver() {
@@ -14,6 +14,7 @@ class AutomationReceiver: BroadcastReceiver() {
     }
 }
 
+@SuppressLint("NewApi")
 fun handleTask(context: Context, intent: Intent): String {
     val sharedPrefs = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     val key = sharedPrefs.getString("automation_key", "") ?: ""
@@ -27,6 +28,7 @@ fun handleTask(context: Context, intent: Intent): String {
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
     val app = intent.getStringExtra("app")
+    val restriction = intent.getStringExtra("restriction")
     try {
         when(operation) {
             "suspend" -> dpm.setPackagesSuspended(receiver, arrayOf(app), true)
@@ -35,6 +37,8 @@ fun handleTask(context: Context, intent: Intent): String {
             "unhide" -> dpm.setApplicationHidden(receiver, app, false)
             "lock" -> dpm.lockNow()
             "reboot" -> dpm.reboot(receiver)
+            "addUserRestriction" -> dpm.addUserRestriction(receiver, restriction)
+            "clearUserRestriction" -> dpm.clearUserRestriction(receiver, restriction)
             else -> return "Operation not defined"
         }
     } catch(e: Exception) {
