@@ -146,7 +146,11 @@
     <string name="nearby_streaming_policy">附近流式传输策略</string>
     <string name="nearby_notification_streaming">附近通知传输</string>
     <string name="enable_if_secure_enough">在足够安全时启用</string>
+    <string name="lock_task_mode">锁定任务模式</string>
     <string name="lock_task_feature">锁定任务功能</string>
+    <string name="lock_task_packages">锁定任务应用</string>
+    <string name="start_lock_task_mode">启动锁定任务模式</string>
+    <string name="app_not_allowed">应用未被允许</string>
     <string name="disable_all">禁用全部</string>
     <string name="ltf_sys_info">允许状态栏信息</string>
     <string name="ltf_notifications">允许通知</string>

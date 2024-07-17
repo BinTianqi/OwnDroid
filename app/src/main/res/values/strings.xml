@@ -157,7 +157,11 @@
     <string name="nearby_streaming_policy">Nearby streaming policy</string>
     <string name="nearby_notification_streaming">Nearby notification streaming policy</string>
     <string name="enable_if_secure_enough">Same managed account only</string>
+    <string name="lock_task_mode">Lock task mode</string>
     <string name="lock_task_feature">Lock task feature</string>
+    <string name="lock_task_packages">Lock task packages</string>
+    <string name="start_lock_task_mode">Start lock task mode</string>
+    <string name="app_not_allowed">App not allowed</string>
     <string name="disable_all">Disable all</string>
     <!--ltf: lock task feature-->
     <string name="ltf_sys_info">Allow system info</string>

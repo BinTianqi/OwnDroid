@@ -151,7 +151,11 @@
     <string name="nearby_streaming_policy">Yakındaki akış politikası</string>
     <string name="nearby_notification_streaming">Yakındaki bildirim akış politikası</string>
     <string name="enable_if_secure_enough">Yalnızca aynı yönetilen hesap</string>
+    <string name="lock_task_mode">Lock task mode</string> <!--TODO-->
     <string name="lock_task_feature">Görev kilitleme özelliği</string>
+    <string name="lock_task_packages">Lock task packages</string> <!--TODO-->
+    <string name="start_lock_task_mode">Start lock task mode</string> <!--TODO-->
+    <string name="app_not_allowed">App not allowed</string> <!--TODO-->
     <string name="disable_all">Hepsini devre dışı bırak</string>
 
     <!--ltf: lock task feature-->

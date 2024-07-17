@@ -55,6 +55,10 @@ fun Set<Any>.toText(): String{
     return output
 }
 
+fun MutableList<Int>.toggle(status: Boolean, element: Int) {
+    if(status) add(element) else remove(element)
+}
+
 fun writeClipBoard(context: Context, string: String):Boolean{
     val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     try {
