@@ -1,8 +1,11 @@
 package com.bintianqi.owndroid
 
+import android.Manifest
 import android.app.admin.DevicePolicyManager
 import android.content.*
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
@@ -69,6 +72,7 @@ fun writeClipBoard(context: Context, string: String):Boolean{
     return true
 }
 
+lateinit var requestPermission: ActivityResultLauncher<String>
 
 fun registerActivityResult(context: ComponentActivity){
     getFile = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
@@ -86,5 +90,21 @@ fun registerActivityResult(context: ComponentActivity){
         if(dpm.isAdminActive(ComponentName(context.applicationContext, Receiver::class.java))){
             backToHomeStateFlow.value = true
         }
+    }
+    requestPermission = context.registerForActivityResult(ActivityResultContracts.RequestPermission()) { permissionGranted.value = it }
+}
+
+val permissionGranted = MutableStateFlow<Boolean?>(null)
+
+suspend fun prepareForNotification(context: Context, action: ()->Unit) {
+    if(VERSION.SDK_INT >= 33) {
+        if(context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            action()
+        } else {
+            requestPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+            permissionGranted.collect { if(it == true) action() }
+        }
+    } else {
+        action()
     }
 }

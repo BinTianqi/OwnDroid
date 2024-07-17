@@ -50,6 +50,7 @@
     <string name="io_exception">G/Ç Hatası</string>
     <string name="current_status_is">Mevcut Durum: </string>
     <string name="start">Başlat</string>
+    <string name="stop">Stop</string> <!--TODO-->
     <string name="unknown_error">Bilinmeyen Hata</string>
     <string name="allow_all">Tümünü İzin Ver</string>
     <string name="use_policy">Politika Kullan</string>

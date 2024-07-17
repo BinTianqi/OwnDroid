@@ -50,6 +50,7 @@
     <string name="io_exception">IO Exception</string>
     <string name="current_status_is">Current status: </string>
     <string name="start">Start</string>
+    <string name="stop">Stop</string>
     <string name="unknown_error">Unknown error</string>
     <string name="allow_all">Allow all</string>
     <string name="use_policy">Use policy</string>
