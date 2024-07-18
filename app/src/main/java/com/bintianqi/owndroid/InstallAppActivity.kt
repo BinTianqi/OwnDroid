@@ -58,34 +58,28 @@ class InstallAppActivity: FragmentActivity() {
             )
             fd?.close()
             withContext(Dispatchers.Main) {
+                status = "waiting"
                 apkInfoText = "${context.getString(R.string.package_name)}: ${apkInfo.packageName}\n"
                 apkInfoText += "${context.getString(R.string.version_name)}: ${apkInfo.versionName}\n"
                 apkInfoText += "${context.getString(R.string.version_code)}: ${apkInfo.versionCode}"
-                if(apkInfo.packageName == packageName) {
-                    status = "self_update"
-                    apkInfoText += "\n" + context.getString(R.string.update_using_system_installer)
-                } else {
-                    status = "waiting"
-                }
             }
         }
         setContent {
-            val canExit = status == "waiting" || status == "self_update"
             OwnDroidTheme(
                 sharedPref.getBoolean("material_you", true),
                 sharedPref.getBoolean("black_theme", false)
             ) {
                 AlertDialog(
-                    properties = DialogProperties(dismissOnBackPress = canExit, dismissOnClickOutside = canExit),
+                    properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
                     title = {
                         Text(stringResource(R.string.install_app))
                     },
                     onDismissRequest = {
-                        if(canExit) finish()
+                        if(status != "installing") finish()
                     },
                     text = {
                         Column {
-                            AnimatedVisibility(status != "waiting" && status != "self_update") {
+                            AnimatedVisibility(status != "waiting") {
                                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                             }
                             Text(text = apkInfoText, modifier = Modifier.padding(top = 4.dp))
@@ -105,7 +99,7 @@ class InstallAppActivity: FragmentActivity() {
                                 status = "installing"
                                 uriToStream(applicationContext, this.intent.data) { stream -> installPackage(applicationContext, stream) }
                             },
-                            enabled = status == "waiting"
+                            enabled = status != "installing"
                         ) {
                             Text(stringResource(R.string.install))
                         }
