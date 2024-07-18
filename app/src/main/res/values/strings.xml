@@ -559,6 +559,9 @@
     <string name="clear_storage">Clear storage</string>
     <string name="clear_storage_success">Clear storage success\nApplication will exit</string>
 
+    <string name="automation_api">Automation API</string>
+    <string name="automation_debug">Debug mode</string>
+
     <!--AndroidPermission-->
     <string name="permission_READ_EXTERNAL_STORAGE">Read external storage</string>
     <string name="permission_WRITE_EXTERNAL_STORAGE">Write external storage</string>
