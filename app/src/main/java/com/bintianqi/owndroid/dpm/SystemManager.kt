@@ -40,7 +40,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Binder
 import android.os.Build.VERSION
 import android.os.UserManager
 import android.util.Log
@@ -225,7 +224,7 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
             SubPageItem(R.string.frp_policy, "", R.drawable.device_reset_fill0) { navCtrl.navigate("FRP") }
         }
         if(dpm.isAdminActive(receiver)) {
-            SubPageItem(R.string.wipe_data, "", R.drawable.warning_fill0) { navCtrl.navigate("WipeData") }
+            SubPageItem(R.string.wipe_data, "", R.drawable.device_reset_fill0) { navCtrl.navigate("WipeData") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
         LaunchedEffect(Unit) { fileUriFlow.value = Uri.parse("") }
@@ -1064,6 +1063,7 @@ fun FactoryResetProtection() {
     }
 }
 
+@SuppressLint("NewApi")
 @Composable
 private fun WipeData() {
     val context = LocalContext.current
@@ -1071,14 +1071,14 @@ private fun WipeData() {
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
+    var warning by remember { mutableStateOf(false) }
+    var wipeDevice by remember { mutableStateOf(false) }
+    var externalStorage by remember { mutableStateOf(false) }
+    var protectionData by remember { mutableStateOf(false) }
+    var euicc by remember { mutableStateOf(false) }
+    var silent by remember { mutableStateOf(false) }
+    var reason by remember { mutableStateOf("") }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        var flag by remember { mutableIntStateOf(0) }
-        var confirmed by remember { mutableStateOf(false) }
-        var externalStorage by remember { mutableStateOf(false) }
-        var protectionData by remember { mutableStateOf(false) }
-        var euicc by remember { mutableStateOf(false) }
-        var silent by remember { mutableStateOf(false) }
-        var reason by remember { mutableStateOf("") }
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(
             text = stringResource(R.string.wipe_data),
@@ -1088,62 +1088,44 @@ private fun WipeData() {
         Spacer(Modifier.padding(vertical = 5.dp))
         CheckBoxItem(
             stringResource(R.string.wipe_external_storage),
-            externalStorage, { externalStorage = it; confirmed = false }
+            externalStorage, { externalStorage = it }
         )
         if(VERSION.SDK_INT >= 22 && isDeviceOwner(dpm)) {
             CheckBoxItem(stringResource(R.string.wipe_reset_protection_data),
-                protectionData, { protectionData = it; confirmed = false}
+                protectionData, { protectionData = it }
             )
         }
-        if(VERSION.SDK_INT >= 28) { CheckBoxItem(stringResource(R.string.wipe_euicc), euicc, { euicc = it; confirmed = false }) }
-        if(VERSION.SDK_INT >= 29) { CheckBoxItem(stringResource(R.string.wipe_silently), silent, { silent = it; confirmed = false }) }
+        if(VERSION.SDK_INT >= 28) { CheckBoxItem(stringResource(R.string.wipe_euicc), euicc, { euicc = it }) }
+        if(VERSION.SDK_INT >= 29) { CheckBoxItem(stringResource(R.string.wipe_silently), silent, { silent = it }) }
         AnimatedVisibility(!silent && VERSION.SDK_INT >= 28) {
             OutlinedTextField(
                 value = reason, onValueChange = { reason = it },
                 label = { Text(stringResource(R.string.reason)) },
-                enabled = !confirmed,
                 modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
             )
         }
         Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = {
-                focusMgr.clearFocus()
-                flag = 0
-                if(externalStorage) { flag += WIPE_EXTERNAL_STORAGE }
-                if(protectionData && VERSION.SDK_INT >= 22) { flag += WIPE_RESET_PROTECTION_DATA }
-                if(euicc && VERSION.SDK_INT >= 28) { flag += WIPE_EUICC }
-                if(reason == "") { silent = true }
-                if(silent && VERSION.SDK_INT >= 29) { flag += WIPE_SILENTLY }
-                confirmed = !confirmed
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if(confirmed) colorScheme.primary else colorScheme.error ,
-                contentColor = if(confirmed) colorScheme.onPrimary else colorScheme.onError 
-            ),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = stringResource(if(confirmed) R.string.cancel else R.string.confirm))
-        }
-        Button(
-            onClick = {
-                if(VERSION.SDK_INT >= 28 && reason != "") {
-                    dpm.wipeData(flag, reason)
-                }else{
-                    dpm.wipeData(flag)
-                }
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
-            enabled = confirmed && (VERSION.SDK_INT < 34 || (VERSION.SDK_INT >= 34 && !userManager.isSystemUser)),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("WipeData")
+        if(VERSION.SDK_INT < 34 || (VERSION.SDK_INT >= 34 && !userManager.isSystemUser)) {
+            Button(
+                onClick = {
+                    focusMgr.clearFocus()
+                    wipeDevice = false
+                    warning = true
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("WipeData")
+            }
         }
         if (VERSION.SDK_INT >= 34 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
             Button(
-                onClick = { dpm.wipeDevice(flag) },
+                onClick = {
+                    focusMgr.clearFocus()
+                    wipeDevice = true
+                    warning = true
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
-                enabled = confirmed,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("WipeDevice")
@@ -1153,10 +1135,51 @@ private fun WipeData() {
         if(VERSION.SDK_INT >= 24 && isProfileOwner(dpm) && dpm.isManagedProfile(receiver)) {
             Information{ Text(text = stringResource(R.string.will_delete_work_profile)) }
         }
-        if(VERSION.SDK_INT >= 34 && Binder.getCallingUid()/100000 == 0) {
-            Information{ Text(text = stringResource(R.string.api34_or_above_wipedata_cannot_in_system_user)) }
-        }
         Spacer(Modifier.padding(vertical = 30.dp))
+    }
+    if(warning) {
+        LaunchedEffect(Unit) { silent = reason == "" }
+        AlertDialog(
+            title = {
+                Text(text = stringResource(R.string.warning), color = colorScheme.error)
+            },
+            text = {
+                Text(text = stringResource(
+                    if(VERSION.SDK_INT >= 24 && isProfileOwner(dpm) && dpm.isManagedProfile(receiver)) R.string.wipe_work_profile_warning
+                    else R.string.wipe_data_warning),
+                    color = colorScheme.error
+                )
+            },
+            onDismissRequest = { warning = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        var flag = 0
+                        if(externalStorage) { flag += WIPE_EXTERNAL_STORAGE }
+                        if(protectionData && VERSION.SDK_INT >= 22) { flag += WIPE_RESET_PROTECTION_DATA }
+                        if(euicc && VERSION.SDK_INT >= 28) { flag += WIPE_EUICC }
+                        if(silent && VERSION.SDK_INT >= 29) { flag += WIPE_SILENTLY }
+                        if(wipeDevice) {
+                            dpm.wipeDevice(flag)
+                        } else {
+                            if(VERSION.SDK_INT >= 28 && reason != "") {
+                                dpm.wipeData(flag, reason)
+                            } else {
+                                dpm.wipeData(flag)
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
+                ) {
+                    Text(stringResource(R.string.confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { warning = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
     }
 }
 

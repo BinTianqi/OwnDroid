@@ -51,10 +51,10 @@
     <string name="current_status_is">Mevcut Durum: </string>
     <string name="start">Başlat</string>
     <string name="stop">Stop</string> <!--TODO-->
-    <string name="unknown_error">Bilinmeyen Hata</string>
     <string name="allow_all">Tümünü İzin Ver</string>
     <string name="use_policy">Politika Kullan</string>
     <string name="account">Hesap</string>
+    <string name="warning">Warning</string> <!--TODO-->
 
     <!--Permissions-->
     <string name="click_to_activate">Etkinleştirmek İçin Tıklayın</string>
@@ -167,7 +167,6 @@
     <string name="ltf_global_actions">Küresel eylemlere izin ver</string>
     <string name="ltf_keyguard">Ekran kilidine izin ver</string>
     <string name="ltf_block_activity_start_in_task">Görevde etkinlik başlatmayı engelle</string>
-    <string name="whitelist_app">Beyaz listeye alınan uygulama</string>
     <string name="ca_cert">CA sertifikası</string>
     <string name="please_select_ca_cert">Lütfen bir sertifika seçin</string>
     <string name="cacert_installed">Yüklenen sertifika: %1$s</string>
@@ -181,7 +180,8 @@
     <string name="wipe_euicc">eUICC (eSIM) sil</string>
     <string name="wipe_silently">Sessizce sil</string>
     <string name="will_delete_work_profile">Çalışma profili silinecek</string>
-    <string name="api34_or_above_wipedata_cannot_in_system_user">System user\'da WipeData kullanamazsınız</string>
+    <string name="wipe_data_warning">All data on your device will be ERASED</string> <!--TODO-->
+    <string name="wipe_work_profile_warning">Your work profile will be REMOVED</string> <!--TODO-->
     <string name="encrypt_status_is">Şifreleme durumu: </string>
     <string name="frp_policy">FRP politikası</string>
     <string name="factory_reset_protection_policy">Fabrika ayarlarına sıfırlama koruma politikası</string>
@@ -220,7 +220,6 @@
     <string name="ssid_list_is">SSID listesi: </string>
     <string name="cannot_be_empty">Boş olamaz</string>
     <string name="already_exist">Zaten mevcut</string>
-    <string name="please_select_a_policy">Lütfen bir politika seçin</string>
     <string name="private_dns">Özel DNS</string>
     <string name="dns_provide_hostname">Ana bilgisayar adı sağlayın</string>
     <string name="host_not_serving_dns_tls">Ana bilgisayar hizmet vermiyor</string>

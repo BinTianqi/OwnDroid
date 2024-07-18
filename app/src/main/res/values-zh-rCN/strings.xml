@@ -48,10 +48,10 @@
     <string name="current_status_is">当前状态：</string>
     <string name="start">开始</string>
     <string name="stop">停止</string>
-    <string name="unknown_error">未知错误</string>
     <string name="allow_all">允许全部</string>
     <string name="use_policy">使用策略</string>
     <string name="account">账户</string>
+    <string name="warning">警告</string>
 
     <!--Permissions-->
     <string name="click_to_activate">点击以激活</string>
@@ -160,7 +160,6 @@
     <string name="ltf_global_actions">允许全局行为(比如长按电源键对话框)</string>
     <string name="ltf_keyguard">允许锁屏</string>
     <string name="ltf_block_activity_start_in_task">阻止启动未允许的应用</string>
-    <string name="whitelist_app">白名单应用</string>
     <string name="package_name">包名</string>
     <string name="not_exist">不存在</string>
     <string name="ca_cert">Ca证书</string>
@@ -176,7 +175,8 @@
     <string name="wipe_euicc">清除eUICC(eSIM)</string>
     <string name="wipe_silently">静默清除</string>
     <string name="will_delete_work_profile">将会删除工作资料</string>
-    <string name="api34_or_above_wipedata_cannot_in_system_user">API34或以上将不能在系统用户中使用WipeData</string>
+    <string name="wipe_data_warning">你的设备上的所有数据将会被清除</string>
+    <string name="wipe_work_profile_warning">你的工作资料将会被删除</string>
     <string name="encrypt_status_is">加密状态：</string>
     <string name="frp_policy">FRP策略</string>
     <string name="factory_reset_protection_policy">恢复出厂设置保护策略</string>
@@ -215,7 +215,6 @@
     <string name="ssid_list_is">SSID列表：</string>
     <string name="cannot_be_empty">不能为空</string>
     <string name="already_exist">已经存在</string>
-    <string name="please_select_a_policy">请选择策略</string>
     <string name="private_dns">私人DNS</string>
     <string name="dns_provide_hostname">指定主机名</string>
     <string name="host_not_serving_dns_tls">主机不支持</string>

@@ -51,10 +51,10 @@
     <string name="current_status_is">Current status: </string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>
-    <string name="unknown_error">Unknown error</string>
     <string name="allow_all">Allow all</string>
     <string name="use_policy">Use policy</string>
     <string name="account">Account</string>
+    <string name="warning">Warning</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
@@ -172,7 +172,6 @@
     <string name="ltf_global_actions">Allow global actions</string>
     <string name="ltf_keyguard">Allow keyguard</string>
     <string name="ltf_block_activity_start_in_task">Block activity start in task</string>
-    <string name="whitelist_app">Whitelisted app</string>
     <string name="ca_cert">Ca certification</string>
     <string name="please_select_ca_cert">Please select a certification</string>
     <string name="cacert_installed">Cert installed: %1$s</string>
@@ -186,7 +185,8 @@
     <string name="wipe_euicc">Wipe eUICC(eSIM)</string>
     <string name="wipe_silently">Wipe silently</string>
     <string name="will_delete_work_profile">Work profile will be deleted. </string>
-    <string name="api34_or_above_wipedata_cannot_in_system_user">You cannot use WipeData in system user. </string>
+    <string name="wipe_data_warning">All data on your device will be ERASED</string>
+    <string name="wipe_work_profile_warning">Your work profile will be REMOVED</string>
     <string name="encrypt_status_is">Encrypt status: </string>
     <string name="frp_policy">FRP policy</string>
     <string name="factory_reset_protection_policy">Factory reset protection policy</string>
@@ -226,7 +226,6 @@
     <string name="ssid_list_is">SSID list: </string>
     <string name="cannot_be_empty">Cannot be empty</string>
     <string name="already_exist">Already exist</string>
-    <string name="please_select_a_policy">Please select a policy</string>
     <string name="private_dns">PrivateDNS</string>
     <string name="dns_provide_hostname">Provide hostname</string>
     <string name="host_not_serving_dns_tls">Host not serving</string>
