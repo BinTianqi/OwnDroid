@@ -176,6 +176,8 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context, Receiver::class.java)
+    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val dangerousFeatures = sharedPref.getBoolean("dangerous_features", false)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
             text = stringResource(R.string.system_manage),
@@ -223,7 +225,7 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
         if(VERSION.SDK_INT >= 30 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.frp_policy, "", R.drawable.device_reset_fill0) { navCtrl.navigate("FRP") }
         }
-        if(dpm.isAdminActive(receiver)) {
+        if(dangerousFeatures && dpm.isAdminActive(receiver) && !(VERSION.SDK_INT >= 24 && isProfileOwner(dpm) && dpm.isManagedProfile(receiver))) {
             SubPageItem(R.string.wipe_data, "", R.drawable.device_reset_fill0) { navCtrl.navigate("WipeData") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -1131,10 +1133,6 @@ private fun WipeData() {
                 Text("WipeDevice")
             }
         }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT >= 24 && isProfileOwner(dpm) && dpm.isManagedProfile(receiver)) {
-            Information{ Text(text = stringResource(R.string.will_delete_work_profile)) }
-        }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
     if(warning) {
@@ -1144,11 +1142,7 @@ private fun WipeData() {
                 Text(text = stringResource(R.string.warning), color = colorScheme.error)
             },
             text = {
-                Text(text = stringResource(
-                    if(VERSION.SDK_INT >= 24 && isProfileOwner(dpm) && dpm.isManagedProfile(receiver)) R.string.wipe_work_profile_warning
-                    else R.string.wipe_data_warning),
-                    color = colorScheme.error
-                )
+                Text(text = stringResource(R.string.wipe_data_warning), color = colorScheme.error)
             },
             onDismissRequest = { warning = false },
             confirmButton = {

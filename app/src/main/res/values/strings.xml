@@ -55,6 +55,7 @@
     <string name="use_policy">Use policy</string>
     <string name="account">Account</string>
     <string name="warning">Warning</string>
+    <string name="delete">Delete</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
@@ -110,8 +111,8 @@
     <string name="dpm_activate_da_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="shizuku_activated_shell">Permission granted (Shell)</string>
     <string name="shizuku_activated_root">Permission granted (Root)</string>
-    <string name="activate_profile_owner">Activate profile owner</string>
-    <string name="activate_device_owner">Activate device owner</string>
+    <string name="activate_profile_owner">Activate Profile owner</string>
+    <string name="activate_device_owner">Activate Device owner</string>
     <string name="activate_org_profile">Activate organization-owned work profile</string>
     <string name="shizuku_service_disconnected">Shizuku service disconnected</string>
     <string name="invalid_binder">Invalid binder</string>
@@ -186,7 +187,7 @@
     <string name="wipe_silently">Wipe silently</string>
     <string name="will_delete_work_profile">Work profile will be deleted. </string>
     <string name="wipe_data_warning">All data on your device will be ERASED</string>
-    <string name="wipe_work_profile_warning">Your work profile will be REMOVED</string>
+    <string name="wipe_work_profile_warning">Your work profile will be DELETED</string>
     <string name="encrypt_status_is">Encrypt status: </string>
     <string name="frp_policy">FRP policy</string>
     <string name="factory_reset_protection_policy">Factory reset protection policy</string>
@@ -285,6 +286,7 @@
     <string name="org_id">Organization ID</string>
     <string name="length_6_to_64">The length should be between 6~64 characters</string>
     <string name="get_specific_id_after_set_org_id">You can get device specific ID after set this. </string>
+    <string name="delete_work_profile">Delete work profile</string>
 
     <!--AppManager-->
     <string name="app_manager">App manager</string>
@@ -534,6 +536,7 @@
 
     <!--Settings&About-->
     <string name="setting">Settings</string>
+    <string name="show_dangerous_features">Show dangerous features</string>
     <string name="material_you_color">Material you color</string>
     <string name="dynamic_color_desc">Android 12+</string>
     <string name="about">About</string>

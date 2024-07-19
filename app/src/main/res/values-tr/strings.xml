@@ -55,6 +55,7 @@
     <string name="use_policy">Politika Kullan</string>
     <string name="account">Hesap</string>
     <string name="warning">Warning</string> <!--TODO-->
+    <string name="delete">Delete</string> <!--TODO-->
 
     <!--Permissions-->
     <string name="click_to_activate">Etkinleştirmek İçin Tıklayın</string>
@@ -181,7 +182,7 @@
     <string name="wipe_silently">Sessizce sil</string>
     <string name="will_delete_work_profile">Çalışma profili silinecek</string>
     <string name="wipe_data_warning">All data on your device will be ERASED</string> <!--TODO-->
-    <string name="wipe_work_profile_warning">Your work profile will be REMOVED</string> <!--TODO-->
+    <string name="wipe_work_profile_warning">Your work profile will be DELETED</string> <!--TODO-->
     <string name="encrypt_status_is">Şifreleme durumu: </string>
     <string name="frp_policy">FRP politikası</string>
     <string name="factory_reset_protection_policy">Fabrika ayarlarına sıfırlama koruma politikası</string>
@@ -276,6 +277,7 @@
     <string name="org_id">Kuruluş Kimliği</string>
     <string name="length_6_to_64">Uzunluk 6 ile 64 karakter arasında olmalıdır</string>
     <string name="get_specific_id_after_set_org_id">Bunu ayarladıktan sonra cihaz spesifik Kimlik alabilirsiniz. </string>
+    <string name="delete_work_profile">Delete work profile</string> <!--TODO-->
 
     <!--AppManager-->
     <string name="app_manager">Uygulama yöneticisi</string>
@@ -527,6 +529,7 @@
 
     <!--Settings&About-->
     <string name="setting">Ayarlar</string>
+    <string name="show_dangerous_features">Show dangerous features</string> <!--TODO-->
     <string name="material_you_color">Material You rengi</string>
     <string name="dynamic_color_desc">Android 12+</string>
     <string name="about">Hakkında</string>
@@ -551,6 +554,9 @@
     <string name="you_cant_clear_storage">OwnDroid\'un depolamasını temizleyemezsiniz</string>
     <string name="clear_storage">Depolamayı temizle</string>
     <string name="clear_storage_success">Depolama başarıyla temizlendi\nUygulama kapanacak</string>
+
+    <string name="automation_api">Automation API</string> <!--TODO-->
+    <string name="automation_debug">Debug mode</string> <!--TODO-->
 
     <!--AndroidPermission-->
     <string name="permission_READ_EXTERNAL_STORAGE">Harici depolamayı oku</string>

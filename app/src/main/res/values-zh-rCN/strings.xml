@@ -52,6 +52,7 @@
     <string name="use_policy">使用策略</string>
     <string name="account">账户</string>
     <string name="warning">警告</string>
+    <string name="delete">删除</string>
 
     <!--Permissions-->
     <string name="click_to_activate">点击以激活</string>
@@ -271,6 +272,7 @@
     <string name="org_id">组织ID</string>
     <string name="length_6_to_64">长度应在6~64个字符之间</string>
     <string name="get_specific_id_after_set_org_id">设置组织ID后才能获取设备唯一标识码</string>
+    <string name="delete_work_profile">删除工作资料</string>
 
     <!--AppManage-->
     <string name="app_manager">应用管理</string>
@@ -518,6 +520,7 @@
 
     <!--Settings&About-->
     <string name="setting">设置</string>
+    <string name="show_dangerous_features">显示危险功能</string>
     <string name="material_you_color">Material you 颜色</string>
     <string name="dynamic_color_desc">安卓12+</string>
     <string name="about">关于</string>

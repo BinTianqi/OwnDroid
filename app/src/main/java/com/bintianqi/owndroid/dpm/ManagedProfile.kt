@@ -11,11 +11,15 @@ import android.app.admin.DevicePolicyManager.FLAG_MANAGED_CAN_ACCESS_PARENT
 import android.app.admin.DevicePolicyManager.FLAG_PARENT_CAN_ACCESS_MANAGED
 import android.app.admin.DevicePolicyManager.PERSONAL_APPS_NOT_SUSPENDED
 import android.app.admin.DevicePolicyManager.PERSONAL_APPS_SUSPENDED_PROFILE_TIMEOUT
+import android.app.admin.DevicePolicyManager.WIPE_EUICC
+import android.app.admin.DevicePolicyManager.WIPE_EXTERNAL_STORAGE
+import android.app.admin.DevicePolicyManager.WIPE_SILENTLY
 import android.content.*
 import android.os.Binder
 import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,13 +30,17 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -80,6 +88,7 @@ fun ManagedProfile(navCtrl: NavHostController) {
             composable(route = "CreateWorkProfile") { CreateWorkProfile() }
             composable(route = "SuspendPersonalApp") { SuspendPersonalApp() }
             composable(route = "IntentFilter") { IntentFilter() }
+            composable(route = "DeleteWorkProfile") { DeleteWorkProfile() }
         }
     }
 }
@@ -97,7 +106,7 @@ private fun Home(navCtrl: NavHostController) {
             style = typography.headlineLarge,
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp)
         )
-        if(VERSION.SDK_INT >= 30&&isProfileOwner(dpm) && dpm.isManagedProfile(receiver)) {
+        if(VERSION.SDK_INT >= 30 && isProfileOwner(dpm) && dpm.isManagedProfile(receiver)) {
             SubPageItem(R.string.org_owned_work_profile, "", R.drawable.corporate_fare_fill0) { navCtrl.navigate("OrgOwnedWorkProfile") }
         }
         if(VERSION.SDK_INT<24 || (VERSION.SDK_INT>=24 && dpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE))) {
@@ -106,8 +115,11 @@ private fun Home(navCtrl: NavHostController) {
         if(dpm.isOrgProfile(receiver)) {
             SubPageItem(R.string.suspend_personal_app, "", R.drawable.block_fill0) { navCtrl.navigate("SuspendPersonalApp") }
         }
-        if(isProfileOwner(dpm) && (VERSION.SDK_INT<24 || (VERSION.SDK_INT>=24 && dpm.isManagedProfile(receiver)))) {
+        if(isProfileOwner(dpm) && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
             SubPageItem(R.string.intent_filter, "", R.drawable.filter_alt_fill0) { navCtrl.navigate("IntentFilter") }
+        }
+        if(isProfileOwner(dpm) && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
+            SubPageItem(R.string.delete_work_profile, "", R.drawable.delete_forever_fill0) { navCtrl.navigate("DeleteWorkProfile") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
@@ -263,5 +275,83 @@ private fun IntentFilter() {
         ) {
             Text(stringResource(R.string.clear_cross_profile_filters))
         }
+    }
+}
+
+@Composable
+private fun DeleteWorkProfile() {
+    val context = LocalContext.current
+    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val focusMgr = LocalFocusManager.current
+    var warning by remember { mutableStateOf(false) }
+    var externalStorage by remember { mutableStateOf(false) }
+    var euicc by remember { mutableStateOf(false) }
+    var silent by remember { mutableStateOf(false) }
+    var reason by remember { mutableStateOf("") }
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(
+            text = stringResource(R.string.delete_work_profile),
+            style = typography.headlineLarge,
+            modifier = Modifier.padding(6.dp),color = colorScheme.error
+        )
+        Spacer(Modifier.padding(vertical = 5.dp))
+        CheckBoxItem(stringResource(R.string.wipe_external_storage), externalStorage, { externalStorage = it })
+        if(VERSION.SDK_INT >= 28) { CheckBoxItem(stringResource(R.string.wipe_euicc), euicc, { euicc = it }) }
+        if(VERSION.SDK_INT >= 29) { CheckBoxItem(stringResource(R.string.wipe_silently), silent, { silent = it }) }
+        AnimatedVisibility(!silent && VERSION.SDK_INT >= 28) {
+            OutlinedTextField(
+                value = reason, onValueChange = { reason = it },
+                label = { Text(stringResource(R.string.reason)) },
+                modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
+            )
+        }
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Button(
+            onClick = {
+                focusMgr.clearFocus()
+                warning = true
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.delete))
+        }
+        Spacer(Modifier.padding(vertical = 30.dp))
+    }
+    if(warning) {
+        LaunchedEffect(Unit) { silent = reason == "" }
+        AlertDialog(
+            title = {
+                Text(text = stringResource(R.string.warning), color = colorScheme.error)
+            },
+            text = {
+                Text(text = stringResource(R.string.wipe_work_profile_warning), color = colorScheme.error)
+            },
+            onDismissRequest = { warning = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        var flag = 0
+                        if(externalStorage) { flag += WIPE_EXTERNAL_STORAGE }
+                        if(euicc && VERSION.SDK_INT >= 28) { flag += WIPE_EUICC }
+                        if(silent && VERSION.SDK_INT >= 29) { flag += WIPE_SILENTLY }
+                        if(VERSION.SDK_INT >= 28 && !silent) {
+                            dpm.wipeData(flag, reason)
+                        } else {
+                            dpm.wipeData(flag)
+                        }
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
+                ) {
+                    Text(stringResource(R.string.confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { warning = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
     }
 }

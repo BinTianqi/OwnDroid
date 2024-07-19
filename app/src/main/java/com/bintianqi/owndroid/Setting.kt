@@ -44,6 +44,7 @@ fun AppSetting(navCtrl:NavHostController, materialYou: MutableState<Boolean>, bl
             modifier = Modifier.padding(top = it.calculateTopPadding())
         ) {
             composable(route = "Home") { Home(localNavCtrl) }
+            composable(route = "Options") { Options() }
             composable(route = "Theme") { ThemeSettings(materialYou, blackTheme) }
             composable(route = "Auth") { AuthSettings() }
             composable(route = "Automation") { Automation() }
@@ -55,10 +56,23 @@ fun AppSetting(navCtrl:NavHostController, materialYou: MutableState<Boolean>, bl
 @Composable
 private fun Home(navCtrl: NavHostController) {
     Column(modifier = Modifier.fillMaxSize()) {
+        SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Options") }
         SubPageItem(R.string.theme, "", R.drawable.format_paint_fill0) { navCtrl.navigate("Theme") }
         SubPageItem(R.string.security, "", R.drawable.lock_fill0) { navCtrl.navigate("Auth") }
         SubPageItem(R.string.automation_api, "", R.drawable.apps_fill0) { navCtrl.navigate("Automation") }
         SubPageItem(R.string.about, "", R.drawable.info_fill0) { navCtrl.navigate("About") }
+    }
+}
+
+@Composable
+private fun Options() {
+    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        SwitchItem(
+            R.string.show_dangerous_features, "", R.drawable.warning_fill0,
+            { sharedPref.getBoolean("dangerous_features", false) },
+            { sharedPref.edit().putBoolean("dangerous_features", it).apply() }
+        )
     }
 }
 
