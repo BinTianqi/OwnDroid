@@ -50,10 +50,12 @@
     <string name="io_exception">G/Ç Hatası</string>
     <string name="current_status_is">Mevcut Durum: </string>
     <string name="start">Başlat</string>
-    <string name="unknown_error">Bilinmeyen Hata</string>
+    <string name="stop">Stop</string> <!--TODO-->
     <string name="allow_all">Tümünü İzin Ver</string>
     <string name="use_policy">Politika Kullan</string>
     <string name="account">Hesap</string>
+    <string name="warning">Warning</string> <!--TODO-->
+    <string name="delete">Delete</string> <!--TODO-->
 
     <!--Permissions-->
     <string name="click_to_activate">Etkinleştirmek İçin Tıklayın</string>
@@ -151,7 +153,11 @@
     <string name="nearby_streaming_policy">Yakındaki akış politikası</string>
     <string name="nearby_notification_streaming">Yakındaki bildirim akış politikası</string>
     <string name="enable_if_secure_enough">Yalnızca aynı yönetilen hesap</string>
+    <string name="lock_task_mode">Lock task mode</string> <!--TODO-->
     <string name="lock_task_feature">Görev kilitleme özelliği</string>
+    <string name="lock_task_packages">Lock task packages</string> <!--TODO-->
+    <string name="start_lock_task_mode">Start lock task mode</string> <!--TODO-->
+    <string name="app_not_allowed">App not allowed</string> <!--TODO-->
     <string name="disable_all">Hepsini devre dışı bırak</string>
 
     <!--ltf: lock task feature-->
@@ -162,7 +168,6 @@
     <string name="ltf_global_actions">Küresel eylemlere izin ver</string>
     <string name="ltf_keyguard">Ekran kilidine izin ver</string>
     <string name="ltf_block_activity_start_in_task">Görevde etkinlik başlatmayı engelle</string>
-    <string name="whitelist_app">Beyaz listeye alınan uygulama</string>
     <string name="ca_cert">CA sertifikası</string>
     <string name="please_select_ca_cert">Lütfen bir sertifika seçin</string>
     <string name="cacert_installed">Yüklenen sertifika: %1$s</string>
@@ -175,8 +180,8 @@
     <string name="wipe_reset_protection_data">Korumalı verileri sil</string>
     <string name="wipe_euicc">eUICC (eSIM) sil</string>
     <string name="wipe_silently">Sessizce sil</string>
-    <string name="will_delete_work_profile">Çalışma profili silinecek</string>
-    <string name="api34_or_above_wipedata_cannot_in_system_user">System user\'da WipeData kullanamazsınız</string>
+    <string name="wipe_data_warning">All data on your device will be ERASED</string> <!--TODO-->
+    <string name="wipe_work_profile_warning">Your work profile will be DELETED</string> <!--TODO-->
     <string name="encrypt_status_is">Şifreleme durumu: </string>
     <string name="frp_policy">FRP politikası</string>
     <string name="factory_reset_protection_policy">Fabrika ayarlarına sıfırlama koruma politikası</string>
@@ -215,7 +220,6 @@
     <string name="ssid_list_is">SSID listesi: </string>
     <string name="cannot_be_empty">Boş olamaz</string>
     <string name="already_exist">Zaten mevcut</string>
-    <string name="please_select_a_policy">Lütfen bir politika seçin</string>
     <string name="private_dns">Özel DNS</string>
     <string name="dns_provide_hostname">Ana bilgisayar adı sağlayın</string>
     <string name="host_not_serving_dns_tls">Ana bilgisayar hizmet vermiyor</string>
@@ -272,6 +276,7 @@
     <string name="org_id">Kuruluş Kimliği</string>
     <string name="length_6_to_64">Uzunluk 6 ile 64 karakter arasında olmalıdır</string>
     <string name="get_specific_id_after_set_org_id">Bunu ayarladıktan sonra cihaz spesifik Kimlik alabilirsiniz. </string>
+    <string name="delete_work_profile">Delete work profile</string> <!--TODO-->
 
     <!--AppManager-->
     <string name="app_manager">Uygulama yöneticisi</string>
@@ -286,6 +291,9 @@
     <string name="hide">Gizle</string>
     <string name="isapphidden_desc">Mevcut olmayan uygulamalar gizlidir</string>
     <string name="always_on_vpn">Her zaman açık VPN</string>
+    <string name="enable_lockdown">Enable lockdown</string> <!--TODO-->
+    <string name="current_app_is">Current app: </string> <!--TODO-->
+    <string name="clear_current_config">Clear current config</string> <!--TODO-->
     <string name="permission">İzin</string>
     <string name="scope_is_work_profile">Kapsam: iş profili</string>
     <string name="app_info">Uygulama bilgisi</string>
@@ -520,6 +528,7 @@
 
     <!--Settings&About-->
     <string name="setting">Ayarlar</string>
+    <string name="show_dangerous_features">Show dangerous features</string> <!--TODO-->
     <string name="material_you_color">Material You rengi</string>
     <string name="dynamic_color_desc">Android 12+</string>
     <string name="about">Hakkında</string>
@@ -544,6 +553,9 @@
     <string name="you_cant_clear_storage">OwnDroid\'un depolamasını temizleyemezsiniz</string>
     <string name="clear_storage">Depolamayı temizle</string>
     <string name="clear_storage_success">Depolama başarıyla temizlendi\nUygulama kapanacak</string>
+
+    <string name="automation_api">Automation API</string> <!--TODO-->
+    <string name="automation_debug">Debug mode</string> <!--TODO-->
 
     <!--AndroidPermission-->
     <string name="permission_READ_EXTERNAL_STORAGE">Harici depolamayı oku</string>
@@ -571,5 +583,8 @@
     <string name="permission_BODY_SENSORS_BACKGROUND">Arka planda vücut sensörlerine eriş</string>
     <string name="permission_ACTIVITY_RECOGNITION">Aktivite tanıma</string>
     <string name="permission_POST_NOTIFICATIONS">Bildirim gönder</string>
-    
+
+    <string name="version_name">Version name</string> <!--TODO-->
+    <string name="version_code">Version code</string> <!--TODO-->
+    <string name="parsing_apk_info" tools:ignore="TypographyEllipsis">Parsing APK info...</string>
 </resources>

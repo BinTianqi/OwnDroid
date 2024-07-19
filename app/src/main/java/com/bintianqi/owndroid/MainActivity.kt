@@ -1,6 +1,5 @@
 package com.bintianqi.owndroid
 
-import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
@@ -41,7 +40,6 @@ import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.dpm.*
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.Locale
 
@@ -50,7 +48,6 @@ var backToHomeStateFlow = MutableStateFlow(false)
 class MainActivity : FragmentActivity() {
     private val showAuth = mutableStateOf(false)
 
-    @SuppressLint("UnrememberedMutableState")
     override fun onCreate(savedInstanceState: Bundle?) {
         registerActivityResult(this)
         enableEdgeToEdge()
@@ -63,8 +60,8 @@ class MainActivity : FragmentActivity() {
         val locale = applicationContext.resources?.configuration?.locale
         zhCN = locale == Locale.SIMPLIFIED_CHINESE || locale == Locale.CHINESE || locale == Locale.CHINA
         setContent {
-            val materialYou = mutableStateOf(sharedPref.getBoolean("material_you", true))
-            val blackTheme = mutableStateOf(sharedPref.getBoolean("black_theme", false))
+            val materialYou = remember { mutableStateOf(sharedPref.getBoolean("material_you", true)) }
+            val blackTheme = remember { mutableStateOf(sharedPref.getBoolean("black_theme", false)) }
             OwnDroidTheme(materialYou.value, blackTheme.value) {
                 Home(materialYou, blackTheme)
                 if(showAuth.value) {
@@ -87,7 +84,6 @@ class MainActivity : FragmentActivity() {
 
 }
 
-@SuppressLint("UnrememberedMutableState")
 @ExperimentalMaterial3Api
 @Composable
 fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>) {
@@ -97,10 +93,10 @@ fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>) {
     val receiver = ComponentName(context,Receiver::class.java)
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val focusMgr = LocalFocusManager.current
-    val pkgName = mutableStateOf("")
-    val dialogStatus = mutableIntStateOf(0)
+    val pkgName = remember { mutableStateOf("") }
+    val dialogStatus = remember { mutableIntStateOf(0) }
     val backToHome by backToHomeStateFlow.collectAsState()
-    LaunchedEffect(Unit) {
+    LaunchedEffect(backToHome) {
         if(backToHome) { navCtrl.navigateUp(); backToHomeStateFlow.value = false }
     }
     NavHost(

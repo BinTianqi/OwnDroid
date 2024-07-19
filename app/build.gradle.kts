@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.cc)
 }
 
 var keyPassword: String? = null
@@ -26,8 +27,8 @@ android {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 21
         targetSdk = 34
-        versionCode = 30
-        versionName = "5.5"
+        versionCode = 31
+        versionName = "5.6"
         multiDexEnabled = false
     }
 
@@ -55,9 +56,6 @@ android {
     buildFeatures {
         compose = true
         aidl = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.13"
     }
     packaging {
         resources {

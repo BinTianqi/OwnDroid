@@ -36,6 +36,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.Receiver
+import com.bintianqi.owndroid.backToHomeStateFlow
 import com.bintianqi.owndroid.ui.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -119,7 +120,7 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
             SubPageItem(R.string.enrollment_specific_id, "", R.drawable.id_card_fill0) { localNavCtrl.navigate("SpecificID") }
         }
         if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
-            SubPageItem(R.string.disable_account_management, "", R.drawable.account_circle_fill0) { localNavCtrl.navigate("NoManagementAccount") }
+            SubPageItem(R.string.disable_account_management, "", R.drawable.account_circle_fill0) { localNavCtrl.navigate("DisableAccountManagement") }
         }
         if(VERSION.SDK_INT >= 24 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.device_owner_lock_screen_info, "", R.drawable.screen_lock_portrait_fill0) { localNavCtrl.navigate("LockScreenInfo") }
@@ -178,8 +179,8 @@ private fun DeviceAdmin() {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
-    val co = rememberCoroutineScope()
     var showDeactivateButton by remember { mutableStateOf(dpm.isAdminActive(receiver)) }
+    var deactivateDialog by remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.device_admin), style = typography.headlineLarge)
@@ -187,10 +188,7 @@ private fun DeviceAdmin() {
         Spacer(Modifier.padding(vertical = 5.dp))
         AnimatedVisibility(showDeactivateButton) {
             Button(
-                onClick = {
-                    dpm.removeActiveAdmin(receiver)
-                    co.launch{ delay(400); showDeactivateButton = dpm.isAdminActive(receiver) }
-                },
+                onClick = { deactivateDialog = true },
                 enabled = !isProfileOwner(dpm) && !isDeviceOwner(dpm),
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
             ) {
@@ -210,6 +208,35 @@ private fun DeviceAdmin() {
             }
         }
     }
+    if(deactivateDialog) {
+        val co = rememberCoroutineScope()
+        AlertDialog(
+            title = { Text(stringResource(R.string.deactivate)) },
+            onDismissRequest = { deactivateDialog = false },
+            dismissButton = {
+                TextButton(
+                    onClick = { deactivateDialog = false }
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        dpm.removeActiveAdmin(receiver)
+                        co.launch{
+                            delay(300)
+                            deactivateDialog = false
+                            showDeactivateButton = dpm.isAdminActive(receiver)
+                            backToHomeStateFlow.value = !dpm.isAdminActive(receiver)
+                        }
+                    }
+                ) {
+                    Text(stringResource(R.string.confirm))
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -218,19 +245,16 @@ private fun ProfileOwner() {
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
     var showDeactivateButton by remember { mutableStateOf(isProfileOwner(dpm)) }
+    var deactivateDialog by remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.profile_owner), style = typography.headlineLarge)
         Text(stringResource(if(isProfileOwner(dpm)) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT>=24) {
+        if(VERSION.SDK_INT >= 24) {
             AnimatedVisibility(showDeactivateButton) {
-                val co = rememberCoroutineScope()
                 Button(
-                    onClick = {
-                        dpm.clearProfileOwner(receiver)
-                        co.launch { delay(400); showDeactivateButton=isProfileOwner(dpm) }
-                    },
+                    onClick = { deactivateDialog = true },
                     enabled = !dpm.isManagedProfile(receiver),
                     colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
                 ) {
@@ -247,14 +271,43 @@ private fun ProfileOwner() {
             }
         }
     }
+    if(deactivateDialog && VERSION.SDK_INT >= 24) {
+        val co = rememberCoroutineScope()
+        AlertDialog(
+            title = { Text(stringResource(R.string.deactivate)) },
+            onDismissRequest = { deactivateDialog = false },
+            dismissButton = {
+                TextButton(
+                    onClick = { deactivateDialog = false }
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        dpm.clearProfileOwner(receiver)
+                        co.launch{
+                            delay(300)
+                            deactivateDialog = false
+                            showDeactivateButton = isProfileOwner(dpm)
+                            backToHomeStateFlow.value = !isProfileOwner(dpm)
+                        }
+                    }
+                ) {
+                    Text(stringResource(R.string.confirm))
+                }
+            }
+        )
+    }
 }
 
 @Composable
 private fun DeviceOwner() {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val co = rememberCoroutineScope()
     var showDeactivateButton by remember { mutableStateOf(isDeviceOwner(dpm)) }
+    var deactivateDialog by remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.device_owner), style = typography.headlineLarge)
@@ -262,10 +315,7 @@ private fun DeviceOwner() {
         Spacer(Modifier.padding(vertical = 5.dp))
         AnimatedVisibility(showDeactivateButton) {
             Button(
-                onClick = {
-                    dpm.clearDeviceOwnerApp(context.packageName)
-                    co.launch{ delay(400); showDeactivateButton=isDeviceOwner(dpm) }
-                },
+                onClick = { deactivateDialog = true },
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
             ) {
                 Text(text = stringResource(R.string.deactivate))
@@ -279,6 +329,35 @@ private fun DeviceOwner() {
                 CopyTextButton(R.string.copy_command, stringResource(R.string.activate_device_owner_command))
             }
         }
+    }
+    if(deactivateDialog) {
+        val co = rememberCoroutineScope()
+        AlertDialog(
+            title = { Text(stringResource(R.string.deactivate)) },
+            onDismissRequest = { deactivateDialog = false },
+            dismissButton = {
+                TextButton(
+                    onClick = { deactivateDialog = false }
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        dpm.clearDeviceOwnerApp(context.packageName)
+                        co.launch{
+                            delay(300)
+                            deactivateDialog = false
+                            showDeactivateButton = isDeviceOwner(dpm)
+                            backToHomeStateFlow.value = !isDeviceOwner(dpm)
+                        }
+                    }
+                ) {
+                    Text(stringResource(R.string.confirm))
+                }
+            }
+        )
     }
 }
 

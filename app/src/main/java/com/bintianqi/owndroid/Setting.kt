@@ -4,13 +4,16 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build.VERSION
+import android.widget.Toast
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -41,8 +44,10 @@ fun AppSetting(navCtrl:NavHostController, materialYou: MutableState<Boolean>, bl
             modifier = Modifier.padding(top = it.calculateTopPadding())
         ) {
             composable(route = "Home") { Home(localNavCtrl) }
+            composable(route = "Options") { Options() }
             composable(route = "Theme") { ThemeSettings(materialYou, blackTheme) }
             composable(route = "Auth") { AuthSettings() }
+            composable(route = "Automation") { Automation() }
             composable(route = "About") { About() }
         }
     }
@@ -51,9 +56,23 @@ fun AppSetting(navCtrl:NavHostController, materialYou: MutableState<Boolean>, bl
 @Composable
 private fun Home(navCtrl: NavHostController) {
     Column(modifier = Modifier.fillMaxSize()) {
+        SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Options") }
         SubPageItem(R.string.theme, "", R.drawable.format_paint_fill0) { navCtrl.navigate("Theme") }
         SubPageItem(R.string.security, "", R.drawable.lock_fill0) { navCtrl.navigate("Auth") }
+        SubPageItem(R.string.automation_api, "", R.drawable.apps_fill0) { navCtrl.navigate("Automation") }
         SubPageItem(R.string.about, "", R.drawable.info_fill0) { navCtrl.navigate("About") }
+    }
+}
+
+@Composable
+private fun Options() {
+    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        SwitchItem(
+            R.string.show_dangerous_features, "", R.drawable.warning_fill0,
+            { sharedPref.getBoolean("dangerous_features", false) },
+            { sharedPref.edit().putBoolean("dangerous_features", it).apply() }
+        )
     }
 }
 
@@ -119,6 +138,36 @@ private fun AuthSettings() {
                 Text(text = stringResource(R.string.auth_on_start))
             }
         }
+    }
+}
+
+@Composable
+private fun Automation() {
+    val context = LocalContext.current
+    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.automation_api), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
+        var key by remember { mutableStateOf("") }
+        TextField(
+            value = key, onValueChange = { key = it }, label = { Text("Key")},
+            modifier = Modifier.fillMaxWidth()
+        )
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = {
+                sharedPref.edit().putString("automation_key", key).apply()
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+            }
+        ) {
+            Text(stringResource(R.string.apply))
+        }
+        SwitchItem(
+            R.string.automation_debug, "", null,
+            { sharedPref.getBoolean("automation_debug", false) },
+            { sharedPref.edit().putBoolean("automation_debug", it).apply() }
+        )
     }
 }
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
     <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_KEYGUARD"/>
     <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_WIPE_DATA"/>
@@ -52,12 +53,23 @@
             android:theme="@style/Theme.OwnDroid">
         </activity>
         <activity
+            android:name=".AutomationActivity"
+            android:exported="true"
+            android:launchMode="singleInstance"
+            android:excludeFromRecents="true"
+            android:windowSoftInputMode="adjustResize|stateHidden"
+            android:theme="@style/Theme.Transparent">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".InstallAppActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize|stateHidden"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
-            android:theme="@style/Theme.OwnDroidAppInstaller">
+            android:theme="@style/Theme.Transparent">
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <action android:name="android.intent.action.VIEW"/>
@@ -86,9 +98,20 @@
             </intent-filter>
         </receiver>
         <receiver
-        android:name=".PackageInstallerReceiver"
-        android:description="@string/app_name"
-        android:permission="android.permission.BIND_DEVICE_ADMIN">
+            android:name=".PackageInstallerReceiver"
+            android:description="@string/app_name"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+        </receiver>
+        <receiver
+            android:name=".StopLockTaskModeReceiver"
+            android:description="@string/app_name">
+        </receiver>
+        <receiver
+                android:name=".AutomationReceiver"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+            </intent-filter>
         </receiver>
         <provider
             android:name="rikka.shizuku.ShizukuProvider"

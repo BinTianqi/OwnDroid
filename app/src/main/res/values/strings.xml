@@ -50,10 +50,12 @@
     <string name="io_exception">IO Exception</string>
     <string name="current_status_is">Current status: </string>
     <string name="start">Start</string>
-    <string name="unknown_error">Unknown error</string>
+    <string name="stop">Stop</string>
     <string name="allow_all">Allow all</string>
     <string name="use_policy">Use policy</string>
     <string name="account">Account</string>
+    <string name="warning">Warning</string>
+    <string name="delete">Delete</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
@@ -109,8 +111,8 @@
     <string name="dpm_activate_da_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="shizuku_activated_shell">Permission granted (Shell)</string>
     <string name="shizuku_activated_root">Permission granted (Root)</string>
-    <string name="activate_profile_owner">Activate profile owner</string>
-    <string name="activate_device_owner">Activate device owner</string>
+    <string name="activate_profile_owner">Activate Profile owner</string>
+    <string name="activate_device_owner">Activate Device owner</string>
     <string name="activate_org_profile">Activate organization-owned work profile</string>
     <string name="shizuku_service_disconnected">Shizuku service disconnected</string>
     <string name="invalid_binder">Invalid binder</string>
@@ -157,7 +159,11 @@
     <string name="nearby_streaming_policy">Nearby streaming policy</string>
     <string name="nearby_notification_streaming">Nearby notification streaming policy</string>
     <string name="enable_if_secure_enough">Same managed account only</string>
+    <string name="lock_task_mode">Lock task mode</string>
     <string name="lock_task_feature">Lock task feature</string>
+    <string name="lock_task_packages">Lock task packages</string>
+    <string name="start_lock_task_mode">Start lock task mode</string>
+    <string name="app_not_allowed">App not allowed</string>
     <string name="disable_all">Disable all</string>
     <!--ltf: lock task feature-->
     <string name="ltf_sys_info">Allow system info</string>
@@ -167,7 +173,6 @@
     <string name="ltf_global_actions">Allow global actions</string>
     <string name="ltf_keyguard">Allow keyguard</string>
     <string name="ltf_block_activity_start_in_task">Block activity start in task</string>
-    <string name="whitelist_app">Whitelisted app</string>
     <string name="ca_cert">Ca certification</string>
     <string name="please_select_ca_cert">Please select a certification</string>
     <string name="cacert_installed">Cert installed: %1$s</string>
@@ -180,8 +185,8 @@
     <string name="wipe_reset_protection_data">Wipe protected data</string>
     <string name="wipe_euicc">Wipe eUICC(eSIM)</string>
     <string name="wipe_silently">Wipe silently</string>
-    <string name="will_delete_work_profile">Work profile will be deleted. </string>
-    <string name="api34_or_above_wipedata_cannot_in_system_user">You cannot use WipeData in system user. </string>
+    <string name="wipe_data_warning">All data on your device will be ERASED</string>
+    <string name="wipe_work_profile_warning">Your work profile will be DELETED</string>
     <string name="encrypt_status_is">Encrypt status: </string>
     <string name="frp_policy">FRP policy</string>
     <string name="factory_reset_protection_policy">Factory reset protection policy</string>
@@ -221,7 +226,6 @@
     <string name="ssid_list_is">SSID list: </string>
     <string name="cannot_be_empty">Cannot be empty</string>
     <string name="already_exist">Already exist</string>
-    <string name="please_select_a_policy">Please select a policy</string>
     <string name="private_dns">PrivateDNS</string>
     <string name="dns_provide_hostname">Provide hostname</string>
     <string name="host_not_serving_dns_tls">Host not serving</string>
@@ -281,6 +285,7 @@
     <string name="org_id">Organization ID</string>
     <string name="length_6_to_64">The length should be between 6~64 characters</string>
     <string name="get_specific_id_after_set_org_id">You can get device specific ID after set this. </string>
+    <string name="delete_work_profile">Delete work profile</string>
 
     <!--AppManager-->
     <string name="app_manager">App manager</string>
@@ -295,6 +300,9 @@
     <string name="hide">Hide</string>
     <string name="isapphidden_desc">Non-existent apps is hidden</string>
     <string name="always_on_vpn">Always-on VPN</string>
+    <string name="enable_lockdown">Enable lockdown</string>
+    <string name="current_app_is">Current app: </string>
+    <string name="clear_current_config">Clear current config</string>
     <string name="permission">Permission</string>
     <string name="scope_is_work_profile">Scope: work profile</string>
     <string name="app_info">App info</string>
@@ -527,6 +535,7 @@
 
     <!--Settings&About-->
     <string name="setting">Settings</string>
+    <string name="show_dangerous_features">Show dangerous features</string>
     <string name="material_you_color">Material you color</string>
     <string name="dynamic_color_desc">Android 12+</string>
     <string name="about">About</string>
@@ -551,6 +560,9 @@
     <string name="you_cant_clear_storage">You can\'t clear storage of OwnDroid</string>
     <string name="clear_storage">Clear storage</string>
     <string name="clear_storage_success">Clear storage success\nApplication will exit</string>
+
+    <string name="automation_api">Automation API</string>
+    <string name="automation_debug">Debug mode</string>
 
     <!--AndroidPermission-->
     <string name="permission_READ_EXTERNAL_STORAGE">Read external storage</string>
@@ -579,4 +591,7 @@
     <string name="permission_ACTIVITY_RECOGNITION">Activity recognition</string>
     <string name="permission_POST_NOTIFICATIONS">Post notifications</string>
 
+    <string name="version_name">Version name</string>
+    <string name="version_code">Version code</string>
+    <string name="parsing_apk_info" tools:ignore="TypographyEllipsis">Parsing APK info...</string>
 </resources>

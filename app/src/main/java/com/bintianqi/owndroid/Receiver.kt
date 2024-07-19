@@ -1,5 +1,7 @@
 package com.bintianqi.owndroid
 
+import android.annotation.SuppressLint
+import android.app.NotificationManager
 import android.app.admin.DeviceAdminReceiver
 import android.app.admin.DevicePolicyManager
 import android.content.BroadcastReceiver
@@ -10,6 +12,7 @@ import android.content.pm.PackageInstaller.*
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.platform.LocalContext
 import com.bintianqi.owndroid.dpm.isDeviceOwner
 import com.bintianqi.owndroid.dpm.isProfileOwner
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -59,5 +62,18 @@ class PackageInstallerReceiver:BroadcastReceiver(){
             val text = context.getString(R.string.app_installer_status) + context.getString(toastText)
             Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
         }
+    }
+}
+
+class StopLockTaskModeReceiver: BroadcastReceiver() {
+    @SuppressLint("NewApi")
+    override fun onReceive(context: Context, intent: Intent) {
+        val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        val receiver = ComponentName(context,Receiver::class.java)
+        val packages = dpm.getLockTaskPackages(receiver)
+        dpm.setLockTaskPackages(receiver, arrayOf())
+        dpm.setLockTaskPackages(receiver, packages)
+        val nm = context.getSystemService(ComponentActivity.NOTIFICATION_SERVICE) as NotificationManager
+        nm.cancel(1)
     }
 }

@@ -4,7 +4,7 @@
         <item name="android:navigationBarColor">#FFFFFF</item>
         <item name="android:statusBarColor">#FFFFFF</item>
     </style>
-    <style name="Theme.OwnDroidAppInstaller" parent="android:Theme.Material.Light.NoActionBar">
+    <style name="Theme.Transparent" parent="Theme.OwnDroid">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowIsTranslucent">true</item>

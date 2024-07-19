@@ -1,6 +1,11 @@
 package com.bintianqi.owndroid.dpm
 
 import android.annotation.SuppressLint
+import android.app.ActivityOptions
+import android.app.AlertDialog
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY
 import android.app.admin.DevicePolicyManager.InstallSystemUpdateCallback
@@ -8,7 +13,6 @@ import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_BLOCK_ACTIVITY_ST
 import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_GLOBAL_ACTIONS
 import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_HOME
 import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_KEYGUARD
-import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_NONE
 import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_NOTIFICATIONS
 import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_OVERVIEW
 import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_SYSTEM_INFO
@@ -36,7 +40,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Binder
 import android.os.Build.VERSION
 import android.os.UserManager
 import android.util.Log
@@ -77,6 +80,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -87,6 +91,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -94,9 +99,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.Receiver
+import com.bintianqi.owndroid.StopLockTaskModeReceiver
 import com.bintianqi.owndroid.fileUriFlow
 import com.bintianqi.owndroid.getFile
+import com.bintianqi.owndroid.prepareForNotification
 import com.bintianqi.owndroid.toText
+import com.bintianqi.owndroid.toggle
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.Information
@@ -105,9 +113,11 @@ import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.TopBar
 import com.bintianqi.owndroid.uriToStream
+import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.TimeZone
 import java.util.concurrent.Executors
+import kotlin.math.pow
 
 @Composable
 fun SystemManage(navCtrl:NavHostController) {
@@ -144,7 +154,7 @@ fun SystemManage(navCtrl:NavHostController) {
             composable(route = "PermissionPolicy") { PermissionPolicy() }
             composable(route = "MTEPolicy") { MTEPolicy() }
             composable(route = "NearbyStreamingPolicy") { NearbyStreamingPolicy() }
-            composable(route = "LockTaskFeatures") { LockTaskFeatures() }
+            composable(route = "LockTaskMode") { LockTaskMode() }
             composable(route = "CaCert") { CaCert() }
             composable(route = "SecurityLogs") { SecurityLogs() }
             composable(route = "SystemUpdatePolicy") { SysUpdatePolicy() }
@@ -166,6 +176,8 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context, Receiver::class.java)
+    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val dangerousFeatures = sharedPref.getBoolean("dangerous_features", false)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
             text = stringResource(R.string.system_manage),
@@ -196,7 +208,7 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
             SubPageItem(R.string.nearby_streaming_policy, "", R.drawable.share_fill0) { navCtrl.navigate("NearbyStreamingPolicy") }
         }
         if(VERSION.SDK_INT >= 28 && isDeviceOwner(dpm)) {
-            SubPageItem(R.string.lock_task_feature, "", R.drawable.lock_fill0) { navCtrl.navigate("LockTaskFeatures") }
+            SubPageItem(R.string.lock_task_mode, "", R.drawable.lock_fill0) { navCtrl.navigate("LockTaskMode") }
         }
         if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
             SubPageItem(R.string.ca_cert, "", R.drawable.license_fill0) { navCtrl.navigate("CaCert") }
@@ -213,8 +225,8 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
         if(VERSION.SDK_INT >= 30 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.frp_policy, "", R.drawable.device_reset_fill0) { navCtrl.navigate("FRP") }
         }
-        if(dpm.isAdminActive(receiver)) {
-            SubPageItem(R.string.wipe_data, "", R.drawable.warning_fill0) { navCtrl.navigate("WipeData") }
+        if(dangerousFeatures && dpm.isAdminActive(receiver) && !(VERSION.SDK_INT >= 24 && isProfileOwner(dpm) && dpm.isManagedProfile(receiver))) {
+            SubPageItem(R.string.wipe_data, "", R.drawable.device_reset_fill0) { navCtrl.navigate("WipeData") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
         LaunchedEffect(Unit) { fileUriFlow.value = Uri.parse("") }
@@ -642,41 +654,30 @@ private fun NearbyStreamingPolicy() {
 
 @SuppressLint("NewApi")
 @Composable
-private fun LockTaskFeatures() {
+private fun LockTaskMode() {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
+    val coroutine = rememberCoroutineScope()
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        val lockTaskPolicyList = mutableListOf(
-            LOCK_TASK_FEATURE_NONE,
-            LOCK_TASK_FEATURE_SYSTEM_INFO,
-            LOCK_TASK_FEATURE_NOTIFICATIONS,
-            LOCK_TASK_FEATURE_HOME,
-            LOCK_TASK_FEATURE_OVERVIEW,
-            LOCK_TASK_FEATURE_GLOBAL_ACTIONS,
-            LOCK_TASK_FEATURE_KEYGUARD
-        )
-        var sysInfo by remember { mutableStateOf(false) }
-        var notifications by remember { mutableStateOf(false) }
-        var home by remember { mutableStateOf(false) }
-        var overview by remember { mutableStateOf(false) }
-        var globalAction by remember { mutableStateOf(false) }
-        var keyGuard by remember { mutableStateOf(false) }
-        var blockAct by remember { mutableStateOf(false) }
-        if(VERSION.SDK_INT >= 30) { lockTaskPolicyList.add(LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK) }
-        var inited by remember { mutableStateOf(false) }
+        val lockTaskFeatures = remember { mutableStateListOf<Int>() }
         var custom by remember { mutableStateOf(false) }
         val refreshFeature = {
             var calculate = dpm.getLockTaskFeatures(receiver)
-            if(calculate!=0) {
-                if(VERSION.SDK_INT >= 30 && calculate-lockTaskPolicyList[7] >= 0) { blockAct= true; calculate -= lockTaskPolicyList[7] }
-                if(calculate-lockTaskPolicyList[6] >= 0) { keyGuard = true; calculate -= lockTaskPolicyList[6] }
-                if(calculate-lockTaskPolicyList[5] >= 0) { globalAction= true; calculate -= lockTaskPolicyList[5] }
-                if(calculate-lockTaskPolicyList[4] >= 0) { overview= true; calculate -= lockTaskPolicyList[4] }
-                if(calculate-lockTaskPolicyList[3] >= 0) { home= true; calculate -= lockTaskPolicyList[3] }
-                if(calculate-lockTaskPolicyList[2] >= 0) { notifications= true; calculate -= lockTaskPolicyList[2] }
-                if(calculate-lockTaskPolicyList[1] >= 0) { sysInfo= true; calculate -= lockTaskPolicyList[1] }
+            lockTaskFeatures.clear()
+            if(calculate != 0) {
+                var sq = 10
+                while(sq >= 1) {
+                    val current = (2).toDouble().pow(sq.toDouble()).toInt()
+                    if(calculate - current >= 0) {
+                        lockTaskFeatures += current
+                        calculate -= current
+                    }
+                    sq--
+                }
+                if(calculate - 1 >= 0) { lockTaskFeatures += 1 }
+                custom = true
             }else{
                 custom = false
             }
@@ -684,57 +685,87 @@ private fun LockTaskFeatures() {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.lock_task_feature), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(!inited) { refreshFeature(); custom=dpm.getLockTaskFeatures(receiver)!=0; inited= true }
+        LaunchedEffect(Unit) { refreshFeature() }
         RadioButtonItem(stringResource(R.string.disable_all), !custom, { custom = false })
         RadioButtonItem(stringResource(R.string.custom), custom, { custom = true })
         AnimatedVisibility(custom) {
             Column {
-                CheckBoxItem(stringResource(R.string.ltf_sys_info), sysInfo, { sysInfo = it })
-                CheckBoxItem(stringResource(R.string.ltf_notifications), notifications, { notifications = it })
-                CheckBoxItem(stringResource(R.string.ltf_home), home, { home = it })
-                CheckBoxItem(stringResource(R.string.ltf_overview), overview, { overview = it })
-                CheckBoxItem(stringResource(R.string.ltf_global_actions), globalAction, { globalAction = it })
-                CheckBoxItem(stringResource(R.string.ltf_keyguard), keyGuard, { keyGuard = it })
-                if(VERSION.SDK_INT >= 30) { CheckBoxItem(stringResource(R.string.ltf_block_activity_start_in_task), blockAct, { blockAct = it }) }
+                CheckBoxItem(
+                    stringResource(R.string.ltf_sys_info),
+                    LOCK_TASK_FEATURE_SYSTEM_INFO in lockTaskFeatures,
+                    { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_SYSTEM_INFO) }
+                )
+                CheckBoxItem(
+                    stringResource(R.string.ltf_notifications),
+                    LOCK_TASK_FEATURE_NOTIFICATIONS in lockTaskFeatures,
+                    { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_NOTIFICATIONS) }
+                )
+                CheckBoxItem(
+                    stringResource(R.string.ltf_home),
+                    LOCK_TASK_FEATURE_HOME in lockTaskFeatures,
+                    { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_HOME) }
+                )
+                CheckBoxItem(
+                    stringResource(R.string.ltf_overview),
+                    LOCK_TASK_FEATURE_OVERVIEW in lockTaskFeatures,
+                    { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_OVERVIEW) }
+                )
+                CheckBoxItem(
+                    stringResource(R.string.ltf_global_actions),
+                    LOCK_TASK_FEATURE_GLOBAL_ACTIONS in lockTaskFeatures,
+                    { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_GLOBAL_ACTIONS) }
+                )
+                CheckBoxItem(
+                    stringResource(R.string.ltf_keyguard),
+                    LOCK_TASK_FEATURE_KEYGUARD in lockTaskFeatures,
+                    { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_KEYGUARD) }
+                )
+                if(VERSION.SDK_INT >= 30) {
+                    CheckBoxItem(
+                        stringResource(R.string.ltf_block_activity_start_in_task),
+                        LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK in lockTaskFeatures,
+                        { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK) }
+                    )
+                }
             }
         }
         Button(
             modifier = Modifier.fillMaxWidth(),
             onClick = {
-                var result = lockTaskPolicyList[0]
+                var result = 0
                 if(custom) {
-                    if(blockAct&&VERSION.SDK_INT >= 30) { result += lockTaskPolicyList[7] }
-                    if(keyGuard) { result += lockTaskPolicyList[6] }
-                    if(globalAction) { result += lockTaskPolicyList[5] }
-                    if(overview) { result += lockTaskPolicyList[4] }
-                    if(home) { result += lockTaskPolicyList[3] }
-                    if(notifications) { result += lockTaskPolicyList[2] }
-                    if(sysInfo) { result += lockTaskPolicyList[1] }
+                    lockTaskFeatures.forEach { result += it }
                 }
-                dpm.setLockTaskFeatures(receiver,result)
+                try {
+                    dpm.setLockTaskFeatures(receiver,result)
+                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                } catch (e: IllegalArgumentException) {
+                    AlertDialog.Builder(context)
+                        .setTitle("Error")
+                        .setMessage(e.message)
+                        .setPositiveButton(R.string.confirm) { dialog, _ -> dialog.dismiss() }
+                        .show()
+                }
                 refreshFeature()
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             }
         ) {
             Text(stringResource(R.string.apply))
         }
+
+        val lockTaskPackages = remember { mutableStateListOf<String>() }
+        var inputLockTaskPkg by remember { mutableStateOf("") }
+        LaunchedEffect(Unit) { lockTaskPackages.addAll(dpm.getLockTaskPackages(receiver)) }
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.lock_task_packages), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        val whitelist = dpm.getLockTaskPackages(receiver).toMutableList()
-        var listText by remember { mutableStateOf("") }
-        var inputPkg by remember { mutableStateOf("") }
-        val refreshWhitelist = {
-            inputPkg = ""
-            listText = ""
-            listText = whitelist.toText()
-        }
-        LaunchedEffect(Unit) { refreshWhitelist() }
-        Text(text = stringResource(R.string.whitelist_app), style = typography.titleLarge)
         SelectionContainer(modifier = Modifier.animateContentSize()) {
-            Text(text = if(listText == "") stringResource(R.string.none) else listText)
+            var listText = ""
+            lockTaskPackages.forEach { listText += "\n" + it }
+            Text(text = stringResource(R.string.app_list_is) + if(listText == "") stringResource(R.string.none) else listText)
         }
         OutlinedTextField(
-            value = inputPkg,
-            onValueChange = { inputPkg = it },
+            value = inputLockTaskPkg,
+            onValueChange = { inputLockTaskPkg = it },
             label = { Text(stringResource(R.string.package_name)) },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
@@ -742,33 +773,63 @@ private fun LockTaskFeatures() {
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Button(
-                onClick = {
-                    focusMgr.clearFocus()
-                    whitelist.add(inputPkg)
-                    dpm.setLockTaskPackages(receiver,whitelist.toTypedArray())
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                    refreshWhitelist()
-                },
+                onClick = { lockTaskPackages.add(inputLockTaskPkg) },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) {
                 Text(stringResource(R.string.add))
             }
             Button(
-                onClick = {
-                    focusMgr.clearFocus()
-                    if(inputPkg in whitelist) {
-                        whitelist.remove(inputPkg)
-                        dpm.setLockTaskPackages(receiver,whitelist.toTypedArray())
-                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(context, R.string.not_exist, Toast.LENGTH_SHORT).show()
-                    }
-                    refreshWhitelist()
-                },
+                onClick = { lockTaskPackages.remove(inputLockTaskPkg) },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) {
                 Text(stringResource(R.string.remove))
             }
+        }
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = {
+                dpm.setLockTaskPackages(receiver, lockTaskPackages.toTypedArray())
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+            }
+        ) {
+            Text(stringResource(R.string.apply))
+        }
+        var startLockTaskApp by remember { mutableStateOf("") }
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.start_lock_task_mode), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
+        OutlinedTextField(
+            value = startLockTaskApp,
+            onValueChange = { startLockTaskApp = it },
+            label = { Text(stringResource(R.string.package_name)) },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
+        )
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = {
+                if(!dpm.getLockTaskPackages(receiver).contains(startLockTaskApp)) {
+                    Toast.makeText(context, R.string.app_not_allowed, Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                val options = ActivityOptions.makeBasic().setLockTaskEnabled(true)
+                val packageManager = context.packageManager
+                val launchIntent = packageManager.getLaunchIntentForPackage(startLockTaskApp)
+                if (launchIntent != null) {
+                    coroutine.launch {
+                        prepareForNotification(context) {
+                            sendStopLockTaskNotification(context)
+                            context.startActivity(launchIntent, options.toBundle())
+                            Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } else {
+                    Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
+                }
+            }
+        ) {
+            Text(stringResource(R.string.start))
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
@@ -1004,6 +1065,7 @@ fun FactoryResetProtection() {
     }
 }
 
+@SuppressLint("NewApi")
 @Composable
 private fun WipeData() {
     val context = LocalContext.current
@@ -1011,14 +1073,14 @@ private fun WipeData() {
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context,Receiver::class.java)
     val focusMgr = LocalFocusManager.current
+    var warning by remember { mutableStateOf(false) }
+    var wipeDevice by remember { mutableStateOf(false) }
+    var externalStorage by remember { mutableStateOf(false) }
+    var protectionData by remember { mutableStateOf(false) }
+    var euicc by remember { mutableStateOf(false) }
+    var silent by remember { mutableStateOf(false) }
+    var reason by remember { mutableStateOf("") }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        var flag by remember { mutableIntStateOf(0) }
-        var confirmed by remember { mutableStateOf(false) }
-        var externalStorage by remember { mutableStateOf(false) }
-        var protectionData by remember { mutableStateOf(false) }
-        var euicc by remember { mutableStateOf(false) }
-        var silent by remember { mutableStateOf(false) }
-        var reason by remember { mutableStateOf("") }
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(
             text = stringResource(R.string.wipe_data),
@@ -1028,75 +1090,90 @@ private fun WipeData() {
         Spacer(Modifier.padding(vertical = 5.dp))
         CheckBoxItem(
             stringResource(R.string.wipe_external_storage),
-            externalStorage, { externalStorage = it; confirmed = false }
+            externalStorage, { externalStorage = it }
         )
         if(VERSION.SDK_INT >= 22 && isDeviceOwner(dpm)) {
             CheckBoxItem(stringResource(R.string.wipe_reset_protection_data),
-                protectionData, { protectionData = it; confirmed = false}
+                protectionData, { protectionData = it }
             )
         }
-        if(VERSION.SDK_INT >= 28) { CheckBoxItem(stringResource(R.string.wipe_euicc), euicc, { euicc = it; confirmed = false }) }
-        if(VERSION.SDK_INT >= 29) { CheckBoxItem(stringResource(R.string.wipe_silently), silent, { silent = it; confirmed = false }) }
+        if(VERSION.SDK_INT >= 28) { CheckBoxItem(stringResource(R.string.wipe_euicc), euicc, { euicc = it }) }
+        if(VERSION.SDK_INT >= 29) { CheckBoxItem(stringResource(R.string.wipe_silently), silent, { silent = it }) }
         AnimatedVisibility(!silent && VERSION.SDK_INT >= 28) {
             OutlinedTextField(
                 value = reason, onValueChange = { reason = it },
                 label = { Text(stringResource(R.string.reason)) },
-                enabled = !confirmed,
                 modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
             )
         }
         Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = {
-                focusMgr.clearFocus()
-                flag = 0
-                if(externalStorage) { flag += WIPE_EXTERNAL_STORAGE }
-                if(protectionData && VERSION.SDK_INT >= 22) { flag += WIPE_RESET_PROTECTION_DATA }
-                if(euicc && VERSION.SDK_INT >= 28) { flag += WIPE_EUICC }
-                if(reason == "") { silent = true }
-                if(silent && VERSION.SDK_INT >= 29) { flag += WIPE_SILENTLY }
-                confirmed = !confirmed
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if(confirmed) colorScheme.primary else colorScheme.error ,
-                contentColor = if(confirmed) colorScheme.onPrimary else colorScheme.onError 
-            ),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = stringResource(if(confirmed) R.string.cancel else R.string.confirm))
-        }
-        Button(
-            onClick = {
-                if(VERSION.SDK_INT >= 28 && reason != "") {
-                    dpm.wipeData(flag, reason)
-                }else{
-                    dpm.wipeData(flag)
-                }
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
-            enabled = confirmed && (VERSION.SDK_INT < 34 || (VERSION.SDK_INT >= 34 && !userManager.isSystemUser)),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("WipeData")
+        if(VERSION.SDK_INT < 34 || (VERSION.SDK_INT >= 34 && !userManager.isSystemUser)) {
+            Button(
+                onClick = {
+                    focusMgr.clearFocus()
+                    wipeDevice = false
+                    warning = true
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("WipeData")
+            }
         }
         if (VERSION.SDK_INT >= 34 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
             Button(
-                onClick = { dpm.wipeDevice(flag) },
+                onClick = {
+                    focusMgr.clearFocus()
+                    wipeDevice = true
+                    warning = true
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
-                enabled = confirmed,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("WipeDevice")
             }
         }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT >= 24 && isProfileOwner(dpm) && dpm.isManagedProfile(receiver)) {
-            Information{ Text(text = stringResource(R.string.will_delete_work_profile)) }
-        }
-        if(VERSION.SDK_INT >= 34 && Binder.getCallingUid()/100000 == 0) {
-            Information{ Text(text = stringResource(R.string.api34_or_above_wipedata_cannot_in_system_user)) }
-        }
         Spacer(Modifier.padding(vertical = 30.dp))
+    }
+    if(warning) {
+        LaunchedEffect(Unit) { silent = reason == "" }
+        AlertDialog(
+            title = {
+                Text(text = stringResource(R.string.warning), color = colorScheme.error)
+            },
+            text = {
+                Text(text = stringResource(R.string.wipe_data_warning), color = colorScheme.error)
+            },
+            onDismissRequest = { warning = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        var flag = 0
+                        if(externalStorage) { flag += WIPE_EXTERNAL_STORAGE }
+                        if(protectionData && VERSION.SDK_INT >= 22) { flag += WIPE_RESET_PROTECTION_DATA }
+                        if(euicc && VERSION.SDK_INT >= 28) { flag += WIPE_EUICC }
+                        if(silent && VERSION.SDK_INT >= 29) { flag += WIPE_SILENTLY }
+                        if(wipeDevice) {
+                            dpm.wipeDevice(flag)
+                        } else {
+                            if(VERSION.SDK_INT >= 28 && reason != "") {
+                                dpm.wipeData(flag, reason)
+                            } else {
+                                dpm.wipeData(flag)
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
+                ) {
+                    Text(stringResource(R.string.confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { warning = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
     }
 }
 
@@ -1251,4 +1328,24 @@ fun InstallSystemUpdate() {
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
+}
+
+@SuppressLint("NewApi")
+private fun sendStopLockTaskNotification(context: Context) {
+    val nm = context.getSystemService(ComponentActivity.NOTIFICATION_SERVICE) as NotificationManager
+    if (VERSION.SDK_INT >= 26) {
+            val channel = NotificationChannel("LockTaskMode", context.getString(R.string.lock_task_mode), NotificationManager.IMPORTANCE_HIGH).apply {
+            description = "Notification channel for stop lock task mode"
+            setShowBadge(false)
+        }
+        nm.createNotificationChannel(channel)
+    }
+    val intent = Intent(context, StopLockTaskModeReceiver::class.java)
+    val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+    val builder = NotificationCompat.Builder(context, "LockTaskMode")
+        .setContentTitle(context.getText(R.string.lock_task_mode))
+        .setSmallIcon(R.drawable.lock_fill0)
+        .addAction(NotificationCompat.Action.Builder(R.drawable.lock_fill0, context.getText(R.string.stop), pendingIntent).build())
+        .setPriority(NotificationCompat.PRIORITY_HIGH)
+    nm.notify(1, builder.build())
 }
