@@ -180,7 +180,6 @@
     <string name="wipe_reset_protection_data">Korumalı verileri sil</string>
     <string name="wipe_euicc">eUICC (eSIM) sil</string>
     <string name="wipe_silently">Sessizce sil</string>
-    <string name="will_delete_work_profile">Çalışma profili silinecek</string>
     <string name="wipe_data_warning">All data on your device will be ERASED</string> <!--TODO-->
     <string name="wipe_work_profile_warning">Your work profile will be DELETED</string> <!--TODO-->
     <string name="encrypt_status_is">Şifreleme durumu: </string>

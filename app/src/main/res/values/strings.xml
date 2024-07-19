@@ -185,7 +185,6 @@
     <string name="wipe_reset_protection_data">Wipe protected data</string>
     <string name="wipe_euicc">Wipe eUICC(eSIM)</string>
     <string name="wipe_silently">Wipe silently</string>
-    <string name="will_delete_work_profile">Work profile will be deleted. </string>
     <string name="wipe_data_warning">All data on your device will be ERASED</string>
     <string name="wipe_work_profile_warning">Your work profile will be DELETED</string>
     <string name="encrypt_status_is">Encrypt status: </string>

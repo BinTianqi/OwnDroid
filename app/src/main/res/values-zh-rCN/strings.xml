@@ -175,7 +175,6 @@
     <string name="wipe_reset_protection_data">清除受保护的数据</string>
     <string name="wipe_euicc">清除eUICC(eSIM)</string>
     <string name="wipe_silently">静默清除</string>
-    <string name="will_delete_work_profile">将会删除工作资料</string>
     <string name="wipe_data_warning">你的设备上的所有数据将会被清除</string>
     <string name="wipe_work_profile_warning">你的工作资料将会被删除</string>
     <string name="encrypt_status_is">加密状态：</string>
