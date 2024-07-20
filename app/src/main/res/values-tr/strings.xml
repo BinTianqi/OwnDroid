@@ -99,6 +99,9 @@
     <string name="onDisabled">OwnDroid: Devre Dışı</string>
     <string name="create_work_profile_success">OwnDroid: İş Profili Başarıyla Oluşturuldu</string>
 
+    <!--Dhizuku-->
+    <string name="permission_not_granted">Permission not granted</string> <!--TODO-->
+    <string name="failed_to_init_dhizuku">Failed to initialize Dhizuku</string> <!--TODO-->
     <!--Shizuku-->
     <string name="check_shizuku">İzni Kontrol Et</string>
     <string name="list_owners">Sahipleri Listele</string>

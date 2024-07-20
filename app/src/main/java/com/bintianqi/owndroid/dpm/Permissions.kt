@@ -6,7 +6,9 @@ import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build.VERSION
+import android.os.RemoteException
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
@@ -38,6 +40,8 @@ import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.backToHomeStateFlow
 import com.bintianqi.owndroid.ui.*
+import com.rosan.dhizuku.api.Dhizuku
+import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -88,11 +92,41 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
     val context = LocalContext.current
     val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val receiver = ComponentName(context, Receiver::class.java)
+    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    var dhizukuStatus by remember { mutableStateOf(sharedPref.getBoolean("dhizuku", false)) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(listScrollState)) {
         Text(
             text = stringResource(R.string.permission),
             style = typography.headlineLarge,
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp)
+        )
+        SwitchItem(
+            R.string.dhizuku, "", null,
+            { dhizukuStatus },
+            {
+                if(!it) {
+                    sharedPref.edit().putBoolean("dhizuku", false).apply()
+                    dhizukuStatus = sharedPref.getBoolean("dhizuku", false)
+                    return@SwitchItem
+                }
+                Dhizuku.init(context)
+                if(Dhizuku.isPermissionGranted()) {
+                    sharedPref.edit().putBoolean("dhizuku", true).apply()
+                    dhizukuStatus = sharedPref.getBoolean("dhizuku", false)
+                } else {
+                    Dhizuku.requestPermission(object: DhizukuRequestPermissionListener() {
+                        @Throws(RemoteException::class)
+                        override fun onRequestPermission(grantResult: Int) {
+                            if(grantResult == PackageManager.PERMISSION_GRANTED) {
+                                sharedPref.edit().putBoolean("dhizuku", true).apply()
+                                dhizukuStatus = sharedPref.getBoolean("dhizuku", false)
+                            } else {
+                                Toast.makeText(context, R.string.permission_not_granted, Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    })
+                }
+            }
         )
         SubPageItem(
             R.string.device_admin, stringResource(if(dpm.isAdminActive(receiver)) R.string.activated else R.string.deactivated),

@@ -101,6 +101,10 @@
     <string name="onDisabled">OwnDroid: Disabled</string>
     <string name="create_work_profile_success">OwnDroid: Create work profile success</string>
 
+    <!--Dhizuku-->
+    <string name="dhizuku" translatable="false">Dhizuku</string>
+    <string name="permission_not_granted">Permission not granted</string>
+    <string name="failed_to_init_dhizuku">Failed to initialize Dhizuku</string>
     <!--Shizuku-->
     <string name="shizuku" translatable="false">Shizuku</string>
     <string name="check_shizuku">Check permission</string>

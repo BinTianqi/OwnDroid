@@ -3,6 +3,7 @@ package com.bintianqi.owndroid
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
+import android.os.Build
 import android.os.Build.VERSION
 import android.os.Bundle
 import android.widget.Toast
@@ -40,7 +41,9 @@ import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.dpm.*
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
+import com.rosan.dhizuku.api.Dhizuku
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.lsposed.hiddenapibypass.HiddenApiBypass
 import java.util.Locale
 
 var backToHomeStateFlow = MutableStateFlow(false)
@@ -54,6 +57,12 @@ class MainActivity : FragmentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         val sharedPref = applicationContext.getSharedPreferences("data", Context.MODE_PRIVATE)
+        if (sharedPref.getBoolean("dhizuku", false)) {
+            if (VERSION.SDK_INT >= 28) HiddenApiBypass.setHiddenApiExemptions("")
+            if(!Dhizuku.init(applicationContext)) {
+                Toast.makeText(applicationContext, R.string.failed_to_init_dhizuku, Toast.LENGTH_SHORT).show()
+            }
+        }
         if(sharedPref.getBoolean("auth", false)) {
             showAuth.value = true
         }
