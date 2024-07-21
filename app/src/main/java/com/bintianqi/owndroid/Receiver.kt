@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.app.admin.DeviceAdminReceiver
 import android.content.BroadcastReceiver
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller.EXTRA_STATUS
@@ -23,6 +22,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import com.bintianqi.owndroid.dpm.getDPM
 import com.bintianqi.owndroid.dpm.getReceiver
+import com.bintianqi.owndroid.dpm.isDeviceAdmin
 import com.bintianqi.owndroid.dpm.isDeviceOwner
 import com.bintianqi.owndroid.dpm.isProfileOwner
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,9 +30,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 class Receiver : DeviceAdminReceiver() {
     override fun onEnabled(context: Context, intent: Intent) {
         super.onEnabled(context, intent)
-        val dpm = context.getDPM()
-        val receiver = ComponentName(context, this::class.java)
-        if(dpm.isAdminActive(receiver) || context.isProfileOwner || context.isDeviceOwner){
+        if(context.isDeviceAdmin || context.isProfileOwner || context.isDeviceOwner){
             Toast.makeText(context, context.getString(R.string.onEnabled), Toast.LENGTH_SHORT).show()
         }
     }

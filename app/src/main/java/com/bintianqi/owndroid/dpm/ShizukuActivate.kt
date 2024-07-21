@@ -50,7 +50,7 @@ fun ShizukuActivate() {
     var enabled by remember { mutableStateOf(false) }
     var bindShizuku by remember { mutableStateOf(false) }
     var outputText by remember { mutableStateOf("") }
-    var showDeviceAdminButton by remember { mutableStateOf(!dpm.isAdminActive(receiver)) }
+    var showDeviceAdminButton by remember { mutableStateOf(!context.isDeviceAdmin) }
     var showProfileOwnerButton by remember { mutableStateOf(!context.isProfileOwner) }
     var showDeviceOwnerButton by remember { mutableStateOf(!context.isDeviceOwner) }
     var showOrgProfileOwnerButton by remember { mutableStateOf(true) }
@@ -124,7 +124,7 @@ fun ShizukuActivate() {
                         outputText = service!!.execute(context.getString(R.string.dpm_activate_da_command))
                         outputTextScrollState.animateScrollTo(0)
                         delay(500)
-                        showDeviceAdminButton = !dpm.isAdminActive(receiver)
+                        showDeviceAdminButton = !context.isDeviceAdmin
                     }
                 },
                 enabled = enabled

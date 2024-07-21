@@ -45,6 +45,11 @@ val Context.isProfileOwner: Boolean
         return dpm.isProfileOwnerApp("com.bintianqi.owndroid")
     }
 
+val Context.isDeviceAdmin: Boolean
+    get() {
+        return getDPM().isAdminActive(getReceiver())
+    }
+
 val Context.dpcPackageName: String
     get() {
         val sharedPref = getSharedPreferences("data", Context.MODE_PRIVATE)

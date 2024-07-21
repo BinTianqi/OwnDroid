@@ -224,7 +224,7 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
         if(VERSION.SDK_INT >= 30 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.frp_policy, "", R.drawable.device_reset_fill0) { navCtrl.navigate("FRP") }
         }
-        if(dangerousFeatures && dpm.isAdminActive(receiver) && !(VERSION.SDK_INT >= 24 && context.isProfileOwner && dpm.isManagedProfile(receiver))) {
+        if(dangerousFeatures && context.isDeviceAdmin && !(VERSION.SDK_INT >= 24 && context.isProfileOwner && dpm.isManagedProfile(receiver))) {
             SubPageItem(R.string.wipe_data, "", R.drawable.device_reset_fill0) { navCtrl.navigate("WipeData") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -337,7 +337,7 @@ private fun Keyguard() {
         var flag by remember { mutableIntStateOf(0) }
         Button(
             onClick = { dpm.lockNow() },
-            enabled = dpm.isAdminActive(receiver),
+            enabled = context.isDeviceAdmin,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.lock_now))

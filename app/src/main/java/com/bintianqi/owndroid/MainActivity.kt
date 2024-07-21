@@ -62,6 +62,7 @@ import com.bintianqi.owndroid.dpm.UserRestriction
 import com.bintianqi.owndroid.dpm.dhizukuErrorStatus
 import com.bintianqi.owndroid.dpm.getDPM
 import com.bintianqi.owndroid.dpm.getReceiver
+import com.bintianqi.owndroid.dpm.isDeviceAdmin
 import com.bintianqi.owndroid.dpm.isDeviceOwner
 import com.bintianqi.owndroid.dpm.isProfileOwner
 import com.bintianqi.owndroid.ui.Animations
@@ -183,7 +184,7 @@ private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>) {
             else if(context.isProfileOwner) {
                 if(VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)) R.string.work_profile_owner else R.string.profile_owner
             }
-            else if(dpm.isAdminActive(receiver)) R.string.device_admin else R.string.click_to_activate
+            else if(context.isDeviceAdmin) R.string.device_admin else R.string.click_to_activate
         )
     LaunchedEffect(Unit) { pkgName.value = "" }
     Column(modifier = Modifier.background(colorScheme.background).statusBarsPadding().verticalScroll(rememberScrollState())) {
@@ -205,14 +206,14 @@ private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>) {
         ) {
             Spacer(modifier = Modifier.padding(start = 22.dp))
             Icon(
-                painter = painterResource(if(dpm.isAdminActive(receiver)) R.drawable.check_circle_fill1 else R.drawable.block_fill0),
+                painter = painterResource(if(context.isDeviceAdmin) R.drawable.check_circle_fill1 else R.drawable.block_fill0),
                 contentDescription = null,
                 tint = colorScheme.onPrimary
             )
             Spacer(modifier = Modifier.padding(start = 10.dp))
             Column {
                 Text(
-                    text = stringResource(if(dpm.isAdminActive(receiver)) R.string.activated else R.string.deactivated),
+                    text = stringResource(if(context.isDeviceAdmin) R.string.activated else R.string.deactivated),
                     style = typography.headlineSmall,
                     color = colorScheme.onPrimary,
                     modifier = Modifier.padding(bottom = 2.dp)

@@ -139,13 +139,13 @@ private fun Home(navCtrl:NavHostController,scrollState: ScrollState) {
         if(VERSION.SDK_INT >= 26 && (context.isDeviceOwner || context.isProfileOwner)) {
             SubPageItem(R.string.reset_password_token, "", R.drawable.key_vertical_fill0) { navCtrl.navigate("ResetPasswordToken") }
         }
-        if(dpm.isAdminActive(receiver) || context.isDeviceOwner || context.isProfileOwner) {
+        if(context.isDeviceAdmin || context.isDeviceOwner || context.isProfileOwner) {
             SubPageItem(R.string.reset_password, "", R.drawable.lock_reset_fill0) { navCtrl.navigate("ResetPassword") }
         }
         if(VERSION.SDK_INT >= 31 && (context.isDeviceOwner || context.isProfileOwner)) {
             SubPageItem(R.string.required_password_complexity, "", R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordComplexity") }
         }
-        if(dpm.isAdminActive(receiver)) {
+        if(context.isDeviceAdmin) {
             SubPageItem(R.string.disable_keyguard_features, "", R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("DisableKeyguardFeatures") }
         }
         if(context.isDeviceOwner) {
@@ -153,7 +153,7 @@ private fun Home(navCtrl:NavHostController,scrollState: ScrollState) {
             SubPageItem(R.string.pwd_expiration_timeout, "", R.drawable.lock_clock_fill0) { navCtrl.navigate("PasswordTimeout") }
             SubPageItem(R.string.max_pwd_fail, "", R.drawable.no_encryption_fill0) { navCtrl.navigate("MaxPasswordFail") }
         }
-        if(dpm.isAdminActive(receiver)){
+        if(context.isDeviceAdmin){
             SubPageItem(R.string.pwd_history, "", R.drawable.history_fill0) { navCtrl.navigate("PasswordHistoryLength") }
         }
         if(VERSION.SDK_INT >= 26 && (context.isDeviceOwner || context.isProfileOwner)) {
@@ -188,7 +188,7 @@ private fun PasswordInfo() {
         if(context.isDeviceOwner || context.isProfileOwner) {
             Text(stringResource(R.string.is_password_sufficient, dpm.isActivePasswordSufficient))
         }
-        if(dpm.isAdminActive(receiver)) {
+        if(context.isDeviceAdmin) {
             val pwdFailedAttempts = dpm.currentFailedPasswordAttempts
             Text(text = stringResource(R.string.password_failed_attempts_is, pwdFailedAttempts))
         }

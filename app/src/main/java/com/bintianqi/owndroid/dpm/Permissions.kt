@@ -36,6 +36,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.backToHomeStateFlow
 import com.bintianqi.owndroid.ui.*
 import com.rosan.dhizuku.api.Dhizuku
@@ -109,7 +110,7 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
             )
         }
         SubPageItem(
-            R.string.device_admin, stringResource(if(dpm.isAdminActive(receiver)) R.string.activated else R.string.deactivated),
+            R.string.device_admin, stringResource(if(context.isDeviceAdmin) R.string.activated else R.string.deactivated),
             operation = { localNavCtrl.navigate("DeviceAdmin") }
         )
         if(!context.isDeviceOwner) {
@@ -139,7 +140,7 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
         if(VERSION.SDK_INT >= 24 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.device_owner_lock_screen_info, "", R.drawable.screen_lock_portrait_fill0) { localNavCtrl.navigate("LockScreenInfo") }
         }
-        if(VERSION.SDK_INT >= 24 && dpm.isAdminActive(receiver)) {
+        if(VERSION.SDK_INT >= 24 && context.isDeviceAdmin) {
             SubPageItem(R.string.support_msg, "", R.drawable.chat_fill0) { localNavCtrl.navigate("SupportMsg") }
         }
         if(VERSION.SDK_INT >= 28 && (context.isDeviceOwner || context.isProfileOwner)) {
@@ -222,12 +223,12 @@ private fun DeviceAdmin() {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    var showDeactivateButton by remember { mutableStateOf(dpm.isAdminActive(receiver)) }
+    var showDeactivateButton by remember { mutableStateOf(context.isDeviceAdmin) }
     var deactivateDialog by remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.device_admin), style = typography.headlineLarge)
-        Text(text = stringResource(if(dpm.isAdminActive(receiver)) R.string.activated else R.string.deactivated), style = typography.titleLarge)
+        Text(text = stringResource(if(context.isDeviceAdmin) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         AnimatedVisibility(showDeactivateButton) {
             Button(
@@ -270,8 +271,8 @@ private fun DeviceAdmin() {
                         co.launch{
                             delay(300)
                             deactivateDialog = false
-                            showDeactivateButton = dpm.isAdminActive(receiver)
-                            backToHomeStateFlow.value = !dpm.isAdminActive(receiver)
+                            showDeactivateButton = context.isDeviceAdmin
+                            backToHomeStateFlow.value = !context.isDeviceAdmin
                         }
                     }
                 ) {
