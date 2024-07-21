@@ -1,7 +1,6 @@
 package com.bintianqi.owndroid.dpm
 
 import android.annotation.SuppressLint
-import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_OFF
 import android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_OPPORTUNISTIC
 import android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_PROVIDER_HOSTNAME
@@ -135,8 +134,8 @@ fun Network(navCtrl: NavHostController) {
     }
     if(wifiMacDialog.value && VERSION.SDK_INT >= 24) {
         val context = LocalContext.current
-        val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        val receiver = ComponentName(context, Receiver::class.java)
+        val dpm = context.getDPM()
+        val receiver = context.getReceiver()
         AlertDialog(
             onDismissRequest = { wifiMacDialog.value = false },
             confirmButton = { TextButton(onClick = { wifiMacDialog.value = false }) { Text(stringResource(R.string.confirm)) } },
@@ -150,36 +149,36 @@ fun Network(navCtrl: NavHostController) {
 @Composable
 private fun Home(navCtrl:NavHostController, scrollState: ScrollState, wifiMacDialog: MutableState<Boolean>) {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context, Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
             text = stringResource(R.string.network),
             style = typography.headlineLarge,
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp)
         )
-        if(VERSION.SDK_INT >= 24 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 24 && (dpm.isDeviceOwner(context) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.wifi_mac_addr, "", R.drawable.wifi_fill0) { wifiMacDialog.value = true }
         }
         if(VERSION.SDK_INT >= 30) {
             SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Switches") }
         }
-        if(VERSION.SDK_INT >= 33 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 33 && (dpm.isDeviceOwner(context) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.min_wifi_security_level, "", R.drawable.wifi_password_fill0) { navCtrl.navigate("MinWifiSecurityLevel") }
         }
-        if(VERSION.SDK_INT >= 33 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 33 && (dpm.isDeviceOwner(context) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.wifi_ssid_policy, "", R.drawable.wifi_fill0) { navCtrl.navigate("WifiSsidPolicy") }
         }
-        if(VERSION.SDK_INT >= 29 && isDeviceOwner(dpm)) {
+        if(VERSION.SDK_INT >= 29 && dpm.isDeviceOwner(context)) {
             SubPageItem(R.string.private_dns, "", R.drawable.dns_fill0) { navCtrl.navigate("PrivateDNS") }
         }
-        if(VERSION.SDK_INT >= 26&&(isDeviceOwner(dpm) || (isProfileOwner(dpm) && dpm.isManagedProfile(receiver)))) {
+        if(VERSION.SDK_INT >= 26&&(dpm.isDeviceOwner(context) || (dpm.isProfileOwner(context) && dpm.isManagedProfile(receiver)))) {
             SubPageItem(R.string.retrieve_net_logs, "", R.drawable.description_fill0) { navCtrl.navigate("NetworkLog") }
         }
-        if(VERSION.SDK_INT >= 31 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
+        if(VERSION.SDK_INT >= 31 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
             SubPageItem(R.string.wifi_auth_keypair, "", R.drawable.key_fill0) { navCtrl.navigate("WifiAuthKeypair") }
         }
-        if(VERSION.SDK_INT >= 28 && isDeviceOwner(dpm)) {
+        if(VERSION.SDK_INT >= 28 && dpm.isDeviceOwner(context)) {
             SubPageItem(R.string.override_apn_settings, "", R.drawable.cell_tower_fill0) { navCtrl.navigate("APN") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -189,17 +188,17 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState, wifiMacDia
 @Composable
 private fun Switches() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT >= 33 && isDeviceOwner(dpm)) {
+        if(VERSION.SDK_INT >= 33 && dpm.isDeviceOwner(context)) {
             SwitchItem(
                 R.string.preferential_network_service, stringResource(R.string.developing), R.drawable.globe_fill0,
                 { dpm.isPreferentialNetworkServiceEnabled }, { dpm.isPreferentialNetworkServiceEnabled = it }
             )
         }
-        if(VERSION.SDK_INT>=30 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT>=30 && (dpm.isDeviceOwner(context) || dpm.isOrgProfile(receiver))) {
             SwitchItem(R.string.lockdown_admin_configured_network, "", R.drawable.wifi_password_fill0,
                 { dpm.hasLockdownAdminConfiguredNetworks(receiver) }, { dpm.setConfiguredNetworksLockdownState(receiver,it) }
             )
@@ -211,7 +210,7 @@ private fun Switches() {
 @Composable
 private fun WifiSecLevel() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val dpm = context.getDPM()
     var selectedWifiSecLevel by remember { mutableIntStateOf(0) }
     LaunchedEffect(Unit) { selectedWifiSecLevel = dpm.minimumRequiredWifiSecurityLevel }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
@@ -255,7 +254,7 @@ private fun WifiSecLevel() {
 @Composable
 private fun WifiSsidPolicy() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         var selectedPolicyType by remember { mutableIntStateOf(-1) }
@@ -363,8 +362,8 @@ private fun WifiSsidPolicy() {
 @Composable
 private fun PrivateDNS() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -433,8 +432,8 @@ private fun PrivateDNS() {
 @Composable
 private fun NetworkLog() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.retrieve_net_logs), style = typography.headlineLarge)
@@ -465,7 +464,7 @@ private fun NetworkLog() {
 @Composable
 private fun WifiAuthKeypair() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         var keyPair by remember { mutableStateOf("") }
@@ -511,8 +510,8 @@ private fun WifiAuthKeypair() {
 @Composable
 private fun APN() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         val setting = dpm.getOverrideApns(receiver)

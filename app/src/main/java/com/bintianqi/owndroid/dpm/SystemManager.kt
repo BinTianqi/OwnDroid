@@ -6,7 +6,6 @@ import android.app.AlertDialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY
 import android.app.admin.DevicePolicyManager.InstallSystemUpdateCallback
 import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK
@@ -174,8 +173,8 @@ fun SystemManage(navCtrl:NavHostController) {
 @Composable
 private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDialog: MutableState<Boolean>, bugReportDialog: MutableState<Boolean>) {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context, Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     val dangerousFeatures = sharedPref.getBoolean("dangerous_features", false)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
@@ -184,48 +183,48 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
             style = typography.headlineLarge,
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp)
         )
-        if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
+        if(dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
             SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Switches") }
         }
         SubPageItem(R.string.keyguard, "", R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("Keyguard") }
-        if(VERSION.SDK_INT >= 24 && isDeviceOwner(dpm)) {
+        if(VERSION.SDK_INT >= 24 && dpm.isDeviceOwner(context)) {
             SubPageItem(R.string.reboot, "", R.drawable.restart_alt_fill0) { rebootDialog.value = true }
         }
-        if(isDeviceOwner(dpm) && ((VERSION.SDK_INT >= 28 && dpm.isAffiliatedUser) || VERSION.SDK_INT >= 24)) {
+        if(dpm.isDeviceOwner(context) && ((VERSION.SDK_INT >= 28 && dpm.isAffiliatedUser) || VERSION.SDK_INT >= 24)) {
             SubPageItem(R.string.bug_report, "", R.drawable.bug_report_fill0) { bugReportDialog.value = true }
         }
-        if(VERSION.SDK_INT >= 28 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 28 && (dpm.isDeviceOwner(context) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.edit_time, "", R.drawable.schedule_fill0) { navCtrl.navigate("EditTime") }
             SubPageItem(R.string.edit_timezone, "", R.drawable.schedule_fill0) { navCtrl.navigate("EditTimeZone") }
         }
-        if(VERSION.SDK_INT >= 23 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
+        if(VERSION.SDK_INT >= 23 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
             SubPageItem(R.string.permission_policy, "", R.drawable.key_fill0) { navCtrl.navigate("PermissionPolicy") }
         }
-        if(VERSION.SDK_INT >= 34 && isDeviceOwner(dpm)) {
+        if(VERSION.SDK_INT >= 34 && dpm.isDeviceOwner(context)) {
             SubPageItem(R.string.mte_policy, "", R.drawable.memory_fill0) { navCtrl.navigate("MTEPolicy") }
         }
-        if(VERSION.SDK_INT >= 31 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
+        if(VERSION.SDK_INT >= 31 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
             SubPageItem(R.string.nearby_streaming_policy, "", R.drawable.share_fill0) { navCtrl.navigate("NearbyStreamingPolicy") }
         }
-        if(VERSION.SDK_INT >= 28 && isDeviceOwner(dpm)) {
+        if(VERSION.SDK_INT >= 28 && dpm.isDeviceOwner(context)) {
             SubPageItem(R.string.lock_task_mode, "", R.drawable.lock_fill0) { navCtrl.navigate("LockTaskMode") }
         }
-        if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
+        if(dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
             SubPageItem(R.string.ca_cert, "", R.drawable.license_fill0) { navCtrl.navigate("CaCert") }
         }
-        if(VERSION.SDK_INT >= 26 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 26 && (dpm.isDeviceOwner(context) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.security_logs, "", R.drawable.description_fill0) { navCtrl.navigate("SecurityLogs") }
         }
-        if(VERSION.SDK_INT >= 23 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 23 && (dpm.isDeviceOwner(context) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.system_update_policy, "", R.drawable.system_update_fill0) { navCtrl.navigate("SystemUpdatePolicy") }
         }
-        if(VERSION.SDK_INT >= 29 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 29 && (dpm.isDeviceOwner(context) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.install_system_update, "", R.drawable.system_update_fill0) { navCtrl.navigate("InstallSystemUpdate") }
         }
-        if(VERSION.SDK_INT >= 30 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 30 && (dpm.isDeviceOwner(context) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.frp_policy, "", R.drawable.device_reset_fill0) { navCtrl.navigate("FRP") }
         }
-        if(dangerousFeatures && dpm.isAdminActive(receiver) && !(VERSION.SDK_INT >= 24 && isProfileOwner(dpm) && dpm.isManagedProfile(receiver))) {
+        if(dangerousFeatures && dpm.isAdminActive(receiver) && !(VERSION.SDK_INT >= 24 && dpm.isProfileOwner(context) && dpm.isManagedProfile(receiver))) {
             SubPageItem(R.string.wipe_data, "", R.drawable.device_reset_fill0) { navCtrl.navigate("WipeData") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -236,26 +235,26 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
 @Composable
 private fun Switches() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context, Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
-        if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
+        if(dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
             SwitchItem(R.string.disable_cam,"", R.drawable.photo_camera_fill0,
                 { dpm.getCameraDisabled(null) }, { dpm.setCameraDisabled(receiver,it) }
             )
         }
-        if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
+        if(dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
             SwitchItem(R.string.disable_screen_capture, stringResource(R.string.also_disable_aosp_screen_record), R.drawable.screenshot_fill0,
                 { dpm.getScreenCaptureDisabled(null) }, { dpm.setScreenCaptureDisabled(receiver,it) }
             )
         }
-        if(VERSION.SDK_INT >= 34 && (isDeviceOwner(dpm) || (isProfileOwner(dpm) && dpm.isAffiliatedUser))) {
+        if(VERSION.SDK_INT >= 34 && (dpm.isDeviceOwner(context) || (dpm.isProfileOwner(context) && dpm.isAffiliatedUser))) {
             SwitchItem(R.string.disable_status_bar, "", R.drawable.notifications_fill0,
                 { dpm.isStatusBarDisabled}, { dpm.setStatusBarDisabled(receiver,it) }
             )
         }
-        if(isDeviceOwner(dpm) || dpm.isOrgProfile(receiver)) {
+        if(dpm.isDeviceOwner(context) || dpm.isOrgProfile(receiver)) {
             if(VERSION.SDK_INT >= 30) {
                 SwitchItem(R.string.auto_time, "", R.drawable.schedule_fill0,
                     { dpm.getAutoTimeEnabled(receiver) }, { dpm.setAutoTimeEnabled(receiver,it) }
@@ -267,27 +266,27 @@ private fun Switches() {
                 SwitchItem(R.string.require_auto_time, "", R.drawable.schedule_fill0, { dpm.autoTimeRequired}, { dpm.setAutoTimeRequired(receiver,it) })
             }
         }
-        if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
+        if(dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
             SwitchItem(R.string.master_mute, "", R.drawable.volume_up_fill0,
                 { dpm.isMasterVolumeMuted(receiver) }, { dpm.setMasterVolumeMuted(receiver,it) }
             )
         }
-        if(VERSION.SDK_INT >= 26 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
+        if(VERSION.SDK_INT >= 26 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
             SwitchItem(R.string.backup_service, "", R.drawable.backup_fill0,
                 { dpm.isBackupServiceEnabled(receiver) }, { dpm.setBackupServiceEnabled(receiver,it) }
             )
         }
-        if(VERSION.SDK_INT >= 23 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
+        if(VERSION.SDK_INT >= 23 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
             SwitchItem(R.string.disable_bt_contact_share, "", R.drawable.account_circle_fill0,
                 { dpm.getBluetoothContactSharingDisabled(receiver) }, { dpm.setBluetoothContactSharingDisabled(receiver,it) }
             )
         }
-        if(VERSION.SDK_INT >= 30 && isDeviceOwner(dpm)) {
+        if(VERSION.SDK_INT >= 30 && dpm.isDeviceOwner(context)) {
             SwitchItem(R.string.common_criteria_mode, stringResource(R.string.common_criteria_mode_desc),R.drawable.security_fill0,
                 { dpm.isCommonCriteriaModeEnabled(receiver) }, { dpm.setCommonCriteriaModeEnabled(receiver,it) }
             )
         }
-        if(VERSION.SDK_INT >= 31 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 31 && (dpm.isDeviceOwner(context) || dpm.isOrgProfile(receiver))) {
             SwitchItem(
                 R.string.usb_signal, "", R.drawable.usb_fill0, { dpm.isUsbDataSignalingEnabled },
                 {
@@ -306,8 +305,8 @@ private fun Switches() {
 @Composable
 private fun Keyguard() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.keyguard), style = typography.headlineLarge)
@@ -317,7 +316,7 @@ private fun Keyguard() {
                 onClick = {
                     Toast.makeText(context, if(dpm.setKeyguardDisabled(receiver,true)) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
                 },
-                enabled = isDeviceOwner(dpm) || (VERSION.SDK_INT >= 28 && isProfileOwner(dpm) && dpm.isAffiliatedUser),
+                enabled = dpm.isDeviceOwner(context) || (VERSION.SDK_INT >= 28 && dpm.isProfileOwner(context) && dpm.isAffiliatedUser),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.disable))
@@ -326,7 +325,7 @@ private fun Keyguard() {
                 onClick = {
                     Toast.makeText(context, if(dpm.setKeyguardDisabled(receiver,false)) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
                 },
-                enabled = isDeviceOwner(dpm) || (VERSION.SDK_INT >= 28 && isProfileOwner(dpm) && dpm.isAffiliatedUser),
+                enabled = dpm.isDeviceOwner(context) || (VERSION.SDK_INT >= 28 && dpm.isProfileOwner(context) && dpm.isAffiliatedUser),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.enable))
@@ -358,8 +357,8 @@ private fun Keyguard() {
 @Composable
 private fun BugReportDialog(status: MutableState<Boolean>) {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     AlertDialog(
         onDismissRequest = { status.value = false },
         title = { Text(stringResource(R.string.bug_report)) },
@@ -388,8 +387,8 @@ private fun BugReportDialog(status: MutableState<Boolean>) {
 @Composable
 private fun RebootDialog(status: MutableState<Boolean>) {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     AlertDialog(
         onDismissRequest = { status.value = false },
         title = { Text(stringResource(R.string.reboot)) },
@@ -415,8 +414,8 @@ private fun RebootDialog(status: MutableState<Boolean>) {
 @Composable
 private fun EditTime() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -453,9 +452,9 @@ private fun EditTime() {
 @Composable
 private fun EditTimeZone() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
-    val receiver = ComponentName(context,Receiver::class.java)
+    val receiver = context.getReceiver()
     var expanded by remember { mutableStateOf(false) }
     var inputTimezone by remember { mutableStateOf("") }
     Column(
@@ -506,8 +505,8 @@ private fun EditTimeZone() {
 @Composable
 private fun PermissionPolicy() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         var selectedPolicy by remember { mutableIntStateOf(dpm.getPermissionPolicy(receiver)) }
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -533,7 +532,7 @@ private fun PermissionPolicy() {
 @Composable
 private fun MTEPolicy() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val dpm = context.getDPM()
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.mte_policy), style = typography.headlineLarge)
@@ -578,7 +577,7 @@ private fun MTEPolicy() {
 @Composable
 private fun NearbyStreamingPolicy() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val dpm = context.getDPM()
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         var appPolicy by remember { mutableIntStateOf(dpm.nearbyAppStreamingPolicy) }
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -656,8 +655,8 @@ private fun NearbyStreamingPolicy() {
 @Composable
 private fun LockTaskMode() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     val coroutine = rememberCoroutineScope()
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
@@ -838,8 +837,8 @@ private fun LockTaskMode() {
 @Composable
 private fun CaCert() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val uri by fileUriFlow.collectAsState()
     var exist by remember { mutableStateOf(false) }
     val uriPath = uri.path ?: ""
@@ -922,8 +921,8 @@ private fun CaCert() {
 @Composable
 private fun SecurityLogs() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context, Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.security_logs), style = typography.headlineLarge)
@@ -967,9 +966,9 @@ private fun SecurityLogs() {
 @Composable
 fun FactoryResetProtection() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
-    val receiver = ComponentName(context,Receiver::class.java)
+    val receiver = context.getReceiver()
     var usePolicy by remember { mutableStateOf(false) }
     var enabled by remember { mutableStateOf(false) }
     var unsupported by remember { mutableStateOf(false) }
@@ -1070,8 +1069,8 @@ fun FactoryResetProtection() {
 private fun WipeData() {
     val context = LocalContext.current
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var warning by remember { mutableStateOf(false) }
     var wipeDevice by remember { mutableStateOf(false) }
@@ -1092,7 +1091,7 @@ private fun WipeData() {
             stringResource(R.string.wipe_external_storage),
             externalStorage, { externalStorage = it }
         )
-        if(VERSION.SDK_INT >= 22 && isDeviceOwner(dpm)) {
+        if(VERSION.SDK_INT >= 22 && dpm.isDeviceOwner(context)) {
             CheckBoxItem(stringResource(R.string.wipe_reset_protection_data),
                 protectionData, { protectionData = it }
             )
@@ -1120,7 +1119,7 @@ private fun WipeData() {
                 Text("WipeData")
             }
         }
-        if (VERSION.SDK_INT >= 34 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
+        if (VERSION.SDK_INT >= 34 && (dpm.isDeviceOwner(context) || dpm.isOrgProfile(receiver))) {
             Button(
                 onClick = {
                     focusMgr.clearFocus()
@@ -1180,8 +1179,8 @@ private fun WipeData() {
 @Composable
 private fun SysUpdatePolicy() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -1270,8 +1269,8 @@ private fun SysUpdatePolicy() {
 @Composable
 fun InstallSystemUpdate() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val callback = object: InstallSystemUpdateCallback() {
         override fun onInstallUpdateError(errorCode: Int, errorMessage: String) {
             super.onInstallUpdateError(errorCode, errorMessage)

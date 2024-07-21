@@ -3,16 +3,26 @@ package com.bintianqi.owndroid
 import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.app.admin.DeviceAdminReceiver
-import android.app.admin.DevicePolicyManager
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageInstaller.*
+import android.content.pm.PackageInstaller.EXTRA_STATUS
+import android.content.pm.PackageInstaller.STATUS_FAILURE
+import android.content.pm.PackageInstaller.STATUS_FAILURE_ABORTED
+import android.content.pm.PackageInstaller.STATUS_FAILURE_BLOCKED
+import android.content.pm.PackageInstaller.STATUS_FAILURE_CONFLICT
+import android.content.pm.PackageInstaller.STATUS_FAILURE_INCOMPATIBLE
+import android.content.pm.PackageInstaller.STATUS_FAILURE_INVALID
+import android.content.pm.PackageInstaller.STATUS_FAILURE_STORAGE
+import android.content.pm.PackageInstaller.STATUS_FAILURE_TIMEOUT
+import android.content.pm.PackageInstaller.STATUS_PENDING_USER_ACTION
+import android.content.pm.PackageInstaller.STATUS_SUCCESS
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.compose.ui.platform.LocalContext
+import com.bintianqi.owndroid.dpm.getDPM
+import com.bintianqi.owndroid.dpm.getReceiver
 import com.bintianqi.owndroid.dpm.isDeviceOwner
 import com.bintianqi.owndroid.dpm.isProfileOwner
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,9 +30,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 class Receiver : DeviceAdminReceiver() {
     override fun onEnabled(context: Context, intent: Intent) {
         super.onEnabled(context, intent)
-        val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        val dpm = context.getDPM()
         val receiver = ComponentName(context, this::class.java)
-        if(dpm.isAdminActive(receiver) || isProfileOwner(dpm) || isDeviceOwner(dpm)){
+        if(dpm.isAdminActive(receiver) || dpm.isProfileOwner(context) || dpm.isDeviceOwner(context)){
             Toast.makeText(context, context.getString(R.string.onEnabled), Toast.LENGTH_SHORT).show()
         }
     }
@@ -68,8 +78,8 @@ class PackageInstallerReceiver:BroadcastReceiver(){
 class StopLockTaskModeReceiver: BroadcastReceiver() {
     @SuppressLint("NewApi")
     override fun onReceive(context: Context, intent: Intent) {
-        val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        val receiver = ComponentName(context,Receiver::class.java)
+        val dpm = context.getDPM()
+        val receiver = context.getReceiver()
         val packages = dpm.getLockTaskPackages(receiver)
         dpm.setLockTaskPackages(receiver, arrayOf())
         dpm.setLockTaskPackages(receiver, packages)

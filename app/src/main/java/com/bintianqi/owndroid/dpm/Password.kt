@@ -2,23 +2,64 @@ package com.bintianqi.owndroid.dpm
 
 import android.annotation.SuppressLint
 import android.app.KeyguardManager
-import android.app.admin.DevicePolicyManager
-import android.app.admin.DevicePolicyManager.*
+import android.app.admin.DevicePolicyManager.ACTION_SET_NEW_PASSWORD
+import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_BIOMETRICS
+import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_FACE
+import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_FEATURES_ALL
+import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_FEATURES_NONE
+import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_FINGERPRINT
+import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_IRIS
+import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_REMOTE_INPUT
+import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_SECURE_CAMERA
+import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_SECURE_NOTIFICATIONS
+import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_SHORTCUTS_ALL
+import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_TRUST_AGENTS
+import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_UNREDACTED_NOTIFICATIONS
+import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_WIDGETS_ALL
+import android.app.admin.DevicePolicyManager.PASSWORD_COMPLEXITY_HIGH
+import android.app.admin.DevicePolicyManager.PASSWORD_COMPLEXITY_LOW
+import android.app.admin.DevicePolicyManager.PASSWORD_COMPLEXITY_MEDIUM
+import android.app.admin.DevicePolicyManager.PASSWORD_COMPLEXITY_NONE
+import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_ALPHABETIC
+import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_ALPHANUMERIC
+import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_BIOMETRIC_WEAK
+import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_COMPLEX
+import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_NUMERIC
+import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_NUMERIC_COMPLEX
+import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_SOMETHING
+import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED
+import android.app.admin.DevicePolicyManager.RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT
+import android.app.admin.DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build.VERSION
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.runtime.*
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
@@ -35,7 +76,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.Receiver
-import com.bintianqi.owndroid.ui.*
+import com.bintianqi.owndroid.ui.Animations
+import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.Information
+import com.bintianqi.owndroid.ui.RadioButtonItem
+import com.bintianqi.owndroid.ui.SubPageItem
+import com.bintianqi.owndroid.ui.TopBar
 
 @Composable
 fun Password(navCtrl: NavHostController) {
@@ -81,8 +127,8 @@ fun Password(navCtrl: NavHostController) {
 @Composable
 private fun Home(navCtrl:NavHostController,scrollState: ScrollState) {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context, Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
             text = stringResource(R.string.password_and_keyguard),
@@ -90,19 +136,19 @@ private fun Home(navCtrl:NavHostController,scrollState: ScrollState) {
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp)
         )
         SubPageItem(R.string.password_info, "", R.drawable.info_fill0) { navCtrl.navigate("PasswordInfo") }
-        if(VERSION.SDK_INT >= 26 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
+        if(VERSION.SDK_INT >= 26 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
             SubPageItem(R.string.reset_password_token, "", R.drawable.key_vertical_fill0) { navCtrl.navigate("ResetPasswordToken") }
         }
-        if(dpm.isAdminActive(receiver) || isDeviceOwner(dpm) || isProfileOwner(dpm)) {
+        if(dpm.isAdminActive(receiver) || dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
             SubPageItem(R.string.reset_password, "", R.drawable.lock_reset_fill0) { navCtrl.navigate("ResetPassword") }
         }
-        if(VERSION.SDK_INT >= 31 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
+        if(VERSION.SDK_INT >= 31 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
             SubPageItem(R.string.required_password_complexity, "", R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordComplexity") }
         }
         if(dpm.isAdminActive(receiver)) {
             SubPageItem(R.string.disable_keyguard_features, "", R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("DisableKeyguardFeatures") }
         }
-        if(isDeviceOwner(dpm)) {
+        if(dpm.isDeviceOwner(context)) {
             SubPageItem(R.string.max_time_to_lock, "", R.drawable.schedule_fill0) { navCtrl.navigate("MaxTimeToLock") }
             SubPageItem(R.string.pwd_expiration_timeout, "", R.drawable.lock_clock_fill0) { navCtrl.navigate("PasswordTimeout") }
             SubPageItem(R.string.max_pwd_fail, "", R.drawable.no_encryption_fill0) { navCtrl.navigate("MaxPasswordFail") }
@@ -110,10 +156,10 @@ private fun Home(navCtrl:NavHostController,scrollState: ScrollState) {
         if(dpm.isAdminActive(receiver)){
             SubPageItem(R.string.pwd_history, "", R.drawable.history_fill0) { navCtrl.navigate("PasswordHistoryLength") }
         }
-        if(VERSION.SDK_INT >= 26 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
+        if(VERSION.SDK_INT >= 26 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
             SubPageItem(R.string.required_strong_auth_timeout, "", R.drawable.fingerprint_off_fill0) { navCtrl.navigate("RequiredStrongAuthTimeout") }
         }
-        if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
+        if(dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
             SubPageItem(R.string.required_password_quality, "", R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordQuality") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -123,8 +169,8 @@ private fun Home(navCtrl:NavHostController,scrollState: ScrollState) {
 @Composable
 private fun PasswordInfo() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context, Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.password_info), style = typography.headlineLarge)
@@ -139,14 +185,14 @@ private fun PasswordInfo() {
             val pwdComplex = passwordComplexity[dpm.passwordComplexity]
             Text(text = stringResource(R.string.current_password_complexity_is, pwdComplex?:stringResource(R.string.unknown)))
         }
-        if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
+        if(dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
             Text(stringResource(R.string.is_password_sufficient, dpm.isActivePasswordSufficient))
         }
         if(dpm.isAdminActive(receiver)) {
             val pwdFailedAttempts = dpm.currentFailedPasswordAttempts
             Text(text = stringResource(R.string.password_failed_attempts_is, pwdFailedAttempts))
         }
-        if(VERSION.SDK_INT >= 28 && isProfileOwner(dpm) && dpm.isManagedProfile(receiver)) {
+        if(VERSION.SDK_INT >= 28 && dpm.isProfileOwner(context) && dpm.isManagedProfile(receiver)) {
             val unifiedPwd = dpm.isUsingUnifiedPassword(receiver)
             Text(stringResource(R.string.is_using_unified_password, unifiedPwd))
         }
@@ -157,8 +203,8 @@ private fun PasswordInfo() {
 @Composable
 private fun ResetPasswordToken() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val tokenByteArray by remember { mutableStateOf(byteArrayOf(1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0)) }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -211,8 +257,8 @@ private fun ResetPasswordToken() {
 @Composable
 private fun ResetPassword() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var newPwd by remember { mutableStateOf("") }
     val tokenByteArray by remember { mutableStateOf(byteArrayOf(1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0)) }
@@ -271,7 +317,7 @@ private fun ResetPassword() {
                     confirmed=false
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
-                enabled = confirmed && (isDeviceOwner(dpm) || isProfileOwner(dpm)),
+                enabled = confirmed && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.reset_password_with_token))
@@ -298,7 +344,7 @@ private fun ResetPassword() {
 @Composable
 private fun PasswordComplexity() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val dpm = context.getDPM()
     val passwordComplexity = mapOf(
         PASSWORD_COMPLEXITY_NONE to stringResource(R.string.password_complexity_none),
         PASSWORD_COMPLEXITY_LOW to stringResource(R.string.password_complexity_low),
@@ -356,8 +402,8 @@ private fun PasswordComplexity() {
 @Composable
 private fun ScreenTimeout() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var inputContent by remember { mutableStateOf("") }
     LaunchedEffect(Unit) { inputContent = dpm.getMaximumTimeToLock(receiver).toString() }
@@ -390,8 +436,8 @@ private fun ScreenTimeout() {
 @Composable
 private fun RequiredStrongAuthTimeout() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var input by remember { mutableStateOf("") }
     LaunchedEffect(Unit) { input = dpm.getRequiredStrongAuthTimeout(receiver).toString() }
@@ -424,8 +470,8 @@ private fun RequiredStrongAuthTimeout() {
 @Composable
 private fun MaxFailedPasswordForWipe() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var inputContent by remember { mutableStateOf("") }
     LaunchedEffect(Unit) { inputContent = dpm.getMaximumFailedPasswordsForWipe(receiver).toString() }
@@ -457,8 +503,8 @@ private fun MaxFailedPasswordForWipe() {
 @Composable
 private fun PasswordExpiration() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var inputContent by remember { mutableStateOf("") }
     LaunchedEffect(Unit) { inputContent = dpm.getPasswordExpirationTimeout(receiver).toString() }
@@ -488,8 +534,8 @@ private fun PasswordExpiration() {
 @Composable
 private fun PasswordHistoryLength() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var inputContent by remember { mutableStateOf("") }
     LaunchedEffect(Unit) { inputContent = dpm.getPasswordHistoryLength(receiver).toString() }
@@ -521,8 +567,8 @@ private fun PasswordHistoryLength() {
 @Composable
 private fun DisableKeyguardFeatures() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     var state by remember { mutableIntStateOf(-1) }
     var shortcuts by remember { mutableStateOf(false) }
     var biometrics by remember { mutableStateOf(false) }
@@ -618,8 +664,8 @@ private fun DisableKeyguardFeatures() {
 @Composable
 private fun PasswordQuality() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val passwordQuality = mapOf(
         PASSWORD_QUALITY_UNSPECIFIED to stringResource(R.string.password_quality_unspecified),
         PASSWORD_QUALITY_SOMETHING to stringResource(R.string.password_quality_something),

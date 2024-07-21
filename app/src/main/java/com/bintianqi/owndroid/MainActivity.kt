@@ -3,17 +3,22 @@ package com.bintianqi.owndroid
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
-import android.os.Build
 import android.os.Build.VERSION
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -22,7 +27,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,7 +50,18 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.bintianqi.owndroid.dpm.*
+import com.bintianqi.owndroid.dpm.ApplicationManage
+import com.bintianqi.owndroid.dpm.DpmPermissions
+import com.bintianqi.owndroid.dpm.ManagedProfile
+import com.bintianqi.owndroid.dpm.Network
+import com.bintianqi.owndroid.dpm.Password
+import com.bintianqi.owndroid.dpm.SystemManage
+import com.bintianqi.owndroid.dpm.UserManage
+import com.bintianqi.owndroid.dpm.UserRestriction
+import com.bintianqi.owndroid.dpm.getDPM
+import com.bintianqi.owndroid.dpm.getReceiver
+import com.bintianqi.owndroid.dpm.isDeviceOwner
+import com.bintianqi.owndroid.dpm.isProfileOwner
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import com.rosan.dhizuku.api.Dhizuku
@@ -98,8 +121,8 @@ class MainActivity : FragmentActivity() {
 fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>) {
     val navCtrl = rememberNavController()
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val focusMgr = LocalFocusManager.current
     val pkgName = remember { mutableStateOf("") }
@@ -136,7 +159,7 @@ fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>) {
     }
     LaunchedEffect(Unit) {
         val profileInited = sharedPref.getBoolean("ManagedProfileActivated", false)
-        val profileNotActivated = !profileInited && isProfileOwner(dpm) && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))
+        val profileNotActivated = !profileInited && dpm.isProfileOwner(context) && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))
         if(profileNotActivated) {
             dpm.setProfileEnabled(receiver)
             sharedPref.edit().putBoolean("ManagedProfileActivated", true).apply()
@@ -148,11 +171,11 @@ fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>) {
 @Composable
 private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>) {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val activateType = stringResource(
-        if(isDeviceOwner(dpm)) { R.string.device_owner }
-        else if(isProfileOwner(dpm)) {
+        if(dpm.isDeviceOwner(context)) { R.string.device_owner }
+        else if(dpm.isProfileOwner(context)) {
             if(VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)) R.string.work_profile_owner else R.string.profile_owner
         }
         else if(dpm.isAdminActive(receiver)) R.string.device_admin else R.string.click_to_activate
@@ -193,11 +216,11 @@ private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>) {
             }
         }
         HomePageItem(R.string.system_manage, R.drawable.mobile_phone_fill0, "SystemManage", navCtrl)
-        if(VERSION.SDK_INT >= 24 && (isDeviceOwner(dpm)) || isProfileOwner(dpm)) { HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network", navCtrl) }
+        if(VERSION.SDK_INT >= 24 && (dpm.isDeviceOwner(context)) || dpm.isProfileOwner(context)) { HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network", navCtrl) }
         if(
-            (VERSION.SDK_INT < 24 && !isDeviceOwner(dpm)) || (
+            (VERSION.SDK_INT < 24 && !dpm.isDeviceOwner(context)) || (
                     VERSION.SDK_INT >= 24 && (dpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE) ||
-                            (isProfileOwner(dpm) && dpm.isManagedProfile(receiver)))
+                            (dpm.isProfileOwner(context) && dpm.isManagedProfile(receiver)))
             )
         ) {
             HomePageItem(R.string.work_profile, R.drawable.work_fill0, "ManagedProfile", navCtrl)

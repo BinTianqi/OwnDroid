@@ -14,7 +14,6 @@ import android.os.UserHandle
 import android.os.UserManager
 import android.provider.MediaStore
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
@@ -109,7 +108,7 @@ fun UserManage(navCtrl: NavHostController) {
 @Composable
 private fun Home(navCtrl: NavHostController,scrollState: ScrollState) {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val dpm = context.getDPM()
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
             text = stringResource(R.string.user_manager),
@@ -117,22 +116,22 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState) {
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp)
         )
         SubPageItem(R.string.user_info, "", R.drawable.person_fill0) { navCtrl.navigate("UserInfo") }
-        if(isDeviceOwner(dpm)) {
+        if(dpm.isDeviceOwner(context)) {
             SubPageItem(R.string.user_operation, "", R.drawable.sync_alt_fill0) { navCtrl.navigate("UserOperation") }
         }
-        if(VERSION.SDK_INT >= 24 && isDeviceOwner(dpm)) {
+        if(VERSION.SDK_INT >= 24 && dpm.isDeviceOwner(context)) {
             SubPageItem(R.string.create_user, "", R.drawable.person_add_fill0) { navCtrl.navigate("CreateUser") }
         }
-        if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
+        if(dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
             SubPageItem(R.string.edit_username, "", R.drawable.edit_fill0) { navCtrl.navigate("EditUsername") }
         }
-        if(VERSION.SDK_INT >= 23 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
+        if(VERSION.SDK_INT >= 23 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
             SubPageItem(R.string.change_user_icon, "", R.drawable.account_circle_fill0) { navCtrl.navigate("ChangeUserIcon") }
         }
-        if(VERSION.SDK_INT >= 28 && isDeviceOwner(dpm)) {
+        if(VERSION.SDK_INT >= 28 && dpm.isDeviceOwner(context)) {
             SubPageItem(R.string.user_session_msg, "", R.drawable.notifications_fill0) { navCtrl.navigate("UserSessionMessage") }
         }
-        if(VERSION.SDK_INT >= 26 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
+        if(VERSION.SDK_INT >= 26 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
             SubPageItem(R.string.affiliation_id, "", R.drawable.id_card_fill0) { navCtrl.navigate("AffiliationID") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -143,8 +142,8 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState) {
 @Composable
 private fun CurrentUserInfo() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context, Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -159,7 +158,7 @@ private fun CurrentUserInfo() {
         if (VERSION.SDK_INT >= 28) {
             val logoutable = dpm.isLogoutEnabled
             Text(text = stringResource(R.string.user_can_logout, logoutable))
-            if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
+            if(dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
                 val ephemeralUser = dpm.isEphemeralUser(receiver)
                 Text(text = stringResource(R.string.is_ephemeral_user, ephemeralUser))
             }
@@ -175,8 +174,8 @@ private fun CurrentUserInfo() {
 private fun UserOperation() {
     val context = LocalContext.current
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -209,7 +208,7 @@ private fun UserOperation() {
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT > 28) {
-            if(isProfileOwner(dpm)&&dpm.isAffiliatedUser) {
+            if(dpm.isProfileOwner(context)&&dpm.isAffiliatedUser) {
                 Button(
                     onClick = {
                         val result = dpm.logoutUser(receiver)
@@ -281,8 +280,8 @@ private fun UserOperation() {
 private fun CreateUser() {
     val context = LocalContext.current
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var userName by remember { mutableStateOf("") }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
@@ -339,8 +338,8 @@ private fun CreateUser() {
 @Composable
 private fun AffiliationID() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var input by remember { mutableStateOf("") }
     var list by remember { mutableStateOf("") }
@@ -405,8 +404,8 @@ private fun AffiliationID() {
 @Composable
 private fun Username() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var inputUsername by remember { mutableStateOf("") }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
@@ -444,8 +443,8 @@ private fun Username() {
 @Composable
 private fun UserSessionMessage() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     val getStart = dpm.getStartUserSessionMessage(receiver)?:""
     val getEnd = dpm.getEndUserSessionMessage(receiver)?:""
@@ -501,8 +500,8 @@ private fun UserSessionMessage() {
 @Composable
 private fun UserIcon() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     var getContent by remember { mutableStateOf(false) }
     val canApply = fileUriFlow.collectAsState().value != Uri.parse("")
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {

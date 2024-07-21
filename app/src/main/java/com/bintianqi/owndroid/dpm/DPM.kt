@@ -14,6 +14,7 @@ import androidx.activity.ComponentActivity.CONTEXT_IGNORE_SECURITY
 import androidx.activity.ComponentActivity.DEVICE_POLICY_SERVICE
 import androidx.activity.result.ActivityResultLauncher
 import com.bintianqi.owndroid.PackageInstallerReceiver
+import com.bintianqi.owndroid.Receiver
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.Dhizuku.binderWrapper
 import com.rosan.dhizuku.api.DhizukuBinderWrapper
@@ -25,16 +26,30 @@ var selectedPermission = MutableStateFlow("")
 lateinit var createManagedProfile: ActivityResultLauncher<Intent>
 lateinit var addDeviceAdmin: ActivityResultLauncher<Intent>
 
-fun isDeviceOwner(dpm: DevicePolicyManager): Boolean {
-    return dpm.isDeviceOwnerApp("com.bintianqi.owndroid")
+fun DevicePolicyManager.isDeviceOwner(context: Context): Boolean {
+    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    return this.isDeviceOwnerApp(
+        if(sharedPref.getBoolean("dhizuku", false)) {
+            Dhizuku.getOwnerPackageName()
+        } else {
+            "com.bintianqi.owndroid"
+        }
+    )
 }
 
-fun isProfileOwner(dpm: DevicePolicyManager): Boolean {
-    return dpm.isProfileOwnerApp("com.bintianqi.owndroid")
+fun DevicePolicyManager.isProfileOwner(context: Context): Boolean {
+    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    return this.isProfileOwnerApp(
+        if(sharedPref.getBoolean("dhizuku", false)) {
+            Dhizuku.getOwnerPackageName()
+        } else {
+            "com.bintianqi.owndroid"
+        }
+    )
 }
 
-fun DevicePolicyManager.isOrgProfile(receiver: ComponentName):Boolean {
-    return VERSION.SDK_INT >= 30 && isProfileOwner(this) && isManagedProfile(receiver) && isOrganizationOwnedDeviceWithManagedProfile
+fun DevicePolicyManager.isOrgProfile(receiver: ComponentName): Boolean {
+    return VERSION.SDK_INT >= 30 && this.isProfileOwnerApp("com.bintianqi.owndroid") && isManagedProfile(receiver) && isOrganizationOwnedDeviceWithManagedProfile
 }
 
 @Throws(IOException::class)
@@ -75,5 +90,23 @@ fun binderWrapperDevicePolicyManager(appContext: Context): DevicePolicyManager {
         throw RuntimeException(e)
     } catch (e: PackageManager.NameNotFoundException) {
         throw RuntimeException(e)
+    }
+}
+
+fun Context.getDPM(): DevicePolicyManager {
+    val sharedPref = this.getSharedPreferences("data", Context.MODE_PRIVATE)
+    return if(sharedPref.getBoolean("dhizuku", false)) {
+        binderWrapperDevicePolicyManager(this)
+    } else {
+        this.getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    }
+}
+
+fun Context.getReceiver(): ComponentName {
+    val sharedPref = this.getSharedPreferences("data", Context.MODE_PRIVATE)
+    return if(sharedPref.getBoolean("dhizuku", false)) {
+        Dhizuku.getOwnerComponent()
+    } else {
+        ComponentName(this, Receiver::class.java)
     }
 }

@@ -18,7 +18,6 @@ import android.os.Build.VERSION
 import android.os.Looper
 import android.provider.Settings
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
@@ -200,10 +199,10 @@ private fun Home(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
     ) {
         val context = LocalContext.current
-        val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        val receiver = ComponentName(context, Receiver::class.java)
+        val dpm = context.getDPM()
+        val receiver = context.getReceiver()
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT >= 24&&isProfileOwner(dpm)&&dpm.isManagedProfile(receiver)) {
+        if(VERSION.SDK_INT >= 24&&dpm.isProfileOwner(context)&&dpm.isManagedProfile(receiver)) {
             Text(text = stringResource(R.string.scope_is_work_profile), textAlign = TextAlign.Center,modifier = Modifier.fillMaxWidth())
         }
         SubPageItem(R.string.app_info,"", R.drawable.open_in_new) { 
@@ -211,7 +210,7 @@ private fun Home(
             intent.setData(Uri.parse("package:$pkgName"))
             startActivity(context, intent, null)
         }
-        if(VERSION.SDK_INT>=24 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) { 
+        if(VERSION.SDK_INT>=24 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) { 
             val getSuspendStatus = {
                 try{ dpm.isPackageSuspended(receiver, pkgName) }
                 catch(e:NameNotFoundException) { false }
@@ -229,7 +228,7 @@ private fun Home(
                 }
             )
         }
-        if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
+        if(dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
             SwitchItem(
                 title = R.string.hide, desc = stringResource(R.string.isapphidden_desc), icon = R.drawable.visibility_off_fill0,
                 getState = { dpm.isApplicationHidden(receiver,pkgName) },
@@ -242,7 +241,7 @@ private fun Home(
                 }
             )
         }
-        if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
+        if(dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
             SwitchItem(
                 title = R.string.block_uninstall, desc = "", icon = R.drawable.delete_forever_fill0,
                 getState = { dpm.isUninstallBlocked(receiver,pkgName) },
@@ -255,44 +254,44 @@ private fun Home(
                 }
             )
         }
-        if(VERSION.SDK_INT>=24 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
+        if(VERSION.SDK_INT>=24 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
             SubPageItem(R.string.always_on_vpn, "", R.drawable.vpn_key_fill0) { navCtrl.navigate("AlwaysOnVpn") }
         }
-        if((VERSION.SDK_INT>=33&&isProfileOwner(dpm))||(VERSION.SDK_INT>=30&&isDeviceOwner(dpm))) { 
+        if((VERSION.SDK_INT>=33&&dpm.isProfileOwner(context))||(VERSION.SDK_INT>=30&&dpm.isDeviceOwner(context))) { 
             SubPageItem(R.string.ucd, "", R.drawable.do_not_touch_fill0) { navCtrl.navigate("UserControlDisabled") }
         }
-        if(VERSION.SDK_INT>=23&&(isDeviceOwner(dpm)||isProfileOwner(dpm))) { 
+        if(VERSION.SDK_INT>=23&&(dpm.isDeviceOwner(context)||dpm.isProfileOwner(context))) { 
             SubPageItem(R.string.permission_manage, "", R.drawable.key_fill0) { navCtrl.navigate("PermissionManage") }
         }
-        if(VERSION.SDK_INT>=30&&isProfileOwner(dpm)&&dpm.isManagedProfile(receiver)) { 
+        if(VERSION.SDK_INT>=30&&dpm.isProfileOwner(context)&&dpm.isManagedProfile(receiver)) { 
             SubPageItem(R.string.cross_profile_package, "", R.drawable.work_fill0) { navCtrl.navigate("CrossProfilePackage") }
         }
-        if(isProfileOwner(dpm)) { 
+        if(dpm.isProfileOwner(context)) { 
             SubPageItem(R.string.cross_profile_widget, "", R.drawable.widgets_fill0) { navCtrl.navigate("CrossProfileWidget") }
         }
-        if(VERSION.SDK_INT>=34&&isDeviceOwner(dpm)) { 
+        if(VERSION.SDK_INT>=34&&dpm.isDeviceOwner(context)) { 
             SubPageItem(R.string.credential_manage_policy, "", R.drawable.license_fill0) { navCtrl.navigate("CredentialManagePolicy") }
         }
-        if(isProfileOwner(dpm)||isDeviceOwner(dpm)) { 
+        if(dpm.isProfileOwner(context)||dpm.isDeviceOwner(context)) { 
             SubPageItem(R.string.permitted_accessibility_services, "", R.drawable.settings_accessibility_fill0) { navCtrl.navigate("Accessibility") }
         }
-        if(isDeviceOwner(dpm)||isProfileOwner(dpm)) { 
+        if(dpm.isDeviceOwner(context)||dpm.isProfileOwner(context)) { 
             SubPageItem(R.string.permitted_ime, "", R.drawable.keyboard_fill0) { navCtrl.navigate("IME") }
         }
-        if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
+        if(dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
             SubPageItem(R.string.enable_system_app, "", R.drawable.enable_fill0) { enableSystemAppDialog.value = true }
         }
-        if(VERSION.SDK_INT>=28&&isDeviceOwner(dpm)) { 
+        if(VERSION.SDK_INT>=28&&dpm.isDeviceOwner(context)) { 
             SubPageItem(R.string.keep_uninstalled_packages, "", R.drawable.delete_fill0) { navCtrl.navigate("KeepUninstalled") }
         }
-        if(VERSION.SDK_INT>=28 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
+        if(VERSION.SDK_INT>=28 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
             SubPageItem(R.string.clear_app_storage, "", R.drawable.mop_fill0) {
                 if(pkgName != "") { clearAppDataDialog.value = true }
             }
         }
         SubPageItem(R.string.install_app, "", R.drawable.install_mobile_fill0) { navCtrl.navigate("InstallApp") }
         SubPageItem(R.string.uninstall_app, "", R.drawable.delete_fill0) { navCtrl.navigate("UninstallApp") }
-        if(VERSION.SDK_INT >= 34 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 34 && (dpm.isDeviceOwner(context) || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.set_default_dialer, "", R.drawable.call_fill0) { defaultDialerAppDialog.value = true }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -304,8 +303,8 @@ private fun Home(
 @Composable
 fun AlwaysOnVPNPackage(pkgName: String) {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     var lockdown by remember { mutableStateOf(false) }
     var pkg by remember { mutableStateOf<String?>("") }
     val refresh = { pkg = dpm.getAlwaysOnVpnPackage(receiver) }
@@ -348,8 +347,8 @@ fun AlwaysOnVPNPackage(pkgName: String) {
 @Composable
 private fun UserCtrlDisabledPkg(pkgName:String) { 
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val pkgList = remember { mutableStateListOf<String>() }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         val refresh = {
@@ -405,8 +404,8 @@ private fun UserCtrlDisabledPkg(pkgName:String) {
 @Composable
 private fun PermissionManage(pkgName: String, navCtrl: NavHostController) { 
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var inputPermission by remember { mutableStateOf("") }
     var currentState by remember { mutableStateOf(context.getString(R.string.unknown)) }
@@ -487,8 +486,8 @@ private fun PermissionManage(pkgName: String, navCtrl: NavHostController) {
 @Composable
 private fun CrossProfilePkg(pkgName: String) { 
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context, Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val crossProfilePkg = remember { mutableStateListOf<String>() }
     val refresh = {
         crossProfilePkg.clear()
@@ -541,8 +540,8 @@ private fun CrossProfilePkg(pkgName: String) {
 @Composable
 private fun CrossProfileWidget(pkgName: String) { 
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val pkgList = remember { mutableStateListOf<String>() }
     val refresh = {
         pkgList.clear()
@@ -598,7 +597,7 @@ private fun CrossProfileWidget(pkgName: String) {
 @Composable
 private fun CredentialManagePolicy(pkgName: String) { 
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val dpm = context.getDPM()
     var policy: PackagePolicy?
     var policyType by remember{ mutableIntStateOf(-1) }
     val credentialList = remember { mutableStateListOf<String>() }
@@ -691,8 +690,8 @@ private fun CredentialManagePolicy(pkgName: String) {
 @Composable
 private fun PermittedAccessibility(pkgName: String) { 
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val pkgList = remember { mutableStateListOf<String>() }
     var allowAll by remember { mutableStateOf(false) }
     val refresh = {
@@ -777,8 +776,8 @@ private fun PermittedAccessibility(pkgName: String) {
 @Composable
 private fun PermittedIME(pkgName: String) { 
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val permittedIme = remember { mutableStateListOf<String>() }
     var allowAll by remember { mutableStateOf(false) }
     val refresh = {
@@ -864,8 +863,8 @@ private fun PermittedIME(pkgName: String) {
 @Composable
 private fun KeepUninstalledApp(pkgName: String) { 
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val pkgList = remember { mutableStateListOf<String>() }
     val refresh = {
         pkgList.clear()
@@ -1004,8 +1003,8 @@ private fun InstallApp() {
 @Composable
 private fun ClearAppDataDialog(status: MutableState<Boolean>, pkgName: String) {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     AlertDialog(
         title = { Text(text = stringResource(R.string.clear_app_storage)) },
         text = {
@@ -1048,7 +1047,7 @@ private fun ClearAppDataDialog(status: MutableState<Boolean>, pkgName: String) {
 @Composable
 private fun DefaultDialerAppDialog(status: MutableState<Boolean>, pkgName: String) {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val dpm = context.getDPM()
     AlertDialog(
         title = { Text(stringResource(R.string.set_default_dialer)) },
         text = {
@@ -1082,8 +1081,8 @@ private fun DefaultDialerAppDialog(status: MutableState<Boolean>, pkgName: Strin
 @Composable
 private fun EnableSystemAppDialog(status: MutableState<Boolean>, pkgName: String) {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     AlertDialog(
         title = { Text(stringResource(R.string.enable_system_app)) },
         text = {

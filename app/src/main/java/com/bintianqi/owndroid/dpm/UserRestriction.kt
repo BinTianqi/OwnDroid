@@ -1,13 +1,10 @@
 package com.bintianqi.owndroid.dpm
 
 import android.annotation.SuppressLint
-import android.app.admin.DevicePolicyManager
-import android.content.ComponentName
 import android.content.Context
 import android.os.Build.VERSION
 import android.os.UserManager
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ScrollState
@@ -33,7 +30,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.SwitchItem
@@ -98,8 +94,8 @@ fun UserRestriction(navCtrl: NavHostController) {
 @Composable
 private fun Home(navCtrl:NavHostController, scrollState: ScrollState) {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context, Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
             text = stringResource(R.string.user_restrict),
@@ -107,8 +103,8 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState) {
             modifier = Modifier.padding(top = 8.dp, bottom = 7.dp, start = 15.dp)
         )
         Text(text = stringResource(R.string.switch_to_disable_feature), modifier = Modifier.padding(start = 15.dp))
-        if(isProfileOwner(dpm)) { Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.padding(start = 15.dp)) }
-        if(isProfileOwner(dpm) && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
+        if(dpm.isProfileOwner(context)) { Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.padding(start = 15.dp)) }
+        if(dpm.isProfileOwner(context) && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
             Text(text = stringResource(R.string.some_features_invalid_in_work_profile), modifier = Modifier.padding(start = 15.dp))
         }
         Spacer(Modifier.padding(vertical = 2.dp))
@@ -193,11 +189,11 @@ private fun UserRestrictionItem(
     leadIcon:Int
 ) {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context, Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     SwitchItem(
         itemName,restrictionDescription,leadIcon,
-        { if(isDeviceOwner(dpm)||isProfileOwner(dpm)) { dpm.getUserRestrictions(receiver).getBoolean(restriction) }else{ false } },
+        { if(dpm.isDeviceOwner(context)||dpm.isProfileOwner(context)) { dpm.getUserRestrictions(receiver).getBoolean(restriction) }else{ false } },
         {
             try{
                 if(it) {
@@ -206,12 +202,12 @@ private fun UserRestrictionItem(
                     dpm.clearUserRestriction(receiver,restriction)
                 }
             }catch(e:SecurityException) {
-                if(isProfileOwner(dpm)) {
+                if(dpm.isProfileOwner(context)) {
                     Toast.makeText(context, R.string.require_device_owner, Toast.LENGTH_SHORT).show()
                 }
             }
         },
-        isDeviceOwner(dpm)||isProfileOwner(dpm)
+        dpm.isDeviceOwner(context)||dpm.isProfileOwner(context)
     )
 }
 
