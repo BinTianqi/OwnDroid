@@ -95,8 +95,10 @@
     <string name="create_work_profile_success">OwnDroid：创建工作资料成功</string>
 
     <!--Dhizuku-->
-    <string name="permission_not_granted">未授权</string>
     <string name="failed_to_init_dhizuku">Dhizuku初始化失败</string>
+    <string name="dhizuku_permission_not_granted">Dhizuku未授权</string>
+    <string name="dhizuku_mode_disabled">Dhizuku模式已禁用</string>
+
     <!--Shizuku-->
     <string name="check_shizuku">检查Shizuku</string>
     <string name="list_owners">列出Owners</string>

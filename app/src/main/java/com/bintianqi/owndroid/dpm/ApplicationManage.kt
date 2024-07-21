@@ -202,7 +202,7 @@ private fun Home(
         val dpm = context.getDPM()
         val receiver = context.getReceiver()
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT >= 24&&dpm.isProfileOwner(context)&&dpm.isManagedProfile(receiver)) {
+        if(VERSION.SDK_INT >= 24&&context.isProfileOwner&&dpm.isManagedProfile(receiver)) {
             Text(text = stringResource(R.string.scope_is_work_profile), textAlign = TextAlign.Center,modifier = Modifier.fillMaxWidth())
         }
         SubPageItem(R.string.app_info,"", R.drawable.open_in_new) { 
@@ -210,7 +210,7 @@ private fun Home(
             intent.setData(Uri.parse("package:$pkgName"))
             startActivity(context, intent, null)
         }
-        if(VERSION.SDK_INT>=24 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) { 
+        if(VERSION.SDK_INT>=24 && (context.isDeviceOwner || context.isProfileOwner)) { 
             val getSuspendStatus = {
                 try{ dpm.isPackageSuspended(receiver, pkgName) }
                 catch(e:NameNotFoundException) { false }
@@ -228,7 +228,7 @@ private fun Home(
                 }
             )
         }
-        if(dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
+        if(context.isDeviceOwner || context.isProfileOwner) {
             SwitchItem(
                 title = R.string.hide, desc = stringResource(R.string.isapphidden_desc), icon = R.drawable.visibility_off_fill0,
                 getState = { dpm.isApplicationHidden(receiver,pkgName) },
@@ -241,7 +241,7 @@ private fun Home(
                 }
             )
         }
-        if(dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
+        if(context.isDeviceOwner || context.isProfileOwner) {
             SwitchItem(
                 title = R.string.block_uninstall, desc = "", icon = R.drawable.delete_forever_fill0,
                 getState = { dpm.isUninstallBlocked(receiver,pkgName) },
@@ -254,44 +254,44 @@ private fun Home(
                 }
             )
         }
-        if(VERSION.SDK_INT>=24 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
+        if(VERSION.SDK_INT>=24 && (context.isDeviceOwner || context.isProfileOwner)) {
             SubPageItem(R.string.always_on_vpn, "", R.drawable.vpn_key_fill0) { navCtrl.navigate("AlwaysOnVpn") }
         }
-        if((VERSION.SDK_INT>=33&&dpm.isProfileOwner(context))||(VERSION.SDK_INT>=30&&dpm.isDeviceOwner(context))) { 
+        if((VERSION.SDK_INT>=33&&context.isProfileOwner)||(VERSION.SDK_INT>=30&&context.isDeviceOwner)) { 
             SubPageItem(R.string.ucd, "", R.drawable.do_not_touch_fill0) { navCtrl.navigate("UserControlDisabled") }
         }
-        if(VERSION.SDK_INT>=23&&(dpm.isDeviceOwner(context)||dpm.isProfileOwner(context))) { 
+        if(VERSION.SDK_INT>=23&&(context.isDeviceOwner||context.isProfileOwner)) { 
             SubPageItem(R.string.permission_manage, "", R.drawable.key_fill0) { navCtrl.navigate("PermissionManage") }
         }
-        if(VERSION.SDK_INT>=30&&dpm.isProfileOwner(context)&&dpm.isManagedProfile(receiver)) { 
+        if(VERSION.SDK_INT>=30&&context.isProfileOwner&&dpm.isManagedProfile(receiver)) { 
             SubPageItem(R.string.cross_profile_package, "", R.drawable.work_fill0) { navCtrl.navigate("CrossProfilePackage") }
         }
-        if(dpm.isProfileOwner(context)) { 
+        if(context.isProfileOwner) { 
             SubPageItem(R.string.cross_profile_widget, "", R.drawable.widgets_fill0) { navCtrl.navigate("CrossProfileWidget") }
         }
-        if(VERSION.SDK_INT>=34&&dpm.isDeviceOwner(context)) { 
+        if(VERSION.SDK_INT>=34&&context.isDeviceOwner) { 
             SubPageItem(R.string.credential_manage_policy, "", R.drawable.license_fill0) { navCtrl.navigate("CredentialManagePolicy") }
         }
-        if(dpm.isProfileOwner(context)||dpm.isDeviceOwner(context)) { 
+        if(context.isProfileOwner||context.isDeviceOwner) { 
             SubPageItem(R.string.permitted_accessibility_services, "", R.drawable.settings_accessibility_fill0) { navCtrl.navigate("Accessibility") }
         }
-        if(dpm.isDeviceOwner(context)||dpm.isProfileOwner(context)) { 
+        if(context.isDeviceOwner||context.isProfileOwner) { 
             SubPageItem(R.string.permitted_ime, "", R.drawable.keyboard_fill0) { navCtrl.navigate("IME") }
         }
-        if(dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
+        if(context.isDeviceOwner || context.isProfileOwner) {
             SubPageItem(R.string.enable_system_app, "", R.drawable.enable_fill0) { enableSystemAppDialog.value = true }
         }
-        if(VERSION.SDK_INT>=28&&dpm.isDeviceOwner(context)) { 
+        if(VERSION.SDK_INT>=28&&context.isDeviceOwner) { 
             SubPageItem(R.string.keep_uninstalled_packages, "", R.drawable.delete_fill0) { navCtrl.navigate("KeepUninstalled") }
         }
-        if(VERSION.SDK_INT>=28 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
+        if(VERSION.SDK_INT>=28 && (context.isDeviceOwner || context.isProfileOwner)) {
             SubPageItem(R.string.clear_app_storage, "", R.drawable.mop_fill0) {
                 if(pkgName != "") { clearAppDataDialog.value = true }
             }
         }
         SubPageItem(R.string.install_app, "", R.drawable.install_mobile_fill0) { navCtrl.navigate("InstallApp") }
         SubPageItem(R.string.uninstall_app, "", R.drawable.delete_fill0) { navCtrl.navigate("UninstallApp") }
-        if(VERSION.SDK_INT >= 34 && (dpm.isDeviceOwner(context) || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 34 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.set_default_dialer, "", R.drawable.call_fill0) { defaultDialerAppDialog.value = true }
         }
         Spacer(Modifier.padding(vertical = 30.dp))

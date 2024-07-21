@@ -103,8 +103,8 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState) {
             modifier = Modifier.padding(top = 8.dp, bottom = 7.dp, start = 15.dp)
         )
         Text(text = stringResource(R.string.switch_to_disable_feature), modifier = Modifier.padding(start = 15.dp))
-        if(dpm.isProfileOwner(context)) { Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.padding(start = 15.dp)) }
-        if(dpm.isProfileOwner(context) && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
+        if(context.isProfileOwner) { Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.padding(start = 15.dp)) }
+        if(context.isProfileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
             Text(text = stringResource(R.string.some_features_invalid_in_work_profile), modifier = Modifier.padding(start = 15.dp))
         }
         Spacer(Modifier.padding(vertical = 2.dp))
@@ -193,7 +193,7 @@ private fun UserRestrictionItem(
     val receiver = context.getReceiver()
     SwitchItem(
         itemName,restrictionDescription,leadIcon,
-        { if(dpm.isDeviceOwner(context)||dpm.isProfileOwner(context)) { dpm.getUserRestrictions(receiver).getBoolean(restriction) }else{ false } },
+        { if(context.isDeviceOwner||context.isProfileOwner) { dpm.getUserRestrictions(receiver).getBoolean(restriction) }else{ false } },
         {
             try{
                 if(it) {
@@ -202,12 +202,12 @@ private fun UserRestrictionItem(
                     dpm.clearUserRestriction(receiver,restriction)
                 }
             }catch(e:SecurityException) {
-                if(dpm.isProfileOwner(context)) {
+                if(context.isProfileOwner) {
                     Toast.makeText(context, R.string.require_device_owner, Toast.LENGTH_SHORT).show()
                 }
             }
         },
-        dpm.isDeviceOwner(context)||dpm.isProfileOwner(context)
+        context.isDeviceOwner||context.isProfileOwner
     )
 }
 

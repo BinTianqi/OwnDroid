@@ -8,13 +8,13 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller
-import android.content.pm.PackageManager
 import android.os.Build.VERSION
 import androidx.activity.ComponentActivity.CONTEXT_IGNORE_SECURITY
 import androidx.activity.ComponentActivity.DEVICE_POLICY_SERVICE
 import androidx.activity.result.ActivityResultLauncher
 import com.bintianqi.owndroid.PackageInstallerReceiver
 import com.bintianqi.owndroid.Receiver
+import com.bintianqi.owndroid.backToHomeStateFlow
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.Dhizuku.binderWrapper
 import com.rosan.dhizuku.api.DhizukuBinderWrapper
@@ -26,27 +26,34 @@ var selectedPermission = MutableStateFlow("")
 lateinit var createManagedProfile: ActivityResultLauncher<Intent>
 lateinit var addDeviceAdmin: ActivityResultLauncher<Intent>
 
-fun DevicePolicyManager.isDeviceOwner(context: Context): Boolean {
-    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
-    return this.isDeviceOwnerApp(
-        if(sharedPref.getBoolean("dhizuku", false)) {
-            Dhizuku.getOwnerPackageName()
-        } else {
-            "com.bintianqi.owndroid"
-        }
-    )
-}
+val Context.isDeviceOwner: Boolean
+    get() {
+        val sharedPref = getSharedPreferences("data", Context.MODE_PRIVATE)
+        val dpm = getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        return dpm.isDeviceOwnerApp(
+            if(sharedPref.getBoolean("dhizuku", false)) {
+                Dhizuku.getOwnerPackageName()
+            } else {
+                "com.bintianqi.owndroid"
+            }
+        )
+    }
 
-fun DevicePolicyManager.isProfileOwner(context: Context): Boolean {
-    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
-    return this.isProfileOwnerApp(
-        if(sharedPref.getBoolean("dhizuku", false)) {
+val Context.isProfileOwner: Boolean
+    get() {
+        val dpm = getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        return dpm.isProfileOwnerApp("com.bintianqi.owndroid")
+    }
+
+val Context.dpcPackageName: String
+    get() {
+        val sharedPref = getSharedPreferences("data", Context.MODE_PRIVATE)
+        return if(sharedPref.getBoolean("dhizuku", false)) {
             Dhizuku.getOwnerPackageName()
         } else {
             "com.bintianqi.owndroid"
         }
-    )
-}
+    }
 
 fun DevicePolicyManager.isOrgProfile(receiver: ComponentName): Boolean {
     return VERSION.SDK_INT >= 30 && this.isProfileOwnerApp("com.bintianqi.owndroid") && isManagedProfile(receiver) && isOrganizationOwnedDeviceWithManagedProfile
@@ -71,7 +78,7 @@ fun installPackage(context: Context, inputStream: InputStream) {
 }
 
 @SuppressLint("PrivateApi")
-fun binderWrapperDevicePolicyManager(appContext: Context): DevicePolicyManager {
+fun binderWrapperDevicePolicyManager(appContext: Context): DevicePolicyManager? {
     try {
         val context = appContext.createPackageContext(Dhizuku.getOwnerComponent().packageName, CONTEXT_IGNORE_SECURITY)
         val manager = context.getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
@@ -84,21 +91,23 @@ fun binderWrapperDevicePolicyManager(appContext: Context): DevicePolicyManager {
         val newInterface = IDevicePolicyManager.Stub.asInterface(newBinder)
         field[manager] = newInterface
         return manager
-    } catch (e: NoSuchFieldException) {
-        throw RuntimeException(e)
-    } catch (e: IllegalAccessException) {
-        throw RuntimeException(e)
-    } catch (e: PackageManager.NameNotFoundException) {
-        throw RuntimeException(e)
+    } catch (e: Exception) {
+        dhizukuErrorStatus.value = 1
     }
+    return null
 }
 
 fun Context.getDPM(): DevicePolicyManager {
     val sharedPref = this.getSharedPreferences("data", Context.MODE_PRIVATE)
-    return if(sharedPref.getBoolean("dhizuku", false)) {
-        binderWrapperDevicePolicyManager(this)
+    if(sharedPref.getBoolean("dhizuku", false)) {
+        if (!Dhizuku.isPermissionGranted()) {
+            dhizukuErrorStatus.value = 2
+            backToHomeStateFlow.value = true
+            return this.getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        }
+        return binderWrapperDevicePolicyManager(this) ?: this.getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
     } else {
-        this.getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        return this.getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
     }
 }
 
@@ -110,3 +119,5 @@ fun Context.getReceiver(): ComponentName {
         ComponentName(this, Receiver::class.java)
     }
 }
+
+val dhizukuErrorStatus = MutableStateFlow(0)

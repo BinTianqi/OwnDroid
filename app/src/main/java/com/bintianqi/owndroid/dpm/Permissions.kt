@@ -36,7 +36,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.backToHomeStateFlow
 import com.bintianqi.owndroid.ui.*
 import com.rosan.dhizuku.api.Dhizuku
@@ -99,72 +98,83 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
             style = typography.headlineLarge,
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp)
         )
-        SwitchItem(
-            R.string.dhizuku, "", null,
-            { dhizukuStatus },
-            {
-                if(!it) {
-                    sharedPref.edit().putBoolean("dhizuku", false).apply()
+        if(!dpm.isDeviceOwnerApp(context.packageName)) {
+            SwitchItem(
+                R.string.dhizuku, "", null,
+                { dhizukuStatus },
+                {
+                    toggleDhizukuMode(it, context)
                     dhizukuStatus = sharedPref.getBoolean("dhizuku", false)
-                    return@SwitchItem
                 }
-                Dhizuku.init(context)
-                if(Dhizuku.isPermissionGranted()) {
-                    sharedPref.edit().putBoolean("dhizuku", true).apply()
-                    dhizukuStatus = sharedPref.getBoolean("dhizuku", false)
-                } else {
-                    Dhizuku.requestPermission(object: DhizukuRequestPermissionListener() {
-                        @Throws(RemoteException::class)
-                        override fun onRequestPermission(grantResult: Int) {
-                            if(grantResult == PackageManager.PERMISSION_GRANTED) {
-                                sharedPref.edit().putBoolean("dhizuku", true).apply()
-                                dhizukuStatus = sharedPref.getBoolean("dhizuku", false)
-                            } else {
-                                Toast.makeText(context, R.string.permission_not_granted, Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    })
-                }
-            }
-        )
+            )
+        }
         SubPageItem(
             R.string.device_admin, stringResource(if(dpm.isAdminActive(receiver)) R.string.activated else R.string.deactivated),
             operation = { localNavCtrl.navigate("DeviceAdmin") }
         )
-        if(!dpm.isDeviceOwner(context)) {
+        if(!context.isDeviceOwner) {
             SubPageItem(
-                R.string.profile_owner, stringResource(if(dpm.isProfileOwner(context)) R.string.activated else R.string.deactivated),
+                R.string.profile_owner, stringResource(if(context.isProfileOwner) R.string.activated else R.string.deactivated),
                 operation = { localNavCtrl.navigate("ProfileOwner") }
             )
         }
-        if(!dpm.isProfileOwner(context)) {
+        if(!context.isProfileOwner) {
             SubPageItem(
-                R.string.device_owner, stringResource(if(dpm.isDeviceOwner(context)) R.string.activated else R.string.deactivated),
+                R.string.device_owner, stringResource(if(context.isDeviceOwner) R.string.activated else R.string.deactivated),
                 operation = { localNavCtrl.navigate("DeviceOwner") }
             )
         }
         SubPageItem(R.string.shizuku,"") { localNavCtrl.navigate("Shizuku") }
         SubPageItem(R.string.device_info, "", R.drawable.perm_device_information_fill0) { localNavCtrl.navigate("DeviceInfo") }
-        if((VERSION.SDK_INT >= 26 && dpm.isDeviceOwner(context)) || (VERSION.SDK_INT>=24 && dpm.isProfileOwner(context))) {
+        if((VERSION.SDK_INT >= 26 && context.isDeviceOwner) || (VERSION.SDK_INT>=24 && context.isProfileOwner)) {
             SubPageItem(R.string.org_name, "", R.drawable.corporate_fare_fill0) { localNavCtrl.navigate("OrgName") }
         }
-        if(VERSION.SDK_INT >= 31 && (dpm.isProfileOwner(context) || dpm.isDeviceOwner(context))) {
+        if(VERSION.SDK_INT >= 31 && (context.isProfileOwner || context.isDeviceOwner)) {
             SubPageItem(R.string.org_id, "", R.drawable.corporate_fare_fill0) { localNavCtrl.navigate("OrgID") }
             SubPageItem(R.string.enrollment_specific_id, "", R.drawable.id_card_fill0) { localNavCtrl.navigate("SpecificID") }
         }
-        if(dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
+        if(context.isDeviceOwner || context.isProfileOwner) {
             SubPageItem(R.string.disable_account_management, "", R.drawable.account_circle_fill0) { localNavCtrl.navigate("DisableAccountManagement") }
         }
-        if(VERSION.SDK_INT >= 24 && (dpm.isDeviceOwner(context) || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 24 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.device_owner_lock_screen_info, "", R.drawable.screen_lock_portrait_fill0) { localNavCtrl.navigate("LockScreenInfo") }
         }
         if(VERSION.SDK_INT >= 24 && dpm.isAdminActive(receiver)) {
             SubPageItem(R.string.support_msg, "", R.drawable.chat_fill0) { localNavCtrl.navigate("SupportMsg") }
         }
-        if(VERSION.SDK_INT >= 28 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
+        if(VERSION.SDK_INT >= 28 && (context.isDeviceOwner || context.isProfileOwner)) {
             SubPageItem(R.string.transfer_ownership, "", R.drawable.admin_panel_settings_fill0) { localNavCtrl.navigate("TransformOwnership") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
+    }
+}
+
+private fun toggleDhizukuMode(status: Boolean, context: Context) {
+    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    if(!status) {
+        sharedPref.edit().putBoolean("dhizuku", false).apply()
+        backToHomeStateFlow.value = true
+        return
+    }
+    if(!Dhizuku.init(context)) {
+        dhizukuErrorStatus.value = 1
+        return
+    }
+    if(Dhizuku.isPermissionGranted()) {
+        sharedPref.edit().putBoolean("dhizuku", true).apply()
+        backToHomeStateFlow.value = true
+    } else {
+        Dhizuku.requestPermission(object: DhizukuRequestPermissionListener() {
+            @Throws(RemoteException::class)
+            override fun onRequestPermission(grantResult: Int) {
+                if(grantResult == PackageManager.PERMISSION_GRANTED) {
+                    sharedPref.edit().putBoolean("dhizuku", true).apply()
+                    backToHomeStateFlow.value = true
+                } else {
+                    dhizukuErrorStatus.value = 2
+                }
+            }
+        })
     }
 }
 
@@ -222,7 +232,7 @@ private fun DeviceAdmin() {
         AnimatedVisibility(showDeactivateButton) {
             Button(
                 onClick = { deactivateDialog = true },
-                enabled = !dpm.isProfileOwner(context) && !dpm.isDeviceOwner(context),
+                enabled = !context.isProfileOwner && !context.isDeviceOwner,
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
             ) {
                 Text(stringResource(R.string.deactivate))
@@ -277,12 +287,12 @@ private fun ProfileOwner() {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    var showDeactivateButton by remember { mutableStateOf(dpm.isProfileOwner(context)) }
+    var showDeactivateButton by remember { mutableStateOf(context.isProfileOwner) }
     var deactivateDialog by remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.profile_owner), style = typography.headlineLarge)
-        Text(stringResource(if(dpm.isProfileOwner(context)) R.string.activated else R.string.deactivated), style = typography.titleLarge)
+        Text(stringResource(if(context.isProfileOwner) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT >= 24) {
             AnimatedVisibility(showDeactivateButton) {
@@ -323,8 +333,8 @@ private fun ProfileOwner() {
                         co.launch{
                             delay(300)
                             deactivateDialog = false
-                            showDeactivateButton = dpm.isProfileOwner(context)
-                            backToHomeStateFlow.value = !dpm.isProfileOwner(context)
+                            showDeactivateButton = context.isProfileOwner
+                            backToHomeStateFlow.value = !context.isProfileOwner
                         }
                     }
                 ) {
@@ -339,12 +349,12 @@ private fun ProfileOwner() {
 private fun DeviceOwner() {
     val context = LocalContext.current
     val dpm = context.getDPM()
-    var showDeactivateButton by remember { mutableStateOf(dpm.isDeviceOwner(context)) }
+    var showDeactivateButton by remember { mutableStateOf(context.isDeviceOwner) }
     var deactivateDialog by remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.device_owner), style = typography.headlineLarge)
-        Text(text = stringResource(if(dpm.isDeviceOwner(context)) R.string.activated else R.string.deactivated), style = typography.titleLarge)
+        Text(text = stringResource(if(context.isDeviceOwner) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         AnimatedVisibility(showDeactivateButton) {
             Button(
@@ -378,12 +388,12 @@ private fun DeviceOwner() {
             confirmButton = {
                 TextButton(
                     onClick = {
-                        dpm.clearDeviceOwnerApp(context.packageName)
+                        dpm.clearDeviceOwnerApp(context.dpcPackageName)
                         co.launch{
                             delay(300)
                             deactivateDialog = false
-                            showDeactivateButton = dpm.isDeviceOwner(context)
-                            backToHomeStateFlow.value = !dpm.isDeviceOwner(context)
+                            showDeactivateButton = context.isDeviceOwner
+                            backToHomeStateFlow.value = !context.isDeviceOwner
                         }
                     }
                 ) {
@@ -403,7 +413,7 @@ fun DeviceInfo() {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.device_info), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT>=34 && (dpm.isDeviceOwner(context) || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT>=34 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
             val financed = dpm.isDeviceFinanced
             Text(stringResource(R.string.is_device_financed, financed))
         }

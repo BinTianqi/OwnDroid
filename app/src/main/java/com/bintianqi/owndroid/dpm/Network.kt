@@ -157,28 +157,28 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState, wifiMacDia
             style = typography.headlineLarge,
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp)
         )
-        if(VERSION.SDK_INT >= 24 && (dpm.isDeviceOwner(context) || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 24 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.wifi_mac_addr, "", R.drawable.wifi_fill0) { wifiMacDialog.value = true }
         }
         if(VERSION.SDK_INT >= 30) {
             SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Switches") }
         }
-        if(VERSION.SDK_INT >= 33 && (dpm.isDeviceOwner(context) || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 33 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.min_wifi_security_level, "", R.drawable.wifi_password_fill0) { navCtrl.navigate("MinWifiSecurityLevel") }
         }
-        if(VERSION.SDK_INT >= 33 && (dpm.isDeviceOwner(context) || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 33 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.wifi_ssid_policy, "", R.drawable.wifi_fill0) { navCtrl.navigate("WifiSsidPolicy") }
         }
-        if(VERSION.SDK_INT >= 29 && dpm.isDeviceOwner(context)) {
+        if(VERSION.SDK_INT >= 29 && context.isDeviceOwner) {
             SubPageItem(R.string.private_dns, "", R.drawable.dns_fill0) { navCtrl.navigate("PrivateDNS") }
         }
-        if(VERSION.SDK_INT >= 26&&(dpm.isDeviceOwner(context) || (dpm.isProfileOwner(context) && dpm.isManagedProfile(receiver)))) {
+        if(VERSION.SDK_INT >= 26&&(context.isDeviceOwner || (context.isProfileOwner && dpm.isManagedProfile(receiver)))) {
             SubPageItem(R.string.retrieve_net_logs, "", R.drawable.description_fill0) { navCtrl.navigate("NetworkLog") }
         }
-        if(VERSION.SDK_INT >= 31 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
+        if(VERSION.SDK_INT >= 31 && (context.isDeviceOwner || context.isProfileOwner)) {
             SubPageItem(R.string.wifi_auth_keypair, "", R.drawable.key_fill0) { navCtrl.navigate("WifiAuthKeypair") }
         }
-        if(VERSION.SDK_INT >= 28 && dpm.isDeviceOwner(context)) {
+        if(VERSION.SDK_INT >= 28 && context.isDeviceOwner) {
             SubPageItem(R.string.override_apn_settings, "", R.drawable.cell_tower_fill0) { navCtrl.navigate("APN") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -192,13 +192,13 @@ private fun Switches() {
     val receiver = context.getReceiver()
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT >= 33 && dpm.isDeviceOwner(context)) {
+        if(VERSION.SDK_INT >= 33 && context.isDeviceOwner) {
             SwitchItem(
                 R.string.preferential_network_service, stringResource(R.string.developing), R.drawable.globe_fill0,
                 { dpm.isPreferentialNetworkServiceEnabled }, { dpm.isPreferentialNetworkServiceEnabled = it }
             )
         }
-        if(VERSION.SDK_INT>=30 && (dpm.isDeviceOwner(context) || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT>=30 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
             SwitchItem(R.string.lockdown_admin_configured_network, "", R.drawable.wifi_password_fill0,
                 { dpm.hasLockdownAdminConfiguredNetworks(receiver) }, { dpm.setConfiguredNetworksLockdownState(receiver,it) }
             )

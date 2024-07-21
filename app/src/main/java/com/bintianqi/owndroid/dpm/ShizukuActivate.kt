@@ -51,8 +51,8 @@ fun ShizukuActivate() {
     var bindShizuku by remember { mutableStateOf(false) }
     var outputText by remember { mutableStateOf("") }
     var showDeviceAdminButton by remember { mutableStateOf(!dpm.isAdminActive(receiver)) }
-    var showProfileOwnerButton by remember { mutableStateOf(!dpm.isProfileOwner(context)) }
-    var showDeviceOwnerButton by remember { mutableStateOf(!dpm.isDeviceOwner(context)) }
+    var showProfileOwnerButton by remember { mutableStateOf(!context.isProfileOwner) }
+    var showDeviceOwnerButton by remember { mutableStateOf(!context.isDeviceOwner) }
     var showOrgProfileOwnerButton by remember { mutableStateOf(true) }
     val service by shizukuService.collectAsState()
     LaunchedEffect(service) {
@@ -140,7 +140,7 @@ fun ShizukuActivate() {
                         outputText = service!!.execute(context.getString(R.string.dpm_activate_po_command))
                         outputTextScrollState.animateScrollTo(0)
                         delay(500)
-                        showProfileOwnerButton = !dpm.isProfileOwner(context)
+                        showProfileOwnerButton = !context.isProfileOwner
                     }
                 },
                 enabled = enabled
@@ -156,7 +156,7 @@ fun ShizukuActivate() {
                         outputText = service!!.execute(context.getString(R.string.dpm_activate_do_command))
                         outputTextScrollState.animateScrollTo(0)
                         delay(500)
-                        showDeviceOwnerButton = !dpm.isDeviceOwner(context)
+                        showDeviceOwnerButton = !context.isDeviceOwner
                     }
                 },
                 enabled = enabled
@@ -165,7 +165,7 @@ fun ShizukuActivate() {
             }
         }
         
-        if(VERSION.SDK_INT >= 30 && dpm.isProfileOwner(context) && dpm.isManagedProfile(receiver) && !dpm.isOrganizationOwnedDeviceWithManagedProfile) {
+        if(VERSION.SDK_INT >= 30 && context.isProfileOwner && dpm.isManagedProfile(receiver) && !dpm.isOrganizationOwnedDeviceWithManagedProfile) {
             AnimatedVisibility(showOrgProfileOwnerButton) {
                 Button(
                     onClick = {

@@ -136,19 +136,19 @@ private fun Home(navCtrl:NavHostController,scrollState: ScrollState) {
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp)
         )
         SubPageItem(R.string.password_info, "", R.drawable.info_fill0) { navCtrl.navigate("PasswordInfo") }
-        if(VERSION.SDK_INT >= 26 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
+        if(VERSION.SDK_INT >= 26 && (context.isDeviceOwner || context.isProfileOwner)) {
             SubPageItem(R.string.reset_password_token, "", R.drawable.key_vertical_fill0) { navCtrl.navigate("ResetPasswordToken") }
         }
-        if(dpm.isAdminActive(receiver) || dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
+        if(dpm.isAdminActive(receiver) || context.isDeviceOwner || context.isProfileOwner) {
             SubPageItem(R.string.reset_password, "", R.drawable.lock_reset_fill0) { navCtrl.navigate("ResetPassword") }
         }
-        if(VERSION.SDK_INT >= 31 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
+        if(VERSION.SDK_INT >= 31 && (context.isDeviceOwner || context.isProfileOwner)) {
             SubPageItem(R.string.required_password_complexity, "", R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordComplexity") }
         }
         if(dpm.isAdminActive(receiver)) {
             SubPageItem(R.string.disable_keyguard_features, "", R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("DisableKeyguardFeatures") }
         }
-        if(dpm.isDeviceOwner(context)) {
+        if(context.isDeviceOwner) {
             SubPageItem(R.string.max_time_to_lock, "", R.drawable.schedule_fill0) { navCtrl.navigate("MaxTimeToLock") }
             SubPageItem(R.string.pwd_expiration_timeout, "", R.drawable.lock_clock_fill0) { navCtrl.navigate("PasswordTimeout") }
             SubPageItem(R.string.max_pwd_fail, "", R.drawable.no_encryption_fill0) { navCtrl.navigate("MaxPasswordFail") }
@@ -156,10 +156,10 @@ private fun Home(navCtrl:NavHostController,scrollState: ScrollState) {
         if(dpm.isAdminActive(receiver)){
             SubPageItem(R.string.pwd_history, "", R.drawable.history_fill0) { navCtrl.navigate("PasswordHistoryLength") }
         }
-        if(VERSION.SDK_INT >= 26 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
+        if(VERSION.SDK_INT >= 26 && (context.isDeviceOwner || context.isProfileOwner)) {
             SubPageItem(R.string.required_strong_auth_timeout, "", R.drawable.fingerprint_off_fill0) { navCtrl.navigate("RequiredStrongAuthTimeout") }
         }
-        if(dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
+        if(context.isDeviceOwner || context.isProfileOwner) {
             SubPageItem(R.string.required_password_quality, "", R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordQuality") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -185,14 +185,14 @@ private fun PasswordInfo() {
             val pwdComplex = passwordComplexity[dpm.passwordComplexity]
             Text(text = stringResource(R.string.current_password_complexity_is, pwdComplex?:stringResource(R.string.unknown)))
         }
-        if(dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
+        if(context.isDeviceOwner || context.isProfileOwner) {
             Text(stringResource(R.string.is_password_sufficient, dpm.isActivePasswordSufficient))
         }
         if(dpm.isAdminActive(receiver)) {
             val pwdFailedAttempts = dpm.currentFailedPasswordAttempts
             Text(text = stringResource(R.string.password_failed_attempts_is, pwdFailedAttempts))
         }
-        if(VERSION.SDK_INT >= 28 && dpm.isProfileOwner(context) && dpm.isManagedProfile(receiver)) {
+        if(VERSION.SDK_INT >= 28 && context.isProfileOwner && dpm.isManagedProfile(receiver)) {
             val unifiedPwd = dpm.isUsingUnifiedPassword(receiver)
             Text(stringResource(R.string.is_using_unified_password, unifiedPwd))
         }
@@ -317,7 +317,7 @@ private fun ResetPassword() {
                     confirmed=false
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
-                enabled = confirmed && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)),
+                enabled = confirmed && (context.isDeviceOwner || context.isProfileOwner),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.reset_password_with_token))

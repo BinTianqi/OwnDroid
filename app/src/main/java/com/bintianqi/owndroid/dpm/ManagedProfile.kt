@@ -104,7 +104,7 @@ private fun Home(navCtrl: NavHostController) {
             style = typography.headlineLarge,
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp)
         )
-        if(VERSION.SDK_INT >= 30 && dpm.isProfileOwner(context) && dpm.isManagedProfile(receiver)) {
+        if(VERSION.SDK_INT >= 30 && context.isProfileOwner && dpm.isManagedProfile(receiver)) {
             SubPageItem(R.string.org_owned_work_profile, "", R.drawable.corporate_fare_fill0) { navCtrl.navigate("OrgOwnedWorkProfile") }
         }
         if(VERSION.SDK_INT<24 || (VERSION.SDK_INT>=24 && dpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE))) {
@@ -113,10 +113,10 @@ private fun Home(navCtrl: NavHostController) {
         if(dpm.isOrgProfile(receiver)) {
             SubPageItem(R.string.suspend_personal_app, "", R.drawable.block_fill0) { navCtrl.navigate("SuspendPersonalApp") }
         }
-        if(dpm.isProfileOwner(context) && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
+        if(context.isProfileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
             SubPageItem(R.string.intent_filter, "", R.drawable.filter_alt_fill0) { navCtrl.navigate("IntentFilter") }
         }
-        if(dpm.isProfileOwner(context) && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
+        if(context.isProfileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
             SubPageItem(R.string.delete_work_profile, "", R.drawable.delete_forever_fill0) { navCtrl.navigate("DeleteWorkProfile") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))

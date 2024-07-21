@@ -116,22 +116,22 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState) {
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp)
         )
         SubPageItem(R.string.user_info, "", R.drawable.person_fill0) { navCtrl.navigate("UserInfo") }
-        if(dpm.isDeviceOwner(context)) {
+        if(context.isDeviceOwner) {
             SubPageItem(R.string.user_operation, "", R.drawable.sync_alt_fill0) { navCtrl.navigate("UserOperation") }
         }
-        if(VERSION.SDK_INT >= 24 && dpm.isDeviceOwner(context)) {
+        if(VERSION.SDK_INT >= 24 && context.isDeviceOwner) {
             SubPageItem(R.string.create_user, "", R.drawable.person_add_fill0) { navCtrl.navigate("CreateUser") }
         }
-        if(dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
+        if(context.isDeviceOwner || context.isProfileOwner) {
             SubPageItem(R.string.edit_username, "", R.drawable.edit_fill0) { navCtrl.navigate("EditUsername") }
         }
-        if(VERSION.SDK_INT >= 23 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
+        if(VERSION.SDK_INT >= 23 && (context.isDeviceOwner || context.isProfileOwner)) {
             SubPageItem(R.string.change_user_icon, "", R.drawable.account_circle_fill0) { navCtrl.navigate("ChangeUserIcon") }
         }
-        if(VERSION.SDK_INT >= 28 && dpm.isDeviceOwner(context)) {
+        if(VERSION.SDK_INT >= 28 && context.isDeviceOwner) {
             SubPageItem(R.string.user_session_msg, "", R.drawable.notifications_fill0) { navCtrl.navigate("UserSessionMessage") }
         }
-        if(VERSION.SDK_INT >= 26 && (dpm.isDeviceOwner(context) || dpm.isProfileOwner(context))) {
+        if(VERSION.SDK_INT >= 26 && (context.isDeviceOwner || context.isProfileOwner)) {
             SubPageItem(R.string.affiliation_id, "", R.drawable.id_card_fill0) { navCtrl.navigate("AffiliationID") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -158,7 +158,7 @@ private fun CurrentUserInfo() {
         if (VERSION.SDK_INT >= 28) {
             val logoutable = dpm.isLogoutEnabled
             Text(text = stringResource(R.string.user_can_logout, logoutable))
-            if(dpm.isDeviceOwner(context) || dpm.isProfileOwner(context)) {
+            if(context.isDeviceOwner || context.isProfileOwner) {
                 val ephemeralUser = dpm.isEphemeralUser(receiver)
                 Text(text = stringResource(R.string.is_ephemeral_user, ephemeralUser))
             }
@@ -208,7 +208,7 @@ private fun UserOperation() {
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT > 28) {
-            if(dpm.isProfileOwner(context)&&dpm.isAffiliatedUser) {
+            if(context.isProfileOwner&&dpm.isAffiliatedUser) {
                 Button(
                     onClick = {
                         val result = dpm.logoutUser(receiver)

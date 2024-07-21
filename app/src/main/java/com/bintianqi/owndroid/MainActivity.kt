@@ -1,7 +1,6 @@
 package com.bintianqi.owndroid
 
 import android.app.admin.DevicePolicyManager
-import android.content.ComponentName
 import android.content.Context
 import android.os.Build.VERSION
 import android.os.Bundle
@@ -22,11 +21,13 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -58,6 +59,7 @@ import com.bintianqi.owndroid.dpm.Password
 import com.bintianqi.owndroid.dpm.SystemManage
 import com.bintianqi.owndroid.dpm.UserManage
 import com.bintianqi.owndroid.dpm.UserRestriction
+import com.bintianqi.owndroid.dpm.dhizukuErrorStatus
 import com.bintianqi.owndroid.dpm.getDPM
 import com.bintianqi.owndroid.dpm.getReceiver
 import com.bintianqi.owndroid.dpm.isDeviceOwner
@@ -65,6 +67,7 @@ import com.bintianqi.owndroid.dpm.isProfileOwner
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import com.rosan.dhizuku.api.Dhizuku
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 import java.util.Locale
@@ -80,12 +83,7 @@ class MainActivity : FragmentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         val sharedPref = applicationContext.getSharedPreferences("data", Context.MODE_PRIVATE)
-        if (sharedPref.getBoolean("dhizuku", false)) {
-            if (VERSION.SDK_INT >= 28) HiddenApiBypass.setHiddenApiExemptions("")
-            if(!Dhizuku.init(applicationContext)) {
-                Toast.makeText(applicationContext, R.string.failed_to_init_dhizuku, Toast.LENGTH_SHORT).show()
-            }
-        }
+        if (VERSION.SDK_INT >= 28) HiddenApiBypass.setHiddenApiExemptions("")
         if(sharedPref.getBoolean("auth", false)) {
             showAuth.value = true
         }
@@ -111,6 +109,10 @@ class MainActivity : FragmentActivity() {
             sharedPref.getBoolean("lock_in_background", false)
         ) {
             showAuth.value = true
+        }
+        if (sharedPref.getBoolean("dhizuku", false)) {
+            if (!Dhizuku.init(applicationContext)) { dhizukuErrorStatus.value = 1 }
+            if (!Dhizuku.isPermissionGranted()) { dhizukuErrorStatus.value = 2 }
         }
     }
 
@@ -159,13 +161,14 @@ fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>) {
     }
     LaunchedEffect(Unit) {
         val profileInited = sharedPref.getBoolean("ManagedProfileActivated", false)
-        val profileNotActivated = !profileInited && dpm.isProfileOwner(context) && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))
+        val profileNotActivated = !profileInited && context.isProfileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))
         if(profileNotActivated) {
             dpm.setProfileEnabled(receiver)
             sharedPref.edit().putBoolean("ManagedProfileActivated", true).apply()
             Toast.makeText(context, R.string.work_profile_activated, Toast.LENGTH_SHORT).show()
         }
     }
+    DhizukuErrorDialog()
 }
 
 @Composable
@@ -173,13 +176,15 @@ private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val activateType = stringResource(
-        if(dpm.isDeviceOwner(context)) { R.string.device_owner }
-        else if(dpm.isProfileOwner(context)) {
-            if(VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)) R.string.work_profile_owner else R.string.profile_owner
-        }
-        else if(dpm.isAdminActive(receiver)) R.string.device_admin else R.string.click_to_activate
-    )
+    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    var activateType = if(sharedPref.getBoolean("dhizuku", false)) stringResource(R.string.dhizuku) + " - " else ""
+    activateType += stringResource(
+            if(context.isDeviceOwner) { R.string.device_owner }
+            else if(context.isProfileOwner) {
+                if(VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)) R.string.work_profile_owner else R.string.profile_owner
+            }
+            else if(dpm.isAdminActive(receiver)) R.string.device_admin else R.string.click_to_activate
+        )
     LaunchedEffect(Unit) { pkgName.value = "" }
     Column(modifier = Modifier.background(colorScheme.background).statusBarsPadding().verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 25.dp))
@@ -216,11 +221,11 @@ private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>) {
             }
         }
         HomePageItem(R.string.system_manage, R.drawable.mobile_phone_fill0, "SystemManage", navCtrl)
-        if(VERSION.SDK_INT >= 24 && (dpm.isDeviceOwner(context)) || dpm.isProfileOwner(context)) { HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network", navCtrl) }
+        if(VERSION.SDK_INT >= 24 && (context.isDeviceOwner) || context.isProfileOwner) { HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network", navCtrl) }
         if(
-            (VERSION.SDK_INT < 24 && !dpm.isDeviceOwner(context)) || (
+            (VERSION.SDK_INT < 24 && !context.isDeviceOwner) || (
                     VERSION.SDK_INT >= 24 && (dpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE) ||
-                            (dpm.isProfileOwner(context) && dpm.isManagedProfile(receiver)))
+                            (context.isProfileOwner && dpm.isManagedProfile(receiver)))
             )
         ) {
             HomePageItem(R.string.work_profile, R.drawable.work_fill0, "ManagedProfile", navCtrl)
@@ -258,6 +263,39 @@ fun HomePageItem(name: Int, imgVector: Int, navTo: String, navCtrl: NavHostContr
             style = typography.headlineSmall,
             color = colorScheme.onBackground,
             modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp)
+        )
+    }
+}
+
+@Composable
+private fun DhizukuErrorDialog() {
+    val status by dhizukuErrorStatus.collectAsState()
+    if (status != 0) {
+        val context = LocalContext.current
+        val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+        LaunchedEffect(Unit) {
+            delay(200)
+            sharedPref.edit().putBoolean("dhizuku", false).apply()
+        }
+        AlertDialog(
+            onDismissRequest = { dhizukuErrorStatus.value = 0 },
+            confirmButton = {
+                TextButton(onClick = { dhizukuErrorStatus.value = 0 }) {
+                    Text(stringResource(R.string.confirm))
+                }
+            },
+            title = { Text(stringResource(R.string.dhizuku)) },
+            text = {
+                var text = stringResource(
+                    when(status){
+                        1 -> R.string.failed_to_init_dhizuku
+                        2 -> R.string.dhizuku_permission_not_granted
+                        else -> R.string.failed_to_init_dhizuku
+                    }
+                )
+                if(sharedPref.getBoolean("dhizuku", false)) text += "\n" + stringResource(R.string.dhizuku_mode_disabled)
+                Text(text)
+            }
         )
     }
 }

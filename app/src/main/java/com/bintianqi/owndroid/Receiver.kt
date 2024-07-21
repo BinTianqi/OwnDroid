@@ -32,7 +32,7 @@ class Receiver : DeviceAdminReceiver() {
         super.onEnabled(context, intent)
         val dpm = context.getDPM()
         val receiver = ComponentName(context, this::class.java)
-        if(dpm.isAdminActive(receiver) || dpm.isProfileOwner(context) || dpm.isDeviceOwner(context)){
+        if(dpm.isAdminActive(receiver) || context.isProfileOwner || context.isDeviceOwner){
             Toast.makeText(context, context.getString(R.string.onEnabled), Toast.LENGTH_SHORT).show()
         }
     }
