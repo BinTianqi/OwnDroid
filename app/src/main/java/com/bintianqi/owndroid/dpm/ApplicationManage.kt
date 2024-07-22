@@ -194,7 +194,7 @@ private fun Home(
     enableSystemAppDialog: MutableState<Boolean>
 ) {
     Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 30.dp, end = 12.dp)
     ) {
         val context = LocalContext.current
         val dpm = context.getDPM()
@@ -317,23 +317,22 @@ fun AlwaysOnVPNPackage(pkgName: String) {
             Toast.makeText(context, R.string.not_installed, Toast.LENGTH_SHORT).show()
         }
     }
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.always_on_vpn), style = typography.headlineLarge, modifier = Modifier.padding(8.dp))
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text = stringResource(R.string.current_app_is) + pkg, modifier = Modifier.padding(8.dp))
+        Text(text = stringResource(R.string.always_on_vpn), style = typography.headlineLarge, modifier = Modifier.padding(vertical = 8.dp))
+        Text(text = stringResource(R.string.current_app_is) + pkg, modifier = Modifier.padding(vertical = 8.dp))
         SwitchItem(R.string.enable_lockdown, "", null, { lockdown }, { lockdown = it })
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = { setAlwaysOnVpn(pkgName, lockdown); refresh() },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.apply))
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = { setAlwaysOnVpn(null, false); refresh() },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.clear_current_config))
         }

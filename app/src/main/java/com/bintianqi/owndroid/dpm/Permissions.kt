@@ -93,11 +93,11 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
     val receiver = context.getReceiver()
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     var dhizukuStatus by remember { mutableStateOf(sharedPref.getBoolean("dhizuku", false)) }
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(listScrollState)) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(listScrollState).padding(start = 30.dp, end = 12.dp)) {
         Text(
             text = stringResource(R.string.permission),
             style = typography.headlineLarge,
-            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp)
+            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp).offset(x = (-8).dp)
         )
         if(!dpm.isDeviceOwnerApp(context.packageName)) {
             SwitchItem(

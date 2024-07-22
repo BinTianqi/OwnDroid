@@ -96,7 +96,7 @@ private fun Home(navCtrl: NavHostController) {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 30.dp, end = 12.dp)
     ) {
         Text(
             text = stringResource(R.string.work_profile),

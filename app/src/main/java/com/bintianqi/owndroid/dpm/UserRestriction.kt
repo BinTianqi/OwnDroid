@@ -11,6 +11,7 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -96,16 +97,16 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState).padding(start = 30.dp, end = 12.dp)) {
         Text(
             text = stringResource(R.string.user_restrict),
             style = typography.headlineLarge,
-            modifier = Modifier.padding(top = 8.dp, bottom = 7.dp, start = 15.dp)
+            modifier = Modifier.padding(top = 8.dp, bottom = 7.dp).offset(x = (-8).dp)
         )
-        Text(text = stringResource(R.string.switch_to_disable_feature), modifier = Modifier.padding(start = 15.dp))
-        if(context.isProfileOwner) { Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.padding(start = 15.dp)) }
+        Text(text = stringResource(R.string.switch_to_disable_feature), modifier = Modifier.offset(x = (-6).dp))
+        if(context.isProfileOwner) { Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.offset(x = (-6).dp)) }
         if(context.isProfileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
-            Text(text = stringResource(R.string.some_features_invalid_in_work_profile), modifier = Modifier.padding(start = 15.dp))
+            Text(text = stringResource(R.string.some_features_invalid_in_work_profile), modifier = Modifier.offset(x = (-6).dp))
         }
         Spacer(Modifier.padding(vertical = 2.dp))
         SubPageItem(R.string.network_internet, "", R.drawable.wifi_fill0) { navCtrl.navigate("Internet") }
