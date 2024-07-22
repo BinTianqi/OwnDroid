@@ -35,7 +35,7 @@ import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.TopBar
 
-private data class Restriction(
+data class Restriction(
     val restriction:String,
     @StringRes val name:Int,
     val desc:String,
@@ -211,7 +211,7 @@ private fun UserRestrictionItem(
     )
 }
 
-private object RestrictionData{
+object RestrictionData {
     fun internet(): List<Restriction>{
         val list:MutableList<Restriction> = mutableListOf()
         list += Restriction(UserManager.DISALLOW_CONFIG_MOBILE_NETWORKS, R.string.config_mobile_network, "", R.drawable.signal_cellular_alt_fill0)
@@ -312,5 +312,15 @@ private object RestrictionData{
         if(VERSION.SDK_INT>=23) { list += Restriction(UserManager.DISALLOW_SAFE_BOOT, R.string.safe_boot, "", R.drawable.security_fill0) }
         list += Restriction(UserManager.DISALLOW_DEBUGGING_FEATURES, R.string.debug_features, "", R.drawable.adb_fill0)
         return list
+    }
+    fun getAllRestrictions(context: Context): List<String> {
+        val result = mutableListOf<String>()
+        internet().forEach { result.add(it.restriction) }
+        connectivity().forEach { result.add(it.restriction) }
+        media().forEach { result.add(it.restriction) }
+        application(context).forEach { result.add(it.restriction) }
+        user().forEach { result.add(it.restriction) }
+        other(context).forEach { result.add(it.restriction) }
+        return result
     }
 }

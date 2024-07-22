@@ -40,6 +40,9 @@ import com.bintianqi.owndroid.backToHomeStateFlow
 import com.bintianqi.owndroid.ui.*
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun DpmPermissions(navCtrl:NavHostController) {
@@ -350,9 +353,15 @@ private fun DeviceOwner() {
     }
     if(deactivateDialog) {
         val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+        val coroutine = rememberCoroutineScope()
         AlertDialog(
             title = { Text(stringResource(R.string.deactivate)) },
-            text = { if(sharedPref.getBoolean("dhizuku", false)) Text(stringResource(R.string.dhizuku_will_be_deactivated)) },
+            text = {
+                Column {
+                    if(sharedPref.getBoolean("dhizuku", false)) Text(stringResource(R.string.dhizuku_will_be_deactivated))
+                    Text(stringResource(R.string.will_reset_policy))
+                }
+            },
             onDismissRequest = { deactivateDialog = false },
             dismissButton = {
                 TextButton(
@@ -364,14 +373,17 @@ private fun DeviceOwner() {
             confirmButton = {
                 TextButton(
                     onClick = {
-                        dpm.clearDeviceOwnerApp(context.dpcPackageName)
-                        if(sharedPref.getBoolean("dhizuku", false)) {
-                            if (!Dhizuku.init(context)) {
-                                sharedPref.edit().putBoolean("dhizuku", false).apply()
-                                backToHomeStateFlow.value = true
+                        coroutine.launch {
+                            context.resetDevicePolicy()
+                            dpm.clearDeviceOwnerApp(context.dpcPackageName)
+                            if(sharedPref.getBoolean("dhizuku", false)) {
+                                if (!Dhizuku.init(context)) {
+                                    sharedPref.edit().putBoolean("dhizuku", false).apply()
+                                    backToHomeStateFlow.value = true
+                                }
                             }
+                            deactivateDialog = false
                         }
-                        deactivateDialog = false
                     }
                 ) {
                     Text(stringResource(R.string.confirm))

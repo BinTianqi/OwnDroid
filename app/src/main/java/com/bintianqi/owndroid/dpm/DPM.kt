@@ -3,7 +3,10 @@ package com.bintianqi.owndroid.dpm
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.app.admin.DevicePolicyManager
+import android.app.admin.FactoryResetProtectionPolicy
 import android.app.admin.IDevicePolicyManager
+import android.app.admin.SystemUpdatePolicy
+import android.app.admin.WifiSsidPolicy
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -126,3 +129,68 @@ fun Context.getReceiver(): ComponentName {
 }
 
 val dhizukuErrorStatus = MutableStateFlow(0)
+
+fun Context.resetDevicePolicy() {
+    val dpm = getDPM()
+    val receiver = getReceiver()
+    RestrictionData.getAllRestrictions(this).forEach {
+        dpm.clearUserRestriction(receiver, it)
+    }
+    dpm.accountTypesWithManagementDisabled?.forEach {
+        dpm.setAccountManagementDisabled(receiver, it, false)
+    }
+    if (VERSION.SDK_INT >= 30) {
+        dpm.setConfiguredNetworksLockdownState(receiver, false)
+        dpm.setAutoTimeZoneEnabled(receiver, true)
+        dpm.setAutoTimeEnabled(receiver, true)
+        dpm.setCommonCriteriaModeEnabled(receiver, false)
+        try {
+            val frp = FactoryResetProtectionPolicy.Builder().setFactoryResetProtectionEnabled(false).setFactoryResetProtectionAccounts(listOf())
+            dpm.setFactoryResetProtectionPolicy(receiver, frp.build())
+        } catch(_: Exception) {}
+        dpm.setUserControlDisabledPackages(receiver, listOf())
+    }
+    if (VERSION.SDK_INT >= 33) {
+        dpm.minimumRequiredWifiSecurityLevel = DevicePolicyManager.WIFI_SECURITY_OPEN
+        dpm.wifiSsidPolicy = null
+    }
+    if (VERSION.SDK_INT >= 28) {
+        dpm.getOverrideApns(receiver).forEach { dpm.removeOverrideApn(receiver, it.id) }
+        dpm.setKeepUninstalledPackages(receiver, listOf())
+    }
+    dpm.setCameraDisabled(receiver, false)
+    dpm.setScreenCaptureDisabled(receiver, false)
+    dpm.setMasterVolumeMuted(receiver, false)
+    try {
+        if(VERSION.SDK_INT >= 31) dpm.isUsbDataSignalingEnabled = true
+    } catch (_: Exception) { }
+    if (VERSION.SDK_INT >= 23) {
+        dpm.setPermissionPolicy(receiver, DevicePolicyManager.PERMISSION_POLICY_PROMPT)
+        dpm.setSystemUpdatePolicy(receiver, SystemUpdatePolicy.createAutomaticInstallPolicy())
+    }
+    if (VERSION.SDK_INT >= 24) {
+        dpm.setAlwaysOnVpnPackage(receiver, null, false)
+        dpm.setPackagesSuspended(receiver, arrayOf(), false)
+    }
+    dpm.setPermittedInputMethods(receiver, null)
+    dpm.setPermittedAccessibilityServices(receiver, null)
+    packageManager.getInstalledApplications(0).forEach {
+        if (dpm.isUninstallBlocked(receiver, it.packageName)) dpm.setUninstallBlocked(receiver, it.packageName, false)
+    }
+    if (VERSION.SDK_INT >= 26) {
+        dpm.setRequiredStrongAuthTimeout(receiver, 0)
+        dpm.clearResetPasswordToken(receiver)
+    }
+    if (VERSION.SDK_INT >= 31) {
+        dpm.requiredPasswordComplexity = DevicePolicyManager.PASSWORD_COMPLEXITY_NONE
+    }
+    dpm.setKeyguardDisabledFeatures(receiver, 0)
+    dpm.setMaximumTimeToLock(receiver, 0)
+    dpm.setPasswordExpirationTimeout(receiver, 0)
+    dpm.setMaximumFailedPasswordsForWipe(receiver, 0)
+    dpm.setPasswordHistoryLength(receiver, 0)
+    if (VERSION.SDK_INT < 31) {
+        dpm.setPasswordQuality(receiver, DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED)
+    }
+    dpm.setRecommendedGlobalProxy(receiver, null)
+}

@@ -60,6 +60,7 @@
     <string name="activate_jump" tools:ignore="TypographyEllipsis">激活...</string>
     <string name="profile_owner">Profile owner</string>
     <string name="device_owner">Device owner</string>
+    <string name="will_reset_policy">所有由OwnDroid设置的设备策略将被清除</string>
     <string name="dhizuku_will_be_deactivated">Dhizuku将被停用</string>
     <string name="activate_device_admin">激活Device admin</string>
     <string name="device_info">设备信息</string>
