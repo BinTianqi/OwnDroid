@@ -35,7 +35,6 @@ import android.app.admin.SystemUpdatePolicy
 import android.app.admin.SystemUpdatePolicy.TYPE_INSTALL_AUTOMATIC
 import android.app.admin.SystemUpdatePolicy.TYPE_INSTALL_WINDOWED
 import android.app.admin.SystemUpdatePolicy.TYPE_POSTPONE
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -97,7 +96,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.StopLockTaskModeReceiver
 import com.bintianqi.owndroid.fileUriFlow
 import com.bintianqi.owndroid.getFile

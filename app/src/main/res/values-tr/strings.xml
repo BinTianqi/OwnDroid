@@ -63,6 +63,7 @@
     <string name="activate_jump" tools:ignore="TypographyEllipsis">Etkinleştir...</string>
     <string name="profile_owner">Profil Sahibi</string>
     <string name="device_owner">Cihaz Sahibi</string>
+    <string name="dhizuku_will_be_deactivated">Dhizuku will be deactivated</string> <!--TODO-->
     <string name="activate_device_admin">Cihaz Yöneticisini Etkinleştir</string>
     <string name="device_info">Cihaz Bilgisi</string>
     <string name="support_device_id_attestation">Cihaz Kimliği Doğrulama Desteği: </string>

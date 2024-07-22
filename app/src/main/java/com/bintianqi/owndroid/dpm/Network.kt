@@ -15,7 +15,6 @@ import android.app.admin.DevicePolicyManager.WIFI_SECURITY_PERSONAL
 import android.app.admin.WifiSsidPolicy
 import android.app.admin.WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_ALLOWLIST
 import android.app.admin.WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_DENYLIST
-import android.content.ComponentName
 import android.net.wifi.WifiSsid
 import android.os.Build.VERSION
 import android.telephony.TelephonyManager
@@ -88,7 +87,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.toText
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.RadioButtonItem

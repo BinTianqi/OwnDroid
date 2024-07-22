@@ -2,7 +2,6 @@ package com.bintianqi.owndroid
 
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import com.bintianqi.owndroid.dpm.getDPM

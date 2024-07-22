@@ -2,7 +2,6 @@ package com.bintianqi.owndroid.dpm
 
 import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -56,7 +55,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.fileUriFlow
 import com.bintianqi.owndroid.getFile
 import com.bintianqi.owndroid.toText
@@ -108,7 +106,6 @@ fun UserManage(navCtrl: NavHostController) {
 @Composable
 private fun Home(navCtrl: NavHostController,scrollState: ScrollState) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
             text = stringResource(R.string.user_manager),

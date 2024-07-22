@@ -60,6 +60,7 @@
     <string name="activate_jump" tools:ignore="TypographyEllipsis">激活...</string>
     <string name="profile_owner">Profile owner</string>
     <string name="device_owner">Device owner</string>
+    <string name="dhizuku_will_be_deactivated">Dhizuku将被停用</string>
     <string name="activate_device_admin">激活Device admin</string>
     <string name="device_info">设备信息</string>
     <string name="support_device_id_attestation">支持设备ID认证：</string>

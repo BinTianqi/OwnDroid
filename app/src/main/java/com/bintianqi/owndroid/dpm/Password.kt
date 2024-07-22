@@ -30,7 +30,6 @@ import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_SOMETHING
 import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED
 import android.app.admin.DevicePolicyManager.RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT
 import android.app.admin.DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build.VERSION
@@ -75,7 +74,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.Information
@@ -127,8 +125,6 @@ fun Password(navCtrl: NavHostController) {
 @Composable
 private fun Home(navCtrl:NavHostController,scrollState: ScrollState) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
             text = stringResource(R.string.password_and_keyguard),

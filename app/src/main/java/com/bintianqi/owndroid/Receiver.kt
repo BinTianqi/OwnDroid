@@ -37,6 +37,7 @@ class Receiver : DeviceAdminReceiver() {
 
     override fun onDisabled(context: Context, intent: Intent) {
         super.onDisabled(context, intent)
+        backToHomeStateFlow.value = true
         Toast.makeText(context, R.string.onDisabled, Toast.LENGTH_SHORT).show()
     }
 

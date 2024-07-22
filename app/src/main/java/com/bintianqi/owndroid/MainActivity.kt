@@ -112,8 +112,12 @@ class MainActivity : FragmentActivity() {
             showAuth.value = true
         }
         if (sharedPref.getBoolean("dhizuku", false)) {
-            if (!Dhizuku.init(applicationContext)) { dhizukuErrorStatus.value = 1 }
-            if (!Dhizuku.isPermissionGranted()) { dhizukuErrorStatus.value = 2 }
+            if (Dhizuku.init(applicationContext)) {
+                if (!Dhizuku.isPermissionGranted()) { dhizukuErrorStatus.value = 2 }
+            } else {
+                sharedPref.edit().putBoolean("dhizuku", false).apply()
+                dhizukuErrorStatus.value = 1
+            }
         }
     }
 

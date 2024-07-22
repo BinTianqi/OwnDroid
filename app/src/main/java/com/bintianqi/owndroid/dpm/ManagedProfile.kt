@@ -56,7 +56,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.CopyTextButton

@@ -10,7 +10,6 @@ import android.app.admin.PackagePolicy
 import android.app.admin.PackagePolicy.PACKAGE_POLICY_ALLOWLIST
 import android.app.admin.PackagePolicy.PACKAGE_POLICY_ALLOWLIST_AND_SYSTEM
 import android.app.admin.PackagePolicy.PACKAGE_POLICY_BLOCKLIST
-import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager.NameNotFoundException
 import android.net.Uri
@@ -80,7 +79,6 @@ import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.InstallAppActivity
 import com.bintianqi.owndroid.PackageInstallerReceiver
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.fileUriFlow
 import com.bintianqi.owndroid.getFile
 import com.bintianqi.owndroid.toText

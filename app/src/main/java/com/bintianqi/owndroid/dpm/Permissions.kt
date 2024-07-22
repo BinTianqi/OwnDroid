@@ -36,13 +36,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.backToHomeStateFlow
 import com.bintianqi.owndroid.ui.*
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Composable
 fun DpmPermissions(navCtrl:NavHostController) {
@@ -223,14 +220,13 @@ private fun DeviceAdmin() {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    var showDeactivateButton by remember { mutableStateOf(context.isDeviceAdmin) }
     var deactivateDialog by remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.device_admin), style = typography.headlineLarge)
         Text(text = stringResource(if(context.isDeviceAdmin) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        AnimatedVisibility(showDeactivateButton) {
+        AnimatedVisibility(context.isDeviceAdmin) {
             Button(
                 onClick = { deactivateDialog = true },
                 enabled = !context.isProfileOwner && !context.isDeviceOwner,
@@ -239,9 +235,9 @@ private fun DeviceAdmin() {
                 Text(stringResource(R.string.deactivate))
             }
         }
-        AnimatedVisibility(!showDeactivateButton) {
+        AnimatedVisibility(!context.isDeviceAdmin) {
             Column {
-                Button(onClick = {activateDeviceAdmin(context, receiver) }, modifier = Modifier.fillMaxWidth()) {
+                Button(onClick = { activateDeviceAdmin(context, receiver) }, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.activate_jump))
                 }
                 Spacer(Modifier.padding(vertical = 5.dp))
@@ -253,7 +249,6 @@ private fun DeviceAdmin() {
         }
     }
     if(deactivateDialog) {
-        val co = rememberCoroutineScope()
         AlertDialog(
             title = { Text(stringResource(R.string.deactivate)) },
             onDismissRequest = { deactivateDialog = false },
@@ -268,12 +263,7 @@ private fun DeviceAdmin() {
                 TextButton(
                     onClick = {
                         dpm.removeActiveAdmin(receiver)
-                        co.launch{
-                            delay(300)
-                            deactivateDialog = false
-                            showDeactivateButton = context.isDeviceAdmin
-                            backToHomeStateFlow.value = !context.isDeviceAdmin
-                        }
+                        deactivateDialog = false
                     }
                 ) {
                     Text(stringResource(R.string.confirm))
@@ -288,7 +278,6 @@ private fun ProfileOwner() {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    var showDeactivateButton by remember { mutableStateOf(context.isProfileOwner) }
     var deactivateDialog by remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -296,7 +285,7 @@ private fun ProfileOwner() {
         Text(stringResource(if(context.isProfileOwner) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT >= 24) {
-            AnimatedVisibility(showDeactivateButton) {
+            if(context.isProfileOwner) {
                 Button(
                     onClick = { deactivateDialog = true },
                     enabled = !dpm.isManagedProfile(receiver),
@@ -306,17 +295,8 @@ private fun ProfileOwner() {
                 }
             }
         }
-        AnimatedVisibility(!showDeactivateButton) {
-            Column {
-                SelectionContainer{
-                    Text(text = stringResource(R.string.activate_profile_owner_command))
-                }
-                CopyTextButton(R.string.copy_command, stringResource(R.string.activate_profile_owner_command))
-            }
-        }
     }
     if(deactivateDialog && VERSION.SDK_INT >= 24) {
-        val co = rememberCoroutineScope()
         AlertDialog(
             title = { Text(stringResource(R.string.deactivate)) },
             onDismissRequest = { deactivateDialog = false },
@@ -331,12 +311,7 @@ private fun ProfileOwner() {
                 TextButton(
                     onClick = {
                         dpm.clearProfileOwner(receiver)
-                        co.launch{
-                            delay(300)
-                            deactivateDialog = false
-                            showDeactivateButton = context.isProfileOwner
-                            backToHomeStateFlow.value = !context.isProfileOwner
-                        }
+                        deactivateDialog = false
                     }
                 ) {
                     Text(stringResource(R.string.confirm))
@@ -350,14 +325,13 @@ private fun ProfileOwner() {
 private fun DeviceOwner() {
     val context = LocalContext.current
     val dpm = context.getDPM()
-    var showDeactivateButton by remember { mutableStateOf(context.isDeviceOwner) }
     var deactivateDialog by remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.device_owner), style = typography.headlineLarge)
         Text(text = stringResource(if(context.isDeviceOwner) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        AnimatedVisibility(showDeactivateButton) {
+        AnimatedVisibility(context.isDeviceOwner) {
             Button(
                 onClick = { deactivateDialog = true },
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
@@ -365,7 +339,7 @@ private fun DeviceOwner() {
                 Text(text = stringResource(R.string.deactivate))
             }
         }
-        AnimatedVisibility(!showDeactivateButton) {
+        AnimatedVisibility(!context.isDeviceOwner) {
             Column {
                 SelectionContainer{
                     Text(text = stringResource(R.string.activate_device_owner_command))
@@ -375,9 +349,10 @@ private fun DeviceOwner() {
         }
     }
     if(deactivateDialog) {
-        val co = rememberCoroutineScope()
+        val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
         AlertDialog(
             title = { Text(stringResource(R.string.deactivate)) },
+            text = { if(sharedPref.getBoolean("dhizuku", false)) Text(stringResource(R.string.dhizuku_will_be_deactivated)) },
             onDismissRequest = { deactivateDialog = false },
             dismissButton = {
                 TextButton(
@@ -390,12 +365,13 @@ private fun DeviceOwner() {
                 TextButton(
                     onClick = {
                         dpm.clearDeviceOwnerApp(context.dpcPackageName)
-                        co.launch{
-                            delay(300)
-                            deactivateDialog = false
-                            showDeactivateButton = context.isDeviceOwner
-                            backToHomeStateFlow.value = !context.isDeviceOwner
+                        if(sharedPref.getBoolean("dhizuku", false)) {
+                            if (!Dhizuku.init(context)) {
+                                sharedPref.edit().putBoolean("dhizuku", false).apply()
+                                backToHomeStateFlow.value = true
+                            }
                         }
+                        deactivateDialog = false
                     }
                 ) {
                     Text(stringResource(R.string.confirm))
