@@ -162,7 +162,6 @@ fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>) {
         composable(route = "AppSetting") { AppSetting(navCtrl, materialYou, blackTheme) }
         composable(route = "Network") { Network(navCtrl) }
         composable(route = "PackageSelector") { PackageSelector(navCtrl, pkgName) }
-        composable(route = "PermissionPicker") { PermissionPicker(navCtrl) }
     }
     LaunchedEffect(Unit) {
         val profileInited = sharedPref.getBoolean("ManagedProfileActivated", false)

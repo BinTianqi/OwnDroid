@@ -19,6 +19,7 @@ import android.provider.Settings
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -41,7 +42,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -55,12 +55,15 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -157,7 +160,7 @@ fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, 
                 }
                 composable(route = "AlwaysOnVpn") { AlwaysOnVPNPackage(pkgName.value) }
                 composable(route = "UserControlDisabled") { UserCtrlDisabledPkg(pkgName.value) }
-                composable(route = "PermissionManage") { PermissionManage(pkgName.value, navCtrl) }
+                composable(route = "PermissionManage") { PermissionManage(pkgName.value) }
                 composable(route = "CrossProfilePackage") { CrossProfilePkg(pkgName.value) }
                 composable(route = "CrossProfileWidget") { CrossProfileWidget(pkgName.value) }
                 composable(route = "CredentialManagePolicy") { CredentialManagePolicy(pkgName.value) }
@@ -399,83 +402,97 @@ private fun UserCtrlDisabledPkg(pkgName:String) {
 
 @SuppressLint("NewApi")
 @Composable
-private fun PermissionManage(pkgName: String, navCtrl: NavHostController) { 
+private fun PermissionManage(pkgName: String) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val focusMgr = LocalFocusManager.current
-    var inputPermission by remember { mutableStateOf("") }
-    var currentState by remember { mutableStateOf(context.getString(R.string.unknown)) }
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedPermission by remember { mutableStateOf(PermissionPickerItem("", R.string.unknown, R.drawable.block_fill0)) }
+    val statusMap = remember { mutableStateMapOf<String, Int>() }
     val grantState = mapOf(
         PERMISSION_GRANT_STATE_DEFAULT to stringResource(R.string.default_stringres),
         PERMISSION_GRANT_STATE_GRANTED to stringResource(R.string.granted),
         PERMISSION_GRANT_STATE_DENIED to stringResource(R.string.denied)
     )
-    val applyPermission by selectedPermission.collectAsState()
-    LaunchedEffect(applyPermission) {
-        if(applyPermission != "") {
-            inputPermission = applyPermission
-            selectedPermission.value = ""
-        }
-    }
     LaunchedEffect(pkgName) {
-        if(pkgName!="") { currentState = grantState[dpm.getPermissionGrantState(receiver,pkgName,inputPermission)]!! }
+        if(pkgName != "") {
+            permissionList().forEach { statusMap[it.permission] = dpm.getPermissionGrantState(receiver, pkgName, it.permission) }
+        }
     }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.permission_manage), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        OutlinedTextField(
-            value = inputPermission,
-            label = { Text(stringResource(R.string.permission)) },
-            onValueChange = {
-                inputPermission = it
-                currentState = grantState[dpm.getPermissionGrantState(receiver,pkgName,inputPermission)]!!
-            },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.fillMaxWidth(),
-            trailingIcon = {
-                Icon(painter = painterResource(R.drawable.checklist_fill0), contentDescription = null,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50))
-                        .clickable(onClick = { navCtrl.navigate("PermissionPicker") })
-                        .padding(3.dp))
-            }
-        )
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Text(stringResource(R.string.current_state, currentState))
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { 
-            Button(
-                onClick = {
-                    dpm.setPermissionGrantState(receiver,pkgName,inputPermission, PERMISSION_GRANT_STATE_GRANTED)
-                    currentState = grantState[dpm.getPermissionGrantState(receiver,pkgName,inputPermission)]!!
-                },
-                modifier = Modifier.fillMaxWidth(0.49F)
+        Spacer(Modifier.padding(vertical = 4.dp))
+        for(permission in permissionList()) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        if(pkgName != "") {
+                            selectedPermission = permission
+                            showDialog = true
+                        }
+                    }
+                    .padding(top = 8.dp, bottom = 8.dp, end = 8.dp)
             ) {
-                Text(stringResource(R.string.grant))
+                Icon(
+                    painter = painterResource(permission.icon),
+                    contentDescription = stringResource(permission.label),
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                Column {
+                    Text(text = stringResource(permission.label))
+                    Text(
+                        text = grantState[statusMap[permission.permission]]?: stringResource(R.string.unknown),
+                        modifier = Modifier.alpha(0.7F), style = typography.bodyMedium
+                    )
+                }
             }
-            Button(
-                onClick = {
-                    dpm.setPermissionGrantState(receiver,pkgName,inputPermission, PERMISSION_GRANT_STATE_DENIED)
-                    currentState = grantState[dpm.getPermissionGrantState(receiver,pkgName,inputPermission)]!!
-                },
-                Modifier.fillMaxWidth(0.96F)
-            ) {
-                Text(stringResource(R.string.deny))
-            }
-        }
-        Button(
-            onClick = {
-                dpm.setPermissionGrantState(receiver,pkgName,inputPermission, PERMISSION_GRANT_STATE_DEFAULT)
-                currentState = grantState[dpm.getPermissionGrantState(receiver,pkgName,inputPermission)]!!
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.default_stringres))
         }
         Spacer(Modifier.padding(vertical = 30.dp))
+    }
+    if(showDialog) {
+        val grantPermission: (Int)->Unit = {
+            dpm.setPermissionGrantState(receiver, pkgName, selectedPermission.permission, it)
+            statusMap[selectedPermission.permission] = dpm.getPermissionGrantState(receiver, pkgName, selectedPermission.permission)
+            showDialog = false
+        }
+        @Composable
+        fun GrantPermissionItem(label: Int, status: Int) {
+            val selected = statusMap[selectedPermission.permission] == status
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(if(selected) colorScheme.primaryContainer else Color.Transparent)
+                    .clickable { grantPermission(status) }
+                    .padding(vertical = 16.dp, horizontal = 12.dp)
+            ) {
+                Text(text = stringResource(label), color = if(selected) colorScheme.primary else Color.Unspecified)
+                if(selected) {
+                    Icon(
+                        painter = painterResource(R.drawable.check_circle_fill0),
+                        contentDescription = stringResource(label),
+                        tint = colorScheme.primary
+                    )
+                }
+            }
+        }
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            confirmButton = { TextButton(onClick = { showDialog = false }) { Text(stringResource(R.string.cancel)) } },
+            title = { Text(stringResource(selectedPermission.label)) },
+            text = {
+                Column {
+                    Text(selectedPermission.permission)
+                    Spacer(Modifier.padding(vertical = 4.dp))
+                    GrantPermissionItem(R.string.grant, PERMISSION_GRANT_STATE_GRANTED)
+                    GrantPermissionItem(R.string.deny, PERMISSION_GRANT_STATE_DENIED)
+                    GrantPermissionItem(R.string.default_stringres, PERMISSION_GRANT_STATE_DEFAULT)
+                }
+            }
+        )
     }
 }
 
