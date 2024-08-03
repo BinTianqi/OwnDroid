@@ -230,6 +230,13 @@
     <string name="invalid_hostname">无效主机名</string>
     <string name="security_exception">安全错误</string>
     <string name="set_dns_host">设置DNS主机</string>
+    <string name="recommended_global_proxy">建议的全局代理</string>
+    <string name="proxy_type_off">无代理</string>
+    <string name="proxy_type_pac">PAC代理</string>
+    <string name="proxy_type_direct">直连代理</string>
+    <string name="specify_port">指定端口</string>
+    <string name="invalid_config">无效配置</string>
+    <string name="exclude_hosts">排除列表</string>
     <string name="retrieve_net_logs">收集网络日志</string>
     <string name="retrieve">收集</string>
     <string name="wifi_auth_keypair">WiFi密钥对</string>

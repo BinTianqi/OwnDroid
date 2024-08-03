@@ -225,7 +225,7 @@ private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>) {
             }
         }
         HomePageItem(R.string.system_manage, R.drawable.mobile_phone_fill0, "SystemManage", navCtrl)
-        if(VERSION.SDK_INT >= 24 && (context.isDeviceOwner) || context.isProfileOwner) { HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network", navCtrl) }
+        if(context.isDeviceOwner || context.isProfileOwner) { HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network", navCtrl) }
         if(
             (VERSION.SDK_INT < 24 && !context.isDeviceOwner) || (
                     VERSION.SDK_INT >= 24 && (dpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE) ||

@@ -240,6 +240,13 @@
     <string name="invalid_hostname">Invalid hostname</string>
     <string name="security_exception">Security Exception</string>
     <string name="set_dns_host">Set DNS host</string>
+    <string name="recommended_global_proxy">Recommended global proxy</string>
+    <string name="proxy_type_off">No proxy</string>
+    <string name="proxy_type_pac">PAC proxy</string>
+    <string name="proxy_type_direct">Direct proxy</string>
+    <string name="specify_port">Specify port</string>
+    <string name="invalid_config">Invalid config</string>
+    <string name="exclude_hosts">Exclude hosts</string>
     <string name="retrieve_net_logs">Network logs</string>
     <string name="retrieve">Retrieve</string>
     <string name="wifi_auth_keypair">WiFi keypair</string>

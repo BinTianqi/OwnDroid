@@ -15,6 +15,8 @@ import android.app.admin.DevicePolicyManager.WIFI_SECURITY_PERSONAL
 import android.app.admin.WifiSsidPolicy
 import android.app.admin.WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_ALLOWLIST
 import android.app.admin.WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_DENYLIST
+import android.net.ProxyInfo
+import android.net.Uri
 import android.net.wifi.WifiSsid
 import android.os.Build.VERSION
 import android.telephony.TelephonyManager
@@ -42,6 +44,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -90,6 +93,7 @@ import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.toText
 import com.bintianqi.owndroid.ui.Animations
+import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.SwitchItem
@@ -126,6 +130,7 @@ fun Network(navCtrl: NavHostController) {
             composable(route = "MinWifiSecurityLevel") { WifiSecLevel() }
             composable(route = "WifiSsidPolicy") { WifiSsidPolicy() }
             composable(route = "PrivateDNS") { PrivateDNS() }
+            composable(route = "RecommendedGlobalProxy") { RecommendedGlobalProxy() }
             composable(route = "NetworkLog") { NetworkLog() }
             composable(route = "WifiAuthKeypair") { WifiAuthKeypair() }
             composable(route = "APN") { APN() }
@@ -170,6 +175,9 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState, wifiMacDia
         }
         if(VERSION.SDK_INT >= 29 && context.isDeviceOwner) {
             SubPageItem(R.string.private_dns, "", R.drawable.dns_fill0) { navCtrl.navigate("PrivateDNS") }
+        }
+        if(context.isDeviceOwner) {
+            SubPageItem(R.string.recommended_global_proxy, "", R.drawable.vpn_key_fill0) { navCtrl.navigate("RecommendedGlobalProxy") }
         }
         if(VERSION.SDK_INT >= 26&&(context.isDeviceOwner || (context.isProfileOwner && dpm.isManagedProfile(receiver)))) {
             SubPageItem(R.string.retrieve_net_logs, "", R.drawable.description_fill0) { navCtrl.navigate("NetworkLog") }
@@ -423,6 +431,103 @@ private fun PrivateDNS() {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.set_dns_host))
+        }
+    }
+}
+
+@Composable
+private fun RecommendedGlobalProxy() {
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
+    val focusMgr = LocalFocusManager.current
+    var proxyType by remember { mutableIntStateOf(0) }
+    var proxyUri by remember { mutableStateOf("") }
+    var specifyPort by remember { mutableStateOf(false) }
+    var proxyPort by remember { mutableStateOf("") }
+    var exclList by remember { mutableStateOf("") }
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.recommended_global_proxy), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
+        RadioButtonItem(stringResource(R.string.proxy_type_off), proxyType == 0, { proxyType = 0 })
+        RadioButtonItem(stringResource(R.string.proxy_type_pac), proxyType == 1, { proxyType = 1 })
+        RadioButtonItem(stringResource(R.string.proxy_type_direct), proxyType == 2, { proxyType = 2 })
+        AnimatedVisibility(proxyType != 0) {
+            OutlinedTextField(
+                value = proxyUri,
+                onValueChange = { proxyUri = it },
+                label = { Text(if(proxyType == 1) "URL" else "Host") },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
+            )
+        }
+        AnimatedVisibility(proxyType == 1 && VERSION.SDK_INT >= 30) {
+            Box(modifier = Modifier.padding(top = 2.dp)) {
+                CheckBoxItem(stringResource(R.string.specify_port), specifyPort, { specifyPort = it })
+            }
+        }
+        AnimatedVisibility((proxyType == 1 && specifyPort && VERSION.SDK_INT >= 30) || proxyType == 2) {
+            OutlinedTextField(
+                value = proxyPort,
+                onValueChange = { proxyPort = it },
+                label = { Text(stringResource(R.string.port)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
+            )
+        }
+        AnimatedVisibility(proxyType == 2) {
+            OutlinedTextField(
+                value = exclList,
+                onValueChange = { exclList = it },
+                label = { Text(stringResource(R.string.exclude_hosts)) },
+                maxLines = 5,
+                minLines = 2,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
+            )
+        }
+        Spacer(Modifier.padding(vertical = 4.dp))
+        Button(
+            onClick = {
+                if(proxyType == 0) {
+                    dpm.setRecommendedGlobalProxy(receiver, null)
+                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                if(proxyUri == "") {
+                    Toast.makeText(context, R.string.invalid_config, Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                val uri = Uri.parse(proxyUri)
+                val port: Int
+                try {
+                    port = proxyPort.toInt()
+                } catch(e: NumberFormatException) {
+                    Toast.makeText(context, R.string.invalid_config, Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                val proxyInfo =
+                    if(proxyType == 1) {
+                        if(specifyPort && VERSION.SDK_INT >= 30) {
+                            ProxyInfo.buildPacProxy(uri, port)
+                        } else {
+                            ProxyInfo.buildPacProxy(uri)
+                        }
+                    } else {
+                        ProxyInfo.buildDirectProxy(proxyUri, port, exclList.lines())
+                    }
+                if(VERSION.SDK_INT >= 30 && !proxyInfo.isValid) {
+                    Toast.makeText(context, R.string.invalid_config, Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                dpm.setRecommendedGlobalProxy(receiver, proxyInfo)
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.apply))
         }
     }
 }
