@@ -343,7 +343,7 @@ private fun Keyguard() {
         }
         if(VERSION.SDK_INT >= 26) {
             CheckBoxItem(
-                stringResource(R.string.evict_credential_encryptoon_key),
+                R.string.evict_credential_encryptoon_key,
                 flag == FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY,
                 { flag = if(flag==0) {1}else{0} }
             )
@@ -511,9 +511,9 @@ private fun PermissionPolicy() {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.permission_policy), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        RadioButtonItem(stringResource(R.string.default_stringres), selectedPolicy == PERMISSION_POLICY_PROMPT, { selectedPolicy = PERMISSION_POLICY_PROMPT })
-        RadioButtonItem(stringResource(R.string.auto_grant), selectedPolicy == PERMISSION_POLICY_AUTO_GRANT, { selectedPolicy = PERMISSION_POLICY_AUTO_GRANT })
-        RadioButtonItem(stringResource(R.string.auto_deny), selectedPolicy == PERMISSION_POLICY_AUTO_DENY, { selectedPolicy = PERMISSION_POLICY_AUTO_DENY })
+        RadioButtonItem(R.string.default_stringres, selectedPolicy == PERMISSION_POLICY_PROMPT, { selectedPolicy = PERMISSION_POLICY_PROMPT })
+        RadioButtonItem(R.string.auto_grant, selectedPolicy == PERMISSION_POLICY_AUTO_GRANT, { selectedPolicy = PERMISSION_POLICY_AUTO_GRANT })
+        RadioButtonItem(R.string.auto_deny, selectedPolicy == PERMISSION_POLICY_AUTO_DENY, { selectedPolicy = PERMISSION_POLICY_AUTO_DENY })
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
@@ -538,17 +538,17 @@ private fun MTEPolicy() {
         Spacer(Modifier.padding(vertical = 5.dp))
         var selectedMtePolicy by remember { mutableIntStateOf(dpm.mtePolicy) }
         RadioButtonItem(
-            stringResource(R.string.decide_by_user),
+            R.string.decide_by_user,
             selectedMtePolicy == MTE_NOT_CONTROLLED_BY_POLICY,
             { selectedMtePolicy = MTE_NOT_CONTROLLED_BY_POLICY }
         )
         RadioButtonItem(
-            stringResource(R.string.enabled),
+            R.string.enabled,
             selectedMtePolicy == MTE_ENABLED,
             { selectedMtePolicy = MTE_ENABLED }
         )
         RadioButtonItem(
-            stringResource(R.string.disabled),
+            R.string.disabled,
             selectedMtePolicy == MTE_DISABLED,
             { selectedMtePolicy = MTE_DISABLED }
         )
@@ -557,7 +557,7 @@ private fun MTEPolicy() {
                 try {
                     dpm.mtePolicy = selectedMtePolicy
                     Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                }catch(e:java.lang.UnsupportedOperationException) {
+                } catch(e:java.lang.UnsupportedOperationException) {
                     Toast.makeText(context, R.string.unsupported, Toast.LENGTH_SHORT).show()
                 }
                 selectedMtePolicy = dpm.mtePolicy
@@ -583,22 +583,22 @@ private fun NearbyStreamingPolicy() {
         Text(text = stringResource(R.string.nearby_app_streaming), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 3.dp))
         RadioButtonItem(
-            stringResource(R.string.decide_by_user),
+            R.string.decide_by_user,
             appPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY,
             { appPolicy = NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY }
         )
         RadioButtonItem(
-            stringResource(R.string.enabled),
+            R.string.enabled,
             appPolicy == NEARBY_STREAMING_ENABLED,
             { appPolicy = NEARBY_STREAMING_ENABLED }
         )
         RadioButtonItem(
-            stringResource(R.string.disabled),
+            R.string.disabled,
             appPolicy == NEARBY_STREAMING_DISABLED,
             { appPolicy = NEARBY_STREAMING_DISABLED }
         )
         RadioButtonItem(
-            stringResource(R.string.enable_if_secure_enough),
+            R.string.enable_if_secure_enough,
             appPolicy == NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY,
             { appPolicy = NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY }
         )
@@ -617,22 +617,22 @@ private fun NearbyStreamingPolicy() {
         Text(text = stringResource(R.string.nearby_notification_streaming), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 3.dp))
         RadioButtonItem(
-            stringResource(R.string.decide_by_user),
+            R.string.decide_by_user,
             notificationPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY,
             { notificationPolicy = NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY }
         )
         RadioButtonItem(
-            stringResource(R.string.enabled),
+            R.string.enabled,
             notificationPolicy == NEARBY_STREAMING_ENABLED,
             { notificationPolicy = NEARBY_STREAMING_ENABLED }
         )
         RadioButtonItem(
-            stringResource(R.string.disabled),
+            R.string.disabled,
             notificationPolicy == NEARBY_STREAMING_DISABLED,
             { notificationPolicy = NEARBY_STREAMING_DISABLED }
         )
         RadioButtonItem(
-            stringResource(R.string.enable_if_secure_enough),
+            R.string.enable_if_secure_enough,
             notificationPolicy == NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY,
             { notificationPolicy = NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY }
         )
@@ -684,43 +684,43 @@ private fun LockTaskMode() {
         Text(text = stringResource(R.string.lock_task_feature), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         LaunchedEffect(Unit) { refreshFeature() }
-        RadioButtonItem(stringResource(R.string.disable_all), !custom, { custom = false })
-        RadioButtonItem(stringResource(R.string.custom), custom, { custom = true })
+        RadioButtonItem(R.string.disable_all, !custom, { custom = false })
+        RadioButtonItem(R.string.custom, custom, { custom = true })
         AnimatedVisibility(custom) {
             Column {
                 CheckBoxItem(
-                    stringResource(R.string.ltf_sys_info),
+                    R.string.ltf_sys_info,
                     LOCK_TASK_FEATURE_SYSTEM_INFO in lockTaskFeatures,
                     { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_SYSTEM_INFO) }
                 )
                 CheckBoxItem(
-                    stringResource(R.string.ltf_notifications),
+                    R.string.ltf_notifications,
                     LOCK_TASK_FEATURE_NOTIFICATIONS in lockTaskFeatures,
                     { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_NOTIFICATIONS) }
                 )
                 CheckBoxItem(
-                    stringResource(R.string.ltf_home),
+                    R.string.ltf_home,
                     LOCK_TASK_FEATURE_HOME in lockTaskFeatures,
                     { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_HOME) }
                 )
                 CheckBoxItem(
-                    stringResource(R.string.ltf_overview),
+                    R.string.ltf_overview,
                     LOCK_TASK_FEATURE_OVERVIEW in lockTaskFeatures,
                     { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_OVERVIEW) }
                 )
                 CheckBoxItem(
-                    stringResource(R.string.ltf_global_actions),
+                    R.string.ltf_global_actions,
                     LOCK_TASK_FEATURE_GLOBAL_ACTIONS in lockTaskFeatures,
                     { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_GLOBAL_ACTIONS) }
                 )
                 CheckBoxItem(
-                    stringResource(R.string.ltf_keyguard),
+                    R.string.ltf_keyguard,
                     LOCK_TASK_FEATURE_KEYGUARD in lockTaskFeatures,
                     { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_KEYGUARD) }
                 )
                 if(VERSION.SDK_INT >= 30) {
                     CheckBoxItem(
-                        stringResource(R.string.ltf_block_activity_start_in_task),
+                        R.string.ltf_block_activity_start_in_task,
                         LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK in lockTaskFeatures,
                         { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK) }
                     )
@@ -1004,7 +1004,7 @@ fun FactoryResetProtection() {
         }
         AnimatedVisibility(usePolicy) {
             Column {
-                CheckBoxItem(stringResource(R.string.enable_frp), enabled, { enabled = it })
+                CheckBoxItem(R.string.enable_frp, enabled, { enabled = it })
                 Text(stringResource(R.string.account_list_is))
                 Text(
                     text = if(accountList.isEmpty()) stringResource(R.string.none) else accountList.toText(),
@@ -1087,16 +1087,16 @@ private fun WipeData() {
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         CheckBoxItem(
-            stringResource(R.string.wipe_external_storage),
+            R.string.wipe_external_storage,
             externalStorage, { externalStorage = it }
         )
         if(VERSION.SDK_INT >= 22 && context.isDeviceOwner) {
-            CheckBoxItem(stringResource(R.string.wipe_reset_protection_data),
+            CheckBoxItem(R.string.wipe_reset_protection_data,
                 protectionData, { protectionData = it }
             )
         }
-        if(VERSION.SDK_INT >= 28) { CheckBoxItem(stringResource(R.string.wipe_euicc), euicc, { euicc = it }) }
-        if(VERSION.SDK_INT >= 29) { CheckBoxItem(stringResource(R.string.wipe_silently), silent, { silent = it }) }
+        if(VERSION.SDK_INT >= 28) { CheckBoxItem(R.string.wipe_euicc, euicc, { euicc = it }) }
+        if(VERSION.SDK_INT >= 29) { CheckBoxItem(R.string.wipe_silently, silent, { silent = it }) }
         AnimatedVisibility(!silent && VERSION.SDK_INT >= 28) {
             OutlinedTextField(
                 value = reason, onValueChange = { reason = it },
@@ -1189,18 +1189,18 @@ private fun SysUpdatePolicy() {
                 Text(text = stringResource(R.string.system_update_policy), style = typography.headlineLarge)
                 Spacer(Modifier.padding(vertical = 5.dp))
                 RadioButtonItem(
-                    stringResource(R.string.system_update_policy_automatic),
+                    R.string.system_update_policy_automatic,
                     selectedPolicy == TYPE_INSTALL_AUTOMATIC, { selectedPolicy = TYPE_INSTALL_AUTOMATIC }
                 )
                 RadioButtonItem(
-                    stringResource(R.string.system_update_policy_install_windowed),
+                    R.string.system_update_policy_install_windowed,
                     selectedPolicy == TYPE_INSTALL_WINDOWED, { selectedPolicy = TYPE_INSTALL_WINDOWED }
                 )
                 RadioButtonItem(
-                    stringResource(R.string.system_update_policy_postpone),
+                    R.string.system_update_policy_postpone,
                     selectedPolicy == TYPE_POSTPONE, { selectedPolicy = TYPE_POSTPONE }
                 )
-                RadioButtonItem(stringResource(R.string.none), selectedPolicy == null, { selectedPolicy = null })
+                RadioButtonItem(R.string.none, selectedPolicy == null, { selectedPolicy = null })
                 var windowedPolicyStart by remember { mutableStateOf("") }
                 var windowedPolicyEnd by remember { mutableStateOf("") }
                 if(selectedPolicy == 2) {

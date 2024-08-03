@@ -40,9 +40,7 @@ import com.bintianqi.owndroid.backToHomeStateFlow
 import com.bintianqi.owndroid.ui.*
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @Composable
 fun DpmPermissions(navCtrl:NavHostController) {

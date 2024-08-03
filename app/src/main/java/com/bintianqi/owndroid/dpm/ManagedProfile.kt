@@ -132,7 +132,7 @@ private fun CreateWorkProfile() {
         Spacer(Modifier.padding(vertical = 5.dp))
         var skipEncrypt by remember { mutableStateOf(false) }
         if(VERSION.SDK_INT>=24) {
-            CheckBoxItem(stringResource(R.string.skip_encryption), skipEncrypt, { skipEncrypt = it })
+            CheckBoxItem(R.string.skip_encryption, skipEncrypt, { skipEncrypt = it })
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
@@ -293,9 +293,9 @@ private fun DeleteWorkProfile() {
             modifier = Modifier.padding(6.dp),color = colorScheme.error
         )
         Spacer(Modifier.padding(vertical = 5.dp))
-        CheckBoxItem(stringResource(R.string.wipe_external_storage), externalStorage, { externalStorage = it })
-        if(VERSION.SDK_INT >= 28) { CheckBoxItem(stringResource(R.string.wipe_euicc), euicc, { euicc = it }) }
-        if(VERSION.SDK_INT >= 29) { CheckBoxItem(stringResource(R.string.wipe_silently), silent, { silent = it }) }
+        CheckBoxItem(R.string.wipe_external_storage, externalStorage, { externalStorage = it })
+        if(VERSION.SDK_INT >= 28) { CheckBoxItem(R.string.wipe_euicc, euicc, { euicc = it }) }
+        if(VERSION.SDK_INT >= 29) { CheckBoxItem(R.string.wipe_silently, silent, { silent = it }) }
         AnimatedVisibility(!silent && VERSION.SDK_INT >= 28) {
             OutlinedTextField(
                 value = reason, onValueChange = { reason = it },

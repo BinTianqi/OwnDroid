@@ -225,7 +225,7 @@ private fun WifiSecLevel() {
         Text(text = stringResource(R.string.min_wifi_security_level), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         RadioButtonItem(
-            stringResource(R.string.wifi_security_level_open),
+            R.string.wifi_security_open,
             selectedWifiSecLevel == WIFI_SECURITY_OPEN,
             { selectedWifiSecLevel = WIFI_SECURITY_OPEN }
         )
@@ -277,17 +277,17 @@ private fun WifiSsidPolicy() {
         Text(text = stringResource(R.string.wifi_ssid_policy), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         RadioButtonItem(
-            stringResource(R.string.none),
+            R.string.none,
             selectedPolicyType == -1,
             { selectedPolicyType = -1 }
         )
         RadioButtonItem(
-            stringResource(R.string.whitelist),
+            R.string.whitelist,
             selectedPolicyType == WIFI_SSID_POLICY_TYPE_ALLOWLIST,
             { selectedPolicyType = WIFI_SSID_POLICY_TYPE_ALLOWLIST }
         )
         RadioButtonItem(
-            stringResource(R.string.blacklist),
+            R.string.blacklist,
             selectedPolicyType == WIFI_SSID_POLICY_TYPE_DENYLIST,
             { selectedPolicyType = WIFI_SSID_POLICY_TYPE_DENYLIST }
         )
@@ -450,9 +450,9 @@ private fun RecommendedGlobalProxy() {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.recommended_global_proxy), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        RadioButtonItem(stringResource(R.string.proxy_type_off), proxyType == 0, { proxyType = 0 })
-        RadioButtonItem(stringResource(R.string.proxy_type_pac), proxyType == 1, { proxyType = 1 })
-        RadioButtonItem(stringResource(R.string.proxy_type_direct), proxyType == 2, { proxyType = 2 })
+        RadioButtonItem(R.string.proxy_type_off, proxyType == 0, { proxyType = 0 })
+        RadioButtonItem(R.string.proxy_type_pac, proxyType == 1, { proxyType = 1 })
+        RadioButtonItem(R.string.proxy_type_direct, proxyType == 2, { proxyType = 2 })
         AnimatedVisibility(proxyType != 0) {
             OutlinedTextField(
                 value = proxyUri,
@@ -465,7 +465,7 @@ private fun RecommendedGlobalProxy() {
         }
         AnimatedVisibility(proxyType == 1 && VERSION.SDK_INT >= 30) {
             Box(modifier = Modifier.padding(top = 2.dp)) {
-                CheckBoxItem(stringResource(R.string.specify_port), specifyPort, { specifyPort = it })
+                CheckBoxItem(R.string.specify_port, specifyPort, { specifyPort = it })
             }
         }
         AnimatedVisibility((proxyType == 1 && specifyPort && VERSION.SDK_INT >= 30) || proxyType == 2) {
@@ -744,7 +744,7 @@ private fun APN() {
                 }
                 
                 Text(text = stringResource(R.string.auth_type), style = typography.titleLarge)
-                RadioButtonItem(stringResource(R.string.none), selectedAuthType==AUTH_TYPE_NONE , { selectedAuthType=AUTH_TYPE_NONE })
+                RadioButtonItem(R.string.none, selectedAuthType==AUTH_TYPE_NONE , { selectedAuthType=AUTH_TYPE_NONE })
                 RadioButtonItem("CHAP", selectedAuthType == AUTH_TYPE_CHAP , { selectedAuthType = AUTH_TYPE_CHAP })
                 RadioButtonItem("PAP", selectedAuthType == AUTH_TYPE_PAP, { selectedAuthType = AUTH_TYPE_PAP })
                 RadioButtonItem("PAP/CHAP", selectedAuthType == AUTH_TYPE_PAP_OR_CHAP, { selectedAuthType = AUTH_TYPE_PAP_OR_CHAP })

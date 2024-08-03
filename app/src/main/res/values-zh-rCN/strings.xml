@@ -215,7 +215,7 @@
     <string name="network">网络</string>
     <string name="wifi_mac_addr">Wi-Fi Mac地址</string>
     <string name="min_wifi_security_level">最低WiFi安全等级</string>
-    <string name="wifi_security_level_open">开放</string>
+    <string name="wifi_security_open">开放</string>
     <string name="preferential_network_service">优先网络服务</string>
     <string name="lockdown_admin_configured_network">锁定由管理员配置的网络</string>
     <string name="wifi_ssid_policy">WiFi SSID策略</string>

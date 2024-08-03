@@ -23,7 +23,6 @@ import android.app.admin.DevicePolicyManager.PASSWORD_COMPLEXITY_NONE
 import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_ALPHABETIC
 import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_ALPHANUMERIC
 import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_BIOMETRIC_WEAK
-import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_COMPLEX
 import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_NUMERIC
 import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_NUMERIC_COMPLEX
 import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_SOMETHING
@@ -278,17 +277,17 @@ private fun ResetPassword() {
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT >= 23) {
             RadioButtonItem(
-                stringResource(R.string.do_not_ask_credentials_on_boot),
+                R.string.do_not_ask_credentials_on_boot,
                 resetPwdFlag == RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT,
                 { resetPwdFlag = RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT }
             )
         }
         RadioButtonItem(
-            stringResource(R.string.reset_password_require_entry),
+            R.string.reset_password_require_entry,
             resetPwdFlag == RESET_PASSWORD_REQUIRE_ENTRY,
             { resetPwdFlag = RESET_PASSWORD_REQUIRE_ENTRY }
         )
-        RadioButtonItem(stringResource(R.string.none), resetPwdFlag == 0, { resetPwdFlag = 0 })
+        RadioButtonItem(R.string.none, resetPwdFlag == 0, { resetPwdFlag = 0 })
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
@@ -342,10 +341,10 @@ private fun PasswordComplexity() {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val passwordComplexity = mapOf(
-        PASSWORD_COMPLEXITY_NONE to stringResource(R.string.password_complexity_none),
-        PASSWORD_COMPLEXITY_LOW to stringResource(R.string.password_complexity_low),
-        PASSWORD_COMPLEXITY_MEDIUM to stringResource(R.string.password_complexity_medium),
-        PASSWORD_COMPLEXITY_HIGH to stringResource(R.string.password_complexity_high)
+        PASSWORD_COMPLEXITY_NONE to R.string.password_complexity_none,
+        PASSWORD_COMPLEXITY_LOW to R.string.password_complexity_low,
+        PASSWORD_COMPLEXITY_MEDIUM to R.string.password_complexity_medium,
+        PASSWORD_COMPLEXITY_HIGH to R.string.password_complexity_high
     ).toList()
     var selectedItem by remember { mutableIntStateOf(passwordComplexity[0].first) }
     LaunchedEffect(Unit) { selectedItem = dpm.requiredPasswordComplexity }
@@ -353,28 +352,14 @@ private fun PasswordComplexity() {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.required_password_complexity), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        RadioButtonItem(
-            passwordComplexity[0].second,
-            selectedItem == passwordComplexity[0].first,
-            { selectedItem = passwordComplexity[0].first }
-        )
-        RadioButtonItem(
-            passwordComplexity[1].second,
-            selectedItem == passwordComplexity[1].first,
-            { selectedItem = passwordComplexity[1].first }
-        )
-        RadioButtonItem(
-            passwordComplexity[2].second,
-            selectedItem == passwordComplexity[2].first,
-            { selectedItem = passwordComplexity[2].first }
-        )
-        RadioButtonItem(
-            passwordComplexity[3].second,
-            selectedItem == passwordComplexity[3].first,
-            { selectedItem = passwordComplexity[3].first }
-        )
+        for(index in 0..3) {
+            RadioButtonItem(
+                passwordComplexity[index].second,
+                selectedItem == passwordComplexity[index].first,
+                { selectedItem = passwordComplexity[index].first }
+            )
+        }
         Spacer(Modifier.padding(vertical = 5.dp))
-        
         Button(
             onClick = {
                 dpm.requiredPasswordComplexity = selectedItem
@@ -606,24 +591,24 @@ private fun DisableKeyguardFeatures() {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.disable_keyguard_features), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        RadioButtonItem(stringResource(R.string.enable_all), state == 0, { state = 0 })
-        RadioButtonItem(stringResource(R.string.disable_all), state == 1, { state = 1 })
-        RadioButtonItem(stringResource(R.string.custom), state == 2 , { state = 2 })
+        RadioButtonItem(R.string.enable_all, state == 0, { state = 0 })
+        RadioButtonItem(R.string.disable_all, state == 1, { state = 1 })
+        RadioButtonItem(R.string.custom, state == 2 , { state = 2 })
         AnimatedVisibility(state==2) {
             Column {
-                CheckBoxItem(stringResource(R.string.disable_keyguard_features_widgets), widgets, { widgets = it })
-                CheckBoxItem(stringResource(R.string.disable_keyguard_features_camera), camera, { camera = it })
-                CheckBoxItem(stringResource(R.string.disable_keyguard_features_notification), notification, { notification = it })
-                CheckBoxItem(stringResource(R.string.disable_keyguard_features_unredacted_notification), unredacted, { unredacted = it })
-                CheckBoxItem(stringResource(R.string.disable_keyguard_features_trust_agents), agents, { agents = it })
-                CheckBoxItem(stringResource(R.string.disable_keyguard_features_fingerprint), fingerprint, { fingerprint = it })
-                if(VERSION.SDK_INT >= 24) { CheckBoxItem(stringResource(R.string.disable_keyguard_features_remote_input), remote , { remote = it }) }
+                CheckBoxItem(R.string.disable_keyguard_features_widgets, widgets, { widgets = it })
+                CheckBoxItem(R.string.disable_keyguard_features_camera, camera, { camera = it })
+                CheckBoxItem(R.string.disable_keyguard_features_notification, notification, { notification = it })
+                CheckBoxItem(R.string.disable_keyguard_features_unredacted_notification, unredacted, { unredacted = it })
+                CheckBoxItem(R.string.disable_keyguard_features_trust_agents, agents, { agents = it })
+                CheckBoxItem(R.string.disable_keyguard_features_fingerprint, fingerprint, { fingerprint = it })
+                if(VERSION.SDK_INT >= 24) { CheckBoxItem(R.string.disable_keyguard_features_remote_input, remote , { remote = it }) }
                 if(VERSION.SDK_INT >= 28) {
-                    CheckBoxItem(stringResource(R.string.disable_keyguard_features_face), face, { face = it })
-                    CheckBoxItem(stringResource(R.string.disable_keyguard_features_iris), iris, { iris = it })
-                    CheckBoxItem(stringResource(R.string.disable_keyguard_features_biometrics), biometrics, { biometrics = it })
+                    CheckBoxItem(R.string.disable_keyguard_features_face, face, { face = it })
+                    CheckBoxItem(R.string.disable_keyguard_features_iris, iris, { iris = it })
+                    CheckBoxItem(R.string.disable_keyguard_features_biometrics, biometrics, { biometrics = it })
                 }
-                if(VERSION.SDK_INT >= 34) { CheckBoxItem(stringResource(R.string.disable_keyguard_features_shortcuts), shortcuts, { shortcuts = it }) }
+                if(VERSION.SDK_INT >= 34) { CheckBoxItem(R.string.disable_keyguard_features_shortcuts, shortcuts, { shortcuts = it }) }
             }
         }
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -663,14 +648,13 @@ private fun PasswordQuality() {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val passwordQuality = mapOf(
-        PASSWORD_QUALITY_UNSPECIFIED to stringResource(R.string.password_quality_unspecified),
-        PASSWORD_QUALITY_SOMETHING to stringResource(R.string.password_quality_something),
-        PASSWORD_QUALITY_ALPHABETIC to stringResource(R.string.password_quality_alphabetic),
-        PASSWORD_QUALITY_NUMERIC to stringResource(R.string.password_quality_numeric),
-        PASSWORD_QUALITY_ALPHANUMERIC to stringResource(R.string.password_quality_alphanumeric),
-        PASSWORD_QUALITY_BIOMETRIC_WEAK to stringResource(R.string.password_quality_biometrics_weak),
-        PASSWORD_QUALITY_NUMERIC_COMPLEX to stringResource(R.string.password_quality_numeric_complex),
-        PASSWORD_QUALITY_COMPLEX to stringResource(R.string.custom) + "（${stringResource(R.string.unsupported) }）",
+        PASSWORD_QUALITY_UNSPECIFIED to R.string.password_quality_unspecified,
+        PASSWORD_QUALITY_SOMETHING to R.string.password_quality_something,
+        PASSWORD_QUALITY_ALPHABETIC to R.string.password_quality_alphabetic,
+        PASSWORD_QUALITY_NUMERIC to R.string.password_quality_numeric,
+        PASSWORD_QUALITY_ALPHANUMERIC to R.string.password_quality_alphanumeric,
+        PASSWORD_QUALITY_BIOMETRIC_WEAK to R.string.password_quality_biometrics_weak,
+        PASSWORD_QUALITY_NUMERIC_COMPLEX to R.string.password_quality_numeric_complex
     ).toList()
     var selectedItem by remember { mutableIntStateOf(passwordQuality[0].first) }
     LaunchedEffect(Unit) { selectedItem=dpm.getPasswordQuality(receiver) }
@@ -681,14 +665,9 @@ private fun PasswordQuality() {
         Text(text = stringResource(R.string.password_complexity_instead_password_quality))
         if(VERSION.SDK_INT >= 31) { Text(text = stringResource(R.string.password_quality_deprecated_desc), color = colorScheme.error) }
         Spacer(Modifier.padding(vertical = 5.dp))
-        RadioButtonItem(passwordQuality[0].second, selectedItem == passwordQuality[0].first, { selectedItem = passwordQuality[0].first })
-        RadioButtonItem(passwordQuality[1].second, selectedItem == passwordQuality[1].first, { selectedItem = passwordQuality[1].first })
-        RadioButtonItem(passwordQuality[2].second, selectedItem == passwordQuality[2].first, { selectedItem = passwordQuality[2].first })
-        RadioButtonItem(passwordQuality[3].second, selectedItem == passwordQuality[3].first, { selectedItem = passwordQuality[3].first })
-        RadioButtonItem(passwordQuality[4].second, selectedItem == passwordQuality[4].first, { selectedItem = passwordQuality[4].first })
-        RadioButtonItem(passwordQuality[5].second, selectedItem == passwordQuality[5].first, { selectedItem = passwordQuality[5].first })
-        RadioButtonItem(passwordQuality[6].second, selectedItem == passwordQuality[6].first, { selectedItem = passwordQuality[6].first })
-        RadioButtonItem(passwordQuality[7].second, selectedItem == passwordQuality[7].first, { selectedItem = passwordQuality[7].first })
+        for(index in 1..6) {
+            RadioButtonItem(passwordQuality[index].second, selectedItem == passwordQuality[index].first, { selectedItem = passwordQuality[index].first })
+        }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {

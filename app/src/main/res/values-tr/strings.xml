@@ -220,7 +220,7 @@
     <string name="network">Ağ</string>
     <string name="wifi_mac_addr">Wi-Fi MAC adresi</string>
     <string name="min_wifi_security_level">Minimum Wi-Fi güvenlik seviyesi</string>
-    <string name="wifi_security_level_open">Açık</string>
+    <string name="wifi_security_open">Açık</string>
     <string name="preferential_network_service">Tercihli ağ hizmeti</string>
     <string name="lockdown_admin_configured_network">Yönetici tarafından yapılandırılmış ağı kilitle</string>
     <string name="wifi_ssid_policy">WiFi SSID politikası</string>

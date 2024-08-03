@@ -79,6 +79,16 @@ fun Information(content: @Composable ()->Unit) {
 
 @Composable
 fun RadioButtonItem(
+    @StringRes text: Int,
+    selected: Boolean,
+    operation: () -> Unit,
+    textColor: Color = colorScheme.onBackground
+) {
+    RadioButtonItem(stringResource(text), selected, operation, textColor)
+}
+
+@Composable
+fun RadioButtonItem(
     text: String,
     selected: Boolean,
     operation: () -> Unit,
@@ -96,7 +106,7 @@ fun RadioButtonItem(
 
 @Composable
 fun CheckBoxItem(
-    text: String,
+    @StringRes text: Int,
     checked: Boolean,
     operation: (Boolean) -> Unit,
     textColor: Color = colorScheme.onBackground
@@ -110,7 +120,7 @@ fun CheckBoxItem(
             checked = checked,
             onCheckedChange = operation
         )
-        Text(text = text, color = textColor, modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
+        Text(text = stringResource(text), color = textColor, modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
     }
 }
 

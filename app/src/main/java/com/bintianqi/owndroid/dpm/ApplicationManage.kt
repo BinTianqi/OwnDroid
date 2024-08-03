@@ -640,21 +640,21 @@ private fun CredentialManagePolicy(pkgName: String) {
         Text(text = stringResource(R.string.credential_manage_policy), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         RadioButtonItem(
-            stringResource(R.string.none),
+            R.string.none,
             policyType == -1, { policyType = -1 }
         )
         RadioButtonItem(
-            stringResource(R.string.blacklist),
+            R.string.blacklist,
             policyType == PACKAGE_POLICY_BLOCKLIST,
             { policyType = PACKAGE_POLICY_BLOCKLIST }
         )
         RadioButtonItem(
-            stringResource(R.string.whitelist),
+            R.string.whitelist,
             policyType == PACKAGE_POLICY_ALLOWLIST,
             { policyType = PACKAGE_POLICY_ALLOWLIST }
         )
         RadioButtonItem(
-            stringResource(R.string.whitelist_and_system_app),
+            R.string.whitelist_and_system_app,
             policyType == PACKAGE_POLICY_ALLOWLIST_AND_SYSTEM,
             { policyType = PACKAGE_POLICY_ALLOWLIST_AND_SYSTEM }
         )

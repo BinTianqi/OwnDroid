@@ -225,14 +225,14 @@
     <string name="network">Network</string>
     <string name="wifi_mac_addr">Wi-Fi Mac address</string>
     <string name="min_wifi_security_level">Min Wi-Fi security level</string>
-    <string name="wifi_security_level_open">Open</string>
+    <string name="wifi_security_open">Open</string>
     <string name="preferential_network_service">Preferential network service</string>
     <string name="lockdown_admin_configured_network">Lockdown admin configured network</string>
     <string name="wifi_ssid_policy">WiFi SSID policy</string>
     <string name="ssid_list_is">SSID list: </string>
     <string name="cannot_be_empty">Cannot be empty</string>
     <string name="already_exist">Already exist</string>
-    <string name="private_dns">PrivateDNS</string>
+    <string name="private_dns">Private DNS</string>
     <string name="dns_provide_hostname">Provide hostname</string>
     <string name="host_not_serving_dns_tls">Host not serving</string>
     <string name="set_to_opportunistic">Set to opportunistic</string>
