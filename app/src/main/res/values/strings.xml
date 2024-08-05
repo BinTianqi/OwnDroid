@@ -306,8 +306,6 @@
     <string name="loading">Loading</string>
     <string name="show_user_app">Show user apps</string>
     <string name="show_system_app">Show system apps</string>
-    <string name="show_priv_app">Show priv-apps</string>
-    <string name="show_apex_app">Show apex apps</string>
     <string name="permission_picker">Permission picker</string>
     <string name="suspend">Suspend</string>
     <string name="hide">Hide</string>
@@ -353,6 +351,7 @@
     <string name="select_apk" tools:ignore="TypographyEllipsis">Select APK...</string>
     <string name="silent_install">Silent install</string>
     <string name="request_install">Request install</string>
+    <string name="search">Search</string>
     <!--App install session status-->
     <string name="app_installer_status">App installer:</string>
     <string name="status_pending_action">Pending user action</string>

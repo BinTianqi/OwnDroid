@@ -298,8 +298,6 @@
     <string name="loading">Yükleniyor</string>
     <string name="show_user_app">Kullanıcı uygulamalarını göster</string>
     <string name="show_system_app">Sistem uygulamalarını göster</string>
-    <string name="show_priv_app">Priv uygulamalarını göster</string>
-    <string name="show_apex_app">Apex uygulamalarını göster</string>
     <string name="permission_picker">İzin seçici</string>
     <string name="suspend">Askıya al</string>
     <string name="hide">Gizle</string>
@@ -346,6 +344,7 @@
     <string name="select_apk" tools:ignore="TypographyEllipsis">APK seç...</string>
     <string name="silent_install">Sessiz yükleme</string>
     <string name="request_install">Yükleme isteği</string>
+    <string name="search">Search</string> <!--TODO-->
 
     <!--App install session status-->
     <string name="app_installer_status">Uygulama yükleyici:</string>

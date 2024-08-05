@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -192,24 +193,25 @@ private fun UserRestrictionItem(
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    SwitchItem(
-        itemName,restrictionDescription,leadIcon,
-        { if(context.isDeviceOwner||context.isProfileOwner) { dpm.getUserRestrictions(receiver).getBoolean(restriction) }else{ false } },
-        {
-            try{
-                if(it) {
-                    dpm.addUserRestriction(receiver,restriction)
-                }else{
-                    dpm.clearUserRestriction(receiver,restriction)
-                }
-            }catch(e:SecurityException) {
-                if(context.isProfileOwner) {
-                    Toast.makeText(context, R.string.require_device_owner, Toast.LENGTH_SHORT).show()
+    Box(modifier = Modifier.padding(start = 22.dp, end = 16.dp)) {
+        SwitchItem(
+            itemName,restrictionDescription,leadIcon,
+            { if(context.isDeviceOwner||context.isProfileOwner) { dpm.getUserRestrictions(receiver).getBoolean(restriction) }else{ false } },
+            {
+                try{
+                    if(it) {
+                        dpm.addUserRestriction(receiver,restriction)
+                    }else{
+                        dpm.clearUserRestriction(receiver,restriction)
+                    }
+                }catch(e:SecurityException) {
+                    if(context.isProfileOwner) {
+                        Toast.makeText(context, R.string.require_device_owner, Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
-        },
-        context.isDeviceOwner||context.isProfileOwner
-    )
+        )
+    }
 }
 
 object RestrictionData {
