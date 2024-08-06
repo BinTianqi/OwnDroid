@@ -36,7 +36,7 @@ import kotlinx.coroutines.withContext
 import java.io.FileInputStream
 
 class InstallAppActivity: FragmentActivity() {
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         this.intent = intent
     }

@@ -15,6 +15,7 @@ import android.app.admin.DevicePolicyManager.WIFI_SECURITY_PERSONAL
 import android.app.admin.WifiSsidPolicy
 import android.app.admin.WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_ALLOWLIST
 import android.app.admin.WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_DENYLIST
+import android.content.Context
 import android.net.ProxyInfo
 import android.net.Uri
 import android.net.wifi.WifiSsid
@@ -750,7 +751,7 @@ private fun APN() {
                 RadioButtonItem("PAP/CHAP", selectedAuthType == AUTH_TYPE_PAP_OR_CHAP, { selectedAuthType = AUTH_TYPE_PAP_OR_CHAP })
                 
                 if(VERSION.SDK_INT>=29) {
-                    val ts = context.getSystemService(ComponentActivity.TELEPHONY_SERVICE) as TelephonyManager
+                    val ts = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
                     carrierId = ts.simCarrierId.toString()
                     Text(text = "CarrierID", style = typography.titleLarge)
                     TextField(

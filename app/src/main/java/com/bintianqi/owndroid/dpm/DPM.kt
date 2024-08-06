@@ -12,8 +12,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller
 import android.os.Build.VERSION
-import androidx.activity.ComponentActivity.CONTEXT_IGNORE_SECURITY
-import androidx.activity.ComponentActivity.DEVICE_POLICY_SERVICE
 import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -34,7 +32,7 @@ lateinit var addDeviceAdmin: ActivityResultLauncher<Intent>
 val Context.isDeviceOwner: Boolean
     get() {
         val sharedPref = getSharedPreferences("data", Context.MODE_PRIVATE)
-        val dpm = getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        val dpm = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         return dpm.isDeviceOwnerApp(
             if(sharedPref.getBoolean("dhizuku", false)) {
                 Dhizuku.getOwnerPackageName()
@@ -46,7 +44,7 @@ val Context.isDeviceOwner: Boolean
 
 val Context.isProfileOwner: Boolean
     get() {
-        val dpm = getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        val dpm = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         return dpm.isProfileOwnerApp("com.bintianqi.owndroid")
     }
 
@@ -90,8 +88,8 @@ fun installPackage(context: Context, inputStream: InputStream) {
 @SuppressLint("PrivateApi")
 fun binderWrapperDevicePolicyManager(appContext: Context): DevicePolicyManager? {
     try {
-        val context = appContext.createPackageContext(Dhizuku.getOwnerComponent().packageName, CONTEXT_IGNORE_SECURITY)
-        val manager = context.getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        val context = appContext.createPackageContext(Dhizuku.getOwnerComponent().packageName, Context.CONTEXT_IGNORE_SECURITY)
+        val manager = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         val field = manager.javaClass.getDeclaredField("mService")
         field.isAccessible = true
         val oldInterface = field[manager] as IDevicePolicyManager
@@ -113,11 +111,11 @@ fun Context.getDPM(): DevicePolicyManager {
         if (!Dhizuku.isPermissionGranted()) {
             dhizukuErrorStatus.value = 2
             backToHomeStateFlow.value = true
-            return this.getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
+            return this.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         }
-        return binderWrapperDevicePolicyManager(this) ?: this.getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        return binderWrapperDevicePolicyManager(this) ?: this.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     } else {
-        return this.getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        return this.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     }
 }
 

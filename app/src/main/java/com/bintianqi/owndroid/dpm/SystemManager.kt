@@ -1330,7 +1330,7 @@ fun InstallSystemUpdate() {
 
 @SuppressLint("NewApi")
 private fun sendStopLockTaskNotification(context: Context) {
-    val nm = context.getSystemService(ComponentActivity.NOTIFICATION_SERVICE) as NotificationManager
+    val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     if (VERSION.SDK_INT >= 26) {
             val channel = NotificationChannel("LockTaskMode", context.getString(R.string.lock_task_mode), NotificationManager.IMPORTANCE_HIGH).apply {
             description = "Notification channel for stop lock task mode"

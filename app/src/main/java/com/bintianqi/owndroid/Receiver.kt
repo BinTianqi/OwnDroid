@@ -82,7 +82,7 @@ class StopLockTaskModeReceiver: BroadcastReceiver() {
         val packages = dpm.getLockTaskPackages(receiver)
         dpm.setLockTaskPackages(receiver, arrayOf())
         dpm.setLockTaskPackages(receiver, packages)
-        val nm = context.getSystemService(ComponentActivity.NOTIFICATION_SERVICE) as NotificationManager
+        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         nm.cancel(1)
     }
 }
