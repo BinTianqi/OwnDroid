@@ -91,6 +91,6 @@ jobs:
           mv ./$RELEASE_SIGNED_PWD/app-release.apk ./$RELEASE_SIGNED_PWD.apk && rm -rf ./$RELEASE_SIGNED_PWD
           ../binaries/telegram-bot-api --api-id=${{ secrets.TELEGRAM_API_APP_ID }} --api-hash=${{ secrets.TELEGRAM_API_HASH }} --local 2>&1 > /dev/null &
           export token=${{ secrets.TELEGRAM_BOT_KEY }}
-          curl -v "http://127.0.0.1:8081/bot$token/sendMediaGroup?chat_id=-1002216379163&media=%5B%7B%22type%22%3A%22document%22%2C%22media%22%3A%22attach%3A%2F%2FdebugTest%22%7D%2C%7B%22type%22%3A%22document%22%2C%22media%22%3A%22attach%3A%2F%2FreleaseTest%22%7D%2C%7B%22type%22%3A%22document%22%2C%22media%22%3A%22attach%3A%2F%2FdebugSigned%22%7D%2C%7B%22type%22%3A%22document%22%2C%22media%22%3A%22attach%3A%2F%2FreleaseSigned%22%2C%22parse_mode%22%3A%22MarkdownV2%22%2C%22caption%22%3A${ESCAPED}%7D%5D" \
+          curl -v "http://127.0.0.1:8081/bot$token/sendMediaGroup?chat_id=-1002216379163&media=%5B%7B%22type%22%3A%22document%22%2C%22media%22%3A%22attach%3A%2F%2FreleaseTest%22%7D%2C%7B%22type%22%3A%22document%22%2C%22media%22%3A%22attach%3A%2F%2FreleaseSigned%22%2C%22parse_mode%22%3A%22MarkdownV2%22%2C%22caption%22%3A${ESCAPED}%7D%5D" \
            -F releaseTest="@$RELEASE_TEST_PWD.apk" \
            -F releaseSigned="@$RELEASE_SIGNED_PWD.apk"

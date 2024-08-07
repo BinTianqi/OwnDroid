@@ -327,6 +327,7 @@ private fun DeviceOwner() {
     val context = LocalContext.current
     val dpm = context.getDPM()
     var deactivateDialog by remember { mutableStateOf(false) }
+    var resetPolicy by remember { mutableStateOf(true) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.device_owner), style = typography.headlineLarge)
@@ -357,7 +358,8 @@ private fun DeviceOwner() {
             text = {
                 Column {
                     if(sharedPref.getBoolean("dhizuku", false)) Text(stringResource(R.string.dhizuku_will_be_deactivated))
-                    Text(stringResource(R.string.will_reset_policy))
+                    Spacer(Modifier.padding(vertical = 4.dp))
+                    CheckBoxItem(text = R.string.reset_device_policy, checked = resetPolicy, operation = { resetPolicy = it })
                 }
             },
             onDismissRequest = { deactivateDialog = false },
@@ -372,7 +374,7 @@ private fun DeviceOwner() {
                 TextButton(
                     onClick = {
                         coroutine.launch {
-                            context.resetDevicePolicy()
+                            if(resetPolicy) context.resetDevicePolicy()
                             dpm.clearDeviceOwnerApp(context.dpcPackageName)
                             if(sharedPref.getBoolean("dhizuku", false)) {
                                 if (!Dhizuku.init(context)) {

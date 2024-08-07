@@ -10,6 +10,7 @@ import android.app.admin.SystemUpdatePolicy
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.IPackageInstaller
 import android.content.pm.PackageInstaller
 import android.os.Build.VERSION
 import androidx.activity.result.ActivityResultLauncher
@@ -86,7 +87,7 @@ fun installPackage(context: Context, inputStream: InputStream) {
 }
 
 @SuppressLint("PrivateApi")
-fun binderWrapperDevicePolicyManager(appContext: Context): DevicePolicyManager? {
+private fun binderWrapperDevicePolicyManager(appContext: Context): DevicePolicyManager? {
     try {
         val context = appContext.createPackageContext(Dhizuku.getOwnerComponent().packageName, Context.CONTEXT_IGNORE_SECURITY)
         val manager = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
@@ -103,6 +104,40 @@ fun binderWrapperDevicePolicyManager(appContext: Context): DevicePolicyManager? 
         dhizukuErrorStatus.value = 1
     }
     return null
+}
+
+@SuppressLint("PrivateApi")
+private fun binderWrapperPackageInstaller(appContext: Context): PackageInstaller? {
+    try {
+        val context = appContext.createPackageContext(Dhizuku.getOwnerComponent().packageName, Context.CONTEXT_IGNORE_SECURITY)
+        val installer = context.packageManager.packageInstaller
+        val field = installer.javaClass.getDeclaredField("mInstaller")
+        field.isAccessible = true
+        val oldInterface = field[installer] as IPackageInstaller
+        if (oldInterface is DhizukuBinderWrapper) return installer
+        val oldBinder = oldInterface.asBinder()
+        val newBinder = binderWrapper(oldBinder)
+        val newInterface = IPackageInstaller.Stub.asInterface(newBinder)
+        field[installer] = newInterface
+        return installer
+    } catch (e: Exception) {
+        dhizukuErrorStatus.value = 1
+    }
+    return null
+}
+
+fun Context.getPI(): PackageInstaller {
+    val sharedPref = this.getSharedPreferences("data", Context.MODE_PRIVATE)
+    if(sharedPref.getBoolean("dhizuku", false)) {
+        if (!Dhizuku.isPermissionGranted()) {
+            dhizukuErrorStatus.value = 2
+            backToHomeStateFlow.value = true
+            return this.packageManager.packageInstaller
+        }
+        return binderWrapperPackageInstaller(this) ?: this.packageManager.packageInstaller
+    } else {
+        return this.packageManager.packageInstaller
+    }
 }
 
 fun Context.getDPM(): DevicePolicyManager {

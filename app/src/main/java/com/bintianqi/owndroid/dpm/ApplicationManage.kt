@@ -942,7 +942,7 @@ private fun UninstallApp(pkgName: String) {
                 onClick = {
                     val intent = Intent(context, PackageInstallerReceiver::class.java)
                     val intentSender = PendingIntent.getBroadcast(context, 8, intent, PendingIntent.FLAG_IMMUTABLE).intentSender
-                    val pkgInstaller = context.packageManager.packageInstaller
+                    val pkgInstaller = context.getPI()
                     pkgInstaller.uninstall(pkgName, intentSender)
                 },
                 modifier = Modifier.fillMaxWidth()

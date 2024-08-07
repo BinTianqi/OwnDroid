@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -101,7 +102,7 @@ private fun Home(navCtrl: NavHostController) {
         Text(
             text = stringResource(R.string.work_profile),
             style = typography.headlineLarge,
-            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp)
+            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp).offset(x = (-8).dp)
         )
         if(VERSION.SDK_INT >= 30 && context.isProfileOwner && dpm.isManagedProfile(receiver)) {
             SubPageItem(R.string.org_owned_work_profile, "", R.drawable.corporate_fare_fill0) { navCtrl.navigate("OrgOwnedWorkProfile") }
