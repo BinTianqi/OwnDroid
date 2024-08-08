@@ -407,8 +407,9 @@ private fun PermissionManage(pkgName: String) {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     var showDialog by remember { mutableStateOf(false) }
-    var selectedPermission by remember { mutableStateOf(PermissionPickerItem("", R.string.unknown, R.drawable.block_fill0)) }
+    var selectedPermission by remember { mutableStateOf(PermissionItem("", R.string.unknown, R.drawable.block_fill0)) }
     val statusMap = remember { mutableStateMapOf<String, Int>() }
+    val profileOwner = context.isProfileOwner
     val grantState = mapOf(
         PERMISSION_GRANT_STATE_DEFAULT to stringResource(R.string.default_stringres),
         PERMISSION_GRANT_STATE_GRANTED to stringResource(R.string.granted),
@@ -417,9 +418,11 @@ private fun PermissionManage(pkgName: String) {
     LaunchedEffect(pkgName) {
         if(pkgName != "") {
             permissionList().forEach { statusMap[it.permission] = dpm.getPermissionGrantState(receiver, pkgName, it.permission) }
+        } else {
+            statusMap.clear()
         }
     }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 4.dp))
         for(permission in permissionList()) {
             Row(
@@ -432,7 +435,7 @@ private fun PermissionManage(pkgName: String) {
                             showDialog = true
                         }
                     }
-                    .padding(top = 8.dp, bottom = 8.dp, end = 8.dp)
+                    .padding(8.dp)
             ) {
                 Icon(
                     painter = painterResource(permission.icon),
@@ -487,7 +490,9 @@ private fun PermissionManage(pkgName: String) {
                 Column {
                     Text(selectedPermission.permission)
                     Spacer(Modifier.padding(vertical = 4.dp))
-                    GrantPermissionItem(R.string.grant, PERMISSION_GRANT_STATE_GRANTED)
+                    if(!(VERSION.SDK_INT >=31 && profileOwner && selectedPermission.profileOwnerRestricted)) {
+                        GrantPermissionItem(R.string.grant, PERMISSION_GRANT_STATE_GRANTED)
+                    }
                     GrantPermissionItem(R.string.deny, PERMISSION_GRANT_STATE_DENIED)
                     GrantPermissionItem(R.string.default_stringres, PERMISSION_GRANT_STATE_DEFAULT)
                 }

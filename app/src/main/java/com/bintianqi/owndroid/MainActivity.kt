@@ -36,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -181,14 +182,18 @@ private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>) {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    var activateType = if(sharedPref.getBoolean("dhizuku", false)) stringResource(R.string.dhizuku) + " - " else ""
-    activateType += stringResource(
+    val refreshStatus by dhizukuErrorStatus.collectAsState()
+    var activateType by remember { mutableStateOf("") }
+    LaunchedEffect(refreshStatus) {
+        activateType = if(sharedPref.getBoolean("dhizuku", false)) context.getString(R.string.dhizuku) + " - " else ""
+        activateType += context.getString(
             if(context.isDeviceOwner) { R.string.device_owner }
             else if(context.isProfileOwner) {
                 if(VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)) R.string.work_profile_owner else R.string.profile_owner
             }
             else if(context.isDeviceAdmin) R.string.device_admin else R.string.click_to_activate
         )
+    }
     LaunchedEffect(Unit) { pkgName.value = "" }
     Column(modifier = Modifier.background(colorScheme.background).statusBarsPadding().verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 25.dp))

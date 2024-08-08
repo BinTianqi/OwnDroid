@@ -563,6 +563,7 @@
     <string name="automation_debug">调试模式</string>
 
     <!--AndroidPermission-->
+    <string name="permission_POST_NOTIFICATIONS">发送通知</string>
     <string name="permission_READ_EXTERNAL_STORAGE">读取外部存储</string>
     <string name="permission_WRITE_EXTERNAL_STORAGE">写入外部存储</string>
     <string name="permission_READ_MEDIA_AUDIO">读取音频</string>
@@ -577,17 +578,25 @@
     <string name="permission_ACCESS_COARSE_LOCATION">粗略位置</string>
     <string name="permission_ACCESS_FINE_LOCATION">准确位置</string>
     <string name="permission_ACCESS_BACKGROUND_LOCATION">后台获取位置</string>
+    <string name="permission_BLUETOOTH_CONNECT">蓝牙连接</string>
+    <string name="permission_BLUETOOTH_SCAN">蓝牙扫描</string>
+    <string name="permission_BLUETOOTH_ADVERTISE">使设备可被发现</string>
+    <string name="permission_NEARBY_WIFI_DEVICES">附近的Wi-Fi设备</string>
     <string name="permission_CALL_PHONE">打电话</string>
+    <string name="permission_ANSWER_PHONE_CALLS">接电话</string>
+    <string name="permission_READ_PHONE_NUMBERS">读取手机号码</string>
     <string name="permission_READ_PHONE_STATE">读取手机状态</string>
+    <string name="permission_USE_SIP">使用SIP</string>
+    <string name="permission_UWB_RANGING">超宽频</string>
     <string name="permission_READ_SMS">读取短信</string>
     <string name="permission_RECEIVE_SMS">接收短信</string>
     <string name="permission_SEND_SMS">发送短信</string>
     <string name="permission_READ_CALL_LOG">读取通话记录</string>
     <string name="permission_WRITE_CALL_LOG">写入通话记录</string>
+    <string name="permission_RECEIVE_WAP_PUSH">接收WAP推送</string>
     <string name="permission_BODY_SENSORS">身体传感器</string>
     <string name="permission_BODY_SENSORS_BACKGROUND">后台使用身体传感器</string>
     <string name="permission_ACTIVITY_RECOGNITION">查看使用情况</string>
-    <string name="permission_POST_NOTIFICATIONS">发送通知</string>
 
     <string name="version_name">版本名</string>
     <string name="version_code">版本号</string>

@@ -577,6 +577,7 @@
     <string name="automation_debug">Debug mode</string>
 
     <!--AndroidPermission-->
+    <string name="permission_POST_NOTIFICATIONS">Post notifications</string>
     <string name="permission_READ_EXTERNAL_STORAGE">Read external storage</string>
     <string name="permission_WRITE_EXTERNAL_STORAGE">Write external storage</string>
     <string name="permission_READ_MEDIA_AUDIO">Read media (audio)</string>
@@ -591,17 +592,25 @@
     <string name="permission_ACCESS_COARSE_LOCATION">Access coarse location</string>
     <string name="permission_ACCESS_FINE_LOCATION">Access fine location</string>
     <string name="permission_ACCESS_BACKGROUND_LOCATION">Access location in background</string>
+    <string name="permission_BLUETOOTH_CONNECT">Bluetooth connect</string>
+    <string name="permission_BLUETOOTH_SCAN">Bluetooth scan</string>
+    <string name="permission_BLUETOOTH_ADVERTISE">Bluetooth advertise</string>
+    <string name="permission_NEARBY_WIFI_DEVICES">Nearby Wi-Fi devices</string>
     <string name="permission_CALL_PHONE">Call phone</string>
+    <string name="permission_ANSWER_PHONE_CALLS">Answer phone calls</string>
+    <string name="permission_READ_PHONE_NUMBERS">Read phone numbers</string>
     <string name="permission_READ_PHONE_STATE">Read phone state</string>
+    <string name="permission_USE_SIP">Use SIP</string>
+    <string name="permission_UWB_RANGING">UWB ranging</string>
     <string name="permission_READ_SMS">Read SMS</string>
     <string name="permission_RECEIVE_SMS">Receive SMS</string>
     <string name="permission_SEND_SMS">Send SMS</string>
     <string name="permission_READ_CALL_LOG">Read call log</string>
     <string name="permission_WRITE_CALL_LOG">Write call log</string>
+    <string name="permission_RECEIVE_WAP_PUSH">Receive WAP push</string>
     <string name="permission_BODY_SENSORS">Access body sensors</string>
     <string name="permission_BODY_SENSORS_BACKGROUND">Access body sensors in background</string>
     <string name="permission_ACTIVITY_RECOGNITION">Activity recognition</string>
-    <string name="permission_POST_NOTIFICATIONS">Post notifications</string>
 
     <string name="version_name">Version name</string>
     <string name="version_code">Version code</string>

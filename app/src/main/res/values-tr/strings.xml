@@ -571,6 +571,7 @@
     <string name="automation_debug">Debug mode</string> <!--TODO-->
 
     <!--AndroidPermission-->
+    <string name="permission_POST_NOTIFICATIONS">Bildirim gönder</string>
     <string name="permission_READ_EXTERNAL_STORAGE">Harici depolamayı oku</string>
     <string name="permission_WRITE_EXTERNAL_STORAGE">Harici depolamaya yaz</string>
     <string name="permission_READ_MEDIA_AUDIO">Medya oku (ses)</string>
@@ -585,17 +586,25 @@
     <string name="permission_ACCESS_COARSE_LOCATION">Yaklaşık konuma eriş</string>
     <string name="permission_ACCESS_FINE_LOCATION">Kesin konuma eriş</string>
     <string name="permission_ACCESS_BACKGROUND_LOCATION">Arka planda konuma eriş</string>
+    <string name="permission_BLUETOOTH_CONNECT">Bluetooth connect</string> <!--TODO-->
+    <string name="permission_BLUETOOTH_SCAN">Bluetooth scan</string> <!--TODO-->
+    <string name="permission_BLUETOOTH_ADVERTISE">Bluetooth advertise</string> <!--TODO-->
+    <string name="permission_NEARBY_WIFI_DEVICES">Nearby Wi-Fi devices</string> <!--TODO-->
     <string name="permission_CALL_PHONE">Telefonla arama yap</string>
+    <string name="permission_ANSWER_PHONE_CALLS">Answer phone calls</string> <!--TODO-->
+    <string name="permission_READ_PHONE_NUMBERS">Read phone numbers</string> <!--TODO-->
     <string name="permission_READ_PHONE_STATE">Telefon durumunu oku</string>
+    <string name="permission_USE_SIP">Use SIP</string> <!--TODO-->
+    <string name="permission_UWB_RANGING">UWB ranging</string> <!--TODO-->
     <string name="permission_READ_SMS">SMS oku</string>
     <string name="permission_RECEIVE_SMS">SMS al</string>
     <string name="permission_SEND_SMS">SMS gönder</string>
     <string name="permission_READ_CALL_LOG">Arama kaydını oku</string>
     <string name="permission_WRITE_CALL_LOG">Arama kaydına yaz</string>
+    <string name="permission_RECEIVE_WAP_PUSH">Receive WAP push</string> <!--TODO-->
     <string name="permission_BODY_SENSORS">Vücut sensörlerine eriş</string>
     <string name="permission_BODY_SENSORS_BACKGROUND">Arka planda vücut sensörlerine eriş</string>
     <string name="permission_ACTIVITY_RECOGNITION">Aktivite tanıma</string>
-    <string name="permission_POST_NOTIFICATIONS">Bildirim gönder</string>
 
     <string name="version_name">Version name</string> <!--TODO-->
     <string name="version_code">Version code</string> <!--TODO-->
