@@ -55,7 +55,7 @@ fun AppSetting(navCtrl:NavHostController, materialYou: MutableState<Boolean>, bl
 
 @Composable
 private fun Home(navCtrl: NavHostController) {
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().padding(start = 30.dp, end = 12.dp)) {
         SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Options") }
         SubPageItem(R.string.theme, "", R.drawable.format_paint_fill0) { navCtrl.navigate("Theme") }
         SubPageItem(R.string.security, "", R.drawable.lock_fill0) { navCtrl.navigate("Auth") }
@@ -67,7 +67,7 @@ private fun Home(navCtrl: NavHostController) {
 @Composable
 private fun Options() {
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 12.dp)) {
         SwitchItem(
             R.string.show_dangerous_features, "", R.drawable.warning_fill0,
             { sharedPref.getBoolean("dangerous_features", false) },
@@ -79,7 +79,7 @@ private fun Options() {
 @Composable
 private fun ThemeSettings(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>) {
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 12.dp)) {
         if(VERSION.SDK_INT>=31) {
             SwitchItem(
                 R.string.material_you_color, stringResource(R.string.dynamic_color_desc), null,
@@ -107,7 +107,7 @@ private fun ThemeSettings(materialYou:MutableState<Boolean>, blackTheme:MutableS
 private fun AuthSettings() {
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     var auth by remember{ mutableStateOf(sharedPref.getBoolean("auth",false)) }
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 12.dp)) {
         SwitchItem(
             R.string.lock_owndroid, "", null,
             { auth },
@@ -133,7 +133,7 @@ private fun AuthSettings() {
             { sharedPref.getBoolean("protect_storage", false) },
             { sharedPref.edit().putBoolean("protect_storage", it).apply() }
         )
-        Box(modifier = Modifier.padding(horizontal = 8.dp)) {
+        Box(modifier = Modifier.offset(x = (-8).dp)) {
             Information {
                 Text(text = stringResource(R.string.auth_on_start))
             }
@@ -177,17 +177,17 @@ private fun About() {
     val pkgInfo = context.packageManager.getPackageInfo(context.packageName,0)
     val verCode = pkgInfo.versionCode
     val verName = pkgInfo.versionName
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
-        Column(modifier = Modifier.padding(horizontal = 8.dp)) {
-            Text(text = stringResource(R.string.about), style = typography.headlineLarge)
-            Spacer(Modifier.padding(vertical = 5.dp))
-            Text(text = stringResource(R.string.app_name)+" v$verName ($verCode)")
-            Text(text = stringResource(R.string.about_desc))
-            Spacer(Modifier.padding(vertical = 5.dp))
+        Text(text = stringResource(R.string.about), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Text(text = stringResource(R.string.app_name)+" v$verName ($verCode)")
+        Text(text = stringResource(R.string.about_desc))
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Column(modifier = Modifier.padding(start = 16.dp)) {
+            SubPageItem(R.string.user_guide, "", R.drawable.open_in_new) { shareLink(context, "https://owndroid.pages.dev") }
+            SubPageItem(R.string.source_code, "", R.drawable.open_in_new) { shareLink(context, "https://github.com/BinTianqi/OwnDroid") }
         }
-        SubPageItem(R.string.user_guide, "", R.drawable.open_in_new) { shareLink(context, "https://owndroid.pages.dev") }
-        SubPageItem(R.string.source_code, "", R.drawable.open_in_new) { shareLink(context, "https://github.com/BinTianqi/OwnDroid") }
     }
 }
 

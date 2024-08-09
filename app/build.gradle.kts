@@ -4,17 +4,13 @@ plugins {
     alias(libs.plugins.cc)
 }
 
-var keyPassword: String? = null
-var keystorePassword: String? = null
-var keyAlias: String? = null
-
 android {
     signingConfigs {
         create("defaultSignature") {
-            storeFile = file("signature.jks")
-            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "testkey"
-            keyPassword = System.getenv("KEY_PASSWORD") ?: "testkey"
-            keyAlias = System.getenv("KEY_ALIAS") ?: "testkey"
+            storeFile = file(project.findProperty("StoreFile") ?: "testkey.jks")
+            storePassword = (project.findProperty("StorePassword") as String?) ?: "testkey"
+            keyPassword = (project.findProperty("KeyPassword") as String?) ?: "testkey"
+            keyAlias = (project.findProperty("KeyAlias") as String?) ?: "testkey"
         }
     }
     namespace = "com.bintianqi.owndroid"
@@ -27,8 +23,8 @@ android {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 21
         targetSdk = 34
-        versionCode = 31
-        versionName = "5.6"
+        versionCode = 32
+        versionName = "6.0"
         multiDexEnabled = false
     }
 
@@ -77,26 +73,6 @@ gradle.taskGraph.whenReady {
     project.tasks.findByPath(":app:lintAnalyzeDebug")?.enabled = false
 }
 
-tasks.findByName("preBuild")?.dependsOn?.plusAssign("prepareSignature")
-
-tasks.register("prepareSignature") {
-    doFirst {
-        file("signature.jks").let {
-            if(!it.exists()) file("testkey.jks").copyTo(it)
-        }
-    }
-}
-
-tasks.findByName("clean")?.dependsOn?.plusAssign("cleanKey")
-
-tasks.register("cleanKey") {
-    doFirst {
-        file("signature.jks").let {
-            if(it.exists()) it.delete()
-        }
-    }
-}
-
 dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.ui)
@@ -106,6 +82,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.shizuku.provider)
     implementation(libs.shizuku.api)
+    implementation(libs.dhizuku.api)
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.fragment)
+    implementation(libs.hiddenApiBypass)
 }

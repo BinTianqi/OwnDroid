@@ -63,9 +63,10 @@
     <string name="activate_jump" tools:ignore="TypographyEllipsis">Activate...</string>
     <string name="profile_owner">Profile owner</string>
     <string name="device_owner">Device owner</string>
+    <string name="dhizuku_will_be_deactivated">Dhizuku will be deactivated</string>
+    <string name="reset_device_policy">Reset device policy</string>
     <string name="activate_device_admin">Activate Device admin</string>
     <string name="activate_device_admin_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
-    <string name="activate_profile_owner_command" translatable="false">dpm set-profile-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="activate_device_owner_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="device_info">Device info</string>
     <string name="support_device_id_attestation">Support Device ID attestation: </string>
@@ -101,6 +102,11 @@
     <string name="onDisabled">OwnDroid: Disabled</string>
     <string name="create_work_profile_success">OwnDroid: Create work profile success</string>
 
+    <!--Dhizuku-->
+    <string name="dhizuku" translatable="false">Dhizuku</string>
+    <string name="failed_to_init_dhizuku">Failed to initialize Dhizuku</string>
+    <string name="dhizuku_permission_not_granted">Dhizuku permission not granted</string>
+    <string name="dhizuku_mode_disabled">Dhizuku mode disabled</string>
     <!--Shizuku-->
     <string name="shizuku" translatable="false">Shizuku</string>
     <string name="check_shizuku">Check permission</string>
@@ -219,14 +225,14 @@
     <string name="network">Network</string>
     <string name="wifi_mac_addr">Wi-Fi Mac address</string>
     <string name="min_wifi_security_level">Min Wi-Fi security level</string>
-    <string name="wifi_security_level_open">Open</string>
+    <string name="wifi_security_open">Open</string>
     <string name="preferential_network_service">Preferential network service</string>
     <string name="lockdown_admin_configured_network">Lockdown admin configured network</string>
     <string name="wifi_ssid_policy">WiFi SSID policy</string>
     <string name="ssid_list_is">SSID list: </string>
     <string name="cannot_be_empty">Cannot be empty</string>
     <string name="already_exist">Already exist</string>
-    <string name="private_dns">PrivateDNS</string>
+    <string name="private_dns">Private DNS</string>
     <string name="dns_provide_hostname">Provide hostname</string>
     <string name="host_not_serving_dns_tls">Host not serving</string>
     <string name="set_to_opportunistic">Set to opportunistic</string>
@@ -234,6 +240,13 @@
     <string name="invalid_hostname">Invalid hostname</string>
     <string name="security_exception">Security Exception</string>
     <string name="set_dns_host">Set DNS host</string>
+    <string name="recommended_global_proxy">Recommended global proxy</string>
+    <string name="proxy_type_off">No proxy</string>
+    <string name="proxy_type_pac">PAC proxy</string>
+    <string name="proxy_type_direct">Direct proxy</string>
+    <string name="specify_port">Specify port</string>
+    <string name="invalid_config">Invalid config</string>
+    <string name="exclude_hosts">Exclude hosts</string>
     <string name="retrieve_net_logs">Network logs</string>
     <string name="retrieve">Retrieve</string>
     <string name="wifi_auth_keypair">WiFi keypair</string>
@@ -293,8 +306,6 @@
     <string name="loading">Loading</string>
     <string name="show_user_app">Show user apps</string>
     <string name="show_system_app">Show system apps</string>
-    <string name="show_priv_app">Show priv-apps</string>
-    <string name="show_apex_app">Show apex apps</string>
     <string name="permission_picker">Permission picker</string>
     <string name="suspend">Suspend</string>
     <string name="hide">Hide</string>
@@ -340,6 +351,7 @@
     <string name="select_apk" tools:ignore="TypographyEllipsis">Select APK...</string>
     <string name="silent_install">Silent install</string>
     <string name="request_install">Request install</string>
+    <string name="search">Search</string>
     <!--App install session status-->
     <string name="app_installer_status">App installer:</string>
     <string name="status_pending_action">Pending user action</string>
@@ -495,17 +507,19 @@
     <string name="password_failed_attempts_is">Password failed attempts: %1$s</string>
     <string name="is_using_unified_password">Unified password: %1$s</string>
     <string name="reset_password_token">Reset password token</string>
+    <string name="token">Token</string>
+    <string name="token_must_longer_than_32_byte">The token must be longer than 32-byte</string>
     <string name="token_already_activated">Token already activated</string>
     <string name="clear">Clear</string>
     <string name="set">Set</string>
     <string name="please_set_a_token">Please set a token</string>
     <string name="activate_token_not_required_when_no_password">Token will be automatically activated if no password is set. </string>
     <string name="reset_password">Reset password</string>
+    <string name="confirm_password">Confirm password</string>
     <string name="do_not_ask_credentials_on_boot">Do not ask credentials on boot</string>
     <string name="reset_password_require_entry">Require entry</string>
     <string name="require_4_digit_password">Require at least 4 digit password</string>
     <string name="reset_password_with_token">Reset password with token</string>
-    <string name="reset_password_deprecated">Reset password</string>
     <string name="required_password_complexity">Required password complexity</string>
     <string name="require_set_new_password">Request to set a new password</string>
     <string name="disable_keyguard_features">Keyguard features</string>
@@ -565,6 +579,7 @@
     <string name="automation_debug">Debug mode</string>
 
     <!--AndroidPermission-->
+    <string name="permission_POST_NOTIFICATIONS">Post notifications</string>
     <string name="permission_READ_EXTERNAL_STORAGE">Read external storage</string>
     <string name="permission_WRITE_EXTERNAL_STORAGE">Write external storage</string>
     <string name="permission_READ_MEDIA_AUDIO">Read media (audio)</string>
@@ -579,17 +594,25 @@
     <string name="permission_ACCESS_COARSE_LOCATION">Access coarse location</string>
     <string name="permission_ACCESS_FINE_LOCATION">Access fine location</string>
     <string name="permission_ACCESS_BACKGROUND_LOCATION">Access location in background</string>
+    <string name="permission_BLUETOOTH_CONNECT">Bluetooth connect</string>
+    <string name="permission_BLUETOOTH_SCAN">Bluetooth scan</string>
+    <string name="permission_BLUETOOTH_ADVERTISE">Bluetooth advertise</string>
+    <string name="permission_NEARBY_WIFI_DEVICES">Nearby Wi-Fi devices</string>
     <string name="permission_CALL_PHONE">Call phone</string>
+    <string name="permission_ANSWER_PHONE_CALLS">Answer phone calls</string>
+    <string name="permission_READ_PHONE_NUMBERS">Read phone numbers</string>
     <string name="permission_READ_PHONE_STATE">Read phone state</string>
+    <string name="permission_USE_SIP">Use SIP</string>
+    <string name="permission_UWB_RANGING">UWB ranging</string>
     <string name="permission_READ_SMS">Read SMS</string>
     <string name="permission_RECEIVE_SMS">Receive SMS</string>
     <string name="permission_SEND_SMS">Send SMS</string>
     <string name="permission_READ_CALL_LOG">Read call log</string>
     <string name="permission_WRITE_CALL_LOG">Write call log</string>
+    <string name="permission_RECEIVE_WAP_PUSH">Receive WAP push</string>
     <string name="permission_BODY_SENSORS">Access body sensors</string>
     <string name="permission_BODY_SENSORS_BACKGROUND">Access body sensors in background</string>
     <string name="permission_ACTIVITY_RECOGNITION">Activity recognition</string>
-    <string name="permission_POST_NOTIFICATIONS">Post notifications</string>
 
     <string name="version_name">Version name</string>
     <string name="version_code">Version code</string>
