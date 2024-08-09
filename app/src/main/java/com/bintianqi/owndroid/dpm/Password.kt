@@ -35,15 +35,19 @@ import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -51,10 +55,12 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -65,6 +71,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavHostController
@@ -73,6 +80,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.toggle
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.Information
@@ -124,18 +132,21 @@ fun Password(navCtrl: NavHostController) {
 @Composable
 private fun Home(navCtrl:NavHostController,scrollState: ScrollState) {
     val context = LocalContext.current
+    val sharedPrefs = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState).padding(start = 30.dp, end = 12.dp)) {
         Text(
             text = stringResource(R.string.password_and_keyguard),
             style = typography.headlineLarge,
-            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp)
+            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp).offset(x = (-8).dp)
         )
         SubPageItem(R.string.password_info, "", R.drawable.info_fill0) { navCtrl.navigate("PasswordInfo") }
-        if(VERSION.SDK_INT >= 26 && (context.isDeviceOwner || context.isProfileOwner)) {
-            SubPageItem(R.string.reset_password_token, "", R.drawable.key_vertical_fill0) { navCtrl.navigate("ResetPasswordToken") }
-        }
-        if(context.isDeviceAdmin || context.isDeviceOwner || context.isProfileOwner) {
-            SubPageItem(R.string.reset_password, "", R.drawable.lock_reset_fill0) { navCtrl.navigate("ResetPassword") }
+        if(sharedPrefs.getBoolean("dangerous_features", false)) {
+            if(VERSION.SDK_INT >= 26 && (context.isDeviceOwner || context.isProfileOwner)) {
+                SubPageItem(R.string.reset_password_token, "", R.drawable.key_vertical_fill0) { navCtrl.navigate("ResetPasswordToken") }
+            }
+            if(context.isDeviceAdmin || context.isDeviceOwner || context.isProfileOwner) {
+                SubPageItem(R.string.reset_password, "", R.drawable.lock_reset_fill0) { navCtrl.navigate("ResetPassword") }
+            }
         }
         if(VERSION.SDK_INT >= 31 && (context.isDeviceOwner || context.isProfileOwner)) {
             SubPageItem(R.string.required_password_complexity, "", R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordComplexity") }
@@ -200,23 +211,25 @@ private fun ResetPasswordToken() {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val tokenByteArray by remember { mutableStateOf(byteArrayOf(1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0)) }
+    var token by remember { mutableStateOf("") }
+    val tokenByteArray = token.toByteArray()
+    val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.reset_password_token), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = {
-                Toast.makeText(
-                    context,
-                    if(dpm.clearResetPasswordToken(receiver)) R.string.success else R.string.failed,
-                    Toast.LENGTH_SHORT
-                ).show()
+        OutlinedTextField(
+            value = token, onValueChange = { token = it },
+            label = { Text(stringResource(R.string.token)) },
+            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            supportingText = {
+                AnimatedVisibility(tokenByteArray.size < 32) {
+                    Text(stringResource(R.string.token_must_longer_than_32_byte))
+                }
             },
             modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.clear))
-        }
+        )
         Button(
             onClick = {
                 try {
@@ -229,20 +242,38 @@ private fun ResetPasswordToken() {
                     Toast.makeText(context, R.string.security_exception, Toast.LENGTH_SHORT).show()
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+            enabled = tokenByteArray.size >= 32
         ) {
             Text(stringResource(R.string.set))
         }
-        Button(
-            onClick = {
-                if(!dpm.isResetPasswordTokenActive(receiver)) {
-                    try { activateToken(context) }
-                    catch(e:NullPointerException) { Toast.makeText(context, R.string.please_set_a_token, Toast.LENGTH_SHORT).show() }
-                } else { Toast.makeText(context, R.string.token_already_activated, Toast.LENGTH_SHORT).show() }
-            },
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(stringResource(R.string.activate))
+            Button(
+                onClick = {
+                    if(!dpm.isResetPasswordTokenActive(receiver)) {
+                        try { activateToken(context) }
+                        catch(e:NullPointerException) { Toast.makeText(context, R.string.please_set_a_token, Toast.LENGTH_SHORT).show() }
+                    } else { Toast.makeText(context, R.string.token_already_activated, Toast.LENGTH_SHORT).show() }
+                },
+                modifier = Modifier.fillMaxWidth(0.49F)
+            ) {
+                Text(stringResource(R.string.activate))
+            }
+            Button(
+                onClick = {
+                    Toast.makeText(
+                        context,
+                        if(dpm.clearResetPasswordToken(receiver)) R.string.success else R.string.failed,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                },
+                modifier = Modifier.fillMaxWidth(0.96F)
+            ) {
+                Text(stringResource(R.string.clear))
+            }
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Information{ Text(stringResource(R.string.activate_token_not_required_when_no_password)) }
@@ -255,83 +286,122 @@ private fun ResetPassword() {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    var newPwd by remember { mutableStateOf("") }
-    val tokenByteArray by remember { mutableStateOf(byteArrayOf(1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0,1,1,4,5,1,4,1,9,1,9,8,1,0)) }
-    var confirmed by remember { mutableStateOf(false) }
-    var resetPwdFlag by remember { mutableIntStateOf(0) }
+    var password by remember { mutableStateOf("") }
+    var useToken by remember { mutableStateOf(false) }
+    var token by remember { mutableStateOf("") }
+    val tokenByteArray = token.toByteArray()
+    var flags = remember { mutableStateListOf<Int>() }
+    var confirmDialog by remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.reset_password),style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
+        if(VERSION.SDK_INT >= 26) {
+            OutlinedTextField(
+                value = token, onValueChange = { token = it },
+                label = { Text(stringResource(R.string.token)) },
+                keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
         OutlinedTextField(
-            value = newPwd,
-            onValueChange = { newPwd=it },
-            enabled = !confirmed,
+            value = password,
+            onValueChange = { password = it },
             label = { Text(stringResource(R.string.password)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+            supportingText = { Text(stringResource(R.string.reset_pwd_desc)) },
+            visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
-        Spacer(Modifier.padding(vertical = 3.dp))
-        Text(text = stringResource(R.string.reset_pwd_desc))
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT >= 23) {
-            RadioButtonItem(
+            CheckBoxItem(
                 R.string.do_not_ask_credentials_on_boot,
-                resetPwdFlag == RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT,
-                { resetPwdFlag = RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT }
+                RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT in flags,
+                { flags.toggle(it, RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT) }
             )
         }
-        RadioButtonItem(
+        CheckBoxItem(
             R.string.reset_password_require_entry,
-            resetPwdFlag == RESET_PASSWORD_REQUIRE_ENTRY,
-            { resetPwdFlag = RESET_PASSWORD_REQUIRE_ENTRY }
+            RESET_PASSWORD_REQUIRE_ENTRY in flags,
+            { flags.toggle(it, RESET_PASSWORD_REQUIRE_ENTRY) }
         )
-        RadioButtonItem(R.string.none, resetPwdFlag == 0, { resetPwdFlag = 0 })
         Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = {
-                if(newPwd.length>=4 || newPwd.isEmpty()) { confirmed=!confirmed }
-                else { Toast.makeText(context, R.string.require_4_digit_password, Toast.LENGTH_SHORT).show() }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if(confirmed) colorScheme.primary else colorScheme.error,
-                contentColor = if(confirmed) colorScheme.onPrimary else colorScheme.onError 
-            )
-        ) {
-            Text(text = stringResource(if(confirmed) R.string.cancel else R.string.confirm))
-        }
-        Spacer(Modifier.padding(vertical = 3.dp))
         if(VERSION.SDK_INT >= 26) {
             Button(
                 onClick = {
-                    val resetSuccess = dpm.resetPasswordWithToken(receiver,newPwd,tokenByteArray,resetPwdFlag)
-                    if(resetSuccess) { Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show(); newPwd=""}
-                    else{ Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show() }
-                    confirmed=false
+                    useToken = true
+                    confirmDialog = true
+                    focusMgr.clearFocus()
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
-                enabled = confirmed && (context.isDeviceOwner || context.isProfileOwner),
+                enabled = tokenByteArray.size >=32 && password.length !in 1..3 && (context.isDeviceOwner || context.isProfileOwner),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.reset_password_with_token))
             }
         }
-        Button(
-            onClick = {
-                val resetSuccess = dpm.resetPassword(newPwd,resetPwdFlag)
-                if(resetSuccess) { Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show(); newPwd="" }
-                else{ Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show() }
-                confirmed=false
-            },
-            enabled = confirmed,
-            colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.reset_password_deprecated))
+        if(VERSION.SDK_INT <= 30) {
+            Button(
+                onClick = {
+                    useToken = false
+                    confirmDialog = true
+                    focusMgr.clearFocus()
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
+                enabled = password.length !in 1..3,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.reset_password))
+            }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
+    }
+    if(confirmDialog) {
+        var confirmPassword by remember { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = { confirmDialog = false },
+            title = { Text(stringResource(R.string.reset_password)) },
+            text = {
+                val dialogFocusMgr = LocalFocusManager.current
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it },
+                    label = { Text(stringResource(R.string.confirm_password)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { dialogFocusMgr.clearFocus() }),
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        var resetFlag = 0
+                        flags.forEach { resetFlag += it }
+                        val success = if(VERSION.SDK_INT >= 26 && useToken) {
+                            dpm.resetPasswordWithToken(receiver, password, tokenByteArray, resetFlag)
+                        } else {
+                            dpm.resetPassword(password, resetFlag)
+                        }
+                        Toast.makeText(context, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+                        password = ""
+                        confirmDialog = false
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error),
+                    enabled = confirmPassword == password
+                ) {
+                    Text(stringResource(R.string.confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
     }
 }
 

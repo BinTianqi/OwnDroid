@@ -191,7 +191,7 @@ private fun PackageItem(pkg: PkgInfo, navCtrl: NavHostController, pkgName: Mutab
         modifier = Modifier
             .fillMaxWidth()
             .clickable{ pkgName.value = pkg.pkgName; navCtrl.navigateUp() }
-            .padding(vertical = 3.dp)
+            .padding(vertical = 6.dp)
     ) {
         Spacer(Modifier.padding(start = 15.dp))
         Image(
@@ -202,7 +202,6 @@ private fun PackageItem(pkg: PkgInfo, navCtrl: NavHostController, pkgName: Mutab
         Column {
             Text(text = pkg.label, style = typography.titleLarge)
             Text(text = pkg.pkgName, modifier = Modifier.alpha(0.8F))
-            Spacer(Modifier.padding(top = 3.dp))
         }
     }
 }
