@@ -142,7 +142,10 @@ fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, 
                         Icon(painter = painterResource(R.drawable.checklist_fill0), contentDescription = null,
                             modifier = Modifier
                                 .clip(RoundedCornerShape(50))
-                                .clickable(onClick = {navCtrl.navigate("PackageSelector")})
+                                .clickable(onClick = {
+                                    focusMgr.clearFocus()
+                                    navCtrl.navigate("PackageSelector")
+                                })
                                 .padding(3.dp))
                     },
                     singleLine = true

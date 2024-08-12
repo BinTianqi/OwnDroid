@@ -293,7 +293,6 @@
     <string name="loading">加载中</string>
     <string name="show_user_app">显示用户应用</string>
     <string name="show_system_app">显示系统应用</string>
-    <string name="permission_picker">权限选择器</string>
     <string name="suspend">挂起</string>
     <string name="hide">隐藏</string>
     <string name="isapphidden_desc">如果隐藏，有可能是没安装</string>
@@ -504,7 +503,6 @@
     <string name="confirm_password">确认密码</string>
     <string name="do_not_ask_credentials_on_boot">启动(boot)时不要求密码</string>
     <string name="reset_password_require_entry">不允许其他设备管理员重置密码直至用户输入一次密码</string>
-    <string name="require_4_digit_password">需要4位密码</string>
     <string name="reset_password_with_token">使用令牌重置密码</string>
     <string name="required_password_complexity">密码复杂度要求</string>
     <string name="require_set_new_password">要求设置新密码</string>
@@ -586,7 +584,6 @@
     <string name="permission_NEARBY_WIFI_DEVICES">附近的Wi-Fi设备</string>
     <string name="permission_CALL_PHONE">打电话</string>
     <string name="permission_ANSWER_PHONE_CALLS">接电话</string>
-    <string name="permission_READ_PHONE_NUMBERS">读取手机号码</string>
     <string name="permission_READ_PHONE_STATE">读取手机状态</string>
     <string name="permission_USE_SIP">使用SIP</string>
     <string name="permission_UWB_RANGING">超宽频</string>

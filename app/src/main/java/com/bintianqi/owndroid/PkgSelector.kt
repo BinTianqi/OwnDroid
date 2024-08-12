@@ -42,6 +42,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -76,6 +78,7 @@ fun PackageSelector(navCtrl: NavHostController, pkgName: MutableState<String>) {
     var hideProgress by remember { mutableStateOf(true) }
     var system by remember { mutableStateOf(false) }
     var search by remember { mutableStateOf("") }
+    var searchMode by remember { mutableStateOf(false) }
     val scrollState = rememberLazyListState()
     val focusMgr = LocalFocusManager.current
     val co = rememberCoroutineScope()
@@ -99,49 +102,65 @@ fun PackageSelector(navCtrl: NavHostController, pkgName: MutableState<String>) {
         topBar = {
             TopAppBar(
                 actions = {
-                    Icon(
-                        painter = painterResource(R.drawable.filter_alt_fill0),
-                        contentDescription = "filter",
-                        modifier = Modifier
-                            .padding(horizontal = 4.dp)
-                            .clip(RoundedCornerShape(50))
-                            .clickable {
-                                system = !system
-                                Toast.makeText(context, if(system) R.string.show_system_app else R.string.show_user_app, Toast.LENGTH_SHORT).show()
-                            }
-                            .padding(5.dp)
-                    )
-                    Icon(
-                        painter = painterResource(R.drawable.refresh_fill0),
-                        contentDescription = "refresh",
-                        modifier = Modifier
-                            .padding(horizontal = 4.dp)
-                            .clip(RoundedCornerShape(50))
-                            .clickable {
-                                co.launch { getPkgList() }
-                            }
-                            .padding(5.dp)
-                    )
+                    if(!searchMode) {
+                        Icon(
+                            painter = painterResource(R.drawable.search_fill0),
+                            contentDescription = "search",
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .clip(RoundedCornerShape(50))
+                                .clickable { searchMode = true }
+                                .padding(5.dp)
+                        )
+                        Icon(
+                            painter = painterResource(R.drawable.filter_alt_fill0),
+                            contentDescription = "filter",
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .clip(RoundedCornerShape(50))
+                                .clickable {
+                                    system = !system
+                                    Toast.makeText(context, if(system) R.string.show_system_app else R.string.show_user_app, Toast.LENGTH_SHORT).show()
+                                }
+                                .padding(5.dp)
+                        )
+                        Icon(
+                            painter = painterResource(R.drawable.refresh_fill0),
+                            contentDescription = "refresh",
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .clip(RoundedCornerShape(50))
+                                .clickable { co.launch { getPkgList() } }
+                                .padding(5.dp)
+                        )
+                    }
                 },
                 title = {
-                    OutlinedTextField(
-                        value = search,
-                        onValueChange = { search = it },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        keyboardActions = KeyboardActions { focusMgr.clearFocus() },
-                        placeholder = { Text(stringResource(R.string.search)) },
-                        trailingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.close_fill0),
-                                contentDescription = "clear search",
-                                modifier = Modifier.clickable {
-                                    search = ""
-                                    focusMgr.clearFocus()
-                                }
-                            )
-                        },
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
+                    if(searchMode) {
+                        val fr = FocusRequester()
+                        LaunchedEffect(Unit) { fr.requestFocus() }
+                        OutlinedTextField(
+                            value = search,
+                            onValueChange = { search = it },
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                            keyboardActions = KeyboardActions { focusMgr.clearFocus() },
+                            placeholder = { Text(stringResource(R.string.search)) },
+                            trailingIcon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.close_fill0),
+                                    contentDescription = "clear search",
+                                    modifier = Modifier.clickable {
+                                        focusMgr.clearFocus()
+                                        search = ""
+                                        searchMode = false
+                                    }
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth().focusRequester(fr)
+                        )
+                    } else {
+                        Text(stringResource(R.string.pkg_selector))
+                    }
                 },
                 navigationIcon = { NavIcon{ navCtrl.navigateUp() } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.background)
@@ -186,11 +205,16 @@ fun PackageSelector(navCtrl: NavHostController, pkgName: MutableState<String>) {
 
 @Composable
 private fun PackageItem(pkg: PkgInfo, navCtrl: NavHostController, pkgName: MutableState<String>) {
+    val focusMgr = LocalFocusManager.current
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable{ pkgName.value = pkg.pkgName; navCtrl.navigateUp() }
+            .clickable{
+                pkgName.value = pkg.pkgName
+                focusMgr.clearFocus()
+                navCtrl.navigateUp()
+            }
             .padding(vertical = 6.dp)
     ) {
         Spacer(Modifier.padding(start = 15.dp))

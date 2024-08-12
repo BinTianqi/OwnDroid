@@ -306,7 +306,6 @@
     <string name="loading">Loading</string>
     <string name="show_user_app">Show user apps</string>
     <string name="show_system_app">Show system apps</string>
-    <string name="permission_picker">Permission picker</string>
     <string name="suspend">Suspend</string>
     <string name="hide">Hide</string>
     <string name="isapphidden_desc">Non-existent apps is hidden</string>
@@ -518,7 +517,6 @@
     <string name="confirm_password">Confirm password</string>
     <string name="do_not_ask_credentials_on_boot">Do not ask credentials on boot</string>
     <string name="reset_password_require_entry">Require entry</string>
-    <string name="require_4_digit_password">Require at least 4 digit password</string>
     <string name="reset_password_with_token">Reset password with token</string>
     <string name="required_password_complexity">Required password complexity</string>
     <string name="require_set_new_password">Request to set a new password</string>
@@ -600,7 +598,6 @@
     <string name="permission_NEARBY_WIFI_DEVICES">Nearby Wi-Fi devices</string>
     <string name="permission_CALL_PHONE">Call phone</string>
     <string name="permission_ANSWER_PHONE_CALLS">Answer phone calls</string>
-    <string name="permission_READ_PHONE_NUMBERS">Read phone numbers</string>
     <string name="permission_READ_PHONE_STATE">Read phone state</string>
     <string name="permission_USE_SIP">Use SIP</string>
     <string name="permission_UWB_RANGING">UWB ranging</string>

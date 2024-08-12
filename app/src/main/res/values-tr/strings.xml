@@ -298,7 +298,6 @@
     <string name="loading">Yükleniyor</string>
     <string name="show_user_app">Kullanıcı uygulamalarını göster</string>
     <string name="show_system_app">Sistem uygulamalarını göster</string>
-    <string name="permission_picker">İzin seçici</string>
     <string name="suspend">Askıya al</string>
     <string name="hide">Gizle</string>
     <string name="isapphidden_desc">Mevcut olmayan uygulamalar gizlidir</string>
@@ -512,7 +511,6 @@
     <string name="confirm_password">Confirm password</string> <!--TODO-->
     <string name="do_not_ask_credentials_on_boot">Başlangıçta kimlik bilgilerini sorma</string>
     <string name="reset_password_require_entry">Giriş gerektir</string>
-    <string name="require_4_digit_password">En az 4 haneli şifre gerektir</string>
     <string name="reset_password_with_token">Jeton ile şifreyi sıfırla</string>
     <string name="required_password_complexity">Gereken şifre karmaşıklığı</string>
     <string name="require_set_new_password">Yeni şifre ayarlanmasını iste</string>
@@ -594,7 +592,6 @@
     <string name="permission_NEARBY_WIFI_DEVICES">Nearby Wi-Fi devices</string> <!--TODO-->
     <string name="permission_CALL_PHONE">Telefonla arama yap</string>
     <string name="permission_ANSWER_PHONE_CALLS">Answer phone calls</string> <!--TODO-->
-    <string name="permission_READ_PHONE_NUMBERS">Read phone numbers</string> <!--TODO-->
     <string name="permission_READ_PHONE_STATE">Telefon durumunu oku</string>
     <string name="permission_USE_SIP">Use SIP</string> <!--TODO-->
     <string name="permission_UWB_RANGING">UWB ranging</string> <!--TODO-->
