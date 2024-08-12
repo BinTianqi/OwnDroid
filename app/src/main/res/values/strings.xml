@@ -86,7 +86,7 @@
     <string name="disable_account_management">Disable account management</string>
     <string name="account_types_are">Account types: </string>
     <string name="transfer_ownership">Transfer Ownership</string>
-    <string name="transfer_ownership_desc">Transfer device owner or profile owner privilege to another app. The target app must be a device admin. </string>
+    <string name="transfer_ownership_desc">Transfer device owner or profile owner privilege to another app.</string>
     <string name="target_package_name">Target package name</string>
     <string name="target_class_name">Target class name</string>
     <string name="device_owner_lock_screen_info">Lockscreen info</string>
@@ -113,11 +113,9 @@
     <string name="list_owners">List owners</string>
     <string name="shizuku_not_started">Shizuku not started. </string>
     <string name="dpm_activate_do_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
-    <string name="dpm_activate_po_command" translatable="false">dpm set-profile-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="dpm_activate_da_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="shizuku_activated_shell">Permission granted (Shell)</string>
     <string name="shizuku_activated_root">Permission granted (Root)</string>
-    <string name="activate_profile_owner">Activate Profile owner</string>
     <string name="activate_device_owner">Activate Device owner</string>
     <string name="activate_org_profile">Activate organization-owned work profile</string>
     <string name="shizuku_service_disconnected">Shizuku service disconnected</string>

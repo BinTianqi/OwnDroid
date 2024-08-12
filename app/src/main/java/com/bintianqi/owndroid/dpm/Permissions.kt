@@ -91,6 +91,9 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
     val receiver = context.getReceiver()
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     var dhizukuStatus by remember { mutableStateOf(sharedPref.getBoolean("dhizuku", false)) }
+    val deviceAdmin = context.isDeviceAdmin
+    val deviceOwner = context.isDeviceOwner
+    val profileOwner = context.isProfileOwner
     Column(modifier = Modifier.fillMaxSize().verticalScroll(listScrollState).padding(start = 30.dp, end = 12.dp)) {
         Text(
             text = stringResource(R.string.permission),
@@ -108,40 +111,40 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
             )
         }
         SubPageItem(
-            R.string.device_admin, stringResource(if(context.isDeviceAdmin) R.string.activated else R.string.deactivated),
+            R.string.device_admin, stringResource(if(deviceAdmin) R.string.activated else R.string.deactivated),
             operation = { localNavCtrl.navigate("DeviceAdmin") }
         )
-        if(!context.isDeviceOwner) {
+        if(!deviceOwner) {
             SubPageItem(
-                R.string.profile_owner, stringResource(if(context.isProfileOwner) R.string.activated else R.string.deactivated),
+                R.string.profile_owner, stringResource(if(profileOwner) R.string.activated else R.string.deactivated),
                 operation = { localNavCtrl.navigate("ProfileOwner") }
             )
         }
-        if(!context.isProfileOwner) {
+        if(!profileOwner) {
             SubPageItem(
-                R.string.device_owner, stringResource(if(context.isDeviceOwner) R.string.activated else R.string.deactivated),
+                R.string.device_owner, stringResource(if(deviceOwner) R.string.activated else R.string.deactivated),
                 operation = { localNavCtrl.navigate("DeviceOwner") }
             )
         }
         SubPageItem(R.string.shizuku,"") { localNavCtrl.navigate("Shizuku") }
         SubPageItem(R.string.device_info, "", R.drawable.perm_device_information_fill0) { localNavCtrl.navigate("DeviceInfo") }
-        if((VERSION.SDK_INT >= 26 && context.isDeviceOwner) || (VERSION.SDK_INT>=24 && context.isProfileOwner)) {
+        if((VERSION.SDK_INT >= 26 && deviceOwner) || (VERSION.SDK_INT>=24 && profileOwner)) {
             SubPageItem(R.string.org_name, "", R.drawable.corporate_fare_fill0) { localNavCtrl.navigate("OrgName") }
         }
-        if(VERSION.SDK_INT >= 31 && (context.isProfileOwner || context.isDeviceOwner)) {
+        if(VERSION.SDK_INT >= 31 && (profileOwner || deviceOwner)) {
             SubPageItem(R.string.org_id, "", R.drawable.corporate_fare_fill0) { localNavCtrl.navigate("OrgID") }
             SubPageItem(R.string.enrollment_specific_id, "", R.drawable.id_card_fill0) { localNavCtrl.navigate("SpecificID") }
         }
-        if(context.isDeviceOwner || context.isProfileOwner) {
+        if(deviceOwner || profileOwner) {
             SubPageItem(R.string.disable_account_management, "", R.drawable.account_circle_fill0) { localNavCtrl.navigate("DisableAccountManagement") }
         }
-        if(VERSION.SDK_INT >= 24 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 24 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.device_owner_lock_screen_info, "", R.drawable.screen_lock_portrait_fill0) { localNavCtrl.navigate("LockScreenInfo") }
         }
-        if(VERSION.SDK_INT >= 24 && context.isDeviceAdmin) {
+        if(VERSION.SDK_INT >= 24 && deviceAdmin) {
             SubPageItem(R.string.support_msg, "", R.drawable.chat_fill0) { localNavCtrl.navigate("SupportMsg") }
         }
-        if(VERSION.SDK_INT >= 28 && (context.isDeviceOwner || context.isProfileOwner)) {
+        if(VERSION.SDK_INT >= 28 && (deviceOwner || profileOwner)) {
             SubPageItem(R.string.transfer_ownership, "", R.drawable.admin_panel_settings_fill0) { localNavCtrl.navigate("TransformOwnership") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -222,12 +225,13 @@ private fun DeviceAdmin() {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     var deactivateDialog by remember { mutableStateOf(false) }
+    val deviceAdmin = context.isDeviceAdmin
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.device_admin), style = typography.headlineLarge)
         Text(text = stringResource(if(context.isDeviceAdmin) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        AnimatedVisibility(context.isDeviceAdmin) {
+        AnimatedVisibility(deviceAdmin) {
             Button(
                 onClick = { deactivateDialog = true },
                 enabled = !context.isProfileOwner && !context.isDeviceOwner,
@@ -236,7 +240,7 @@ private fun DeviceAdmin() {
                 Text(stringResource(R.string.deactivate))
             }
         }
-        AnimatedVisibility(!context.isDeviceAdmin) {
+        AnimatedVisibility(!deviceAdmin) {
             Column {
                 Button(onClick = { activateDeviceAdmin(context, receiver) }, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.activate_jump))
@@ -280,13 +284,14 @@ private fun ProfileOwner() {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     var deactivateDialog by remember { mutableStateOf(false) }
+    val profileOwner = context.isProfileOwner
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.profile_owner), style = typography.headlineLarge)
-        Text(stringResource(if(context.isProfileOwner) R.string.activated else R.string.deactivated), style = typography.titleLarge)
+        Text(stringResource(if(profileOwner) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT >= 24) {
-            if(context.isProfileOwner) {
+            if(profileOwner) {
                 Button(
                     onClick = { deactivateDialog = true },
                     enabled = !dpm.isManagedProfile(receiver),
@@ -328,12 +333,13 @@ private fun DeviceOwner() {
     val dpm = context.getDPM()
     var deactivateDialog by remember { mutableStateOf(false) }
     var resetPolicy by remember { mutableStateOf(true) }
+    val deviceOwner = context.isDeviceOwner
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.device_owner), style = typography.headlineLarge)
-        Text(text = stringResource(if(context.isDeviceOwner) R.string.activated else R.string.deactivated), style = typography.titleLarge)
+        Text(text = stringResource(if(deviceOwner) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        AnimatedVisibility(context.isDeviceOwner) {
+        AnimatedVisibility(deviceOwner) {
             Button(
                 onClick = { deactivateDialog = true },
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
@@ -341,7 +347,7 @@ private fun DeviceOwner() {
                 Text(text = stringResource(R.string.deactivate))
             }
         }
-        AnimatedVisibility(!context.isDeviceOwner) {
+        AnimatedVisibility(!deviceOwner) {
             Column {
                 SelectionContainer{
                     Text(text = stringResource(R.string.activate_device_owner_command))

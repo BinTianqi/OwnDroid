@@ -133,22 +133,6 @@ fun ShizukuActivate() {
             }
         }
 
-        AnimatedVisibility(showProfileOwnerButton&&showDeviceOwnerButton) {
-            Button(
-                onClick = {
-                    coScope.launch{
-                        outputText = service!!.execute(context.getString(R.string.dpm_activate_po_command))
-                        outputTextScrollState.animateScrollTo(0)
-                        delay(500)
-                        showProfileOwnerButton = !context.isProfileOwner
-                    }
-                },
-                enabled = enabled
-            ) {
-                Text(text = stringResource(R.string.activate_profile_owner))
-            }
-        }
-
         AnimatedVisibility(showDeviceOwnerButton && showProfileOwnerButton) {
             Button(
                 onClick = {

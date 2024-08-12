@@ -80,7 +80,7 @@
     <string name="disable_account_management">禁用账号管理</string>
     <string name="account_types_are">账号类型：</string>
     <string name="transfer_ownership">转移所有权</string>
-    <string name="transfer_ownership_desc">把Device owner或Profile owner权限转移到另一个应用 (目标必须是Device admin)</string>
+    <string name="transfer_ownership_desc">把Device owner或Profile owner权限转移到另一个应用</string>
     <string name="target_package_name">目标包名</string>
     <string name="target_class_name">目标类名</string>
     <string name="device_owner_lock_screen_info">锁屏提示信息</string>
@@ -107,7 +107,6 @@
     <string name="shizuku_not_started">服务未启动</string>
     <string name="shizuku_activated_shell">已授权（Shell）</string>
     <string name="shizuku_activated_root">已授权（Root）</string>
-    <string name="activate_profile_owner">激活Profile owner</string>
     <string name="activate_device_owner">激活Device owner</string>
     <string name="activate_org_profile">激活由组织拥有的工作资料</string>
     <string name="shizuku_service_disconnected">Shizuku服务断开连接</string>

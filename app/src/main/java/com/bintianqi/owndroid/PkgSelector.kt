@@ -31,7 +31,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -55,6 +54,7 @@ import com.bintianqi.owndroid.ui.NavIcon
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -67,9 +67,11 @@ private data class PkgInfo(
 
 private val pkgs = mutableListOf<PkgInfo>()
 
+val selectedPackage = MutableStateFlow("")
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PackageSelector(navCtrl: NavHostController, pkgName: MutableState<String>) {
+fun PackageSelector(navCtrl: NavHostController) {
     val context = LocalContext.current
     val pm = context.packageManager
     val apps = pm.getInstalledApplications(0)
@@ -182,10 +184,10 @@ fun PackageSelector(navCtrl: NavHostController, pkgName: MutableState<String>) {
                     if(system == it.system) {
                         if(search != "") {
                             if(it.pkgName.contains(search, ignoreCase = true) || it.label.contains(search, ignoreCase = true)) {
-                                PackageItem(it, navCtrl, pkgName)
+                                PackageItem(it, navCtrl)
                             }
                         } else {
-                            PackageItem(it, navCtrl, pkgName)
+                            PackageItem(it, navCtrl)
                         }
                     }
                 }
@@ -204,15 +206,15 @@ fun PackageSelector(navCtrl: NavHostController, pkgName: MutableState<String>) {
 }
 
 @Composable
-private fun PackageItem(pkg: PkgInfo, navCtrl: NavHostController, pkgName: MutableState<String>) {
+private fun PackageItem(pkg: PkgInfo, navCtrl: NavHostController) {
     val focusMgr = LocalFocusManager.current
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
             .clickable{
-                pkgName.value = pkg.pkgName
                 focusMgr.clearFocus()
+                selectedPackage.value = pkg.pkgName
                 navCtrl.navigateUp()
             }
             .padding(vertical = 6.dp)

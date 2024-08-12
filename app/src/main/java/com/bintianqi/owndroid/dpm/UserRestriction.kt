@@ -196,7 +196,7 @@ private fun UserRestrictionItem(
     Box(modifier = Modifier.padding(start = 22.dp, end = 16.dp)) {
         SwitchItem(
             itemName,restrictionDescription,leadIcon,
-            { if(context.isDeviceOwner||context.isProfileOwner) { dpm.getUserRestrictions(receiver).getBoolean(restriction) }else{ false } },
+            { dpm.getUserRestrictions(receiver).getBoolean(restriction) },
             {
                 try{
                     if(it) {
@@ -204,7 +204,7 @@ private fun UserRestrictionItem(
                     }else{
                         dpm.clearUserRestriction(receiver,restriction)
                     }
-                }catch(e:SecurityException) {
+                } catch(e:SecurityException) {
                     if(context.isProfileOwner) {
                         Toast.makeText(context, R.string.require_device_owner, Toast.LENGTH_SHORT).show()
                     }

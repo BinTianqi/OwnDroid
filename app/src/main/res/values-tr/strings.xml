@@ -85,7 +85,7 @@
     <string name="disable_account_management">Hesap Yönetimini Devre Dışı Bırak</string>
     <string name="account_types_are">Hesap Türleri: </string>
     <string name="transfer_ownership">Sahipliği Devret</string>
-    <string name="transfer_ownership_desc">Cihaz sahibi veya profil sahibi ayrıcalığını başka bir uygulamaya devredin. Hedef uygulama cihaz yöneticisi olmalıdır. </string>
+    <string name="transfer_ownership_desc">Cihaz sahibi veya profil sahibi ayrıcalığını başka bir uygulamaya devredin.</string>
     <string name="target_package_name">Hedef Paket Adı</string>
     <string name="target_class_name">Hedef Sınıf Adı</string>
     <string name="device_owner_lock_screen_info">Ekran Kilidi Bilgisi</string>
@@ -112,7 +112,6 @@
     <string name="shizuku_not_started">Shizuku Başlatılmadı. </string>
     <string name="shizuku_activated_shell">İzin Verildi (Kabuk)</string>
     <string name="shizuku_activated_root">İzin Verildi (Root)</string>
-    <string name="activate_profile_owner">Profil Sahibini Etkinleştir</string>
     <string name="activate_device_owner">Cihaz Sahibini Etkinleştir</string>
     <string name="activate_org_profile">Kuruluş Profili Sahibini Etkinleştir</string>
     <string name="shizuku_service_disconnected">Shizuku Hizmeti Bağlantısı Kesildi</string>

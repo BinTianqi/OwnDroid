@@ -42,7 +42,6 @@ import android.os.Build.VERSION
 import android.os.UserManager
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ScrollState
@@ -176,54 +175,56 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
     val receiver = context.getReceiver()
     val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     val dangerousFeatures = sharedPref.getBoolean("dangerous_features", false)
+    val deviceOwner = context.isDeviceOwner
+    val profileOwner = context.isProfileOwner
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState).padding(start = 30.dp, end = 12.dp)) {
         Text(
             text = stringResource(R.string.system_manage),
             style = typography.headlineLarge,
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp).offset(x = (-8).dp)
         )
-        if(context.isDeviceOwner || context.isProfileOwner) {
+        if(deviceOwner || profileOwner) {
             SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Switches") }
         }
         SubPageItem(R.string.keyguard, "", R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("Keyguard") }
-        if(VERSION.SDK_INT >= 24 && context.isDeviceOwner) {
+        if(VERSION.SDK_INT >= 24 && deviceOwner) {
             SubPageItem(R.string.reboot, "", R.drawable.restart_alt_fill0) { rebootDialog.value = true }
         }
-        if(context.isDeviceOwner && ((VERSION.SDK_INT >= 28 && dpm.isAffiliatedUser) || VERSION.SDK_INT >= 24)) {
+        if(deviceOwner && ((VERSION.SDK_INT >= 28 && dpm.isAffiliatedUser) || VERSION.SDK_INT >= 24)) {
             SubPageItem(R.string.bug_report, "", R.drawable.bug_report_fill0) { bugReportDialog.value = true }
         }
-        if(VERSION.SDK_INT >= 28 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 28 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.edit_time, "", R.drawable.schedule_fill0) { navCtrl.navigate("EditTime") }
             SubPageItem(R.string.edit_timezone, "", R.drawable.schedule_fill0) { navCtrl.navigate("EditTimeZone") }
         }
-        if(VERSION.SDK_INT >= 23 && (context.isDeviceOwner || context.isProfileOwner)) {
+        if(VERSION.SDK_INT >= 23 && (deviceOwner || profileOwner)) {
             SubPageItem(R.string.permission_policy, "", R.drawable.key_fill0) { navCtrl.navigate("PermissionPolicy") }
         }
-        if(VERSION.SDK_INT >= 34 && context.isDeviceOwner) {
+        if(VERSION.SDK_INT >= 34 && deviceOwner) {
             SubPageItem(R.string.mte_policy, "", R.drawable.memory_fill0) { navCtrl.navigate("MTEPolicy") }
         }
-        if(VERSION.SDK_INT >= 31 && (context.isDeviceOwner || context.isProfileOwner)) {
+        if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) {
             SubPageItem(R.string.nearby_streaming_policy, "", R.drawable.share_fill0) { navCtrl.navigate("NearbyStreamingPolicy") }
         }
-        if(VERSION.SDK_INT >= 28 && context.isDeviceOwner) {
+        if(VERSION.SDK_INT >= 28 && deviceOwner) {
             SubPageItem(R.string.lock_task_mode, "", R.drawable.lock_fill0) { navCtrl.navigate("LockTaskMode") }
         }
-        if(context.isDeviceOwner || context.isProfileOwner) {
+        if(deviceOwner || profileOwner) {
             SubPageItem(R.string.ca_cert, "", R.drawable.license_fill0) { navCtrl.navigate("CaCert") }
         }
-        if(VERSION.SDK_INT >= 26 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 26 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.security_logs, "", R.drawable.description_fill0) { navCtrl.navigate("SecurityLogs") }
         }
-        if(VERSION.SDK_INT >= 23 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 23 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.system_update_policy, "", R.drawable.system_update_fill0) { navCtrl.navigate("SystemUpdatePolicy") }
         }
-        if(VERSION.SDK_INT >= 29 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 29 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.install_system_update, "", R.drawable.system_update_fill0) { navCtrl.navigate("InstallSystemUpdate") }
         }
-        if(VERSION.SDK_INT >= 30 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 30 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.frp_policy, "", R.drawable.device_reset_fill0) { navCtrl.navigate("FRP") }
         }
-        if(dangerousFeatures && context.isDeviceAdmin && !(VERSION.SDK_INT >= 24 && context.isProfileOwner && dpm.isManagedProfile(receiver))) {
+        if(dangerousFeatures && context.isDeviceAdmin && !(VERSION.SDK_INT >= 24 && profileOwner && dpm.isManagedProfile(receiver))) {
             SubPageItem(R.string.wipe_data, "", R.drawable.device_reset_fill0) { navCtrl.navigate("WipeData") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -236,24 +237,26 @@ private fun Switches() {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
+    val deviceOwner = context.isDeviceOwner
+    val profileOwner = context.isProfileOwner
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 12.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
-        if(context.isDeviceOwner || context.isProfileOwner) {
+        if(deviceOwner || profileOwner) {
             SwitchItem(R.string.disable_cam,"", R.drawable.photo_camera_fill0,
                 { dpm.getCameraDisabled(null) }, { dpm.setCameraDisabled(receiver,it) }
             )
         }
-        if(context.isDeviceOwner || context.isProfileOwner) {
+        if(deviceOwner || profileOwner) {
             SwitchItem(R.string.disable_screen_capture, stringResource(R.string.also_disable_aosp_screen_record), R.drawable.screenshot_fill0,
                 { dpm.getScreenCaptureDisabled(null) }, { dpm.setScreenCaptureDisabled(receiver,it) }
             )
         }
-        if(VERSION.SDK_INT >= 34 && (context.isDeviceOwner || (context.isProfileOwner && dpm.isAffiliatedUser))) {
+        if(VERSION.SDK_INT >= 34 && (deviceOwner || (profileOwner && dpm.isAffiliatedUser))) {
             SwitchItem(R.string.disable_status_bar, "", R.drawable.notifications_fill0,
                 { dpm.isStatusBarDisabled}, { dpm.setStatusBarDisabled(receiver,it) }
             )
         }
-        if(context.isDeviceOwner || dpm.isOrgProfile(receiver)) {
+        if(deviceOwner || dpm.isOrgProfile(receiver)) {
             if(VERSION.SDK_INT >= 30) {
                 SwitchItem(R.string.auto_time, "", R.drawable.schedule_fill0,
                     { dpm.getAutoTimeEnabled(receiver) }, { dpm.setAutoTimeEnabled(receiver,it) }
@@ -265,27 +268,27 @@ private fun Switches() {
                 SwitchItem(R.string.require_auto_time, "", R.drawable.schedule_fill0, { dpm.autoTimeRequired}, { dpm.setAutoTimeRequired(receiver,it) })
             }
         }
-        if(context.isDeviceOwner || context.isProfileOwner) {
+        if(deviceOwner || profileOwner) {
             SwitchItem(R.string.master_mute, "", R.drawable.volume_up_fill0,
                 { dpm.isMasterVolumeMuted(receiver) }, { dpm.setMasterVolumeMuted(receiver,it) }
             )
         }
-        if(VERSION.SDK_INT >= 26 && (context.isDeviceOwner || context.isProfileOwner)) {
+        if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
             SwitchItem(R.string.backup_service, "", R.drawable.backup_fill0,
                 { dpm.isBackupServiceEnabled(receiver) }, { dpm.setBackupServiceEnabled(receiver,it) }
             )
         }
-        if(VERSION.SDK_INT >= 23 && (context.isDeviceOwner || context.isProfileOwner)) {
+        if(VERSION.SDK_INT >= 23 && (deviceOwner || profileOwner)) {
             SwitchItem(R.string.disable_bt_contact_share, "", R.drawable.account_circle_fill0,
                 { dpm.getBluetoothContactSharingDisabled(receiver) }, { dpm.setBluetoothContactSharingDisabled(receiver,it) }
             )
         }
-        if(VERSION.SDK_INT >= 30 && context.isDeviceOwner) {
+        if(VERSION.SDK_INT >= 30 && deviceOwner) {
             SwitchItem(R.string.common_criteria_mode, stringResource(R.string.common_criteria_mode_desc),R.drawable.security_fill0,
                 { dpm.isCommonCriteriaModeEnabled(receiver) }, { dpm.setCommonCriteriaModeEnabled(receiver,it) }
             )
         }
-        if(VERSION.SDK_INT >= 31 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 31 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SwitchItem(
                 R.string.usb_signal, "", R.drawable.usb_fill0, { dpm.isUsbDataSignalingEnabled },
                 {
@@ -306,6 +309,8 @@ private fun Keyguard() {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
+    val deviceOwner = context.isDeviceOwner
+    val profileOwner = context.isProfileOwner
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.keyguard), style = typography.headlineLarge)
@@ -315,7 +320,7 @@ private fun Keyguard() {
                 onClick = {
                     Toast.makeText(context, if(dpm.setKeyguardDisabled(receiver,true)) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
                 },
-                enabled = context.isDeviceOwner || (VERSION.SDK_INT >= 28 && context.isProfileOwner && dpm.isAffiliatedUser),
+                enabled = deviceOwner || (VERSION.SDK_INT >= 28 && profileOwner && dpm.isAffiliatedUser),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.disable))
@@ -324,7 +329,7 @@ private fun Keyguard() {
                 onClick = {
                     Toast.makeText(context, if(dpm.setKeyguardDisabled(receiver,false)) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
                 },
-                enabled = context.isDeviceOwner || (VERSION.SDK_INT >= 28 && context.isProfileOwner && dpm.isAffiliatedUser),
+                enabled = deviceOwner || (VERSION.SDK_INT >= 28 && profileOwner && dpm.isAffiliatedUser),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.enable))

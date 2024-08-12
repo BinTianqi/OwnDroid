@@ -131,9 +131,8 @@ fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     val focusMgr = LocalFocusManager.current
-    val pkgName = remember { mutableStateOf("") }
     val dialogStatus = remember { mutableIntStateOf(0) }
     val backToHome by backToHomeStateFlow.collectAsState()
     LaunchedEffect(backToHome) {
@@ -152,17 +151,17 @@ fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>) {
         popEnterTransition = Animations.navHostPopEnterTransition,
         popExitTransition = Animations.navHostPopExitTransition
     ) {
-        composable(route = "HomePage") { HomePage(navCtrl, pkgName) }
+        composable(route = "HomePage") { HomePage(navCtrl) }
         composable(route = "SystemManage") { SystemManage(navCtrl) }
         composable(route = "ManagedProfile") { ManagedProfile(navCtrl) }
         composable(route = "Permissions") { DpmPermissions(navCtrl) }
-        composable(route = "ApplicationManage") { ApplicationManage(navCtrl, pkgName, dialogStatus) }
+        composable(route = "ApplicationManage") { ApplicationManage(navCtrl, dialogStatus) }
         composable(route = "UserRestriction") { UserRestriction(navCtrl) }
         composable(route = "UserManage") { UserManage(navCtrl) }
         composable(route = "Password") { Password(navCtrl) }
         composable(route = "AppSetting") { AppSetting(navCtrl, materialYou, blackTheme) }
         composable(route = "Network") { Network(navCtrl) }
-        composable(route = "PackageSelector") { PackageSelector(navCtrl, pkgName) }
+        composable(route = "PackageSelector") { PackageSelector(navCtrl) }
     }
     LaunchedEffect(Unit) {
         val profileInited = sharedPref.getBoolean("ManagedProfileActivated", false)
@@ -177,24 +176,26 @@ fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>) {
 }
 
 @Composable
-private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>) {
+private fun HomePage(navCtrl:NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    val refreshStatus by dhizukuErrorStatus.collectAsState()
+    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     var activateType by remember { mutableStateOf("") }
+    val deviceAdmin = context.isDeviceAdmin
+    val deviceOwner = context.isDeviceOwner
+    val profileOwner = context.isProfileOwner
+    val refreshStatus by dhizukuErrorStatus.collectAsState()
     LaunchedEffect(refreshStatus) {
         activateType = if(sharedPref.getBoolean("dhizuku", false)) context.getString(R.string.dhizuku) + " - " else ""
         activateType += context.getString(
-            if(context.isDeviceOwner) { R.string.device_owner }
-            else if(context.isProfileOwner) {
+            if(deviceOwner) { R.string.device_owner }
+            else if(profileOwner) {
                 if(VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)) R.string.work_profile_owner else R.string.profile_owner
             }
-            else if(context.isDeviceAdmin) R.string.device_admin else R.string.click_to_activate
+            else if(deviceAdmin) R.string.device_admin else R.string.click_to_activate
         )
     }
-    LaunchedEffect(Unit) { pkgName.value = "" }
     Column(modifier = Modifier.background(colorScheme.background).statusBarsPadding().verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 25.dp))
         Text(
@@ -214,14 +215,14 @@ private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>) {
         ) {
             Spacer(modifier = Modifier.padding(start = 22.dp))
             Icon(
-                painter = painterResource(if(context.isDeviceAdmin) R.drawable.check_circle_fill1 else R.drawable.block_fill0),
+                painter = painterResource(if(deviceAdmin) R.drawable.check_circle_fill1 else R.drawable.block_fill0),
                 contentDescription = null,
                 tint = colorScheme.onPrimary
             )
             Spacer(modifier = Modifier.padding(start = 10.dp))
             Column {
                 Text(
-                    text = stringResource(if(context.isDeviceAdmin) R.string.activated else R.string.deactivated),
+                    text = stringResource(if(deviceAdmin) R.string.activated else R.string.deactivated),
                     style = typography.headlineSmall,
                     color = colorScheme.onPrimary,
                     modifier = Modifier.padding(bottom = 2.dp)
@@ -230,17 +231,17 @@ private fun HomePage(navCtrl:NavHostController, pkgName: MutableState<String>) {
             }
         }
         HomePageItem(R.string.system_manage, R.drawable.mobile_phone_fill0, "SystemManage", navCtrl)
-        if(context.isDeviceOwner || context.isProfileOwner) { HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network", navCtrl) }
+        if(deviceOwner || profileOwner) { HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network", navCtrl) }
         if(
-            (VERSION.SDK_INT < 24 && !context.isDeviceOwner) || (
+            (VERSION.SDK_INT < 24 && !deviceOwner) || (
                     VERSION.SDK_INT >= 24 && (dpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE) ||
-                            (context.isProfileOwner && dpm.isManagedProfile(receiver)))
+                            (profileOwner && dpm.isManagedProfile(receiver)))
             )
         ) {
             HomePageItem(R.string.work_profile, R.drawable.work_fill0, "ManagedProfile", navCtrl)
         }
         HomePageItem(R.string.app_manager, R.drawable.apps_fill0, "ApplicationManage", navCtrl)
-        if(VERSION.SDK_INT >= 24 && (context.isProfileOwner || context.isDeviceOwner)) {
+        if(VERSION.SDK_INT >= 24 && (profileOwner || deviceOwner)) {
             HomePageItem(R.string.user_restrict, R.drawable.person_off, "UserRestriction", navCtrl)
         }
         HomePageItem(R.string.user_manager,R.drawable.manage_accounts_fill0,"UserManage", navCtrl)

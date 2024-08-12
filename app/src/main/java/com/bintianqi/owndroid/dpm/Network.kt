@@ -39,7 +39,6 @@ import android.telephony.data.ApnSetting.PROTOCOL_PPP
 import android.telephony.data.ApnSetting.PROTOCOL_UNSTRUCTURED
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ScrollState
@@ -156,37 +155,39 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState, wifiMacDia
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
+    val deviceOwner = context.isDeviceOwner
+    val profileOwner = context.isProfileOwner
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState).padding(start = 30.dp, end = 12.dp)) {
         Text(
             text = stringResource(R.string.network),
             style = typography.headlineLarge,
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp).offset(x = (-8).dp)
         )
-        if(VERSION.SDK_INT >= 24 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 24 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.wifi_mac_addr, "", R.drawable.wifi_fill0) { wifiMacDialog.value = true }
         }
         if(VERSION.SDK_INT >= 30) {
             SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Switches") }
         }
-        if(VERSION.SDK_INT >= 33 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 33 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.min_wifi_security_level, "", R.drawable.wifi_password_fill0) { navCtrl.navigate("MinWifiSecurityLevel") }
         }
-        if(VERSION.SDK_INT >= 33 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 33 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.wifi_ssid_policy, "", R.drawable.wifi_fill0) { navCtrl.navigate("WifiSsidPolicy") }
         }
-        if(VERSION.SDK_INT >= 29 && context.isDeviceOwner) {
+        if(VERSION.SDK_INT >= 29 && deviceOwner) {
             SubPageItem(R.string.private_dns, "", R.drawable.dns_fill0) { navCtrl.navigate("PrivateDNS") }
         }
-        if(context.isDeviceOwner) {
+        if(deviceOwner) {
             SubPageItem(R.string.recommended_global_proxy, "", R.drawable.vpn_key_fill0) { navCtrl.navigate("RecommendedGlobalProxy") }
         }
-        if(VERSION.SDK_INT >= 26&&(context.isDeviceOwner || (context.isProfileOwner && dpm.isManagedProfile(receiver)))) {
+        if(VERSION.SDK_INT >= 26&&(deviceOwner || (profileOwner && dpm.isManagedProfile(receiver)))) {
             SubPageItem(R.string.retrieve_net_logs, "", R.drawable.description_fill0) { navCtrl.navigate("NetworkLog") }
         }
-        if(VERSION.SDK_INT >= 31 && (context.isDeviceOwner || context.isProfileOwner)) {
+        if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) {
             SubPageItem(R.string.wifi_auth_keypair, "", R.drawable.key_fill0) { navCtrl.navigate("WifiAuthKeypair") }
         }
-        if(VERSION.SDK_INT >= 28 && context.isDeviceOwner) {
+        if(VERSION.SDK_INT >= 28 && deviceOwner) {
             SubPageItem(R.string.override_apn_settings, "", R.drawable.cell_tower_fill0) { navCtrl.navigate("APN") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -198,15 +199,16 @@ private fun Switches() {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
+    val deviceOwner = context.isDeviceOwner
     Column(modifier = Modifier.fillMaxSize().padding(start = 20.dp, end = 12.dp)) {
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT >= 33 && context.isDeviceOwner) {
+        if(VERSION.SDK_INT >= 33 && deviceOwner) {
             SwitchItem(
                 R.string.preferential_network_service, stringResource(R.string.developing), R.drawable.globe_fill0,
                 { dpm.isPreferentialNetworkServiceEnabled }, { dpm.isPreferentialNetworkServiceEnabled = it }
             )
         }
-        if(VERSION.SDK_INT>=30 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT>=30 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SwitchItem(R.string.lockdown_admin_configured_network, "", R.drawable.wifi_password_fill0,
                 { dpm.hasLockdownAdminConfiguredNetworks(receiver) }, { dpm.setConfiguredNetworksLockdownState(receiver,it) }
             )

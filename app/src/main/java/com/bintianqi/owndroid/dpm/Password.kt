@@ -133,6 +133,9 @@ fun Password(navCtrl: NavHostController) {
 private fun Home(navCtrl:NavHostController,scrollState: ScrollState) {
     val context = LocalContext.current
     val sharedPrefs = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val deviceAdmin = context.isDeviceAdmin
+    val deviceOwner = context.isDeviceOwner
+    val profileOwner = context.isProfileOwner
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState).padding(start = 30.dp, end = 12.dp)) {
         Text(
             text = stringResource(R.string.password_and_keyguard),
@@ -141,31 +144,31 @@ private fun Home(navCtrl:NavHostController,scrollState: ScrollState) {
         )
         SubPageItem(R.string.password_info, "", R.drawable.info_fill0) { navCtrl.navigate("PasswordInfo") }
         if(sharedPrefs.getBoolean("dangerous_features", false)) {
-            if(VERSION.SDK_INT >= 26 && (context.isDeviceOwner || context.isProfileOwner)) {
+            if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
                 SubPageItem(R.string.reset_password_token, "", R.drawable.key_vertical_fill0) { navCtrl.navigate("ResetPasswordToken") }
             }
-            if(context.isDeviceAdmin || context.isDeviceOwner || context.isProfileOwner) {
+            if(deviceAdmin || deviceOwner || profileOwner) {
                 SubPageItem(R.string.reset_password, "", R.drawable.lock_reset_fill0) { navCtrl.navigate("ResetPassword") }
             }
         }
-        if(VERSION.SDK_INT >= 31 && (context.isDeviceOwner || context.isProfileOwner)) {
+        if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) {
             SubPageItem(R.string.required_password_complexity, "", R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordComplexity") }
         }
-        if(context.isDeviceAdmin) {
+        if(deviceAdmin) {
             SubPageItem(R.string.disable_keyguard_features, "", R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("DisableKeyguardFeatures") }
         }
-        if(context.isDeviceOwner) {
+        if(deviceOwner) {
             SubPageItem(R.string.max_time_to_lock, "", R.drawable.schedule_fill0) { navCtrl.navigate("MaxTimeToLock") }
             SubPageItem(R.string.pwd_expiration_timeout, "", R.drawable.lock_clock_fill0) { navCtrl.navigate("PasswordTimeout") }
             SubPageItem(R.string.max_pwd_fail, "", R.drawable.no_encryption_fill0) { navCtrl.navigate("MaxPasswordFail") }
         }
-        if(context.isDeviceAdmin){
+        if(deviceAdmin){
             SubPageItem(R.string.pwd_history, "", R.drawable.history_fill0) { navCtrl.navigate("PasswordHistoryLength") }
         }
-        if(VERSION.SDK_INT >= 26 && (context.isDeviceOwner || context.isProfileOwner)) {
+        if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
             SubPageItem(R.string.required_strong_auth_timeout, "", R.drawable.fingerprint_off_fill0) { navCtrl.navigate("RequiredStrongAuthTimeout") }
         }
-        if(context.isDeviceOwner || context.isProfileOwner) {
+        if(deviceOwner || profileOwner) {
             SubPageItem(R.string.required_password_quality, "", R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordQuality") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -177,6 +180,8 @@ private fun PasswordInfo() {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
+    val deviceOwner = context.isDeviceOwner
+    val profileOwner = context.isProfileOwner
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.password_info), style = typography.headlineLarge)
@@ -191,14 +196,14 @@ private fun PasswordInfo() {
             val pwdComplex = passwordComplexity[dpm.passwordComplexity]
             Text(text = stringResource(R.string.current_password_complexity_is, pwdComplex?:stringResource(R.string.unknown)))
         }
-        if(context.isDeviceOwner || context.isProfileOwner) {
+        if(deviceOwner || profileOwner) {
             Text(stringResource(R.string.is_password_sufficient, dpm.isActivePasswordSufficient))
         }
         if(context.isDeviceAdmin) {
             val pwdFailedAttempts = dpm.currentFailedPasswordAttempts
             Text(text = stringResource(R.string.password_failed_attempts_is, pwdFailedAttempts))
         }
-        if(VERSION.SDK_INT >= 28 && context.isProfileOwner && dpm.isManagedProfile(receiver)) {
+        if(VERSION.SDK_INT >= 28 && profileOwner && dpm.isManagedProfile(receiver)) {
             val unifiedPwd = dpm.isUsingUnifiedPassword(receiver)
             Text(stringResource(R.string.is_using_unified_password, unifiedPwd))
         }
@@ -290,7 +295,7 @@ private fun ResetPassword() {
     var useToken by remember { mutableStateOf(false) }
     var token by remember { mutableStateOf("") }
     val tokenByteArray = token.toByteArray()
-    var flags = remember { mutableStateListOf<Int>() }
+    val flags = remember { mutableStateListOf<Int>() }
     var confirmDialog by remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))

@@ -84,6 +84,7 @@ import com.bintianqi.owndroid.PackageInstallerReceiver
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.fileUriFlow
 import com.bintianqi.owndroid.getFile
+import com.bintianqi.owndroid.selectedPackage
 import com.bintianqi.owndroid.toText
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.Information
@@ -98,10 +99,18 @@ private var dialogDismissButtonAction = {}
 private var dialogGetStatus = { false }
 
 @Composable
-fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, dialogStatus: MutableIntState) {
+fun ApplicationManage(navCtrl:NavHostController, dialogStatus: MutableIntState) {
     val focusMgr = LocalFocusManager.current
     val localNavCtrl = rememberNavController()
     val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
+    var pkgName by remember { mutableStateOf("") }
+    val updatePackage by selectedPackage.collectAsState()
+    LaunchedEffect(updatePackage) {
+        if(updatePackage != "") {
+            pkgName = updatePackage
+            selectedPackage.value = ""
+        }
+    }
     val titleMap = mapOf(
         "BlockUninstall" to R.string.block_uninstall,
         "UserControlDisabled" to R.string.ucd,
@@ -132,8 +141,8 @@ fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, 
         ) {
             if(backStackEntry?.destination?.route!="InstallApp") { 
                 TextField(
-                    value = pkgName.value,
-                    onValueChange = { pkgName.value = it },
+                    value = pkgName,
+                    onValueChange = { pkgName = it },
                     label = { Text(stringResource(R.string.package_name)) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
@@ -159,19 +168,19 @@ fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, 
                 popExitTransition = Animations.navHostPopExitTransition
             ) { 
                 composable(route = "Home") {
-                    Home(localNavCtrl, pkgName.value, dialogStatus, clearAppDataDialog, defaultDialerAppDialog, enableSystemAppDialog)
+                    Home(localNavCtrl, pkgName, dialogStatus, clearAppDataDialog, defaultDialerAppDialog, enableSystemAppDialog)
                 }
-                composable(route = "AlwaysOnVpn") { AlwaysOnVPNPackage(pkgName.value) }
-                composable(route = "UserControlDisabled") { UserCtrlDisabledPkg(pkgName.value) }
-                composable(route = "PermissionManage") { PermissionManage(pkgName.value) }
-                composable(route = "CrossProfilePackage") { CrossProfilePkg(pkgName.value) }
-                composable(route = "CrossProfileWidget") { CrossProfileWidget(pkgName.value) }
-                composable(route = "CredentialManagePolicy") { CredentialManagePolicy(pkgName.value) }
-                composable(route = "Accessibility") { PermittedAccessibility(pkgName.value) }
-                composable(route = "IME") { PermittedIME(pkgName.value) }
-                composable(route = "KeepUninstalled") { KeepUninstalledApp(pkgName.value) }
+                composable(route = "AlwaysOnVpn") { AlwaysOnVPNPackage(pkgName) }
+                composable(route = "UserControlDisabled") { UserCtrlDisabledPkg(pkgName) }
+                composable(route = "PermissionManage") { PermissionManage(pkgName) }
+                composable(route = "CrossProfilePackage") { CrossProfilePkg(pkgName) }
+                composable(route = "CrossProfileWidget") { CrossProfileWidget(pkgName) }
+                composable(route = "CredentialManagePolicy") { CredentialManagePolicy(pkgName) }
+                composable(route = "Accessibility") { PermittedAccessibility(pkgName) }
+                composable(route = "IME") { PermittedIME(pkgName) }
+                composable(route = "KeepUninstalled") { KeepUninstalledApp(pkgName) }
                 composable(route = "InstallApp") { InstallApp() }
-                composable(route = "UninstallApp") { UninstallApp(pkgName.value) }
+                composable(route = "UninstallApp") { UninstallApp(pkgName) }
             }
         }
     }
@@ -180,13 +189,13 @@ fun ApplicationManage(navCtrl:NavHostController, pkgName: MutableState<String>, 
         AppControlDialog(dialogStatus)
     }
     if(clearAppDataDialog.value) {
-        ClearAppDataDialog(clearAppDataDialog, pkgName.value)
+        ClearAppDataDialog(clearAppDataDialog, pkgName)
     }
     if(defaultDialerAppDialog.value) {
-        DefaultDialerAppDialog(defaultDialerAppDialog, pkgName.value)
+        DefaultDialerAppDialog(defaultDialerAppDialog, pkgName)
     }
     if(enableSystemAppDialog.value) {
-        EnableSystemAppDialog(enableSystemAppDialog, pkgName.value)
+        EnableSystemAppDialog(enableSystemAppDialog, pkgName)
     }
 }
 
@@ -199,14 +208,16 @@ private fun Home(
     defaultDialerAppDialog: MutableState<Boolean>,
     enableSystemAppDialog: MutableState<Boolean>
 ) {
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
+    val deviceOwner = context.isDeviceOwner
+    val profileOwner = context.isProfileOwner
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 30.dp, end = 12.dp)
     ) {
-        val context = LocalContext.current
-        val dpm = context.getDPM()
-        val receiver = context.getReceiver()
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT >= 24&&context.isProfileOwner&&dpm.isManagedProfile(receiver)) {
+        if(VERSION.SDK_INT >= 24 && profileOwner && dpm.isManagedProfile(receiver)) {
             Text(text = stringResource(R.string.scope_is_work_profile), textAlign = TextAlign.Center,modifier = Modifier.fillMaxWidth())
         }
         SubPageItem(R.string.app_info,"", R.drawable.open_in_new) { 
@@ -214,7 +225,7 @@ private fun Home(
             intent.setData(Uri.parse("package:$pkgName"))
             startActivity(context, intent, null)
         }
-        if(VERSION.SDK_INT>=24 && (context.isDeviceOwner || context.isProfileOwner)) { 
+        if(VERSION.SDK_INT>=24 && (deviceOwner || profileOwner)) { 
             val getSuspendStatus = {
                 try{ dpm.isPackageSuspended(receiver, pkgName) }
                 catch(e:NameNotFoundException) { false }
@@ -232,7 +243,7 @@ private fun Home(
                 }
             )
         }
-        if(context.isDeviceOwner || context.isProfileOwner) {
+        if(deviceOwner || profileOwner) {
             SwitchItem(
                 title = R.string.hide, desc = stringResource(R.string.isapphidden_desc), icon = R.drawable.visibility_off_fill0,
                 getState = { dpm.isApplicationHidden(receiver,pkgName) },
@@ -245,7 +256,7 @@ private fun Home(
                 }
             )
         }
-        if(context.isDeviceOwner || context.isProfileOwner) {
+        if(deviceOwner || profileOwner) {
             SwitchItem(
                 title = R.string.block_uninstall, desc = "", icon = R.drawable.delete_forever_fill0,
                 getState = { dpm.isUninstallBlocked(receiver,pkgName) },
@@ -258,44 +269,44 @@ private fun Home(
                 }
             )
         }
-        if(VERSION.SDK_INT>=24 && (context.isDeviceOwner || context.isProfileOwner)) {
+        if(VERSION.SDK_INT>=24 && (deviceOwner || profileOwner)) {
             SubPageItem(R.string.always_on_vpn, "", R.drawable.vpn_key_fill0) { navCtrl.navigate("AlwaysOnVpn") }
         }
-        if((VERSION.SDK_INT>=33&&context.isProfileOwner)||(VERSION.SDK_INT>=30&&context.isDeviceOwner)) { 
+        if((VERSION.SDK_INT>=33&&profileOwner)||(VERSION.SDK_INT>=30&&deviceOwner)) { 
             SubPageItem(R.string.ucd, "", R.drawable.do_not_touch_fill0) { navCtrl.navigate("UserControlDisabled") }
         }
-        if(VERSION.SDK_INT>=23&&(context.isDeviceOwner||context.isProfileOwner)) { 
+        if(VERSION.SDK_INT>=23&&(deviceOwner||profileOwner)) { 
             SubPageItem(R.string.permission_manage, "", R.drawable.key_fill0) { navCtrl.navigate("PermissionManage") }
         }
-        if(VERSION.SDK_INT>=30&&context.isProfileOwner&&dpm.isManagedProfile(receiver)) { 
+        if(VERSION.SDK_INT>=30&&profileOwner&&dpm.isManagedProfile(receiver)) { 
             SubPageItem(R.string.cross_profile_package, "", R.drawable.work_fill0) { navCtrl.navigate("CrossProfilePackage") }
         }
-        if(context.isProfileOwner) { 
+        if(profileOwner) { 
             SubPageItem(R.string.cross_profile_widget, "", R.drawable.widgets_fill0) { navCtrl.navigate("CrossProfileWidget") }
         }
-        if(VERSION.SDK_INT>=34&&context.isDeviceOwner) { 
+        if(VERSION.SDK_INT>=34&&deviceOwner) { 
             SubPageItem(R.string.credential_manage_policy, "", R.drawable.license_fill0) { navCtrl.navigate("CredentialManagePolicy") }
         }
-        if(context.isProfileOwner||context.isDeviceOwner) { 
+        if(profileOwner||deviceOwner) { 
             SubPageItem(R.string.permitted_accessibility_services, "", R.drawable.settings_accessibility_fill0) { navCtrl.navigate("Accessibility") }
         }
-        if(context.isDeviceOwner||context.isProfileOwner) { 
+        if(deviceOwner||profileOwner) { 
             SubPageItem(R.string.permitted_ime, "", R.drawable.keyboard_fill0) { navCtrl.navigate("IME") }
         }
-        if(context.isDeviceOwner || context.isProfileOwner) {
+        if(deviceOwner || profileOwner) {
             SubPageItem(R.string.enable_system_app, "", R.drawable.enable_fill0) { enableSystemAppDialog.value = true }
         }
-        if(VERSION.SDK_INT>=28&&context.isDeviceOwner) { 
+        if(VERSION.SDK_INT>=28&&deviceOwner) { 
             SubPageItem(R.string.keep_uninstalled_packages, "", R.drawable.delete_fill0) { navCtrl.navigate("KeepUninstalled") }
         }
-        if(VERSION.SDK_INT>=28 && (context.isDeviceOwner || context.isProfileOwner)) {
+        if(VERSION.SDK_INT>=28 && (deviceOwner || profileOwner)) {
             SubPageItem(R.string.clear_app_storage, "", R.drawable.mop_fill0) {
                 if(pkgName != "") { clearAppDataDialog.value = true }
             }
         }
         SubPageItem(R.string.install_app, "", R.drawable.install_mobile_fill0) { navCtrl.navigate("InstallApp") }
         SubPageItem(R.string.uninstall_app, "", R.drawable.delete_fill0) { navCtrl.navigate("UninstallApp") }
-        if(VERSION.SDK_INT >= 34 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 34 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.set_default_dialer, "", R.drawable.call_fill0) { defaultDialerAppDialog.value = true }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -412,7 +423,6 @@ private fun PermissionManage(pkgName: String) {
     var showDialog by remember { mutableStateOf(false) }
     var selectedPermission by remember { mutableStateOf(PermissionItem("", R.string.unknown, R.drawable.block_fill0)) }
     val statusMap = remember { mutableStateMapOf<String, Int>() }
-    val profileOwner = context.isProfileOwner
     val grantState = mapOf(
         PERMISSION_GRANT_STATE_DEFAULT to stringResource(R.string.default_stringres),
         PERMISSION_GRANT_STATE_GRANTED to stringResource(R.string.granted),
@@ -493,7 +503,7 @@ private fun PermissionManage(pkgName: String) {
                 Column {
                     Text(selectedPermission.permission)
                     Spacer(Modifier.padding(vertical = 4.dp))
-                    if(!(VERSION.SDK_INT >=31 && profileOwner && selectedPermission.profileOwnerRestricted)) {
+                    if(!(VERSION.SDK_INT >=31 && context.isProfileOwner && selectedPermission.profileOwnerRestricted)) {
                         GrantPermissionItem(R.string.grant, PERMISSION_GRANT_STATE_GRANTED)
                     }
                     GrantPermissionItem(R.string.deny, PERMISSION_GRANT_STATE_DENIED)

@@ -107,6 +107,8 @@ fun UserManage(navCtrl: NavHostController) {
 @Composable
 private fun Home(navCtrl: NavHostController,scrollState: ScrollState) {
     val context = LocalContext.current
+    val deviceOwner = context.isDeviceOwner
+    val profileOwner = context.isProfileOwner
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState).padding(start = 30.dp, end = 12.dp)) {
         Text(
             text = stringResource(R.string.user_manager),
@@ -114,22 +116,22 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState) {
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp).offset(x = (-8).dp)
         )
         SubPageItem(R.string.user_info, "", R.drawable.person_fill0) { navCtrl.navigate("UserInfo") }
-        if(context.isDeviceOwner) {
+        if(deviceOwner) {
             SubPageItem(R.string.user_operation, "", R.drawable.sync_alt_fill0) { navCtrl.navigate("UserOperation") }
         }
-        if(VERSION.SDK_INT >= 24 && context.isDeviceOwner) {
+        if(VERSION.SDK_INT >= 24 && deviceOwner) {
             SubPageItem(R.string.create_user, "", R.drawable.person_add_fill0) { navCtrl.navigate("CreateUser") }
         }
-        if(context.isDeviceOwner || context.isProfileOwner) {
+        if(deviceOwner || profileOwner) {
             SubPageItem(R.string.edit_username, "", R.drawable.edit_fill0) { navCtrl.navigate("EditUsername") }
         }
-        if(VERSION.SDK_INT >= 23 && (context.isDeviceOwner || context.isProfileOwner)) {
+        if(VERSION.SDK_INT >= 23 && (deviceOwner || profileOwner)) {
             SubPageItem(R.string.change_user_icon, "", R.drawable.account_circle_fill0) { navCtrl.navigate("ChangeUserIcon") }
         }
-        if(VERSION.SDK_INT >= 28 && context.isDeviceOwner) {
+        if(VERSION.SDK_INT >= 28 && deviceOwner) {
             SubPageItem(R.string.user_session_msg, "", R.drawable.notifications_fill0) { navCtrl.navigate("UserSessionMessage") }
         }
-        if(VERSION.SDK_INT >= 26 && (context.isDeviceOwner || context.isProfileOwner)) {
+        if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
             SubPageItem(R.string.affiliation_id, "", R.drawable.id_card_fill0) { navCtrl.navigate("AffiliationID") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -206,7 +208,7 @@ private fun UserOperation() {
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT > 28) {
-            if(context.isProfileOwner&&dpm.isAffiliatedUser) {
+            if(context.isProfileOwner && dpm.isAffiliatedUser) {
                 Button(
                     onClick = {
                         val result = dpm.logoutUser(receiver)
