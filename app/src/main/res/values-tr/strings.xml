@@ -109,6 +109,8 @@
     <!--Shizuku-->
     <string name="check_shizuku">İzni Kontrol Et</string>
     <string name="list_owners">Sahipleri Listele</string>
+    <string name="list_users">List users</string> <!--TODO-->
+    <string name="list_accounts">List accounts</string> <!--TODO-->
     <string name="shizuku_not_started">Shizuku Başlatılmadı. </string>
     <string name="shizuku_activated_shell">İzin Verildi (Kabuk)</string>
     <string name="shizuku_activated_root">İzin Verildi (Root)</string>
@@ -160,8 +162,9 @@
     <string name="lock_task_mode">Lock task mode</string> <!--TODO-->
     <string name="lock_task_feature">Görev kilitleme özelliği</string>
     <string name="lock_task_packages">Lock task packages</string> <!--TODO-->
+    <string name="specify_activity">Specify Activity</string> <!--TODO-->
     <string name="start_lock_task_mode">Start lock task mode</string> <!--TODO-->
-    <string name="app_not_allowed">App not allowed</string> <!--TODO-->
+    <string name="app_not_allowed">App is not allowed</string> <!--TODO-->
     <string name="disable_all">Hepsini devre dışı bırak</string>
 
     <!--ltf: lock task feature-->

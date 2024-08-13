@@ -114,6 +114,28 @@ fun ShizukuActivate() {
         ) {
             Text(text = stringResource(R.string.list_owners))
         }
+        Button(
+            onClick = {
+                coScope.launch{
+                    outputText = service!!.execute("pm list users")
+                    outputTextScrollState.animateScrollTo(0)
+                }
+            },
+            enabled = enabled
+        ) {
+            Text(text = stringResource(R.string.list_users))
+        }
+        Button(
+            onClick = {
+                coScope.launch{
+                    outputText = service!!.execute("dumpsys account")
+                    outputTextScrollState.animateScrollTo(0)
+                }
+            },
+            enabled = enabled
+        ) {
+            Text(text = stringResource(R.string.list_accounts))
+        }
         Spacer(Modifier.padding(vertical = 5.dp))
 
         AnimatedVisibility(showDeviceAdminButton && showDeviceOwnerButton) {

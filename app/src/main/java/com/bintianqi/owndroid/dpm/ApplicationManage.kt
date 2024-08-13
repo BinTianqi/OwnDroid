@@ -147,7 +147,6 @@ fun ApplicationManage(navCtrl:NavHostController, dialogStatus: MutableIntState) 
             composable(route = "Home") {
                 Home(localNavCtrl, pkgName, dialogStatus)
             }
-            composable(route = "AlwaysOnVpn") { AlwaysOnVPNPackage(pkgName) }
             composable(route = "UserControlDisabled") { UserCtrlDisabledPkg(pkgName) }
             composable(route = "PermissionManage") { PermissionManage(pkgName) }
             composable(route = "CrossProfilePackage") { CrossProfilePkg(pkgName) }
@@ -244,9 +243,6 @@ private fun Home(
                 onCheckedChange = { appControlAction = 3; appControl(it) },
                 onClickBlank = { appControlAction = 3; appControlDialog = true }
             )
-        }
-        if(VERSION.SDK_INT >= 24 && (deviceOwner || profileOwner)) {
-            SubPageItem(R.string.always_on_vpn, "", R.drawable.vpn_key_fill0) { navCtrl.navigate("AlwaysOnVpn") }
         }
         if((VERSION.SDK_INT >= 33 && profileOwner) || (VERSION.SDK_INT >= 30 && deviceOwner)) {
             SubPageItem(R.string.ucd, "", R.drawable.do_not_touch_fill0) { navCtrl.navigate("UserControlDisabled") }
@@ -349,48 +345,6 @@ private fun Home(
     }
 }
 
-@SuppressLint("NewApi")
-@Composable
-fun AlwaysOnVPNPackage(pkgName: String) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    var lockdown by remember { mutableStateOf(false) }
-    var pkg by remember { mutableStateOf<String?>("") }
-    val refresh = { pkg = dpm.getAlwaysOnVpnPackage(receiver) }
-    LaunchedEffect(Unit) { refresh() }
-    val setAlwaysOnVpn: (String?, Boolean)->Unit = { vpnPkg: String?, lockdownEnabled: Boolean ->
-        try {
-            dpm.setAlwaysOnVpnPackage(receiver, vpnPkg, lockdownEnabled)
-            Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-        } catch(e: UnsupportedOperationException) {
-            Toast.makeText(context, R.string.unsupported, Toast.LENGTH_SHORT).show()
-        } catch(e: NameNotFoundException) {
-            Toast.makeText(context, R.string.not_installed, Toast.LENGTH_SHORT).show()
-        }
-    }
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.always_on_vpn), style = typography.headlineLarge, modifier = Modifier.padding(vertical = 8.dp))
-        Text(text = stringResource(R.string.current_app_is) + pkg, modifier = Modifier.padding(vertical = 8.dp))
-        SwitchItem(R.string.enable_lockdown, "", null, lockdown, { lockdown = it }, padding = false)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = { setAlwaysOnVpn(pkgName, lockdown); refresh() },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.apply))
-        }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = { setAlwaysOnVpn(null, false); refresh() },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.clear_current_config))
-        }
-        Spacer(Modifier.padding(vertical = 30.dp))
-    }
-}
 
 @SuppressLint("NewApi")
 @Composable

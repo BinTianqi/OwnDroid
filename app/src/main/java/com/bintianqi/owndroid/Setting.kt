@@ -67,11 +67,11 @@ private fun Home(navCtrl: NavHostController) {
 @Composable
 private fun Options() {
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 16.dp)) {
         SwitchItem(
             R.string.show_dangerous_features, "", R.drawable.warning_fill0,
             { sharedPref.getBoolean("dangerous_features", false) },
-            { sharedPref.edit().putBoolean("dangerous_features", it).apply() }
+            { sharedPref.edit().putBoolean("dangerous_features", it).apply() }, padding = false
         )
     }
 }
@@ -79,15 +79,15 @@ private fun Options() {
 @Composable
 private fun ThemeSettings(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>) {
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        if(VERSION.SDK_INT>=31) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 16.dp)) {
+        if(VERSION.SDK_INT >= 31) {
             SwitchItem(
                 R.string.material_you_color, stringResource(R.string.dynamic_color_desc), null,
                 { sharedPref.getBoolean("material_you",true) },
                 {
                     sharedPref.edit().putBoolean("material_you", it).apply()
                     materialYou.value = it
-                }
+                }, padding = false
             )
         }
         if(isSystemInDarkTheme()) {
@@ -97,7 +97,7 @@ private fun ThemeSettings(materialYou:MutableState<Boolean>, blackTheme:MutableS
                 {
                     sharedPref.edit().putBoolean("black_theme", it).apply()
                     blackTheme.value = it
-                }
+                }, padding = false
             )
         }
     }
@@ -107,30 +107,30 @@ private fun ThemeSettings(materialYou:MutableState<Boolean>, blackTheme:MutableS
 private fun AuthSettings() {
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     var auth by remember{ mutableStateOf(sharedPref.getBoolean("auth",false)) }
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 16.dp)) {
         SwitchItem(
             R.string.lock_owndroid, "", null, auth,
             {
                 sharedPref.edit().putBoolean("auth", it).apply()
                 auth = sharedPref.getBoolean("auth", false)
-            }
+            }, padding = false
         )
         if(auth) {
             SwitchItem(
                 R.string.enable_bio_auth, "", null,
                 { sharedPref.getBoolean("bio_auth", false) },
-                { sharedPref.edit().putBoolean("bio_auth", it).apply() }
+                { sharedPref.edit().putBoolean("bio_auth", it).apply() }, padding = false
             )
             SwitchItem(
                 R.string.lock_in_background, stringResource(R.string.developing), null,
                 { sharedPref.getBoolean("lock_in_background", false) },
-                { sharedPref.edit().putBoolean("lock_in_background", it).apply() }
+                { sharedPref.edit().putBoolean("lock_in_background", it).apply() }, padding = false
             )
         }
         SwitchItem(
             R.string.protect_storage, "", null,
             { sharedPref.getBoolean("protect_storage", false) },
-            { sharedPref.edit().putBoolean("protect_storage", it).apply() }
+            { sharedPref.edit().putBoolean("protect_storage", it).apply() }, padding = false
         )
     }
 }

@@ -111,6 +111,8 @@
     <string name="shizuku" translatable="false">Shizuku</string>
     <string name="check_shizuku">Check permission</string>
     <string name="list_owners">List owners</string>
+    <string name="list_users">List users</string>
+    <string name="list_accounts">List accounts</string>
     <string name="shizuku_not_started">Shizuku not started. </string>
     <string name="dpm_activate_do_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="dpm_activate_da_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
@@ -164,8 +166,9 @@
     <string name="lock_task_mode">Lock task mode</string>
     <string name="lock_task_feature">Lock task feature</string>
     <string name="lock_task_packages">Lock task packages</string>
+    <string name="specify_activity">Specify Activity</string>
     <string name="start_lock_task_mode">Start lock task mode</string>
-    <string name="app_not_allowed">App not allowed</string>
+    <string name="app_not_allowed">App is not allowed</string>
     <string name="disable_all">Disable all</string>
     <!--ltf: lock task feature-->
     <string name="ltf_sys_info">Allow system info</string>
