@@ -94,10 +94,6 @@ import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import java.util.concurrent.Executors
 
-private var dialogConfirmButtonAction = {}
-private var dialogDismissButtonAction = {}
-private var dialogGetStatus = { false }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ApplicationManage(navCtrl:NavHostController, dialogStatus: MutableIntState) {
@@ -166,10 +162,9 @@ fun ApplicationManage(navCtrl:NavHostController, dialogStatus: MutableIntState) 
     }
     when(dialogStatus.intValue) {
         0 -> {}
-        4 -> EnableSystemAppDialog(dialogStatus, pkgName)
-        5 -> ClearAppDataDialog(dialogStatus, pkgName)
-        6 -> DefaultDialerAppDialog(dialogStatus, pkgName)
-        else -> AppControlDialog(dialogStatus)
+        1 -> EnableSystemAppDialog(dialogStatus, pkgName)
+        2 -> ClearAppDataDialog(dialogStatus, pkgName)
+        3 -> DefaultDialerAppDialog(dialogStatus, pkgName)
     }
     LaunchedEffect(dialogStatus.intValue) {
         focusMgr.clearFocus()
@@ -185,9 +180,35 @@ private fun Home(
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val sharedPrefs = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
+    var suspend by remember { mutableStateOf(false) }
+    suspend = try{ if(VERSION.SDK_INT >= 24) dpm.isPackageSuspended(receiver, pkgName) else false }
+        catch(e:NameNotFoundException) { false }
+        catch(e:IllegalArgumentException) { false }
+    var hide by remember { mutableStateOf(false) }
+    hide = dpm.isApplicationHidden(receiver, pkgName)
+    var blockUninstall by remember { mutableStateOf(false) }
+    blockUninstall = dpm.isUninstallBlocked(receiver,pkgName)
+    var appControlDialog by remember { mutableStateOf(false) }
+    var appControlAction by remember { mutableIntStateOf(0) }
+    val focusMgr = LocalFocusManager.current
+    val appControl: (Boolean) -> Unit = {
+        when(appControlAction) {
+            1 -> if(VERSION.SDK_INT >= 24) dpm.setPackagesSuspended(receiver, arrayOf(pkgName), it)
+            2 -> dpm.setApplicationHidden(receiver, pkgName, it)
+            3 -> dpm.setUninstallBlocked(receiver, pkgName, it)
+        }
+        when(appControlAction) {
+            1 -> {
+                suspend = try{ if(VERSION.SDK_INT >= 24) dpm.isPackageSuspended(receiver, pkgName) else false }
+                catch(e:NameNotFoundException) { false }
+                catch(e:IllegalArgumentException) { false }
+            }
+            2 -> hide = dpm.isApplicationHidden(receiver,pkgName)
+            3 -> blockUninstall = dpm.isUninstallBlocked(receiver,pkgName)
+        }
+    }
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
     ) {
@@ -201,53 +222,33 @@ private fun Home(
             startActivity(context, intent, null)
         }
         if(VERSION.SDK_INT >= 24 && (deviceOwner || profileOwner)) {
-            val getSuspendStatus = {
-                try{ dpm.isPackageSuspended(receiver, pkgName) }
-                catch(e:NameNotFoundException) { false }
-                catch(e:IllegalArgumentException) { false }
-            }
             SwitchItem(
                 title = R.string.suspend, desc = "", icon = R.drawable.block_fill0,
-                getState = getSuspendStatus,
-                onCheckedChange = { dpm.setPackagesSuspended(receiver, arrayOf(pkgName), it) },
-                onClickBlank = {
-                    dialogGetStatus = getSuspendStatus
-                    dialogConfirmButtonAction = { dpm.setPackagesSuspended(receiver, arrayOf(pkgName), true) }
-                    dialogDismissButtonAction = { dpm.setPackagesSuspended(receiver, arrayOf(pkgName), false) }
-                    dialogStatus.intValue = 1
-                }
+                state = suspend,
+                onCheckedChange = { appControlAction = 1; appControl(it) },
+                onClickBlank = { appControlAction = 1; appControlDialog = true }
             )
         }
         if(deviceOwner || profileOwner) {
             SwitchItem(
                 title = R.string.hide, desc = stringResource(R.string.isapphidden_desc), icon = R.drawable.visibility_off_fill0,
-                getState = { dpm.isApplicationHidden(receiver,pkgName) },
-                onCheckedChange = { dpm.setApplicationHidden(receiver, pkgName, it) },
-                onClickBlank = {
-                    dialogGetStatus = { dpm.isApplicationHidden(receiver,pkgName) }
-                    dialogConfirmButtonAction = { dpm.setApplicationHidden(receiver, pkgName, true) }
-                    dialogDismissButtonAction = { dpm.setApplicationHidden(receiver, pkgName, false) }
-                    dialogStatus.intValue = 2
-                }
+                state = hide,
+                onCheckedChange = { appControlAction = 2; appControl(it) },
+                onClickBlank = { appControlAction = 2; appControlDialog = true }
             )
         }
         if(deviceOwner || profileOwner) {
             SwitchItem(
                 title = R.string.block_uninstall, desc = "", icon = R.drawable.delete_forever_fill0,
-                getState = { dpm.isUninstallBlocked(receiver,pkgName) },
-                onCheckedChange = { dpm.setUninstallBlocked(receiver,pkgName,it) },
-                onClickBlank = {
-                    dialogGetStatus = { dpm.isUninstallBlocked(receiver,pkgName) }
-                    dialogConfirmButtonAction = { dpm.setUninstallBlocked(receiver,pkgName,true) }
-                    dialogDismissButtonAction = { dpm.setUninstallBlocked(receiver,pkgName,false) }
-                    dialogStatus.intValue = 3
-                }
+                state = blockUninstall,
+                onCheckedChange = { appControlAction = 3; appControl(it) },
+                onClickBlank = { appControlAction = 3; appControlDialog = true }
             )
         }
-        if(VERSION.SDK_INT>=24 && (deviceOwner || profileOwner)) {
+        if(VERSION.SDK_INT >= 24 && (deviceOwner || profileOwner)) {
             SubPageItem(R.string.always_on_vpn, "", R.drawable.vpn_key_fill0) { navCtrl.navigate("AlwaysOnVpn") }
         }
-        if((VERSION.SDK_INT>=33&&profileOwner)||(VERSION.SDK_INT>=30&&deviceOwner)) { 
+        if((VERSION.SDK_INT >= 33 && profileOwner) || (VERSION.SDK_INT >= 30 && deviceOwner)) {
             SubPageItem(R.string.ucd, "", R.drawable.do_not_touch_fill0) { navCtrl.navigate("UserControlDisabled") }
         }
         if(VERSION.SDK_INT>=23&&(deviceOwner||profileOwner)) { 
@@ -270,7 +271,7 @@ private fun Home(
         }
         if(deviceOwner || profileOwner) {
             SubPageItem(R.string.enable_system_app, "", R.drawable.enable_fill0) {
-                if(pkgName != "") dialogStatus.intValue = 4
+                if(pkgName != "") dialogStatus.intValue = 1
             }
         }
         if(VERSION.SDK_INT >= 28 && deviceOwner) {
@@ -278,20 +279,73 @@ private fun Home(
         }
         if(VERSION.SDK_INT >= 28 && (deviceOwner || profileOwner)) {
             SubPageItem(R.string.clear_app_storage, "", R.drawable.mop_fill0) {
-                if(pkgName != "") dialogStatus.intValue = 5
+                if(pkgName != "") dialogStatus.intValue = 2
             }
         }
-        if(!sharedPrefs.getBoolean("dhizuku", false)) {
-            SubPageItem(R.string.install_app, "", R.drawable.install_mobile_fill0) { navCtrl.navigate("InstallApp") }
-        }
+        SubPageItem(R.string.install_app, "", R.drawable.install_mobile_fill0) { navCtrl.navigate("InstallApp") }
         SubPageItem(R.string.uninstall_app, "", R.drawable.delete_fill0) { navCtrl.navigate("UninstallApp") }
         if(VERSION.SDK_INT >= 34 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.set_default_dialer, "", R.drawable.call_fill0) {
-                if(pkgName != "") dialogStatus.intValue = 6
+                if(pkgName != "") dialogStatus.intValue = 3
             }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
         LaunchedEffect(Unit) { fileUriFlow.value = Uri.parse("") }
+    }
+    if(appControlDialog) {
+        LaunchedEffect(Unit) {
+            focusMgr.clearFocus()
+        }
+        AlertDialog(
+            onDismissRequest = { appControlDialog = false },
+            title = {
+                Text(
+                    text = stringResource(
+                        when(appControlAction) {
+                            1 -> R.string.suspend
+                            2 -> R.string.hide
+                            3 -> R.string.block_uninstall
+                            4 -> R.string.always_on_vpn
+                            else -> R.string.unknown
+                        }
+                    ),
+                    style = typography.headlineMedium,
+                    modifier = Modifier.padding(start = 5.dp)
+                )
+            },
+            text = {
+                val enabled = when(appControlAction){
+                    1 -> suspend
+                    2 -> hide
+                    3 -> blockUninstall
+                    else -> false
+                }
+                Text(
+                    text = stringResource(R.string.current_state, stringResource(if(enabled) R.string.enabled else R.string.disabled)),
+                    modifier = Modifier.padding(start = 5.dp, top = 5.dp, bottom = 5.dp)
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        appControl(true)
+                        appControlDialog = false
+                    }
+                ) {
+                    Text(text = stringResource(R.string.enable))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        appControl(false)
+                        appControlDialog = false
+                    }
+                ) {
+                    Text(text = stringResource(R.string.disable))
+                }
+            }
+        )
     }
 }
 
@@ -319,7 +373,7 @@ fun AlwaysOnVPNPackage(pkgName: String) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.always_on_vpn), style = typography.headlineLarge, modifier = Modifier.padding(vertical = 8.dp))
         Text(text = stringResource(R.string.current_app_is) + pkg, modifier = Modifier.padding(vertical = 8.dp))
-        SwitchItem(R.string.enable_lockdown, "", null, { lockdown }, { lockdown = it }, padding = false)
+        SwitchItem(R.string.enable_lockdown, "", null, lockdown, { lockdown = it }, padding = false)
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = { setAlwaysOnVpn(pkgName, lockdown); refresh() },
@@ -809,7 +863,7 @@ private fun PermittedIME(pkgName: String) {
         Text(text = stringResource(R.string.permitted_ime), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         SwitchItem(
-            R.string.allow_all, "", null, { allowAll },
+            R.string.allow_all, "", null, allowAll,
             {
                 dpm.setPermittedInputMethods(receiver, if(it) null else listOf())
                 refresh()
@@ -963,6 +1017,7 @@ private fun InstallApp() {
     val context = LocalContext.current
     val focusMgr = LocalFocusManager.current
     val selected = fileUriFlow.collectAsState().value != Uri.parse("")
+    val sharedPrefs = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.install_app), style = typography.headlineLarge)
@@ -988,6 +1043,7 @@ private fun InstallApp() {
                         intent.data = fileUriFlow.value
                         context.startActivity(intent)
                     },
+                    enabled = !sharedPrefs.getBoolean("dhizuku", false) && context.isDeviceOwner,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(stringResource(R.string.silent_install))
@@ -1119,48 +1175,5 @@ private fun EnableSystemAppDialog(status: MutableIntState, pkgName: String) {
             }
         },
         modifier = Modifier.fillMaxWidth()
-    )
-}
-
-@Composable
-private fun AppControlDialog(status: MutableIntState) {
-    val enabled = dialogGetStatus()
-    AlertDialog(
-        onDismissRequest = { status.intValue = 0 },
-        title = {
-            Text(
-                text = stringResource(
-                    when(status.intValue) {
-                        1 -> R.string.suspend
-                        2 -> R.string.hide
-                        3 -> R.string.block_uninstall
-                        4 -> R.string.always_on_vpn
-                        else -> R.string.unknown
-                    }
-                ),
-                style = typography.headlineMedium,
-                modifier = Modifier.padding(start = 5.dp)
-            )
-        },
-        text = {
-            Text(
-                text = stringResource(R.string.current_status_is) + stringResource(if(enabled) R.string.enabled else R.string.disabled),
-                modifier = Modifier.padding(start = 5.dp, top = 5.dp, bottom = 5.dp)
-            )
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { dialogConfirmButtonAction(); status.intValue = 0 }
-            ) {
-                Text(text = stringResource(R.string.enable))
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = { dialogDismissButtonAction(); status.intValue = 0 }
-            ) {
-                Text(text = stringResource(R.string.disable))
-            }
-        }
     )
 }

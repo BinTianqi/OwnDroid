@@ -12,10 +12,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.IPackageInstaller
 import android.content.pm.PackageInstaller
+import android.content.pm.PackageManager
 import android.os.Build.VERSION
 import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import com.bintianqi.owndroid.InstallAppActivity
 import com.bintianqi.owndroid.PackageInstallerReceiver
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.Receiver
@@ -230,6 +232,15 @@ fun Context.resetDevicePolicy() {
     dpm.setRecommendedGlobalProxy(receiver, null)
 }
 
+fun Context.toggleInstallAppActivity() {
+    val sharedPrefs = getSharedPreferences("data", Context.MODE_PRIVATE)
+    val disable = sharedPrefs.getBoolean("dhizuku", false) || !isDeviceOwner
+    packageManager?.setComponentEnabledSetting(
+        ComponentName(this, InstallAppActivity::class.java),
+        if (disable) PackageManager.COMPONENT_ENABLED_STATE_DISABLED else PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+        PackageManager.DONT_KILL_APP
+    )
+}
 
 data class PermissionItem(
     val permission: String,

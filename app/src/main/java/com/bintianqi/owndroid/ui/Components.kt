@@ -124,6 +124,7 @@ fun CheckBoxItem(
     }
 }
 
+
 @Composable
 fun SwitchItem(
     @StringRes title: Int,
@@ -135,7 +136,21 @@ fun SwitchItem(
     onClickBlank: (() -> Unit)? = null,
     padding: Boolean = true
 ) {
-    var checked by remember { mutableStateOf(getState()) }
+    var state by remember { mutableStateOf(getState()) }
+    SwitchItem(title, desc, icon, state, { onCheckedChange(it); state = getState() }, enable, onClickBlank, padding)
+}
+
+@Composable
+fun SwitchItem(
+    @StringRes title: Int,
+    desc: String,
+    @DrawableRes icon: Int?,
+    state: Boolean,
+    onCheckedChange: (Boolean)->Unit,
+    enable: Boolean = true,
+    onClickBlank: (() -> Unit)? = null,
+    padding: Boolean = true
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -159,7 +174,7 @@ fun SwitchItem(
             }
         }
         Switch(
-            checked = checked, onCheckedChange = { onCheckedChange(it); checked = getState() },
+            checked = state, onCheckedChange = { onCheckedChange(it) },
             modifier = Modifier.align(Alignment.CenterEnd), enabled = enable
         )
     }

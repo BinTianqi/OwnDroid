@@ -124,7 +124,6 @@
     <string name="disable_cam">Kamerayı devre dışı bırak</string>
     <string name="disable_screen_capture">Ekran görüntüsünü devre dışı bırak</string>
     <string name="disable_status_bar">Durum çubuğunu devre dışı bırak</string>
-    <string name="also_disable_aosp_screen_record">AOSP\'de ekran kaydını da devre dışı bırak</string>
     <string name="auto_time">Otomatik saat</string>
     <string name="require_auto_time">Otomatik saat gerektir</string>
     <string name="auto_timezone">Otomatik saat dilimi</string>
@@ -132,7 +131,6 @@
     <string name="backup_service">Yedekleme servisi</string>
     <string name="disable_bt_contact_share">Bluetooth kişi paylaşımını devre dışı bırak</string>
     <string name="common_criteria_mode">Ortak kriter modu</string>
-    <string name="common_criteria_mode_desc">Bilinmeyen etki</string>
     <string name="usb_signal">USB sinyali</string>
     <string name="keyguard">Ekran kilidi</string>
     <string name="require_no_password_to_disable">Ekran kilidini devre dışı bırakmak için parola ayarlanmamış olmalıdır</string>
@@ -398,7 +396,6 @@
     <string name="install_unknown_src_globally">Bilinmeyen kaynakları global olarak yükle</string>
     <string name="inst_unknown_src">Bilinmeyen kaynakları yükle</string>
     <string name="apps_ctrl">Uygulama kontrolü</string>
-    <string name="apps_control_desc">Uygulama verilerini veya önbelleği temizle</string>
     <string name="config_default_apps">Varsayılan uygulamaları yapılandır</string>
 
     <string name="config_brightness">Parlaklığı yapılandır</string>
@@ -422,11 +419,9 @@
     <string name="content_capture">İçerik yakalama</string>
     <string name="content_suggestions">İçerik önerileri</string>
     <string name="create_windows">Pencere oluştur</string>
-    <string name="create_windows_desc">ör. tostlar, bildirim afişi</string>
     <string name="set_wallpaper">Duvar kağıdı ayarla</string>
     <string name="grant_admin">Cihaz yöneticisi yetkisi ver</string>
     <string name="fun">Eğlence</string>
-    <string name="fun_desc">Oyunları devre dışı bırakabilir</string>
     <string name="modify_accounts">Hesapları değiştir</string>
     <string name="config_locale">Yerel ayarları yapılandır</string>
     <string name="config_date_time">Tarihi veya saati yapılandır</string>
@@ -544,7 +539,6 @@
     <string name="material_you_color">Material You rengi</string>
     <string name="dynamic_color_desc">Android 12+</string>
     <string name="about">Hakkında</string>
-    <string name="about_desc">Cihazınızı tam kontrol altına almak için Cihaz yöneticisi, Profil sahibi ve Cihaz sahibi ayrıcalıklarını kullanın.</string>
     <string name="user_guide">Kullanıcı rehberi</string>
     <string name="source_code">Kaynak kodu</string>
     <string name="theme">Tema</string>
@@ -555,7 +549,6 @@
     <string name="lock_owndroid">OwnDroid\'u kilitle</string>
     <string name="enable_bio_auth">Biyometri ile doğrulama</string>
     <string name="authenticate">Doğrula</string>
-    <string name="auth_on_start">OwnDroid başlatıldığında ana ekran şifresi veya biyometri ile doğrulama</string>
     <string name="use_password">Şifre kullan</string>
     <string name="auth_with_password">OwnDroid\'u şifre ile doğrula</string>
     <string name="auth_with_bio">OwnDroid\'u biyometri ile doğrula</string>

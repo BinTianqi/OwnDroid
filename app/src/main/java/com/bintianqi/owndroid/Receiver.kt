@@ -25,11 +25,13 @@ import com.bintianqi.owndroid.dpm.getReceiver
 import com.bintianqi.owndroid.dpm.isDeviceAdmin
 import com.bintianqi.owndroid.dpm.isDeviceOwner
 import com.bintianqi.owndroid.dpm.isProfileOwner
+import com.bintianqi.owndroid.dpm.toggleInstallAppActivity
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class Receiver : DeviceAdminReceiver() {
     override fun onEnabled(context: Context, intent: Intent) {
         super.onEnabled(context, intent)
+        context.toggleInstallAppActivity()
         if(context.isDeviceAdmin || context.isProfileOwner || context.isDeviceOwner){
             Toast.makeText(context, context.getString(R.string.onEnabled), Toast.LENGTH_SHORT).show()
         }
@@ -37,6 +39,7 @@ class Receiver : DeviceAdminReceiver() {
 
     override fun onDisabled(context: Context, intent: Intent) {
         super.onDisabled(context, intent)
+        context.toggleInstallAppActivity()
         backToHomeStateFlow.value = true
         Toast.makeText(context, R.string.onDisabled, Toast.LENGTH_SHORT).show()
     }

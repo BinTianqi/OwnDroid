@@ -119,7 +119,6 @@
     <string name="disable_cam">禁用相机</string>
     <string name="disable_screen_capture">禁止屏幕捕获</string>
     <string name="disable_status_bar">禁用状态栏</string>
-    <string name="also_disable_aosp_screen_record">对AOSP的录屏也起作用</string>
     <string name="auto_time">自动设置时间</string>
     <string name="auto_timezone">自动设置时区</string>
     <string name="require_auto_time">要求自动时间</string>
@@ -127,7 +126,6 @@
     <string name="backup_service">备份服务</string>
     <string name="disable_bt_contact_share">禁止蓝牙分享联系人</string>
     <string name="common_criteria_mode">通用标准模式</string>
-    <string name="common_criteria_mode_desc">Common Criteria</string>
     <string name="usb_signal">USB信号</string>
     <string name="keyguard">锁屏</string>
     <string name="require_no_password_to_disable">禁用需要无密码</string>
@@ -390,7 +388,6 @@
     <string name="install_unknown_src_globally">安装未知来源应用（全局）</string>
     <string name="inst_unknown_src">安装未知来源应用</string>
     <string name="apps_ctrl">控制应用</string>
-    <string name="apps_control_desc">清空缓存/清空内部存储</string>
     <string name="config_default_apps">修改默认App</string>
 
     <string name="config_brightness">调整亮度</string>
@@ -414,11 +411,9 @@
     <string name="content_capture">内容捕获</string>
     <string name="content_suggestions">内容建议</string>
     <string name="create_windows">创建窗口</string>
-    <string name="create_windows_desc">可能包括Toast和浮动通知</string>
     <string name="set_wallpaper">更换壁纸</string>
     <string name="grant_admin">启用设备管理器</string>
     <string name="fun">娱乐</string>
-    <string name="fun_desc">会影响谷歌商店的游戏</string>
     <string name="modify_accounts">修改账号设置</string>
     <string name="config_locale">修改语言</string>
     <string name="config_date_time">修改日期、时间</string>
@@ -536,7 +531,6 @@
     <string name="material_you_color">Material you 颜色</string>
     <string name="dynamic_color_desc">安卓12+</string>
     <string name="about">关于</string>
-    <string name="about_desc">使用安卓的Device admin、Device owner、Profile owner，全方位掌控你的设备</string>
     <string name="user_guide">使用教程</string>
     <string name="source_code">源代码</string>
     <string name="theme">主题</string>
@@ -547,7 +541,6 @@
     <string name="lock_owndroid">锁定OwnDroid</string>
     <string name="enable_bio_auth">使用生物识别</string>
     <string name="authenticate">验证</string>
-    <string name="auth_on_start">在OwnDroid启动时使用锁屏密码或生物识别进行验证</string>
     <string name="use_password">使用密码</string>
     <string name="auth_with_password">使用密码进行验证</string>
     <string name="auth_with_bio">使用生物识别进行验证</string>

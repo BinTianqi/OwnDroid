@@ -128,7 +128,6 @@
     <string name="disable_cam">Disable camera</string>
     <string name="disable_screen_capture">Disable screen capture</string>
     <string name="disable_status_bar">Disable status bar</string>
-    <string name="also_disable_aosp_screen_record">Also disable screen record in AOSP. </string>
     <string name="auto_time">Auto time</string>
     <string name="require_auto_time">Require auto time</string>
     <string name="auto_timezone">Auto timezone</string>
@@ -136,7 +135,6 @@
     <string name="backup_service">Backup service</string>
     <string name="disable_bt_contact_share">Disable bluetooth contact sharing</string>
     <string name="common_criteria_mode">Common criteria mode</string>
-    <string name="common_criteria_mode_desc">Unknown effect</string>
     <string name="usb_signal">USB signal</string>
     <string name="keyguard">Keyguard</string>
     <string name="require_no_password_to_disable">Disable keyguard require no password is set. </string>
@@ -403,7 +401,6 @@
     <string name="install_unknown_src_globally">Install unknown sources globally</string>
     <string name="inst_unknown_src">Install unknown sources</string>
     <string name="apps_ctrl">Apps control</string>
-    <string name="apps_control_desc">Clear app data or cache</string>
     <string name="config_default_apps">Configure default apps</string>
 
     <string name="config_brightness">Configure brightness</string>
@@ -427,11 +424,9 @@
     <string name="content_capture">Content capture</string>
     <string name="content_suggestions">Content suggestions</string>
     <string name="create_windows">Create windows</string>
-    <string name="create_windows_desc">e.g. toasts, notifications banner</string>
     <string name="set_wallpaper">Set wallpaper</string>
     <string name="grant_admin">Grant device admin</string>
     <string name="fun">Fun</string>
-    <string name="fun_desc">May disable games</string>
     <string name="modify_accounts">Modify accounts</string>
     <string name="config_locale">Configure locale</string>
     <string name="config_date_time">Configure date or time</string>
@@ -549,7 +544,6 @@
     <string name="material_you_color">Material you color</string>
     <string name="dynamic_color_desc">Android 12+</string>
     <string name="about">About</string>
-    <string name="about_desc">Use Device admin, Profile owner and Device owner privilege to take full control of your device. </string>
     <string name="user_guide">User guide</string>
     <string name="source_code">Source code</string>
     <string name="theme">Theme</string>
@@ -560,7 +554,6 @@
     <string name="lock_owndroid">Lock OwnDroid</string>
     <string name="enable_bio_auth">Auth with biometrics</string>
     <string name="authenticate">Authenticate</string>
-    <string name="auth_on_start">Authenticating with keyguard password or biometrics when OwnDroid launch</string>
     <string name="use_password">Use password</string>
     <string name="auth_with_password">Authenticate OwnDroid with password</string>
     <string name="auth_with_bio">Authenticate OwnDroid with biometrics</string>

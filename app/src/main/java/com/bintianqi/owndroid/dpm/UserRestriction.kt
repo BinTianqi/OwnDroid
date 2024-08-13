@@ -195,7 +195,7 @@ private fun UserRestrictionItem(
     val receiver = context.getReceiver()
     Box(modifier = Modifier.padding(start = 22.dp, end = 16.dp)) {
         SwitchItem(
-            itemName,restrictionDescription,leadIcon,
+            itemName, restrictionDescription, leadIcon,
             { dpm.getUserRestrictions(receiver).getBoolean(restriction) },
             {
                 try{

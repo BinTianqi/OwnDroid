@@ -109,8 +109,7 @@ private fun AuthSettings() {
     var auth by remember{ mutableStateOf(sharedPref.getBoolean("auth",false)) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         SwitchItem(
-            R.string.lock_owndroid, "", null,
-            { auth },
+            R.string.lock_owndroid, "", null, auth,
             {
                 sharedPref.edit().putBoolean("auth", it).apply()
                 auth = sharedPref.getBoolean("auth", false)

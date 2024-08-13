@@ -90,7 +90,6 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    var dhizukuStatus by remember { mutableStateOf(sharedPref.getBoolean("dhizuku", false)) }
     val deviceAdmin = context.isDeviceAdmin
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
@@ -103,10 +102,9 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
         if(!dpm.isDeviceOwnerApp(context.packageName)) {
             SwitchItem(
                 R.string.dhizuku, "", null,
-                { dhizukuStatus },
+                { sharedPref.getBoolean("dhizuku", false) },
                 {
                     toggleDhizukuMode(it, context)
-                    dhizukuStatus = sharedPref.getBoolean("dhizuku", false)
                 }
             )
         }
@@ -171,6 +169,7 @@ private fun toggleDhizukuMode(status: Boolean, context: Context) {
             override fun onRequestPermission(grantResult: Int) {
                 if(grantResult == PackageManager.PERMISSION_GRANTED) {
                     sharedPref.edit().putBoolean("dhizuku", true).apply()
+                    context.toggleInstallAppActivity()
                     backToHomeStateFlow.value = true
                 } else {
                     dhizukuErrorStatus.value = 2

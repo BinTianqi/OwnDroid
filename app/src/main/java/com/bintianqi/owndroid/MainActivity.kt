@@ -66,6 +66,7 @@ import com.bintianqi.owndroid.dpm.getReceiver
 import com.bintianqi.owndroid.dpm.isDeviceAdmin
 import com.bintianqi.owndroid.dpm.isDeviceOwner
 import com.bintianqi.owndroid.dpm.isProfileOwner
+import com.bintianqi.owndroid.dpm.toggleInstallAppActivity
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import com.rosan.dhizuku.api.Dhizuku
@@ -91,6 +92,7 @@ class MainActivity : FragmentActivity() {
         }
         val locale = applicationContext.resources?.configuration?.locale
         zhCN = locale == Locale.SIMPLIFIED_CHINESE || locale == Locale.CHINESE || locale == Locale.CHINA
+        toggleInstallAppActivity()
         setContent {
             val materialYou = remember { mutableStateOf(sharedPref.getBoolean("material_you", true)) }
             val blackTheme = remember { mutableStateOf(sharedPref.getBoolean("black_theme", false)) }
@@ -284,6 +286,7 @@ private fun DhizukuErrorDialog() {
         val context = LocalContext.current
         val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
         LaunchedEffect(Unit) {
+            context.toggleInstallAppActivity()
             delay(200)
             sharedPref.edit().putBoolean("dhizuku", false).apply()
         }

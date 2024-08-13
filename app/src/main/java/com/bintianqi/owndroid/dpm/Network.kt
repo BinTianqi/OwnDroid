@@ -547,7 +547,7 @@ private fun NetworkLog() {
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.developing))
         Spacer(Modifier.padding(vertical = 5.dp))
-        SwitchItem(R.string.enable,"",null, {dpm.isNetworkLoggingEnabled(receiver) }, {dpm.setNetworkLoggingEnabled(receiver,it) }, padding = false)
+        SwitchItem(R.string.enable,"",null, { dpm.isNetworkLoggingEnabled(receiver) }, {dpm.setNetworkLoggingEnabled(receiver,it) }, padding = false)
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
