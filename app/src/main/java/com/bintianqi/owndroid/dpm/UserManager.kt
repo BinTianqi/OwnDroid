@@ -75,7 +75,7 @@ fun UserManage(navCtrl: NavHostController) {
     Scaffold(
         topBar = {
             TopBar(backStackEntry, navCtrl, localNavCtrl) {
-                if(backStackEntry?.destination?.route == "Home" && scrollState.maxValue > 80) {
+                if(backStackEntry?.destination?.route == "Home" && scrollState.maxValue > 100) {
                     Text(
                         text = stringResource(R.string.user_manager),
                         modifier = Modifier.alpha((maxOf(scrollState.value-30, 0)).toFloat() / 80)
@@ -109,11 +109,11 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState) {
     val context = LocalContext.current
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState).padding(start = 30.dp, end = 12.dp)) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
             text = stringResource(R.string.user_manager),
             style = typography.headlineLarge,
-            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp).offset(x = (-8).dp)
+            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 16.dp)
         )
         SubPageItem(R.string.user_info, "", R.drawable.person_fill0) { navCtrl.navigate("UserInfo") }
         if(deviceOwner) {

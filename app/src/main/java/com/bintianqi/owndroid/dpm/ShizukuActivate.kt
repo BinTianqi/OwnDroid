@@ -51,7 +51,6 @@ fun ShizukuActivate() {
     var bindShizuku by remember { mutableStateOf(false) }
     var outputText by remember { mutableStateOf("") }
     var showDeviceAdminButton by remember { mutableStateOf(!context.isDeviceAdmin) }
-    var showProfileOwnerButton by remember { mutableStateOf(!context.isProfileOwner) }
     var showDeviceOwnerButton by remember { mutableStateOf(!context.isDeviceOwner) }
     var showOrgProfileOwnerButton by remember { mutableStateOf(true) }
     val service by shizukuService.collectAsState()
@@ -117,7 +116,7 @@ fun ShizukuActivate() {
         }
         Spacer(Modifier.padding(vertical = 5.dp))
 
-        AnimatedVisibility(showDeviceAdminButton && showProfileOwnerButton && showDeviceOwnerButton) {
+        AnimatedVisibility(showDeviceAdminButton && showDeviceOwnerButton) {
             Button(
                 onClick = {
                     coScope.launch{
@@ -133,7 +132,7 @@ fun ShizukuActivate() {
             }
         }
 
-        AnimatedVisibility(showDeviceOwnerButton && showProfileOwnerButton) {
+        AnimatedVisibility(showDeviceOwnerButton) {
             Button(
                 onClick = {
                     coScope.launch{

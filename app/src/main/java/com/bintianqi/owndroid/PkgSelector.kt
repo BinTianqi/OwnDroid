@@ -158,6 +158,7 @@ fun PackageSelector(navCtrl: NavHostController) {
                                     }
                                 )
                             },
+                            textStyle = typography.bodyLarge,
                             modifier = Modifier.fillMaxWidth().focusRequester(fr)
                         )
                     } else {
@@ -217,14 +218,12 @@ private fun PackageItem(pkg: PkgInfo, navCtrl: NavHostController) {
                 selectedPackage.value = pkg.pkgName
                 navCtrl.navigateUp()
             }
-            .padding(vertical = 6.dp)
+            .padding(horizontal = 8.dp, vertical = 10.dp)
     ) {
-        Spacer(Modifier.padding(start = 15.dp))
         Image(
             painter = rememberDrawablePainter(pkg.icon), contentDescription = "App icon",
-            modifier = Modifier.size(50.dp)
+            modifier = Modifier.padding(start = 12.dp, end = 18.dp).size(40.dp)
         )
-        Spacer(Modifier.padding(start = 15.dp))
         Column {
             Text(text = pkg.label, style = typography.titleLarge)
             Text(text = pkg.pkgName, modifier = Modifier.alpha(0.8F))

@@ -98,16 +98,16 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState).padding(start = 30.dp, end = 12.dp)) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
             text = stringResource(R.string.user_restrict),
             style = typography.headlineLarge,
-            modifier = Modifier.padding(top = 8.dp, bottom = 7.dp).offset(x = (-8).dp)
+            modifier = Modifier.padding(top = 8.dp, bottom = 7.dp, start = 16.dp)
         )
-        Text(text = stringResource(R.string.switch_to_disable_feature), modifier = Modifier.offset(x = (-6).dp))
-        if(context.isProfileOwner) { Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.offset(x = (-6).dp)) }
+        Text(text = stringResource(R.string.switch_to_disable_feature), modifier = Modifier.padding(start = 16.dp))
+        if(context.isProfileOwner) { Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.padding(start = 16.dp)) }
         if(context.isProfileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
-            Text(text = stringResource(R.string.some_features_invalid_in_work_profile), modifier = Modifier.offset(x = (-6).dp))
+            Text(text = stringResource(R.string.some_features_invalid_in_work_profile), modifier = Modifier.padding(start = 16.dp))
         }
         Spacer(Modifier.padding(vertical = 2.dp))
         SubPageItem(R.string.network_internet, "", R.drawable.wifi_fill0) { navCtrl.navigate("Internet") }
@@ -209,7 +209,7 @@ private fun UserRestrictionItem(
                         Toast.makeText(context, R.string.require_device_owner, Toast.LENGTH_SHORT).show()
                     }
                 }
-            }
+            }, padding = false
         )
     }
 }
@@ -261,7 +261,7 @@ object RestrictionData {
         if(VERSION.SDK_INT>=29) { list += Restriction(UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY, R.string.install_unknown_src_globally, "", R.drawable.android_fill0) }
         list += Restriction(UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES, R.string.inst_unknown_src, "", R.drawable.android_fill0)
         list += Restriction(UserManager.DISALLOW_UNINSTALL_APPS, R.string.uninstall_app, "", R.drawable.delete_fill0)
-        list += Restriction(UserManager.DISALLOW_APPS_CONTROL, R.string.apps_ctrl, context.getString(R.string.apps_control_desc), R.drawable.apps_fill0)
+        list += Restriction(UserManager.DISALLOW_APPS_CONTROL, R.string.apps_ctrl, "", R.drawable.apps_fill0)
         if(VERSION.SDK_INT>=34) { list += Restriction(UserManager.DISALLOW_CONFIG_DEFAULT_APPS, R.string.config_default_apps, "", R.drawable.apps_fill0) }
         return list
     }
@@ -301,10 +301,10 @@ object RestrictionData {
             list += Restriction(UserManager.DISALLOW_CONTENT_CAPTURE, R.string.content_capture, "", R.drawable.screenshot_fill0)
             list += Restriction(UserManager.DISALLOW_CONTENT_SUGGESTIONS, R.string.content_suggestions, "", R.drawable.sms_fill0)
         }
-        list += Restriction(UserManager.DISALLOW_CREATE_WINDOWS, R.string.create_windows, context.getString(R.string.create_windows_desc), R.drawable.web_asset)
+        list += Restriction(UserManager.DISALLOW_CREATE_WINDOWS, R.string.create_windows, "", R.drawable.web_asset)
         if(VERSION.SDK_INT>=24) { list += Restriction(UserManager.DISALLOW_SET_WALLPAPER, R.string.set_wallpaper, "", R.drawable.wallpaper_fill0) }
         if(VERSION.SDK_INT>=34) { list += Restriction(UserManager.DISALLOW_GRANT_ADMIN, R.string.grant_admin, "", R.drawable.security_fill0) }
-        if(VERSION.SDK_INT>=23) { list += Restriction(UserManager.DISALLOW_FUN, R.string.`fun`, context.getString(R.string.fun_desc), R.drawable.stadia_controller_fill0) }
+        if(VERSION.SDK_INT>=23) { list += Restriction(UserManager.DISALLOW_FUN, R.string.`fun`, "", R.drawable.stadia_controller_fill0) }
         list += Restriction(UserManager.DISALLOW_MODIFY_ACCOUNTS, R.string.modify_accounts, "", R.drawable.manage_accounts_fill0)
         if(VERSION.SDK_INT>=28) {
             list += Restriction(UserManager.DISALLOW_CONFIG_LOCALE, R.string.config_locale, "", R.drawable.language_fill0)

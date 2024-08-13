@@ -98,12 +98,12 @@ private fun Home(navCtrl: NavHostController) {
     val receiver = context.getReceiver()
     val profileOwner = context.isProfileOwner
     Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 30.dp, end = 12.dp)
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
     ) {
         Text(
             text = stringResource(R.string.work_profile),
             style = typography.headlineLarge,
-            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp).offset(x = (-8).dp)
+            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 16.dp)
         )
         if(VERSION.SDK_INT >= 30 && profileOwner && dpm.isManagedProfile(receiver)) {
             SubPageItem(R.string.org_owned_work_profile, "", R.drawable.corporate_fare_fill0) { navCtrl.navigate("OrgOwnedWorkProfile") }
@@ -195,7 +195,7 @@ private fun SuspendPersonalApp() {
         SwitchItem(
             R.string.suspend_personal_app, "", null,
             { dpm.getPersonalAppsSuspendedReasons(receiver)!=PERSONAL_APPS_NOT_SUSPENDED },
-            { dpm.setPersonalAppsSuspended(receiver,it) }
+            { dpm.setPersonalAppsSuspended(receiver,it) }, padding = false
         )
         var time by remember { mutableStateOf("") }
         time = dpm.getManagedProfileMaximumTimeOff(receiver).toString()

@@ -157,11 +157,11 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState, wifiMacDia
     val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState).padding(start = 30.dp, end = 12.dp)) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
             text = stringResource(R.string.network),
             style = typography.headlineLarge,
-            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp).offset(x = (-8).dp)
+            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 16.dp)
         )
         if(VERSION.SDK_INT >= 24 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.wifi_mac_addr, "", R.drawable.wifi_fill0) { wifiMacDialog.value = true }
@@ -200,7 +200,7 @@ private fun Switches() {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
-    Column(modifier = Modifier.fillMaxSize().padding(start = 20.dp, end = 12.dp)) {
+    Column(modifier = Modifier.fillMaxSize()) {
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT >= 33 && deviceOwner) {
             SwitchItem(
@@ -547,7 +547,7 @@ private fun NetworkLog() {
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.developing))
         Spacer(Modifier.padding(vertical = 5.dp))
-        SwitchItem(R.string.enable,"",null, {dpm.isNetworkLoggingEnabled(receiver) }, {dpm.setNetworkLoggingEnabled(receiver,it) })
+        SwitchItem(R.string.enable,"",null, {dpm.isNetworkLoggingEnabled(receiver) }, {dpm.setNetworkLoggingEnabled(receiver,it) }, padding = false)
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
@@ -630,7 +630,7 @@ private fun APN() {
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(id = R.string.developing))
         Spacer(Modifier.padding(vertical = 5.dp))
-        SwitchItem(R.string.enable, "", null, { dpm.isOverrideApnEnabled(receiver) }, { dpm.setOverrideApnsEnabled(receiver,it) })
+        SwitchItem(R.string.enable, "", null, { dpm.isOverrideApnEnabled(receiver) }, { dpm.setOverrideApnsEnabled(receiver,it) }, padding = false)
         Text(text = stringResource(R.string.total_apn_amount, setting.size))
         if(setting.size>0) {
             Text(text = stringResource(R.string.select_a_apn_or_create, setting.size))

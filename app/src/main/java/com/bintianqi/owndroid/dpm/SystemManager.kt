@@ -126,7 +126,7 @@ fun SystemManage(navCtrl:NavHostController) {
     Scaffold(
         topBar = {
             TopBar(backStackEntry,navCtrl,localNavCtrl) {
-                if(backStackEntry?.destination?.route=="Home"&&scrollState.maxValue>80) {
+                if(backStackEntry?.destination?.route=="Home"&&scrollState.maxValue > 100) {
                     Text(
                         text = stringResource(R.string.system_manage),
                         modifier = Modifier.alpha((maxOf(scrollState.value-30,0)).toFloat()/80)
@@ -177,11 +177,11 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
     val dangerousFeatures = sharedPref.getBoolean("dangerous_features", false)
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState).padding(start = 30.dp, end = 12.dp)) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
             text = stringResource(R.string.system_manage),
             style = typography.headlineLarge,
-            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp).offset(x = (-8).dp)
+            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 16.dp)
         )
         if(deviceOwner || profileOwner) {
             SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Switches") }
@@ -239,7 +239,7 @@ private fun Switches() {
     val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 12.dp)) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         if(deviceOwner || profileOwner) {
             SwitchItem(R.string.disable_cam,"", R.drawable.photo_camera_fill0,
@@ -247,7 +247,7 @@ private fun Switches() {
             )
         }
         if(deviceOwner || profileOwner) {
-            SwitchItem(R.string.disable_screen_capture, stringResource(R.string.also_disable_aosp_screen_record), R.drawable.screenshot_fill0,
+            SwitchItem(R.string.disable_screen_capture, "", R.drawable.screenshot_fill0,
                 { dpm.getScreenCaptureDisabled(null) }, { dpm.setScreenCaptureDisabled(receiver,it) }
             )
         }
@@ -284,7 +284,7 @@ private fun Switches() {
             )
         }
         if(VERSION.SDK_INT >= 30 && deviceOwner) {
-            SwitchItem(R.string.common_criteria_mode, stringResource(R.string.common_criteria_mode_desc),R.drawable.security_fill0,
+            SwitchItem(R.string.common_criteria_mode , "",R.drawable.security_fill0,
                 { dpm.isCommonCriteriaModeEnabled(receiver) }, { dpm.setCommonCriteriaModeEnabled(receiver,it) }
             )
         }
@@ -932,7 +932,7 @@ private fun SecurityLogs() {
         Text(text = stringResource(R.string.security_logs), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.developing))
-        SwitchItem(R.string.enable, "", null, { dpm.isSecurityLoggingEnabled(receiver) }, { dpm.setSecurityLoggingEnabled(receiver,it) })
+        SwitchItem(R.string.enable, "", null, { dpm.isSecurityLoggingEnabled(receiver) }, { dpm.setSecurityLoggingEnabled(receiver,it) }, padding = false)
         Button(
             onClick = {
                 val log = dpm.retrieveSecurityLogs(receiver)

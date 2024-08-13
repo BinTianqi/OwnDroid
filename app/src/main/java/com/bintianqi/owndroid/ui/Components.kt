@@ -35,10 +35,10 @@ fun SubPageItem(
     operation: () -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = operation).padding(vertical = 15.dp),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = operation).padding(top = 15.dp, bottom = 15.dp, start = 30.dp, end = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if(icon!=null) {
+        if(icon != null) {
             Icon(painter = painterResource(icon), contentDescription = stringResource(title), modifier = Modifier.padding(top = 1.dp))
             Spacer(Modifier.padding(start = 15.dp))
         }
@@ -132,14 +132,15 @@ fun SwitchItem(
     getState: ()->Boolean,
     onCheckedChange: (Boolean)->Unit,
     enable: Boolean = true,
-    onClickBlank: (() -> Unit)? = null
+    onClickBlank: (() -> Unit)? = null,
+    padding: Boolean = true
 ) {
     var checked by remember { mutableStateOf(getState()) }
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = onClickBlank != null, onClick = onClickBlank?:{})
-            .padding(vertical = 5.dp)
+            .padding(top = 5.dp, bottom = 5.dp, start = if(padding) 30.dp else 0.dp, end = if(padding) 12.dp else 0.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

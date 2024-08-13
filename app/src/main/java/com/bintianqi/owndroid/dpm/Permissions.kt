@@ -50,7 +50,7 @@ fun DpmPermissions(navCtrl:NavHostController) {
     Scaffold(
         topBar = {
             TopBar(backStackEntry,navCtrl,localNavCtrl) {
-                if(backStackEntry?.destination?.route=="Home"&&scrollState.maxValue>80) {
+                if(backStackEntry?.destination?.route=="Home"&&scrollState.maxValue > 100) {
                     Text(
                         text = stringResource(R.string.permission),
                         modifier = Modifier.alpha((maxOf(scrollState.value-30,0)).toFloat()/80)
@@ -94,11 +94,11 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
     val deviceAdmin = context.isDeviceAdmin
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(listScrollState).padding(start = 30.dp, end = 12.dp)) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(listScrollState)) {
         Text(
             text = stringResource(R.string.permission),
             style = typography.headlineLarge,
-            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp).offset(x = (-8).dp)
+            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 16.dp)
         )
         if(!dpm.isDeviceOwnerApp(context.packageName)) {
             SwitchItem(
