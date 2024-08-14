@@ -289,15 +289,13 @@ private fun ProfileOwner() {
         Text(text = stringResource(R.string.profile_owner), style = typography.headlineLarge)
         Text(stringResource(if(profileOwner) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT >= 24) {
-            if(profileOwner) {
-                Button(
-                    onClick = { deactivateDialog = true },
-                    enabled = !dpm.isManagedProfile(receiver),
-                    colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
-                ) {
-                    Text(stringResource(R.string.deactivate))
-                }
+        if(VERSION.SDK_INT >= 24 && profileOwner) {
+            Button(
+                onClick = { deactivateDialog = true },
+                enabled = !dpm.isManagedProfile(receiver),
+                colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
+            ) {
+                Text(stringResource(R.string.deactivate))
             }
         }
     }

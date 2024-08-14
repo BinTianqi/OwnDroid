@@ -48,7 +48,6 @@
     <string name="copy">Copy</string>
     <string name="file_not_exist">File not exist</string>
     <string name="io_exception">IO Exception</string>
-    <string name="current_status_is">Current status: </string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>
     <string name="allow_all">Allow all</string>
@@ -139,7 +138,6 @@
     <string name="common_criteria_mode">Common criteria mode</string>
     <string name="usb_signal">USB signal</string>
     <string name="keyguard">Keyguard</string>
-    <string name="require_no_password_to_disable">Disable keyguard require no password is set. </string>
     <string name="lock_now">Lock screen now</string>
     <string name="evict_credential_encryptoon_key">Evict credential encryption key</string>
     <string name="bug_report">Bug report</string>
@@ -178,11 +176,11 @@
     <string name="ltf_global_actions">Allow global actions</string>
     <string name="ltf_keyguard">Allow keyguard</string>
     <string name="ltf_block_activity_start_in_task">Block activity start in task</string>
-    <string name="ca_cert">Ca certification</string>
-    <string name="please_select_ca_cert">Please select a certification</string>
-    <string name="cacert_installed">Cert installed: %1$s</string>
-    <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Select cert...</string>
-    <string name="uninstall_all_user_ca_cert">Uninstall all user cert</string>
+    <string name="ca_cert">CA certificate</string>
+    <string name="please_select_ca_cert">Please select a certificate</string>
+    <string name="cert_installed">Certificate installed: %1$s</string>
+    <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Select certificate...</string>
+    <string name="uninstall_all_user_ca_cert">Uninstall all user CA certificate</string>
     <string name="security_logs">Security logs</string>
     <string name="pre_reboot_security_logs">Pre-reboot security logs</string>
     <string name="wipe_data">Wipe data</string>
@@ -310,7 +308,6 @@
     <string name="isapphidden_desc">Non-existent apps is hidden</string>
     <string name="always_on_vpn">Always-on VPN</string>
     <string name="enable_lockdown">Enable lockdown</string>
-    <string name="current_app_is">Current app: </string>
     <string name="clear_current_config">Clear current config</string>
     <string name="permission">Permission</string>
     <string name="scope_is_work_profile">Scope: work profile</string>

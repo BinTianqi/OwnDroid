@@ -45,7 +45,6 @@
     <string name="copy">复制</string>
     <string name="file_not_exist">文件不存在</string>
     <string name="io_exception">IO异常</string>
-    <string name="current_status_is">当前状态：</string>
     <string name="start">开始</string>
     <string name="stop">停止</string>
     <string name="allow_all">允许全部</string>
@@ -130,7 +129,6 @@
     <string name="common_criteria_mode">通用标准模式</string>
     <string name="usb_signal">USB信号</string>
     <string name="keyguard">锁屏</string>
-    <string name="require_no_password_to_disable">禁用需要无密码</string>
     <string name="lock_now">立即锁屏</string>
     <string name="evict_credential_encryptoon_key">移除凭证加密密钥</string>
     <string name="bug_report">错误报告</string>
@@ -170,9 +168,9 @@
     <string name="ltf_block_activity_start_in_task">阻止启动未允许的应用</string>
     <string name="package_name">包名</string>
     <string name="not_exist">不存在</string>
-    <string name="ca_cert">Ca证书</string>
-    <string name="please_select_ca_cert">请选择Ca证书</string>
-    <string name="cacert_installed">证书已安装：%1$s</string>
+    <string name="ca_cert">CA证书</string>
+    <string name="please_select_ca_cert">请选择CA证书</string>
+    <string name="cert_installed">证书已安装：%1$s</string>
     <string name="select_ca_cert" tools:ignore="TypographyEllipsis">选择证书...</string>
     <string name="uninstall_all_user_ca_cert">卸载所有用户证书</string>
     <string name="security_logs">安全日志</string>
@@ -298,7 +296,6 @@
     <string name="isapphidden_desc">如果隐藏，有可能是没安装</string>
     <string name="always_on_vpn">VPN保持打开</string>
     <string name="enable_lockdown">启用锁定</string>
-    <string name="current_app_is">当前应用：</string>
     <string name="clear_current_config">清除当前配置</string>
     <string name="permission">权限</string>
     <string name="scope_is_work_profile">作用域: 工作资料</string>

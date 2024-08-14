@@ -246,6 +246,7 @@ private fun Switches() {
     val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
+    val um = context.getSystemService(Context.USER_SERVICE) as UserManager
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 16.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         if(deviceOwner || profileOwner) {
@@ -263,7 +264,7 @@ private fun Switches() {
                 { dpm.isStatusBarDisabled}, { dpm.setStatusBarDisabled(receiver,it) }, padding = false
             )
         }
-        if(deviceOwner || dpm.isOrgProfile(receiver)) {
+        if(deviceOwner || (VERSION.SDK_INT >= 23 && profileOwner && um.isSystemUser) || dpm.isOrgProfile(receiver)) {
             if(VERSION.SDK_INT >= 30) {
                 SwitchItem(R.string.auto_time, "", R.drawable.schedule_fill0,
                     { dpm.getAutoTimeEnabled(receiver) }, { dpm.setAutoTimeEnabled(receiver,it) }, padding = false
@@ -285,7 +286,7 @@ private fun Switches() {
                 { dpm.isBackupServiceEnabled(receiver) }, { dpm.setBackupServiceEnabled(receiver,it) }, padding = false
             )
         }
-        if(VERSION.SDK_INT >= 23 && (deviceOwner || profileOwner)) {
+        if(VERSION.SDK_INT >= 24 && profileOwner && dpm.isManagedProfile(receiver)) {
             SwitchItem(R.string.disable_bt_contact_share, "", R.drawable.account_circle_fill0,
                 { dpm.getBluetoothContactSharingDisabled(receiver) }, { dpm.setBluetoothContactSharingDisabled(receiver,it) }, padding = false
             )
@@ -323,42 +324,50 @@ private fun Keyguard() {
         Text(text = stringResource(R.string.keyguard), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT >= 23) {
-            Button(
-                onClick = {
-                    Toast.makeText(context, if(dpm.setKeyguardDisabled(receiver,true)) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
-                },
-                enabled = deviceOwner || (VERSION.SDK_INT >= 28 && profileOwner && dpm.isAffiliatedUser),
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(stringResource(R.string.disable))
+                Button(
+                    onClick = {
+                        Toast.makeText(context, if(dpm.setKeyguardDisabled(receiver,true)) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+                    },
+                    enabled = deviceOwner || (VERSION.SDK_INT >= 28 && profileOwner && dpm.isAffiliatedUser),
+                    modifier = Modifier.fillMaxWidth(0.49F)
+                ) {
+                    Text(stringResource(R.string.disable))
+                }
+                Button(
+                    onClick = {
+                        Toast.makeText(context, if(dpm.setKeyguardDisabled(receiver,false)) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+                    },
+                    enabled = deviceOwner || (VERSION.SDK_INT >= 28 && profileOwner && dpm.isAffiliatedUser),
+                    modifier = Modifier.fillMaxWidth(0.96F)
+                ) {
+                    Text(stringResource(R.string.enable))
+                }
             }
-            Button(
-                onClick = {
-                    Toast.makeText(context, if(dpm.setKeyguardDisabled(receiver,false)) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
-                },
-                enabled = deviceOwner || (VERSION.SDK_INT >= 28 && profileOwner && dpm.isAffiliatedUser),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.enable))
-            }
-            Spacer(Modifier.padding(vertical = 3.dp))
-            Information{ Text(text = stringResource(R.string.require_no_password_to_disable)) }
-            Spacer(Modifier.padding(vertical = 8.dp))
+            Spacer(Modifier.padding(vertical = 15.dp))
         }
+        Text(text = stringResource(R.string.lock_now), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 2.dp))
         var flag by remember { mutableIntStateOf(0) }
-        Button(
-            onClick = { dpm.lockNow() },
-            enabled = context.isDeviceAdmin,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.lock_now))
-        }
-        if(VERSION.SDK_INT >= 26) {
+        if(VERSION.SDK_INT >= 26 && profileOwner && dpm.isManagedProfile(receiver)) {
             CheckBoxItem(
                 R.string.evict_credential_encryptoon_key,
                 flag == FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY,
                 { flag = if(flag==0) {1}else{0} }
             )
+            Spacer(Modifier.padding(vertical = 2.dp))
+        }
+        Button(
+            onClick = {
+                if(VERSION.SDK_INT >= 26) dpm.lockNow(flag) else dpm.lockNow()
+            },
+            enabled = context.isDeviceAdmin,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.lock_now))
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
@@ -919,7 +928,7 @@ private fun CaCert() {
             Text(text = uriPath)
         }
         Text(
-            text = if(uriPath == "") { stringResource(R.string.please_select_ca_cert) } else { stringResource(R.string.cacert_installed, exist) },
+            text = if(uriPath == "") { stringResource(R.string.please_select_ca_cert) } else { stringResource(R.string.cert_installed, exist) },
             modifier = Modifier.animateContentSize()
         )
         Spacer(Modifier.padding(vertical = 5.dp))

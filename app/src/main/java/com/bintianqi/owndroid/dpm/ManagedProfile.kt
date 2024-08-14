@@ -300,7 +300,7 @@ private fun DeleteWorkProfile() {
         Spacer(Modifier.padding(vertical = 5.dp))
         CheckBoxItem(R.string.wipe_external_storage, externalStorage, { externalStorage = it })
         if(VERSION.SDK_INT >= 28) { CheckBoxItem(R.string.wipe_euicc, euicc, { euicc = it }) }
-        if(VERSION.SDK_INT >= 29) { CheckBoxItem(R.string.wipe_silently, silent, { silent = it }) }
+        CheckBoxItem(R.string.wipe_silently, silent, { silent = it })
         AnimatedVisibility(!silent && VERSION.SDK_INT >= 28) {
             OutlinedTextField(
                 value = reason, onValueChange = { reason = it },
@@ -312,6 +312,7 @@ private fun DeleteWorkProfile() {
         Button(
             onClick = {
                 focusMgr.clearFocus()
+                silent = reason == ""
                 warning = true
             },
             colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
@@ -337,7 +338,6 @@ private fun DeleteWorkProfile() {
                         var flag = 0
                         if(externalStorage) { flag += WIPE_EXTERNAL_STORAGE }
                         if(euicc && VERSION.SDK_INT >= 28) { flag += WIPE_EUICC }
-                        if(silent && VERSION.SDK_INT >= 29) { flag += WIPE_SILENTLY }
                         if(VERSION.SDK_INT >= 28 && !silent) {
                             dpm.wipeData(flag, reason)
                         } else {

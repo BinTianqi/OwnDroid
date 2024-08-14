@@ -48,7 +48,6 @@
     <string name="copy">Kopyala</string>
     <string name="file_not_exist">Dosya Mevcut Değil</string>
     <string name="io_exception">G/Ç Hatası</string>
-    <string name="current_status_is">Mevcut Durum: </string>
     <string name="start">Başlat</string>
     <string name="stop">Stop</string> <!--TODO-->
     <string name="allow_all">Tümünü İzin Ver</string>
@@ -135,7 +134,6 @@
     <string name="common_criteria_mode">Ortak kriter modu</string>
     <string name="usb_signal">USB sinyali</string>
     <string name="keyguard">Ekran kilidi</string>
-    <string name="require_no_password_to_disable">Ekran kilidini devre dışı bırakmak için parola ayarlanmamış olmalıdır</string>
     <string name="lock_now">Ekranı şimdi kilitle</string>
     <string name="evict_credential_encryptoon_key">Kimlik doğrulama şifreleme anahtarını çıkar</string>
     <string name="bug_report">Hata raporu</string>
@@ -175,11 +173,11 @@
     <string name="ltf_global_actions">Küresel eylemlere izin ver</string>
     <string name="ltf_keyguard">Ekran kilidine izin ver</string>
     <string name="ltf_block_activity_start_in_task">Görevde etkinlik başlatmayı engelle</string>
-    <string name="ca_cert">CA sertifikası</string>
-    <string name="please_select_ca_cert">Lütfen bir sertifika seçin</string>
-    <string name="cacert_installed">Yüklenen sertifika: %1$s</string>
-    <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Sertifika seç...</string>
-    <string name="uninstall_all_user_ca_cert">Tüm kullanıcı sertifikalarını kaldır</string>
+    <string name="ca_cert">CA sertifikası</string> <!--TODO-->
+    <string name="please_select_ca_cert">Lütfen bir sertifika seçin</string> <!--TODO-->
+    <string name="cert_installed">Yüklenen sertifika: %1$s</string> <!--TODO-->
+    <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Sertifika seç...</string> <!--TODO-->
+    <string name="uninstall_all_user_ca_cert">Tüm kullanıcı sertifikalarını kaldır</string> <!--TODO-->
     <string name="security_logs">Güvenlik kayıtları</string>
     <string name="pre_reboot_security_logs">Yeniden başlatmadan önce güvenlik kayıtları</string>
     <string name="wipe_data">Verileri sil</string>
@@ -303,7 +301,6 @@
     <string name="isapphidden_desc">Mevcut olmayan uygulamalar gizlidir</string>
     <string name="always_on_vpn">Her zaman açık VPN</string>
     <string name="enable_lockdown">Enable lockdown</string> <!--TODO-->
-    <string name="current_app_is">Current app: </string> <!--TODO-->
     <string name="clear_current_config">Clear current config</string> <!--TODO-->
     <string name="permission">İzin</string>
     <string name="scope_is_work_profile">Kapsam: iş profili</string>
@@ -468,7 +465,7 @@
     <string name="change_user_icon">Kullanıcı simgesini değiştir</string>
     <string name="pick_a_square_image">Kare bir resim seçmelisiniz</string>
     <string name="file_picker_instead_gallery">Galeri yerine dosya seçici kullan</string>
-    <string name="select_picture">Resim seç...</string>
+    <string name="select_picture" tools:ignore="TypographyEllipsis">Resim seç...</string>
     <string name="unknown_result">Bilinmeyen sonuç (başarısız olabilir)</string>
     <string name="fail_managed_profile">Başarısız: yönetilen profil</string>
     <string name="fail_current_user">Başarısız: mevcut kullanıcı</string>
