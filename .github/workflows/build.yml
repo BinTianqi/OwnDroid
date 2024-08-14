@@ -41,17 +41,10 @@ jobs:
           name: OwnDroid-CI-${{ env.SHORT_SHA }}-release-testkey
           path: app/build/outputs/apk/release/app-release.apk
 
-      - name: Export key
-        env:
-          KEY_BASE64: ${{ secrets.KEY_BASE64 }}
-        run: echo "$KEY_BASE64" | base64 --decode - > app/signature.jks
-
       - name: Build APK
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-        run: ./gradlew build
+        run: |
+          echo "${{ secrets.KEY_BASE64 }}" | base64 --decode - > app/release.jks
+          ./gradlew build -PStoreFile="$(pwd)/app/release.jks" -PStorePassword="${{ secrets.KEYSTORE_PASSWORD }}" -PKeyPassword="${{ secrets.KEY_PASSWORD }}" -PKeyAlias="${{ secrets.KEY_ALIAS }}"
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
@@ -77,7 +70,7 @@ jobs:
         with:
           path: artifacts
 
-      - name: Download telegram-bot-api-binary
+      - name: Download telegram-bot-api
         run: |
           mkdir ./binaries
           wget "https://github.com/jakbin/telegram-bot-api-binary/releases/download/latest/telegram-bot-api" -O ./binaries/telegram-bot-api
@@ -86,27 +79,18 @@ jobs:
       - name: Start API Server & Upload
         env:
           COMMIT_MESSAGE: |+
-            New push to GitHub\!
-            ```
-            ${{ github.event.head_commit.message }}
-            ```by `${{ github.event.head_commit.author.name }}`
-            See commit detail [here](${{ github.event.head_commit.url }})
+            <blockquote>${{ github.event.head_commit.message }}</blockquote>
+            <a href="${{ github.event.head_commit.url }}">See commit details here</a>
           COMMIT_URL: ${{ github.event.head_commit.url }}
         run: |
           ESCAPED=`python3 -c 'import json,os,urllib.parse; msg = json.dumps(os.environ["COMMIT_MESSAGE"]); print(urllib.parse.quote(msg if len(msg) <= 1024 else json.dumps(os.environ["COMMIT_URL"])))'`     
           cd artifacts
-          export DEBUG_TEST_PWD=$(find . -name "*-debug-testkey*")
-          mv ./$DEBUG_TEST_PWD/app-debug.apk ./$DEBUG_TEST_PWD.apk && rm -rf ./$DEBUG_TEST_PWD
           export RELEASE_TEST_PWD=$(find . -name "*release-testkey*")
           mv ./$RELEASE_TEST_PWD/app-release.apk ./$RELEASE_TEST_PWD.apk && rm -rf ./$RELEASE_TEST_PWD
-          export DEBUG_SIGNED_PWD=$(find . -name "*-debug-signed*")
-          mv ./$DEBUG_SIGNED_PWD/app-debug.apk ./$DEBUG_SIGNED_PWD.apk && rm -rf ./$DEBUG_SIGNED_PWD
           export RELEASE_SIGNED_PWD=$(find . -name "*release-signed*")
           mv ./$RELEASE_SIGNED_PWD/app-release.apk ./$RELEASE_SIGNED_PWD.apk && rm -rf ./$RELEASE_SIGNED_PWD
           ../binaries/telegram-bot-api --api-id=${{ secrets.TELEGRAM_API_APP_ID }} --api-hash=${{ secrets.TELEGRAM_API_HASH }} --local 2>&1 > /dev/null &
           export token=${{ secrets.TELEGRAM_BOT_KEY }}
-          curl -v "http://127.0.0.1:8081/bot$token/sendMediaGroup?chat_id=-1002216379163&media=%5B%7B%22type%22%3A%22document%22%2C%22media%22%3A%22attach%3A%2F%2FdebugTest%22%7D%2C%7B%22type%22%3A%22document%22%2C%22media%22%3A%22attach%3A%2F%2FreleaseTest%22%7D%2C%7B%22type%22%3A%22document%22%2C%22media%22%3A%22attach%3A%2F%2FdebugSigned%22%7D%2C%7B%22type%22%3A%22document%22%2C%22media%22%3A%22attach%3A%2F%2FreleaseSigned%22%2C%22parse_mode%22%3A%22MarkdownV2%22%2C%22caption%22%3A${ESCAPED}%7D%5D" \
-           -F debugTest="@$DEBUG_TEST_PWD.apk" \
+          curl -v "http://127.0.0.1:8081/bot$token/sendMediaGroup?chat_id=-1002216379163&media=%5B%7B%22type%22%3A%22document%22%2C%22media%22%3A%22attach%3A%2F%2FreleaseTest%22%7D%2C%7B%22type%22%3A%22document%22%2C%22media%22%3A%22attach%3A%2F%2FreleaseSigned%22%2C%22parse_mode%22%3A%22HTML%22%2C%22caption%22%3A${ESCAPED}%7D%5D" \
            -F releaseTest="@$RELEASE_TEST_PWD.apk" \
-           -F debugSigned="@$DEBUG_SIGNED_PWD.apk" \
            -F releaseSigned="@$RELEASE_SIGNED_PWD.apk"

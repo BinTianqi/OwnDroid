@@ -1,12 +1,11 @@
 package com.bintianqi.owndroid
 
 import android.annotation.SuppressLint
-import android.app.admin.DevicePolicyManager
 import android.content.BroadcastReceiver
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import androidx.activity.ComponentActivity
+import com.bintianqi.owndroid.dpm.getDPM
+import com.bintianqi.owndroid.dpm.getReceiver
 
 class AutomationReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -25,8 +24,8 @@ fun handleTask(context: Context, intent: Intent): String {
         return "Wrong key"
     }
     val operation = intent.getStringExtra("operation")
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val app = intent.getStringExtra("app")
     val restriction = intent.getStringExtra("restriction")
     try {

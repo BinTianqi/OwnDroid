@@ -1,7 +1,6 @@
 package com.bintianqi.owndroid.dpm
 
 import android.annotation.SuppressLint
-import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE
 import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ALLOW_OFFLINE
 import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME
@@ -18,7 +17,6 @@ import android.content.*
 import android.os.Binder
 import android.os.Build.VERSION
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -58,7 +56,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.CopyTextButton
@@ -96,17 +93,18 @@ fun ManagedProfile(navCtrl: NavHostController) {
 @Composable
 private fun Home(navCtrl: NavHostController) {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context, Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
+    val profileOwner = context.isProfileOwner
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
     ) {
         Text(
             text = stringResource(R.string.work_profile),
             style = typography.headlineLarge,
-            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp)
+            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 16.dp)
         )
-        if(VERSION.SDK_INT >= 30 && isProfileOwner(dpm) && dpm.isManagedProfile(receiver)) {
+        if(VERSION.SDK_INT >= 30 && profileOwner && dpm.isManagedProfile(receiver)) {
             SubPageItem(R.string.org_owned_work_profile, "", R.drawable.corporate_fare_fill0) { navCtrl.navigate("OrgOwnedWorkProfile") }
         }
         if(VERSION.SDK_INT<24 || (VERSION.SDK_INT>=24 && dpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE))) {
@@ -115,10 +113,10 @@ private fun Home(navCtrl: NavHostController) {
         if(dpm.isOrgProfile(receiver)) {
             SubPageItem(R.string.suspend_personal_app, "", R.drawable.block_fill0) { navCtrl.navigate("SuspendPersonalApp") }
         }
-        if(isProfileOwner(dpm) && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
+        if(profileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
             SubPageItem(R.string.intent_filter, "", R.drawable.filter_alt_fill0) { navCtrl.navigate("IntentFilter") }
         }
-        if(isProfileOwner(dpm) && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
+        if(profileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
             SubPageItem(R.string.delete_work_profile, "", R.drawable.delete_forever_fill0) { navCtrl.navigate("DeleteWorkProfile") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -128,14 +126,14 @@ private fun Home(navCtrl: NavHostController) {
 @Composable
 private fun CreateWorkProfile() {
     val context = LocalContext.current
-    val receiver = ComponentName(context,Receiver::class.java)
+    val receiver = context.getReceiver()
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.create_work_profile), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         var skipEncrypt by remember { mutableStateOf(false) }
         if(VERSION.SDK_INT>=24) {
-            CheckBoxItem(stringResource(R.string.skip_encryption), skipEncrypt, { skipEncrypt = it })
+            CheckBoxItem(R.string.skip_encryption, skipEncrypt, { skipEncrypt = it })
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
@@ -165,7 +163,7 @@ private fun CreateWorkProfile() {
 @Composable
 private fun OrgOwnedProfile() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val dpm = context.getDPM()
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.org_owned_work_profile), style = typography.headlineLarge)
@@ -188,15 +186,19 @@ private fun OrgOwnedProfile() {
 @Composable
 private fun SuspendPersonalApp() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
+    var suspend by remember { mutableStateOf(dpm.getPersonalAppsSuspendedReasons(receiver) != PERSONAL_APPS_NOT_SUSPENDED) }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         SwitchItem(
             R.string.suspend_personal_app, "", null,
-            { dpm.getPersonalAppsSuspendedReasons(receiver)!=PERSONAL_APPS_NOT_SUSPENDED },
-            { dpm.setPersonalAppsSuspended(receiver,it) }
+            suspend,
+            {
+                dpm.setPersonalAppsSuspended(receiver,it)
+                suspend = dpm.getPersonalAppsSuspendedReasons(receiver) != PERSONAL_APPS_NOT_SUSPENDED
+            }, padding = false
         )
         var time by remember { mutableStateOf("") }
         time = dpm.getManagedProfileMaximumTimeOff(receiver).toString()
@@ -231,8 +233,8 @@ private fun SuspendPersonalApp() {
 @Composable
 private fun IntentFilter() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         var action by remember { mutableStateOf("") }
@@ -281,7 +283,7 @@ private fun IntentFilter() {
 @Composable
 private fun DeleteWorkProfile() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
     var warning by remember { mutableStateOf(false) }
     var externalStorage by remember { mutableStateOf(false) }
@@ -296,9 +298,9 @@ private fun DeleteWorkProfile() {
             modifier = Modifier.padding(6.dp),color = colorScheme.error
         )
         Spacer(Modifier.padding(vertical = 5.dp))
-        CheckBoxItem(stringResource(R.string.wipe_external_storage), externalStorage, { externalStorage = it })
-        if(VERSION.SDK_INT >= 28) { CheckBoxItem(stringResource(R.string.wipe_euicc), euicc, { euicc = it }) }
-        if(VERSION.SDK_INT >= 29) { CheckBoxItem(stringResource(R.string.wipe_silently), silent, { silent = it }) }
+        CheckBoxItem(R.string.wipe_external_storage, externalStorage, { externalStorage = it })
+        if(VERSION.SDK_INT >= 28) { CheckBoxItem(R.string.wipe_euicc, euicc, { euicc = it }) }
+        CheckBoxItem(R.string.wipe_silently, silent, { silent = it })
         AnimatedVisibility(!silent && VERSION.SDK_INT >= 28) {
             OutlinedTextField(
                 value = reason, onValueChange = { reason = it },
@@ -310,6 +312,7 @@ private fun DeleteWorkProfile() {
         Button(
             onClick = {
                 focusMgr.clearFocus()
+                silent = reason == ""
                 warning = true
             },
             colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
@@ -335,7 +338,6 @@ private fun DeleteWorkProfile() {
                         var flag = 0
                         if(externalStorage) { flag += WIPE_EXTERNAL_STORAGE }
                         if(euicc && VERSION.SDK_INT >= 28) { flag += WIPE_EUICC }
-                        if(silent && VERSION.SDK_INT >= 29) { flag += WIPE_SILENTLY }
                         if(VERSION.SDK_INT >= 28 && !silent) {
                             dpm.wipeData(flag, reason)
                         } else {

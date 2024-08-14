@@ -45,7 +45,6 @@
     <string name="copy">复制</string>
     <string name="file_not_exist">文件不存在</string>
     <string name="io_exception">IO异常</string>
-    <string name="current_status_is">当前状态：</string>
     <string name="start">开始</string>
     <string name="stop">停止</string>
     <string name="allow_all">允许全部</string>
@@ -60,6 +59,8 @@
     <string name="activate_jump" tools:ignore="TypographyEllipsis">激活...</string>
     <string name="profile_owner">Profile owner</string>
     <string name="device_owner">Device owner</string>
+    <string name="reset_device_policy">重置设备策略</string>
+    <string name="dhizuku_will_be_deactivated">Dhizuku将被停用</string>
     <string name="activate_device_admin">激活Device admin</string>
     <string name="device_info">设备信息</string>
     <string name="support_device_id_attestation">支持设备ID认证：</string>
@@ -78,7 +79,7 @@
     <string name="disable_account_management">禁用账号管理</string>
     <string name="account_types_are">账号类型：</string>
     <string name="transfer_ownership">转移所有权</string>
-    <string name="transfer_ownership_desc">把Device owner或Profile owner权限转移到另一个应用 (目标必须是Device admin)</string>
+    <string name="transfer_ownership_desc">把Device owner或Profile owner权限转移到另一个应用</string>
     <string name="target_package_name">目标包名</string>
     <string name="target_class_name">目标类名</string>
     <string name="device_owner_lock_screen_info">锁屏提示信息</string>
@@ -94,13 +95,19 @@
     <string name="onDisabled">OwnDroid：已禁用</string>
     <string name="create_work_profile_success">OwnDroid：创建工作资料成功</string>
 
+    <!--Dhizuku-->
+    <string name="failed_to_init_dhizuku">Dhizuku初始化失败</string>
+    <string name="dhizuku_permission_not_granted">Dhizuku未授权</string>
+    <string name="dhizuku_mode_disabled">Dhizuku模式已禁用</string>
+
     <!--Shizuku-->
     <string name="check_shizuku">检查Shizuku</string>
     <string name="list_owners">列出Owners</string>
+    <string name="list_users">列出用户</string>
+    <string name="list_accounts">列出账号</string>
     <string name="shizuku_not_started">服务未启动</string>
     <string name="shizuku_activated_shell">已授权（Shell）</string>
     <string name="shizuku_activated_root">已授权（Root）</string>
-    <string name="activate_profile_owner">激活Profile owner</string>
     <string name="activate_device_owner">激活Device owner</string>
     <string name="activate_org_profile">激活由组织拥有的工作资料</string>
     <string name="shizuku_service_disconnected">Shizuku服务断开连接</string>
@@ -113,7 +120,6 @@
     <string name="disable_cam">禁用相机</string>
     <string name="disable_screen_capture">禁止屏幕捕获</string>
     <string name="disable_status_bar">禁用状态栏</string>
-    <string name="also_disable_aosp_screen_record">对AOSP的录屏也起作用</string>
     <string name="auto_time">自动设置时间</string>
     <string name="auto_timezone">自动设置时区</string>
     <string name="require_auto_time">要求自动时间</string>
@@ -121,10 +127,8 @@
     <string name="backup_service">备份服务</string>
     <string name="disable_bt_contact_share">禁止蓝牙分享联系人</string>
     <string name="common_criteria_mode">通用标准模式</string>
-    <string name="common_criteria_mode_desc">Common Criteria</string>
     <string name="usb_signal">USB信号</string>
     <string name="keyguard">锁屏</string>
-    <string name="require_no_password_to_disable">禁用需要无密码</string>
     <string name="lock_now">立即锁屏</string>
     <string name="evict_credential_encryptoon_key">移除凭证加密密钥</string>
     <string name="bug_report">错误报告</string>
@@ -151,6 +155,7 @@
     <string name="lock_task_mode">锁定任务模式</string>
     <string name="lock_task_feature">锁定任务功能</string>
     <string name="lock_task_packages">锁定任务应用</string>
+    <string name="specify_activity">指定Activity</string>
     <string name="start_lock_task_mode">启动锁定任务模式</string>
     <string name="app_not_allowed">应用未被允许</string>
     <string name="disable_all">禁用全部</string>
@@ -163,9 +168,9 @@
     <string name="ltf_block_activity_start_in_task">阻止启动未允许的应用</string>
     <string name="package_name">包名</string>
     <string name="not_exist">不存在</string>
-    <string name="ca_cert">Ca证书</string>
-    <string name="please_select_ca_cert">请选择Ca证书</string>
-    <string name="cacert_installed">证书已安装：%1$s</string>
+    <string name="ca_cert">CA证书</string>
+    <string name="please_select_ca_cert">请选择CA证书</string>
+    <string name="cert_installed">证书已安装：%1$s</string>
     <string name="select_ca_cert" tools:ignore="TypographyEllipsis">选择证书...</string>
     <string name="uninstall_all_user_ca_cert">卸载所有用户证书</string>
     <string name="security_logs">安全日志</string>
@@ -208,7 +213,7 @@
     <string name="network">网络</string>
     <string name="wifi_mac_addr">Wi-Fi Mac地址</string>
     <string name="min_wifi_security_level">最低WiFi安全等级</string>
-    <string name="wifi_security_level_open">开放</string>
+    <string name="wifi_security_open">开放</string>
     <string name="preferential_network_service">优先网络服务</string>
     <string name="lockdown_admin_configured_network">锁定由管理员配置的网络</string>
     <string name="wifi_ssid_policy">WiFi SSID策略</string>
@@ -223,6 +228,13 @@
     <string name="invalid_hostname">无效主机名</string>
     <string name="security_exception">安全错误</string>
     <string name="set_dns_host">设置DNS主机</string>
+    <string name="recommended_global_proxy">建议的全局代理</string>
+    <string name="proxy_type_off">无代理</string>
+    <string name="proxy_type_pac">PAC代理</string>
+    <string name="proxy_type_direct">直连代理</string>
+    <string name="specify_port">指定端口</string>
+    <string name="invalid_config">无效配置</string>
+    <string name="exclude_hosts">排除列表</string>
     <string name="retrieve_net_logs">收集网络日志</string>
     <string name="retrieve">收集</string>
     <string name="wifi_auth_keypair">WiFi密钥对</string>
@@ -279,15 +291,11 @@
     <string name="loading">加载中</string>
     <string name="show_user_app">显示用户应用</string>
     <string name="show_system_app">显示系统应用</string>
-    <string name="show_priv_app">显示priv-app</string>
-    <string name="show_apex_app">显示apex应用</string>
-    <string name="permission_picker">权限选择器</string>
     <string name="suspend">挂起</string>
     <string name="hide">隐藏</string>
     <string name="isapphidden_desc">如果隐藏，有可能是没安装</string>
     <string name="always_on_vpn">VPN保持打开</string>
     <string name="enable_lockdown">启用锁定</string>
-    <string name="current_app_is">当前应用：</string>
     <string name="clear_current_config">清除当前配置</string>
     <string name="permission">权限</string>
     <string name="scope_is_work_profile">作用域: 工作资料</string>
@@ -325,6 +333,8 @@
     <string name="request_install">请求安装</string>
     <string name="enable_system_app">启用系统应用</string>
     <string name="enable_system_app_desc">重新启用一个默认被禁用的系统应用</string>
+    <string name="search">搜索</string>
+    <!--App install session status-->
     <string name="app_installer_status">应用安装器：</string>
     <string name="status_pending_action">等待用户操作</string>
     <string name="status_fail_blocked">被阻止</string>
@@ -378,7 +388,6 @@
     <string name="install_unknown_src_globally">安装未知来源应用（全局）</string>
     <string name="inst_unknown_src">安装未知来源应用</string>
     <string name="apps_ctrl">控制应用</string>
-    <string name="apps_control_desc">清空缓存/清空内部存储</string>
     <string name="config_default_apps">修改默认App</string>
 
     <string name="config_brightness">调整亮度</string>
@@ -402,11 +411,9 @@
     <string name="content_capture">内容捕获</string>
     <string name="content_suggestions">内容建议</string>
     <string name="create_windows">创建窗口</string>
-    <string name="create_windows_desc">可能包括Toast和浮动通知</string>
     <string name="set_wallpaper">更换壁纸</string>
     <string name="grant_admin">启用设备管理器</string>
     <string name="fun">娱乐</string>
-    <string name="fun_desc">会影响谷歌商店的游戏</string>
     <string name="modify_accounts">修改账号设置</string>
     <string name="config_locale">修改语言</string>
     <string name="config_date_time">修改日期、时间</string>
@@ -459,7 +466,7 @@
     <!--Password&Keyguard-->
     <string name="password_and_keyguard">密码与锁屏</string>
     <string name="password_info">密码信息</string>
-    <string name="reset_pwd_desc">留空可以清除密码，纯数字将使用PIN码</string>
+    <string name="reset_pwd_desc">留空以清除密码</string>
     <string name="max_pwd_fail">最大密码错误次数</string>
     <string name="max_pwd_fail_desc">达到该限制会恢复出厂设置，0为无限制</string>
     <string name="max_pwd_fail_textfield">错误次数</string>
@@ -479,17 +486,18 @@
     <string name="password_failed_attempts_is">密码已错误次数：%1$s</string>
     <string name="is_using_unified_password">个人与工作应用密码一致：%1$s</string>
     <string name="reset_password_token">密码重置令牌</string>
+    <string name="token">令牌</string>
+    <string name="token_must_longer_than_32_byte">令牌必须大于32字节</string>
     <string name="token_already_activated">令牌已经激活</string>
     <string name="clear">清除</string>
     <string name="set">设置</string>
     <string name="please_set_a_token">请先设置令牌</string>
     <string name="activate_token_not_required_when_no_password">没有密码时会自动激活令牌</string>
     <string name="reset_password">重置密码</string>
+    <string name="confirm_password">确认密码</string>
     <string name="do_not_ask_credentials_on_boot">启动(boot)时不要求密码</string>
     <string name="reset_password_require_entry">不允许其他设备管理员重置密码直至用户输入一次密码</string>
-    <string name="require_4_digit_password">需要4位密码</string>
     <string name="reset_password_with_token">使用令牌重置密码</string>
-    <string name="reset_password_deprecated">重置密码（弃用）</string>
     <string name="required_password_complexity">密码复杂度要求</string>
     <string name="require_set_new_password">要求设置新密码</string>
     <string name="disable_keyguard_features">锁屏功能</string>
@@ -523,7 +531,6 @@
     <string name="material_you_color">Material you 颜色</string>
     <string name="dynamic_color_desc">安卓12+</string>
     <string name="about">关于</string>
-    <string name="about_desc">使用安卓的Device admin、Device owner、Profile owner，全方位掌控你的设备</string>
     <string name="user_guide">使用教程</string>
     <string name="source_code">源代码</string>
     <string name="theme">主题</string>
@@ -534,7 +541,6 @@
     <string name="lock_owndroid">锁定OwnDroid</string>
     <string name="enable_bio_auth">使用生物识别</string>
     <string name="authenticate">验证</string>
-    <string name="auth_on_start">在OwnDroid启动时使用锁屏密码或生物识别进行验证</string>
     <string name="use_password">使用密码</string>
     <string name="auth_with_password">使用密码进行验证</string>
     <string name="auth_with_bio">使用生物识别进行验证</string>
@@ -549,6 +555,7 @@
     <string name="automation_debug">调试模式</string>
 
     <!--AndroidPermission-->
+    <string name="permission_POST_NOTIFICATIONS">发送通知</string>
     <string name="permission_READ_EXTERNAL_STORAGE">读取外部存储</string>
     <string name="permission_WRITE_EXTERNAL_STORAGE">写入外部存储</string>
     <string name="permission_READ_MEDIA_AUDIO">读取音频</string>
@@ -563,17 +570,24 @@
     <string name="permission_ACCESS_COARSE_LOCATION">粗略位置</string>
     <string name="permission_ACCESS_FINE_LOCATION">准确位置</string>
     <string name="permission_ACCESS_BACKGROUND_LOCATION">后台获取位置</string>
+    <string name="permission_BLUETOOTH_CONNECT">蓝牙连接</string>
+    <string name="permission_BLUETOOTH_SCAN">蓝牙扫描</string>
+    <string name="permission_BLUETOOTH_ADVERTISE">使设备可被发现</string>
+    <string name="permission_NEARBY_WIFI_DEVICES">附近的Wi-Fi设备</string>
     <string name="permission_CALL_PHONE">打电话</string>
+    <string name="permission_ANSWER_PHONE_CALLS">接电话</string>
     <string name="permission_READ_PHONE_STATE">读取手机状态</string>
+    <string name="permission_USE_SIP">使用SIP</string>
+    <string name="permission_UWB_RANGING">超宽频</string>
     <string name="permission_READ_SMS">读取短信</string>
     <string name="permission_RECEIVE_SMS">接收短信</string>
     <string name="permission_SEND_SMS">发送短信</string>
     <string name="permission_READ_CALL_LOG">读取通话记录</string>
     <string name="permission_WRITE_CALL_LOG">写入通话记录</string>
+    <string name="permission_RECEIVE_WAP_PUSH">接收WAP推送</string>
     <string name="permission_BODY_SENSORS">身体传感器</string>
     <string name="permission_BODY_SENSORS_BACKGROUND">后台使用身体传感器</string>
     <string name="permission_ACTIVITY_RECOGNITION">查看使用情况</string>
-    <string name="permission_POST_NOTIFICATIONS">发送通知</string>
 
     <string name="version_name">版本名</string>
     <string name="version_code">版本号</string>

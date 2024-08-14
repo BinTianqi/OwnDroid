@@ -36,7 +36,7 @@ import kotlinx.coroutines.withContext
 import java.io.FileInputStream
 
 class InstallAppActivity: FragmentActivity() {
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         this.intent = intent
     }
@@ -58,7 +58,7 @@ class InstallAppActivity: FragmentActivity() {
             )
             fd?.close()
             withContext(Dispatchers.Main) {
-                status = "waiting"
+                status = "pending"
                 apkInfoText = "${context.getString(R.string.package_name)}: ${apkInfo.packageName}\n"
                 apkInfoText += "${context.getString(R.string.version_name)}: ${apkInfo.versionName}\n"
                 apkInfoText += "${context.getString(R.string.version_code)}: ${apkInfo.versionCode}"
@@ -79,7 +79,7 @@ class InstallAppActivity: FragmentActivity() {
                     },
                     text = {
                         Column {
-                            AnimatedVisibility(status != "waiting") {
+                            AnimatedVisibility(status != "pending") {
                                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                             }
                             Text(text = apkInfoText, modifier = Modifier.padding(top = 4.dp))

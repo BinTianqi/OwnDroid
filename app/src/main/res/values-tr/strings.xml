@@ -48,7 +48,6 @@
     <string name="copy">Kopyala</string>
     <string name="file_not_exist">Dosya Mevcut Değil</string>
     <string name="io_exception">G/Ç Hatası</string>
-    <string name="current_status_is">Mevcut Durum: </string>
     <string name="start">Başlat</string>
     <string name="stop">Stop</string> <!--TODO-->
     <string name="allow_all">Tümünü İzin Ver</string>
@@ -63,6 +62,8 @@
     <string name="activate_jump" tools:ignore="TypographyEllipsis">Etkinleştir...</string>
     <string name="profile_owner">Profil Sahibi</string>
     <string name="device_owner">Cihaz Sahibi</string>
+    <string name="dhizuku_will_be_deactivated">Dhizuku will be deactivated</string> <!--TODO-->
+    <string name="reset_device_policy">Reset device policy</string> <!--TODO-->
     <string name="activate_device_admin">Cihaz Yöneticisini Etkinleştir</string>
     <string name="device_info">Cihaz Bilgisi</string>
     <string name="support_device_id_attestation">Cihaz Kimliği Doğrulama Desteği: </string>
@@ -83,7 +84,7 @@
     <string name="disable_account_management">Hesap Yönetimini Devre Dışı Bırak</string>
     <string name="account_types_are">Hesap Türleri: </string>
     <string name="transfer_ownership">Sahipliği Devret</string>
-    <string name="transfer_ownership_desc">Cihaz sahibi veya profil sahibi ayrıcalığını başka bir uygulamaya devredin. Hedef uygulama cihaz yöneticisi olmalıdır. </string>
+    <string name="transfer_ownership_desc">Cihaz sahibi veya profil sahibi ayrıcalığını başka bir uygulamaya devredin.</string>
     <string name="target_package_name">Hedef Paket Adı</string>
     <string name="target_class_name">Hedef Sınıf Adı</string>
     <string name="device_owner_lock_screen_info">Ekran Kilidi Bilgisi</string>
@@ -99,13 +100,19 @@
     <string name="onDisabled">OwnDroid: Devre Dışı</string>
     <string name="create_work_profile_success">OwnDroid: İş Profili Başarıyla Oluşturuldu</string>
 
+    <!--Dhizuku--> <!--TODO-->
+    <string name="failed_to_init_dhizuku">Failed to initialize Dhizuku</string>
+    <string name="dhizuku_permission_not_granted">Dhizuku permission not granted</string>
+    <string name="dhizuku_mode_disabled">Dhizuku mode disabled</string>
+
     <!--Shizuku-->
     <string name="check_shizuku">İzni Kontrol Et</string>
     <string name="list_owners">Sahipleri Listele</string>
+    <string name="list_users">List users</string> <!--TODO-->
+    <string name="list_accounts">List accounts</string> <!--TODO-->
     <string name="shizuku_not_started">Shizuku Başlatılmadı. </string>
     <string name="shizuku_activated_shell">İzin Verildi (Kabuk)</string>
     <string name="shizuku_activated_root">İzin Verildi (Root)</string>
-    <string name="activate_profile_owner">Profil Sahibini Etkinleştir</string>
     <string name="activate_device_owner">Cihaz Sahibini Etkinleştir</string>
     <string name="activate_org_profile">Kuruluş Profili Sahibini Etkinleştir</string>
     <string name="shizuku_service_disconnected">Shizuku Hizmeti Bağlantısı Kesildi</string>
@@ -118,7 +125,6 @@
     <string name="disable_cam">Kamerayı devre dışı bırak</string>
     <string name="disable_screen_capture">Ekran görüntüsünü devre dışı bırak</string>
     <string name="disable_status_bar">Durum çubuğunu devre dışı bırak</string>
-    <string name="also_disable_aosp_screen_record">AOSP\'de ekran kaydını da devre dışı bırak</string>
     <string name="auto_time">Otomatik saat</string>
     <string name="require_auto_time">Otomatik saat gerektir</string>
     <string name="auto_timezone">Otomatik saat dilimi</string>
@@ -126,10 +132,8 @@
     <string name="backup_service">Yedekleme servisi</string>
     <string name="disable_bt_contact_share">Bluetooth kişi paylaşımını devre dışı bırak</string>
     <string name="common_criteria_mode">Ortak kriter modu</string>
-    <string name="common_criteria_mode_desc">Bilinmeyen etki</string>
     <string name="usb_signal">USB sinyali</string>
     <string name="keyguard">Ekran kilidi</string>
-    <string name="require_no_password_to_disable">Ekran kilidini devre dışı bırakmak için parola ayarlanmamış olmalıdır</string>
     <string name="lock_now">Ekranı şimdi kilitle</string>
     <string name="evict_credential_encryptoon_key">Kimlik doğrulama şifreleme anahtarını çıkar</string>
     <string name="bug_report">Hata raporu</string>
@@ -156,8 +160,9 @@
     <string name="lock_task_mode">Lock task mode</string> <!--TODO-->
     <string name="lock_task_feature">Görev kilitleme özelliği</string>
     <string name="lock_task_packages">Lock task packages</string> <!--TODO-->
+    <string name="specify_activity">Specify Activity</string> <!--TODO-->
     <string name="start_lock_task_mode">Start lock task mode</string> <!--TODO-->
-    <string name="app_not_allowed">App not allowed</string> <!--TODO-->
+    <string name="app_not_allowed">App is not allowed</string> <!--TODO-->
     <string name="disable_all">Hepsini devre dışı bırak</string>
 
     <!--ltf: lock task feature-->
@@ -168,11 +173,11 @@
     <string name="ltf_global_actions">Küresel eylemlere izin ver</string>
     <string name="ltf_keyguard">Ekran kilidine izin ver</string>
     <string name="ltf_block_activity_start_in_task">Görevde etkinlik başlatmayı engelle</string>
-    <string name="ca_cert">CA sertifikası</string>
-    <string name="please_select_ca_cert">Lütfen bir sertifika seçin</string>
-    <string name="cacert_installed">Yüklenen sertifika: %1$s</string>
-    <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Sertifika seç...</string>
-    <string name="uninstall_all_user_ca_cert">Tüm kullanıcı sertifikalarını kaldır</string>
+    <string name="ca_cert">CA sertifikası</string> <!--TODO-->
+    <string name="please_select_ca_cert">Lütfen bir sertifika seçin</string> <!--TODO-->
+    <string name="cert_installed">Yüklenen sertifika: %1$s</string> <!--TODO-->
+    <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Sertifika seç...</string> <!--TODO-->
+    <string name="uninstall_all_user_ca_cert">Tüm kullanıcı sertifikalarını kaldır</string> <!--TODO-->
     <string name="security_logs">Güvenlik kayıtları</string>
     <string name="pre_reboot_security_logs">Yeniden başlatmadan önce güvenlik kayıtları</string>
     <string name="wipe_data">Verileri sil</string>
@@ -213,7 +218,7 @@
     <string name="network">Ağ</string>
     <string name="wifi_mac_addr">Wi-Fi MAC adresi</string>
     <string name="min_wifi_security_level">Minimum Wi-Fi güvenlik seviyesi</string>
-    <string name="wifi_security_level_open">Açık</string>
+    <string name="wifi_security_open">Açık</string>
     <string name="preferential_network_service">Tercihli ağ hizmeti</string>
     <string name="lockdown_admin_configured_network">Yönetici tarafından yapılandırılmış ağı kilitle</string>
     <string name="wifi_ssid_policy">WiFi SSID politikası</string>
@@ -228,6 +233,13 @@
     <string name="invalid_hostname">Geçersiz ana bilgisayar adı</string>
     <string name="security_exception">Güvenlik İstisnası</string>
     <string name="set_dns_host">DNS ana bilgisayarını ayarla</string>
+    <string name="recommended_global_proxy">Recommended global proxy</string> <!--TODO-->
+    <string name="proxy_type_off">No proxy</string> <!--TODO-->
+    <string name="proxy_type_pac">PAC proxy</string> <!--TODO-->
+    <string name="proxy_type_direct">Direct proxy</string> <!--TODO-->
+    <string name="specify_port">Specify port</string> <!--TODO-->
+    <string name="invalid_config">Invalid config</string> <!--TODO-->
+    <string name="exclude_hosts">Exclude hosts</string> <!--TODO-->
     <string name="retrieve_net_logs">Ağ kayıtları</string>
     <string name="retrieve">Geri al</string>
     <string name="wifi_auth_keypair">WiFi anahtar çifti</string>
@@ -284,15 +296,11 @@
     <string name="loading">Yükleniyor</string>
     <string name="show_user_app">Kullanıcı uygulamalarını göster</string>
     <string name="show_system_app">Sistem uygulamalarını göster</string>
-    <string name="show_priv_app">Priv uygulamalarını göster</string>
-    <string name="show_apex_app">Apex uygulamalarını göster</string>
-    <string name="permission_picker">İzin seçici</string>
     <string name="suspend">Askıya al</string>
     <string name="hide">Gizle</string>
     <string name="isapphidden_desc">Mevcut olmayan uygulamalar gizlidir</string>
     <string name="always_on_vpn">Her zaman açık VPN</string>
     <string name="enable_lockdown">Enable lockdown</string> <!--TODO-->
-    <string name="current_app_is">Current app: </string> <!--TODO-->
     <string name="clear_current_config">Clear current config</string> <!--TODO-->
     <string name="permission">İzin</string>
     <string name="scope_is_work_profile">Kapsam: iş profili</string>
@@ -332,6 +340,7 @@
     <string name="select_apk" tools:ignore="TypographyEllipsis">APK seç...</string>
     <string name="silent_install">Sessiz yükleme</string>
     <string name="request_install">Yükleme isteği</string>
+    <string name="search">Search</string> <!--TODO-->
 
     <!--App install session status-->
     <string name="app_installer_status">Uygulama yükleyici:</string>
@@ -387,7 +396,6 @@
     <string name="install_unknown_src_globally">Bilinmeyen kaynakları global olarak yükle</string>
     <string name="inst_unknown_src">Bilinmeyen kaynakları yükle</string>
     <string name="apps_ctrl">Uygulama kontrolü</string>
-    <string name="apps_control_desc">Uygulama verilerini veya önbelleği temizle</string>
     <string name="config_default_apps">Varsayılan uygulamaları yapılandır</string>
 
     <string name="config_brightness">Parlaklığı yapılandır</string>
@@ -411,11 +419,9 @@
     <string name="content_capture">İçerik yakalama</string>
     <string name="content_suggestions">İçerik önerileri</string>
     <string name="create_windows">Pencere oluştur</string>
-    <string name="create_windows_desc">ör. tostlar, bildirim afişi</string>
     <string name="set_wallpaper">Duvar kağıdı ayarla</string>
     <string name="grant_admin">Cihaz yöneticisi yetkisi ver</string>
     <string name="fun">Eğlence</string>
-    <string name="fun_desc">Oyunları devre dışı bırakabilir</string>
     <string name="modify_accounts">Hesapları değiştir</string>
     <string name="config_locale">Yerel ayarları yapılandır</string>
     <string name="config_date_time">Tarihi veya saati yapılandır</string>
@@ -459,7 +465,7 @@
     <string name="change_user_icon">Kullanıcı simgesini değiştir</string>
     <string name="pick_a_square_image">Kare bir resim seçmelisiniz</string>
     <string name="file_picker_instead_gallery">Galeri yerine dosya seçici kullan</string>
-    <string name="select_picture">Resim seç...</string>
+    <string name="select_picture" tools:ignore="TypographyEllipsis">Resim seç...</string>
     <string name="unknown_result">Bilinmeyen sonuç (başarısız olabilir)</string>
     <string name="fail_managed_profile">Başarısız: yönetilen profil</string>
     <string name="fail_current_user">Başarısız: mevcut kullanıcı</string>
@@ -488,17 +494,18 @@
     <string name="password_failed_attempts_is">Başarısız şifre denemeleri: %1$s</string>
     <string name="is_using_unified_password">Birleşik şifre: %1$s</string>
     <string name="reset_password_token">Şifre sıfırlama jetonu</string>
+    <string name="token">Token</string> <!--TODO-->
+    <string name="token_must_longer_than_32_byte">The token must be longer than 32-byte</string> <!--TODO-->
     <string name="token_already_activated">Jeton zaten etkinleştirildi</string>
     <string name="clear">Temizle</string>
     <string name="set">Ayarla</string>
     <string name="please_set_a_token">Lütfen bir jeton ayarlayın</string>
     <string name="activate_token_not_required_when_no_password">Şifre ayarlanmadığında jeton otomatik olarak etkinleştirilecektir.</string>
     <string name="reset_password">Şifreyi sıfırla</string>
+    <string name="confirm_password">Confirm password</string> <!--TODO-->
     <string name="do_not_ask_credentials_on_boot">Başlangıçta kimlik bilgilerini sorma</string>
     <string name="reset_password_require_entry">Giriş gerektir</string>
-    <string name="require_4_digit_password">En az 4 haneli şifre gerektir</string>
     <string name="reset_password_with_token">Jeton ile şifreyi sıfırla</string>
-    <string name="reset_password_deprecated">Şifreyi sıfırla</string>
     <string name="required_password_complexity">Gereken şifre karmaşıklığı</string>
     <string name="require_set_new_password">Yeni şifre ayarlanmasını iste</string>
     <string name="disable_keyguard_features">Kilit ekranı özellikleri</string>
@@ -532,7 +539,6 @@
     <string name="material_you_color">Material You rengi</string>
     <string name="dynamic_color_desc">Android 12+</string>
     <string name="about">Hakkında</string>
-    <string name="about_desc">Cihazınızı tam kontrol altına almak için Cihaz yöneticisi, Profil sahibi ve Cihaz sahibi ayrıcalıklarını kullanın.</string>
     <string name="user_guide">Kullanıcı rehberi</string>
     <string name="source_code">Kaynak kodu</string>
     <string name="theme">Tema</string>
@@ -543,7 +549,6 @@
     <string name="lock_owndroid">OwnDroid\'u kilitle</string>
     <string name="enable_bio_auth">Biyometri ile doğrulama</string>
     <string name="authenticate">Doğrula</string>
-    <string name="auth_on_start">OwnDroid başlatıldığında ana ekran şifresi veya biyometri ile doğrulama</string>
     <string name="use_password">Şifre kullan</string>
     <string name="auth_with_password">OwnDroid\'u şifre ile doğrula</string>
     <string name="auth_with_bio">OwnDroid\'u biyometri ile doğrula</string>
@@ -558,6 +563,7 @@
     <string name="automation_debug">Debug mode</string> <!--TODO-->
 
     <!--AndroidPermission-->
+    <string name="permission_POST_NOTIFICATIONS">Bildirim gönder</string>
     <string name="permission_READ_EXTERNAL_STORAGE">Harici depolamayı oku</string>
     <string name="permission_WRITE_EXTERNAL_STORAGE">Harici depolamaya yaz</string>
     <string name="permission_READ_MEDIA_AUDIO">Medya oku (ses)</string>
@@ -572,17 +578,24 @@
     <string name="permission_ACCESS_COARSE_LOCATION">Yaklaşık konuma eriş</string>
     <string name="permission_ACCESS_FINE_LOCATION">Kesin konuma eriş</string>
     <string name="permission_ACCESS_BACKGROUND_LOCATION">Arka planda konuma eriş</string>
+    <string name="permission_BLUETOOTH_CONNECT">Bluetooth connect</string> <!--TODO-->
+    <string name="permission_BLUETOOTH_SCAN">Bluetooth scan</string> <!--TODO-->
+    <string name="permission_BLUETOOTH_ADVERTISE">Bluetooth advertise</string> <!--TODO-->
+    <string name="permission_NEARBY_WIFI_DEVICES">Nearby Wi-Fi devices</string> <!--TODO-->
     <string name="permission_CALL_PHONE">Telefonla arama yap</string>
+    <string name="permission_ANSWER_PHONE_CALLS">Answer phone calls</string> <!--TODO-->
     <string name="permission_READ_PHONE_STATE">Telefon durumunu oku</string>
+    <string name="permission_USE_SIP">Use SIP</string> <!--TODO-->
+    <string name="permission_UWB_RANGING">UWB ranging</string> <!--TODO-->
     <string name="permission_READ_SMS">SMS oku</string>
     <string name="permission_RECEIVE_SMS">SMS al</string>
     <string name="permission_SEND_SMS">SMS gönder</string>
     <string name="permission_READ_CALL_LOG">Arama kaydını oku</string>
     <string name="permission_WRITE_CALL_LOG">Arama kaydına yaz</string>
+    <string name="permission_RECEIVE_WAP_PUSH">Receive WAP push</string> <!--TODO-->
     <string name="permission_BODY_SENSORS">Vücut sensörlerine eriş</string>
     <string name="permission_BODY_SENSORS_BACKGROUND">Arka planda vücut sensörlerine eriş</string>
     <string name="permission_ACTIVITY_RECOGNITION">Aktivite tanıma</string>
-    <string name="permission_POST_NOTIFICATIONS">Bildirim gönder</string>
 
     <string name="version_name">Version name</string> <!--TODO-->
     <string name="version_code">Version code</string> <!--TODO-->

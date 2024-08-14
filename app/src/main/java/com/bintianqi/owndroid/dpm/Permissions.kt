@@ -6,9 +6,10 @@ import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build.VERSION
+import android.os.RemoteException
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -35,10 +36,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.backToHomeStateFlow
 import com.bintianqi.owndroid.ui.*
-import kotlinx.coroutines.delay
+import com.rosan.dhizuku.api.Dhizuku
+import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
 import kotlinx.coroutines.launch
 
 @Composable
@@ -49,7 +50,7 @@ fun DpmPermissions(navCtrl:NavHostController) {
     Scaffold(
         topBar = {
             TopBar(backStackEntry,navCtrl,localNavCtrl) {
-                if(backStackEntry?.destination?.route=="Home"&&scrollState.maxValue>80) {
+                if(backStackEntry?.destination?.route=="Home"&&scrollState.maxValue > 100) {
                     Text(
                         text = stringResource(R.string.permission),
                         modifier = Modifier.alpha((maxOf(scrollState.value-30,0)).toFloat()/80)
@@ -86,52 +87,95 @@ fun DpmPermissions(navCtrl:NavHostController) {
 @Composable
 private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context, Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
+    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val deviceAdmin = context.isDeviceAdmin
+    val deviceOwner = context.isDeviceOwner
+    val profileOwner = context.isProfileOwner
     Column(modifier = Modifier.fillMaxSize().verticalScroll(listScrollState)) {
         Text(
             text = stringResource(R.string.permission),
             style = typography.headlineLarge,
-            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 15.dp)
+            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 16.dp)
         )
+        if(!dpm.isDeviceOwnerApp(context.packageName)) {
+            SwitchItem(
+                R.string.dhizuku, "", null,
+                { sharedPref.getBoolean("dhizuku", false) },
+                {
+                    toggleDhizukuMode(it, context)
+                }
+            )
+        }
         SubPageItem(
-            R.string.device_admin, stringResource(if(dpm.isAdminActive(receiver)) R.string.activated else R.string.deactivated),
+            R.string.device_admin, stringResource(if(deviceAdmin) R.string.activated else R.string.deactivated),
             operation = { localNavCtrl.navigate("DeviceAdmin") }
         )
-        if(!isDeviceOwner(dpm)) {
+        if(!deviceOwner) {
             SubPageItem(
-                R.string.profile_owner, stringResource(if(isProfileOwner(dpm)) R.string.activated else R.string.deactivated),
+                R.string.profile_owner, stringResource(if(profileOwner) R.string.activated else R.string.deactivated),
                 operation = { localNavCtrl.navigate("ProfileOwner") }
             )
         }
-        if(!isProfileOwner(dpm)) {
+        if(!profileOwner) {
             SubPageItem(
-                R.string.device_owner, stringResource(if(isDeviceOwner(dpm)) R.string.activated else R.string.deactivated),
+                R.string.device_owner, stringResource(if(deviceOwner) R.string.activated else R.string.deactivated),
                 operation = { localNavCtrl.navigate("DeviceOwner") }
             )
         }
         SubPageItem(R.string.shizuku,"") { localNavCtrl.navigate("Shizuku") }
         SubPageItem(R.string.device_info, "", R.drawable.perm_device_information_fill0) { localNavCtrl.navigate("DeviceInfo") }
-        if((VERSION.SDK_INT >= 26 && isDeviceOwner(dpm)) || (VERSION.SDK_INT>=24 && isProfileOwner(dpm))) {
+        if((VERSION.SDK_INT >= 26 && deviceOwner) || (VERSION.SDK_INT>=24 && profileOwner)) {
             SubPageItem(R.string.org_name, "", R.drawable.corporate_fare_fill0) { localNavCtrl.navigate("OrgName") }
         }
-        if(VERSION.SDK_INT >= 31 && (isProfileOwner(dpm) || isDeviceOwner(dpm))) {
+        if(VERSION.SDK_INT >= 31 && (profileOwner || deviceOwner)) {
             SubPageItem(R.string.org_id, "", R.drawable.corporate_fare_fill0) { localNavCtrl.navigate("OrgID") }
             SubPageItem(R.string.enrollment_specific_id, "", R.drawable.id_card_fill0) { localNavCtrl.navigate("SpecificID") }
         }
-        if(isDeviceOwner(dpm) || isProfileOwner(dpm)) {
+        if(deviceOwner || profileOwner) {
             SubPageItem(R.string.disable_account_management, "", R.drawable.account_circle_fill0) { localNavCtrl.navigate("DisableAccountManagement") }
         }
-        if(VERSION.SDK_INT >= 24 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 24 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.device_owner_lock_screen_info, "", R.drawable.screen_lock_portrait_fill0) { localNavCtrl.navigate("LockScreenInfo") }
         }
-        if(VERSION.SDK_INT >= 24 && dpm.isAdminActive(receiver)) {
+        if(VERSION.SDK_INT >= 24 && deviceAdmin) {
             SubPageItem(R.string.support_msg, "", R.drawable.chat_fill0) { localNavCtrl.navigate("SupportMsg") }
         }
-        if(VERSION.SDK_INT >= 28 && (isDeviceOwner(dpm) || isProfileOwner(dpm))) {
+        if(VERSION.SDK_INT >= 28 && (deviceOwner || profileOwner)) {
             SubPageItem(R.string.transfer_ownership, "", R.drawable.admin_panel_settings_fill0) { localNavCtrl.navigate("TransformOwnership") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
+    }
+}
+
+private fun toggleDhizukuMode(status: Boolean, context: Context) {
+    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    if(!status) {
+        sharedPref.edit().putBoolean("dhizuku", false).apply()
+        backToHomeStateFlow.value = true
+        return
+    }
+    if(!Dhizuku.init(context)) {
+        dhizukuErrorStatus.value = 1
+        return
+    }
+    if(Dhizuku.isPermissionGranted()) {
+        sharedPref.edit().putBoolean("dhizuku", true).apply()
+        backToHomeStateFlow.value = true
+    } else {
+        Dhizuku.requestPermission(object: DhizukuRequestPermissionListener() {
+            @Throws(RemoteException::class)
+            override fun onRequestPermission(grantResult: Int) {
+                if(grantResult == PackageManager.PERMISSION_GRANTED) {
+                    sharedPref.edit().putBoolean("dhizuku", true).apply()
+                    context.toggleInstallAppActivity()
+                    backToHomeStateFlow.value = true
+                } else {
+                    dhizukuErrorStatus.value = 2
+                }
+            }
+        })
     }
 }
 
@@ -139,8 +183,8 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
 @Composable
 private fun LockScreenInfo() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var infoText by remember { mutableStateOf(dpm.deviceOwnerLockScreenInfo?.toString() ?: "") }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
@@ -177,27 +221,27 @@ private fun LockScreenInfo() {
 @Composable
 private fun DeviceAdmin() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
-    var showDeactivateButton by remember { mutableStateOf(dpm.isAdminActive(receiver)) }
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     var deactivateDialog by remember { mutableStateOf(false) }
+    val deviceAdmin = context.isDeviceAdmin
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.device_admin), style = typography.headlineLarge)
-        Text(text = stringResource(if(dpm.isAdminActive(receiver)) R.string.activated else R.string.deactivated), style = typography.titleLarge)
+        Text(text = stringResource(if(context.isDeviceAdmin) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        AnimatedVisibility(showDeactivateButton) {
+        AnimatedVisibility(deviceAdmin) {
             Button(
                 onClick = { deactivateDialog = true },
-                enabled = !isProfileOwner(dpm) && !isDeviceOwner(dpm),
+                enabled = !context.isProfileOwner && !context.isDeviceOwner,
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
             ) {
                 Text(stringResource(R.string.deactivate))
             }
         }
-        AnimatedVisibility(!showDeactivateButton) {
+        AnimatedVisibility(!deviceAdmin) {
             Column {
-                Button(onClick = {activateDeviceAdmin(context, receiver) }, modifier = Modifier.fillMaxWidth()) {
+                Button(onClick = { activateDeviceAdmin(context, receiver) }, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.activate_jump))
                 }
                 Spacer(Modifier.padding(vertical = 5.dp))
@@ -209,7 +253,6 @@ private fun DeviceAdmin() {
         }
     }
     if(deactivateDialog) {
-        val co = rememberCoroutineScope()
         AlertDialog(
             title = { Text(stringResource(R.string.deactivate)) },
             onDismissRequest = { deactivateDialog = false },
@@ -224,12 +267,7 @@ private fun DeviceAdmin() {
                 TextButton(
                     onClick = {
                         dpm.removeActiveAdmin(receiver)
-                        co.launch{
-                            delay(300)
-                            deactivateDialog = false
-                            showDeactivateButton = dpm.isAdminActive(receiver)
-                            backToHomeStateFlow.value = !dpm.isAdminActive(receiver)
-                        }
+                        deactivateDialog = false
                     }
                 ) {
                     Text(stringResource(R.string.confirm))
@@ -242,37 +280,26 @@ private fun DeviceAdmin() {
 @Composable
 private fun ProfileOwner() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
-    var showDeactivateButton by remember { mutableStateOf(isProfileOwner(dpm)) }
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     var deactivateDialog by remember { mutableStateOf(false) }
+    val profileOwner = context.isProfileOwner
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.profile_owner), style = typography.headlineLarge)
-        Text(stringResource(if(isProfileOwner(dpm)) R.string.activated else R.string.deactivated), style = typography.titleLarge)
+        Text(stringResource(if(profileOwner) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT >= 24) {
-            AnimatedVisibility(showDeactivateButton) {
-                Button(
-                    onClick = { deactivateDialog = true },
-                    enabled = !dpm.isManagedProfile(receiver),
-                    colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
-                ) {
-                    Text(stringResource(R.string.deactivate))
-                }
-            }
-        }
-        AnimatedVisibility(!showDeactivateButton) {
-            Column {
-                SelectionContainer{
-                    Text(text = stringResource(R.string.activate_profile_owner_command))
-                }
-                CopyTextButton(R.string.copy_command, stringResource(R.string.activate_profile_owner_command))
+        if(VERSION.SDK_INT >= 24 && profileOwner) {
+            Button(
+                onClick = { deactivateDialog = true },
+                enabled = !dpm.isManagedProfile(receiver),
+                colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
+            ) {
+                Text(stringResource(R.string.deactivate))
             }
         }
     }
     if(deactivateDialog && VERSION.SDK_INT >= 24) {
-        val co = rememberCoroutineScope()
         AlertDialog(
             title = { Text(stringResource(R.string.deactivate)) },
             onDismissRequest = { deactivateDialog = false },
@@ -287,12 +314,7 @@ private fun ProfileOwner() {
                 TextButton(
                     onClick = {
                         dpm.clearProfileOwner(receiver)
-                        co.launch{
-                            delay(300)
-                            deactivateDialog = false
-                            showDeactivateButton = isProfileOwner(dpm)
-                            backToHomeStateFlow.value = !isProfileOwner(dpm)
-                        }
+                        deactivateDialog = false
                     }
                 ) {
                     Text(stringResource(R.string.confirm))
@@ -305,15 +327,16 @@ private fun ProfileOwner() {
 @Composable
 private fun DeviceOwner() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    var showDeactivateButton by remember { mutableStateOf(isDeviceOwner(dpm)) }
+    val dpm = context.getDPM()
     var deactivateDialog by remember { mutableStateOf(false) }
+    var resetPolicy by remember { mutableStateOf(true) }
+    val deviceOwner = context.isDeviceOwner
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.device_owner), style = typography.headlineLarge)
-        Text(text = stringResource(if(isDeviceOwner(dpm)) R.string.activated else R.string.deactivated), style = typography.titleLarge)
+        Text(text = stringResource(if(deviceOwner) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        AnimatedVisibility(showDeactivateButton) {
+        AnimatedVisibility(deviceOwner) {
             Button(
                 onClick = { deactivateDialog = true },
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
@@ -321,7 +344,7 @@ private fun DeviceOwner() {
                 Text(text = stringResource(R.string.deactivate))
             }
         }
-        AnimatedVisibility(!showDeactivateButton) {
+        AnimatedVisibility(!deviceOwner) {
             Column {
                 SelectionContainer{
                     Text(text = stringResource(R.string.activate_device_owner_command))
@@ -331,9 +354,17 @@ private fun DeviceOwner() {
         }
     }
     if(deactivateDialog) {
-        val co = rememberCoroutineScope()
+        val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+        val coroutine = rememberCoroutineScope()
         AlertDialog(
             title = { Text(stringResource(R.string.deactivate)) },
+            text = {
+                Column {
+                    if(sharedPref.getBoolean("dhizuku", false)) Text(stringResource(R.string.dhizuku_will_be_deactivated))
+                    Spacer(Modifier.padding(vertical = 4.dp))
+                    CheckBoxItem(text = R.string.reset_device_policy, checked = resetPolicy, operation = { resetPolicy = it })
+                }
+            },
             onDismissRequest = { deactivateDialog = false },
             dismissButton = {
                 TextButton(
@@ -345,12 +376,16 @@ private fun DeviceOwner() {
             confirmButton = {
                 TextButton(
                     onClick = {
-                        dpm.clearDeviceOwnerApp(context.packageName)
-                        co.launch{
-                            delay(300)
+                        coroutine.launch {
+                            if(resetPolicy) context.resetDevicePolicy()
+                            dpm.clearDeviceOwnerApp(context.dpcPackageName)
+                            if(sharedPref.getBoolean("dhizuku", false)) {
+                                if (!Dhizuku.init(context)) {
+                                    sharedPref.edit().putBoolean("dhizuku", false).apply()
+                                    backToHomeStateFlow.value = true
+                                }
+                            }
                             deactivateDialog = false
-                            showDeactivateButton = isDeviceOwner(dpm)
-                            backToHomeStateFlow.value = !isDeviceOwner(dpm)
                         }
                     }
                 ) {
@@ -364,13 +399,13 @@ private fun DeviceOwner() {
 @Composable
 fun DeviceInfo() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.device_info), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT>=34 && (isDeviceOwner(dpm) || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT>=34 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
             val financed = dpm.isDeviceFinanced
             Text(stringResource(R.string.is_device_financed, financed))
         }
@@ -423,7 +458,7 @@ fun DeviceInfo() {
 @Composable
 private fun OrgID() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         var orgId by remember { mutableStateOf("") }
@@ -461,7 +496,7 @@ private fun OrgID() {
 @Composable
 private fun SpecificID() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val dpm = context.getDPM()
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         val specificId = dpm.enrollmentSpecificId
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -480,8 +515,8 @@ private fun SpecificID() {
 @Composable
 private fun OrgName() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         var orgName by remember { mutableStateOf(try{dpm.getOrganizationName(receiver).toString() }catch(e:SecurityException) {""}) }
@@ -512,8 +547,8 @@ private fun OrgName() {
 @Composable
 private fun SupportMsg() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var shortMsg by remember { mutableStateOf(dpm.getShortSupportMessage(receiver)?.toString() ?: "") }
     var longMsg by remember { mutableStateOf(dpm.getLongSupportMessage(receiver)?.toString() ?: "") }
@@ -571,8 +606,8 @@ private fun SupportMsg() {
 @Composable
 private fun DisableAccountManagement() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -625,8 +660,8 @@ private fun DisableAccountManagement() {
 @Composable
 private fun TransformOwnership() {
     val context = LocalContext.current
-    val dpm = context.getSystemService(ComponentActivity.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val receiver = ComponentName(context,Receiver::class.java)
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     val focusRequester = FocusRequester()
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
