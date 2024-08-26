@@ -220,7 +220,7 @@ private fun Home(
             intent.setData(Uri.parse("package:$pkgName"))
             startActivity(context, intent, null)
         }
-        if(VERSION.SDK_INT >= 24 && (deviceOwner || profileOwner)) {
+        if(VERSION.SDK_INT >= 24) {
             SwitchItem(
                 title = R.string.suspend, desc = "", icon = R.drawable.block_fill0,
                 state = suspend,
@@ -228,26 +228,22 @@ private fun Home(
                 onClickBlank = { appControlAction = 1; appControlDialog = true }
             )
         }
-        if(deviceOwner || profileOwner) {
-            SwitchItem(
-                title = R.string.hide, desc = stringResource(R.string.isapphidden_desc), icon = R.drawable.visibility_off_fill0,
-                state = hide,
-                onCheckedChange = { appControlAction = 2; appControl(it) },
-                onClickBlank = { appControlAction = 2; appControlDialog = true }
-            )
-        }
-        if(deviceOwner || profileOwner) {
-            SwitchItem(
-                title = R.string.block_uninstall, desc = "", icon = R.drawable.delete_forever_fill0,
-                state = blockUninstall,
-                onCheckedChange = { appControlAction = 3; appControl(it) },
-                onClickBlank = { appControlAction = 3; appControlDialog = true }
-            )
-        }
+        SwitchItem(
+            title = R.string.hide, desc = stringResource(R.string.isapphidden_desc), icon = R.drawable.visibility_off_fill0,
+            state = hide,
+            onCheckedChange = { appControlAction = 2; appControl(it) },
+            onClickBlank = { appControlAction = 2; appControlDialog = true }
+        )
+        SwitchItem(
+            title = R.string.block_uninstall, desc = "", icon = R.drawable.delete_forever_fill0,
+            state = blockUninstall,
+            onCheckedChange = { appControlAction = 3; appControl(it) },
+            onClickBlank = { appControlAction = 3; appControlDialog = true }
+        )
         if((VERSION.SDK_INT >= 33 && profileOwner) || (VERSION.SDK_INT >= 30 && deviceOwner)) {
             SubPageItem(R.string.ucd, "", R.drawable.do_not_touch_fill0) { navCtrl.navigate("UserControlDisabled") }
         }
-        if(VERSION.SDK_INT>=23&&(deviceOwner||profileOwner)) { 
+        if(VERSION.SDK_INT>=23) {
             SubPageItem(R.string.permission_manage, "", R.drawable.key_fill0) { navCtrl.navigate("PermissionManage") }
         }
         if(VERSION.SDK_INT >= 30 && profileOwner && dpm.isManagedProfile(receiver)) {
@@ -259,21 +255,15 @@ private fun Home(
         if(VERSION.SDK_INT >= 34 && deviceOwner) {
             SubPageItem(R.string.credential_manage_policy, "", R.drawable.license_fill0) { navCtrl.navigate("CredentialManagePolicy") }
         }
-        if(profileOwner || deviceOwner) {
-            SubPageItem(R.string.permitted_accessibility_services, "", R.drawable.settings_accessibility_fill0) { navCtrl.navigate("Accessibility") }
-        }
-        if(deviceOwner || profileOwner) {
-            SubPageItem(R.string.permitted_ime, "", R.drawable.keyboard_fill0) { navCtrl.navigate("IME") }
-        }
-        if(deviceOwner || profileOwner) {
-            SubPageItem(R.string.enable_system_app, "", R.drawable.enable_fill0) {
-                if(pkgName != "") dialogStatus.intValue = 1
-            }
+        SubPageItem(R.string.permitted_accessibility_services, "", R.drawable.settings_accessibility_fill0) { navCtrl.navigate("Accessibility") }
+        SubPageItem(R.string.permitted_ime, "", R.drawable.keyboard_fill0) { navCtrl.navigate("IME") }
+        SubPageItem(R.string.enable_system_app, "", R.drawable.enable_fill0) {
+            if(pkgName != "") dialogStatus.intValue = 1
         }
         if(VERSION.SDK_INT >= 28 && deviceOwner) {
             SubPageItem(R.string.keep_uninstalled_packages, "", R.drawable.delete_fill0) { navCtrl.navigate("KeepUninstalled") }
         }
-        if(VERSION.SDK_INT >= 28 && (deviceOwner || profileOwner)) {
+        if(VERSION.SDK_INT >= 28) {
             SubPageItem(R.string.clear_app_storage, "", R.drawable.mop_fill0) {
                 if(pkgName != "") dialogStatus.intValue = 2
             }

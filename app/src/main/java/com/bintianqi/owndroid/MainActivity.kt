@@ -242,7 +242,7 @@ private fun HomePage(navCtrl:NavHostController) {
         ) {
             HomePageItem(R.string.work_profile, R.drawable.work_fill0, "ManagedProfile", navCtrl)
         }
-        HomePageItem(R.string.app_manager, R.drawable.apps_fill0, "ApplicationManage", navCtrl)
+        if(deviceOwner || profileOwner) HomePageItem(R.string.app_manager, R.drawable.apps_fill0, "ApplicationManage", navCtrl)
         if(VERSION.SDK_INT >= 24 && (profileOwner || deviceOwner)) {
             HomePageItem(R.string.user_restrict, R.drawable.person_off, "UserRestriction", navCtrl)
         }
