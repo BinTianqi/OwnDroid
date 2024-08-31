@@ -3,7 +3,9 @@ package com.bintianqi.owndroid.dpm
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.PendingIntent
+import android.app.admin.ConnectEvent
 import android.app.admin.DevicePolicyManager
+import android.app.admin.DnsEvent
 import android.app.admin.FactoryResetProtectionPolicy
 import android.app.admin.IDevicePolicyManager
 import android.app.admin.SystemUpdatePolicy
@@ -13,9 +15,11 @@ import android.content.Intent
 import android.content.pm.IPackageInstaller
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Build.VERSION
 import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.DrawableRes
+import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import com.bintianqi.owndroid.InstallAppActivity
 import com.bintianqi.owndroid.PackageInstallerReceiver
@@ -26,8 +30,18 @@ import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.Dhizuku.binderWrapper
 import com.rosan.dhizuku.api.DhizukuBinderWrapper
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.json.encodeToStream
 import java.io.IOException
 import java.io.InputStream
+import kotlin.io.path.inputStream
+import kotlin.io.path.notExists
+import kotlin.io.path.outputStream
+import kotlin.io.path.writeText
 
 lateinit var createManagedProfile: ActivityResultLauncher<Intent>
 lateinit var addDeviceAdmin: ActivityResultLauncher<Intent>
@@ -305,3 +319,54 @@ fun permissionList(): List<PermissionItem>{
     }
     return list
 }
+
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalSerializationApi::class)
+fun handleNetworkLogs(context: Context, batchToken: Long) {
+    val events = context.getDPM().retrieveNetworkLogs(context.getReceiver(), batchToken) ?: return
+    val eventsList = mutableListOf<NetworkEventItem>()
+    val file = context.filesDir.toPath().resolve("NetworkLogs.json")
+    if(file.notExists()) file.writeText("[]")
+    val json = Json { ignoreUnknownKeys = true; explicitNulls = false }
+    var jsonObj: MutableList<NetworkEventItem>
+    file.inputStream().use {
+        jsonObj = json.decodeFromStream(it)
+    }
+    events.forEach { event ->
+        try {
+            val dnsEvent = event as DnsEvent
+            val addresses = mutableListOf<String?>()
+            dnsEvent.inetAddresses.forEach { inetAddresses ->
+                addresses += inetAddresses.hostAddress
+            }
+            eventsList += NetworkEventItem(
+                id = if(VERSION.SDK_INT >= 28) event.id else null, packageName = event.packageName
+                , timestamp = event.timestamp, type = "dns", hostName = dnsEvent.hostname,
+                hostAddresses = addresses, totalResolvedAddressCount = dnsEvent.totalResolvedAddressCount
+            )
+        } catch(e: Exception) {
+            val connectEvent = event as ConnectEvent
+            eventsList += NetworkEventItem(
+                id = if(VERSION.SDK_INT >= 28) event.id else null, packageName = event.packageName, timestamp = event.timestamp, type = "connect",
+                hostAddress = connectEvent.inetAddress.hostAddress, port = connectEvent.port
+            )
+        }
+    }
+    jsonObj.addAll(eventsList)
+    file.outputStream().use {
+        json.encodeToStream(jsonObj, it)
+    }
+}
+
+@Serializable
+data class NetworkEventItem(
+    val id: Long? = null,
+    @SerialName("package_name") val packageName: String,
+    val timestamp: Long,
+    val type: String,
+    val port: Int? = null,
+    @SerialName("address") val hostAddress: String? = null,
+    @SerialName("host_name") val hostName: String? = null,
+    @SerialName("count") val totalResolvedAddressCount: Int? = null,
+    @SerialName("addresses") val hostAddresses: List<String?>? = null
+)

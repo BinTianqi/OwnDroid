@@ -245,6 +245,9 @@
     <string name="invalid_config">Invalid config</string>
     <string name="exclude_hosts">Exclude hosts</string>
     <string name="retrieve_net_logs">Network logs</string>
+    <string name="retrieved_logs_are">Retrieved logs: %1$s</string>
+    <string name="delete_logs">Delete logs</string>
+    <string name="export_logs">Export logs</string>
     <string name="retrieve">Retrieve</string>
     <string name="wifi_auth_keypair">WiFi keypair</string>
     <string name="keypair">Keypair</string>

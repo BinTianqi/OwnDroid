@@ -16,6 +16,7 @@ import android.app.admin.WifiSsidPolicy
 import android.app.admin.WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_ALLOWLIST
 import android.app.admin.WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_DENYLIST
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager.NameNotFoundException
 import android.net.ProxyInfo
 import android.net.Uri
@@ -38,7 +39,6 @@ import android.telephony.data.ApnSetting.PROTOCOL_IPV6
 import android.telephony.data.ApnSetting.PROTOCOL_NON_IP
 import android.telephony.data.ApnSetting.PROTOCOL_PPP
 import android.telephony.data.ApnSetting.PROTOCOL_UNSTRUCTURED
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -75,6 +75,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -98,6 +99,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.formatFileSize
+import com.bintianqi.owndroid.saveNetworkLogs
 import com.bintianqi.owndroid.selectedPackage
 import com.bintianqi.owndroid.toText
 import com.bintianqi.owndroid.ui.Animations
@@ -624,28 +627,40 @@ private fun NetworkLog() {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
+    val logFile = context.filesDir.resolve("NetworkLogs.json")
+    var fileSize by remember { mutableLongStateOf(0) }
+    var fileExists by remember { mutableStateOf(logFile.exists()) }
+    LaunchedEffect(Unit) {
+        fileSize = logFile.length()
+    }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.retrieve_net_logs), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text = stringResource(R.string.developing))
-        Spacer(Modifier.padding(vertical = 5.dp))
-        SwitchItem(R.string.enable,"",null, { dpm.isNetworkLoggingEnabled(receiver) }, {dpm.setNetworkLoggingEnabled(receiver,it) }, padding = false)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = {
-                val log = dpm.retrieveNetworkLogs(receiver,1234567890)
-                if(log != null) {
-                    for(i in log) { Log.d("NetworkLog",i.toString()) }
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                }else{
-                    Log.d("NetworkLog",context.getString(R.string.none))
-                    Toast.makeText(context, R.string.none, Toast.LENGTH_SHORT).show()
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.retrieve))
+        SwitchItem(R.string.enable, "", null, { dpm.isNetworkLoggingEnabled(receiver) }, { dpm.setNetworkLoggingEnabled(receiver,it) }, padding = false)
+        if(fileExists) {
+            Text(stringResource(R.string.retrieved_logs_are, formatFileSize(fileSize)))
+            Button(
+                onClick = {
+                    val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
+                    intent.addCategory(Intent.CATEGORY_OPENABLE)
+                    intent.setType("application/json")
+                    intent.putExtra(Intent.EXTRA_TITLE, "NetworkLogs.json")
+                    saveNetworkLogs.launch(intent)
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.export_logs))
+            }
+            Button(
+                onClick = {
+                    Toast.makeText(context, if(logFile.delete()) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+                    fileExists = logFile.exists()
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.delete_logs))
+            }
         }
     }
 }

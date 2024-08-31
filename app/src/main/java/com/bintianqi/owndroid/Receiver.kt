@@ -17,16 +17,20 @@ import android.content.pm.PackageInstaller.STATUS_FAILURE_STORAGE
 import android.content.pm.PackageInstaller.STATUS_FAILURE_TIMEOUT
 import android.content.pm.PackageInstaller.STATUS_PENDING_USER_ACTION
 import android.content.pm.PackageInstaller.STATUS_SUCCESS
+import android.os.Build.VERSION
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import com.bintianqi.owndroid.dpm.getDPM
 import com.bintianqi.owndroid.dpm.getReceiver
+import com.bintianqi.owndroid.dpm.handleNetworkLogs
 import com.bintianqi.owndroid.dpm.isDeviceAdmin
 import com.bintianqi.owndroid.dpm.isDeviceOwner
 import com.bintianqi.owndroid.dpm.isProfileOwner
 import com.bintianqi.owndroid.dpm.toggleInstallAppActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 class Receiver : DeviceAdminReceiver() {
     override fun onEnabled(context: Context, intent: Intent) {
@@ -48,6 +52,14 @@ class Receiver : DeviceAdminReceiver() {
         Toast.makeText(context, R.string.create_work_profile_success, Toast.LENGTH_SHORT).show()
     }
 
+    override fun onNetworkLogsAvailable(context: Context, intent: Intent, batchToken: Long, networkLogsCount: Int) {
+        super.onNetworkLogsAvailable(context, intent, batchToken, networkLogsCount)
+        if(VERSION.SDK_INT >= 28) {
+            CoroutineScope(Dispatchers.IO).launch {
+                handleNetworkLogs(context, batchToken)
+            }
+        }
+    }
 }
 
 val installAppDone = MutableStateFlow(false)

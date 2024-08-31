@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.cc)
+    kotlin("plugin.serialization") version "2.0.0"
 }
 
 android {
@@ -86,4 +87,5 @@ dependencies {
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.fragment)
     implementation(libs.hiddenApiBypass)
+    implementation(libs.serialization)
 }

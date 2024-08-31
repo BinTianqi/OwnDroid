@@ -13,9 +13,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.bintianqi.owndroid.dpm.addDeviceAdmin
 import com.bintianqi.owndroid.dpm.createManagedProfile
 import kotlinx.coroutines.flow.MutableStateFlow
+import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
+import java.nio.file.Files
+import java.util.Locale
 
 lateinit var getFile: ActivityResultLauncher<Intent>
 val fileUriFlow = MutableStateFlow(Uri.parse(""))
@@ -73,6 +76,7 @@ fun writeClipBoard(context: Context, string: String):Boolean{
 }
 
 lateinit var requestPermission: ActivityResultLauncher<String>
+lateinit var saveNetworkLogs: ActivityResultLauncher<Intent>
 
 fun registerActivityResult(context: ComponentActivity){
     getFile = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
@@ -92,6 +96,19 @@ fun registerActivityResult(context: ComponentActivity){
         }
     }
     requestPermission = context.registerForActivityResult(ActivityResultContracts.RequestPermission()) { permissionGranted.value = it }
+    saveNetworkLogs = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val intentData = result.data ?: return@registerForActivityResult
+        val uriData = intentData.data ?: return@registerForActivityResult
+        context.contentResolver.openOutputStream(uriData).use { outStream ->
+            if(outStream != null) {
+                val logFile = context.filesDir.resolve("NetworkLogs.json")
+                logFile.inputStream().use { inStream ->
+                    inStream.copyTo(outStream)
+                }
+                Toast.makeText(context.applicationContext, R.string.success, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 }
 
 val permissionGranted = MutableStateFlow<Boolean?>(null)
@@ -106,5 +123,17 @@ suspend fun prepareForNotification(context: Context, action: ()->Unit) {
         }
     } else {
         action()
+    }
+}
+
+fun formatFileSize(bytes: Long): String {
+    val kb = 1024
+    val mb = kb * 1024
+    val gb = mb * 1024
+    return when {
+        bytes >= gb -> String.format(Locale.US, "%.2f GB", bytes / gb.toDouble())
+        bytes >= mb -> String.format(Locale.US, "%.2f MB", bytes / mb.toDouble())
+        bytes >= kb -> String.format(Locale.US, "%.2f KB", bytes / kb.toDouble())
+        else -> "$bytes bytes"
     }
 }

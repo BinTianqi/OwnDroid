@@ -236,6 +236,9 @@
     <string name="invalid_config">无效配置</string>
     <string name="exclude_hosts">排除列表</string>
     <string name="retrieve_net_logs">收集网络日志</string>
+    <string name="retrieved_logs_are">已收集的日志：%1$s</string>
+    <string name="delete_logs">删除日志</string>
+    <string name="export_logs">导出日志</string>
     <string name="retrieve">收集</string>
     <string name="wifi_auth_keypair">WiFi密钥对</string>
     <string name="keypair">密钥对</string>

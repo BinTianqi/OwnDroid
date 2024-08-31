@@ -11,6 +11,7 @@ biometric = "1.2.0-alpha05"
 fragment = "1.8.0-beta01"
 dhizuku = "2.5.2"
 hiddenApiBypass = "4.3"
+serialization = "1.7.1"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
@@ -27,6 +28,8 @@ shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
 dhizuku-api = { module = "io.github.iamr0s:Dhizuku-API", version.ref = "dhizuku" }
 hiddenApiBypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version.ref = "hiddenApiBypass" }
 androidx-fragment = { group = "androidx.fragment", name = "fragment", version.ref = "fragment" }
+
+serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
