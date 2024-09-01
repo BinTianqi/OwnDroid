@@ -23,6 +23,7 @@ import android.widget.Toast
 import com.bintianqi.owndroid.dpm.getDPM
 import com.bintianqi.owndroid.dpm.getReceiver
 import com.bintianqi.owndroid.dpm.handleNetworkLogs
+import com.bintianqi.owndroid.dpm.handleSecurityLogs
 import com.bintianqi.owndroid.dpm.isDeviceAdmin
 import com.bintianqi.owndroid.dpm.isDeviceOwner
 import com.bintianqi.owndroid.dpm.isProfileOwner
@@ -54,10 +55,17 @@ class Receiver : DeviceAdminReceiver() {
 
     override fun onNetworkLogsAvailable(context: Context, intent: Intent, batchToken: Long, networkLogsCount: Int) {
         super.onNetworkLogsAvailable(context, intent, batchToken, networkLogsCount)
-        if(VERSION.SDK_INT >= 28) {
+        if(VERSION.SDK_INT >= 26) {
             CoroutineScope(Dispatchers.IO).launch {
                 handleNetworkLogs(context, batchToken)
             }
+        }
+    }
+
+    override fun onSecurityLogsAvailable(context: Context, intent: Intent) {
+        super.onSecurityLogsAvailable(context, intent)
+        if(VERSION.SDK_INT >= 24) {
+            handleSecurityLogs(context)
         }
     }
 }

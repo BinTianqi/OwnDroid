@@ -2,7 +2,11 @@ package com.bintianqi.owndroid
 
 import android.Manifest
 import android.app.admin.DevicePolicyManager
-import android.content.*
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build.VERSION
@@ -17,7 +21,6 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
-import java.nio.file.Files
 import java.util.Locale
 
 lateinit var getFile: ActivityResultLauncher<Intent>
@@ -76,12 +79,13 @@ fun writeClipBoard(context: Context, string: String):Boolean{
 }
 
 lateinit var requestPermission: ActivityResultLauncher<String>
-lateinit var saveNetworkLogs: ActivityResultLauncher<Intent>
+lateinit var exportFile: ActivityResultLauncher<Intent>
+val exportFilePath = MutableStateFlow<String?>(null)
 
 fun registerActivityResult(context: ComponentActivity){
     getFile = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
         activityResult.data.let {
-            if(it==null){
+            if(it == null){
                 Toast.makeText(context.applicationContext, R.string.file_not_exist, Toast.LENGTH_SHORT).show()
             }else{
                 fileUriFlow.value = it.data
@@ -96,13 +100,13 @@ fun registerActivityResult(context: ComponentActivity){
         }
     }
     requestPermission = context.registerForActivityResult(ActivityResultContracts.RequestPermission()) { permissionGranted.value = it }
-    saveNetworkLogs = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+    exportFile = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val intentData = result.data ?: return@registerForActivityResult
         val uriData = intentData.data ?: return@registerForActivityResult
+        val path = exportFilePath.value ?: return@registerForActivityResult
         context.contentResolver.openOutputStream(uriData).use { outStream ->
             if(outStream != null) {
-                val logFile = context.filesDir.resolve("NetworkLogs.json")
-                logFile.inputStream().use { inStream ->
+                File(path).inputStream().use { inStream ->
                     inStream.copyTo(outStream)
                 }
                 Toast.makeText(context.applicationContext, R.string.success, Toast.LENGTH_SHORT).show()

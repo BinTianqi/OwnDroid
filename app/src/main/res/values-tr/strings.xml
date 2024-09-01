@@ -241,7 +241,7 @@
     <string name="invalid_config">Invalid config</string> <!--TODO-->
     <string name="exclude_hosts">Exclude hosts</string> <!--TODO-->
     <string name="retrieve_net_logs">Ağ kayıtları</string>
-    <string name="retrieved_logs_are">Retrieved logs: %1$s</string> <!--TODO-->
+    <string name="log_file_size_is">Log file size: %1$s</string> <!--TODO-->
     <string name="delete_logs">Delete logs</string> <!--TODO-->
     <string name="export_logs">Export logs</string> <!--TODO-->
     <string name="retrieve">Geri al</string>

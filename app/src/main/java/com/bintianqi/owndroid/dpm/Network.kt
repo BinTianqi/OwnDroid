@@ -99,8 +99,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.exportFile
+import com.bintianqi.owndroid.exportFilePath
 import com.bintianqi.owndroid.formatFileSize
-import com.bintianqi.owndroid.saveNetworkLogs
 import com.bintianqi.owndroid.selectedPackage
 import com.bintianqi.owndroid.toText
 import com.bintianqi.owndroid.ui.Animations
@@ -169,6 +170,8 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState, wifiMacDia
     val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
+    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val dhizuku = sharedPref.getBoolean("dhizuku", false)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
             text = stringResource(R.string.network),
@@ -196,7 +199,7 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState, wifiMacDia
         if(deviceOwner) {
             SubPageItem(R.string.recommended_global_proxy, "", R.drawable.vpn_key_fill0) { navCtrl.navigate("RecommendedGlobalProxy") }
         }
-        if(VERSION.SDK_INT >= 26&&(deviceOwner || (profileOwner && dpm.isManagedProfile(receiver)))) {
+        if(VERSION.SDK_INT >= 26 && !dhizuku && (deviceOwner || (profileOwner && dpm.isManagedProfile(receiver)))) {
             SubPageItem(R.string.retrieve_net_logs, "", R.drawable.description_fill0) { navCtrl.navigate("NetworkLog") }
         }
         if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) {
@@ -629,7 +632,6 @@ private fun NetworkLog() {
     val receiver = context.getReceiver()
     val logFile = context.filesDir.resolve("NetworkLogs.json")
     var fileSize by remember { mutableLongStateOf(0) }
-    var fileExists by remember { mutableStateOf(logFile.exists()) }
     LaunchedEffect(Unit) {
         fileSize = logFile.length()
     }
@@ -638,26 +640,29 @@ private fun NetworkLog() {
         Text(text = stringResource(R.string.retrieve_net_logs), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         SwitchItem(R.string.enable, "", null, { dpm.isNetworkLoggingEnabled(receiver) }, { dpm.setNetworkLoggingEnabled(receiver,it) }, padding = false)
-        if(fileExists) {
-            Text(stringResource(R.string.retrieved_logs_are, formatFileSize(fileSize)))
+        Text(stringResource(R.string.log_file_size_is, formatFileSize(fileSize)))
+        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
             Button(
                 onClick = {
                     val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
                     intent.addCategory(Intent.CATEGORY_OPENABLE)
                     intent.setType("application/json")
                     intent.putExtra(Intent.EXTRA_TITLE, "NetworkLogs.json")
-                    saveNetworkLogs.launch(intent)
+                    exportFilePath.value = logFile.path
+                    exportFile.launch(intent)
                 },
-                modifier = Modifier.fillMaxWidth()
+                enabled = fileSize > 0,
+                modifier = Modifier.fillMaxWidth(0.49F)
             ) {
                 Text(stringResource(R.string.export_logs))
             }
             Button(
                 onClick = {
-                    Toast.makeText(context, if(logFile.delete()) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
-                    fileExists = logFile.exists()
+                    logFile.delete()
+                    fileSize = logFile.length()
                 },
-                modifier = Modifier.fillMaxWidth()
+                enabled = fileSize > 0,
+                modifier = Modifier.fillMaxWidth(0.96F)
             ) {
                 Text(stringResource(R.string.delete_logs))
             }
