@@ -12,6 +12,7 @@ fragment = "1.8.0-beta01"
 dhizuku = "2.5.2"
 hiddenApiBypass = "4.3"
 serialization = "1.7.1"
+argon2 = "13.1"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
@@ -30,6 +31,8 @@ hiddenApiBypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", vers
 androidx-fragment = { group = "androidx.fragment", name = "fragment", version.ref = "fragment" }
 
 serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
+
+argon2= { module = "org.signal:argon2", version.ref = "argon2"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

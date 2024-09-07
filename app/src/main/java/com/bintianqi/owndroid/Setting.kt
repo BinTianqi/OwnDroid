@@ -24,6 +24,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.bintianqi.owndroid.encryption.EncryptionManager
 import com.bintianqi.owndroid.ui.*
 
 @Composable
@@ -138,6 +139,7 @@ private fun AuthSettings() {
 @Composable
 private fun Automation() {
     val context = LocalContext.current
+    val encryptionManager = EncryptionManager()
     val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -152,6 +154,8 @@ private fun Automation() {
             modifier = Modifier.fillMaxWidth(),
             onClick = {
                 sharedPref.edit().putString("automation_key", key).apply()
+                val (hash, salt) = encryptionManager.makeHash(key)
+                sharedPref.edit().putString("automation_key", hash).putString("salt",salt).apply()
                 Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             }
         ) {

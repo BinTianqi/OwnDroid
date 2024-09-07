@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import com.bintianqi.owndroid.dpm.getDPM
 import com.bintianqi.owndroid.dpm.getReceiver
+import com.bintianqi.owndroid.encryption.EncryptionManager
 
 class AutomationReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -16,11 +17,11 @@ class AutomationReceiver: BroadcastReceiver() {
 @SuppressLint("NewApi")
 fun handleTask(context: Context, intent: Intent): String {
     val sharedPrefs = context.getSharedPreferences("data", Context.MODE_PRIVATE)
-    val key = sharedPrefs.getString("automation_key", "") ?: ""
-    if(key.length < 6) {
-        return "Key length must longer than 6"
-    }
-    if(key != intent.getStringExtra("key")) {
+    val encryptionManager = EncryptionManager()
+    val hash = sharedPrefs.getString("automation_key", "") ?: ""
+    val salt = sharedPrefs.getString("salt","") ?: ""
+    val key = intent.getStringExtra("key") ?: ""
+    if(!encryptionManager.checkPassword(key,hash, salt)) {
         return "Wrong key"
     }
     val operation = intent.getStringExtra("operation")
