@@ -74,7 +74,6 @@
     <string name="es_active_per_user">每个用户分别加密</string>
     <string name="activated_device_admin">激活的Device admin: %1$s</string>
     <string name="enrollment_specific_id">设备注册专用ID</string>
-    <string name="require_set_org_id">需要设置组织ID</string>
     <string name="org_name">组织名称</string>
     <string name="disable_account_management">禁用账号管理</string>
     <string name="account_types_are">账号类型：</string>
@@ -239,7 +238,6 @@
     <string name="log_file_size_is">日志文件大小：%1$s</string>
     <string name="delete_logs">删除日志</string>
     <string name="export_logs">导出日志</string>
-    <string name="retrieve">收集</string>
     <string name="wifi_auth_keypair">WiFi密钥对</string>
     <string name="keypair">密钥对</string>
     <string name="override_apn_settings">APN设置</string>
@@ -285,7 +283,6 @@
     <string name="clear_cross_profile_filters">清除所有过滤器</string>
     <string name="org_id">组织ID</string>
     <string name="length_6_to_64">长度应在6~64个字符之间</string>
-    <string name="get_specific_id_after_set_org_id">设置组织ID后才能获取设备唯一标识码</string>
     <string name="delete_work_profile">删除工作资料</string>
 
     <!--AppManage-->
@@ -524,8 +521,6 @@
     <string name="password_quality_biometrics_weak">生物识别（弱）</string>
     <string name="password_quality_numeric_complex">复杂数字（无连续性）</string>
     <string name="required_password_quality">密码质量要求</string>
-    <string name="password_complexity_instead_password_quality">设置密码复杂度将会取代密码质量</string>
-    <string name="password_quality_deprecated_desc">已弃用，请使用上面的”密码复杂度要求“</string>
     <string name="activate_reset_password_token_here">在这里激活密码重置令牌</string>
 
     <!--Settings&About-->

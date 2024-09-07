@@ -183,12 +183,14 @@ private fun HomePage(navCtrl:NavHostController) {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    var activated by remember { mutableStateOf(false) }
     var activateType by remember { mutableStateOf("") }
     val deviceAdmin = context.isDeviceAdmin
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
     val refreshStatus by dhizukuErrorStatus.collectAsState()
     LaunchedEffect(refreshStatus) {
+        activated = context.isDeviceAdmin
         activateType = if(sharedPref.getBoolean("dhizuku", false)) context.getString(R.string.dhizuku) + " - " else ""
         activateType += context.getString(
             if(deviceOwner) { R.string.device_owner }
@@ -217,14 +219,14 @@ private fun HomePage(navCtrl:NavHostController) {
         ) {
             Spacer(modifier = Modifier.padding(start = 22.dp))
             Icon(
-                painter = painterResource(if(deviceAdmin) R.drawable.check_circle_fill1 else R.drawable.block_fill0),
+                painter = painterResource(if(activated) R.drawable.check_circle_fill1 else R.drawable.block_fill0),
                 contentDescription = null,
                 tint = colorScheme.onPrimary
             )
             Spacer(modifier = Modifier.padding(start = 10.dp))
             Column {
                 Text(
-                    text = stringResource(if(deviceAdmin) R.string.activated else R.string.deactivated),
+                    text = stringResource(if(activated) R.string.activated else R.string.deactivated),
                     style = typography.headlineSmall,
                     color = colorScheme.onPrimary,
                     modifier = Modifier.padding(bottom = 2.dp)

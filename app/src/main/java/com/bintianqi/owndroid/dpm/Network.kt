@@ -62,6 +62,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -110,6 +111,7 @@ import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.TopBar
+import com.bintianqi.owndroid.writeClipBoard
 
 @Composable
 fun Network(navCtrl: NavHostController) {
@@ -157,7 +159,18 @@ fun Network(navCtrl: NavHostController) {
             onDismissRequest = { wifiMacDialog.value = false },
             confirmButton = { TextButton(onClick = { wifiMacDialog.value = false }) { Text(stringResource(R.string.confirm)) } },
             title = { Text(stringResource(R.string.wifi_mac_addr)) },
-            text = { SelectionContainer { Text(dpm.getWifiMacAddress(receiver)?: stringResource(R.string.none)) } },
+            text = {
+                val mac = dpm.getWifiMacAddress(receiver)
+                OutlinedTextField(
+                    value = mac ?: stringResource(R.string.none),
+                    onValueChange = {}, readOnly = true, modifier = Modifier.fillMaxWidth(), textStyle = typography.titleMedium,
+                    trailingIcon = {
+                        if(mac != null) IconButton(onClick = { writeClipBoard(context, mac) }) {
+                            Icon(painter = painterResource(R.drawable.content_copy_fill0), contentDescription = stringResource(R.string.copy))
+                        }
+                    }
+                )
+            },
             modifier = Modifier.fillMaxWidth()
         )
     }
@@ -222,7 +235,7 @@ private fun Switches() {
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT >= 33 && deviceOwner) {
             SwitchItem(
-                R.string.preferential_network_service, stringResource(R.string.developing), R.drawable.globe_fill0,
+                R.string.preferential_network_service, "", R.drawable.globe_fill0,
                 { dpm.isPreferentialNetworkServiceEnabled }, { dpm.isPreferentialNetworkServiceEnabled = it }, padding = false
             )
         }

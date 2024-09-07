@@ -167,7 +167,7 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState) {
         if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
             SubPageItem(R.string.required_strong_auth_timeout, "", R.drawable.fingerprint_off_fill0) { navCtrl.navigate("RequiredStrongAuthTimeout") }
         }
-        if(deviceOwner || profileOwner) {
+        if(VERSION.SDK_INT < 31 && (deviceOwner || profileOwner)) {
             SubPageItem(R.string.required_password_quality, "", R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordQuality") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -735,9 +735,6 @@ private fun PasswordQuality() {
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.required_password_quality), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text = stringResource(R.string.password_complexity_instead_password_quality))
-        if(VERSION.SDK_INT >= 31) { Text(text = stringResource(R.string.password_quality_deprecated_desc), color = colorScheme.error) }
         Spacer(Modifier.padding(vertical = 5.dp))
         for(index in 1..6) {
             RadioButtonItem(passwordQuality[index].second, selectedItem == passwordQuality[index].first, { selectedItem = passwordQuality[index].first })

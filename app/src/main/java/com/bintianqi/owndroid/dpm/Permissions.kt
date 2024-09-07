@@ -26,6 +26,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -38,6 +39,7 @@ import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.backToHomeStateFlow
 import com.bintianqi.owndroid.ui.*
+import com.bintianqi.owndroid.writeClipBoard
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
 import kotlinx.coroutines.launch
@@ -74,7 +76,6 @@ fun DpmPermissions(navCtrl:NavHostController) {
             composable(route = "DeviceOwner") { DeviceOwner() }
             composable(route = "DeviceInfo") { DeviceInfo() }
             composable(route = "OrgID") { OrgID() }
-            composable(route = "SpecificID") { SpecificID() }
             composable(route = "OrgName") { OrgName() }
             composable(route = "DisableAccountManagement") { DisableAccountManagement() }
             composable(route = "LockScreenInfo") { LockScreenInfo() }
@@ -84,6 +85,7 @@ fun DpmPermissions(navCtrl:NavHostController) {
     }
 }
 
+@SuppressLint("NewApi")
 @Composable
 private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
     val context = LocalContext.current
@@ -93,6 +95,8 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
     val deviceAdmin = context.isDeviceAdmin
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
+    var enrollmentIdDialog by remember { mutableStateOf(false) }
+    val enrollmentSpecificId = if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) dpm.enrollmentSpecificId else ""
     Column(modifier = Modifier.fillMaxSize().verticalScroll(listScrollState)) {
         Text(
             text = stringResource(R.string.permission),
@@ -112,9 +116,9 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
             R.string.device_admin, stringResource(if(deviceAdmin) R.string.activated else R.string.deactivated),
             operation = { localNavCtrl.navigate("DeviceAdmin") }
         )
-        if(!deviceOwner) {
+        if(profileOwner) {
             SubPageItem(
-                R.string.profile_owner, stringResource(if(profileOwner) R.string.activated else R.string.deactivated),
+                R.string.profile_owner, stringResource(R.string.activated),
                 operation = { localNavCtrl.navigate("ProfileOwner") }
             )
         }
@@ -131,7 +135,9 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
         }
         if(VERSION.SDK_INT >= 31 && (profileOwner || deviceOwner)) {
             SubPageItem(R.string.org_id, "", R.drawable.corporate_fare_fill0) { localNavCtrl.navigate("OrgID") }
-            SubPageItem(R.string.enrollment_specific_id, "", R.drawable.id_card_fill0) { localNavCtrl.navigate("SpecificID") }
+        }
+        if(enrollmentSpecificId != "") {
+            SubPageItem(R.string.enrollment_specific_id, "", R.drawable.id_card_fill0) { enrollmentIdDialog = true }
         }
         if(deviceOwner || profileOwner) {
             SubPageItem(R.string.disable_account_management, "", R.drawable.account_circle_fill0) { localNavCtrl.navigate("DisableAccountManagement") }
@@ -147,6 +153,27 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
+    if(enrollmentIdDialog) AlertDialog(
+        title = { Text(stringResource(R.string.enrollment_specific_id)) },
+        text = {
+            val esid = dpm.enrollmentSpecificId
+            OutlinedTextField(
+                value = esid,
+                onValueChange = {}, readOnly = true, modifier = Modifier.fillMaxWidth(),
+                trailingIcon = {
+                    IconButton(onClick = { writeClipBoard(context, esid) }) {
+                        Icon(painter = painterResource(R.drawable.content_copy_fill0), contentDescription = stringResource(R.string.copy))
+                    }
+                }
+            )
+        },
+        onDismissRequest = { enrollmentIdDialog = false },
+        confirmButton = {
+            TextButton(onClick = { enrollmentIdDialog = false }) {
+                Text(stringResource(R.string.confirm))
+            }
+        }
+    )
 }
 
 private fun toggleDhizukuMode(status: Boolean, context: Context) {
@@ -466,7 +493,7 @@ private fun OrgID() {
         Text(text = stringResource(R.string.org_id), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
-            value = orgId, onValueChange = {orgId=it},
+            value = orgId, onValueChange = { orgId=it },
             label = { Text(stringResource(R.string.org_id)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
@@ -479,34 +506,17 @@ private fun OrgID() {
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                dpm.setOrganizationId(orgId)
-                Toast.makeText(context, R.string.success,Toast.LENGTH_SHORT).show()
+                try {
+                    dpm.setOrganizationId(orgId)
+                    Toast.makeText(context, R.string.success,Toast.LENGTH_SHORT).show()
+                } catch(e: IllegalStateException) {
+                    Toast.makeText(context, R.string.failed,Toast.LENGTH_SHORT).show()
+                }
             },
             enabled = orgId.length in 6..64,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.apply))
-        }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Information{ Text(text = stringResource(R.string.get_specific_id_after_set_org_id)) }
-    }
-}
-
-@SuppressLint("NewApi")
-@Composable
-private fun SpecificID() {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
-        val specificId = dpm.enrollmentSpecificId
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.enrollment_specific_id), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        if(specificId != "") {
-            SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState())) { Text(specificId) }
-            CopyTextButton(R.string.copy, specificId)
-        }else{
-            Text(stringResource(R.string.require_set_org_id))
         }
     }
 }

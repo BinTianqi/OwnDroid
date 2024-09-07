@@ -80,7 +80,6 @@
     <string name="es_active_per_user">Active(per-user)</string>
     <string name="activated_device_admin">Active device admins: %1$s</string>
     <string name="enrollment_specific_id">Enrollment specific ID</string>
-    <string name="require_set_org_id">Require organization ID</string>
     <string name="org_name">Organization name</string>
     <string name="disable_account_management">Disable account management</string>
     <string name="account_types_are">Account types: </string>
@@ -248,7 +247,6 @@
     <string name="log_file_size_is">Log file size: %1$s</string>
     <string name="delete_logs">Delete logs</string>
     <string name="export_logs">Export logs</string>
-    <string name="retrieve">Retrieve</string>
     <string name="wifi_auth_keypair">WiFi keypair</string>
     <string name="keypair">Keypair</string>
     <string name="override_apn_settings">APN settings</string>
@@ -297,7 +295,6 @@
     <string name="clear_cross_profile_filters">Clear all filters</string>
     <string name="org_id">Organization ID</string>
     <string name="length_6_to_64">The length should be between 6~64 characters</string>
-    <string name="get_specific_id_after_set_org_id">You can get device specific ID after set this. </string>
     <string name="delete_work_profile">Delete work profile</string>
 
     <!--AppManager-->
@@ -537,8 +534,6 @@
     <string name="password_quality_biometrics_weak">Biometrics (Weak)</string>
     <string name="password_quality_numeric_complex">Numeric complex (No repeating characters)</string>
     <string name="required_password_quality">Required password quality</string>
-    <string name="password_complexity_instead_password_quality">Set password complexity will disable password quality settings. </string>
-    <string name="password_quality_deprecated_desc">Deprecated. Use "Required password complexity" instead. </string>
     <string name="activate_reset_password_token_here">Activate reset password token here. </string>
 
     <!--Settings&About-->

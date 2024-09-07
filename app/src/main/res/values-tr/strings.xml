@@ -79,7 +79,6 @@
     <string name="es_active_per_user">Aktif(Kullanıcı Başına)</string>
     <string name="activated_device_admin">Aktif Cihaz Yöneticileri: %1$s</string>
     <string name="enrollment_specific_id">Kayıt Özel Kimliği</string>
-    <string name="require_set_org_id">Organizasyon Kimliği Gerekli</string>
     <string name="org_name">Organizasyon Adı</string>
     <string name="disable_account_management">Hesap Yönetimini Devre Dışı Bırak</string>
     <string name="account_types_are">Hesap Türleri: </string>
@@ -244,7 +243,6 @@
     <string name="log_file_size_is">Log file size: %1$s</string> <!--TODO-->
     <string name="delete_logs">Delete logs</string> <!--TODO-->
     <string name="export_logs">Export logs</string> <!--TODO-->
-    <string name="retrieve">Geri al</string>
     <string name="wifi_auth_keypair">WiFi anahtar çifti</string>
     <string name="keypair">Anahtar çifti</string>
     <string name="override_apn_settings">APN ayarlarını geçersiz kıl</string>
@@ -290,7 +288,6 @@
     <string name="clear_cross_profile_filters">Tüm filtreleri temizle</string>
     <string name="org_id">Kuruluş Kimliği</string>
     <string name="length_6_to_64">Uzunluk 6 ile 64 karakter arasında olmalıdır</string>
-    <string name="get_specific_id_after_set_org_id">Bunu ayarladıktan sonra cihaz spesifik Kimlik alabilirsiniz. </string>
     <string name="delete_work_profile">Delete work profile</string> <!--TODO-->
 
     <!--AppManager-->
@@ -532,8 +529,6 @@
     <string name="password_quality_biometrics_weak">Biyometrik (Zayıf)</string>
     <string name="password_quality_numeric_complex">Sayısal karmaşık (Tekrar eden karakter yok)</string>
     <string name="required_password_quality">Gereken şifre kalitesi</string>
-    <string name="password_complexity_instead_password_quality">Şifre karmaşıklığı ayarlamak şifre kalitesi ayarlarını devre dışı bırakacaktır.</string>
-    <string name="password_quality_deprecated_desc">Kullanım dışı. Bunun yerine "Gereken şifre karmaşıklığı" kullanın.</string>
     <string name="activate_reset_password_token_here">Şifre sıfırlama jetonunu burada etkinleştirin.</string>
 
     <!--Settings&About-->
