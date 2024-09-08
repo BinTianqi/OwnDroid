@@ -17,9 +17,6 @@ class AutomationReceiver: BroadcastReceiver() {
 fun handleTask(context: Context, intent: Intent): String {
     val sharedPrefs = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     val key = sharedPrefs.getString("automation_key", "") ?: ""
-    if(key.length < 6) {
-        return "Key length must longer than 6"
-    }
     if(key != intent.getStringExtra("key")) {
         return "Wrong key"
     }
