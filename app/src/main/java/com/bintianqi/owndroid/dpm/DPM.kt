@@ -183,7 +183,7 @@ val dhizukuErrorStatus = MutableStateFlow(0)
 fun Context.resetDevicePolicy() {
     val dpm = getDPM()
     val receiver = getReceiver()
-    RestrictionData.getAllRestrictions(this).forEach {
+    RestrictionData.getAllRestrictions().forEach {
         dpm.clearUserRestriction(receiver, it)
     }
     dpm.accountTypesWithManagementDisabled?.forEach {

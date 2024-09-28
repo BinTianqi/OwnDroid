@@ -34,7 +34,7 @@ fun uriToStream(
     operation: (stream: InputStream)->Unit
 ){
     if(uri!=null){
-        try{
+        try {
             val stream = context.contentResolver.openInputStream(uri)
             if(stream != null) { operation(stream) }
             stream?.close()
@@ -42,26 +42,6 @@ fun uriToStream(
         catch(e: FileNotFoundException) { Toast.makeText(context, R.string.file_not_exist, Toast.LENGTH_SHORT).show() }
         catch(e: IOException) { Toast.makeText(context, R.string.io_exception, Toast.LENGTH_SHORT).show() }
     }
-}
-
-fun List<Any>.toText():String{
-    var output = ""
-    var isFirst = true
-    for(each in listIterator()){
-        if(isFirst) { isFirst = false } else { output+="\n" }
-        output+=each
-    }
-    return output
-}
-
-fun Set<Any>.toText(): String{
-    var output = ""
-    var isFirst = true
-    for(each in iterator()){
-        if(isFirst) { isFirst = false } else { output+="\n" }
-        output += each
-    }
-    return output
 }
 
 fun MutableList<Int>.toggle(status: Boolean, element: Int) {

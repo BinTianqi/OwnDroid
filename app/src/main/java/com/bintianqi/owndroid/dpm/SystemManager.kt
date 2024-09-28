@@ -110,7 +110,6 @@ import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.getFile
 import com.bintianqi.owndroid.prepareForNotification
 import com.bintianqi.owndroid.selectedPackage
-import com.bintianqi.owndroid.toText
 import com.bintianqi.owndroid.toggle
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CheckBoxItem
@@ -1115,7 +1114,7 @@ fun FactoryResetProtection() {
                 CheckBoxItem(R.string.enable_frp, enabled, { enabled = it })
                 Text(stringResource(R.string.account_list_is))
                 Text(
-                    text = if(accountList.isEmpty()) stringResource(R.string.none) else accountList.toText(),
+                    text = if(accountList.isEmpty()) stringResource(R.string.none) else accountList.joinToString(separator = "\n"),
                     modifier = Modifier.animateContentSize()
                 )
                 OutlinedTextField(

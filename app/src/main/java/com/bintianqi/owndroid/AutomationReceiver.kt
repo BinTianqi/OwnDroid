@@ -16,8 +16,8 @@ class AutomationReceiver: BroadcastReceiver() {
 @SuppressLint("NewApi")
 fun handleTask(context: Context, intent: Intent): String {
     val sharedPrefs = context.getSharedPreferences("data", Context.MODE_PRIVATE)
-    val key = sharedPrefs.getString("automation_key", "") ?: ""
-    if(key != intent.getStringExtra("key")) {
+    val key = sharedPrefs.getString("automation_key", "")
+    if(key == null || key != intent.getStringExtra("key")) {
         return "Wrong key"
     }
     val operation = intent.getStringExtra("operation")

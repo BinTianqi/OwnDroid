@@ -104,7 +104,6 @@ import com.bintianqi.owndroid.exportFile
 import com.bintianqi.owndroid.exportFilePath
 import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.selectedPackage
-import com.bintianqi.owndroid.toText
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.RadioButtonItem
@@ -332,7 +331,7 @@ private fun WifiSsidPolicy() {
                     Spacer(Modifier.padding(vertical = 5.dp))
                     Text(stringResource(R.string.ssid_list_is))
                     SelectionContainer(modifier = Modifier.animateContentSize().horizontalScroll(rememberScrollState())) {
-                        Text(if(ssidList.isEmpty()) stringResource(R.string.none) else ssidList.toText())
+                        Text(if(ssidList.isEmpty()) stringResource(R.string.none) else ssidList.joinToString(separator = "\n"))
                     }
                 }
                 Spacer(Modifier.padding(vertical = 5.dp))

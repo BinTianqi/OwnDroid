@@ -559,9 +559,13 @@ private fun SupportMsg() {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val focusMgr = LocalFocusManager.current
-    var shortMsg by remember { mutableStateOf(dpm.getShortSupportMessage(receiver)?.toString() ?: "") }
-    var longMsg by remember { mutableStateOf(dpm.getLongSupportMessage(receiver)?.toString() ?: "") }
+    var shortMsg by remember { mutableStateOf("") }
+    var longMsg by remember { mutableStateOf("") }
+    val refreshMsg = {
+        shortMsg = dpm.getShortSupportMessage(receiver)?.toString() ?: ""
+        longMsg = dpm.getLongSupportMessage(receiver)?.toString() ?: ""
+    }
+    LaunchedEffect(Unit) { refreshMsg() }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.support_msg), style = typography.headlineLarge)
@@ -570,45 +574,59 @@ private fun SupportMsg() {
             value = shortMsg,
             label = { Text(stringResource(R.string.short_support_msg)) },
             onValueChange = { shortMsg = it },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp)
         )
-        Spacer(Modifier.padding(vertical = 2.dp))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Button(
+                onClick = {
+                    dpm.setShortSupportMessage(receiver, shortMsg)
+                    refreshMsg()
+                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier.fillMaxWidth(0.49F)
+            ) {
+                Text(text = stringResource(R.string.apply))
+            }
+            Button(
+                onClick = {
+                    dpm.setShortSupportMessage(receiver, null)
+                    refreshMsg()
+                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier.fillMaxWidth(0.96F)
+            ) {
+                Text(text = stringResource(R.string.reset))
+            }
+        }
+        Spacer(Modifier.padding(vertical = 8.dp))
         OutlinedTextField(
             value = longMsg,
             label = { Text(stringResource(R.string.long_support_msg)) },
             onValueChange = { longMsg = it },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp)
         )
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = {
-                focusMgr.clearFocus()
-                dpm.setShortSupportMessage(receiver, shortMsg)
-                dpm.setLongSupportMessage(receiver, longMsg)
-                shortMsg = dpm.getShortSupportMessage(receiver)?.toString() ?: ""
-                longMsg = dpm.getLongSupportMessage(receiver)?.toString() ?: ""
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = stringResource(R.string.apply))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Button(
+                onClick = {
+                    dpm.setLongSupportMessage(receiver, longMsg)
+                    refreshMsg()
+                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier.fillMaxWidth(0.49F)
+            ) {
+                Text(text = stringResource(R.string.apply))
+            }
+            Button(
+                onClick = {
+                    dpm.setLongSupportMessage(receiver, null)
+                    refreshMsg()
+                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier.fillMaxWidth(0.96F)
+            ) {
+                Text(text = stringResource(R.string.reset))
+            }
         }
-        Spacer(Modifier.padding(vertical = 1.dp))
-        Button(
-            onClick = {
-                focusMgr.clearFocus()
-                dpm.setShortSupportMessage(receiver, null)
-                dpm.setLongSupportMessage(receiver, null)
-                shortMsg = dpm.getShortSupportMessage(receiver)?.toString() ?: ""
-                longMsg = dpm.getLongSupportMessage(receiver)?.toString() ?: ""
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = stringResource(R.string.reset))
-        }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Information{ Text(text = stringResource(R.string.support_msg_desc)) }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }

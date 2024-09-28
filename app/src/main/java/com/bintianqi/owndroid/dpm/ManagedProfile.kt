@@ -12,7 +12,6 @@ import android.app.admin.DevicePolicyManager.PERSONAL_APPS_NOT_SUSPENDED
 import android.app.admin.DevicePolicyManager.PERSONAL_APPS_SUSPENDED_PROFILE_TIMEOUT
 import android.app.admin.DevicePolicyManager.WIPE_EUICC
 import android.app.admin.DevicePolicyManager.WIPE_EXTERNAL_STORAGE
-import android.app.admin.DevicePolicyManager.WIPE_SILENTLY
 import android.content.*
 import android.os.Binder
 import android.os.Build.VERSION

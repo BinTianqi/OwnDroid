@@ -18,6 +18,7 @@ import android.content.pm.PackageInstaller.STATUS_FAILURE_TIMEOUT
 import android.content.pm.PackageInstaller.STATUS_PENDING_USER_ACTION
 import android.content.pm.PackageInstaller.STATUS_SUCCESS
 import android.os.Build.VERSION
+import android.os.PersistableBundle
 import android.util.Log
 import android.widget.Toast
 import com.bintianqi.owndroid.dpm.getDPM
@@ -67,6 +68,13 @@ class Receiver : DeviceAdminReceiver() {
         if(VERSION.SDK_INT >= 24) {
             handleSecurityLogs(context)
         }
+    }
+
+    override fun onTransferOwnershipComplete(context: Context, bundle: PersistableBundle?) {
+        super.onTransferOwnershipComplete(context, bundle)
+        val sp = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+        sp.edit().putBoolean("dhizuku", false).apply()
+        context.toggleInstallAppActivity()
     }
 }
 
