@@ -63,8 +63,8 @@
     <string name="dhizuku_will_be_deactivated">Dhizuku将被停用</string>
     <string name="activate_device_admin">激活Device admin</string>
     <string name="device_info">设备信息</string>
-    <string name="support_device_id_attestation">支持设备ID认证：</string>
-    <string name="support_unique_device_attestation">支持唯一设备认证：</string>
+    <string name="support_device_id_attestation">支持设备ID认证：%1$s</string>
+    <string name="support_unique_device_attestation">支持唯一设备认证：%1$s</string>
     <string name="is_device_financed">Financed device: %1$s</string>
     <string name="dpmrh">设备策略管理器角色(DPMRH)：%1$s</string>
     <string name="es_inactive">未使用</string>
@@ -76,7 +76,7 @@
     <string name="enrollment_specific_id">设备注册专用ID</string>
     <string name="org_name">组织名称</string>
     <string name="disable_account_management">禁用账号管理</string>
-    <string name="account_types_are">账号类型：</string>
+    <string name="account_type">账号类型</string>
     <string name="transfer_ownership">转移所有权</string>
     <string name="transfer_ownership_desc">把Device owner或Profile owner权限转移到另一个应用</string>
     <string name="target_package_name">目标包名</string>
@@ -84,7 +84,6 @@
     <string name="device_owner_lock_screen_info">锁屏提示信息</string>
     <string name="support_msg">提供支持的消息</string>
     <string name="short_support_msg">提供支持的短消息</string>
-    <string name="support_msg_desc">如果你禁用了某个功能，用户尝试使用这个功能时会看见这个消息（可多行）</string>
     <string name="long_support_msg">提供支持的长消息</string>
     <string name="transfer">转移</string>
     <string name="activate_device_admin_here">在这里激活Device admin</string>
@@ -181,7 +180,7 @@
     <string name="wipe_silently">静默清除</string>
     <string name="wipe_data_warning">你的设备上的所有数据将会被清除</string>
     <string name="wipe_work_profile_warning">你的工作资料将会被删除</string>
-    <string name="encrypt_status_is">加密状态：</string>
+    <string name="encrypt_status_is">加密状态：%1$s</string>
     <string name="frp_policy">FRP策略</string>
     <string name="factory_reset_protection_policy">恢复出厂设置保护策略</string>
     <string name="frp_policy_not_supported">这个设备不支持恢复出厂设置保护策略</string>
@@ -268,6 +267,10 @@
     <string name="work_profile_owner">Profile owner（工作资料）</string>
     <string name="work_profile_activated">工作资料已激活</string>
     <string name="create_work_profile">创建工作资料</string>
+    <string name="offline_provisioning">离线模式</string>
+    <string name="migrate_account">迁移账号</string>
+    <string name="account_name">账号名</string>
+    <string name="keep_account">保留账号</string>
     <string name="is_org_owned_profile">由组织拥有的工作资料：%1$s</string>
     <string name="org_owned_work_profile">组织拥有的工作资料</string>
     <string name="skip_encryption">跳过加密</string>
@@ -455,7 +458,6 @@
     <string name="affiliation_id">附属用户ID</string>
     <string name="include_empty_string">有空字符串</string>
     <string name="change_user_icon">更换用户头像</string>
-    <string name="pick_a_square_image">尽量选择正方形的图片，以免产生问题</string>
     <string name="file_picker_instead_gallery">使用文件选择器而不是相册</string>
     <string name="select_picture" tools:ignore="TypographyEllipsis">选择图片...</string>
     <string name="unknown_result">未知结果（失败）</string>

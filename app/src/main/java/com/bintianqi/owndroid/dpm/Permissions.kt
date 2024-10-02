@@ -454,14 +454,14 @@ fun DeviceInfo() {
         )
         if(VERSION.SDK_INT >= 23) { encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY] = stringResource(R.string.es_active_default_key) }
         if(VERSION.SDK_INT >= 24) { encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER] = stringResource(R.string.es_active_per_user) }
-        Text(stringResource(R.string.encrypt_status_is)+encryptionStatus[dpm.storageEncryptionStatus])
+        Text(stringResource(R.string.encrypt_status_is, encryptionStatus[dpm.storageEncryptionStatus] ?: ""))
         Spacer(Modifier.padding(vertical = 2.dp))
         if(VERSION.SDK_INT >= 28) {
-            Text(stringResource(R.string.support_device_id_attestation) + dpm.isDeviceIdAttestationSupported)
+            Text(stringResource(R.string.support_device_id_attestation, dpm.isDeviceIdAttestationSupported))
         }
         Spacer(Modifier.padding(vertical = 2.dp))
         if (VERSION.SDK_INT >= 30) {
-            Text(stringResource(R.string.support_unique_device_attestation) + dpm.isUniqueDeviceAttestationSupported)
+            Text(stringResource(R.string.support_unique_device_attestation, dpm.isUniqueDeviceAttestationSupported))
         }
         Spacer(Modifier.padding(vertical = 2.dp))
         val adminList = dpm.activeAdmins
@@ -658,7 +658,7 @@ private fun DisableAccountManagement() {
         OutlinedTextField(
             value = inputText,
             onValueChange = { inputText = it },
-            label = { Text(stringResource(R.string.account_types_are)) },
+            label = { Text(stringResource(R.string.account_type)) },
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() })

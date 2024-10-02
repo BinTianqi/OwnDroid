@@ -41,7 +41,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,9 +65,9 @@ import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.fileUriFlow
 import com.bintianqi.owndroid.getFile
+import com.bintianqi.owndroid.toggle
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CheckBoxItem
-import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.TopBar
 import com.bintianqi.owndroid.uriToStream
@@ -290,6 +289,7 @@ private fun CreateUser() {
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var userName by remember { mutableStateOf("") }
+    val flags = remember { mutableStateListOf<Int>() }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.create_user), style = typography.headlineLarge)
@@ -303,31 +303,29 @@ private fun CreateUser() {
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() })
         )
         Spacer(Modifier.padding(vertical = 5.dp))
-        var selectedFlag by remember { mutableIntStateOf(0) }
-        RadioButtonItem(R.string.none, selectedFlag == 0, { selectedFlag = 0 })
-        RadioButtonItem(
+        CheckBoxItem(
             R.string.create_user_skip_wizard,
-            selectedFlag == DevicePolicyManager.SKIP_SETUP_WIZARD,
-            { selectedFlag = DevicePolicyManager.SKIP_SETUP_WIZARD }
+            DevicePolicyManager.SKIP_SETUP_WIZARD in flags,
+            { flags.toggle(it, DevicePolicyManager.SKIP_SETUP_WIZARD) }
         )
         if(VERSION.SDK_INT >= 28) {
-            RadioButtonItem(
+            CheckBoxItem(
                 R.string.create_user_ephemeral_user,
-                selectedFlag == DevicePolicyManager.MAKE_USER_EPHEMERAL,
-                { selectedFlag = DevicePolicyManager.MAKE_USER_EPHEMERAL }
+                DevicePolicyManager.MAKE_USER_EPHEMERAL in flags,
+                { flags.toggle(it, DevicePolicyManager.MAKE_USER_EPHEMERAL) }
             )
-            RadioButtonItem(
+            CheckBoxItem(
                 R.string.create_user_enable_all_system_app,
-                selectedFlag == DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED,
-                { selectedFlag = DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED }
+                DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED in flags,
+                { flags.toggle(it, DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED) }
             )
         }
         var newUserHandle: UserHandle? by remember { mutableStateOf(null) }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                newUserHandle = dpm.createAndManageUser(receiver, userName, receiver, null, selectedFlag)
                 focusMgr.clearFocus()
+                newUserHandle = dpm.createAndManageUser(receiver, userName, receiver, null, flags.sum())
                 Toast.makeText(context, if(newUserHandle!=null) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()

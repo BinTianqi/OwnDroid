@@ -68,8 +68,8 @@
     <string name="activate_device_admin_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="activate_device_owner_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="device_info">Device info</string>
-    <string name="support_device_id_attestation">Support Device ID attestation: </string>
-    <string name="support_unique_device_attestation">Support unique device attestation: </string>
+    <string name="support_device_id_attestation">Support Device ID attestation: %1$s</string>
+    <string name="support_unique_device_attestation">Support unique device attestation: %1$s</string>
     <string name="is_device_financed">Financed device: %1$s</string>
     <string name="dpmrh">Device policy management role holder: %1$s</string>
     <!--es: encryption status-->
@@ -82,7 +82,7 @@
     <string name="enrollment_specific_id">Enrollment specific ID</string>
     <string name="org_name">Organization name</string>
     <string name="disable_account_management">Disable account management</string>
-    <string name="account_types_are">Account types: </string>
+    <string name="account_type">Account type</string>
     <string name="transfer_ownership">Transfer Ownership</string>
     <string name="transfer_ownership_desc">Transfer device owner or profile owner privilege to another app.</string>
     <string name="target_package_name">Target package name</string>
@@ -90,7 +90,6 @@
     <string name="device_owner_lock_screen_info">Lockscreen info</string>
     <string name="support_msg">Support Message</string>
     <string name="short_support_msg">Short message</string>
-    <string name="support_msg_desc">When users try to use functions disabled by this app, the support message will show. (Multi-line allowed) </string>
     <string name="long_support_msg">Long message</string>
     <string name="transfer">Transfer</string>
     <string name="activate_device_admin_here">Activate Device admin here.</string>
@@ -189,12 +188,12 @@
     <string name="wipe_silently">Wipe silently</string>
     <string name="wipe_data_warning">All data on your device will be ERASED</string>
     <string name="wipe_work_profile_warning">Your work profile will be DELETED</string>
-    <string name="encrypt_status_is">Encrypt status: </string>
+    <string name="encrypt_status_is">Encrypt status: %1$s</string>
     <string name="frp_policy">FRP policy</string>
     <string name="factory_reset_protection_policy">Factory reset protection policy</string>
     <string name="frp_policy_not_supported">FRP policy is not supported on this device</string>
     <string name="enable_frp">Enable FRP</string>
-    <string name="account_list_is">Account list: </string>
+    <string name="account_list_is">"Account list: "</string>
 
     <!--SystemUpdatePolicy-->
     <string name="is_security_patch">Security patch: %1$s</string>
@@ -211,7 +210,7 @@
     <string name="install_system_update">Install system update</string>
     <string name="select_ota_package" tools:ignore="TypographyEllipsis">Select OTA package...</string>
     <string name="start_install_system_update">Start installing system update</string>
-    <string name="install_system_update_failed">Install system update failed: </string>
+    <string name="install_system_update_failed">"Install system update failed: "</string>
     <string name="battery_low">Battery is low</string>
     <string name="update_file_invalid">Update file is invalid</string>
     <string name="incorrect_os_ver">Incorrect OS version</string>
@@ -225,7 +224,7 @@
     <string name="preferential_network_service">Preferential network service</string>
     <string name="lockdown_admin_configured_network">Lockdown admin configured network</string>
     <string name="wifi_ssid_policy">WiFi SSID policy</string>
-    <string name="ssid_list_is">SSID list: </string>
+    <string name="ssid_list_is">SSID list:</string>
     <string name="cannot_be_empty">Cannot be empty</string>
     <string name="already_exist">Already exist</string>
     <string name="private_dns">Private DNS</string>
@@ -277,6 +276,10 @@
     <string name="work_profile_owner">Profile owner (Work profile)</string>
     <string name="work_profile_activated">Work profile activated</string>
     <string name="create_work_profile">Create work profile</string>
+    <string name="offline_provisioning">Offline mode</string>
+    <string name="migrate_account">Migrate account</string>
+    <string name="account_name">Account name</string>
+    <string name="keep_account">Keep account</string>
     <string name="is_org_owned_profile">Organization owned work profile: %1$s</string>
     <string name="org_owned_work_profile">Organization work profile</string>
     <string name="activate_org_profile_command" tools:ignore="TypographyDashes" translatable="false">
@@ -319,7 +322,7 @@
     <!--ucd: user control disabled-->
     <string name="ucd">Disable user control</string>
     <string name="ucd_desc">If you set this, you cannot clear these apps\' storage or force stop them. </string>
-    <string name="app_list_is">App list: </string>
+    <string name="app_list_is">App list:</string>
     <string name="clear_list">Clear list</string>
     <string name="permission_manage">Permission manage</string>
     <string name="cross_profile_package">Cross profile package</string>
@@ -468,7 +471,6 @@
     <string name="affiliation_id">Affiliation ID</string>
     <string name="include_empty_string">Include empty string</string>
     <string name="change_user_icon">Change user icon</string>
-    <string name="pick_a_square_image">You should pick a square image</string>
     <string name="file_picker_instead_gallery">Use file picker instead of gallery</string>
     <string name="select_picture" tools:ignore="TypographyEllipsis">Select image...</string>
     <string name="unknown_result">Unknown result(may failed)</string>

@@ -49,6 +49,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
@@ -131,7 +132,8 @@ fun ApplicationManage(navCtrl:NavHostController, dialogStatus: MutableIntState) 
                         singleLine = true
                     )
                 },
-                navigationIcon = { NavIcon { navCtrl.navigateUp() } }
+                navigationIcon = { NavIcon { navCtrl.navigateUp() } },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.background)
             )
         }
     ) {  paddingValues->

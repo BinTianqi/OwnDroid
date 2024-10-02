@@ -1112,7 +1112,7 @@ fun FactoryResetProtection() {
         AnimatedVisibility(usePolicy) {
             Column {
                 CheckBoxItem(R.string.enable_frp, enabled, { enabled = it })
-                Text(stringResource(R.string.account_list_is))
+                Text(stringResource(R.string.account_list_is) + "\n")
                 Text(
                     text = if(accountList.isEmpty()) stringResource(R.string.none) else accountList.joinToString(separator = "\n"),
                     modifier = Modifier.animateContentSize()

@@ -546,7 +546,11 @@ private fun MaxFailedPasswordForWipe() {
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
-            onClick = { focusMgr.clearFocus(); dpm.setMaximumFailedPasswordsForWipe(receiver,inputContent.toInt()) },
+            onClick = {
+                focusMgr.clearFocus()
+                dpm.setMaximumFailedPasswordsForWipe(receiver, inputContent.toInt())
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+            },
             modifier = Modifier.fillMaxWidth(),
             enabled = inputContent != ""
         ) {

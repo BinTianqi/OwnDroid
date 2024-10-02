@@ -4,9 +4,7 @@
 
 ### Description
 
-Use Device admin and Device owner privilege to take full control of your device. 
-
-This app is renamed to "OwnDroid" from "Android Owner".
+Use Device admin and Device owner privilege to take full control of your device.
 
 ### Docs
 

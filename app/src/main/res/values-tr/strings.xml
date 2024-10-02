@@ -66,8 +66,8 @@
     <string name="reset_device_policy">Reset device policy</string> <!--TODO-->
     <string name="activate_device_admin">Cihaz Yöneticisini Etkinleştir</string>
     <string name="device_info">Cihaz Bilgisi</string>
-    <string name="support_device_id_attestation">Cihaz Kimliği Doğrulama Desteği: </string>
-    <string name="support_unique_device_attestation">Benzersiz Cihaz Doğrulama Desteği: </string>
+    <string name="support_device_id_attestation">Cihaz Kimliği Doğrulama Desteği: %1$s</string>
+    <string name="support_unique_device_attestation">Benzersiz Cihaz Doğrulama Desteği: %1$s</string>
     <string name="is_device_financed">Finansmanlı Cihaz: %1$s</string>
     <string name="dpmrh">Cihaz Politikası Yönetim Rolü: %1$s</string>
 
@@ -81,7 +81,7 @@
     <string name="enrollment_specific_id">Kayıt Özel Kimliği</string>
     <string name="org_name">Organizasyon Adı</string>
     <string name="disable_account_management">Hesap Yönetimini Devre Dışı Bırak</string>
-    <string name="account_types_are">Hesap Türleri: </string>
+    <string name="account_type">Hesap Türleri</string>
     <string name="transfer_ownership">Sahipliği Devret</string>
     <string name="transfer_ownership_desc">Cihaz sahibi veya profil sahibi ayrıcalığını başka bir uygulamaya devredin.</string>
     <string name="target_package_name">Hedef Paket Adı</string>
@@ -89,7 +89,6 @@
     <string name="device_owner_lock_screen_info">Ekran Kilidi Bilgisi</string>
     <string name="support_msg">Destek Mesajı</string>
     <string name="short_support_msg">Kısa Mesaj</string>
-    <string name="support_msg_desc">Bu uygulama tarafından devre dışı bırakılan işlevleri kullanmaya çalışan kullanıcılara destek mesajı gösterilir. (Çok satırlı izin verilir) </string>
     <string name="long_support_msg">Uzun Mesaj</string>
     <string name="transfer">Transfer</string>
     <string name="activate_device_admin_here">Cihaz Yöneticisini Burada Etkinleştir.</string>
@@ -186,12 +185,12 @@
     <string name="wipe_silently">Sessizce sil</string>
     <string name="wipe_data_warning">All data on your device will be ERASED</string> <!--TODO-->
     <string name="wipe_work_profile_warning">Your work profile will be DELETED</string> <!--TODO-->
-    <string name="encrypt_status_is">Şifreleme durumu: </string>
+    <string name="encrypt_status_is">Şifreleme durumu: %1$s</string>
     <string name="frp_policy">FRP politikası</string>
     <string name="factory_reset_protection_policy">Fabrika ayarlarına sıfırlama koruma politikası</string>
     <string name="frp_policy_not_supported">FRP politikası bu cihazda desteklenmiyor</string>
     <string name="enable_frp">FRP\'yi etkinleştir</string>
-    <string name="account_list_is">Hesap listesi: </string>
+    <string name="account_list_is">"Hesap listesi: "</string>
 
     <!--SystemUpdatePolicy-->
     <string name="is_security_patch">Güvenlik yaması: %1$s</string>
@@ -207,7 +206,7 @@
     <string name="install_system_update">Sistem güncellemesini yükle</string>
     <string name="select_ota_package" tools:ignore="TypographyEllipsis">OTA paketini seç...</string>
     <string name="start_install_system_update">Sistem güncellemesi yüklemeye başla</string>
-    <string name="install_system_update_failed">Sistem güncellemesi yükleme başarısız: </string>
+    <string name="install_system_update_failed">"Sistem güncellemesi yükleme başarısız: "</string>
     <string name="battery_low">Pil zayıf</string>
     <string name="update_file_invalid">Güncelleme dosyası geçersiz</string>
     <string name="incorrect_os_ver">Yanlış işletim sistemi sürümü</string>
@@ -221,7 +220,7 @@
     <string name="preferential_network_service">Tercihli ağ hizmeti</string>
     <string name="lockdown_admin_configured_network">Yönetici tarafından yapılandırılmış ağı kilitle</string>
     <string name="wifi_ssid_policy">WiFi SSID politikası</string>
-    <string name="ssid_list_is">SSID listesi: </string>
+    <string name="ssid_list_is">SSID listesi:</string>
     <string name="cannot_be_empty">Boş olamaz</string>
     <string name="already_exist">Zaten mevcut</string>
     <string name="private_dns">Özel DNS</string>
@@ -273,6 +272,10 @@
     <string name="work_profile_owner">Profil sahibi (İş profili)</string>
     <string name="work_profile_activated">İş profili etkinleştirildi</string>
     <string name="create_work_profile">İş profili oluştur</string>
+    <string name="offline_provisioning">Offline mode</string> <!--TODO-->
+    <string name="migrate_account">Migrate account</string> <!--TODO-->
+    <string name="account_name">Account name</string> <!--TODO-->
+    <string name="keep_account">Keep account</string> <!--TODO-->
     <string name="is_org_owned_profile">Kuruluşa ait iş profili: %1$s</string>
     <string name="org_owned_work_profile">Kuruluş iş profili</string>
     <string name="skip_encryption">Şifrelemeyi atla</string>
@@ -313,7 +316,7 @@
     <!--ucd: user control disabled-->
     <string name="ucd">Kullanıcı kontrolünü devre dışı bırak</string>
     <string name="ucd_desc">Bunu ayarlarsanız, bu uygulamaların depolama alanını temizleyemez veya zorla durduramazsınız. </string>
-    <string name="app_list_is">Uygulama listesi: </string>
+    <string name="app_list_is">Uygulama listesi:</string>
     <string name="clear_list">Listeyi temizle</string>
     <string name="permission_manage">İzin yönetimi</string>
     <string name="cross_profile_package">Profil geçişli paket</string>
@@ -463,7 +466,6 @@
     <string name="affiliation_id">Bağlılık ID</string>
     <string name="include_empty_string">Boş string dahil et</string>
     <string name="change_user_icon">Kullanıcı simgesini değiştir</string>
-    <string name="pick_a_square_image">Kare bir resim seçmelisiniz</string>
     <string name="file_picker_instead_gallery">Galeri yerine dosya seçici kullan</string>
     <string name="select_picture" tools:ignore="TypographyEllipsis">Resim seç...</string>
     <string name="unknown_result">Bilinmeyen sonuç (başarısız olabilir)</string>
