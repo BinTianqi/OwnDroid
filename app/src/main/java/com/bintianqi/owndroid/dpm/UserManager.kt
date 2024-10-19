@@ -69,6 +69,7 @@ import com.bintianqi.owndroid.toggle
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.SubPageItem
+import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.TopBar
 import com.bintianqi.owndroid.uriToStream
 
@@ -99,6 +100,7 @@ fun UserManage(navCtrl: NavHostController) {
         ) {
             composable(route = "Home") { Home(localNavCtrl, scrollState) }
             composable(route = "UserInfo") { CurrentUserInfo() }
+            composable(route = "Options") { Options() }
             composable(route = "UserOperation") { UserOperation() }
             composable(route = "CreateUser") { CreateUser() }
             composable(route = "EditUsername") { Username() }
@@ -121,6 +123,9 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState) {
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 16.dp)
         )
         SubPageItem(R.string.user_info, "", R.drawable.person_fill0) { navCtrl.navigate("UserInfo") }
+        if(deviceOwner && VERSION.SDK_INT >= 28) {
+            SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Options") }
+        }
         if(deviceOwner) {
             SubPageItem(R.string.user_operation, "", R.drawable.sync_alt_fill0) { navCtrl.navigate("UserOperation") }
         }
@@ -141,6 +146,18 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState) {
         }
         Spacer(Modifier.padding(vertical = 30.dp))
         LaunchedEffect(Unit) { fileUriFlow.value = Uri.parse("") }
+    }
+}
+
+@Composable
+private fun Options() {
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        if(VERSION.SDK_INT >= 28) {
+            SwitchItem(R.string.enable_logout, "", null, { dpm.isLogoutEnabled }, { dpm.setLogoutEnabled(receiver, it) })
+        }
     }
 }
 

@@ -440,6 +440,7 @@
 
     <!--UserManage-->
     <string name="user_manager">User manager</string>
+    <string name="enable_logout">Enable logout</string>
     <string name="edit_username">Edit username</string>
     <string name="start_user_session_msg">Start user session message</string>
     <string name="end_user_session_msg">End user session message</string>
@@ -488,8 +489,7 @@
     <string name="pwd_expiration_timeout">Password expiration timeout</string>
     <string name="max_time_to_lock">Screen timeout</string>
     <string name="required_strong_auth_timeout">Required strong auth timeout</string>
-    <string name="zero_means_no_control">A value of 0 means the admin is not participating in controlling the timeout</string>
-    <string name="max_time_to_lock_desc">Enter 0 to allow user decision, unit: millisecond</string>
+    <string name="zero_means_no_restriction">0 means no restriction</string>
     <string name="pwd_history">Password history length</string>
     <string name="pwd_history_desc">Historical passwords within the specified range cannot be set by user</string>
     <string name="password_complexity_none">None (No password allowed)</string>

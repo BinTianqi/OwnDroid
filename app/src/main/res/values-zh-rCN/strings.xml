@@ -29,7 +29,7 @@
     <string name="custom">自定义</string>
     <string name="unknown">未知</string>
     <string name="reset">重置</string>
-    <string name="time_unit_ms">时间(ms)</string>
+    <string name="time_unit_ms">时间（毫秒）</string>
     <string name="length">长度</string>
     <string name="none">无</string>
     <string name="no_logs">无日志</string>
@@ -427,6 +427,7 @@
 
     <!--UserManage-->
     <string name="user_manager">用户管理</string>
+    <string name="enable_logout">允许登出</string>
     <string name="edit_username">修改用户名</string>
     <string name="start_user_session_msg">用户会话开始消息</string>
     <string name="end_user_session_msg">用户会话结束消息</string>
@@ -470,13 +471,12 @@
     <string name="password_info">密码信息</string>
     <string name="reset_pwd_desc">留空以清除密码</string>
     <string name="max_pwd_fail">最大密码错误次数</string>
-    <string name="max_pwd_fail_desc">达到该限制会恢复出厂设置，0为无限制</string>
+    <string name="max_pwd_fail_desc">达到该限制会恢复出厂设置</string>
     <string name="max_pwd_fail_textfield">错误次数</string>
-    <string name="pwd_expiration_timeout">密码失效超时时间</string>
+    <string name="pwd_expiration_timeout">密码失效超时</string>
     <string name="max_time_to_lock">屏幕超时</string>
     <string name="required_strong_auth_timeout">要求强验证超时</string>
-    <string name="zero_means_no_control">值为0表示OwnDroid不参与控制超时</string>
-    <string name="max_time_to_lock_desc">超时后锁屏(毫秒)，0为由用户决定</string>
+    <string name="zero_means_no_restriction">0表示不做限制</string>
     <string name="pwd_history">密码历史长度</string>
     <string name="pwd_history_desc">用户无法设置指定历史范围内之前曾设置过的密码</string>
     <string name="password_complexity_none">无（允许不设密码）</string>

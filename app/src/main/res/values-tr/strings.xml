@@ -435,6 +435,7 @@
 
     <!--UserManage-->
     <string name="user_manager">Kullanıcı yöneticisi</string>
+    <string name="enable_logout">Enable logout</string> <!--TODO-->
     <string name="edit_username">Kullanıcı adını düzenle</string>
     <string name="start_user_session_msg">Kullanıcı oturumunu başlat mesajı</string>
     <string name="end_user_session_msg">Kullanıcı oturumunu sonlandır mesajı</string>
@@ -483,8 +484,7 @@
     <string name="pwd_expiration_timeout">Şifre geçerlilik süresi</string>
     <string name="max_time_to_lock">Ekran zaman aşımı</string>
     <string name="required_strong_auth_timeout">Gereken güçlü doğrulama zaman aşımı</string>
-    <string name="zero_means_no_control">0 değeri, yöneticinin zaman aşımını kontrol etmediği anlamına gelir</string>
-    <string name="max_time_to_lock_desc">Kullanıcı kararına izin vermek için 0 girin, birim: milisaniye</string>
+    <string name="zero_means_no_restriction">0 means no restriction</string> <!--TODO-->
     <string name="pwd_history">Şifre geçmişi uzunluğu</string>
     <string name="pwd_history_desc">Belirtilen aralıktaki geçmiş şifreler kullanıcı tarafından ayarlanamaz</string>
     <string name="password_complexity_none">Yok (Şifreye izin verilmez)</string>

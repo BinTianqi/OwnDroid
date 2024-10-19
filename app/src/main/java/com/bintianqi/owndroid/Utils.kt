@@ -39,8 +39,8 @@ fun uriToStream(
             if(stream != null) { operation(stream) }
             stream?.close()
         }
-        catch(e: FileNotFoundException) { Toast.makeText(context, R.string.file_not_exist, Toast.LENGTH_SHORT).show() }
-        catch(e: IOException) { Toast.makeText(context, R.string.io_exception, Toast.LENGTH_SHORT).show() }
+        catch(_: FileNotFoundException) { Toast.makeText(context, R.string.file_not_exist, Toast.LENGTH_SHORT).show() }
+        catch(_: IOException) { Toast.makeText(context, R.string.io_exception, Toast.LENGTH_SHORT).show() }
     }
 }
 
@@ -52,7 +52,7 @@ fun writeClipBoard(context: Context, string: String):Boolean{
     val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     try {
         clipboardManager.setPrimaryClip(ClipData.newPlainText("", string))
-    }catch(e:Exception){
+    } catch(_:Exception) {
         return false
     }
     return true
