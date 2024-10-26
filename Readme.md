@@ -6,8 +6,6 @@
 
 使用安卓的Device Admin和Device Owner特权，完全掌控你的设备。
 
-这个APP已经改名为"OwnDroid"，原名"Android Owner"
-
 ### 文档
 
 全新的OwnDroid文档：[owndroid.pages.dev](https://owndroid.pages.dev/zh_CN)

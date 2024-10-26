@@ -2,7 +2,11 @@ package com.bintianqi.owndroid
 
 import android.Manifest
 import android.app.admin.DevicePolicyManager
-import android.content.*
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build.VERSION
@@ -10,6 +14,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import com.bintianqi.owndroid.dpm.addDeviceAdmin
 import com.bintianqi.owndroid.dpm.createManagedProfile
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +22,6 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
-import java.nio.file.Files
 import java.util.Locale
 
 lateinit var getFile: ActivityResultLauncher<Intent>
@@ -31,34 +35,14 @@ fun uriToStream(
     operation: (stream: InputStream)->Unit
 ){
     if(uri!=null){
-        try{
+        try {
             val stream = context.contentResolver.openInputStream(uri)
             if(stream != null) { operation(stream) }
             stream?.close()
         }
-        catch(e: FileNotFoundException) { Toast.makeText(context, R.string.file_not_exist, Toast.LENGTH_SHORT).show() }
-        catch(e: IOException) { Toast.makeText(context, R.string.io_exception, Toast.LENGTH_SHORT).show() }
+        catch(_: FileNotFoundException) { Toast.makeText(context, R.string.file_not_exist, Toast.LENGTH_SHORT).show() }
+        catch(_: IOException) { Toast.makeText(context, R.string.io_exception, Toast.LENGTH_SHORT).show() }
     }
-}
-
-fun List<Any>.toText():String{
-    var output = ""
-    var isFirst = true
-    for(each in listIterator()){
-        if(isFirst) { isFirst = false } else { output+="\n" }
-        output+=each
-    }
-    return output
-}
-
-fun Set<Any>.toText(): String{
-    var output = ""
-    var isFirst = true
-    for(each in iterator()){
-        if(isFirst) { isFirst = false } else { output+="\n" }
-        output += each
-    }
-    return output
 }
 
 fun MutableList<Int>.toggle(status: Boolean, element: Int) {
@@ -69,19 +53,20 @@ fun writeClipBoard(context: Context, string: String):Boolean{
     val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     try {
         clipboardManager.setPrimaryClip(ClipData.newPlainText("", string))
-    }catch(e:Exception){
+    } catch(_:Exception) {
         return false
     }
     return true
 }
 
 lateinit var requestPermission: ActivityResultLauncher<String>
-lateinit var saveNetworkLogs: ActivityResultLauncher<Intent>
+lateinit var exportFile: ActivityResultLauncher<Intent>
+val exportFilePath = MutableStateFlow<String?>(null)
 
 fun registerActivityResult(context: ComponentActivity){
     getFile = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
         activityResult.data.let {
-            if(it==null){
+            if(it == null){
                 Toast.makeText(context.applicationContext, R.string.file_not_exist, Toast.LENGTH_SHORT).show()
             }else{
                 fileUriFlow.value = it.data
@@ -96,13 +81,13 @@ fun registerActivityResult(context: ComponentActivity){
         }
     }
     requestPermission = context.registerForActivityResult(ActivityResultContracts.RequestPermission()) { permissionGranted.value = it }
-    saveNetworkLogs = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+    exportFile = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val intentData = result.data ?: return@registerForActivityResult
         val uriData = intentData.data ?: return@registerForActivityResult
+        val path = exportFilePath.value ?: return@registerForActivityResult
         context.contentResolver.openOutputStream(uriData).use { outStream ->
             if(outStream != null) {
-                val logFile = context.filesDir.resolve("NetworkLogs.json")
-                logFile.inputStream().use { inStream ->
+                File(path).inputStream().use { inStream ->
                     inStream.copyTo(outStream)
                 }
                 Toast.makeText(context.applicationContext, R.string.success, Toast.LENGTH_SHORT).show()
@@ -136,4 +121,9 @@ fun formatFileSize(bytes: Long): String {
         bytes >= kb -> String.format(Locale.US, "%.2f KB", bytes / kb.toDouble())
         else -> "$bytes bytes"
     }
+}
+
+@StringRes
+fun Boolean.yesOrNo(): Int {
+    return if(this) R.string.yes else R.string.no
 }

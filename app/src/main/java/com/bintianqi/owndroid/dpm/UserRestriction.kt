@@ -1,7 +1,6 @@
 package com.bintianqi.owndroid.dpm
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Build.VERSION
 import android.os.UserManager
 import android.widget.Toast
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -143,9 +141,8 @@ private fun Connectivity() {
 
 @Composable
 fun Application() {
-    val context = LocalContext.current
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        for(applicationItem in RestrictionData.application(context)) {
+        for(applicationItem in RestrictionData.application()) {
             UserRestrictionItem(applicationItem.restriction, applicationItem.name, applicationItem.desc, applicationItem.ico)
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -174,9 +171,8 @@ private fun Media() {
 
 @Composable
 private fun Other() {
-    val context = LocalContext.current
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        for(otherItem in RestrictionData.other(context)) {
+        for(otherItem in RestrictionData.other()) {
             UserRestrictionItem(otherItem.restriction, otherItem.name, otherItem.desc, otherItem.ico)
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -255,7 +251,7 @@ object RestrictionData {
         if(VERSION.SDK_INT>=28) { list += Restriction(UserManager.DISALLOW_PRINTING, R.string.printing, "", R.drawable.print_fill0) }
         return list
     }
-    fun application(context: Context): List<Restriction>{
+    fun application(): List<Restriction>{
         val list:MutableList<Restriction> = mutableListOf()
         list += Restriction(UserManager.DISALLOW_INSTALL_APPS, R.string.install_app, "", R.drawable.android_fill0)
         if(VERSION.SDK_INT>=29) { list += Restriction(UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY, R.string.install_unknown_src_globally, "", R.drawable.android_fill0) }
@@ -293,7 +289,7 @@ object RestrictionData {
         }
         return list
     }
-    fun other(context: Context): List<Restriction>{
+    fun other(): List<Restriction>{
         val list:MutableList<Restriction> = mutableListOf()
         if(VERSION.SDK_INT>=26) { list += Restriction(UserManager.DISALLOW_AUTOFILL, R.string.autofill, "", R.drawable.password_fill0) }
         list += Restriction(UserManager.DISALLOW_CONFIG_CREDENTIALS, R.string.config_credentials, "", R.drawable.android_fill0)
@@ -316,14 +312,14 @@ object RestrictionData {
         list += Restriction(UserManager.DISALLOW_DEBUGGING_FEATURES, R.string.debug_features, "", R.drawable.adb_fill0)
         return list
     }
-    fun getAllRestrictions(context: Context): List<String> {
+    fun getAllRestrictions(): List<String> {
         val result = mutableListOf<String>()
         internet().forEach { result.add(it.restriction) }
         connectivity().forEach { result.add(it.restriction) }
         media().forEach { result.add(it.restriction) }
-        application(context).forEach { result.add(it.restriction) }
+        application().forEach { result.add(it.restriction) }
         user().forEach { result.add(it.restriction) }
-        other(context).forEach { result.add(it.restriction) }
+        other().forEach { result.add(it.restriction) }
         return result
     }
 }

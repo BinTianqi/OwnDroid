@@ -50,7 +50,7 @@
         <activity
             android:name=".ManageSpaceActivity"
             android:windowSoftInputMode="adjustResize|stateHidden"
-            android:theme="@style/Theme.OwnDroid">
+            android:theme="@style/Theme.Transparent">
         </activity>
         <activity
             android:name=".AutomationActivity"

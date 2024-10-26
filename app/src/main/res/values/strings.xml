@@ -55,6 +55,8 @@
     <string name="account">Account</string>
     <string name="warning">Warning</string>
     <string name="delete">Delete</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
@@ -68,22 +70,21 @@
     <string name="activate_device_admin_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="activate_device_owner_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="device_info">Device info</string>
-    <string name="support_device_id_attestation">Support Device ID attestation: </string>
-    <string name="support_unique_device_attestation">Support unique device attestation: </string>
-    <string name="is_device_financed">Financed device: %1$s</string>
-    <string name="dpmrh">Device policy management role holder: %1$s</string>
+    <string name="support_device_id_attestation">Support Device ID attestation</string>
+    <string name="support_unique_device_attestation">Support unique device attestation</string>
+    <string name="financed_device">Financed device</string>
+    <string name="dpmrh">Device policy management role holder</string>
     <!--es: encryption status-->
     <string name="es_inactive">Inactive</string>
     <string name="es_active">Active</string>
     <string name="es_unsupported">Unsupported</string>
     <string name="es_active_default_key">Active(default key)</string>
     <string name="es_active_per_user">Active(per-user)</string>
-    <string name="activated_device_admin">Active device admins: %1$s</string>
+    <string name="activated_device_admin">Active device admins</string>
     <string name="enrollment_specific_id">Enrollment specific ID</string>
-    <string name="require_set_org_id">Require organization ID</string>
     <string name="org_name">Organization name</string>
     <string name="disable_account_management">Disable account management</string>
-    <string name="account_types_are">Account types: </string>
+    <string name="account_type">Account type</string>
     <string name="transfer_ownership">Transfer Ownership</string>
     <string name="transfer_ownership_desc">Transfer device owner or profile owner privilege to another app.</string>
     <string name="target_package_name">Target package name</string>
@@ -91,7 +92,6 @@
     <string name="device_owner_lock_screen_info">Lockscreen info</string>
     <string name="support_msg">Support Message</string>
     <string name="short_support_msg">Short message</string>
-    <string name="support_msg_desc">When users try to use functions disabled by this app, the support message will show. (Multi-line allowed) </string>
     <string name="long_support_msg">Long message</string>
     <string name="transfer">Transfer</string>
     <string name="activate_device_admin_here">Activate Device admin here.</string>
@@ -136,7 +136,7 @@
     <string name="backup_service">Backup service</string>
     <string name="disable_bt_contact_share">Disable bluetooth contact sharing</string>
     <string name="common_criteria_mode">Common criteria mode</string>
-    <string name="usb_signal">USB signal</string>
+    <string name="disable_usb_signal">Disable USB signal</string>
     <string name="keyguard">Keyguard</string>
     <string name="lock_now">Lock screen now</string>
     <string name="evict_credential_encryptoon_key">Evict credential encryption key</string>
@@ -190,12 +190,12 @@
     <string name="wipe_silently">Wipe silently</string>
     <string name="wipe_data_warning">All data on your device will be ERASED</string>
     <string name="wipe_work_profile_warning">Your work profile will be DELETED</string>
-    <string name="encrypt_status_is">Encrypt status: </string>
+    <string name="encryption_status">Encryption status</string>
     <string name="frp_policy">FRP policy</string>
     <string name="factory_reset_protection_policy">Factory reset protection policy</string>
     <string name="frp_policy_not_supported">FRP policy is not supported on this device</string>
     <string name="enable_frp">Enable FRP</string>
-    <string name="account_list_is">Account list: </string>
+    <string name="account_list_is">"Account list: "</string>
 
     <!--SystemUpdatePolicy-->
     <string name="is_security_patch">Security patch: %1$s</string>
@@ -212,7 +212,7 @@
     <string name="install_system_update">Install system update</string>
     <string name="select_ota_package" tools:ignore="TypographyEllipsis">Select OTA package...</string>
     <string name="start_install_system_update">Start installing system update</string>
-    <string name="install_system_update_failed">Install system update failed: </string>
+    <string name="install_system_update_failed">"Install system update failed: "</string>
     <string name="battery_low">Battery is low</string>
     <string name="update_file_invalid">Update file is invalid</string>
     <string name="incorrect_os_ver">Incorrect OS version</string>
@@ -226,7 +226,7 @@
     <string name="preferential_network_service">Preferential network service</string>
     <string name="lockdown_admin_configured_network">Lockdown admin configured network</string>
     <string name="wifi_ssid_policy">WiFi SSID policy</string>
-    <string name="ssid_list_is">SSID list: </string>
+    <string name="ssid_list_is">SSID list:</string>
     <string name="cannot_be_empty">Cannot be empty</string>
     <string name="already_exist">Already exist</string>
     <string name="private_dns">Private DNS</string>
@@ -245,10 +245,9 @@
     <string name="invalid_config">Invalid config</string>
     <string name="exclude_hosts">Exclude hosts</string>
     <string name="retrieve_net_logs">Network logs</string>
-    <string name="retrieved_logs_are">Retrieved logs: %1$s</string>
+    <string name="log_file_size_is">Log file size: %1$s</string>
     <string name="delete_logs">Delete logs</string>
     <string name="export_logs">Export logs</string>
-    <string name="retrieve">Retrieve</string>
     <string name="wifi_auth_keypair">WiFi keypair</string>
     <string name="keypair">Keypair</string>
     <string name="override_apn_settings">APN settings</string>
@@ -279,6 +278,10 @@
     <string name="work_profile_owner">Profile owner (Work profile)</string>
     <string name="work_profile_activated">Work profile activated</string>
     <string name="create_work_profile">Create work profile</string>
+    <string name="offline_provisioning">Offline mode</string>
+    <string name="migrate_account">Migrate account</string>
+    <string name="account_name">Account name</string>
+    <string name="keep_account">Keep account</string>
     <string name="is_org_owned_profile">Organization owned work profile: %1$s</string>
     <string name="org_owned_work_profile">Organization work profile</string>
     <string name="activate_org_profile_command" tools:ignore="TypographyDashes" translatable="false">
@@ -297,7 +300,6 @@
     <string name="clear_cross_profile_filters">Clear all filters</string>
     <string name="org_id">Organization ID</string>
     <string name="length_6_to_64">The length should be between 6~64 characters</string>
-    <string name="get_specific_id_after_set_org_id">You can get device specific ID after set this. </string>
     <string name="delete_work_profile">Delete work profile</string>
 
     <!--AppManager-->
@@ -322,7 +324,7 @@
     <!--ucd: user control disabled-->
     <string name="ucd">Disable user control</string>
     <string name="ucd_desc">If you set this, you cannot clear these apps\' storage or force stop them. </string>
-    <string name="app_list_is">App list: </string>
+    <string name="app_list_is">App list:</string>
     <string name="clear_list">Clear list</string>
     <string name="permission_manage">Permission manage</string>
     <string name="cross_profile_package">Cross profile package</string>
@@ -440,20 +442,20 @@
 
     <!--UserManage-->
     <string name="user_manager">User manager</string>
+    <string name="enable_logout">Enable logout</string>
     <string name="edit_username">Edit username</string>
     <string name="start_user_session_msg">Start user session message</string>
     <string name="end_user_session_msg">End user session message</string>
     <string name="user_info">User info</string>
-    <string name="is_user_unlocked">User unlocked: %1$s</string>
-    <string name="is_support_multi_user">Support multiuser: %1$s</string>
-    <string name="is_system_user">System user: %1$s</string>
-    <string name="is_admin_user">Admin user: %1$s</string>
-    <string name="is_headless_system_user">Headless system user: %1$s</string>
-    <string name="user_can_logout">User can logout: %1$s</string>
-    <string name="is_ephemeral_user">Ephemeral user: %1$s</string>
-    <string name="is_affiliated_user">Affiliated user: %1$s</string>
-    <string name="user_id_is">UserID：%1$s</string>
-    <string name="user_serial_number_is">User serial number: %1$s</string>
+    <string name="support_multiuser">Support multiuser</string>
+    <string name="system_user">System user</string>
+    <string name="admin_user">Admin user</string>
+    <string name="headless_system_user">Headless system user</string>
+    <string name="logout_enabled">Logout enabled</string>
+    <string name="ephemeral_user">Ephemeral user</string>
+    <string name="affiliated_user">Affiliated user</string>
+    <string name="user_id">UserID</string>
+    <string name="user_serial_number">User serial number</string>
     <string name="user_operation">User operation</string>
     <string name="serial_number">Serial number</string>
     <string name="use_uid">Use UID</string>
@@ -471,7 +473,6 @@
     <string name="affiliation_id">Affiliation ID</string>
     <string name="include_empty_string">Include empty string</string>
     <string name="change_user_icon">Change user icon</string>
-    <string name="pick_a_square_image">You should pick a square image</string>
     <string name="file_picker_instead_gallery">Use file picker instead of gallery</string>
     <string name="select_picture" tools:ignore="TypographyEllipsis">Select image...</string>
     <string name="unknown_result">Unknown result(may failed)</string>
@@ -489,18 +490,16 @@
     <string name="pwd_expiration_timeout">Password expiration timeout</string>
     <string name="max_time_to_lock">Screen timeout</string>
     <string name="required_strong_auth_timeout">Required strong auth timeout</string>
-    <string name="zero_means_no_control">A value of 0 means the admin is not participating in controlling the timeout</string>
-    <string name="max_time_to_lock_desc">Enter 0 to allow user decision, unit: millisecond</string>
+    <string name="zero_means_no_restriction">0 means no restriction</string>
     <string name="pwd_history">Password history length</string>
     <string name="pwd_history_desc">Historical passwords within the specified range cannot be set by user</string>
     <string name="password_complexity_none">None (No password allowed)</string>
     <string name="password_complexity_low">Low (Gesture password and characters repetition allowed)</string>
     <string name="password_complexity_medium">Medium (Repetition disallowed, 4 characters at least)</string>
     <string name="password_complexity_high">High (Repetition disallowed, 6 characters at least)</string>
-    <string name="current_password_complexity_is">Current password complexity: %1$s</string>
-    <string name="is_password_sufficient">Is password complexity sufficient: %1$s</string>
-    <string name="password_failed_attempts_is">Password failed attempts: %1$s</string>
-    <string name="is_using_unified_password">Unified password: %1$s</string>
+    <string name="current_password_complexity">Current password complexity</string>
+    <string name="password_sufficient">Password complexity sufficient</string>
+    <string name="unified_password">Unified password</string>
     <string name="reset_password_token">Reset password token</string>
     <string name="token">Token</string>
     <string name="token_must_longer_than_32_byte">The token must be longer than 32-byte</string>
@@ -537,8 +536,6 @@
     <string name="password_quality_biometrics_weak">Biometrics (Weak)</string>
     <string name="password_quality_numeric_complex">Numeric complex (No repeating characters)</string>
     <string name="required_password_quality">Required password quality</string>
-    <string name="password_complexity_instead_password_quality">Set password complexity will disable password quality settings. </string>
-    <string name="password_quality_deprecated_desc">Deprecated. Use "Required password complexity" instead. </string>
     <string name="activate_reset_password_token_here">Activate reset password token here. </string>
 
     <!--Settings&About-->
@@ -562,10 +559,8 @@
     <string name="auth_with_bio">Authenticate OwnDroid with biometrics</string>
     <string name="lock_in_background">Lock when switch to background</string>
     <string name="protect_storage">Protect storage</string>
-    <string name="storage_is_protected">Storage is protected</string>
-    <string name="you_cant_clear_storage">You can\'t clear storage of OwnDroid</string>
+    <string name="storage_is_protected">Storage is protected, you can\'t clear storage of OwnDroid</string>
     <string name="clear_storage">Clear storage</string>
-    <string name="clear_storage_success">Clear storage success\nApplication will exit</string>
 
     <string name="automation_api">Automation API</string>
     <string name="automation_debug">Debug mode</string>

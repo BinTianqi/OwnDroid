@@ -15,7 +15,6 @@ import android.content.Intent
 import android.content.pm.IPackageInstaller
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Build.VERSION
 import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.DrawableRes
@@ -184,7 +183,7 @@ val dhizukuErrorStatus = MutableStateFlow(0)
 fun Context.resetDevicePolicy() {
     val dpm = getDPM()
     val receiver = getReceiver()
-    RestrictionData.getAllRestrictions(this).forEach {
+    RestrictionData.getAllRestrictions().forEach {
         dpm.clearUserRestriction(receiver, it)
     }
     dpm.accountTypesWithManagementDisabled?.forEach {
@@ -320,41 +319,39 @@ fun permissionList(): List<PermissionItem>{
     return list
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+@RequiresApi(26)
 @OptIn(ExperimentalSerializationApi::class)
 fun handleNetworkLogs(context: Context, batchToken: Long) {
-    val events = context.getDPM().retrieveNetworkLogs(context.getReceiver(), batchToken) ?: return
-    val eventsList = mutableListOf<NetworkEventItem>()
+    val networkEvents = context.getDPM().retrieveNetworkLogs(context.getReceiver(), batchToken) ?: return
     val file = context.filesDir.toPath().resolve("NetworkLogs.json")
     if(file.notExists()) file.writeText("[]")
     val json = Json { ignoreUnknownKeys = true; explicitNulls = false }
-    var jsonObj: MutableList<NetworkEventItem>
+    var events: MutableList<NetworkEventItem>
     file.inputStream().use {
-        jsonObj = json.decodeFromStream(it)
+        events = json.decodeFromStream(it)
     }
-    events.forEach { event ->
+    networkEvents.forEach { event ->
         try {
             val dnsEvent = event as DnsEvent
             val addresses = mutableListOf<String?>()
             dnsEvent.inetAddresses.forEach { inetAddresses ->
                 addresses += inetAddresses.hostAddress
             }
-            eventsList += NetworkEventItem(
+            events += NetworkEventItem(
                 id = if(VERSION.SDK_INT >= 28) event.id else null, packageName = event.packageName
                 , timestamp = event.timestamp, type = "dns", hostName = dnsEvent.hostname,
                 hostAddresses = addresses, totalResolvedAddressCount = dnsEvent.totalResolvedAddressCount
             )
         } catch(e: Exception) {
             val connectEvent = event as ConnectEvent
-            eventsList += NetworkEventItem(
+            events += NetworkEventItem(
                 id = if(VERSION.SDK_INT >= 28) event.id else null, packageName = event.packageName, timestamp = event.timestamp, type = "connect",
                 hostAddress = connectEvent.inetAddress.hostAddress, port = connectEvent.port
             )
         }
     }
-    jsonObj.addAll(eventsList)
     file.outputStream().use {
-        json.encodeToStream(jsonObj, it)
+        json.encodeToStream(events, it)
     }
 }
 
@@ -364,9 +361,43 @@ data class NetworkEventItem(
     @SerialName("package_name") val packageName: String,
     val timestamp: Long,
     val type: String,
-    val port: Int? = null,
     @SerialName("address") val hostAddress: String? = null,
+    val port: Int? = null,
     @SerialName("host_name") val hostName: String? = null,
     @SerialName("count") val totalResolvedAddressCount: Int? = null,
     @SerialName("addresses") val hostAddresses: List<String?>? = null
+)
+
+@OptIn(ExperimentalSerializationApi::class)
+@RequiresApi(24)
+fun handleSecurityLogs(context: Context) {
+    val file = context.filesDir.resolve("SecurityLogs.json")
+    val json = Json { ignoreUnknownKeys = true; explicitNulls = false }
+    if(!file.exists()) file.writeText("[]")
+    val securityEvents = context.getDPM().retrieveSecurityLogs(context.getReceiver())
+    securityEvents ?: return
+    val logs: MutableList<SecurityEventItem>
+    file.inputStream().use {
+        logs = json.decodeFromStream(it)
+    }
+    securityEvents.forEach {
+        logs += SecurityEventItem(
+            id = if(VERSION.SDK_INT >= 28) it.id else null,
+            tag = it.tag, timeNanos = it.timeNanos,
+            logLevel = if(VERSION.SDK_INT >= 28) it.logLevel else null,
+            data = it.data.toString()
+        )
+    }
+    file.outputStream().use {
+        json.encodeToStream(logs, it)
+    }
+}
+
+@Serializable
+data class SecurityEventItem(
+    val id: Long?,
+    val tag: Int,
+    @SerialName("time_nanos") val timeNanos: Long,
+    @SerialName("log_level") val logLevel: Int?,
+    val data: String
 )

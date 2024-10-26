@@ -1,10 +1,13 @@
 package com.bintianqi.owndroid.dpm
 
+import android.accounts.Account
 import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE
+import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ACCOUNT_TO_MIGRATE
 import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ALLOW_OFFLINE
 import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME
 import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME
+import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_KEEP_ACCOUNT_ON_MIGRATION
 import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_SKIP_ENCRYPTION
 import android.app.admin.DevicePolicyManager.FLAG_MANAGED_CAN_ACCESS_PARENT
 import android.app.admin.DevicePolicyManager.FLAG_PARENT_CAN_ACCESS_MANAGED
@@ -12,7 +15,6 @@ import android.app.admin.DevicePolicyManager.PERSONAL_APPS_NOT_SUSPENDED
 import android.app.admin.DevicePolicyManager.PERSONAL_APPS_SUSPENDED_PROFILE_TIMEOUT
 import android.app.admin.DevicePolicyManager.WIPE_EUICC
 import android.app.admin.DevicePolicyManager.WIPE_EXTERNAL_STORAGE
-import android.app.admin.DevicePolicyManager.WIPE_SILENTLY
 import android.content.*
 import android.os.Binder
 import android.os.Build.VERSION
@@ -44,6 +46,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -127,13 +131,47 @@ private fun Home(navCtrl: NavHostController) {
 private fun CreateWorkProfile() {
     val context = LocalContext.current
     val receiver = context.getReceiver()
+    val focusMgr = LocalFocusManager.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.create_work_profile), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         var skipEncrypt by remember { mutableStateOf(false) }
-        if(VERSION.SDK_INT>=24) {
+        var offlineProvisioning by remember { mutableStateOf(true) }
+        var migrateAccount by remember { mutableStateOf(false) }
+        var migrateAccountName by remember { mutableStateOf("") }
+        var migrateAccountType by remember { mutableStateOf("") }
+        var keepAccount by remember { mutableStateOf(true) }
+        if(VERSION.SDK_INT >= 22) {
+            CheckBoxItem(R.string.migrate_account, migrateAccount, { migrateAccount = it })
+            AnimatedVisibility(migrateAccount) {
+                val fr = FocusRequester()
+                Column(modifier = Modifier.padding(start = 10.dp)) {
+                    OutlinedTextField(
+                        value = migrateAccountName, onValueChange = { migrateAccountName = it },
+                        label = { Text(stringResource(R.string.account_name)) },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions { fr.requestFocus() },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = migrateAccountType, onValueChange = { migrateAccountType = it },
+                        label = { Text(stringResource(R.string.account_type)) },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions { focusMgr.clearFocus() },
+                        modifier = Modifier.fillMaxWidth().focusRequester(fr)
+                    )
+                    if(VERSION.SDK_INT >= 26) {
+                        CheckBoxItem(R.string.keep_account, keepAccount, { keepAccount = it })
+                    }
+                }
+            }
+        }
+        if(VERSION.SDK_INT >= 24) {
             CheckBoxItem(R.string.skip_encryption, skipEncrypt, { skipEncrypt = it })
+        }
+        if(VERSION.SDK_INT >= 33) {
+            CheckBoxItem(R.string.offline_provisioning, offlineProvisioning, { offlineProvisioning = it })
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
@@ -142,13 +180,19 @@ private fun CreateWorkProfile() {
                     val intent = Intent(ACTION_PROVISION_MANAGED_PROFILE)
                     if(VERSION.SDK_INT>=23) {
                         intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME,receiver)
-                    }else{
+                    } else {
                         intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME, context.packageName)
                     }
-                    if(VERSION.SDK_INT>=24) { intent.putExtra(EXTRA_PROVISIONING_SKIP_ENCRYPTION,skipEncrypt) }
-                    if(VERSION.SDK_INT>=33) { intent.putExtra(EXTRA_PROVISIONING_ALLOW_OFFLINE,true) }
+                    if(migrateAccount && VERSION.SDK_INT >= 22) {
+                        intent.putExtra(EXTRA_PROVISIONING_ACCOUNT_TO_MIGRATE, Account(migrateAccountName, migrateAccountType))
+                        if(VERSION.SDK_INT >= 26) {
+                            intent.putExtra(EXTRA_PROVISIONING_KEEP_ACCOUNT_ON_MIGRATION, keepAccount)
+                        }
+                    }
+                    if(VERSION.SDK_INT >= 24) { intent.putExtra(EXTRA_PROVISIONING_SKIP_ENCRYPTION, skipEncrypt) }
+                    if(VERSION.SDK_INT >= 33) { intent.putExtra(EXTRA_PROVISIONING_ALLOW_OFFLINE, offlineProvisioning) }
                     createManagedProfile.launch(intent)
-                }catch(e:ActivityNotFoundException) {
+                } catch(_:ActivityNotFoundException) {
                     Toast.makeText(context, R.string.unsupported, Toast.LENGTH_SHORT).show()
                 }
             },

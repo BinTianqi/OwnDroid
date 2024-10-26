@@ -26,9 +26,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -38,6 +38,8 @@ import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.backToHomeStateFlow
 import com.bintianqi.owndroid.ui.*
+import com.bintianqi.owndroid.writeClipBoard
+import com.bintianqi.owndroid.yesOrNo
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
 import kotlinx.coroutines.launch
@@ -73,9 +75,6 @@ fun DpmPermissions(navCtrl:NavHostController) {
             composable(route = "ProfileOwner") { ProfileOwner() }
             composable(route = "DeviceOwner") { DeviceOwner() }
             composable(route = "DeviceInfo") { DeviceInfo() }
-            composable(route = "OrgID") { OrgID() }
-            composable(route = "SpecificID") { SpecificID() }
-            composable(route = "OrgName") { OrgName() }
             composable(route = "DisableAccountManagement") { DisableAccountManagement() }
             composable(route = "LockScreenInfo") { LockScreenInfo() }
             composable(route = "SupportMsg") { SupportMsg() }
@@ -84,6 +83,7 @@ fun DpmPermissions(navCtrl:NavHostController) {
     }
 }
 
+@SuppressLint("NewApi")
 @Composable
 private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
     val context = LocalContext.current
@@ -93,6 +93,8 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
     val deviceAdmin = context.isDeviceAdmin
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
+    var dialog by remember { mutableIntStateOf(0) }
+    val enrollmentSpecificId = if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) dpm.enrollmentSpecificId else ""
     Column(modifier = Modifier.fillMaxSize().verticalScroll(listScrollState)) {
         Text(
             text = stringResource(R.string.permission),
@@ -112,9 +114,9 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
             R.string.device_admin, stringResource(if(deviceAdmin) R.string.activated else R.string.deactivated),
             operation = { localNavCtrl.navigate("DeviceAdmin") }
         )
-        if(!deviceOwner) {
+        if(profileOwner) {
             SubPageItem(
-                R.string.profile_owner, stringResource(if(profileOwner) R.string.activated else R.string.deactivated),
+                R.string.profile_owner, stringResource(R.string.activated),
                 operation = { localNavCtrl.navigate("ProfileOwner") }
             )
         }
@@ -127,11 +129,13 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
         SubPageItem(R.string.shizuku,"") { localNavCtrl.navigate("Shizuku") }
         SubPageItem(R.string.device_info, "", R.drawable.perm_device_information_fill0) { localNavCtrl.navigate("DeviceInfo") }
         if((VERSION.SDK_INT >= 26 && deviceOwner) || (VERSION.SDK_INT>=24 && profileOwner)) {
-            SubPageItem(R.string.org_name, "", R.drawable.corporate_fare_fill0) { localNavCtrl.navigate("OrgName") }
+            SubPageItem(R.string.org_name, "", R.drawable.corporate_fare_fill0) { dialog = 2 }
         }
         if(VERSION.SDK_INT >= 31 && (profileOwner || deviceOwner)) {
-            SubPageItem(R.string.org_id, "", R.drawable.corporate_fare_fill0) { localNavCtrl.navigate("OrgID") }
-            SubPageItem(R.string.enrollment_specific_id, "", R.drawable.id_card_fill0) { localNavCtrl.navigate("SpecificID") }
+            SubPageItem(R.string.org_id, "", R.drawable.corporate_fare_fill0) { dialog = 3 }
+        }
+        if(enrollmentSpecificId != "") {
+            SubPageItem(R.string.enrollment_specific_id, "", R.drawable.id_card_fill0) { dialog = 1 }
         }
         if(deviceOwner || profileOwner) {
             SubPageItem(R.string.disable_account_management, "", R.drawable.account_circle_fill0) { localNavCtrl.navigate("DisableAccountManagement") }
@@ -146,6 +150,76 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
             SubPageItem(R.string.transfer_ownership, "", R.drawable.admin_panel_settings_fill0) { localNavCtrl.navigate("TransformOwnership") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
+    }
+    if(dialog != 0) {
+        var input by remember { mutableStateOf("") }
+        AlertDialog(
+            title = {
+                Text(stringResource(
+                    when(dialog){
+                        1 -> R.string.enrollment_specific_id
+                        2 -> R.string.org_name
+                        3 -> R.string.org_id
+                        else -> R.string.permission
+                    }
+                ))
+            },
+            text = {
+                val focusMgr = LocalFocusManager.current
+                LaunchedEffect(Unit) {
+                    if(dialog == 1) input = dpm.enrollmentSpecificId
+                }
+                OutlinedTextField(
+                    value = input,
+                    onValueChange = { input = it }, readOnly = dialog == 1, modifier = Modifier.fillMaxWidth(),
+                    label = {
+                        Text(stringResource(
+                            when(dialog){
+                                1 -> R.string.enrollment_specific_id
+                                2 -> R.string.org_name
+                                3 -> R.string.org_id
+                                else -> R.string.permission
+                            }
+                        ))
+                    },
+                    trailingIcon = {
+                        if(dialog == 1) IconButton(onClick = { writeClipBoard(context, input) }) {
+                            Icon(painter = painterResource(R.drawable.content_copy_fill0), contentDescription = stringResource(R.string.copy))
+                        }
+                    },
+                    supportingText = {
+                        if(dialog == 3) Text(stringResource(R.string.length_6_to_64))
+                    },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions { focusMgr.clearFocus() },
+                    textStyle = typography.bodyLarge
+                )
+            },
+            onDismissRequest = { dialog = 0 },
+            dismissButton = {
+                TextButton(
+                    onClick = { dialog = 0 }
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        try {
+                            if(dialog == 2) dpm.setOrganizationName(receiver, input)
+                            if(dialog == 3) dpm.setOrganizationId(input)
+                            dialog = 0
+                        } catch(_: IllegalStateException) {
+                            Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    enabled = (dialog == 3 && input.length in 6..64) || dialog != 3
+                ) {
+                    Text(stringResource(R.string.confirm))
+                }
+            }
+        )
     }
 }
 
@@ -406,139 +480,29 @@ fun DeviceInfo() {
         Text(text = stringResource(R.string.device_info), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT>=34 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
-            val financed = dpm.isDeviceFinanced
-            Text(stringResource(R.string.is_device_financed, financed))
+            CardItem(R.string.financed_device, dpm.isDeviceFinanced.yesOrNo())
         }
-        Spacer(Modifier.padding(vertical = 2.dp))
         if(VERSION.SDK_INT >= 33) {
             val dpmRole = dpm.devicePolicyManagementRoleHolderPackage
-            Text(stringResource(R.string.dpmrh, if(dpmRole == null) stringResource(R.string.none) else ""))
-            if(dpmRole!=null) {
-                SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-                    Text(text = dpmRole)
-                }
-            }
+            CardItem(R.string.dpmrh, if(dpmRole == null) stringResource(R.string.none) else dpmRole)
         }
-        Spacer(Modifier.padding(vertical = 2.dp))
         val encryptionStatus = mutableMapOf(
-            DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE to stringResource(R.string.es_inactive),
-            DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE to stringResource(R.string.es_active),
-            DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED to stringResource(R.string.es_unsupported)
+            DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE to R.string.es_inactive,
+            DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE to R.string.es_active,
+            DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED to R.string.es_unsupported
         )
-        if(VERSION.SDK_INT >= 23) { encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY] = stringResource(R.string.es_active_default_key) }
-        if(VERSION.SDK_INT >= 24) { encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER] = stringResource(R.string.es_active_per_user) }
-        Text(stringResource(R.string.encrypt_status_is)+encryptionStatus[dpm.storageEncryptionStatus])
-        Spacer(Modifier.padding(vertical = 2.dp))
+        if(VERSION.SDK_INT >= 23) { encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY] = R.string.es_active_default_key }
+        if(VERSION.SDK_INT >= 24) { encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER] = R.string.es_active_per_user }
+        CardItem(R.string.encryption_status, encryptionStatus[dpm.storageEncryptionStatus] ?: R.string.unknown)
         if(VERSION.SDK_INT >= 28) {
-            Text(stringResource(R.string.support_device_id_attestation) + dpm.isDeviceIdAttestationSupported)
+            CardItem(R.string.support_device_id_attestation, dpm.isDeviceIdAttestationSupported.yesOrNo())
         }
-        Spacer(Modifier.padding(vertical = 2.dp))
         if (VERSION.SDK_INT >= 30) {
-            Text(stringResource(R.string.support_unique_device_attestation) + dpm.isUniqueDeviceAttestationSupported)
+            CardItem(R.string.support_unique_device_attestation, dpm.isUniqueDeviceAttestationSupported.yesOrNo())
         }
-        Spacer(Modifier.padding(vertical = 2.dp))
         val adminList = dpm.activeAdmins
-        if(adminList!=null) {
-            var adminListText = ""
-            Text(text = stringResource(R.string.activated_device_admin, adminList.size))
-            var count = adminList.size
-            for(each in adminList) {
-                count -= 1
-                adminListText += "${each.packageName}/${each.className}"
-                if(count>0) {adminListText += "\n"}
-            }
-            SelectionContainer(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp).horizontalScroll(rememberScrollState())) {
-                Text(text = adminListText)
-            }
-        }
-    }
-}
-
-@SuppressLint("NewApi")
-@Composable
-private fun OrgID() {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        var orgId by remember { mutableStateOf("") }
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.org_id), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        OutlinedTextField(
-            value = orgId, onValueChange = {orgId=it},
-            label = { Text(stringResource(R.string.org_id)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(Modifier.padding(vertical = 2.dp))
-        AnimatedVisibility(orgId.length !in 6..64) {
-            Text(text = stringResource(R.string.length_6_to_64))
-        }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = {
-                dpm.setOrganizationId(orgId)
-                Toast.makeText(context, R.string.success,Toast.LENGTH_SHORT).show()
-            },
-            enabled = orgId.length in 6..64,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.apply))
-        }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Information{ Text(text = stringResource(R.string.get_specific_id_after_set_org_id)) }
-    }
-}
-
-@SuppressLint("NewApi")
-@Composable
-private fun SpecificID() {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
-        val specificId = dpm.enrollmentSpecificId
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.enrollment_specific_id), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        if(specificId != "") {
-            SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState())) { Text(specificId) }
-            CopyTextButton(R.string.copy, specificId)
-        }else{
-            Text(stringResource(R.string.require_set_org_id))
-        }
-    }
-}
-
-@SuppressLint("NewApi")
-@Composable
-private fun OrgName() {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
-        var orgName by remember { mutableStateOf(try{dpm.getOrganizationName(receiver).toString() }catch(e:SecurityException) {""}) }
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.org_name), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        OutlinedTextField(
-            value = orgName, onValueChange = { orgName = it }, modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
-            label = { Text(stringResource(R.string.org_name)) },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() })
-        )
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = {
-                focusMgr.clearFocus()
-                dpm.setOrganizationName(receiver,orgName)
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.apply))
+        if(adminList != null) {
+            CardItem(R.string.activated_device_admin, adminList.map { it.flattenToShortString() }.joinToString("\n"))
         }
     }
 }
@@ -549,9 +513,13 @@ private fun SupportMsg() {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val focusMgr = LocalFocusManager.current
-    var shortMsg by remember { mutableStateOf(dpm.getShortSupportMessage(receiver)?.toString() ?: "") }
-    var longMsg by remember { mutableStateOf(dpm.getLongSupportMessage(receiver)?.toString() ?: "") }
+    var shortMsg by remember { mutableStateOf("") }
+    var longMsg by remember { mutableStateOf("") }
+    val refreshMsg = {
+        shortMsg = dpm.getShortSupportMessage(receiver)?.toString() ?: ""
+        longMsg = dpm.getLongSupportMessage(receiver)?.toString() ?: ""
+    }
+    LaunchedEffect(Unit) { refreshMsg() }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.support_msg), style = typography.headlineLarge)
@@ -560,45 +528,59 @@ private fun SupportMsg() {
             value = shortMsg,
             label = { Text(stringResource(R.string.short_support_msg)) },
             onValueChange = { shortMsg = it },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp)
         )
-        Spacer(Modifier.padding(vertical = 2.dp))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Button(
+                onClick = {
+                    dpm.setShortSupportMessage(receiver, shortMsg)
+                    refreshMsg()
+                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier.fillMaxWidth(0.49F)
+            ) {
+                Text(text = stringResource(R.string.apply))
+            }
+            Button(
+                onClick = {
+                    dpm.setShortSupportMessage(receiver, null)
+                    refreshMsg()
+                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier.fillMaxWidth(0.96F)
+            ) {
+                Text(text = stringResource(R.string.reset))
+            }
+        }
+        Spacer(Modifier.padding(vertical = 8.dp))
         OutlinedTextField(
             value = longMsg,
             label = { Text(stringResource(R.string.long_support_msg)) },
             onValueChange = { longMsg = it },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp)
         )
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = {
-                focusMgr.clearFocus()
-                dpm.setShortSupportMessage(receiver, shortMsg)
-                dpm.setLongSupportMessage(receiver, longMsg)
-                shortMsg = dpm.getShortSupportMessage(receiver)?.toString() ?: ""
-                longMsg = dpm.getLongSupportMessage(receiver)?.toString() ?: ""
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = stringResource(R.string.apply))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Button(
+                onClick = {
+                    dpm.setLongSupportMessage(receiver, longMsg)
+                    refreshMsg()
+                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier.fillMaxWidth(0.49F)
+            ) {
+                Text(text = stringResource(R.string.apply))
+            }
+            Button(
+                onClick = {
+                    dpm.setLongSupportMessage(receiver, null)
+                    refreshMsg()
+                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier.fillMaxWidth(0.96F)
+            ) {
+                Text(text = stringResource(R.string.reset))
+            }
         }
-        Spacer(Modifier.padding(vertical = 1.dp))
-        Button(
-            onClick = {
-                focusMgr.clearFocus()
-                dpm.setShortSupportMessage(receiver, null)
-                dpm.setLongSupportMessage(receiver, null)
-                shortMsg = dpm.getShortSupportMessage(receiver)?.toString() ?: ""
-                longMsg = dpm.getLongSupportMessage(receiver)?.toString() ?: ""
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = stringResource(R.string.reset))
-        }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Information{ Text(text = stringResource(R.string.support_msg_desc)) }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
@@ -630,7 +612,7 @@ private fun DisableAccountManagement() {
         OutlinedTextField(
             value = inputText,
             onValueChange = { inputText = it },
-            label = { Text(stringResource(R.string.account_types_are)) },
+            label = { Text(stringResource(R.string.account_type)) },
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() })
@@ -689,9 +671,9 @@ private fun TransformOwnership() {
         Button(
             onClick = {
                 try {
-                    dpm.transferOwnership(receiver,ComponentName(pkg, cls),null)
+                    dpm.transferOwnership(receiver, ComponentName(pkg, cls),null)
                     Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                }catch(e:IllegalArgumentException) {
+                } catch(_:IllegalArgumentException) {
                     Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
                 }
             },
@@ -709,7 +691,7 @@ private fun activateDeviceAdmin(inputContext:Context,inputComponent:ComponentNam
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, inputComponent)
         intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, inputContext.getString(R.string.activate_device_admin_here))
         addDeviceAdmin.launch(intent)
-    }catch(e:ActivityNotFoundException) {
+    } catch(_:ActivityNotFoundException) {
         Toast.makeText(inputContext, R.string.unsupported, Toast.LENGTH_SHORT).show()
     }
 }

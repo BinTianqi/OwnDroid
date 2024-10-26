@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.cc)
+    alias(libs.plugins.compose)
     kotlin("plugin.serialization") version "2.0.0"
 }
 
@@ -76,8 +76,6 @@ gradle.taskGraph.whenReady {
 
 dependencies {
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
     implementation(libs.accompanist.drawablepainter)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)

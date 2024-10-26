@@ -41,7 +41,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build.VERSION
 import android.os.UserManager
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -78,6 +77,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -103,11 +103,13 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.StopLockTaskModeReceiver
+import com.bintianqi.owndroid.exportFile
+import com.bintianqi.owndroid.exportFilePath
 import com.bintianqi.owndroid.fileUriFlow
+import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.getFile
 import com.bintianqi.owndroid.prepareForNotification
 import com.bintianqi.owndroid.selectedPackage
-import com.bintianqi.owndroid.toText
 import com.bintianqi.owndroid.toggle
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CheckBoxItem
@@ -118,6 +120,9 @@ import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.TopBar
 import com.bintianqi.owndroid.uriToStream
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.encodeToStream
 import java.util.Date
 import java.util.TimeZone
 import java.util.concurrent.Executors
@@ -181,6 +186,7 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val dhizuku = sharedPref.getBoolean("dhizuku", false)
     val dangerousFeatures = sharedPref.getBoolean("dangerous_features", false)
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
@@ -219,7 +225,7 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
         if(deviceOwner || profileOwner) {
             SubPageItem(R.string.ca_cert, "", R.drawable.license_fill0) { navCtrl.navigate("CaCert") }
         }
-        if(VERSION.SDK_INT >= 26 && (deviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 26 && !dhizuku && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.security_logs, "", R.drawable.description_fill0) { navCtrl.navigate("SecurityLogs") }
         }
         if(VERSION.SDK_INT >= 23 && (deviceOwner || dpm.isOrgProfile(receiver))) {
@@ -276,7 +282,7 @@ private fun Switches() {
                 SwitchItem(R.string.require_auto_time, "", R.drawable.schedule_fill0, { dpm.autoTimeRequired}, { dpm.setAutoTimeRequired(receiver,it) }, padding = false)
             }
         }
-        if(deviceOwner || profileOwner) {
+        if(deviceOwner || (profileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && !dpm.isManagedProfile(receiver))))) {
             SwitchItem(R.string.master_mute, "", R.drawable.volume_up_fill0,
                 { dpm.isMasterVolumeMuted(receiver) }, { dpm.setMasterVolumeMuted(receiver,it) }, padding = false
             )
@@ -296,16 +302,10 @@ private fun Switches() {
                 { dpm.isCommonCriteriaModeEnabled(receiver) }, { dpm.setCommonCriteriaModeEnabled(receiver,it) }, padding = false
             )
         }
-        if(VERSION.SDK_INT >= 31 && (deviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 31 && (deviceOwner || dpm.isOrgProfile(receiver)) && dpm.canUsbDataSignalingBeDisabled()) {
             SwitchItem(
-                R.string.usb_signal, "", R.drawable.usb_fill0, { dpm.isUsbDataSignalingEnabled },
-                {
-                    if(dpm.canUsbDataSignalingBeDisabled()) {
-                        dpm.isUsbDataSignalingEnabled = it
-                    } else {
-                        Toast.makeText(context, R.string.unsupported, Toast.LENGTH_SHORT).show()
-                    }
-                }, padding = false
+                R.string.disable_usb_signal, "", R.drawable.usb_fill0, { !dpm.isUsbDataSignalingEnabled },
+                { dpm.isUsbDataSignalingEnabled = !it }, padding = false
             )
         }
         Spacer(Modifier.padding(vertical = 30.dp))
@@ -981,42 +981,78 @@ private fun CaCert() {
     }
 }
 
+@OptIn(ExperimentalSerializationApi::class)
 @SuppressLint("NewApi")
 @Composable
 private fun SecurityLogs() {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
+    val logFile = context.filesDir.resolve("SecurityLogs.json")
+    var fileSize by remember { mutableLongStateOf(0) }
+    LaunchedEffect(Unit) {
+        fileSize = logFile.length()
+    }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.security_logs), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text = stringResource(R.string.developing))
-        SwitchItem(R.string.enable, "", null, { dpm.isSecurityLoggingEnabled(receiver) }, { dpm.setSecurityLoggingEnabled(receiver,it) }, padding = false)
-        Button(
-            onClick = {
-                val log = dpm.retrieveSecurityLogs(receiver)
-                if(log!=null) {
-                    for(i in log) { Log.d("SecureLog",i.toString()) }
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                }else{
-                    Log.d("SecureLog", context.getString(R.string.none))
-                    Toast.makeText(context, R.string.no_logs, Toast.LENGTH_SHORT).show()
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.security_logs))
+        SwitchItem(R.string.enable, "", null, { dpm.isSecurityLoggingEnabled(receiver) }, { dpm.setSecurityLoggingEnabled(receiver, it) }, padding = false)
+        Text(stringResource(R.string.log_file_size_is, formatFileSize(fileSize)))
+        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+            Button(
+                onClick = {
+                    val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
+                    intent.addCategory(Intent.CATEGORY_OPENABLE)
+                    intent.setType("application/json")
+                    intent.putExtra(Intent.EXTRA_TITLE, "SecurityLogs.json")
+                    exportFilePath.value = logFile.path
+                    exportFile.launch(intent)
+                },
+                enabled = fileSize > 0,
+                modifier = Modifier.fillMaxWidth(0.49F)
+            ) {
+                Text(stringResource(R.string.export_logs))
+            }
+            Button(
+                onClick = {
+                    logFile.delete()
+                    fileSize = logFile.length()
+                },
+                enabled = fileSize > 0,
+                modifier = Modifier.fillMaxWidth(0.96F)
+            ) {
+                Text(stringResource(R.string.delete_logs))
+            }
         }
+        Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                val log = dpm.retrievePreRebootSecurityLogs(receiver)
-                if(log!=null) {
-                    for(i in log) { Log.d("SecureLog",i.toString()) }
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                }else{
-                    Log.d("SecureLog", context.getString(R.string.none))
+                val logs = dpm.retrievePreRebootSecurityLogs(receiver)
+                if(logs == null) {
                     Toast.makeText(context, R.string.no_logs, Toast.LENGTH_SHORT).show()
+                    return@Button
+                } else {
+                    val logsList = mutableListOf<SecurityEventItem>()
+                    logs.forEach {
+                        logsList += SecurityEventItem(
+                            id = if(VERSION.SDK_INT >= 28) it.id else null,
+                            tag = it.tag, timeNanos = it.timeNanos,
+                            logLevel = if(VERSION.SDK_INT >= 28) it.logLevel else null,
+                            data = it.data.toString()
+                        )
+                    }
+                    val preRebootSecurityLogs = context.filesDir.resolve("PreRebootSecurityLogs")
+                    preRebootSecurityLogs.outputStream().use {
+                        val json = Json { ignoreUnknownKeys = true; explicitNulls = false }
+                        json.encodeToStream(logsList, it)
+                    }
+                    val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
+                    intent.addCategory(Intent.CATEGORY_OPENABLE)
+                    intent.setType("application/json")
+                    intent.putExtra(Intent.EXTRA_TITLE, "PreRebootSecurityLogs.json")
+                    exportFilePath.value = preRebootSecurityLogs.path
+                    exportFile.launch(intent)
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -1070,9 +1106,9 @@ fun FactoryResetProtection() {
         AnimatedVisibility(usePolicy) {
             Column {
                 CheckBoxItem(R.string.enable_frp, enabled, { enabled = it })
-                Text(stringResource(R.string.account_list_is))
+                Text(stringResource(R.string.account_list_is) + "\n")
                 Text(
-                    text = if(accountList.isEmpty()) stringResource(R.string.none) else accountList.toText(),
+                    text = if(accountList.isEmpty()) stringResource(R.string.none) else accountList.joinToString(separator = "\n"),
                     modifier = Modifier.animateContentSize()
                 )
                 OutlinedTextField(

@@ -62,6 +62,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -99,16 +100,17 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.exportFile
+import com.bintianqi.owndroid.exportFilePath
 import com.bintianqi.owndroid.formatFileSize
-import com.bintianqi.owndroid.saveNetworkLogs
 import com.bintianqi.owndroid.selectedPackage
-import com.bintianqi.owndroid.toText
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.TopBar
+import com.bintianqi.owndroid.writeClipBoard
 
 @Composable
 fun Network(navCtrl: NavHostController) {
@@ -156,7 +158,18 @@ fun Network(navCtrl: NavHostController) {
             onDismissRequest = { wifiMacDialog.value = false },
             confirmButton = { TextButton(onClick = { wifiMacDialog.value = false }) { Text(stringResource(R.string.confirm)) } },
             title = { Text(stringResource(R.string.wifi_mac_addr)) },
-            text = { SelectionContainer { Text(dpm.getWifiMacAddress(receiver)?: stringResource(R.string.none)) } },
+            text = {
+                val mac = dpm.getWifiMacAddress(receiver)
+                OutlinedTextField(
+                    value = mac ?: stringResource(R.string.none),
+                    onValueChange = {}, readOnly = true, modifier = Modifier.fillMaxWidth(), textStyle = typography.bodyLarge,
+                    trailingIcon = {
+                        if(mac != null) IconButton(onClick = { writeClipBoard(context, mac) }) {
+                            Icon(painter = painterResource(R.drawable.content_copy_fill0), contentDescription = stringResource(R.string.copy))
+                        }
+                    }
+                )
+            },
             modifier = Modifier.fillMaxWidth()
         )
     }
@@ -169,6 +182,8 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState, wifiMacDia
     val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
+    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val dhizuku = sharedPref.getBoolean("dhizuku", false)
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
             text = stringResource(R.string.network),
@@ -196,7 +211,7 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState, wifiMacDia
         if(deviceOwner) {
             SubPageItem(R.string.recommended_global_proxy, "", R.drawable.vpn_key_fill0) { navCtrl.navigate("RecommendedGlobalProxy") }
         }
-        if(VERSION.SDK_INT >= 26&&(deviceOwner || (profileOwner && dpm.isManagedProfile(receiver)))) {
+        if(VERSION.SDK_INT >= 26 && !dhizuku && (deviceOwner || (profileOwner && dpm.isManagedProfile(receiver)))) {
             SubPageItem(R.string.retrieve_net_logs, "", R.drawable.description_fill0) { navCtrl.navigate("NetworkLog") }
         }
         if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) {
@@ -219,7 +234,7 @@ private fun Switches() {
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT >= 33 && deviceOwner) {
             SwitchItem(
-                R.string.preferential_network_service, stringResource(R.string.developing), R.drawable.globe_fill0,
+                R.string.preferential_network_service, "", R.drawable.globe_fill0,
                 { dpm.isPreferentialNetworkServiceEnabled }, { dpm.isPreferentialNetworkServiceEnabled = it }, padding = false
             )
         }
@@ -316,7 +331,7 @@ private fun WifiSsidPolicy() {
                     Spacer(Modifier.padding(vertical = 5.dp))
                     Text(stringResource(R.string.ssid_list_is))
                     SelectionContainer(modifier = Modifier.animateContentSize().horizontalScroll(rememberScrollState())) {
-                        Text(if(ssidList.isEmpty()) stringResource(R.string.none) else ssidList.toText())
+                        Text(if(ssidList.isEmpty()) stringResource(R.string.none) else ssidList.joinToString(separator = "\n"))
                     }
                 }
                 Spacer(Modifier.padding(vertical = 5.dp))
@@ -629,7 +644,6 @@ private fun NetworkLog() {
     val receiver = context.getReceiver()
     val logFile = context.filesDir.resolve("NetworkLogs.json")
     var fileSize by remember { mutableLongStateOf(0) }
-    var fileExists by remember { mutableStateOf(logFile.exists()) }
     LaunchedEffect(Unit) {
         fileSize = logFile.length()
     }
@@ -638,26 +652,29 @@ private fun NetworkLog() {
         Text(text = stringResource(R.string.retrieve_net_logs), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         SwitchItem(R.string.enable, "", null, { dpm.isNetworkLoggingEnabled(receiver) }, { dpm.setNetworkLoggingEnabled(receiver,it) }, padding = false)
-        if(fileExists) {
-            Text(stringResource(R.string.retrieved_logs_are, formatFileSize(fileSize)))
+        Text(stringResource(R.string.log_file_size_is, formatFileSize(fileSize)))
+        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
             Button(
                 onClick = {
                     val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
                     intent.addCategory(Intent.CATEGORY_OPENABLE)
                     intent.setType("application/json")
                     intent.putExtra(Intent.EXTRA_TITLE, "NetworkLogs.json")
-                    saveNetworkLogs.launch(intent)
+                    exportFilePath.value = logFile.path
+                    exportFile.launch(intent)
                 },
-                modifier = Modifier.fillMaxWidth()
+                enabled = fileSize > 0,
+                modifier = Modifier.fillMaxWidth(0.49F)
             ) {
                 Text(stringResource(R.string.export_logs))
             }
             Button(
                 onClick = {
-                    Toast.makeText(context, if(logFile.delete()) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
-                    fileExists = logFile.exists()
+                    logFile.delete()
+                    fileSize = logFile.length()
                 },
-                modifier = Modifier.fillMaxWidth()
+                enabled = fileSize > 0,
+                modifier = Modifier.fillMaxWidth(0.96F)
             ) {
                 Text(stringResource(R.string.delete_logs))
             }

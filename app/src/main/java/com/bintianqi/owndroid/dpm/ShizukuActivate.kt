@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,7 +50,7 @@ fun ShizukuActivate() {
     val outputTextScrollState = rememberScrollState()
     var enabled by remember { mutableStateOf(false) }
     var bindShizuku by remember { mutableStateOf(false) }
-    var outputText by remember { mutableStateOf("") }
+    var outputText by rememberSaveable { mutableStateOf("") }
     var showDeviceAdminButton by remember { mutableStateOf(!context.isDeviceAdmin) }
     var showDeviceOwnerButton by remember { mutableStateOf(!context.isDeviceOwner) }
     var showOrgProfileOwnerButton by remember { mutableStateOf(true) }

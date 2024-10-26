@@ -7,6 +7,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -18,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
@@ -220,6 +222,21 @@ fun CopyTextButton(@StringRes label: Int, content: String) {
             Icon(painter = painterResource(if(ok) R.drawable.check_fill0 else R.drawable.content_copy_fill0), contentDescription = null)
             Spacer(modifier = Modifier.padding(horizontal = 2.dp))
             Text(text = stringResource(if(ok) R.string.success else label))
+        }
+    }
+}
+
+@Composable
+fun CardItem(@StringRes title: Int, @StringRes text: Int) {
+    CardItem(title, stringResource(text))
+}
+
+@Composable
+fun CardItem(@StringRes title: Int, text: String) {
+    Card(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+        Text(text = stringResource(title), style = typography.titleLarge, modifier = Modifier.padding(start = 8.dp, top = 6.dp))
+        SelectionContainer {
+            Text(text = text, modifier = Modifier.padding(start = 8.dp, bottom = 6.dp))
         }
     }
 }

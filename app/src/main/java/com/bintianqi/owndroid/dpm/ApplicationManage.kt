@@ -49,6 +49,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
@@ -85,7 +86,6 @@ import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.fileUriFlow
 import com.bintianqi.owndroid.getFile
 import com.bintianqi.owndroid.selectedPackage
-import com.bintianqi.owndroid.toText
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.Information
 import com.bintianqi.owndroid.ui.NavIcon
@@ -132,7 +132,8 @@ fun ApplicationManage(navCtrl:NavHostController, dialogStatus: MutableIntState) 
                         singleLine = true
                     )
                 },
-                navigationIcon = { NavIcon { navCtrl.navigateUp() } }
+                navigationIcon = { NavIcon { navCtrl.navigateUp() } },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.background)
             )
         }
     ) {  paddingValues->
@@ -358,7 +359,7 @@ private fun UserCtrlDisabledPkg(pkgName:String) {
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.app_list_is))
         SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize()) { 
-            Text(text = if(pkgList.isEmpty()) stringResource(R.string.none) else pkgList.toText())
+            Text(text = if(pkgList.isEmpty()) stringResource(R.string.none) else pkgList.joinToString(separator = "\n"))
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { 
@@ -510,7 +511,7 @@ private fun CrossProfilePkg(pkgName: String) {
         Text(text = stringResource(R.string.cross_profile_package), style = typography.headlineLarge)
         Text(text = stringResource(R.string.app_list_is))
         SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize()) { 
-            Text(text = if(crossProfilePkg.isEmpty()) stringResource(R.string.none) else crossProfilePkg.toText())
+            Text(text = if(crossProfilePkg.isEmpty()) stringResource(R.string.none) else crossProfilePkg.joinToString(separator = "\n"))
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { 
             Button(
@@ -567,7 +568,7 @@ private fun CrossProfileWidget(pkgName: String) {
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.app_list_is))
         SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize()) { 
-            Text(text = if(pkgList.isEmpty()) stringResource(R.string.none) else pkgList.toText())
+            Text(text = if(pkgList.isEmpty()) stringResource(R.string.none) else pkgList.joinToString(separator = "\n"))
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { 
@@ -660,7 +661,7 @@ private fun CredentialManagePolicy(pkgName: String) {
             Column {
                 Text(stringResource(R.string.app_list_is))
                 SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize()) {
-                    Text(text = if(credentialList.isEmpty()) stringResource(R.string.none) else credentialList.toText())
+                    Text(text = if(credentialList.isEmpty()) stringResource(R.string.none) else credentialList.joinToString(separator = "\n"))
                 }
                 Spacer(Modifier.padding(vertical = 10.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { 
@@ -739,7 +740,7 @@ private fun PermittedAccessibility(pkgName: String) {
                     if (pkgList.isEmpty()) {
                         Text(stringResource(R.string.only_system_accessibility_allowed))
                     } else {
-                        Text(stringResource(R.string.permitted_packages_is) + pkgList.toText())
+                        Text(stringResource(R.string.permitted_packages_is) + pkgList.joinToString(separator = "\n"))
                     }
                 }
                 Spacer(Modifier.padding(vertical = 5.dp))
@@ -819,7 +820,7 @@ private fun PermittedIME(pkgName: String) {
                     if(permittedIme.isEmpty()) {
                         Text(stringResource(R.string.only_system_ime_allowed))
                     } else {
-                        Text(stringResource(R.string.permitted_packages_is) + permittedIme.toText())
+                        Text(stringResource(R.string.permitted_packages_is) + permittedIme.joinToString(separator = "\n"))
                     }
                 }
                 Spacer(Modifier.padding(vertical = 5.dp))
@@ -882,7 +883,7 @@ private fun KeepUninstalledApp(pkgName: String) {
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.app_list_is))
         SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState()).animateContentSize()) {
-            Text(text = if(pkgList.isEmpty()) stringResource(R.string.none) else pkgList.toText())
+            Text(text = if(pkgList.isEmpty()) stringResource(R.string.none) else pkgList.joinToString(separator = "\n"))
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { 

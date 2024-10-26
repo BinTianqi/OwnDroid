@@ -81,11 +81,13 @@ import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.toggle
 import com.bintianqi.owndroid.ui.Animations
+import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.Information
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.TopBar
+import com.bintianqi.owndroid.yesOrNo
 
 @Composable
 fun Password(navCtrl: NavHostController) {
@@ -118,16 +120,12 @@ fun Password(navCtrl: NavHostController) {
             composable(route = "ResetPassword") { ResetPassword() }
             composable(route = "RequirePasswordComplexity") { PasswordComplexity() }
             composable(route = "DisableKeyguardFeatures") { DisableKeyguardFeatures() }
-            composable(route = "MaxTimeToLock") { ScreenTimeout() }
-            composable(route = "PasswordTimeout") { PasswordExpiration() }
-            composable(route = "MaxPasswordFail") { MaxFailedPasswordForWipe() }
-            composable(route = "RequiredStrongAuthTimeout") { RequiredStrongAuthTimeout() }
-            composable(route = "PasswordHistoryLength") { PasswordHistoryLength() }
             composable(route = "RequirePasswordQuality") { PasswordQuality() }
         }
     }
 }
 
+@SuppressLint("NewApi")
 @Composable
 private fun Home(navCtrl:NavHostController, scrollState: ScrollState) {
     val context = LocalContext.current
@@ -135,6 +133,7 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState) {
     val deviceAdmin = context.isDeviceAdmin
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
+    var dialog by remember { mutableIntStateOf(0) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
             text = stringResource(R.string.password_and_keyguard),
@@ -157,20 +156,101 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState) {
             SubPageItem(R.string.disable_keyguard_features, "", R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("DisableKeyguardFeatures") }
         }
         if(deviceOwner) {
-            SubPageItem(R.string.max_time_to_lock, "", R.drawable.schedule_fill0) { navCtrl.navigate("MaxTimeToLock") }
-            SubPageItem(R.string.pwd_expiration_timeout, "", R.drawable.lock_clock_fill0) { navCtrl.navigate("PasswordTimeout") }
-            SubPageItem(R.string.max_pwd_fail, "", R.drawable.no_encryption_fill0) { navCtrl.navigate("MaxPasswordFail") }
-        }
-        if(deviceAdmin){
-            SubPageItem(R.string.pwd_history, "", R.drawable.history_fill0) { navCtrl.navigate("PasswordHistoryLength") }
+            SubPageItem(R.string.max_time_to_lock, "", R.drawable.schedule_fill0) { dialog = 1 }
+            SubPageItem(R.string.pwd_expiration_timeout, "", R.drawable.lock_clock_fill0) { dialog = 3 }
+            SubPageItem(R.string.max_pwd_fail, "", R.drawable.no_encryption_fill0) { dialog = 4 }
         }
         if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
-            SubPageItem(R.string.required_strong_auth_timeout, "", R.drawable.fingerprint_off_fill0) { navCtrl.navigate("RequiredStrongAuthTimeout") }
+            SubPageItem(R.string.required_strong_auth_timeout, "", R.drawable.fingerprint_off_fill0) { dialog = 2 }
         }
-        if(deviceOwner || profileOwner) {
+        if(deviceAdmin){
+            SubPageItem(R.string.pwd_history, "", R.drawable.history_fill0) { dialog = 5 }
+        }
+        if(VERSION.SDK_INT < 31 && (deviceOwner || profileOwner)) {
             SubPageItem(R.string.required_password_quality, "", R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordQuality") }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
+    }
+    if(dialog != 0) {
+        val dpm = context.getDPM()
+        val receiver = context.getReceiver()
+        var input by remember { mutableStateOf("") }
+        LaunchedEffect(Unit) {
+            input = when(dialog) {
+                1 -> dpm.getMaximumTimeToLock(receiver).toString()
+                2 -> dpm.getRequiredStrongAuthTimeout(receiver).toString()
+                3 -> dpm.getPasswordExpirationTimeout(receiver).toString()
+                4 -> dpm.getMaximumFailedPasswordsForWipe(receiver).toString()
+                5 -> dpm.getPasswordHistoryLength(receiver).toString()
+                else -> ""
+            }
+        }
+        AlertDialog(
+            title = {
+                Text(stringResource(
+                    when(dialog) {
+                        1 -> R.string.max_time_to_lock
+                        2 -> R.string.required_strong_auth_timeout
+                        3 -> R.string.pwd_expiration_timeout
+                        4 -> R.string.max_pwd_fail
+                        5 -> R.string.pwd_history
+                        else -> R.string.password
+                    }
+                ))
+            },
+            text = {
+                val focusMgr = LocalFocusManager.current
+                Column {
+                    OutlinedTextField(
+                        value = input,
+                        label = {
+                            Text(stringResource(
+                                when(dialog) {
+                                    1,2,3 -> R.string.time_unit_ms
+                                    4 -> R.string.max_pwd_fail_textfield
+                                    5 -> R.string.length
+                                    else -> R.string.password
+                                }
+                            ))
+                        },
+                        onValueChange = { input = it },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+                        textStyle = typography.bodyLarge,
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)
+                    )
+                    when(dialog) {
+                        4 -> Text(stringResource(R.string.max_pwd_fail_desc))
+                        5 -> Text(stringResource(R.string.pwd_history_desc))
+                    }
+                    Text(stringResource(R.string.zero_means_no_restriction))
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        when(dialog) {
+                            1 -> dpm.setMaximumTimeToLock(receiver, input.toLong())
+                            2 -> dpm.setRequiredStrongAuthTimeout(receiver, input.toLong())
+                            3 -> dpm.setPasswordExpirationTimeout(receiver, input.toLong())
+                            4 -> dpm.setMaximumFailedPasswordsForWipe(receiver, input.toInt())
+                            5 -> dpm.setPasswordHistoryLength(receiver, input.toInt())
+                        }
+                        dialog = 0
+                    }
+                ) {
+                    Text(stringResource(R.string.apply))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { dialog = 0 }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+            onDismissRequest = {
+                dialog = 0
+            }
+        )
     }
 }
 
@@ -187,24 +267,18 @@ private fun PasswordInfo() {
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT >= 29) {
             val passwordComplexity = mapOf(
-                PASSWORD_COMPLEXITY_NONE to stringResource(R.string.password_complexity_none),
-                PASSWORD_COMPLEXITY_LOW to stringResource(R.string.password_complexity_low),
-                PASSWORD_COMPLEXITY_MEDIUM to stringResource(R.string.password_complexity_medium),
-                PASSWORD_COMPLEXITY_HIGH to stringResource(R.string.password_complexity_high)
+                PASSWORD_COMPLEXITY_NONE to R.string.password_complexity_none,
+                PASSWORD_COMPLEXITY_LOW to R.string.password_complexity_low,
+                PASSWORD_COMPLEXITY_MEDIUM to R.string.password_complexity_medium,
+                PASSWORD_COMPLEXITY_HIGH to R.string.password_complexity_high
             )
-            val pwdComplex = passwordComplexity[dpm.passwordComplexity]
-            Text(text = stringResource(R.string.current_password_complexity_is, pwdComplex?:stringResource(R.string.unknown)))
+            CardItem(R.string.current_password_complexity, passwordComplexity[dpm.passwordComplexity] ?: R.string.unknown)
         }
         if(deviceOwner || profileOwner) {
-            Text(stringResource(R.string.is_password_sufficient, dpm.isActivePasswordSufficient))
-        }
-        if(context.isDeviceAdmin) {
-            val pwdFailedAttempts = dpm.currentFailedPasswordAttempts
-            Text(text = stringResource(R.string.password_failed_attempts_is, pwdFailedAttempts))
+            CardItem(R.string.password_sufficient, dpm.isActivePasswordSufficient.yesOrNo())
         }
         if(VERSION.SDK_INT >= 28 && profileOwner && dpm.isManagedProfile(receiver)) {
-            val unifiedPwd = dpm.isUsingUnifiedPassword(receiver)
-            Text(stringResource(R.string.is_using_unified_password, unifiedPwd))
+            CardItem(R.string.unified_password, dpm.isUsingUnifiedPassword(receiver).yesOrNo())
         }
     }
 }
@@ -242,7 +316,7 @@ private fun ResetPasswordToken() {
                         if(dpm.setResetPasswordToken(receiver, tokenByteArray)) R.string.success else R.string.failed,
                         Toast.LENGTH_SHORT
                     ).show()
-                }catch(e:SecurityException) {
+                }catch(_:SecurityException) {
                     Toast.makeText(context, R.string.security_exception, Toast.LENGTH_SHORT).show()
                 }
             },
@@ -259,7 +333,7 @@ private fun ResetPasswordToken() {
                 onClick = {
                     if(!dpm.isResetPasswordTokenActive(receiver)) {
                         try { activateToken(context) }
-                        catch(e:NullPointerException) { Toast.makeText(context, R.string.please_set_a_token, Toast.LENGTH_SHORT).show() }
+                        catch(_:NullPointerException) { Toast.makeText(context, R.string.please_set_a_token, Toast.LENGTH_SHORT).show() }
                     } else { Toast.makeText(context, R.string.token_already_activated, Toast.LENGTH_SHORT).show() }
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
@@ -455,171 +529,6 @@ private fun PasswordComplexity() {
 }
 
 @Composable
-private fun ScreenTimeout() {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val focusMgr = LocalFocusManager.current
-    var inputContent by remember { mutableStateOf("") }
-    LaunchedEffect(Unit) { inputContent = dpm.getMaximumTimeToLock(receiver).toString() }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.max_time_to_lock), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text= stringResource(R.string.max_time_to_lock_desc),modifier=Modifier.padding(vertical = 2.dp))
-        Spacer(Modifier.padding(vertical = 5.dp))
-        OutlinedTextField(
-            value = inputContent,
-            label = { Text(stringResource(R.string.time_unit_ms)) },
-            onValueChange = { inputContent = it },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = { focusMgr.clearFocus(); dpm.setMaximumTimeToLock(receiver, inputContent.toLong()) },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = inputContent != ""
-        ) {
-            Text(stringResource(R.string.apply))
-        }
-    }
-}
-
-@SuppressLint("NewApi")
-@Composable
-private fun RequiredStrongAuthTimeout() {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val focusMgr = LocalFocusManager.current
-    var input by remember { mutableStateOf("") }
-    LaunchedEffect(Unit) { input = dpm.getRequiredStrongAuthTimeout(receiver).toString() }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.required_strong_auth_timeout), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        OutlinedTextField(
-            value = input,
-            label = { Text(stringResource(R.string.time_unit_ms)) },
-            onValueChange = { input = it },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = { focusMgr.clearFocus(); dpm.setRequiredStrongAuthTimeout(receiver, input.toLong()) },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = input != ""
-        ) {
-            Text(stringResource(R.string.apply))
-        }
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Information { Text(stringResource(R.string.zero_means_no_control)) }
-        Spacer(Modifier.padding(vertical = 60.dp))
-    }
-}
-
-@Composable
-private fun MaxFailedPasswordForWipe() {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val focusMgr = LocalFocusManager.current
-    var inputContent by remember { mutableStateOf("") }
-    LaunchedEffect(Unit) { inputContent = dpm.getMaximumFailedPasswordsForWipe(receiver).toString() }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.max_pwd_fail), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text= stringResource(R.string.max_pwd_fail_desc))
-        Spacer(Modifier.padding(vertical = 5.dp))
-        OutlinedTextField(
-            value = inputContent,
-            label = { Text(stringResource(R.string.max_pwd_fail_textfield)) },
-            onValueChange = { inputContent = it },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = { focusMgr.clearFocus(); dpm.setMaximumFailedPasswordsForWipe(receiver,inputContent.toInt()) },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = inputContent != ""
-        ) {
-            Text(stringResource(R.string.apply))
-        }
-    }
-}
-
-@Composable
-private fun PasswordExpiration() {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val focusMgr = LocalFocusManager.current
-    var inputContent by remember { mutableStateOf("") }
-    LaunchedEffect(Unit) { inputContent = dpm.getPasswordExpirationTimeout(receiver).toString() }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.pwd_expiration_timeout), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        OutlinedTextField(
-            value = inputContent,
-            label = { Text(stringResource(R.string.time_unit_ms)) },
-            onValueChange = { inputContent = it },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = { focusMgr.clearFocus() ; dpm.setPasswordExpirationTimeout(receiver,inputContent.toLong()) },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = inputContent != ""
-        ) {
-            Text(stringResource(R.string.apply))
-        }
-    }
-}
-
-@Composable
-private fun PasswordHistoryLength() {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val focusMgr = LocalFocusManager.current
-    var inputContent by remember { mutableStateOf("") }
-    LaunchedEffect(Unit) { inputContent = dpm.getPasswordHistoryLength(receiver).toString() }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.pwd_history), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text= stringResource(R.string.pwd_history_desc))
-        Spacer(Modifier.padding(vertical = 5.dp))
-        OutlinedTextField(
-            value = inputContent,
-            label = { Text(stringResource(R.string.length)) },
-            onValueChange = { inputContent = it },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = { focusMgr.clearFocus() ; dpm.setPasswordHistoryLength(receiver,inputContent.toInt()) },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = inputContent != ""
-        ) {
-            Text(stringResource(R.string.apply))
-        }
-    }
-}
-
-@Composable
 private fun DisableKeyguardFeatures() {
     val context = LocalContext.current
     val dpm = context.getDPM()
@@ -735,9 +644,6 @@ private fun PasswordQuality() {
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.required_password_quality), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text = stringResource(R.string.password_complexity_instead_password_quality))
-        if(VERSION.SDK_INT >= 31) { Text(text = stringResource(R.string.password_quality_deprecated_desc), color = colorScheme.error) }
         Spacer(Modifier.padding(vertical = 5.dp))
         for(index in 1..6) {
             RadioButtonItem(passwordQuality[index].second, selectedItem == passwordQuality[index].first, { selectedItem = passwordQuality[index].first })

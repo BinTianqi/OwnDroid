@@ -55,6 +55,8 @@
     <string name="account">Hesap</string>
     <string name="warning">Warning</string> <!--TODO-->
     <string name="delete">Delete</string> <!--TODO-->
+    <string name="yes">Yes</string> <!--TODO-->
+    <string name="no">No</string> <!--TODO-->
 
     <!--Permissions-->
     <string name="click_to_activate">Etkinleştirmek İçin Tıklayın</string>
@@ -66,10 +68,10 @@
     <string name="reset_device_policy">Reset device policy</string> <!--TODO-->
     <string name="activate_device_admin">Cihaz Yöneticisini Etkinleştir</string>
     <string name="device_info">Cihaz Bilgisi</string>
-    <string name="support_device_id_attestation">Cihaz Kimliği Doğrulama Desteği: </string>
-    <string name="support_unique_device_attestation">Benzersiz Cihaz Doğrulama Desteği: </string>
-    <string name="is_device_financed">Finansmanlı Cihaz: %1$s</string>
-    <string name="dpmrh">Cihaz Politikası Yönetim Rolü: %1$s</string>
+    <string name="support_device_id_attestation">Cihaz Kimliği Doğrulama Desteği</string>
+    <string name="support_unique_device_attestation">Benzersiz Cihaz Doğrulama Desteği</string>
+    <string name="financed_device">Finansmanlı Cihaz</string>
+    <string name="dpmrh">Cihaz Politikası Yönetim Rolü</string>
 
     <!--es: encryption status-->
     <string name="es_inactive">Devre Dışı</string>
@@ -77,12 +79,11 @@
     <string name="es_unsupported">Desteklenmiyor</string>
     <string name="es_active_default_key">Aktif(Varsayılan Anahtar)</string>
     <string name="es_active_per_user">Aktif(Kullanıcı Başına)</string>
-    <string name="activated_device_admin">Aktif Cihaz Yöneticileri: %1$s</string>
+    <string name="activated_device_admin">Aktif Cihaz Yöneticileri</string>
     <string name="enrollment_specific_id">Kayıt Özel Kimliği</string>
-    <string name="require_set_org_id">Organizasyon Kimliği Gerekli</string>
     <string name="org_name">Organizasyon Adı</string>
     <string name="disable_account_management">Hesap Yönetimini Devre Dışı Bırak</string>
-    <string name="account_types_are">Hesap Türleri: </string>
+    <string name="account_type">Hesap Türleri</string>
     <string name="transfer_ownership">Sahipliği Devret</string>
     <string name="transfer_ownership_desc">Cihaz sahibi veya profil sahibi ayrıcalığını başka bir uygulamaya devredin.</string>
     <string name="target_package_name">Hedef Paket Adı</string>
@@ -90,7 +91,6 @@
     <string name="device_owner_lock_screen_info">Ekran Kilidi Bilgisi</string>
     <string name="support_msg">Destek Mesajı</string>
     <string name="short_support_msg">Kısa Mesaj</string>
-    <string name="support_msg_desc">Bu uygulama tarafından devre dışı bırakılan işlevleri kullanmaya çalışan kullanıcılara destek mesajı gösterilir. (Çok satırlı izin verilir) </string>
     <string name="long_support_msg">Uzun Mesaj</string>
     <string name="transfer">Transfer</string>
     <string name="activate_device_admin_here">Cihaz Yöneticisini Burada Etkinleştir.</string>
@@ -132,7 +132,7 @@
     <string name="backup_service">Yedekleme servisi</string>
     <string name="disable_bt_contact_share">Bluetooth kişi paylaşımını devre dışı bırak</string>
     <string name="common_criteria_mode">Ortak kriter modu</string>
-    <string name="usb_signal">USB sinyali</string>
+    <string name="disable_usb_signal">USB sinyali</string> <!--TODO-->
     <string name="keyguard">Ekran kilidi</string>
     <string name="lock_now">Ekranı şimdi kilitle</string>
     <string name="evict_credential_encryptoon_key">Kimlik doğrulama şifreleme anahtarını çıkar</string>
@@ -187,12 +187,12 @@
     <string name="wipe_silently">Sessizce sil</string>
     <string name="wipe_data_warning">All data on your device will be ERASED</string> <!--TODO-->
     <string name="wipe_work_profile_warning">Your work profile will be DELETED</string> <!--TODO-->
-    <string name="encrypt_status_is">Şifreleme durumu: </string>
+    <string name="encryption_status">Encryption status</string> <!--TODO-->
     <string name="frp_policy">FRP politikası</string>
     <string name="factory_reset_protection_policy">Fabrika ayarlarına sıfırlama koruma politikası</string>
     <string name="frp_policy_not_supported">FRP politikası bu cihazda desteklenmiyor</string>
     <string name="enable_frp">FRP\'yi etkinleştir</string>
-    <string name="account_list_is">Hesap listesi: </string>
+    <string name="account_list_is">"Hesap listesi: "</string>
 
     <!--SystemUpdatePolicy-->
     <string name="is_security_patch">Güvenlik yaması: %1$s</string>
@@ -208,7 +208,7 @@
     <string name="install_system_update">Sistem güncellemesini yükle</string>
     <string name="select_ota_package" tools:ignore="TypographyEllipsis">OTA paketini seç...</string>
     <string name="start_install_system_update">Sistem güncellemesi yüklemeye başla</string>
-    <string name="install_system_update_failed">Sistem güncellemesi yükleme başarısız: </string>
+    <string name="install_system_update_failed">"Sistem güncellemesi yükleme başarısız: "</string>
     <string name="battery_low">Pil zayıf</string>
     <string name="update_file_invalid">Güncelleme dosyası geçersiz</string>
     <string name="incorrect_os_ver">Yanlış işletim sistemi sürümü</string>
@@ -222,7 +222,7 @@
     <string name="preferential_network_service">Tercihli ağ hizmeti</string>
     <string name="lockdown_admin_configured_network">Yönetici tarafından yapılandırılmış ağı kilitle</string>
     <string name="wifi_ssid_policy">WiFi SSID politikası</string>
-    <string name="ssid_list_is">SSID listesi: </string>
+    <string name="ssid_list_is">SSID listesi:</string>
     <string name="cannot_be_empty">Boş olamaz</string>
     <string name="already_exist">Zaten mevcut</string>
     <string name="private_dns">Özel DNS</string>
@@ -241,10 +241,9 @@
     <string name="invalid_config">Invalid config</string> <!--TODO-->
     <string name="exclude_hosts">Exclude hosts</string> <!--TODO-->
     <string name="retrieve_net_logs">Ağ kayıtları</string>
-    <string name="retrieved_logs_are">Retrieved logs: %1$s</string> <!--TODO-->
+    <string name="log_file_size_is">Log file size: %1$s</string> <!--TODO-->
     <string name="delete_logs">Delete logs</string> <!--TODO-->
     <string name="export_logs">Export logs</string> <!--TODO-->
-    <string name="retrieve">Geri al</string>
     <string name="wifi_auth_keypair">WiFi anahtar çifti</string>
     <string name="keypair">Anahtar çifti</string>
     <string name="override_apn_settings">APN ayarlarını geçersiz kıl</string>
@@ -275,6 +274,10 @@
     <string name="work_profile_owner">Profil sahibi (İş profili)</string>
     <string name="work_profile_activated">İş profili etkinleştirildi</string>
     <string name="create_work_profile">İş profili oluştur</string>
+    <string name="offline_provisioning">Offline mode</string> <!--TODO-->
+    <string name="migrate_account">Migrate account</string> <!--TODO-->
+    <string name="account_name">Account name</string> <!--TODO-->
+    <string name="keep_account">Keep account</string> <!--TODO-->
     <string name="is_org_owned_profile">Kuruluşa ait iş profili: %1$s</string>
     <string name="org_owned_work_profile">Kuruluş iş profili</string>
     <string name="skip_encryption">Şifrelemeyi atla</string>
@@ -290,7 +293,6 @@
     <string name="clear_cross_profile_filters">Tüm filtreleri temizle</string>
     <string name="org_id">Kuruluş Kimliği</string>
     <string name="length_6_to_64">Uzunluk 6 ile 64 karakter arasında olmalıdır</string>
-    <string name="get_specific_id_after_set_org_id">Bunu ayarladıktan sonra cihaz spesifik Kimlik alabilirsiniz. </string>
     <string name="delete_work_profile">Delete work profile</string> <!--TODO-->
 
     <!--AppManager-->
@@ -316,7 +318,7 @@
     <!--ucd: user control disabled-->
     <string name="ucd">Kullanıcı kontrolünü devre dışı bırak</string>
     <string name="ucd_desc">Bunu ayarlarsanız, bu uygulamaların depolama alanını temizleyemez veya zorla durduramazsınız. </string>
-    <string name="app_list_is">Uygulama listesi: </string>
+    <string name="app_list_is">Uygulama listesi:</string>
     <string name="clear_list">Listeyi temizle</string>
     <string name="permission_manage">İzin yönetimi</string>
     <string name="cross_profile_package">Profil geçişli paket</string>
@@ -435,20 +437,20 @@
 
     <!--UserManage-->
     <string name="user_manager">Kullanıcı yöneticisi</string>
+    <string name="enable_logout">Enable logout</string> <!--TODO-->
     <string name="edit_username">Kullanıcı adını düzenle</string>
     <string name="start_user_session_msg">Kullanıcı oturumunu başlat mesajı</string>
     <string name="end_user_session_msg">Kullanıcı oturumunu sonlandır mesajı</string>
     <string name="user_info">Kullanıcı bilgisi</string>
-    <string name="is_user_unlocked">Kullanıcı kilidi açıldı: %1$s</string>
-    <string name="is_support_multi_user">Çoklu kullanıcı desteği: %1$s</string>
-    <string name="is_system_user">Sistem kullanıcısı: %1$s</string>
-    <string name="is_admin_user">Yönetici kullanıcısı: %1$s</string>
-    <string name="is_headless_system_user">Başsız sistem kullanıcısı: %1$s</string>
-    <string name="user_can_logout">Kullanıcı çıkış yapabilir: %1$s</string>
-    <string name="is_ephemeral_user">Geçici kullanıcı: %1$s</string>
-    <string name="is_affiliated_user">Bağlı kullanıcı: %1$s</string>
-    <string name="user_id_is">Kullanıcı ID: %1$s</string>
-    <string name="user_serial_number_is">Kullanıcı seri numarası: %1$s</string>
+    <string name="support_multiuser">Çoklu kullanıcı desteği</string>
+    <string name="system_user">Sistem kullanıcısı</string>
+    <string name="admin_user">Yönetici kullanıcısı</string>
+    <string name="headless_system_user">Başsız sistem kullanıcısı</string>
+    <string name="logout_enabled">Logout enabled</string> <!--TODO-->
+    <string name="ephemeral_user">Geçici kullanıcı</string>
+    <string name="affiliated_user">Bağlı kullanıcı</string>
+    <string name="user_id">Kullanıcı ID</string>
+    <string name="user_serial_number">Kullanıcı seri numarası</string>
     <string name="user_operation">Kullanıcı işlemi</string>
     <string name="serial_number">Seri numarası</string>
     <string name="use_uid">UID kullan</string>
@@ -466,7 +468,6 @@
     <string name="affiliation_id">Bağlılık ID</string>
     <string name="include_empty_string">Boş string dahil et</string>
     <string name="change_user_icon">Kullanıcı simgesini değiştir</string>
-    <string name="pick_a_square_image">Kare bir resim seçmelisiniz</string>
     <string name="file_picker_instead_gallery">Galeri yerine dosya seçici kullan</string>
     <string name="select_picture" tools:ignore="TypographyEllipsis">Resim seç...</string>
     <string name="unknown_result">Bilinmeyen sonuç (başarısız olabilir)</string>
@@ -484,18 +485,16 @@
     <string name="pwd_expiration_timeout">Şifre geçerlilik süresi</string>
     <string name="max_time_to_lock">Ekran zaman aşımı</string>
     <string name="required_strong_auth_timeout">Gereken güçlü doğrulama zaman aşımı</string>
-    <string name="zero_means_no_control">0 değeri, yöneticinin zaman aşımını kontrol etmediği anlamına gelir</string>
-    <string name="max_time_to_lock_desc">Kullanıcı kararına izin vermek için 0 girin, birim: milisaniye</string>
+    <string name="zero_means_no_restriction">0 means no restriction</string> <!--TODO-->
     <string name="pwd_history">Şifre geçmişi uzunluğu</string>
     <string name="pwd_history_desc">Belirtilen aralıktaki geçmiş şifreler kullanıcı tarafından ayarlanamaz</string>
     <string name="password_complexity_none">Yok (Şifreye izin verilmez)</string>
     <string name="password_complexity_low">Düşük (Hareket şifresi ve karakter tekrarı izinli)</string>
     <string name="password_complexity_medium">Orta (Tekrar yasak, en az 4 karakter)</string>
     <string name="password_complexity_high">Yüksek (Tekrar yasak, en az 6 karakter)</string>
-    <string name="current_password_complexity_is">Mevcut şifre karmaşıklığı: %1$s</string>
-    <string name="is_password_sufficient">Şifre karmaşıklığı yeterli mi: %1$s</string>
-    <string name="password_failed_attempts_is">Başarısız şifre denemeleri: %1$s</string>
-    <string name="is_using_unified_password">Birleşik şifre: %1$s</string>
+    <string name="current_password_complexity">Mevcut şifre karmaşıklığı</string>
+    <string name="password_sufficient">Şifre karmaşıklığı yeterli mi</string>
+    <string name="unified_password">Birleşik şifre</string>
     <string name="reset_password_token">Şifre sıfırlama jetonu</string>
     <string name="token">Token</string> <!--TODO-->
     <string name="token_must_longer_than_32_byte">The token must be longer than 32-byte</string> <!--TODO-->
@@ -532,8 +531,6 @@
     <string name="password_quality_biometrics_weak">Biyometrik (Zayıf)</string>
     <string name="password_quality_numeric_complex">Sayısal karmaşık (Tekrar eden karakter yok)</string>
     <string name="required_password_quality">Gereken şifre kalitesi</string>
-    <string name="password_complexity_instead_password_quality">Şifre karmaşıklığı ayarlamak şifre kalitesi ayarlarını devre dışı bırakacaktır.</string>
-    <string name="password_quality_deprecated_desc">Kullanım dışı. Bunun yerine "Gereken şifre karmaşıklığı" kullanın.</string>
     <string name="activate_reset_password_token_here">Şifre sıfırlama jetonunu burada etkinleştirin.</string>
 
     <!--Settings&About-->
@@ -557,10 +554,8 @@
     <string name="auth_with_bio">OwnDroid\'u biyometri ile doğrula</string>
     <string name="lock_in_background">Arka plana geçince kilitle</string>
     <string name="protect_storage">Depolamayı koru</string>
-    <string name="storage_is_protected">Depolama korunuyor</string>
-    <string name="you_cant_clear_storage">OwnDroid\'un depolamasını temizleyemezsiniz</string>
+    <string name="storage_is_protected">Depolama korunuyor</string> <!--TODO-->
     <string name="clear_storage">Depolamayı temizle</string>
-    <string name="clear_storage_success">Depolama başarıyla temizlendi\nUygulama kapanacak</string>
 
     <string name="automation_api">Automation API</string> <!--TODO-->
     <string name="automation_debug">Debug mode</string> <!--TODO-->
