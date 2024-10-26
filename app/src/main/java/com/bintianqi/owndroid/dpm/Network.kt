@@ -162,7 +162,7 @@ fun Network(navCtrl: NavHostController) {
                 val mac = dpm.getWifiMacAddress(receiver)
                 OutlinedTextField(
                     value = mac ?: stringResource(R.string.none),
-                    onValueChange = {}, readOnly = true, modifier = Modifier.fillMaxWidth(), textStyle = typography.titleMedium,
+                    onValueChange = {}, readOnly = true, modifier = Modifier.fillMaxWidth(), textStyle = typography.bodyLarge,
                     trailingIcon = {
                         if(mac != null) IconButton(onClick = { writeClipBoard(context, mac) }) {
                             Icon(painter = painterResource(R.drawable.content_copy_fill0), contentDescription = stringResource(R.string.copy))

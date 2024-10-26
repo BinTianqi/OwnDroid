@@ -81,11 +81,13 @@ import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.toggle
 import com.bintianqi.owndroid.ui.Animations
+import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.Information
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.TopBar
+import com.bintianqi.owndroid.yesOrNo
 
 @Composable
 fun Password(navCtrl: NavHostController) {
@@ -265,24 +267,18 @@ private fun PasswordInfo() {
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT >= 29) {
             val passwordComplexity = mapOf(
-                PASSWORD_COMPLEXITY_NONE to stringResource(R.string.password_complexity_none),
-                PASSWORD_COMPLEXITY_LOW to stringResource(R.string.password_complexity_low),
-                PASSWORD_COMPLEXITY_MEDIUM to stringResource(R.string.password_complexity_medium),
-                PASSWORD_COMPLEXITY_HIGH to stringResource(R.string.password_complexity_high)
+                PASSWORD_COMPLEXITY_NONE to R.string.password_complexity_none,
+                PASSWORD_COMPLEXITY_LOW to R.string.password_complexity_low,
+                PASSWORD_COMPLEXITY_MEDIUM to R.string.password_complexity_medium,
+                PASSWORD_COMPLEXITY_HIGH to R.string.password_complexity_high
             )
-            val pwdComplex = passwordComplexity[dpm.passwordComplexity]
-            Text(text = stringResource(R.string.current_password_complexity_is, pwdComplex?:stringResource(R.string.unknown)))
+            CardItem(R.string.current_password_complexity, passwordComplexity[dpm.passwordComplexity] ?: R.string.unknown)
         }
         if(deviceOwner || profileOwner) {
-            Text(stringResource(R.string.is_password_sufficient, dpm.isActivePasswordSufficient))
-        }
-        if(context.isDeviceAdmin) {
-            val pwdFailedAttempts = dpm.currentFailedPasswordAttempts
-            Text(text = stringResource(R.string.password_failed_attempts_is, pwdFailedAttempts))
+            CardItem(R.string.password_sufficient, dpm.isActivePasswordSufficient.yesOrNo())
         }
         if(VERSION.SDK_INT >= 28 && profileOwner && dpm.isManagedProfile(receiver)) {
-            val unifiedPwd = dpm.isUsingUnifiedPassword(receiver)
-            Text(stringResource(R.string.is_using_unified_password, unifiedPwd))
+            CardItem(R.string.unified_password, dpm.isUsingUnifiedPassword(receiver).yesOrNo())
         }
     }
 }

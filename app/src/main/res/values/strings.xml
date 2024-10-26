@@ -55,6 +55,8 @@
     <string name="account">Account</string>
     <string name="warning">Warning</string>
     <string name="delete">Delete</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
@@ -68,17 +70,17 @@
     <string name="activate_device_admin_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="activate_device_owner_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="device_info">Device info</string>
-    <string name="support_device_id_attestation">Support Device ID attestation: %1$s</string>
-    <string name="support_unique_device_attestation">Support unique device attestation: %1$s</string>
-    <string name="is_device_financed">Financed device: %1$s</string>
-    <string name="dpmrh">Device policy management role holder: %1$s</string>
+    <string name="support_device_id_attestation">Support Device ID attestation</string>
+    <string name="support_unique_device_attestation">Support unique device attestation</string>
+    <string name="financed_device">Financed device</string>
+    <string name="dpmrh">Device policy management role holder</string>
     <!--es: encryption status-->
     <string name="es_inactive">Inactive</string>
     <string name="es_active">Active</string>
     <string name="es_unsupported">Unsupported</string>
     <string name="es_active_default_key">Active(default key)</string>
     <string name="es_active_per_user">Active(per-user)</string>
-    <string name="activated_device_admin">Active device admins: %1$s</string>
+    <string name="activated_device_admin">Active device admins</string>
     <string name="enrollment_specific_id">Enrollment specific ID</string>
     <string name="org_name">Organization name</string>
     <string name="disable_account_management">Disable account management</string>
@@ -134,7 +136,7 @@
     <string name="backup_service">Backup service</string>
     <string name="disable_bt_contact_share">Disable bluetooth contact sharing</string>
     <string name="common_criteria_mode">Common criteria mode</string>
-    <string name="usb_signal">USB signal</string>
+    <string name="disable_usb_signal">Disable USB signal</string>
     <string name="keyguard">Keyguard</string>
     <string name="lock_now">Lock screen now</string>
     <string name="evict_credential_encryptoon_key">Evict credential encryption key</string>
@@ -188,7 +190,7 @@
     <string name="wipe_silently">Wipe silently</string>
     <string name="wipe_data_warning">All data on your device will be ERASED</string>
     <string name="wipe_work_profile_warning">Your work profile will be DELETED</string>
-    <string name="encrypt_status_is">Encrypt status: %1$s</string>
+    <string name="encryption_status">Encryption status</string>
     <string name="frp_policy">FRP policy</string>
     <string name="factory_reset_protection_policy">Factory reset protection policy</string>
     <string name="frp_policy_not_supported">FRP policy is not supported on this device</string>
@@ -445,16 +447,15 @@
     <string name="start_user_session_msg">Start user session message</string>
     <string name="end_user_session_msg">End user session message</string>
     <string name="user_info">User info</string>
-    <string name="is_user_unlocked">User unlocked: %1$s</string>
-    <string name="is_support_multi_user">Support multiuser: %1$s</string>
-    <string name="is_system_user">System user: %1$s</string>
-    <string name="is_admin_user">Admin user: %1$s</string>
-    <string name="is_headless_system_user">Headless system user: %1$s</string>
-    <string name="user_can_logout">User can logout: %1$s</string>
-    <string name="is_ephemeral_user">Ephemeral user: %1$s</string>
-    <string name="is_affiliated_user">Affiliated user: %1$s</string>
-    <string name="user_id_is">UserID：%1$s</string>
-    <string name="user_serial_number_is">User serial number: %1$s</string>
+    <string name="support_multiuser">Support multiuser</string>
+    <string name="system_user">System user</string>
+    <string name="admin_user">Admin user</string>
+    <string name="headless_system_user">Headless system user</string>
+    <string name="logout_enabled">Logout enabled</string>
+    <string name="ephemeral_user">Ephemeral user</string>
+    <string name="affiliated_user">Affiliated user</string>
+    <string name="user_id">UserID</string>
+    <string name="user_serial_number">User serial number</string>
     <string name="user_operation">User operation</string>
     <string name="serial_number">Serial number</string>
     <string name="use_uid">Use UID</string>
@@ -496,10 +497,9 @@
     <string name="password_complexity_low">Low (Gesture password and characters repetition allowed)</string>
     <string name="password_complexity_medium">Medium (Repetition disallowed, 4 characters at least)</string>
     <string name="password_complexity_high">High (Repetition disallowed, 6 characters at least)</string>
-    <string name="current_password_complexity_is">Current password complexity: %1$s</string>
-    <string name="is_password_sufficient">Is password complexity sufficient: %1$s</string>
-    <string name="password_failed_attempts_is">Password failed attempts: %1$s</string>
-    <string name="is_using_unified_password">Unified password: %1$s</string>
+    <string name="current_password_complexity">Current password complexity</string>
+    <string name="password_sufficient">Password complexity sufficient</string>
+    <string name="unified_password">Unified password</string>
     <string name="reset_password_token">Reset password token</string>
     <string name="token">Token</string>
     <string name="token_must_longer_than_32_byte">The token must be longer than 32-byte</string>

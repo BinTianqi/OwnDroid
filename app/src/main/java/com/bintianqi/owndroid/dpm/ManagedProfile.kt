@@ -192,7 +192,7 @@ private fun CreateWorkProfile() {
                     if(VERSION.SDK_INT >= 24) { intent.putExtra(EXTRA_PROVISIONING_SKIP_ENCRYPTION, skipEncrypt) }
                     if(VERSION.SDK_INT >= 33) { intent.putExtra(EXTRA_PROVISIONING_ALLOW_OFFLINE, offlineProvisioning) }
                     createManagedProfile.launch(intent)
-                } catch(e:ActivityNotFoundException) {
+                } catch(_:ActivityNotFoundException) {
                     Toast.makeText(context, R.string.unsupported, Toast.LENGTH_SHORT).show()
                 }
             },

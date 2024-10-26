@@ -56,7 +56,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.core.os.UserManagerCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -67,11 +66,13 @@ import com.bintianqi.owndroid.fileUriFlow
 import com.bintianqi.owndroid.getFile
 import com.bintianqi.owndroid.toggle
 import com.bintianqi.owndroid.ui.Animations
+import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.TopBar
 import com.bintianqi.owndroid.uriToStream
+import com.bintianqi.owndroid.yesOrNo
 
 @Composable
 fun UserManage(navCtrl: NavHostController) {
@@ -171,24 +172,20 @@ private fun CurrentUserInfo() {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.user_info), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        Text(stringResource(R.string.is_user_unlocked, UserManagerCompat.isUserUnlocked(context)))
-        if(VERSION.SDK_INT >= 24) { Text(stringResource(R.string.is_support_multi_user, UserManager.supportsMultipleUsers())) }
-        if(VERSION.SDK_INT >= 23) { Text(text = stringResource(R.string.is_system_user, userManager.isSystemUser)) }
-        if(VERSION.SDK_INT >= 34) { Text(text = stringResource(R.string.is_admin_user, userManager.isAdminUser)) }
-        if(VERSION.SDK_INT >= 31) { Text(text = stringResource(R.string.is_headless_system_user, UserManager.isHeadlessSystemUserMode())) }
-        Spacer(Modifier.padding(vertical = 5.dp))
+        if(VERSION.SDK_INT >= 24) CardItem(R.string.support_multiuser, UserManager.supportsMultipleUsers().yesOrNo())
+        if(VERSION.SDK_INT >= 23) CardItem(R.string.system_user, userManager.isSystemUser.yesOrNo())
+        if(VERSION.SDK_INT >= 34) CardItem(R.string.admin_user, userManager.isAdminUser.yesOrNo())
+        if(VERSION.SDK_INT >= 31) CardItem(R.string.headless_system_user, UserManager.isHeadlessSystemUserMode().yesOrNo())
         if (VERSION.SDK_INT >= 28) {
-            val logoutable = dpm.isLogoutEnabled
-            Text(text = stringResource(R.string.user_can_logout, logoutable))
+            CardItem(R.string.logout_enabled, dpm.isLogoutEnabled.yesOrNo())
             if(context.isDeviceOwner || context.isProfileOwner) {
-                val ephemeralUser = dpm.isEphemeralUser(receiver)
-                Text(text = stringResource(R.string.is_ephemeral_user, ephemeralUser))
+                CardItem(R.string.ephemeral_user, dpm.isEphemeralUser(receiver).yesOrNo())
             }
-            Text(text = stringResource(R.string.is_affiliated_user, dpm.isAffiliatedUser))
+            CardItem(R.string.affiliated_user, dpm.isAffiliatedUser.yesOrNo())
         }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text = stringResource(R.string.user_id_is, Binder.getCallingUid() / 100000))
-        Text(text = stringResource(R.string.user_serial_number_is, userManager.getSerialNumberForUser(Process.myUserHandle())))
+        CardItem(R.string.user_id, (Binder.getCallingUid() / 100000).toString())
+        CardItem(R.string.user_serial_number, userManager.getSerialNumberForUser(Process.myUserHandle()).toString())
+        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
@@ -270,7 +267,7 @@ private fun UserOperation() {
                     try{
                         val result = dpm.stopUser(receiver,userHandleById)
                         Toast.makeText(context, userOperationResultCode(result,context), Toast.LENGTH_SHORT).show()
-                    }catch(e:IllegalArgumentException) {
+                    }catch(_: IllegalArgumentException) {
                         Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
                     }
                 },

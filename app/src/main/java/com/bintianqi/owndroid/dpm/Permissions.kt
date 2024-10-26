@@ -29,7 +29,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -40,6 +39,7 @@ import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.backToHomeStateFlow
 import com.bintianqi.owndroid.ui.*
 import com.bintianqi.owndroid.writeClipBoard
+import com.bintianqi.owndroid.yesOrNo
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
 import kotlinx.coroutines.launch
@@ -480,50 +480,29 @@ fun DeviceInfo() {
         Text(text = stringResource(R.string.device_info), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT>=34 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
-            val financed = dpm.isDeviceFinanced
-            Text(stringResource(R.string.is_device_financed, financed))
+            CardItem(R.string.financed_device, dpm.isDeviceFinanced.yesOrNo())
         }
-        Spacer(Modifier.padding(vertical = 2.dp))
         if(VERSION.SDK_INT >= 33) {
             val dpmRole = dpm.devicePolicyManagementRoleHolderPackage
-            Text(stringResource(R.string.dpmrh, if(dpmRole == null) stringResource(R.string.none) else ""))
-            if(dpmRole!=null) {
-                SelectionContainer(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-                    Text(text = dpmRole)
-                }
-            }
+            CardItem(R.string.dpmrh, if(dpmRole == null) stringResource(R.string.none) else dpmRole)
         }
-        Spacer(Modifier.padding(vertical = 2.dp))
         val encryptionStatus = mutableMapOf(
-            DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE to stringResource(R.string.es_inactive),
-            DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE to stringResource(R.string.es_active),
-            DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED to stringResource(R.string.es_unsupported)
+            DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE to R.string.es_inactive,
+            DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE to R.string.es_active,
+            DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED to R.string.es_unsupported
         )
-        if(VERSION.SDK_INT >= 23) { encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY] = stringResource(R.string.es_active_default_key) }
-        if(VERSION.SDK_INT >= 24) { encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER] = stringResource(R.string.es_active_per_user) }
-        Text(stringResource(R.string.encrypt_status_is, encryptionStatus[dpm.storageEncryptionStatus] ?: ""))
-        Spacer(Modifier.padding(vertical = 2.dp))
+        if(VERSION.SDK_INT >= 23) { encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY] = R.string.es_active_default_key }
+        if(VERSION.SDK_INT >= 24) { encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER] = R.string.es_active_per_user }
+        CardItem(R.string.encryption_status, encryptionStatus[dpm.storageEncryptionStatus] ?: R.string.unknown)
         if(VERSION.SDK_INT >= 28) {
-            Text(stringResource(R.string.support_device_id_attestation, dpm.isDeviceIdAttestationSupported))
+            CardItem(R.string.support_device_id_attestation, dpm.isDeviceIdAttestationSupported.yesOrNo())
         }
-        Spacer(Modifier.padding(vertical = 2.dp))
         if (VERSION.SDK_INT >= 30) {
-            Text(stringResource(R.string.support_unique_device_attestation, dpm.isUniqueDeviceAttestationSupported))
+            CardItem(R.string.support_unique_device_attestation, dpm.isUniqueDeviceAttestationSupported.yesOrNo())
         }
-        Spacer(Modifier.padding(vertical = 2.dp))
         val adminList = dpm.activeAdmins
-        if(adminList!=null) {
-            var adminListText = ""
-            Text(text = stringResource(R.string.activated_device_admin, adminList.size))
-            var count = adminList.size
-            for(each in adminList) {
-                count -= 1
-                adminListText += "${each.packageName}/${each.className}"
-                if(count>0) {adminListText += "\n"}
-            }
-            SelectionContainer(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp).horizontalScroll(rememberScrollState())) {
-                Text(text = adminListText)
-            }
+        if(adminList != null) {
+            CardItem(R.string.activated_device_admin, adminList.map { it.flattenToShortString() }.joinToString("\n"))
         }
     }
 }
@@ -692,9 +671,9 @@ private fun TransformOwnership() {
         Button(
             onClick = {
                 try {
-                    dpm.transferOwnership(receiver,ComponentName(pkg, cls),null)
+                    dpm.transferOwnership(receiver, ComponentName(pkg, cls),null)
                     Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                }catch(e:IllegalArgumentException) {
+                } catch(_:IllegalArgumentException) {
                     Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
                 }
             },
@@ -712,7 +691,7 @@ private fun activateDeviceAdmin(inputContext:Context,inputComponent:ComponentNam
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, inputComponent)
         intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, inputContext.getString(R.string.activate_device_admin_here))
         addDeviceAdmin.launch(intent)
-    }catch(e:ActivityNotFoundException) {
+    } catch(_:ActivityNotFoundException) {
         Toast.makeText(inputContext, R.string.unsupported, Toast.LENGTH_SHORT).show()
     }
 }

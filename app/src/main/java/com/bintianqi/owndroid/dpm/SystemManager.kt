@@ -282,7 +282,7 @@ private fun Switches() {
                 SwitchItem(R.string.require_auto_time, "", R.drawable.schedule_fill0, { dpm.autoTimeRequired}, { dpm.setAutoTimeRequired(receiver,it) }, padding = false)
             }
         }
-        if(deviceOwner || profileOwner) {
+        if(deviceOwner || (profileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && !dpm.isManagedProfile(receiver))))) {
             SwitchItem(R.string.master_mute, "", R.drawable.volume_up_fill0,
                 { dpm.isMasterVolumeMuted(receiver) }, { dpm.setMasterVolumeMuted(receiver,it) }, padding = false
             )
@@ -302,16 +302,10 @@ private fun Switches() {
                 { dpm.isCommonCriteriaModeEnabled(receiver) }, { dpm.setCommonCriteriaModeEnabled(receiver,it) }, padding = false
             )
         }
-        if(VERSION.SDK_INT >= 31 && (deviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 31 && (deviceOwner || dpm.isOrgProfile(receiver)) && dpm.canUsbDataSignalingBeDisabled()) {
             SwitchItem(
-                R.string.usb_signal, "", R.drawable.usb_fill0, { dpm.isUsbDataSignalingEnabled },
-                {
-                    if(dpm.canUsbDataSignalingBeDisabled()) {
-                        dpm.isUsbDataSignalingEnabled = it
-                    } else {
-                        Toast.makeText(context, R.string.unsupported, Toast.LENGTH_SHORT).show()
-                    }
-                }, padding = false
+                R.string.disable_usb_signal, "", R.drawable.usb_fill0, { !dpm.isUsbDataSignalingEnabled },
+                { dpm.isUsbDataSignalingEnabled = !it }, padding = false
             )
         }
         Spacer(Modifier.padding(vertical = 30.dp))

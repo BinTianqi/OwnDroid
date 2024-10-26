@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import com.bintianqi.owndroid.dpm.addDeviceAdmin
 import com.bintianqi.owndroid.dpm.createManagedProfile
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -120,4 +121,9 @@ fun formatFileSize(bytes: Long): String {
         bytes >= kb -> String.format(Locale.US, "%.2f KB", bytes / kb.toDouble())
         else -> "$bytes bytes"
     }
+}
+
+@StringRes
+fun Boolean.yesOrNo(): Int {
+    return if(this) R.string.yes else R.string.no
 }

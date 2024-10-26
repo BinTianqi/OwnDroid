@@ -55,6 +55,8 @@
     <string name="account">Hesap</string>
     <string name="warning">Warning</string> <!--TODO-->
     <string name="delete">Delete</string> <!--TODO-->
+    <string name="yes">Yes</string> <!--TODO-->
+    <string name="no">No</string> <!--TODO-->
 
     <!--Permissions-->
     <string name="click_to_activate">Etkinleştirmek İçin Tıklayın</string>
@@ -66,10 +68,10 @@
     <string name="reset_device_policy">Reset device policy</string> <!--TODO-->
     <string name="activate_device_admin">Cihaz Yöneticisini Etkinleştir</string>
     <string name="device_info">Cihaz Bilgisi</string>
-    <string name="support_device_id_attestation">Cihaz Kimliği Doğrulama Desteği: %1$s</string>
-    <string name="support_unique_device_attestation">Benzersiz Cihaz Doğrulama Desteği: %1$s</string>
-    <string name="is_device_financed">Finansmanlı Cihaz: %1$s</string>
-    <string name="dpmrh">Cihaz Politikası Yönetim Rolü: %1$s</string>
+    <string name="support_device_id_attestation">Cihaz Kimliği Doğrulama Desteği</string>
+    <string name="support_unique_device_attestation">Benzersiz Cihaz Doğrulama Desteği</string>
+    <string name="financed_device">Finansmanlı Cihaz</string>
+    <string name="dpmrh">Cihaz Politikası Yönetim Rolü</string>
 
     <!--es: encryption status-->
     <string name="es_inactive">Devre Dışı</string>
@@ -77,7 +79,7 @@
     <string name="es_unsupported">Desteklenmiyor</string>
     <string name="es_active_default_key">Aktif(Varsayılan Anahtar)</string>
     <string name="es_active_per_user">Aktif(Kullanıcı Başına)</string>
-    <string name="activated_device_admin">Aktif Cihaz Yöneticileri: %1$s</string>
+    <string name="activated_device_admin">Aktif Cihaz Yöneticileri</string>
     <string name="enrollment_specific_id">Kayıt Özel Kimliği</string>
     <string name="org_name">Organizasyon Adı</string>
     <string name="disable_account_management">Hesap Yönetimini Devre Dışı Bırak</string>
@@ -130,7 +132,7 @@
     <string name="backup_service">Yedekleme servisi</string>
     <string name="disable_bt_contact_share">Bluetooth kişi paylaşımını devre dışı bırak</string>
     <string name="common_criteria_mode">Ortak kriter modu</string>
-    <string name="usb_signal">USB sinyali</string>
+    <string name="disable_usb_signal">USB sinyali</string> <!--TODO-->
     <string name="keyguard">Ekran kilidi</string>
     <string name="lock_now">Ekranı şimdi kilitle</string>
     <string name="evict_credential_encryptoon_key">Kimlik doğrulama şifreleme anahtarını çıkar</string>
@@ -185,7 +187,7 @@
     <string name="wipe_silently">Sessizce sil</string>
     <string name="wipe_data_warning">All data on your device will be ERASED</string> <!--TODO-->
     <string name="wipe_work_profile_warning">Your work profile will be DELETED</string> <!--TODO-->
-    <string name="encrypt_status_is">Şifreleme durumu: %1$s</string>
+    <string name="encryption_status">Encryption status</string> <!--TODO-->
     <string name="frp_policy">FRP politikası</string>
     <string name="factory_reset_protection_policy">Fabrika ayarlarına sıfırlama koruma politikası</string>
     <string name="frp_policy_not_supported">FRP politikası bu cihazda desteklenmiyor</string>
@@ -440,16 +442,15 @@
     <string name="start_user_session_msg">Kullanıcı oturumunu başlat mesajı</string>
     <string name="end_user_session_msg">Kullanıcı oturumunu sonlandır mesajı</string>
     <string name="user_info">Kullanıcı bilgisi</string>
-    <string name="is_user_unlocked">Kullanıcı kilidi açıldı: %1$s</string>
-    <string name="is_support_multi_user">Çoklu kullanıcı desteği: %1$s</string>
-    <string name="is_system_user">Sistem kullanıcısı: %1$s</string>
-    <string name="is_admin_user">Yönetici kullanıcısı: %1$s</string>
-    <string name="is_headless_system_user">Başsız sistem kullanıcısı: %1$s</string>
-    <string name="user_can_logout">Kullanıcı çıkış yapabilir: %1$s</string>
-    <string name="is_ephemeral_user">Geçici kullanıcı: %1$s</string>
-    <string name="is_affiliated_user">Bağlı kullanıcı: %1$s</string>
-    <string name="user_id_is">Kullanıcı ID: %1$s</string>
-    <string name="user_serial_number_is">Kullanıcı seri numarası: %1$s</string>
+    <string name="support_multiuser">Çoklu kullanıcı desteği</string>
+    <string name="system_user">Sistem kullanıcısı</string>
+    <string name="admin_user">Yönetici kullanıcısı</string>
+    <string name="headless_system_user">Başsız sistem kullanıcısı</string>
+    <string name="logout_enabled">Logout enabled</string> <!--TODO-->
+    <string name="ephemeral_user">Geçici kullanıcı</string>
+    <string name="affiliated_user">Bağlı kullanıcı</string>
+    <string name="user_id">Kullanıcı ID</string>
+    <string name="user_serial_number">Kullanıcı seri numarası</string>
     <string name="user_operation">Kullanıcı işlemi</string>
     <string name="serial_number">Seri numarası</string>
     <string name="use_uid">UID kullan</string>
@@ -491,10 +492,9 @@
     <string name="password_complexity_low">Düşük (Hareket şifresi ve karakter tekrarı izinli)</string>
     <string name="password_complexity_medium">Orta (Tekrar yasak, en az 4 karakter)</string>
     <string name="password_complexity_high">Yüksek (Tekrar yasak, en az 6 karakter)</string>
-    <string name="current_password_complexity_is">Mevcut şifre karmaşıklığı: %1$s</string>
-    <string name="is_password_sufficient">Şifre karmaşıklığı yeterli mi: %1$s</string>
-    <string name="password_failed_attempts_is">Başarısız şifre denemeleri: %1$s</string>
-    <string name="is_using_unified_password">Birleşik şifre: %1$s</string>
+    <string name="current_password_complexity">Mevcut şifre karmaşıklığı</string>
+    <string name="password_sufficient">Şifre karmaşıklığı yeterli mi</string>
+    <string name="unified_password">Birleşik şifre</string>
     <string name="reset_password_token">Şifre sıfırlama jetonu</string>
     <string name="token">Token</string> <!--TODO-->
     <string name="token_must_longer_than_32_byte">The token must be longer than 32-byte</string> <!--TODO-->
