@@ -214,6 +214,7 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState) {
                         onValueChange = { input = it },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+                        textStyle = typography.bodyLarge,
                         modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)
                     )
                     when(dialog) {

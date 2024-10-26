@@ -559,10 +559,8 @@
     <string name="auth_with_bio">Authenticate OwnDroid with biometrics</string>
     <string name="lock_in_background">Lock when switch to background</string>
     <string name="protect_storage">Protect storage</string>
-    <string name="storage_is_protected">Storage is protected</string>
-    <string name="you_cant_clear_storage">You can\'t clear storage of OwnDroid</string>
+    <string name="storage_is_protected">Storage is protected, you can\'t clear storage of OwnDroid</string>
     <string name="clear_storage">Clear storage</string>
-    <string name="clear_storage_success">Clear storage success\nApplication will exit</string>
 
     <string name="automation_api">Automation API</string>
     <string name="automation_debug">Debug mode</string>

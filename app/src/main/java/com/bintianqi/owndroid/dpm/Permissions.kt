@@ -75,8 +75,6 @@ fun DpmPermissions(navCtrl:NavHostController) {
             composable(route = "ProfileOwner") { ProfileOwner() }
             composable(route = "DeviceOwner") { DeviceOwner() }
             composable(route = "DeviceInfo") { DeviceInfo() }
-            composable(route = "OrgID") { OrgID() }
-            composable(route = "OrgName") { OrgName() }
             composable(route = "DisableAccountManagement") { DisableAccountManagement() }
             composable(route = "LockScreenInfo") { LockScreenInfo() }
             composable(route = "SupportMsg") { SupportMsg() }
@@ -95,7 +93,7 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
     val deviceAdmin = context.isDeviceAdmin
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
-    var enrollmentIdDialog by remember { mutableStateOf(false) }
+    var dialog by remember { mutableIntStateOf(0) }
     val enrollmentSpecificId = if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) dpm.enrollmentSpecificId else ""
     Column(modifier = Modifier.fillMaxSize().verticalScroll(listScrollState)) {
         Text(
@@ -131,13 +129,13 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
         SubPageItem(R.string.shizuku,"") { localNavCtrl.navigate("Shizuku") }
         SubPageItem(R.string.device_info, "", R.drawable.perm_device_information_fill0) { localNavCtrl.navigate("DeviceInfo") }
         if((VERSION.SDK_INT >= 26 && deviceOwner) || (VERSION.SDK_INT>=24 && profileOwner)) {
-            SubPageItem(R.string.org_name, "", R.drawable.corporate_fare_fill0) { localNavCtrl.navigate("OrgName") }
+            SubPageItem(R.string.org_name, "", R.drawable.corporate_fare_fill0) { dialog = 2 }
         }
         if(VERSION.SDK_INT >= 31 && (profileOwner || deviceOwner)) {
-            SubPageItem(R.string.org_id, "", R.drawable.corporate_fare_fill0) { localNavCtrl.navigate("OrgID") }
+            SubPageItem(R.string.org_id, "", R.drawable.corporate_fare_fill0) { dialog = 3 }
         }
         if(enrollmentSpecificId != "") {
-            SubPageItem(R.string.enrollment_specific_id, "", R.drawable.id_card_fill0) { enrollmentIdDialog = true }
+            SubPageItem(R.string.enrollment_specific_id, "", R.drawable.id_card_fill0) { dialog = 1 }
         }
         if(deviceOwner || profileOwner) {
             SubPageItem(R.string.disable_account_management, "", R.drawable.account_circle_fill0) { localNavCtrl.navigate("DisableAccountManagement") }
@@ -153,27 +151,76 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
-    if(enrollmentIdDialog) AlertDialog(
-        title = { Text(stringResource(R.string.enrollment_specific_id)) },
-        text = {
-            val esid = dpm.enrollmentSpecificId
-            OutlinedTextField(
-                value = esid,
-                onValueChange = {}, readOnly = true, modifier = Modifier.fillMaxWidth(),
-                trailingIcon = {
-                    IconButton(onClick = { writeClipBoard(context, esid) }) {
-                        Icon(painter = painterResource(R.drawable.content_copy_fill0), contentDescription = stringResource(R.string.copy))
+    if(dialog != 0) {
+        var input by remember { mutableStateOf("") }
+        AlertDialog(
+            title = {
+                Text(stringResource(
+                    when(dialog){
+                        1 -> R.string.enrollment_specific_id
+                        2 -> R.string.org_name
+                        3 -> R.string.org_id
+                        else -> R.string.permission
                     }
+                ))
+            },
+            text = {
+                val focusMgr = LocalFocusManager.current
+                LaunchedEffect(Unit) {
+                    if(dialog == 1) input = dpm.enrollmentSpecificId
                 }
-            )
-        },
-        onDismissRequest = { enrollmentIdDialog = false },
-        confirmButton = {
-            TextButton(onClick = { enrollmentIdDialog = false }) {
-                Text(stringResource(R.string.confirm))
+                OutlinedTextField(
+                    value = input,
+                    onValueChange = { input = it }, readOnly = dialog == 1, modifier = Modifier.fillMaxWidth(),
+                    label = {
+                        Text(stringResource(
+                            when(dialog){
+                                1 -> R.string.enrollment_specific_id
+                                2 -> R.string.org_name
+                                3 -> R.string.org_id
+                                else -> R.string.permission
+                            }
+                        ))
+                    },
+                    trailingIcon = {
+                        if(dialog == 1) IconButton(onClick = { writeClipBoard(context, input) }) {
+                            Icon(painter = painterResource(R.drawable.content_copy_fill0), contentDescription = stringResource(R.string.copy))
+                        }
+                    },
+                    supportingText = {
+                        if(dialog == 3) Text(stringResource(R.string.length_6_to_64))
+                    },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions { focusMgr.clearFocus() },
+                    textStyle = typography.bodyLarge
+                )
+            },
+            onDismissRequest = { dialog = 0 },
+            dismissButton = {
+                TextButton(
+                    onClick = { dialog = 0 }
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        try {
+                            if(dialog == 2) dpm.setOrganizationName(receiver, input)
+                            if(dialog == 3) dpm.setOrganizationId(input)
+                            dialog = 0
+                        } catch(_: IllegalStateException) {
+                            Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    enabled = (dialog == 3 && input.length in 6..64) || dialog != 3
+                ) {
+                    Text(stringResource(R.string.confirm))
+                }
             }
-        }
-    )
+        )
+    }
 }
 
 private fun toggleDhizukuMode(status: Boolean, context: Context) {
@@ -477,78 +524,6 @@ fun DeviceInfo() {
             SelectionContainer(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp).horizontalScroll(rememberScrollState())) {
                 Text(text = adminListText)
             }
-        }
-    }
-}
-
-@SuppressLint("NewApi")
-@Composable
-private fun OrgID() {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        var orgId by remember { mutableStateOf("") }
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.org_id), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        OutlinedTextField(
-            value = orgId, onValueChange = { orgId=it },
-            label = { Text(stringResource(R.string.org_id)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(Modifier.padding(vertical = 2.dp))
-        AnimatedVisibility(orgId.length !in 6..64) {
-            Text(text = stringResource(R.string.length_6_to_64))
-        }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = {
-                try {
-                    dpm.setOrganizationId(orgId)
-                    Toast.makeText(context, R.string.success,Toast.LENGTH_SHORT).show()
-                } catch(e: IllegalStateException) {
-                    Toast.makeText(context, R.string.failed,Toast.LENGTH_SHORT).show()
-                }
-            },
-            enabled = orgId.length in 6..64,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.apply))
-        }
-    }
-}
-
-@SuppressLint("NewApi")
-@Composable
-private fun OrgName() {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
-        var orgName by remember { mutableStateOf(try{dpm.getOrganizationName(receiver).toString() }catch(e:SecurityException) {""}) }
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.org_name), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        OutlinedTextField(
-            value = orgName, onValueChange = { orgName = it }, modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
-            label = { Text(stringResource(R.string.org_name)) },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() })
-        )
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = {
-                focusMgr.clearFocus()
-                dpm.setOrganizationName(receiver,orgName)
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.apply))
         }
     }
 }

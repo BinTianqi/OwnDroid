@@ -546,10 +546,8 @@
     <string name="auth_with_bio">使用生物识别进行验证</string>
     <string name="lock_in_background">处于后台时锁定</string>
     <string name="protect_storage">保护存储空间</string>
-    <string name="storage_is_protected">存储空间受到保护</string>
-    <string name="you_cant_clear_storage">你不能清除OwnDroid的存储空间</string>
+    <string name="storage_is_protected">存储空间受到保护，你不能清除OwnDroid的存储空间</string>
     <string name="clear_storage">清除存储空间</string>
-    <string name="clear_storage_success">清除存储空间成功\n应用即将退出</string>
 
     <string name="automation_api">自动化API</string>
     <string name="automation_debug">调试模式</string>

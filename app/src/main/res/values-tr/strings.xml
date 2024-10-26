@@ -554,10 +554,8 @@
     <string name="auth_with_bio">OwnDroid\'u biyometri ile doğrula</string>
     <string name="lock_in_background">Arka plana geçince kilitle</string>
     <string name="protect_storage">Depolamayı koru</string>
-    <string name="storage_is_protected">Depolama korunuyor</string>
-    <string name="you_cant_clear_storage">OwnDroid\'un depolamasını temizleyemezsiniz</string>
+    <string name="storage_is_protected">Depolama korunuyor</string> <!--TODO-->
     <string name="clear_storage">Depolamayı temizle</string>
-    <string name="clear_storage_success">Depolama başarıyla temizlendi\nUygulama kapanacak</string>
 
     <string name="automation_api">Automation API</string> <!--TODO-->
     <string name="automation_debug">Debug mode</string> <!--TODO-->
