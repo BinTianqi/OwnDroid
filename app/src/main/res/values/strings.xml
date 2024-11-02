@@ -57,6 +57,8 @@
     <string name="delete">Delete</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="previous">Previous</string>
+    <string name="next">Next</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
@@ -87,8 +89,7 @@
     <string name="account_type">Account type</string>
     <string name="transfer_ownership">Transfer Ownership</string>
     <string name="transfer_ownership_desc">Transfer device owner or profile owner privilege to another app.</string>
-    <string name="target_package_name">Target package name</string>
-    <string name="target_class_name">Target class name</string>
+    <string name="target_component_name">Target component name</string>
     <string name="device_owner_lock_screen_info">Lockscreen info</string>
     <string name="support_msg">Support Message</string>
     <string name="short_support_msg">Short message</string>
@@ -223,7 +224,6 @@
     <string name="wifi_mac_addr">Wi-Fi Mac address</string>
     <string name="min_wifi_security_level">Min Wi-Fi security level</string>
     <string name="wifi_security_open">Open</string>
-    <string name="preferential_network_service">Preferential network service</string>
     <string name="lockdown_admin_configured_network">Lockdown admin configured network</string>
     <string name="wifi_ssid_policy">WiFi SSID policy</string>
     <string name="ssid_list_is">SSID list:</string>
@@ -250,6 +250,16 @@
     <string name="export_logs">Export logs</string>
     <string name="wifi_auth_keypair">WiFi keypair</string>
     <string name="keypair">Keypair</string>
+    <string name="preferential_network_service">Preferential network service</string>
+    <string name="network_id">Network ID</string>
+    <string name="allow_fallback_to_default_connection">Allow fallback to default connection</string>
+    <string name="block_non_matching_networks">Block non matching networks</string>
+    <string name="included_uids">Included UIDs</string>
+    <string name="excluded_uids">Excluded UIDs</string>
+    <string name="one_uid_per_line">One UID per line</string>
+    <string name="failed_to_save_current_config">Failed to save current config</string>
+    <string name="save_current_config">Save current config</string>
+    <string name="delete_current_config">Delete current config</string>
     <string name="override_apn_settings">APN settings</string>
     <string name="total_apn_amount">APN settings amount: %1$s</string>
     <string name="select_a_apn_or_create">Select an APN setting you want to edit (1~%1$s) or enter 0 to create a new APN setting. </string>

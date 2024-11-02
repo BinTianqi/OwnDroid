@@ -22,8 +22,6 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -78,7 +76,7 @@ fun DpmPermissions(navCtrl:NavHostController) {
             composable(route = "DisableAccountManagement") { DisableAccountManagement() }
             composable(route = "LockScreenInfo") { LockScreenInfo() }
             composable(route = "SupportMsg") { SupportMsg() }
-            composable(route = "TransformOwnership") { TransformOwnership() }
+            composable(route = "TransformOwnership") { TransferOwnership() }
         }
     }
 }
@@ -640,40 +638,32 @@ private fun DisableAccountManagement() {
 
 @SuppressLint("NewApi")
 @Composable
-private fun TransformOwnership() {
+private fun TransferOwnership() {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    val focusRequester = FocusRequester()
+    var component by remember { mutableStateOf("") }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
-        var pkg by remember { mutableStateOf("") }
-        var cls by remember { mutableStateOf("") }
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.transfer_ownership), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.transfer_ownership_desc))
         Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
-            value = pkg, onValueChange = { pkg = it }, label = { Text(stringResource(R.string.target_package_name)) },
+            value = component, onValueChange = { component = it }, label = { Text(stringResource(R.string.target_component_name)) },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            keyboardActions = KeyboardActions(onNext = { focusRequester.requestFocus() })
-        )
-        Spacer(Modifier.padding(vertical = 2.dp))
-        OutlinedTextField(
-            value = cls, onValueChange = {cls = it }, label = { Text(stringResource(R.string.target_class_name)) },
-            modifier = Modifier.focusRequester(focusRequester).fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() })
+            keyboardActions = KeyboardActions(onNext = { focusMgr.clearFocus() })
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
+                val dpm = context.getDPM()
+                val receiver = context.getReceiver()
                 try {
-                    dpm.transferOwnership(receiver, ComponentName(pkg, cls),null)
+                    dpm.transferOwnership(receiver, ComponentName.unflattenFromString(component)!!, null)
                     Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                } catch(_:IllegalArgumentException) {
+                } catch(e: Exception) {
+                    e.printStackTrace()
                     Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
                 }
             },

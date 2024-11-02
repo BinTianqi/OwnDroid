@@ -57,6 +57,8 @@
     <string name="delete">Delete</string> <!--TODO-->
     <string name="yes">Yes</string> <!--TODO-->
     <string name="no">No</string> <!--TODO-->
+    <string name="previous">Previous</string> <!--TODO-->
+    <string name="next">Next</string> <!--TODO-->
 
     <!--Permissions-->
     <string name="click_to_activate">Etkinleştirmek İçin Tıklayın</string>
@@ -86,8 +88,7 @@
     <string name="account_type">Hesap Türleri</string>
     <string name="transfer_ownership">Sahipliği Devret</string>
     <string name="transfer_ownership_desc">Cihaz sahibi veya profil sahibi ayrıcalığını başka bir uygulamaya devredin.</string>
-    <string name="target_package_name">Hedef Paket Adı</string>
-    <string name="target_class_name">Hedef Sınıf Adı</string>
+    <string name="target_component_name">Target component name</string> <!--TODO-->
     <string name="device_owner_lock_screen_info">Ekran Kilidi Bilgisi</string>
     <string name="support_msg">Destek Mesajı</string>
     <string name="short_support_msg">Kısa Mesaj</string>
@@ -219,7 +220,6 @@
     <string name="wifi_mac_addr">Wi-Fi MAC adresi</string>
     <string name="min_wifi_security_level">Minimum Wi-Fi güvenlik seviyesi</string>
     <string name="wifi_security_open">Açık</string>
-    <string name="preferential_network_service">Tercihli ağ hizmeti</string>
     <string name="lockdown_admin_configured_network">Yönetici tarafından yapılandırılmış ağı kilitle</string>
     <string name="wifi_ssid_policy">WiFi SSID politikası</string>
     <string name="ssid_list_is">SSID listesi:</string>
@@ -246,6 +246,16 @@
     <string name="export_logs">Export logs</string> <!--TODO-->
     <string name="wifi_auth_keypair">WiFi anahtar çifti</string>
     <string name="keypair">Anahtar çifti</string>
+    <string name="preferential_network_service">Tercihli ağ hizmeti</string>
+    <string name="network_id">Network ID</string> <!--TODO-->
+    <string name="allow_fallback_to_default_connection">Allow fallback to default connection</string> <!--TODO-->
+    <string name="block_non_matching_networks">Block non matching networks</string> <!--TODO-->
+    <string name="included_uids">Included UIDs</string> <!--TODO-->
+    <string name="excluded_uids">Excluded UIDs</string> <!--TODO-->
+    <string name="one_uid_per_line">One UID per line</string> <!--TODO-->
+    <string name="failed_to_save_current_config">Failed to save current config</string> <!--TODO-->
+    <string name="save_current_config">Save current config</string> <!--TODO-->
+    <string name="delete_current_config">Delete current config</string> <!--TODO-->
     <string name="override_apn_settings">APN ayarlarını geçersiz kıl</string>
     <string name="total_apn_amount">APN ayarlarının toplamı: %1$s</string>
     <string name="select_a_apn_or_create">Düzenlemek istediğiniz APN ayarını seçin (1~%1$s) veya yeni bir APN ayarı oluşturmak için 0 girin.</string>

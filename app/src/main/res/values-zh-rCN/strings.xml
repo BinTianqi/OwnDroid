@@ -54,6 +54,8 @@
     <string name="delete">删除</string>
     <string name="yes">是</string>
     <string name="no">否</string>
+    <string name="previous">上一个</string>
+    <string name="next">下一个</string>
 
     <!--Permissions-->
     <string name="click_to_activate">点击以激活</string>
@@ -81,8 +83,7 @@
     <string name="account_type">账号类型</string>
     <string name="transfer_ownership">转移所有权</string>
     <string name="transfer_ownership_desc">把Device owner或Profile owner权限转移到另一个应用</string>
-    <string name="target_package_name">目标包名</string>
-    <string name="target_class_name">目标类名</string>
+    <string name="target_component_name">目标组件名</string>
     <string name="device_owner_lock_screen_info">锁屏提示信息</string>
     <string name="support_msg">提供支持的消息</string>
     <string name="short_support_msg">提供支持的短消息</string>
@@ -214,7 +215,6 @@
     <string name="wifi_mac_addr">Wi-Fi Mac地址</string>
     <string name="min_wifi_security_level">最低WiFi安全等级</string>
     <string name="wifi_security_open">开放</string>
-    <string name="preferential_network_service">优先网络服务</string>
     <string name="lockdown_admin_configured_network">锁定由管理员配置的网络</string>
     <string name="wifi_ssid_policy">WiFi SSID策略</string>
     <string name="ssid_list_is">SSID列表：</string>
@@ -241,6 +241,16 @@
     <string name="export_logs">导出日志</string>
     <string name="wifi_auth_keypair">WiFi密钥对</string>
     <string name="keypair">密钥对</string>
+    <string name="preferential_network_service">首选网络服务</string>
+    <string name="network_id">网络ID</string>
+    <string name="allow_fallback_to_default_connection">允许回落到默认连接</string>
+    <string name="block_non_matching_networks">阻止不匹配的网络</string>
+    <string name="included_uids">包含的UID</string>
+    <string name="excluded_uids">排除的UIDs</string>
+    <string name="one_uid_per_line">一行一个UID</string>
+    <string name="failed_to_save_current_config">保存当前配置失败</string>
+    <string name="save_current_config">保存当前配置</string>
+    <string name="delete_current_config">删除当前配置</string>
     <string name="override_apn_settings">APN设置</string>
     <string name="total_apn_amount">一共有%1$s个APN设置</string>
     <string name="select_a_apn_or_create">选择一个你要修改的APN设置(1~%1$s)或者输入0以新建APN设置</string>

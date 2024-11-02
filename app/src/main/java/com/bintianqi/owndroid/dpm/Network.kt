@@ -12,6 +12,7 @@ import android.app.admin.DevicePolicyManager.WIFI_SECURITY_ENTERPRISE_192
 import android.app.admin.DevicePolicyManager.WIFI_SECURITY_ENTERPRISE_EAP
 import android.app.admin.DevicePolicyManager.WIFI_SECURITY_OPEN
 import android.app.admin.DevicePolicyManager.WIFI_SECURITY_PERSONAL
+import android.app.admin.PreferentialNetworkServiceConfig
 import android.app.admin.WifiSsidPolicy
 import android.app.admin.WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_ALLOWLIST
 import android.app.admin.WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_DENYLIST
@@ -59,6 +60,10 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -111,6 +116,7 @@ import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.TopBar
 import com.bintianqi.owndroid.writeClipBoard
+import kotlin.math.max
 
 @Composable
 fun Network(navCtrl: NavHostController) {
@@ -147,6 +153,7 @@ fun Network(navCtrl: NavHostController) {
             composable(route = "RecommendedGlobalProxy") { RecommendedGlobalProxy() }
             composable(route = "NetworkLog") { NetworkLog() }
             composable(route = "WifiAuthKeypair") { WifiAuthKeypair() }
+            composable(route = "PreferentialNetworkService") { PreferentialNetworkService() }
             composable(route = "APN") { APN() }
         }
     }
@@ -217,6 +224,9 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState, wifiMacDia
         if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) {
             SubPageItem(R.string.wifi_auth_keypair, "", R.drawable.key_fill0) { navCtrl.navigate("WifiAuthKeypair") }
         }
+        if(VERSION.SDK_INT >= 33 && (deviceOwner || profileOwner)) {
+            SubPageItem(R.string.preferential_network_service, "", R.drawable.globe_fill0) { navCtrl.navigate("PreferentialNetworkService") }
+        }
         if(VERSION.SDK_INT >= 28 && deviceOwner) {
             SubPageItem(R.string.override_apn_settings, "", R.drawable.cell_tower_fill0) { navCtrl.navigate("APN") }
         }
@@ -232,12 +242,6 @@ private fun Switches() {
     val deviceOwner = context.isDeviceOwner
     Column(modifier = Modifier.fillMaxSize().padding(start = 20.dp, end = 16.dp)) {
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT >= 33 && deviceOwner) {
-            SwitchItem(
-                R.string.preferential_network_service, "", R.drawable.globe_fill0,
-                { dpm.isPreferentialNetworkServiceEnabled }, { dpm.isPreferentialNetworkServiceEnabled = it }, padding = false
-            )
-        }
         if(VERSION.SDK_INT>=30 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SwitchItem(R.string.lockdown_admin_configured_network, "", R.drawable.wifi_password_fill0,
                 { dpm.hasLockdownAdminConfiguredNetworks(receiver) }, { dpm.setConfiguredNetworksLockdownState(receiver,it) }, padding = false
@@ -453,9 +457,11 @@ private fun PrivateDNS() {
                 try {
                     result = dpm.setGlobalPrivateDnsModeSpecifiedHost(receiver,inputHost)
                     Toast.makeText(context, operationResult[result], Toast.LENGTH_SHORT).show()
-                } catch(e:IllegalArgumentException) {
+                } catch(e: IllegalArgumentException) {
+                    e.printStackTrace()
                     Toast.makeText(context, R.string.invalid_hostname, Toast.LENGTH_SHORT).show()
-                } catch(e:SecurityException) {
+                } catch(e: SecurityException) {
+                    e.printStackTrace()
                     Toast.makeText(context, R.string.security_exception, Toast.LENGTH_SHORT).show()
                 } finally {
                     status = dnsStatus[dpm.getGlobalPrivateDnsMode(receiver)]
@@ -492,9 +498,11 @@ fun AlwaysOnVPNPackage(navCtrl: NavHostController) {
             Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             true
         } catch(e: UnsupportedOperationException) {
+            e.printStackTrace()
             Toast.makeText(context, R.string.unsupported, Toast.LENGTH_SHORT).show()
             false
         } catch(e: NameNotFoundException) {
+            e.printStackTrace()
             Toast.makeText(context, R.string.not_installed, Toast.LENGTH_SHORT).show()
             false
         }
@@ -609,6 +617,7 @@ private fun RecommendedGlobalProxy() {
                 try {
                     port = proxyPort.toInt()
                 } catch(e: NumberFormatException) {
+                    e.printStackTrace()
                     Toast.makeText(context, R.string.invalid_config, Toast.LENGTH_SHORT).show()
                     return@Button
                 }
@@ -702,7 +711,12 @@ private fun WifiAuthKeypair() {
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
-        val isExist = try{ dpm.isKeyPairGrantedToWifiAuth(keyPair) }catch(e:java.lang.IllegalArgumentException) { false }
+        val isExist = try {
+            dpm.isKeyPairGrantedToWifiAuth(keyPair)
+        } catch(e: java.lang.IllegalArgumentException) {
+            e.printStackTrace()
+            false
+        }
         Text(stringResource(R.string.already_exist)+"：$isExist")
         Spacer(Modifier.padding(vertical = 5.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -730,6 +744,166 @@ private fun WifiAuthKeypair() {
 
 @SuppressLint("NewApi")
 @Composable
+fun PreferentialNetworkService() {
+    val focusMgr = LocalFocusManager.current
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    var masterEnabled by remember { mutableStateOf(false) }
+    val configs = remember { mutableStateListOf<PreferentialNetworkServiceConfig>() }
+    var index by remember { mutableIntStateOf(-1) }
+    var enabled by remember { mutableStateOf(false) }
+    var networkId by remember { mutableStateOf("") }
+    var allowFallback by remember { mutableStateOf(false) }
+    var blockNonMatching by remember { mutableStateOf(false) }
+    var excludedUids by remember { mutableStateOf("") }
+    var includedUids by remember { mutableStateOf("") }
+    fun refresh() {
+        val config = configs.getOrNull(index)
+        enabled = config?.isEnabled == true
+        networkId = config?.networkId?.toString() ?: ""
+        allowFallback = config?.isFallbackToDefaultConnectionAllowed == true
+        if(VERSION.SDK_INT >= 34) blockNonMatching = config?.shouldBlockNonMatchingNetworks() == true
+        includedUids = config?.includedUids?.joinToString("\n") ?: ""
+        excludedUids = config?.excludedUids?.joinToString("\n") ?: ""
+    }
+    fun saveCurrentConfig() {
+        val builder = PreferentialNetworkServiceConfig.Builder()
+        builder.setEnabled(enabled)
+        builder.setNetworkId(networkId.toInt())
+        builder.setFallbackToDefaultConnectionAllowed(allowFallback)
+        if(VERSION.SDK_INT >= 34) builder.setShouldBlockNonMatchingNetworks(blockNonMatching)
+        builder.setIncludedUids(includedUids.lines().dropWhile { it == "" }.map { it.toInt() }.toIntArray())
+        builder.setExcludedUids(excludedUids.lines().dropWhile { it == "" }.map { it.toInt() }.toIntArray())
+        if(index < configs.size) configs[index] = builder.build() else configs += builder.build()
+    }
+    fun initialize() {
+        masterEnabled = dpm.isPreferentialNetworkServiceEnabled
+        configs.addAll(dpm.preferentialNetworkServiceConfigs)
+        index = max(0, configs.size - 1)
+        refresh()
+    }
+    LaunchedEffect(Unit) { initialize() }
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.preferential_network_service), style = typography.headlineLarge)
+        Spacer(Modifier.padding(vertical = 5.dp))
+        SwitchItem(
+            title = R.string.enabled, desc = "", icon = null,
+            state = masterEnabled, onCheckedChange = { masterEnabled = it }, padding = false
+        )
+        Row(
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+        ) {
+            IconButton(
+                onClick = {
+                    try {
+                        saveCurrentConfig()
+                        index -= 1
+                        refresh()
+                    } catch(e: Exception) {
+                        e.printStackTrace()
+                        Toast.makeText(context, R.string.failed_to_save_current_config, Toast.LENGTH_SHORT).show()
+                    }
+                },
+                enabled = index > 0
+            ) {
+                Icon(imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft, contentDescription = stringResource(R.string.previous))
+            }
+            Text("${index + 1} / ${configs.size}")
+            IconButton(
+                onClick = {
+                    try {
+                        saveCurrentConfig()
+                        index += 1
+                        refresh()
+                    } catch(e: Exception) {
+                        e.printStackTrace()
+                        Toast.makeText(context, R.string.failed_to_save_current_config, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            ) {
+                Icon(
+                    imageVector = if(index + 1 >= configs.size) Icons.Default.Add else Icons.AutoMirrored.Default.KeyboardArrowRight,
+                    contentDescription = stringResource(R.string.previous)
+                )
+            }
+        }
+        Row {
+            Button(
+                onClick = {
+                    try {
+                        saveCurrentConfig()
+                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    } catch(e: Exception) {
+                        e.printStackTrace()
+                        Toast.makeText(context, R.string.failed_to_save_current_config, Toast.LENGTH_SHORT).show()
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(0.49F)
+            ) {
+                Text(stringResource(R.string.save_current_config))
+            }
+            Button(
+                onClick = {
+                    if(index < configs.size) configs.removeAt(index)
+                    if(index > 0) index -= 1
+                    refresh()
+                },
+                modifier = Modifier.fillMaxWidth(0.96F)
+            ) {
+                Text(stringResource(R.string.delete_current_config))
+            }
+        }
+        SwitchItem(
+            title = R.string.enabled, desc = "", icon = null,
+            state = enabled, onCheckedChange = { enabled = it }, padding = false
+        )
+        OutlinedTextField(
+            value = networkId, onValueChange = { networkId = it },
+            label = { Text(stringResource(R.string.network_id)) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions { focusMgr.clearFocus() },
+            modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
+        )
+        SwitchItem(
+            title = R.string.allow_fallback_to_default_connection, desc = "", icon = null,
+            state = allowFallback, onCheckedChange = { allowFallback = it }, padding = false
+        )
+        if(VERSION.SDK_INT >= 34) SwitchItem(
+            title = R.string.block_non_matching_networks, desc = "", icon = null,
+            state = blockNonMatching, onCheckedChange = { blockNonMatching = it }, padding = false
+        )
+        OutlinedTextField(
+            value = includedUids, onValueChange = { includedUids = it }, minLines = 2,
+            label = { Text(stringResource(R.string.included_uids)) },
+            supportingText = { Text(stringResource(R.string.one_uid_per_line)) },
+            modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
+        )
+        OutlinedTextField(
+            value = excludedUids, onValueChange = { excludedUids = it }, minLines = 2,
+            label = { Text(stringResource(R.string.excluded_uids)) },
+            supportingText = { Text(stringResource(R.string.one_uid_per_line)) },
+            modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
+        )
+        Button(
+            onClick = {
+                dpm.isPreferentialNetworkServiceEnabled = masterEnabled
+                dpm.preferentialNetworkServiceConfigs = configs
+                initialize()
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+            },
+            modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
+        ) {
+            Text(stringResource(R.string.apply))
+        }
+        Spacer(Modifier.padding(vertical = 30.dp))
+    }
+}
+
+@SuppressLint("NewApi")
+@Composable
 private fun APN() {
     val context = LocalContext.current
     val dpm = context.getDPM()
@@ -747,7 +921,7 @@ private fun APN() {
         Spacer(Modifier.padding(vertical = 5.dp))
         SwitchItem(R.string.enable, "", null, { dpm.isOverrideApnEnabled(receiver) }, { dpm.setOverrideApnsEnabled(receiver,it) }, padding = false)
         Text(text = stringResource(R.string.total_apn_amount, setting.size))
-        if(setting.size>0) {
+        if(setting.isNotEmpty()) {
             Text(text = stringResource(R.string.select_a_apn_or_create, setting.size))
             TextField(
                 value = inputNum,
