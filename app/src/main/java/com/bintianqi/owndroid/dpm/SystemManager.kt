@@ -60,10 +60,13 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
@@ -114,6 +117,7 @@ import com.bintianqi.owndroid.toggle
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.Information
+import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.SwitchItem
@@ -166,6 +170,7 @@ fun SystemManage(navCtrl: NavHostController) {
             composable(route = "LockTaskMode") { LockTaskMode(navCtrl) }
             composable(route = "CaCert") { CaCert() }
             composable(route = "SecurityLogs") { SecurityLogs() }
+            composable(route = "DisableAccountManagement") { DisableAccountManagement() }
             composable(route = "SystemUpdatePolicy") { SysUpdatePolicy() }
             composable(route = "InstallSystemUpdate") { InstallSystemUpdate() }
             composable(route = "WipeData") { WipeData() }
@@ -227,6 +232,9 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
         }
         if(VERSION.SDK_INT >= 26 && !dhizuku && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.security_logs, "", R.drawable.description_fill0) { navCtrl.navigate("SecurityLogs") }
+        }
+        if(deviceOwner || profileOwner) {
+            SubPageItem(R.string.disable_account_management, "", R.drawable.account_circle_fill0) { navCtrl.navigate("DisableAccountManagement") }
         }
         if(VERSION.SDK_INT >= 23 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.system_update_policy, "", R.drawable.system_update_fill0) { navCtrl.navigate("SystemUpdatePolicy") }
@@ -578,7 +586,7 @@ private fun MTEPolicy() {
                 try {
                     dpm.mtePolicy = selectedMtePolicy
                     Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                } catch(e:java.lang.UnsupportedOperationException) {
+                } catch(_: java.lang.UnsupportedOperationException) {
                     Toast.makeText(context, R.string.unsupported, Toast.LENGTH_SHORT).show()
                 }
                 selectedMtePolicy = dpm.mtePolicy
@@ -778,10 +786,11 @@ private fun LockTaskMode(navCtrl: NavHostController) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.lock_task_packages), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        SelectionContainer(modifier = Modifier.animateContentSize()) {
-            var listText = ""
-            lockTaskPackages.forEach { listText += "\n" + it }
-            Text(text = stringResource(R.string.app_list_is) + if(listText == "") stringResource(R.string.none) else listText)
+        Column(modifier = Modifier.animateContentSize()) {
+            if(lockTaskPackages.isEmpty()) Text(text = stringResource(R.string.none))
+            for(i in lockTaskPackages) {
+                ListItem(i) { lockTaskPackages -= i }
+            }
         }
         OutlinedTextField(
             value = inputLockTaskPkg,
@@ -804,13 +813,19 @@ private fun LockTaskMode(navCtrl: NavHostController) {
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Button(
-                onClick = { lockTaskPackages.add(inputLockTaskPkg) },
+                onClick = {
+                    lockTaskPackages.add(inputLockTaskPkg)
+                    inputLockTaskPkg = ""
+                },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) {
                 Text(stringResource(R.string.add))
             }
             Button(
-                onClick = { lockTaskPackages.remove(inputLockTaskPkg) },
+                onClick = {
+                    lockTaskPackages.remove(inputLockTaskPkg)
+                    inputLockTaskPkg = ""
+                },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) {
                 Text(stringResource(R.string.remove))
@@ -1062,6 +1077,54 @@ private fun SecurityLogs() {
     }
 }
 
+@Composable
+private fun DisableAccountManagement() {
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
+    val focusMgr = LocalFocusManager.current
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(text = stringResource(R.string.disable_account_management), style = typography.headlineLarge)
+        val list = remember { mutableStateListOf<String>() }
+        fun refreshList() {
+            list.clear()
+            dpm.accountTypesWithManagementDisabled?.forEach { list += it }
+        }
+        LaunchedEffect(Unit) { refreshList() }
+        Spacer(Modifier.padding(vertical = 5.dp))
+        Column(modifier = Modifier.animateContentSize()) {
+            if(list.isEmpty()) Text(stringResource(R.string.none))
+            for(i in list) {
+                ListItem(i) {
+                    dpm.setAccountManagementDisabled(receiver, i, false)
+                    refreshList()
+                }
+            }
+        }
+        var inputText by remember{ mutableStateOf("") }
+        OutlinedTextField(
+            value = inputText,
+            onValueChange = { inputText = it },
+            label = { Text(stringResource(R.string.account_type)) },
+            trailingIcon = {
+                IconButton(
+                    onClick = {
+                        dpm.setAccountManagementDisabled(receiver, inputText, true)
+                        inputText = ""
+                        refreshList()
+                    }
+                ) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(R.string.add))
+                }
+            },
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() })
+        )
+    }
+}
+
 @SuppressLint("NewApi")
 @Composable
 fun FactoryResetProtection() {
@@ -1078,7 +1141,7 @@ fun FactoryResetProtection() {
         var policy: FactoryResetProtectionPolicy? = FactoryResetProtectionPolicy.Builder().build()
         try {
             policy = dpm.getFactoryResetProtectionPolicy(receiver)
-        } catch(e: UnsupportedOperationException) {
+        } catch(_: UnsupportedOperationException) {
             unsupported = true
             policy = null
         } finally {
@@ -1106,34 +1169,32 @@ fun FactoryResetProtection() {
         AnimatedVisibility(usePolicy) {
             Column {
                 CheckBoxItem(R.string.enable_frp, enabled, { enabled = it })
-                Text(stringResource(R.string.account_list_is) + "\n")
-                Text(
-                    text = if(accountList.isEmpty()) stringResource(R.string.none) else accountList.joinToString(separator = "\n"),
-                    modifier = Modifier.animateContentSize()
-                )
+                Text(stringResource(R.string.account_list_is))
+                Column(modifier = Modifier.animateContentSize()) {
+                    if(accountList.isEmpty()) Text(stringResource(R.string.none))
+                    for(i in accountList) {
+                        ListItem(i) { accountList -= i }
+                    }
+                }
                 OutlinedTextField(
                     value = inputAccount,
-                    label = { Text(stringResource(R.string.account)) },
                     onValueChange = { inputAccount = it },
+                    label = { Text(stringResource(R.string.account)) },
+                    trailingIcon = {
+                        IconButton(
+                            onClick = {
+                                accountList += inputAccount
+                                inputAccount = ""
+                            }
+                        ) {
+                            Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(R.string.add))
+                        }
+                    },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.padding(vertical = 2.dp))
-                Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween) {
-                    Button(
-                        onClick = { accountList.add(inputAccount) },
-                        modifier = Modifier.fillMaxWidth(0.49F)
-                    ) {
-                        Text(stringResource(R.string.add))
-                    }
-                    Button(
-                        onClick = { accountList.remove(inputAccount) },
-                        modifier = Modifier.fillMaxWidth(0.96F)
-                    ) {
-                        Text(stringResource(R.string.remove))
-                    }
-                }
             }
         }
         Spacer(Modifier.padding(vertical = 5.dp))

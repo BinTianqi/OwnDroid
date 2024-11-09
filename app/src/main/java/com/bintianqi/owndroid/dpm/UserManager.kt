@@ -15,6 +15,7 @@ import android.os.UserManager
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
@@ -29,10 +30,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -68,6 +72,7 @@ import com.bintianqi.owndroid.toggle
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.TopBar
@@ -360,57 +365,48 @@ private fun AffiliationID() {
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var input by remember { mutableStateOf("") }
-    val affiliationID = remember { mutableStateListOf<String>() }
-    val list = affiliationID.joinToString(separator = "\n")
+    val list = remember { mutableStateListOf<String>() }
     val refreshIds = {
-        affiliationID.clear()
-        affiliationID.addAll(dpm.getAffiliationIds(receiver))
+        list.clear()
+        list.addAll(dpm.getAffiliationIds(receiver))
     }
     LaunchedEffect(Unit) { refreshIds() }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.affiliation_id), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(list != "") {
-            SelectionContainer { Text(text = list) }
-        }else{
-            Text(text = stringResource(R.string.none))
+        Column(modifier = Modifier.animateContentSize()) {
+            if(list.isEmpty()) Text(stringResource(R.string.none))
+            for(i in list) {
+                ListItem(i) { list -= i }
+            }
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
             value = input,
-            onValueChange = {input = it},
+            onValueChange = { input = it },
             label = { Text("ID") },
+            trailingIcon = {
+                IconButton(
+                    onClick = {
+                        list += input
+                        input = ""
+                    }
+                ) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(R.string.add))
+                }
+            },
             modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() })
         )
         Spacer(Modifier.padding(vertical = 5.dp))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Button(
-                onClick = { affiliationID.add(input) },
-                modifier = Modifier.fillMaxWidth(0.49F)
-            ) {
-                Text(stringResource(R.string.add))
-            }
-            Button(
-                onClick = { affiliationID.remove(input) },
-                modifier = Modifier.fillMaxWidth(0.96F)
-            ) {
-                Text(stringResource(R.string.remove))
-            }
-        }
         Button(
             onClick = {
-                if("" in affiliationID) {
-                    Toast.makeText(context, R.string.include_empty_string, Toast.LENGTH_SHORT).show()
-                } else if(affiliationID.isEmpty()) {
-                    Toast.makeText(context, R.string.cannot_be_empty, Toast.LENGTH_SHORT).show()
-                } else {
-                    dpm.setAffiliationIds(receiver, affiliationID.toSet())
-                    refreshIds()
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                }
+                list.removeAll(listOf(""))
+                dpm.setAffiliationIds(receiver, list.toSet())
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                refreshIds()
             },
             modifier = Modifier.fillMaxWidth()
         ) {

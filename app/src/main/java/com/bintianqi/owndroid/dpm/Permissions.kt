@@ -73,7 +73,6 @@ fun DpmPermissions(navCtrl:NavHostController) {
             composable(route = "ProfileOwner") { ProfileOwner() }
             composable(route = "DeviceOwner") { DeviceOwner() }
             composable(route = "DeviceInfo") { DeviceInfo() }
-            composable(route = "DisableAccountManagement") { DisableAccountManagement() }
             composable(route = "LockScreenInfo") { LockScreenInfo() }
             composable(route = "SupportMsg") { SupportMsg() }
             composable(route = "TransformOwnership") { TransferOwnership() }
@@ -134,9 +133,6 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
         }
         if(enrollmentSpecificId != "") {
             SubPageItem(R.string.enrollment_specific_id, "", R.drawable.id_card_fill0) { dialog = 1 }
-        }
-        if(deviceOwner || profileOwner) {
-            SubPageItem(R.string.disable_account_management, "", R.drawable.account_circle_fill0) { localNavCtrl.navigate("DisableAccountManagement") }
         }
         if(VERSION.SDK_INT >= 24 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.device_owner_lock_screen_info, "", R.drawable.screen_lock_portrait_fill0) { localNavCtrl.navigate("LockScreenInfo") }
@@ -526,6 +522,7 @@ private fun SupportMsg() {
             value = shortMsg,
             label = { Text(stringResource(R.string.short_support_msg)) },
             onValueChange = { shortMsg = it },
+            minLines = 2,
             modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp)
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -555,6 +552,7 @@ private fun SupportMsg() {
             value = longMsg,
             label = { Text(stringResource(R.string.long_support_msg)) },
             onValueChange = { longMsg = it },
+            minLines = 3,
             modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp)
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -580,59 +578,6 @@ private fun SupportMsg() {
             }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
-    }
-}
-
-@Composable
-private fun DisableAccountManagement() {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.disable_account_management), style = typography.headlineLarge)
-        Text(stringResource(R.string.unknown_effect))
-        var accountList by remember{ mutableStateOf("") }
-        val refreshList = {
-            val noManageAccount = dpm.accountTypesWithManagementDisabled
-            accountList = ""
-            if (noManageAccount != null) {
-                var count = noManageAccount.size
-                for(each in noManageAccount) { count -= 1; accountList += each; if(count>0) { accountList += "\n" } }
-            }
-        }
-        var inited by remember { mutableStateOf(false) }
-        if(!inited) { refreshList(); inited=true }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text = if(accountList=="") stringResource(R.string.none) else accountList)
-        var inputText by remember{ mutableStateOf("") }
-        OutlinedTextField(
-            value = inputText,
-            onValueChange = { inputText = it },
-            label = { Text(stringResource(R.string.account_type)) },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() })
-        )
-        Button(
-            onClick={
-                dpm.setAccountManagementDisabled(receiver, inputText, true)
-                refreshList()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.add))
-        }
-        Button(
-            onClick={
-                dpm.setAccountManagementDisabled(receiver, inputText, false)
-                refreshList()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.remove))
-        }
     }
 }
 

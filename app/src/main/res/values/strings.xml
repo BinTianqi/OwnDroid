@@ -222,7 +222,7 @@
     <!--Network-->
     <string name="network">Network</string>
     <string name="wifi_mac_addr">Wi-Fi Mac address</string>
-    <string name="min_wifi_security_level">Min Wi-Fi security level</string>
+    <string name="min_wifi_security_level">Minimum Wi-Fi security level</string>
     <string name="wifi_security_open">Open</string>
     <string name="lockdown_admin_configured_network">Lockdown admin configured network</string>
     <string name="wifi_ssid_policy">WiFi SSID policy</string>

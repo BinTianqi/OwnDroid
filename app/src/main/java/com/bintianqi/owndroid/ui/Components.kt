@@ -3,11 +3,15 @@ package com.bintianqi.owndroid.ui
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -237,6 +241,25 @@ fun CardItem(@StringRes title: Int, text: String) {
         Text(text = stringResource(title), style = typography.titleLarge, modifier = Modifier.padding(start = 8.dp, top = 6.dp))
         SelectionContainer {
             Text(text = text, modifier = Modifier.padding(start = 8.dp, bottom = 6.dp))
+        }
+    }
+}
+
+@Composable
+fun ListItem(text: String, onDelete: () -> Unit) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(15)).background(colorScheme.surfaceVariant)
+    ) {
+        Text(text = text, modifier = Modifier.padding(start = 12.dp))
+        IconButton(
+            onClick = onDelete
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.close_fill0),
+                contentDescription = stringResource(R.string.delete)
+            )
         }
     }
 }
