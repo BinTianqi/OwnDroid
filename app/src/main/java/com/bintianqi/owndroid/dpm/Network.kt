@@ -111,6 +111,7 @@ import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.selectedPackage
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.InfoCard
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SubPageItem
@@ -241,14 +242,23 @@ private fun Switches() {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
-    Column(modifier = Modifier.fillMaxSize().padding(start = 20.dp, end = 16.dp)) {
+    var dialog by remember { mutableIntStateOf(0) }
+    Column(modifier = Modifier.fillMaxSize()) {
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT>=30 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SwitchItem(R.string.lockdown_admin_configured_network, "", R.drawable.wifi_password_fill0,
-                { dpm.hasLockdownAdminConfiguredNetworks(receiver) }, { dpm.setConfiguredNetworksLockdownState(receiver,it) }, padding = false
+                { dpm.hasLockdownAdminConfiguredNetworks(receiver) }, { dpm.setConfiguredNetworksLockdownState(receiver,it) },
+                onClickBlank = { dialog = 1 }
             )
         }
     }
+    if(dialog != 0) AlertDialog(
+        text = { Text(stringResource(R.string.info_lockdown_admin_configured_network)) },
+        confirmButton = {
+            TextButton(onClick = { dialog = 0 }) { Text(stringResource(R.string.confirm)) }
+        },
+        onDismissRequest = { dialog = 0 }
+    )
 }
 
 @SuppressLint("NewApi")
@@ -292,6 +302,7 @@ private fun WifiSecLevel() {
         ) {
             Text(stringResource(R.string.apply))
         }
+        InfoCard(R.string.info_minimum_wifi_security_level)
     }
 }
 
@@ -418,6 +429,7 @@ private fun PrivateDNS() {
                 Text(stringResource(R.string.set_to_opportunistic))
             }
         }
+        InfoCard(R.string.info_private_dns_mode_oppertunistic)
         Spacer(Modifier.padding(vertical = 10.dp))
         var inputHost by remember { mutableStateOf(dpm.getGlobalPrivateDnsHost(receiver) ?: "") }
         OutlinedTextField(
@@ -450,6 +462,8 @@ private fun PrivateDNS() {
         ) {
             Text(stringResource(R.string.set_dns_host))
         }
+        InfoCard(R.string.info_set_private_dns_host)
+        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
@@ -522,6 +536,7 @@ fun AlwaysOnVPNPackage(navCtrl: NavHostController) {
         ) {
             Text(stringResource(R.string.clear_current_config))
         }
+        InfoCard(R.string.info_always_on_vpn)
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
@@ -621,6 +636,7 @@ private fun RecommendedGlobalProxy() {
         ) {
             Text(stringResource(R.string.apply))
         }
+        InfoCard(R.string.info_recommended_global_proxy)
     }
 }
 
@@ -667,6 +683,7 @@ private fun NetworkLog() {
                 Text(stringResource(R.string.delete_logs))
             }
         }
+        InfoCard(R.string.info_network_log)
     }
 }
 

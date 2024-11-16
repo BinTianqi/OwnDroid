@@ -38,6 +38,7 @@ import android.app.admin.SystemUpdatePolicy.TYPE_POSTPONE
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.icu.text.IDNA
 import android.net.Uri
 import android.os.Build.VERSION
 import android.os.UserManager
@@ -116,6 +117,7 @@ import com.bintianqi.owndroid.selectedPackage
 import com.bintianqi.owndroid.toggle
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.InfoCard
 import com.bintianqi.owndroid.ui.Information
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.RadioButtonItem
@@ -261,30 +263,31 @@ private fun Switches() {
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
     val um = context.getSystemService(Context.USER_SERVICE) as UserManager
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 16.dp)) {
-        Spacer(Modifier.padding(vertical = 10.dp))
+    var dialog by remember { mutableIntStateOf(0) }
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        Spacer(Modifier.padding(vertical = 5.dp))
         if(deviceOwner || profileOwner) {
             SwitchItem(R.string.disable_cam,"", R.drawable.photo_camera_fill0,
-                { dpm.getCameraDisabled(null) }, { dpm.setCameraDisabled(receiver,it) }, padding = false
+                { dpm.getCameraDisabled(null) }, { dpm.setCameraDisabled(receiver,it) }
             )
         }
         if(deviceOwner || profileOwner) {
             SwitchItem(R.string.disable_screen_capture, "", R.drawable.screenshot_fill0,
-                { dpm.getScreenCaptureDisabled(null) }, { dpm.setScreenCaptureDisabled(receiver,it) }, padding = false
+                { dpm.getScreenCaptureDisabled(null) }, { dpm.setScreenCaptureDisabled(receiver,it) }
             )
         }
         if(VERSION.SDK_INT >= 34 && (deviceOwner || (profileOwner && dpm.isAffiliatedUser))) {
             SwitchItem(R.string.disable_status_bar, "", R.drawable.notifications_fill0,
-                { dpm.isStatusBarDisabled}, { dpm.setStatusBarDisabled(receiver,it) }, padding = false
+                { dpm.isStatusBarDisabled}, { dpm.setStatusBarDisabled(receiver,it) }
             )
         }
         if(deviceOwner || (VERSION.SDK_INT >= 23 && profileOwner && um.isSystemUser) || dpm.isOrgProfile(receiver)) {
             if(VERSION.SDK_INT >= 30) {
                 SwitchItem(R.string.auto_time, "", R.drawable.schedule_fill0,
-                    { dpm.getAutoTimeEnabled(receiver) }, { dpm.setAutoTimeEnabled(receiver,it) }, padding = false
+                    { dpm.getAutoTimeEnabled(receiver) }, { dpm.setAutoTimeEnabled(receiver,it) }
                 )
                 SwitchItem(R.string.auto_timezone, "", R.drawable.globe_fill0,
-                    { dpm.getAutoTimeZoneEnabled(receiver) }, { dpm.setAutoTimeZoneEnabled(receiver,it) }, padding = false
+                    { dpm.getAutoTimeZoneEnabled(receiver) }, { dpm.setAutoTimeZoneEnabled(receiver,it) }
                 )
             }else{
                 SwitchItem(R.string.require_auto_time, "", R.drawable.schedule_fill0, { dpm.autoTimeRequired}, { dpm.setAutoTimeRequired(receiver,it) }, padding = false)
@@ -292,32 +295,49 @@ private fun Switches() {
         }
         if(deviceOwner || (profileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && !dpm.isManagedProfile(receiver))))) {
             SwitchItem(R.string.master_mute, "", R.drawable.volume_up_fill0,
-                { dpm.isMasterVolumeMuted(receiver) }, { dpm.setMasterVolumeMuted(receiver,it) }, padding = false
+                { dpm.isMasterVolumeMuted(receiver) }, { dpm.setMasterVolumeMuted(receiver,it) }
             )
         }
         if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
             SwitchItem(R.string.backup_service, "", R.drawable.backup_fill0,
-                { dpm.isBackupServiceEnabled(receiver) }, { dpm.setBackupServiceEnabled(receiver,it) }, padding = false
+                { dpm.isBackupServiceEnabled(receiver) }, { dpm.setBackupServiceEnabled(receiver,it) },
+                onClickBlank = { dialog = 1 }
             )
         }
         if(VERSION.SDK_INT >= 24 && profileOwner && dpm.isManagedProfile(receiver)) {
             SwitchItem(R.string.disable_bt_contact_share, "", R.drawable.account_circle_fill0,
-                { dpm.getBluetoothContactSharingDisabled(receiver) }, { dpm.setBluetoothContactSharingDisabled(receiver,it) }, padding = false
+                { dpm.getBluetoothContactSharingDisabled(receiver) }, { dpm.setBluetoothContactSharingDisabled(receiver,it) },
             )
         }
         if(VERSION.SDK_INT >= 30 && deviceOwner) {
             SwitchItem(R.string.common_criteria_mode , "",R.drawable.security_fill0,
-                { dpm.isCommonCriteriaModeEnabled(receiver) }, { dpm.setCommonCriteriaModeEnabled(receiver,it) }, padding = false
+                { dpm.isCommonCriteriaModeEnabled(receiver) }, { dpm.setCommonCriteriaModeEnabled(receiver,it) },
+                onClickBlank = { dialog = 2 }
             )
         }
         if(VERSION.SDK_INT >= 31 && (deviceOwner || dpm.isOrgProfile(receiver)) && dpm.canUsbDataSignalingBeDisabled()) {
             SwitchItem(
                 R.string.disable_usb_signal, "", R.drawable.usb_fill0, { !dpm.isUsbDataSignalingEnabled },
-                { dpm.isUsbDataSignalingEnabled = !it }, padding = false
+                { dpm.isUsbDataSignalingEnabled = !it },
             )
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
+    if(dialog != 0) AlertDialog(
+        text = {
+            Text(stringResource(
+                when(dialog) {
+                    1 -> R.string.info_backup_service
+                    2 -> R.string.info_common_criteria_mode
+                    else -> R.string.options
+                }
+            ))
+        },
+        confirmButton = {
+            TextButton(onClick = { dialog = 0 }) { Text(stringResource(R.string.confirm)) }
+        },
+        onDismissRequest = { dialog = 0 }
+    )
 }
 
 @Composable
@@ -329,9 +349,9 @@ private fun Keyguard() {
     val profileOwner = context.isProfileOwner
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.keyguard), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT >= 23) {
+            Text(text = stringResource(R.string.keyguard), style = typography.headlineLarge)
+            Spacer(Modifier.padding(vertical = 5.dp))
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
@@ -355,7 +375,8 @@ private fun Keyguard() {
                     Text(stringResource(R.string.enable))
                 }
             }
-            Spacer(Modifier.padding(vertical = 15.dp))
+            InfoCard(R.string.info_disable_keyguard)
+            Spacer(Modifier.padding(vertical = 12.dp))
         }
         Text(text = stringResource(R.string.lock_now), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 2.dp))
@@ -376,6 +397,9 @@ private fun Keyguard() {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.lock_now))
+        }
+        if(VERSION.SDK_INT >= 26 && profileOwner && dpm.isManagedProfile(receiver)) {
+            InfoCard(R.string.info_evict_credential_encryption_key)
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }
@@ -420,7 +444,7 @@ private fun RebootDialog(status: MutableState<Boolean>) {
     AlertDialog(
         onDismissRequest = { status.value = false },
         title = { Text(stringResource(R.string.reboot)) },
-        text = { Text(stringResource(R.string.confirm_reboot)) },
+        text = { Text(stringResource(R.string.info_reboot)) },
         dismissButton = {
             TextButton(onClick = { status.value = false }) {
                 Text(stringResource(R.string.cancel))
@@ -431,7 +455,7 @@ private fun RebootDialog(status: MutableState<Boolean>) {
                 onClick = { dpm.reboot(receiver) },
                 colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
             ) {
-                Text(stringResource(R.string.reboot))
+                Text(stringResource(R.string.confirm))
             }
         },
         modifier = Modifier.fillMaxWidth()
@@ -445,34 +469,27 @@ private fun EditTime() {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
+    var inputTime by remember { mutableStateOf("") }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.edit_time), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        var inputTime by remember { mutableStateOf("") }
-        Text(text = stringResource(R.string.from_epoch_to_target_time))
-        Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
             value = inputTime,
             label = { Text(stringResource(R.string.time_unit_ms)) },
-            onValueChange = { inputTime = it},
+            onValueChange = { inputTime = it },
+            supportingText = { Text(stringResource(R.string.info_edit_time)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
-            onClick = { dpm.setTime(receiver,inputTime.toLong()) },
+            onClick = { dpm.setTime(receiver, inputTime.toLong()) },
             modifier = Modifier.fillMaxWidth(),
             enabled = inputTime != ""
         ) {
             Text(stringResource(R.string.apply))
-        }
-        Button(
-            onClick = { inputTime = System.currentTimeMillis().toString() },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.get_current_time))
         }
     }
 }
@@ -553,6 +570,7 @@ private fun PermissionPolicy() {
         ) {
             Text(stringResource(R.string.apply))
         }
+        InfoCard(R.string.info_permission_policy)
     }
 }
 
@@ -595,8 +613,7 @@ private fun MTEPolicy() {
         ) {
             Text(stringResource(R.string.apply))
         }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Information { Text(stringResource(R.string.mte_policy_desc)) }
+        InfoCard(R.string.info_mte_policy)
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
@@ -641,6 +658,7 @@ private fun NearbyStreamingPolicy() {
         ) {
             Text(stringResource(R.string.apply))
         }
+        InfoCard(R.string.info_nearby_app_streaming_policy)
         var notificationPolicy by remember { mutableIntStateOf(dpm.nearbyNotificationStreamingPolicy) }
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.nearby_notification_streaming), style = typography.titleLarge)
@@ -675,6 +693,7 @@ private fun NearbyStreamingPolicy() {
         ) {
             Text(stringResource(R.string.apply))
         }
+        InfoCard(R.string.info_nearby_notification_streaming_policy)
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
@@ -840,6 +859,7 @@ private fun LockTaskMode(navCtrl: NavHostController) {
         ) {
             Text(stringResource(R.string.apply))
         }
+        InfoCard(R.string.info_lock_task_packages)
         var startLockTaskApp by rememberSaveable { mutableStateOf("") }
         var startLockTaskActivity by rememberSaveable { mutableStateOf("") }
         var specifyActivity by rememberSaveable { mutableStateOf(false) }
@@ -909,6 +929,7 @@ private fun LockTaskMode(navCtrl: NavHostController) {
         ) {
             Text(stringResource(R.string.start))
         }
+        InfoCard(R.string.info_start_lock_task_mode)
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
@@ -1040,6 +1061,7 @@ private fun SecurityLogs() {
                 Text(stringResource(R.string.delete_logs))
             }
         }
+        InfoCard(R.string.info_security_log)
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
@@ -1074,6 +1096,7 @@ private fun SecurityLogs() {
         ) {
             Text(stringResource(R.string.pre_reboot_security_logs))
         }
+        InfoCard(R.string.info_pre_reboot_security_log)
     }
 }
 
@@ -1113,7 +1136,8 @@ private fun DisableAccountManagement() {
                         dpm.setAccountManagementDisabled(receiver, inputText, true)
                         inputText = ""
                         refreshList()
-                    }
+                    },
+                    enabled = inputText != ""
                 ) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(R.string.add))
                 }
@@ -1122,6 +1146,8 @@ private fun DisableAccountManagement() {
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() })
         )
+        Spacer(Modifier.padding(vertical = 10.dp))
+        InfoCard(R.string.info_disable_account_management)
     }
 }
 
@@ -1216,11 +1242,9 @@ fun FactoryResetProtection() {
             Text(stringResource(R.string.apply))
         }
         Spacer(Modifier.padding(vertical = 10.dp))
-        if(unsupported) {
-            Information {
-                Text(stringResource(R.string.frp_policy_not_supported))
-            }
-        }
+        if(unsupported) Text(stringResource(R.string.frp_policy_not_supported))
+        Spacer(Modifier.padding(vertical = 6.dp))
+        InfoCard(R.string.info_frp_policy)
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
@@ -1280,7 +1304,7 @@ private fun WipeData() {
                 Text("WipeData")
             }
         }
-        if (VERSION.SDK_INT >= 34 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
+        if (VERSION.SDK_INT >= 34 && context.isDeviceOwner) {
             Button(
                 onClick = {
                     focusMgr.clearFocus()
@@ -1302,7 +1326,10 @@ private fun WipeData() {
                 Text(text = stringResource(R.string.warning), color = colorScheme.error)
             },
             text = {
-                Text(text = stringResource(R.string.wipe_data_warning), color = colorScheme.error)
+                Text(
+                    text = stringResource(if(userManager.isSystemUser) R.string.wipe_data_warning else R.string.info_wipe_data_in_managed_user),
+                    color = colorScheme.error
+                )
             },
             onDismissRequest = { warning = false },
             confirmButton = {

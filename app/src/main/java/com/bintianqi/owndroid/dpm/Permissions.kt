@@ -102,9 +102,8 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
             SwitchItem(
                 R.string.dhizuku, "", null,
                 { sharedPref.getBoolean("dhizuku", false) },
-                {
-                    toggleDhizukuMode(it, context)
-                }
+                { toggleDhizukuMode(it, context) },
+                onClickBlank = { dialog = 4 }
             )
         }
         SubPageItem(
@@ -154,6 +153,7 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
                         1 -> R.string.enrollment_specific_id
                         2 -> R.string.org_name
                         3 -> R.string.org_id
+                        4 -> R.string.dhizuku
                         else -> R.string.permission
                     }
                 ))
@@ -163,35 +163,41 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
                 LaunchedEffect(Unit) {
                     if(dialog == 1) input = dpm.enrollmentSpecificId
                 }
-                OutlinedTextField(
-                    value = input,
-                    onValueChange = { input = it }, readOnly = dialog == 1, modifier = Modifier.fillMaxWidth(),
-                    label = {
-                        Text(stringResource(
-                            when(dialog){
-                                1 -> R.string.enrollment_specific_id
-                                2 -> R.string.org_name
-                                3 -> R.string.org_id
-                                else -> R.string.permission
+                Column {
+                    if(dialog != 4) OutlinedTextField(
+                        value = input,
+                        onValueChange = { input = it }, readOnly = dialog == 1,
+                        label = {
+                            Text(stringResource(
+                                when(dialog){
+                                    1 -> R.string.enrollment_specific_id
+                                    2 -> R.string.org_name
+                                    3 -> R.string.org_id
+                                    else -> R.string.permission
+                                }
+                            ))
+                        },
+                        trailingIcon = {
+                            if(dialog == 1) IconButton(onClick = { writeClipBoard(context, input) }) {
+                                Icon(painter = painterResource(R.drawable.content_copy_fill0), contentDescription = stringResource(R.string.copy))
                             }
-                        ))
-                    },
-                    trailingIcon = {
-                        if(dialog == 1) IconButton(onClick = { writeClipBoard(context, input) }) {
-                            Icon(painter = painterResource(R.drawable.content_copy_fill0), contentDescription = stringResource(R.string.copy))
-                        }
-                    },
-                    supportingText = {
-                        if(dialog == 3) Text(stringResource(R.string.length_6_to_64))
-                    },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions { focusMgr.clearFocus() },
-                    textStyle = typography.bodyLarge
-                )
+                        },
+                        supportingText = {
+                            if(dialog == 3) Text(stringResource(R.string.length_6_to_64))
+                        },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions { focusMgr.clearFocus() },
+                        textStyle = typography.bodyLarge,
+                        modifier = Modifier.fillMaxWidth().padding(bottom = if(dialog == 2) 0.dp else 10.dp)
+                    )
+                    if(dialog == 1) Text(stringResource(R.string.info_enrollment_specific_id))
+                    if(dialog == 3) Text(stringResource(R.string.info_org_id))
+                    if(dialog == 4) Text(stringResource(R.string.info_dhizuku))
+                }
             },
             onDismissRequest = { dialog = 0 },
             dismissButton = {
-                TextButton(
+                if(dialog != 4) TextButton(
                     onClick = { dialog = 0 }
                 ) {
                     Text(stringResource(R.string.cancel))
@@ -261,6 +267,8 @@ private fun LockScreenInfo() {
             value = infoText,
             label = { Text(stringResource(R.string.device_owner_lock_screen_info)) },
             onValueChange = { infoText = it },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions { focusMgr.clearFocus() },
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
         )
         Button(
@@ -283,6 +291,8 @@ private fun LockScreenInfo() {
         ) {
             Text(text = stringResource(R.string.reset))
         }
+        Spacer(Modifier.padding(vertical = 10.dp))
+        InfoCard(R.string.info_lock_screen_info)
     }
 }
 
@@ -366,6 +376,7 @@ private fun ProfileOwner() {
                 Text(stringResource(R.string.deactivate))
             }
         }
+        InfoCard(R.string.profile_owner)
     }
     if(deactivateDialog && VERSION.SDK_INT >= 24) {
         AlertDialog(
@@ -469,6 +480,7 @@ fun DeviceInfo() {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
+    var dialog by remember { mutableIntStateOf(0) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.device_info), style = typography.headlineLarge)
@@ -489,16 +501,21 @@ fun DeviceInfo() {
         if(VERSION.SDK_INT >= 24) { encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER] = R.string.es_active_per_user }
         CardItem(R.string.encryption_status, encryptionStatus[dpm.storageEncryptionStatus] ?: R.string.unknown)
         if(VERSION.SDK_INT >= 28) {
-            CardItem(R.string.support_device_id_attestation, dpm.isDeviceIdAttestationSupported.yesOrNo())
+            CardItem(R.string.support_device_id_attestation, dpm.isDeviceIdAttestationSupported.yesOrNo()) { dialog = 1 }
         }
         if (VERSION.SDK_INT >= 30) {
-            CardItem(R.string.support_unique_device_attestation, dpm.isUniqueDeviceAttestationSupported.yesOrNo())
+            CardItem(R.string.support_unique_device_attestation, dpm.isUniqueDeviceAttestationSupported.yesOrNo()) { dialog = 2 }
         }
         val adminList = dpm.activeAdmins
         if(adminList != null) {
             CardItem(R.string.activated_device_admin, adminList.map { it.flattenToShortString() }.joinToString("\n"))
         }
     }
+    if(dialog != 0) AlertDialog(
+        text = { Text(stringResource(if(dialog == 1) R.string.info_device_id_attestation else R.string.info_unique_device_attestation)) },
+        confirmButton = { TextButton(onClick = { dialog = 0 }) { Text(stringResource(R.string.confirm)) } },
+        onDismissRequest = { dialog = 0 }
+    )
 }
 
 @SuppressLint("NewApi")
@@ -547,6 +564,7 @@ private fun SupportMsg() {
                 Text(text = stringResource(R.string.reset))
             }
         }
+        InfoCard(R.string.info_short_support_message)
         Spacer(Modifier.padding(vertical = 8.dp))
         OutlinedTextField(
             value = longMsg,
@@ -577,6 +595,7 @@ private fun SupportMsg() {
                 Text(text = stringResource(R.string.reset))
             }
         }
+        InfoCard(R.string.info_long_support_message)
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
@@ -590,8 +609,6 @@ private fun TransferOwnership() {
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.transfer_ownership), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text = stringResource(R.string.transfer_ownership_desc))
         Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
             value = component, onValueChange = { component = it }, label = { Text(stringResource(R.string.target_component_name)) },
@@ -616,7 +633,8 @@ private fun TransferOwnership() {
         ) {
             Text(stringResource(R.string.transfer))
         }
-        Spacer(Modifier.padding(vertical = 30.dp))
+        Spacer(Modifier.padding(vertical = 10.dp))
+        InfoCard(R.string.info_transfer_ownership)
     }
 }
 

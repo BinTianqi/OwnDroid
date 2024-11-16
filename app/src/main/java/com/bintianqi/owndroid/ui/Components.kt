@@ -3,7 +3,6 @@ package com.bintianqi.owndroid.ui
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -23,7 +23,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
@@ -161,7 +160,7 @@ fun SwitchItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = onClickBlank != null, onClick = onClickBlank?:{})
-            .padding(top = 5.dp, bottom = 5.dp, start = if(padding) 30.dp else 0.dp, end = if(padding) 12.dp else 0.dp)
+            .padding(top = 5.dp, bottom = 5.dp, start = if(padding) 25.dp else 0.dp, end = if(padding) 15.dp else 0.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -231,16 +230,27 @@ fun CopyTextButton(@StringRes label: Int, content: String) {
 }
 
 @Composable
-fun CardItem(@StringRes title: Int, @StringRes text: Int) {
-    CardItem(title, stringResource(text))
+fun CardItem(@StringRes title: Int, @StringRes text: Int, onClickInfo: (() -> Unit)? = null) {
+    CardItem(title, stringResource(text), onClickInfo)
 }
 
 @Composable
-fun CardItem(@StringRes title: Int, text: String) {
+fun CardItem(@StringRes title: Int, text: String, onClickInfo: (() -> Unit)? = null) {
     Card(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-        Text(text = stringResource(title), style = typography.titleLarge, modifier = Modifier.padding(start = 8.dp, top = 6.dp))
-        SelectionContainer {
-            Text(text = text, modifier = Modifier.padding(start = 8.dp, bottom = 6.dp))
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.fillMaxWidth(0.85F)) {
+                Text(text = stringResource(title), style = typography.titleLarge, modifier = Modifier.padding(start = 8.dp, top = 6.dp))
+                SelectionContainer {
+                    Text(text = text, modifier = Modifier.padding(start = 8.dp, bottom = 6.dp))
+                }
+            }
+            if(onClickInfo != null) IconButton(onClick = onClickInfo) {
+                Icon(imageVector = Icons.Outlined.Info, contentDescription = null)
+            }
         }
     }
 }
@@ -261,5 +271,19 @@ fun ListItem(text: String, onDelete: () -> Unit) {
                 contentDescription = stringResource(R.string.delete)
             )
         }
+    }
+}
+
+@Composable
+fun InfoCard(@StringRes strID: Int) {
+    Column(
+        modifier = Modifier
+            .padding(vertical = 8.dp)
+            .clip(RoundedCornerShape(10))
+            .background(color = colorScheme.tertiaryContainer)
+            .padding(8.dp)
+    ) {
+        Icon(imageVector = Icons.Outlined.Info, contentDescription = null, modifier = Modifier.padding(vertical = 4.dp))
+        Text(stringResource(strID))
     }
 }

@@ -87,7 +87,6 @@
     <string name="disable_account_management">Отключить управление аккаунтами</string>
     <string name="account_type">Тип аккаунта</string>
     <string name="transfer_ownership">Передача прав владения</string>
-    <string name="transfer_ownership_desc">Передать привилегии владельца устройства или профиля другому приложению.</string>
     <string name="target_component_name">Имя целевого компонента</string>
     <string name="device_owner_lock_screen_info">Информация на экране блокировки</string>
     <string name="support_msg">Сообщение поддержки</string>
@@ -140,20 +139,16 @@
     <string name="bug_report">Отчет об ошибке</string>
     <string name="confirm_bug_report">Запросить отчет об ошибке?</string>
     <string name="reboot">Перезагрузить</string>
-    <string name="confirm_reboot">Подтвердить перезагрузку?</string>
     <string name="edit_time">Изменить время</string>
     <string name="edit_timezone">Изменить часовой пояс</string>
     <string name="view_all_timezones">Посмотреть все идентификаторы часовых поясов</string>
     <string name="hide_all_timezones">Скрыть все идентификаторы часовых поясов</string>
     <string name="timezone_id">Идентификатор часового пояса</string>
     <string name="disable_auto_time_zone_before_set">Автоматический часовой пояс должен быть отключен перед установкой пользовательского часового пояса.</string>
-    <string name="from_epoch_to_target_time">От Эпохи (01.01.1970 00:00:00 UTC) до желаемого времени (мс)</string>
-    <string name="get_current_time">Текущее время</string>
     <string name="permission_policy">Политика разрешений</string>
     <string name="auto_grant">Автоматически разрешать</string>
     <string name="auto_deny">Автоматически запрещать</string>
     <string name="mte_policy">Политика MTE</string>
-    <string name="mte_policy_desc">MTE: Memory Tagging Extension, требуется Android 14 и ARMv9</string>
     <string name="nearby_app_streaming">Политика потоковой передачи Nearby App</string>
     <string name="nearby_streaming_policy">Политика потоковой передачи Nearby</string>
     <string name="nearby_notification_streaming">Политика потоковой передачи уведомлений Nearby</string>
@@ -490,14 +485,11 @@
     <string name="password_info">Информация о пароле</string>
     <string name="reset_pwd_desc">Оставьте пустым, чтобы удалить пароль</string>
     <string name="max_pwd_fail">Максимальное количество неудачных попыток ввода пароля</string>
-    <string name="max_pwd_fail_desc">При достижении этого предела устройство будет сброшено к заводским настройкам</string>
     <string name="max_pwd_fail_textfield">Максимальное количество неудачных попыток</string>
     <string name="pwd_expiration_timeout">Время истечения срока действия пароля</string>
     <string name="max_time_to_lock">Время ожидания экрана</string>
     <string name="required_strong_auth_timeout">Время ожидания строгой аутентификации</string>
-    <string name="zero_means_no_restriction">0 означает отсутствие ограничений</string>
     <string name="pwd_history">Длина истории паролей</string>
-    <string name="pwd_history_desc">Пользователь не может установить пароли из указанного диапазона истории</string>
     <string name="password_complexity_none">Нет (разрешено отсутствие пароля)</string>
     <string name="password_complexity_low">Низкая (графический ключ и повторение символов разрешены)</string>
     <string name="password_complexity_medium">Средняя (повторение запрещено, минимум 4 символа)</string>
@@ -609,4 +601,6 @@
     <string name="version_name">Версия</string>
     <string name="version_code">Код версии</string>
     <string name="parsing_apk_info" tools:ignore="TypographyEllipsis">Анализ информации APK...</string>
+
+    <!--TODO: Translate strings start with "info_"-->
 </resources>

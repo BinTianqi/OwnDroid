@@ -72,6 +72,7 @@ import com.bintianqi.owndroid.toggle
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.InfoCard
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.SwitchItem
@@ -295,6 +296,7 @@ private fun UserOperation() {
         ) {
             Text(stringResource(R.string.delete))
         }
+        InfoCard(R.string.info_user_operation)
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
@@ -412,6 +414,7 @@ private fun AffiliationID() {
         ) {
             Text(stringResource(R.string.apply))
         }
+        InfoCard(R.string.info_affiliated_id)
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }

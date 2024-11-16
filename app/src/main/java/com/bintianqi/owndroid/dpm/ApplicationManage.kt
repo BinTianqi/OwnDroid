@@ -85,6 +85,7 @@ import com.bintianqi.owndroid.fileUriFlow
 import com.bintianqi.owndroid.getFile
 import com.bintianqi.owndroid.selectedPackage
 import com.bintianqi.owndroid.ui.Animations
+import com.bintianqi.owndroid.ui.InfoCard
 import com.bintianqi.owndroid.ui.Information
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.NavIcon
@@ -295,8 +296,7 @@ private fun Home(
                             else -> R.string.unknown
                         }
                     ),
-                    style = typography.headlineMedium,
-                    modifier = Modifier.padding(start = 5.dp)
+                    style = typography.headlineMedium
                 )
             },
             text = {
@@ -306,10 +306,11 @@ private fun Home(
                     3 -> blockUninstall
                     else -> false
                 }
-                Text(
-                    text = stringResource(R.string.current_state, stringResource(if(enabled) R.string.enabled else R.string.disabled)),
-                    modifier = Modifier.padding(start = 5.dp, top = 5.dp, bottom = 5.dp)
-                )
+                Column {
+                    Text(stringResource(R.string.current_state, stringResource(if(enabled) R.string.enabled else R.string.disabled)))
+                    Spacer(Modifier.padding(vertical = 4.dp))
+                    if(appControlAction == 1) Text(stringResource(R.string.info_suspend_app))
+                }
             },
             confirmButton = {
                 TextButton(
@@ -374,6 +375,7 @@ private fun UserCtrlDisabledPkg(pkgName:String) {
         ) {
             Text(stringResource(R.string.apply))
         }
+        InfoCard(R.string.info_disable_user_control)
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
@@ -799,6 +801,7 @@ private fun KeepUninstalledApp(pkgName: String) {
         ) {
             Text(stringResource(R.string.apply))
         }
+        InfoCard(R.string.info_keep_uninstalled_apps)
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }

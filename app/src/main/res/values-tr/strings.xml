@@ -88,7 +88,6 @@
     <string name="disable_account_management">Hesap Yönetimini Devre Dışı Bırak</string>
     <string name="account_type">Hesap Türleri</string>
     <string name="transfer_ownership">Sahipliği Devret</string>
-    <string name="transfer_ownership_desc">Cihaz sahibi veya profil sahibi ayrıcalığını başka bir uygulamaya devredin.</string>
     <string name="target_component_name">Target component name</string> <!--TODO-->
     <string name="device_owner_lock_screen_info">Ekran Kilidi Bilgisi</string>
     <string name="support_msg">Destek Mesajı</string>
@@ -141,20 +140,16 @@
     <string name="bug_report">Hata raporu</string>
     <string name="confirm_bug_report">Hata raporu iste?</string>
     <string name="reboot">Yeniden başlat</string>
-    <string name="confirm_reboot">Yeniden başlatmayı onayla?</string>
     <string name="edit_time">Zamanı düzenle</string>
     <string name="edit_timezone">Saat dilimini düzenle</string>
     <string name="view_all_timezones">Tüm saat dilimi kimliklerini görüntüle</string>
     <string name="hide_all_timezones">Tüm saat dilimi kimliklerini gizle</string>
     <string name="timezone_id">Saat dilimi kimliği</string>
     <string name="disable_auto_time_zone_before_set">Özel bir saat dilimi ayarlamadan önce otomatik saat dilimi devre dışı bırakılmalıdır</string>
-    <string name="from_epoch_to_target_time">Epoch\'tan (1970/1/1 00:00:00 UTC) ayarlanmak istenen zamana kadar (ms)</string>
-    <string name="get_current_time">Geçerli saat</string>
     <string name="permission_policy">İzin politikası</string>
     <string name="auto_grant">Otomatik ver</string>
     <string name="auto_deny">Otomatik reddet</string>
     <string name="mte_policy">MTE politikası</string>
-    <string name="mte_policy_desc">MTE: Bellek Etiketleme Uzantısı, Android 14 ve ARMv9 gerektirir</string>
     <string name="nearby_app_streaming">Yakındaki uygulama akış politikası</string>
     <string name="nearby_streaming_policy">Yakındaki akış politikası</string>
     <string name="nearby_notification_streaming">Yakındaki bildirim akış politikası</string>
@@ -486,14 +481,11 @@
     <string name="password_info">Şifre Bilgisi</string>
     <string name="reset_pwd_desc">Şifreyi kaldırmak için boş bırakın</string>
     <string name="max_pwd_fail">Maksimum hatalı şifre</string>
-    <string name="max_pwd_fail_desc">Bu sınıra ulaşıldığında, cihaz fabrika ayarlarına sıfırlanacaktır</string>
     <string name="max_pwd_fail_textfield">Maksimum hatalı deneme</string>
     <string name="pwd_expiration_timeout">Şifre geçerlilik süresi</string>
     <string name="max_time_to_lock">Ekran zaman aşımı</string>
     <string name="required_strong_auth_timeout">Gereken güçlü doğrulama zaman aşımı</string>
-    <string name="zero_means_no_restriction">0 means no restriction</string> <!--TODO-->
     <string name="pwd_history">Şifre geçmişi uzunluğu</string>
-    <string name="pwd_history_desc">Belirtilen aralıktaki geçmiş şifreler kullanıcı tarafından ayarlanamaz</string>
     <string name="password_complexity_none">Yok (Şifreye izin verilmez)</string>
     <string name="password_complexity_low">Düşük (Hareket şifresi ve karakter tekrarı izinli)</string>
     <string name="password_complexity_medium">Orta (Tekrar yasak, en az 4 karakter)</string>
@@ -604,4 +596,6 @@
     <string name="version_name">Version name</string> <!--TODO-->
     <string name="version_code">Version code</string> <!--TODO-->
     <string name="parsing_apk_info" tools:ignore="TypographyEllipsis">Parsing APK info...</string>
+
+    <!--TODO: Translate strings start with "info_"-->
 </resources>
