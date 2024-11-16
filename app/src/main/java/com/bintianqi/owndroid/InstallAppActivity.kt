@@ -7,6 +7,7 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -64,11 +65,10 @@ class InstallAppActivity: FragmentActivity() {
                 apkInfoText += "${context.getString(R.string.version_code)}: ${apkInfo.versionCode}"
             }
         }
+        val vm by viewModels<MyViewModel>()
+        if(!vm.initialized) vm.initialize(applicationContext)
         setContent {
-            OwnDroidTheme(
-                sharedPref.getBoolean("material_you", true),
-                sharedPref.getBoolean("black_theme", false)
-            ) {
+            OwnDroidTheme(vm) {
                 AlertDialog(
                     properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
                     title = {

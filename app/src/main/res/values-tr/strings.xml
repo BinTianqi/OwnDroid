@@ -39,7 +39,6 @@
     <string name="decide_by_user">Kullanıcı Tarafından Karar Ver</string>
     <string name="unsupported">Desteklenmiyor</string>
     <string name="developing">Geliştirilen İşlev</string>
-    <string name="unknown_effect">Bilinmeyen Etki</string>
     <string name="options">Seçenekler</string>
     <string name="copy_command">Komutu Kopyala</string>
     <string name="package_name">Paket Adı</string>
@@ -59,6 +58,8 @@
     <string name="no">No</string> <!--TODO-->
     <string name="previous">Previous</string> <!--TODO-->
     <string name="next">Next</string> <!--TODO-->
+    <string name="on">On</string> <!--TODO-->
+    <string name="off">Off</string> <!--TODO-->
 
     <!--Permissions-->
     <string name="click_to_activate">Etkinleştirmek İçin Tıklayın</string>
@@ -223,7 +224,6 @@
     <string name="lockdown_admin_configured_network">Yönetici tarafından yapılandırılmış ağı kilitle</string>
     <string name="wifi_ssid_policy">WiFi SSID politikası</string>
     <string name="ssid_list_is">SSID listesi:</string>
-    <string name="cannot_be_empty">Boş olamaz</string>
     <string name="already_exist">Zaten mevcut</string>
     <string name="private_dns">Özel DNS</string>
     <string name="dns_provide_hostname">Ana bilgisayar adı sağlayın</string>
@@ -329,7 +329,6 @@
     <string name="ucd">Kullanıcı kontrolünü devre dışı bırak</string>
     <string name="ucd_desc">Bunu ayarlarsanız, bu uygulamaların depolama alanını temizleyemez veya zorla durduramazsınız. </string>
     <string name="app_list_is">Uygulama listesi:</string>
-    <string name="clear_list">Listeyi temizle</string>
     <string name="permission_manage">İzin yönetimi</string>
     <string name="cross_profile_package">Profil geçişli paket</string>
     <string name="cross_profile_widget">Profil geçişli widget</string>
@@ -467,8 +466,6 @@
     <string name="logout_current_user">Mevcut kullanıcıyı çıkış yap</string>
     <string name="start_in_background">Arka planda başlat</string>
     <string name="user_operation_switch">Değiştir</string>
-    <string name="user_operation_stop">Durdur</string>
-    <string name="user_operation_remove">Kaldır</string>
     <string name="create_user">Kullanıcı oluştur</string>
     <string name="username">Kullanıcı adı</string>
     <string name="create_user_skip_wizard">Sihirbazı atla</string>
@@ -476,7 +473,6 @@
     <string name="create_user_enable_all_system_app">Tüm sistem uygulamalarını etkinleştir</string>
     <string name="serial_number_of_new_user_is">Bu kullanıcının seri numarası: %1$s</string>
     <string name="affiliation_id">Bağlılık ID</string>
-    <string name="include_empty_string">Boş string dahil et</string>
     <string name="change_user_icon">Kullanıcı simgesini değiştir</string>
     <string name="file_picker_instead_gallery">Galeri yerine dosya seçici kullan</string>
     <string name="select_picture" tools:ignore="TypographyEllipsis">Resim seç...</string>
@@ -547,13 +543,13 @@
     <string name="setting">Ayarlar</string>
     <string name="show_dangerous_features">Show dangerous features</string> <!--TODO-->
     <string name="material_you_color">Material You rengi</string>
-    <string name="dynamic_color_desc">Android 12+</string>
+    <string name="dark_theme">Dark theme</string> <!--TODO-->
+    <string name="follow_system">Follow system</string> <!--TODO-->
+    <string name="black_theme">Black theme</string> <!--TODO-->
     <string name="about">Hakkında</string>
     <string name="user_guide">Kullanıcı rehberi</string>
     <string name="source_code">Kaynak kodu</string>
     <string name="theme">Tema</string>
-    <string name="amoled_black">Siyah tema</string>
-    <string name="blackTheme_desc">Karanlık modun açık olmasını gerektirir</string>
 
     <string name="security">Güvenlik</string>
     <string name="lock_owndroid">OwnDroid\'u kilitle</string>

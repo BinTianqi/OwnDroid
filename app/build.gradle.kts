@@ -76,6 +76,7 @@ gradle.taskGraph.whenReady {
 
 dependencies {
     implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.androidx.compose.bom))
     implementation(libs.accompanist.drawablepainter)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)

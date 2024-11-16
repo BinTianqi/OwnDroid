@@ -111,6 +111,7 @@ import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.selectedPackage
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.SwitchItem
@@ -307,7 +308,7 @@ private fun WifiSsidPolicy() {
             val policy = dpm.wifiSsidPolicy
             ssidList.clear()
             selectedPolicyType = policy?.policyType ?: -1
-            (policy?.ssids ?: mutableSetOf()).forEach { ssidList.add(it) }
+            ssidList.addAll(policy?.ssids ?: mutableSetOf())
         }
         LaunchedEffect(Unit) { refreshPolicy() }
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -331,68 +332,46 @@ private fun WifiSsidPolicy() {
         AnimatedVisibility(selectedPolicyType != -1) {
             var inputSsid by remember { mutableStateOf("") }
             Column {
-                Column {
-                    Spacer(Modifier.padding(vertical = 5.dp))
-                    Text(stringResource(R.string.ssid_list_is))
-                    SelectionContainer(modifier = Modifier.animateContentSize().horizontalScroll(rememberScrollState())) {
-                        Text(if(ssidList.isEmpty()) stringResource(R.string.none) else ssidList.joinToString(separator = "\n"))
+                Text(stringResource(R.string.ssid_list_is))
+                if(ssidList.isEmpty()) Text(stringResource(R.string.none))
+                Column(modifier = Modifier.animateContentSize()) {
+                    for(i in ssidList) {
+                        ListItem(i.bytes.decodeToString()) { ssidList -= i }
                     }
                 }
                 Spacer(Modifier.padding(vertical = 5.dp))
                 OutlinedTextField(
                     value = inputSsid,
                     label = { Text("SSID") },
-                    onValueChange = {inputSsid = it },
+                    onValueChange = { inputSsid = it },
+                    trailingIcon = {
+                        IconButton(
+                            onClick = {
+                                ssidList += WifiSsid.fromBytes(inputSsid.encodeToByteArray())
+                                inputSsid = ""
+                            },
+                            enabled = inputSsid != ""
+                        ) {
+                            Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(R.string.add))
+                        }
+                    },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(Modifier.padding(vertical = 5.dp))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Button(
-                        onClick = {
-                            if(inputSsid == "") {
-                                Toast.makeText(context, R.string.cannot_be_empty, Toast.LENGTH_SHORT).show()
-                            } else if (WifiSsid.fromBytes(inputSsid.toByteArray()) in ssidList) {
-                                Toast.makeText(context, R.string.already_exist, Toast.LENGTH_SHORT).show()
-                            } else {
-                                ssidList.add(WifiSsid.fromBytes(inputSsid.toByteArray()))
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(0.49F)
-                    ) {
-                        Text(stringResource(R.string.add))
-                    }
-                    Button(
-                        onClick = {
-                            if(inputSsid == "") {
-                                Toast.makeText(context, R.string.cannot_be_empty, Toast.LENGTH_SHORT).show()
-                            } else if (WifiSsid.fromBytes(inputSsid.toByteArray()) in ssidList) {
-                                ssidList.remove(WifiSsid.fromBytes(inputSsid.toByteArray()))
-                            } else {
-                                Toast.makeText(context, R.string.not_exist, Toast.LENGTH_SHORT).show()
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(0.96F)
-                    ) {
-                        Text(stringResource(R.string.remove))
-                    }
-                }
                 Spacer(Modifier.padding(vertical = 10.dp))
             }
         }
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                if(selectedPolicyType == -1) {
-                    dpm.wifiSsidPolicy = null
-                    refreshPolicy()
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                }else{
-                    dpm.wifiSsidPolicy = if(ssidList.isEmpty()) { null }else{ WifiSsidPolicy(selectedPolicyType, ssidList.toSet()) }
-                    refreshPolicy()
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                dpm.wifiSsidPolicy = if(selectedPolicyType == -1 || ssidList.isEmpty()) {
+                    null
+                } else {
+                    WifiSsidPolicy(selectedPolicyType, ssidList.toSet())
                 }
+                refreshPolicy()
+                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {

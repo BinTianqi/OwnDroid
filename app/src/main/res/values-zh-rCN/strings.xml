@@ -38,7 +38,6 @@
     <string name="decide_by_user">由用户决定</string>
     <string name="unsupported">不支持</string>
     <string name="developing">功能开发中</string>
-    <string name="unknown_effect">效果未知</string>
     <string name="options">选项</string>
     <string name="copy_command">复制代码</string>
     <string name="unknown_status">未知状态</string>
@@ -56,6 +55,8 @@
     <string name="no">否</string>
     <string name="previous">上一个</string>
     <string name="next">下一个</string>
+    <string name="on">开启</string>
+    <string name="off">关闭</string>
 
     <!--Permissions-->
     <string name="click_to_activate">点击以激活</string>
@@ -218,7 +219,6 @@
     <string name="lockdown_admin_configured_network">锁定由管理员配置的网络</string>
     <string name="wifi_ssid_policy">WiFi SSID策略</string>
     <string name="ssid_list_is">SSID列表：</string>
-    <string name="cannot_be_empty">不能为空</string>
     <string name="already_exist">已经存在</string>
     <string name="private_dns">私人DNS</string>
     <string name="dns_provide_hostname">指定主机名</string>
@@ -320,7 +320,6 @@
     <string name="ucd">禁止用户控制</string>
     <string name="ucd_desc">用户将无法清除这些应用的存储空间或强制停止这些应用</string>
     <string name="app_list_is">应用列表：</string>
-    <string name="clear_list">清空列表</string>
     <string name="permission_manage">权限管理</string>
     <string name="cross_profile_package">跨资料应用</string>
     <string name="cross_profile_widget">跨资料微件</string>
@@ -459,8 +458,6 @@
     <string name="logout_current_user">登出当前用户</string>
     <string name="start_in_background">在后台启动</string>
     <string name="user_operation_switch">切换</string>
-    <string name="user_operation_stop">停止</string>
-    <string name="user_operation_remove">移除</string>
     <string name="create_user">创建用户</string>
     <string name="username">用户名</string>
     <string name="create_user_skip_wizard">跳过创建用户向导</string>
@@ -468,7 +465,6 @@
     <string name="create_user_enable_all_system_app">启用所有系统应用</string>
     <string name="serial_number_of_new_user_is">新用户的序列号：%1$s</string>
     <string name="affiliation_id">附属用户ID</string>
-    <string name="include_empty_string">有空字符串</string>
     <string name="change_user_icon">更换用户头像</string>
     <string name="file_picker_instead_gallery">使用文件选择器而不是相册</string>
     <string name="select_picture" tools:ignore="TypographyEllipsis">选择图片...</string>
@@ -539,13 +535,13 @@
     <string name="setting">设置</string>
     <string name="show_dangerous_features">显示危险功能</string>
     <string name="material_you_color">Material you 颜色</string>
-    <string name="dynamic_color_desc">安卓12+</string>
+    <string name="dark_theme">深色主题</string>
+    <string name="follow_system">跟随系统</string>
+    <string name="black_theme">黑色主题</string>
     <string name="about">关于</string>
     <string name="user_guide">使用教程</string>
     <string name="source_code">源代码</string>
     <string name="theme">主题</string>
-    <string name="amoled_black">纯黑夜间主题</string>
-    <string name="blackTheme_desc">需要打开夜间模式</string>
 
     <string name="security">安全</string>
     <string name="lock_owndroid">锁定OwnDroid</string>

@@ -278,7 +278,7 @@ private fun UserOperation() {
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(stringResource(R.string.user_operation_stop))
+                Text(stringResource(R.string.stop))
             }
         }
         Button(
@@ -293,7 +293,7 @@ private fun UserOperation() {
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(stringResource(R.string.user_operation_remove))
+            Text(stringResource(R.string.delete))
         }
         Spacer(Modifier.padding(vertical = 30.dp))
     }

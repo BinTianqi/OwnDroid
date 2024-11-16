@@ -39,7 +39,6 @@
     <string name="decide_by_user">Decide by user</string>
     <string name="unsupported">Unsupported</string>
     <string name="developing">Developing function</string>
-    <string name="unknown_effect">Unknown effect</string>
     <string name="options">Options</string>
     <string name="copy_command">Copy Command</string>
     <string name="package_name">Package name</string>
@@ -59,6 +58,8 @@
     <string name="no">No</string>
     <string name="previous">Previous</string>
     <string name="next">Next</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
@@ -227,7 +228,6 @@
     <string name="lockdown_admin_configured_network">Lockdown admin configured network</string>
     <string name="wifi_ssid_policy">WiFi SSID policy</string>
     <string name="ssid_list_is">SSID list:</string>
-    <string name="cannot_be_empty">Cannot be empty</string>
     <string name="already_exist">Already exist</string>
     <string name="private_dns">Private DNS</string>
     <string name="dns_provide_hostname">Provide hostname</string>
@@ -335,7 +335,6 @@
     <string name="ucd">Disable user control</string>
     <string name="ucd_desc">If you set this, you cannot clear these apps\' storage or force stop them. </string>
     <string name="app_list_is">App list:</string>
-    <string name="clear_list">Clear list</string>
     <string name="permission_manage">Permission manage</string>
     <string name="cross_profile_package">Cross profile package</string>
     <string name="cross_profile_widget">Cross profile widget</string>
@@ -472,8 +471,6 @@
     <string name="logout_current_user">Logout current user</string>
     <string name="start_in_background">Start in background</string>
     <string name="user_operation_switch">Switch</string>
-    <string name="user_operation_stop">Stop</string>
-    <string name="user_operation_remove">Remove</string>
     <string name="create_user">Create user</string>
     <string name="username">Username</string>
     <string name="create_user_skip_wizard">Skip wizard</string>
@@ -481,7 +478,6 @@
     <string name="create_user_enable_all_system_app">Enable all system app</string>
     <string name="serial_number_of_new_user_is">Serial number of this user: %1$s</string>
     <string name="affiliation_id">Affiliation ID</string>
-    <string name="include_empty_string">Include empty string</string>
     <string name="change_user_icon">Change user icon</string>
     <string name="file_picker_instead_gallery">Use file picker instead of gallery</string>
     <string name="select_picture" tools:ignore="TypographyEllipsis">Select image...</string>
@@ -552,13 +548,13 @@
     <string name="setting">Settings</string>
     <string name="show_dangerous_features">Show dangerous features</string>
     <string name="material_you_color">Material you color</string>
-    <string name="dynamic_color_desc">Android 12+</string>
+    <string name="dark_theme">Dark theme</string>
+    <string name="follow_system">Follow system</string>
+    <string name="black_theme">Black theme</string>
     <string name="about">About</string>
     <string name="user_guide">User guide</string>
     <string name="source_code">Source code</string>
     <string name="theme">Theme</string>
-    <string name="amoled_black">Black theme</string>
-    <string name="blackTheme_desc">Require dark mode on</string>
 
     <string name="security">Security</string>
     <string name="lock_owndroid">Lock OwnDroid</string>

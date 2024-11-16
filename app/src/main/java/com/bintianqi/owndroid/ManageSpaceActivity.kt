@@ -3,6 +3,7 @@ package com.bintianqi.owndroid
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -17,11 +18,11 @@ class ManageSpaceActivity: FragmentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         val sharedPref = applicationContext.getSharedPreferences("data", MODE_PRIVATE)
-        val materialYou = sharedPref.getBoolean("material_you", true)
-        val blackTheme = sharedPref.getBoolean("black_theme", false)
         val protected = sharedPref.getBoolean("protect_storage", false)
+        val vm by viewModels<MyViewModel>()
+        if(!vm.initialized) vm.initialize(applicationContext)
         setContent {
-            OwnDroidTheme(materialYou, blackTheme) {
+            OwnDroidTheme(vm) {
                 AlertDialog(
                     title = {
                         Text(stringResource(R.string.clear_storage))

@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -30,7 +31,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -85,7 +85,7 @@ class MainActivity : FragmentActivity() {
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
-        val sharedPref = applicationContext.getSharedPreferences("data", Context.MODE_PRIVATE)
+        val sharedPref = applicationContext.getSharedPreferences("data", MODE_PRIVATE)
         if (VERSION.SDK_INT >= 28) HiddenApiBypass.setHiddenApiExemptions("")
         if(sharedPref.getBoolean("auth", false)) {
             showAuth.value = true
@@ -93,11 +93,11 @@ class MainActivity : FragmentActivity() {
         val locale = applicationContext.resources?.configuration?.locale
         zhCN = locale == Locale.SIMPLIFIED_CHINESE || locale == Locale.CHINESE || locale == Locale.CHINA
         toggleInstallAppActivity()
+        val vm by viewModels<MyViewModel>()
+        if(!vm.initialized) vm.initialize(applicationContext)
         setContent {
-            val materialYou = remember { mutableStateOf(sharedPref.getBoolean("material_you", true)) }
-            val blackTheme = remember { mutableStateOf(sharedPref.getBoolean("black_theme", false)) }
-            OwnDroidTheme(materialYou.value, blackTheme.value) {
-                Home(materialYou, blackTheme)
+            OwnDroidTheme(vm) {
+                Home(vm)
                 if(showAuth.value) {
                     AuthScreen(this, showAuth)
                 }
@@ -107,7 +107,7 @@ class MainActivity : FragmentActivity() {
 
     override fun onResume() {
         super.onResume()
-        val sharedPref = applicationContext.getSharedPreferences("data", Context.MODE_PRIVATE)
+        val sharedPref = applicationContext.getSharedPreferences("data", MODE_PRIVATE)
         if(
             sharedPref.getBoolean("auth", false) &&
             sharedPref.getBoolean("lock_in_background", false)
@@ -128,7 +128,7 @@ class MainActivity : FragmentActivity() {
 
 @ExperimentalMaterial3Api
 @Composable
-fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>) {
+fun Home(vm: MyViewModel) {
     val navCtrl = rememberNavController()
     val context = LocalContext.current
     val dpm = context.getDPM()
@@ -161,7 +161,7 @@ fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>) {
         composable(route = "UserRestriction") { UserRestriction(navCtrl) }
         composable(route = "UserManage") { UserManage(navCtrl) }
         composable(route = "Password") { Password(navCtrl) }
-        composable(route = "AppSetting") { AppSetting(navCtrl, materialYou, blackTheme) }
+        composable(route = "AppSetting") { AppSetting(navCtrl, vm) }
         composable(route = "Network") { Network(navCtrl) }
         composable(route = "PackageSelector") { PackageSelector(navCtrl) }
     }

@@ -68,7 +68,7 @@ fun registerActivityResult(context: ComponentActivity){
         activityResult.data.let {
             if(it == null){
                 Toast.makeText(context.applicationContext, R.string.file_not_exist, Toast.LENGTH_SHORT).show()
-            }else{
+            } else {
                 fileUriFlow.value = it.data
             }
         }
@@ -76,7 +76,7 @@ fun registerActivityResult(context: ComponentActivity){
     createManagedProfile = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
     addDeviceAdmin = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         val dpm = context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        if(dpm.isAdminActive(ComponentName(context.applicationContext, Receiver::class.java))){
+        if(dpm.isAdminActive(ComponentName(context.applicationContext, Receiver::class.java))) {
             backToHomeStateFlow.value = true
         }
     }

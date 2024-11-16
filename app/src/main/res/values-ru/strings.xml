@@ -38,7 +38,6 @@
     <string name="decide_by_user">Определять пользователем</string>
     <string name="unsupported">Не поддерживается</string>
     <string name="developing">Разрабатываемая функция</string>
-    <string name="unknown_effect">Неизвестный эффект</string>
     <string name="options">Опции</string>
     <string name="copy_command">Копировать команду</string>
     <string name="package_name">Имя пакета</string>
@@ -58,6 +57,8 @@
     <string name="no">Нет</string>
     <string name="previous">Предыдущий</string>
     <string name="next">Следующий</string>
+    <string name="on">On</string> <!--TODO-->
+    <string name="off">Off</string> <!--TODO-->
 
 
     <!--Разрешения-->
@@ -222,7 +223,6 @@
     <string name="lockdown_admin_configured_network">Блокировка ети, настроенной администратором</string>
     <string name="wifi_ssid_policy">Политика SSID Wi-Fi</string>
     <string name="ssid_list_is">Список SSID:</string>
-    <string name="cannot_be_empty">Не может быть пустым</string>
     <string name="already_exist">Уже существует</string>
     <string name="private_dns">Частный DNS</string>
     <string name="dns_provide_hostname">Укажите имя хоста</string>
@@ -330,7 +330,6 @@
     <string name="ucd">Отключить управление пользователем</string>
     <string name="ucd_desc">Если вы установите этот флажок, вы не сможете очистить хранилище этих приложений или принудительно остановить их.</string>
     <string name="app_list_is">Список приложений:</string>
-    <string name="clear_list">Очистить список</string>
     <string name="permission_manage">Управление разрешениями</string>
     <string name="cross_profile_package">Кросс-профильный пакет</string>
     <string name="cross_profile_widget">Кросс-профильный виджет</string>
@@ -469,8 +468,6 @@
     <string name="logout_current_user">Выйти из текущего пользователя</string>
     <string name="start_in_background">Запустить в фоновом режиме</string>
     <string name="user_operation_switch">Переключиться</string>
-    <string name="user_operation_stop">Остановить</string>
-    <string name="user_operation_remove">Удалить</string>
     <string name="create_user">Создать пользователя</string>
     <string name="username">Имя пользователя</string>
     <string name="create_user_skip_wizard">Пропустить мастер настройки</string>
@@ -478,7 +475,6 @@
     <string name="create_user_enable_all_system_app">Включить все системные приложения</string>
     <string name="serial_number_of_new_user_is">Серийный номер этого пользователя: %1$s</string>
     <string name="affiliation_id">Идентификатор принадлежности</string>
-    <string name="include_empty_string">Включая пустую строку</string>
     <string name="change_user_icon">Изменить значок пользователя</string>
     <string name="file_picker_instead_gallery">Использовать выборщик файлов вместо галереи</string>
     <string name="select_picture" tools:ignore="TypographyEllipsis">Выберите изображение...</string>
@@ -552,13 +548,13 @@
     <string name="setting">Настройки</string>
     <string name="show_dangerous_features">Показывать опасные функции</string>
     <string name="material_you_color">Цвет Material You</string>
-    <string name="dynamic_color_desc">Android 12+</string>
+    <string name="dark_theme">Dark theme</string> <!--TODO-->
+    <string name="follow_system">Follow system</string> <!--TODO-->
+    <string name="black_theme">Black theme</string> <!--TODO-->
     <string name="about">О приложении</string>
     <string name="user_guide">Руководство пользователя</string>
     <string name="source_code">Исходный код</string>
     <string name="theme">Тема</string>
-    <string name="amoled_black">Черная тема</string>
-    <string name="blackTheme_desc">Требуется включенный темный режим</string>
 
     <string name="security">Безопасность</string>
     <string name="lock_owndroid">Заблокировать OwnDroid</string>
