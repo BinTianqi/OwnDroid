@@ -23,6 +23,7 @@
     <string name="denied">Denied</string>
     <string name="grant">Grant</string>
     <string name="deny">Deny</string>
+    <string name="revoke">Revoke</string>
     <string name="current_state">Current status: %1$s</string>
     <string name="auto">Auto</string>
     <string name="password">Password</string>
@@ -60,6 +61,7 @@
     <string name="next">Next</string>
     <string name="on">On</string>
     <string name="off">Off</string>
+    <string name="alias">Alias</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
@@ -71,6 +73,7 @@
     <string name="reset_device_policy">Reset device policy</string>
     <string name="activate_device_admin">Activate Device admin</string>
     <string name="activate_device_admin_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
+    <string name="activate_profile_owner_command" translatable="false">dpm set-profile-owner --user %1$s com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="activate_device_owner_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="device_info">Device info</string>
     <string name="support_device_id_attestation">Support Device ID attestation</string>

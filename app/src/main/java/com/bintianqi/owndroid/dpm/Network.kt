@@ -700,7 +700,7 @@ private fun WifiAuthKeypair() {
         Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
             value = keyPair,
-            label = { Text(stringResource(R.string.keypair)) },
+            label = { Text(stringResource(R.string.alias)) },
             onValueChange = { keyPair = it },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
@@ -723,7 +723,7 @@ private fun WifiAuthKeypair() {
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) {
-                Text(stringResource(R.string.add))
+                Text(stringResource(R.string.grant))
             }
             Button(
                 onClick = {
@@ -732,7 +732,7 @@ private fun WifiAuthKeypair() {
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) {
-                Text(stringResource(R.string.remove))
+                Text(stringResource(R.string.revoke))
             }
         }
     }

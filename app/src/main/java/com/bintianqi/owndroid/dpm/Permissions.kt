@@ -7,8 +7,10 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Binder
 import android.os.Build.VERSION
 import android.os.RemoteException
+import android.os.UserManager
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.*
@@ -90,6 +92,7 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
     val deviceAdmin = context.isDeviceAdmin
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
+    val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     var dialog by remember { mutableIntStateOf(0) }
     val enrollmentSpecificId = if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) dpm.enrollmentSpecificId else ""
     Column(modifier = Modifier.fillMaxSize().verticalScroll(listScrollState)) {
@@ -110,13 +113,13 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
             R.string.device_admin, stringResource(if(deviceAdmin) R.string.activated else R.string.deactivated),
             operation = { localNavCtrl.navigate("DeviceAdmin") }
         )
-        if(profileOwner) {
+        if(profileOwner || !userManager.isSystemUser) {
             SubPageItem(
-                R.string.profile_owner, stringResource(R.string.activated),
+                R.string.profile_owner, stringResource(if(profileOwner) R.string.activated else R.string.deactivated),
                 operation = { localNavCtrl.navigate("ProfileOwner") }
             )
         }
-        if(!profileOwner) {
+        if(!profileOwner && userManager.isSystemUser) {
             SubPageItem(
                 R.string.device_owner, stringResource(if(deviceOwner) R.string.activated else R.string.deactivated),
                 operation = { localNavCtrl.navigate("DeviceOwner") }
@@ -376,7 +379,13 @@ private fun ProfileOwner() {
                 Text(stringResource(R.string.deactivate))
             }
         }
-        InfoCard(R.string.profile_owner)
+        if(!profileOwner) {
+            val command = context.getString(R.string.activate_profile_owner_command, (Binder.getCallingUid() / 100000).toString())
+            SelectionContainer {
+                Text(command)
+            }
+            CopyTextButton(R.string.copy_command, command)
+        }
     }
     if(deactivateDialog && VERSION.SDK_INT >= 24) {
         AlertDialog(
@@ -394,7 +403,8 @@ private fun ProfileOwner() {
                     onClick = {
                         dpm.clearProfileOwner(receiver)
                         deactivateDialog = false
-                    }
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
                 ) {
                     Text(stringResource(R.string.confirm))
                 }

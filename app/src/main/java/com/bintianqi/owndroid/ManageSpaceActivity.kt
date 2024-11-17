@@ -1,5 +1,6 @@
 package com.bintianqi.owndroid
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -11,6 +12,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
+import kotlin.system.exitProcess
 
 class ManageSpaceActivity: FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,21 +34,26 @@ class ManageSpaceActivity: FragmentActivity() {
                     },
                     onDismissRequest = { finish() },
                     dismissButton = {
-                        if(!protected) TextButton(onClick = { finish() }) {
+                        TextButton(onClick = { finish() }) {
                             Text(stringResource(R.string.cancel))
                         }
                     },
                     confirmButton = {
-                        TextButton(
+                        if(!protected) TextButton(
                             onClick = {
-                                if(!protected) {
-                                    applicationContext.filesDir.deleteRecursively()
+                                filesDir.deleteRecursively()
+                                cacheDir.deleteRecursively()
+                                codeCacheDir.deleteRecursively()
+                                if(Build.VERSION.SDK_INT >= 24) {
+                                    dataDir.resolve("shared_prefs").deleteRecursively()
+                                } else {
                                     sharedPref.edit().clear().apply()
                                 }
                                 finish()
+                                exitProcess(0)
                             }
                         ) {
-                            Text(stringResource(if(protected) R.string.cancel else R.string.confirm))
+                            Text(stringResource(R.string.confirm))
                         }
                     }
                 )

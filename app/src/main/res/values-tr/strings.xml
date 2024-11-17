@@ -23,6 +23,7 @@
     <string name="denied">Reddedildi</string>
     <string name="grant">Ver</string>
     <string name="deny">Reddet</string>
+    <string name="revoke">Revoke</string> <!--TODO-->
     <string name="current_state">Mevcut Durum: %1$s</string>
     <string name="auto">Otomatik</string>
     <string name="password">Şifre</string>
@@ -60,6 +61,7 @@
     <string name="next">Next</string> <!--TODO-->
     <string name="on">On</string> <!--TODO-->
     <string name="off">Off</string> <!--TODO-->
+    <string name="alias">Alias</string> <!--TODO-->
 
     <!--Permissions-->
     <string name="click_to_activate">Etkinleştirmek İçin Tıklayın</string>

@@ -16,6 +16,7 @@ import android.content.pm.IPackageInstaller
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
 import android.os.Build.VERSION
+import android.os.UserManager
 import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
@@ -401,3 +402,24 @@ data class SecurityEventItem(
     @SerialName("log_level") val logLevel: Int?,
     val data: String
 )
+
+fun setDefaultAffiliationID(context: Context) {
+    if(VERSION.SDK_INT < 26) return
+    val sharedPrefs = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    if(!sharedPrefs.getBoolean("default_affiliation_id_set", false)) {
+        try {
+            val um = context.getSystemService(Context.USER_SERVICE) as UserManager
+            if(context.isDeviceOwner || (!um.isSystemUser && context.isProfileOwner)) {
+                val dpm = context.getDPM()
+                val receiver = context.getReceiver()
+                val affiliationIDs = dpm.getAffiliationIds(receiver)
+                if(affiliationIDs.isEmpty()) {
+                    dpm.setAffiliationIds(receiver, setOf("OwnDroid_default_affiliation_id"))
+                    sharedPrefs.edit().putBoolean("default_affiliation_id_set", true).apply()
+                }
+            }
+        } catch(e: Exception) {
+            e.printStackTrace()
+        }
+    }
+}

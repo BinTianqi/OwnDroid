@@ -13,6 +13,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -192,9 +193,7 @@ fun ShizukuActivate() {
             }
         }
         
-        SelectionContainer(modifier = Modifier
-            .align(Alignment.Start)
-            .horizontalScroll(outputTextScrollState)) {
+        SelectionContainer(modifier = Modifier.fillMaxWidth().horizontalScroll(outputTextScrollState)) {
             Text(text = outputText, softWrap = false, modifier = Modifier.padding(4.dp))
         }
         

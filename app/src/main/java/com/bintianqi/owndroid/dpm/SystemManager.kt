@@ -125,6 +125,7 @@ import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.TopBar
 import com.bintianqi.owndroid.uriToStream
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -1255,7 +1256,6 @@ private fun WipeData() {
     val context = LocalContext.current
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var warning by remember { mutableStateOf(false) }
     var wipeDevice by remember { mutableStateOf(false) }
@@ -1333,6 +1333,14 @@ private fun WipeData() {
             },
             onDismissRequest = { warning = false },
             confirmButton = {
+                var timer by remember { mutableIntStateOf(6) }
+                LaunchedEffect(Unit) {
+                    while(timer > 0) {
+                        timer -= 1
+                        delay(1000)
+                    }
+                }
+                val timerText = if(timer > 0) "(${timer}s)" else ""
                 TextButton(
                     onClick = {
                         var flag = 0
@@ -1350,9 +1358,11 @@ private fun WipeData() {
                             }
                         }
                     },
-                    colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
+                    colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error),
+                    modifier = Modifier.animateContentSize(),
+                    enabled = timer == 0
                 ) {
-                    Text(stringResource(R.string.confirm))
+                    Text(stringResource(R.string.confirm) + timerText)
                 }
             },
             dismissButton = {
@@ -1392,27 +1402,30 @@ private fun SysUpdatePolicy() {
                 RadioButtonItem(R.string.none, selectedPolicy == null, { selectedPolicy = null })
                 var windowedPolicyStart by remember { mutableStateOf("") }
                 var windowedPolicyEnd by remember { mutableStateOf("") }
-                if(selectedPolicy == 2) {
-                    Spacer(Modifier.padding(vertical = 3.dp))
-                    OutlinedTextField(
-                        value = windowedPolicyStart,
-                        label = { Text(stringResource(R.string.start_time)) },
-                        onValueChange = { windowedPolicyStart = it },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                        modifier = Modifier.fillMaxWidth(0.5F)
-                    )
-                    Spacer(Modifier.padding(horizontal = 3.dp))
-                    OutlinedTextField(
-                        value = windowedPolicyEnd,
-                        onValueChange = {windowedPolicyEnd = it },
-                        label = { Text(stringResource(R.string.end_time)) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(Modifier.padding(vertical = 3.dp))
-                    Text(text = stringResource(R.string.minutes_in_one_day))
+                AnimatedVisibility(selectedPolicy == 2) {
+                    Column {
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            OutlinedTextField(
+                                value = windowedPolicyStart,
+                                label = { Text(stringResource(R.string.start_time)) },
+                                onValueChange = { windowedPolicyStart = it },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                                keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+                                modifier = Modifier.fillMaxWidth(0.49F)
+                            )
+                            OutlinedTextField(
+                                value = windowedPolicyEnd,
+                                onValueChange = {windowedPolicyEnd = it },
+                                label = { Text(stringResource(R.string.end_time)) },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                                keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+                                modifier = Modifier.fillMaxWidth(0.96F).padding(bottom = 2.dp)
+                            )
+                        }
+                        Text(text = stringResource(R.string.minutes_in_one_day))
+                    }
                 }
                 Button(
                     onClick = {
@@ -1426,7 +1439,7 @@ private fun SysUpdatePolicy() {
                         dpm.setSystemUpdatePolicy(receiver,policy)
                         Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
                 ) {
                     Text(stringResource(R.string.apply))
                 }

@@ -48,6 +48,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -66,12 +67,14 @@ import com.bintianqi.owndroid.dpm.getReceiver
 import com.bintianqi.owndroid.dpm.isDeviceAdmin
 import com.bintianqi.owndroid.dpm.isDeviceOwner
 import com.bintianqi.owndroid.dpm.isProfileOwner
+import com.bintianqi.owndroid.dpm.setDefaultAffiliationID
 import com.bintianqi.owndroid.dpm.toggleInstallAppActivity
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import com.rosan.dhizuku.api.Dhizuku
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 import java.util.Locale
 
@@ -85,16 +88,18 @@ class MainActivity : FragmentActivity() {
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
-        val sharedPref = applicationContext.getSharedPreferences("data", MODE_PRIVATE)
+        val context = applicationContext
+        val sharedPref = context.getSharedPreferences("data", MODE_PRIVATE)
         if (VERSION.SDK_INT >= 28) HiddenApiBypass.setHiddenApiExemptions("")
         if(sharedPref.getBoolean("auth", false)) {
             showAuth.value = true
         }
-        val locale = applicationContext.resources?.configuration?.locale
+        val locale = context.resources?.configuration?.locale
         zhCN = locale == Locale.SIMPLIFIED_CHINESE || locale == Locale.CHINESE || locale == Locale.CHINA
         toggleInstallAppActivity()
         val vm by viewModels<MyViewModel>()
-        if(!vm.initialized) vm.initialize(applicationContext)
+        if(!vm.initialized) vm.initialize(context)
+        lifecycleScope.launch { setDefaultAffiliationID(context) }
         setContent {
             OwnDroidTheme(vm) {
                 Home(vm)

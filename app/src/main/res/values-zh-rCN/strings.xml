@@ -20,8 +20,9 @@
     <string name="whitelist">白名单</string>
     <string name="granted">允许</string>
     <string name="denied">拒绝</string>
-    <string name="grant">允许</string>
+    <string name="grant">授予</string>
     <string name="deny">拒绝</string>
+    <string name="revoke">吊销</string>
     <string name="current_state">当前状态：%1$s</string>
     <string name="auto">自动</string>
     <string name="password">密码</string>
@@ -57,6 +58,7 @@
     <string name="next">下一个</string>
     <string name="on">开启</string>
     <string name="off">关闭</string>
+    <string name="alias">别名</string>
 
     <!--Permissions-->
     <string name="click_to_activate">点击以激活</string>

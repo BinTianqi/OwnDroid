@@ -22,6 +22,7 @@
     <string name="denied">Запрещено</string>
     <string name="grant">Разрешить</string>
     <string name="deny">Запретить</string>
+    <string name="revoke">Revoke</string> <!--TODO-->
     <string name="current_state">Текущее состояние: %1$s</string>
     <string name="auto">Авто</string>
     <string name="password">Пароль</string>
@@ -59,6 +60,7 @@
     <string name="next">Следующий</string>
     <string name="on">On</string> <!--TODO-->
     <string name="off">Off</string> <!--TODO-->
+    <string name="alias">Alias</string> <!--TODO-->
 
 
     <!--Разрешения-->

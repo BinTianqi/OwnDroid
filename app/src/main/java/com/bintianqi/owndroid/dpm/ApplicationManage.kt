@@ -470,9 +470,9 @@ private fun PermissionManage(pkgName: String) {
                     Text(selectedPermission.permission)
                     Spacer(Modifier.padding(vertical = 4.dp))
                     if(!(VERSION.SDK_INT >=31 && context.isProfileOwner && selectedPermission.profileOwnerRestricted)) {
-                        GrantPermissionItem(R.string.grant, PERMISSION_GRANT_STATE_GRANTED)
+                        GrantPermissionItem(R.string.granted, PERMISSION_GRANT_STATE_GRANTED)
                     }
-                    GrantPermissionItem(R.string.deny, PERMISSION_GRANT_STATE_DENIED)
+                    GrantPermissionItem(R.string.denied, PERMISSION_GRANT_STATE_DENIED)
                     GrantPermissionItem(R.string.default_stringres, PERMISSION_GRANT_STATE_DEFAULT)
                 }
             }
