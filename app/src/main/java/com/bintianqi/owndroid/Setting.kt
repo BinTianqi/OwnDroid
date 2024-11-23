@@ -118,7 +118,7 @@ private fun ThemeSettings(vm: MyViewModel) {
             SubPageItem(R.string.dark_theme, stringResource(darkThemeTextID)) { darkThemeMenu = true }
             DropdownMenu(
                 expanded = darkThemeMenu, onDismissRequest = { darkThemeMenu = false },
-                offset = DpOffset(x = 30.dp, y = 0.dp)
+                offset = DpOffset(x = 25.dp, y = 0.dp)
             ) {
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.follow_system)) },
@@ -240,7 +240,6 @@ private fun About() {
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.app_name)+" v$verName ($verCode)", modifier = Modifier.padding(start = 26.dp))
         Spacer(Modifier.padding(vertical = 5.dp))
-        SubPageItem(R.string.user_guide, "", R.drawable.open_in_new) { shareLink(context, "https://owndroid.pages.dev") }
         SubPageItem(R.string.source_code, "", R.drawable.open_in_new) { shareLink(context, "https://github.com/BinTianqi/OwnDroid") }
     }
 }

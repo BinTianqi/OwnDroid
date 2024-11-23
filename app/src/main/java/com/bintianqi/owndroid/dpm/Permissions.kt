@@ -418,7 +418,6 @@ private fun DeviceOwner() {
     val context = LocalContext.current
     val dpm = context.getDPM()
     var deactivateDialog by remember { mutableStateOf(false) }
-    var resetPolicy by remember { mutableStateOf(true) }
     val deviceOwner = context.isDeviceOwner
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -443,6 +442,7 @@ private fun DeviceOwner() {
         }
     }
     if(deactivateDialog) {
+        var resetPolicy by remember { mutableStateOf(false) }
         val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
         val coroutine = rememberCoroutineScope()
         AlertDialog(

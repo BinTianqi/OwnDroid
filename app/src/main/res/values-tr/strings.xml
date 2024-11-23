@@ -144,8 +144,6 @@
     <string name="reboot">Yeniden başlat</string>
     <string name="edit_time">Zamanı düzenle</string>
     <string name="edit_timezone">Saat dilimini düzenle</string>
-    <string name="view_all_timezones">Tüm saat dilimi kimliklerini görüntüle</string>
-    <string name="hide_all_timezones">Tüm saat dilimi kimliklerini gizle</string>
     <string name="timezone_id">Saat dilimi kimliği</string>
     <string name="disable_auto_time_zone_before_set">Özel bir saat dilimi ayarlamadan önce otomatik saat dilimi devre dışı bırakılmalıdır</string>
     <string name="permission_policy">İzin politikası</string>
@@ -541,7 +539,6 @@
     <string name="follow_system">Follow system</string> <!--TODO-->
     <string name="black_theme">Black theme</string> <!--TODO-->
     <string name="about">Hakkında</string>
-    <string name="user_guide">Kullanıcı rehberi</string>
     <string name="source_code">Kaynak kodu</string>
     <string name="theme">Tema</string>
 

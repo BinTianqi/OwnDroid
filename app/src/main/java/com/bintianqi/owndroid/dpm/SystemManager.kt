@@ -38,7 +38,6 @@ import android.app.admin.SystemUpdatePolicy.TYPE_POSTPONE
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.icu.text.IDNA
 import android.net.Uri
 import android.os.Build.VERSION
 import android.os.UserManager
@@ -55,13 +54,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -77,7 +78,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -140,8 +140,6 @@ fun SystemManage(navCtrl: NavHostController) {
     val localNavCtrl = rememberNavController()
     val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
     val scrollState = rememberScrollState()
-    val rebootDialog = remember { mutableStateOf(false) }
-    val bugReportDialog = remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopBar(backStackEntry,navCtrl,localNavCtrl) {
@@ -162,7 +160,7 @@ fun SystemManage(navCtrl: NavHostController) {
             popExitTransition = Animations.navHostPopExitTransition,
             modifier = Modifier.padding(top = it.calculateTopPadding())
         ) {
-            composable(route = "Home") { Home(localNavCtrl, scrollState, rebootDialog, bugReportDialog) }
+            composable(route = "Home") { Home(localNavCtrl, scrollState) }
             composable(route = "Switches") { Switches() }
             composable(route = "Keyguard") { Keyguard() }
             composable(route = "EditTime") { EditTime() }
@@ -180,16 +178,11 @@ fun SystemManage(navCtrl: NavHostController) {
             composable(route = "FRP") { FactoryResetProtection() }
         }
     }
-    if(rebootDialog.value) {
-        RebootDialog(rebootDialog)
-    }
-    if(bugReportDialog.value) {
-        BugReportDialog(bugReportDialog)
-    }
 }
 
+@SuppressLint("NewApi")
 @Composable
-private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDialog: MutableState<Boolean>, bugReportDialog: MutableState<Boolean>) {
+private fun Home(navCtrl: NavHostController, scrollState: ScrollState) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -198,6 +191,7 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
     val dangerousFeatures = sharedPref.getBoolean("dangerous_features", false)
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
+    var dialog by remember { mutableIntStateOf(0) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
             text = stringResource(R.string.system_manage),
@@ -209,10 +203,10 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
         }
         SubPageItem(R.string.keyguard, "", R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("Keyguard") }
         if(VERSION.SDK_INT >= 24 && deviceOwner) {
-            SubPageItem(R.string.reboot, "", R.drawable.restart_alt_fill0) { rebootDialog.value = true }
+            SubPageItem(R.string.reboot, "", R.drawable.restart_alt_fill0) { dialog = 1 }
         }
         if(deviceOwner && ((VERSION.SDK_INT >= 28 && dpm.isAffiliatedUser) || VERSION.SDK_INT >= 24)) {
-            SubPageItem(R.string.bug_report, "", R.drawable.bug_report_fill0) { bugReportDialog.value = true }
+            SubPageItem(R.string.bug_report, "", R.drawable.bug_report_fill0) { dialog = 2 }
         }
         if(VERSION.SDK_INT >= 28 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SubPageItem(R.string.edit_time, "", R.drawable.schedule_fill0) { navCtrl.navigate("EditTime") }
@@ -254,6 +248,32 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState, rebootDia
         Spacer(Modifier.padding(vertical = 30.dp))
         LaunchedEffect(Unit) { fileUriFlow.value = Uri.parse("") }
     }
+    if(dialog != 0) AlertDialog(
+        onDismissRequest = { dialog = 0 },
+        title = { Text(stringResource(if(dialog == 1) R.string.reboot else R.string.bug_report)) },
+        text = { Text(stringResource(if(dialog == 1) R.string.info_reboot else R.string.confirm_bug_report)) },
+        dismissButton = {
+            TextButton(onClick = { dialog = 0 }) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if(dialog == 1) {
+                        dpm.reboot(receiver)
+                    } else {
+                        val result = dpm.requestBugreport(receiver)
+                        Toast.makeText(context, if(result) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+                    }
+                    dialog = 0
+                }
+            ) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        modifier = Modifier.fillMaxWidth()
+    )
 }
 
 @Composable
@@ -408,63 +428,6 @@ private fun Keyguard() {
 
 @SuppressLint("NewApi")
 @Composable
-private fun BugReportDialog(status: MutableState<Boolean>) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    AlertDialog(
-        onDismissRequest = { status.value = false },
-        title = { Text(stringResource(R.string.bug_report)) },
-        text = { Text(stringResource(R.string.confirm_bug_report)) },
-        dismissButton = {
-            TextButton(onClick = { status.value = false }) {
-                Text(stringResource(R.string.cancel))
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    val result = dpm.requestBugreport(receiver)
-                    Toast.makeText(context, if(result) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
-                    status.value = false
-                }
-            ) {
-                Text(stringResource(R.string.confirm))
-            }
-        },
-        modifier = Modifier.fillMaxWidth()
-    )
-}
-
-@SuppressLint("NewApi")
-@Composable
-private fun RebootDialog(status: MutableState<Boolean>) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    AlertDialog(
-        onDismissRequest = { status.value = false },
-        title = { Text(stringResource(R.string.reboot)) },
-        text = { Text(stringResource(R.string.info_reboot)) },
-        dismissButton = {
-            TextButton(onClick = { status.value = false }) {
-                Text(stringResource(R.string.cancel))
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { dpm.reboot(receiver) },
-                colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
-            ) {
-                Text(stringResource(R.string.confirm))
-            }
-        },
-        modifier = Modifier.fillMaxWidth()
-    )
-}
-
-@SuppressLint("NewApi")
-@Composable
 private fun EditTime() {
     val context = LocalContext.current
     val dpm = context.getDPM()
@@ -501,8 +464,8 @@ private fun EditTimeZone() {
     val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
     val receiver = context.getReceiver()
-    var expanded by remember { mutableStateOf(false) }
     var inputTimezone by remember { mutableStateOf("") }
+    var dialog by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -514,6 +477,11 @@ private fun EditTimeZone() {
             value = inputTimezone,
             label = { Text(stringResource(R.string.timezone_id)) },
             onValueChange = { inputTimezone = it },
+            trailingIcon = {
+                IconButton(onClick = { dialog = true }) {
+                    Icon(imageVector = Icons.AutoMirrored.Default.List, contentDescription = null)
+                }
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
             modifier = Modifier.fillMaxWidth()
@@ -524,27 +492,41 @@ private fun EditTimeZone() {
                 val result = dpm.setTimeZone(receiver, inputTimezone)
                 Toast.makeText(context, if(result) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
             },
-            modifier = Modifier.width(100.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.apply))
-        }
-        Spacer(Modifier.padding(vertical = 7.dp))
-        Button(onClick = { expanded = !expanded }) {
-            Text(stringResource(if(expanded) R.string.hide_all_timezones else R.string.view_all_timezones))
-        }
-        AnimatedVisibility(expanded) {
-            var ids = ""
-            TimeZone.getAvailableIDs().forEach { ids += "$it\n" }
-            SelectionContainer {
-                Text(ids)
-            }
         }
         Spacer(Modifier.padding(vertical = 10.dp))
         Information {
             Text(stringResource(R.string.disable_auto_time_zone_before_set))
         }
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
+    if(dialog) AlertDialog(
+        text = {
+            LazyColumn {
+                items(TimeZone.getAvailableIDs()) {
+                    Text(
+                        text = it,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 1.dp)
+                            .clip(RoundedCornerShape(15))
+                            .clickable {
+                                inputTimezone = it
+                                dialog = false
+                            }
+                            .padding(start = 6.dp, top = 10.dp, bottom = 10.dp)
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { dialog = false }) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+        onDismissRequest = { dialog = false }
+    )
 }
 
 @SuppressLint("NewApi")

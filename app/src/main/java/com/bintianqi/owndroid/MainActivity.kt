@@ -91,9 +91,7 @@ class MainActivity : FragmentActivity() {
         val context = applicationContext
         val sharedPref = context.getSharedPreferences("data", MODE_PRIVATE)
         if (VERSION.SDK_INT >= 28) HiddenApiBypass.setHiddenApiExemptions("")
-        if(sharedPref.getBoolean("auth", false)) {
-            showAuth.value = true
-        }
+        if(sharedPref.getBoolean("auth", false)) showAuth.value = true
         val locale = context.resources?.configuration?.locale
         zhCN = locale == Locale.SIMPLIFIED_CHINESE || locale == Locale.CHINESE || locale == Locale.CHINA
         toggleInstallAppActivity()

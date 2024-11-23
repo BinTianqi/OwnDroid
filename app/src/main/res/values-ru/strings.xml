@@ -143,8 +143,6 @@
     <string name="reboot">Перезагрузить</string>
     <string name="edit_time">Изменить время</string>
     <string name="edit_timezone">Изменить часовой пояс</string>
-    <string name="view_all_timezones">Посмотреть все идентификаторы часовых поясов</string>
-    <string name="hide_all_timezones">Скрыть все идентификаторы часовых поясов</string>
     <string name="timezone_id">Идентификатор часового пояса</string>
     <string name="disable_auto_time_zone_before_set">Автоматический часовой пояс должен быть отключен перед установкой пользовательского часового пояса.</string>
     <string name="permission_policy">Политика разрешений</string>
@@ -546,7 +544,6 @@
     <string name="follow_system">Follow system</string> <!--TODO-->
     <string name="black_theme">Black theme</string> <!--TODO-->
     <string name="about">О приложении</string>
-    <string name="user_guide">Руководство пользователя</string>
     <string name="source_code">Исходный код</string>
     <string name="theme">Тема</string>
 

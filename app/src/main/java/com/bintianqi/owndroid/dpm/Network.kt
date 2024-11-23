@@ -45,7 +45,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,12 +57,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -826,8 +825,11 @@ fun PreferentialNetworkService() {
                 )
             }
         }
-        Row {
-            Button(
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            IconButton(
                 onClick = {
                     try {
                         saveCurrentConfig()
@@ -837,19 +839,18 @@ fun PreferentialNetworkService() {
                         Toast.makeText(context, R.string.failed_to_save_current_config, Toast.LENGTH_SHORT).show()
                     }
                 },
-                modifier = Modifier.fillMaxWidth(0.49F)
+                modifier = Modifier.padding(end = 10.dp)
             ) {
-                Text(stringResource(R.string.save_current_config))
+                Icon(painter = painterResource(R.drawable.save_fill0), contentDescription = stringResource(R.string.save_current_config))
             }
-            Button(
+            IconButton(
                 onClick = {
                     if(index < configs.size) configs.removeAt(index)
                     if(index > 0) index -= 1
                     refresh()
-                },
-                modifier = Modifier.fillMaxWidth(0.96F)
+                }
             ) {
-                Text(stringResource(R.string.delete_current_config))
+                Icon(imageVector = Icons.Default.Delete, contentDescription = stringResource(R.string.delete_current_config))
             }
         }
         SwitchItem(

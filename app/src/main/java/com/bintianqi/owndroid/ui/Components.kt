@@ -40,16 +40,25 @@ fun SubPageItem(
     operation: () -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = operation).padding(top = 15.dp, bottom = 15.dp, start = 30.dp, end = 12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = operation)
+            .padding(start = 25.dp, end = 15.dp)
+            .padding(vertical = 12.dp + (if(desc != "") 0 else 3).dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if(icon != null) {
-            Icon(painter = painterResource(icon), contentDescription = stringResource(title), modifier = Modifier.padding(top = 1.dp))
-            Spacer(Modifier.padding(start = 15.dp))
-        }
+        if(icon != null) Icon(
+            painter = painterResource(icon),
+            contentDescription = null,
+            modifier = Modifier.padding(top = 1.dp, end = 20.dp).offset(x = (-2).dp)
+        )
         Column {
-            Text(text = stringResource(title), style = typography.titleLarge, modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
-            if(desc!="") { Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F)) }
+            Text(
+                text = stringResource(title),
+                style = typography.titleLarge,
+                modifier = Modifier.padding(bottom = if(zhCN) 2.dp else 0.dp)
+            )
+            if(desc != "") { Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F)) }
         }
     }
 }
@@ -160,22 +169,22 @@ fun SwitchItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = onClickBlank != null, onClick = onClickBlank?:{})
-            .padding(top = 5.dp, bottom = 5.dp, start = if(padding) 25.dp else 0.dp, end = if(padding) 15.dp else 0.dp)
+            .padding(start = if(padding) 25.dp else 0.dp, end = if(padding) 15.dp else 0.dp, top = 5.dp, bottom = 5.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.align(Alignment.CenterStart)
         ) {
-            if(icon != null) {
-                Icon(painter = painterResource(icon),contentDescription = null)
-                Spacer(Modifier.padding(start = 15.dp))
-            }
-            Column(modifier = Modifier.padding(end = 60.dp)) {
+            if(icon != null) Icon(
+                painter = painterResource(icon),
+                contentDescription = null,
+                modifier = Modifier.padding(end = 20.dp).offset(x = (-2).dp)
+            )
+            Column(modifier = Modifier.padding(end = 60.dp, bottom = if(zhCN) 2.dp else 0.dp)) {
                 Text(text = stringResource(title), style = typography.titleLarge)
-                if(desc!="") {
+                if(desc != "") {
                     Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F))
                 }
-                if(zhCN) { Spacer(Modifier.padding(vertical = 1.dp)) }
             }
         }
         Switch(
