@@ -59,6 +59,7 @@
     <string name="on">开启</string>
     <string name="off">关闭</string>
     <string name="alias">别名</string>
+    <string name="unknown_error">未知错误</string>
 
     <!--Permissions-->
     <string name="click_to_activate">点击以激活</string>
@@ -441,13 +442,17 @@
     <string name="support_multiuser">支持多用户</string>
     <string name="system_user">系统用户</string>
     <string name="admin_user">管理员用户</string>
-    <string name="headless_system_user">无头系统用户</string>
+    <string name="demo_user">演示用户</string>
+    <string name="headless_system_user_mode">无头系统用户模式</string>
+    <string name="creation_time">创建时间</string>
     <string name="logout_enabled">用户可登出</string>
     <string name="ephemeral_user">临时用户</string>
     <string name="affiliated_user">附属用户</string>
     <string name="user_id">当前UserID</string>
     <string name="user_serial_number">当前用户序列号</string>
+    <string name="secondary_users">次要用户</string>
     <string name="user_operation">用户操作</string>
+    <string name="user_not_exist">用户不存在</string>
     <string name="serial_number">序列号</string>
     <string name="use_uid">使用UID</string>
     <string name="logout_current_user">登出当前用户</string>
@@ -626,6 +631,7 @@
     <string name="info_suspend_app">挂起的应用无法被打开，通知会被隐藏，不会在最近任务中显示，不能弹窗，不能发送Toast。\n有些应用无法被挂起，比如Device admin、启动器和默认拨号应用。</string>
     <string name="info_disable_user_control">用户无法清除这些应用的存储空间，也无法强制停止应用</string>
     <string name="info_keep_uninstalled_apps">这个列表中的应用的APK将会一直保留，即使没有任何用户安装这个应用</string>
+    <string name="info_headless_system_user_mode">无头系统用户模式意味着系统用户运行系统服务和一些系统UI，但它不与任何真实的人相关联，必须创建额外的用户才能与真实的人相关联。</string>
     <string name="info_user_operation">推荐使用用户序列号来标识用户，如果要使用UID，UID可以是运行在目标用户中任意应用的UID</string>
     <string name="info_affiliated_id">当Device owner创建并管理用户时，新的用户不是附属用户。Device owner设置和受管理用户完全相同的附属用户ID后，受管理用户成为附属于Device owner的用户</string>
     <string name="info_reset_password">设置一个新的密码，密码的长度需要4位或以上，不输入密码将会清除现有的密码。长度在6位或以下的纯数字密码将会设置为PIN码。</string>

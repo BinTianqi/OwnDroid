@@ -61,6 +61,7 @@
     <string name="on">On</string> <!--TODO-->
     <string name="off">Off</string> <!--TODO-->
     <string name="alias">Alias</string> <!--TODO-->
+    <string name="unknown_error">Unknown error</string> <!--TODO-->
 
 
     <!--Разрешения-->
@@ -451,14 +452,18 @@
     <string name="support_multiuser">Поддержка нескольких пользователей</string>
     <string name="system_user">Системный пользователь</string>
     <string name="admin_user">Пользователь-администратор</string>
-    <string name="headless_system_user">Фоновый системный пользователь</string>
+    <string name="demo_user">Demo user</string> <!--TODO-->
+    <string name="headless_system_user_mode">Headless system user mode</string> <!--TODO-->
+    <string name="creation_time">Creation time</string> <!--TODO-->
     <string name="logout_enabled">Выход из системы разрешен</string>
     <string name="ephemeral_user">Временный пользователь</string>
     <string name="affiliated_user">Связанный пользователь</string>
     <string name="user_id">Идентификатор пользователя</string>
     <string name="user_serial_number">Серийный номер пользователя</string>
     <string name="user_operation">Операция с пользователем</string>
+    <string name="user_not_exist">User does not exist</string> <!--TODO-->
     <string name="serial_number">Серийный номер</string>
+    <string name="secondary_users">Secondary users</string> <!--TODO-->
     <string name="use_uid">Использовать UID</string>
     <string name="logout_current_user">Выйти из текущего пользователя</string>
     <string name="start_in_background">Запустить в фоновом режиме</string>

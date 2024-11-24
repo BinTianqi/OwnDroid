@@ -62,6 +62,7 @@
     <string name="on">On</string> <!--TODO-->
     <string name="off">Off</string> <!--TODO-->
     <string name="alias">Alias</string> <!--TODO-->
+    <string name="unknown_error">Unknown error</string> <!--TODO-->
 
     <!--Permissions-->
     <string name="click_to_activate">Etkinleştirmek İçin Tıklayın</string>
@@ -449,13 +450,17 @@
     <string name="support_multiuser">Çoklu kullanıcı desteği</string>
     <string name="system_user">Sistem kullanıcısı</string>
     <string name="admin_user">Yönetici kullanıcısı</string>
-    <string name="headless_system_user">Başsız sistem kullanıcısı</string>
+    <string name="demo_user">Demo user</string> <!--TODO-->
+    <string name="headless_system_user_mode">Headless system user mode</string> <!--TODO-->
+    <string name="creation_time">Creation time</string> <!--TODO-->
     <string name="logout_enabled">Logout enabled</string> <!--TODO-->
     <string name="ephemeral_user">Geçici kullanıcı</string>
     <string name="affiliated_user">Bağlı kullanıcı</string>
     <string name="user_id">Kullanıcı ID</string>
     <string name="user_serial_number">Kullanıcı seri numarası</string>
+    <string name="secondary_users">Secondary users</string> <!--TODO-->
     <string name="user_operation">Kullanıcı işlemi</string>
+    <string name="user_not_exist">User does not exist</string> <!--TODO-->
     <string name="serial_number">Seri numarası</string>
     <string name="use_uid">UID kullan</string>
     <string name="logout_current_user">Mevcut kullanıcıyı çıkış yap</string>

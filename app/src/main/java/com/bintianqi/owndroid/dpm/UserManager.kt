@@ -14,6 +14,7 @@ import android.os.UserHandle
 import android.os.UserManager
 import android.provider.MediaStore
 import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
@@ -33,6 +34,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -41,10 +43,12 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -68,6 +72,7 @@ import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.fileUriFlow
 import com.bintianqi.owndroid.getFile
+import com.bintianqi.owndroid.parseTimestamp
 import com.bintianqi.owndroid.toggle
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CardItem
@@ -121,8 +126,12 @@ fun UserManage(navCtrl: NavHostController) {
 @Composable
 private fun Home(navCtrl: NavHostController,scrollState: ScrollState) {
     val context = LocalContext.current
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
+    //var logoutDialog by remember { mutableStateOf(false) }
+    var dialog by remember { mutableIntStateOf(0) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
             text = stringResource(R.string.user_manager),
@@ -131,6 +140,7 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState) {
         )
         SubPageItem(R.string.user_info, "", R.drawable.person_fill0) { navCtrl.navigate("UserInfo") }
         if(deviceOwner && VERSION.SDK_INT >= 28) {
+            SubPageItem(R.string.secondary_users, "", R.drawable.list_fill0) { dialog = 1 }
             SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Options") }
         }
         if(deviceOwner) {
@@ -138,6 +148,9 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState) {
         }
         if(VERSION.SDK_INT >= 24 && deviceOwner) {
             SubPageItem(R.string.create_user, "", R.drawable.person_add_fill0) { navCtrl.navigate("CreateUser") }
+        }
+        if(VERSION.SDK_INT >= 28 && profileOwner && dpm.isAffiliatedUser) {
+            SubPageItem(R.string.logout_current_user, "", R.drawable.logout_fill0) { dialog = 2 }
         }
         if(deviceOwner || profileOwner) {
             SubPageItem(R.string.edit_username, "", R.drawable.edit_fill0) { navCtrl.navigate("EditUsername") }
@@ -154,6 +167,40 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState) {
         Spacer(Modifier.padding(vertical = 30.dp))
         LaunchedEffect(Unit) { fileUriFlow.value = Uri.parse("") }
     }
+    if(dialog != 0 && VERSION.SDK_INT >= 28) AlertDialog(
+        title = { Text(stringResource(if(dialog == 1) R.string.secondary_users else R.string.logout_current_user)) },
+        text = {
+            if(dialog == 1) {
+                val um = context.getSystemService(Context.USER_SERVICE) as UserManager
+                val list = dpm.getSecondaryUsers(receiver)
+                Column {
+                    Text("(" + stringResource(R.string.serial_number) + ")")
+                    list.forEach {
+                        Text(um.getSerialNumberForUser(it).toString())
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if(dialog == 2) {
+                        val result = dpm.logoutUser(receiver)
+                        Toast.makeText(context, userOperationResultCode(result), Toast.LENGTH_SHORT).show()
+                    }
+                    dialog = 0
+                }
+            ) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        dismissButton = {
+            if(dialog != 1) TextButton(onClick = { dialog = 0 }) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+        onDismissRequest = { dialog = 0 }
+    )
 }
 
 @Composable
@@ -174,25 +221,39 @@ private fun CurrentUserInfo() {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
+    val user = Process.myUserHandle()
+    var infoDialog by remember { mutableIntStateOf(0) }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.user_info), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT >= 24) CardItem(R.string.support_multiuser, UserManager.supportsMultipleUsers().yesOrNo())
-        if(VERSION.SDK_INT >= 23) CardItem(R.string.system_user, userManager.isSystemUser.yesOrNo())
-        if(VERSION.SDK_INT >= 34) CardItem(R.string.admin_user, userManager.isAdminUser.yesOrNo())
-        if(VERSION.SDK_INT >= 31) CardItem(R.string.headless_system_user, UserManager.isHeadlessSystemUserMode().yesOrNo())
+        if(VERSION.SDK_INT >= 24) CardItem(R.string.support_multiuser, UserManager.supportsMultipleUsers().yesOrNo)
+        if(VERSION.SDK_INT >= 31) CardItem(R.string.headless_system_user_mode, UserManager.isHeadlessSystemUserMode().yesOrNo) { infoDialog = 1 }
+        Spacer(Modifier.padding(vertical = 8.dp))
+        if(VERSION.SDK_INT >= 23) CardItem(R.string.system_user, userManager.isSystemUser.yesOrNo)
+        if(VERSION.SDK_INT >= 34) CardItem(R.string.admin_user, userManager.isAdminUser.yesOrNo)
+        if(VERSION.SDK_INT >= 25) CardItem(R.string.demo_user, userManager.isDemoUser.yesOrNo)
+        if(VERSION.SDK_INT >= 26) CardItem(R.string.creation_time, parseTimestamp(userManager.getUserCreationTime(user)))
         if (VERSION.SDK_INT >= 28) {
-            CardItem(R.string.logout_enabled, dpm.isLogoutEnabled.yesOrNo())
+            CardItem(R.string.logout_enabled, dpm.isLogoutEnabled.yesOrNo)
             if(context.isDeviceOwner || context.isProfileOwner) {
-                CardItem(R.string.ephemeral_user, dpm.isEphemeralUser(receiver).yesOrNo())
+                CardItem(R.string.ephemeral_user, dpm.isEphemeralUser(receiver).yesOrNo)
             }
-            CardItem(R.string.affiliated_user, dpm.isAffiliatedUser.yesOrNo())
+            CardItem(R.string.affiliated_user, dpm.isAffiliatedUser.yesOrNo)
         }
         CardItem(R.string.user_id, (Binder.getCallingUid() / 100000).toString())
         CardItem(R.string.user_serial_number, userManager.getSerialNumberForUser(Process.myUserHandle()).toString())
         Spacer(Modifier.padding(vertical = 30.dp))
     }
+    if(infoDialog != 0) AlertDialog(
+        text = { Text(stringResource(R.string.info_headless_system_user_mode)) },
+        confirmButton = {
+            TextButton(onClick = { infoDialog = 0 }) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        onDismissRequest = { infoDialog = 0 }
+    )
 }
 
 @Composable
@@ -201,26 +262,35 @@ private fun UserOperation() {
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
+    var idInput by remember { mutableStateOf("") }
+    var useUid by remember { mutableStateOf(false) }
     val focusMgr = LocalFocusManager.current
+    fun withUserHandle(operation: (UserHandle) -> Unit) {
+        val userHandle = if(useUid && VERSION.SDK_INT >= 24) {
+            UserHandle.getUserHandleForUid(idInput.toInt())
+        } else {
+            userManager.getUserForSerialNumber(idInput.toLong())
+        }
+        if(userHandle == null) {
+            Toast.makeText(context, R.string.user_not_exist, Toast.LENGTH_SHORT).show()
+        } else {
+            operation(userHandle)
+        }
+    }
+    val legalInput = try {
+        idInput.toInt()
+        true
+    } catch(_: Exception) {
+        false
+    }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.user_operation), style = typography.headlineLarge)
-        var idInput by remember { mutableStateOf("") }
-        var userHandleById: UserHandle by remember { mutableStateOf(Process.myUserHandle()) }
-        var useUid by remember { mutableStateOf(false) }
         Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
             value = idInput,
             onValueChange = {
                 idInput = it
-                if(useUid) {
-                    if(idInput != "" && VERSION.SDK_INT >= 24) {
-                        userHandleById = UserHandle.getUserHandleForUid(idInput.toInt())
-                    }
-                }else{
-                    val userHandleBySerial = userManager.getUserForSerialNumber(idInput.toLong())
-                    userHandleById = userHandleBySerial ?: Process.myUserHandle()
-                }
             },
             label = { Text(if(useUid) "UID" else stringResource(R.string.serial_number)) },
             modifier = Modifier.fillMaxWidth(),
@@ -231,27 +301,16 @@ private fun UserOperation() {
         if(VERSION.SDK_INT >= 24) {
             CheckBoxItem(text = R.string.use_uid, checked = useUid, operation = { idInput=""; useUid = it })
         }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT > 28) {
-            if(context.isProfileOwner && dpm.isAffiliatedUser) {
-                Button(
-                    onClick = {
-                        val result = dpm.logoutUser(receiver)
-                        Toast.makeText(context, userOperationResultCode(result, context), Toast.LENGTH_SHORT).show()
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.logout_current_user))
-                }
-            }
-        }
         if(VERSION.SDK_INT >= 28) {
             Button(
                 onClick = {
                     focusMgr.clearFocus()
-                    val result = dpm.startUserInBackground(receiver, userHandleById)
-                    Toast.makeText(context, userOperationResultCode(result, context), Toast.LENGTH_SHORT).show()
+                    withUserHandle {
+                        val result = dpm.startUserInBackground(receiver, it)
+                        Toast.makeText(context, userOperationResultCode(result), Toast.LENGTH_SHORT).show()
+                    }
                 },
+                enabled = legalInput,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.start_in_background))
@@ -260,8 +319,11 @@ private fun UserOperation() {
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                Toast.makeText(context, if(dpm.switchUser(receiver,userHandleById)) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+                withUserHandle {
+                    Toast.makeText(context, if(dpm.switchUser(receiver, it)) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+                }
             },
+            enabled = legalInput,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.user_operation_switch))
@@ -270,13 +332,12 @@ private fun UserOperation() {
             Button(
                 onClick = {
                     focusMgr.clearFocus()
-                    try{
-                        val result = dpm.stopUser(receiver,userHandleById)
-                        Toast.makeText(context, userOperationResultCode(result,context), Toast.LENGTH_SHORT).show()
-                    }catch(_: IllegalArgumentException) {
-                        Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
+                    withUserHandle {
+                        val result = dpm.stopUser(receiver, it)
+                        Toast.makeText(context, userOperationResultCode(result), Toast.LENGTH_SHORT).show()
                     }
                 },
+                enabled = legalInput,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.stop))
@@ -285,13 +346,16 @@ private fun UserOperation() {
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                if(dpm.removeUser(receiver,userHandleById)) {
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                    idInput = ""
-                }else{
-                    Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
+                withUserHandle {
+                    if(dpm.removeUser(receiver, it)) {
+                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                        idInput = ""
+                    } else {
+                        Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
+                    }
                 }
             },
+            enabled = legalInput,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.delete))
@@ -593,12 +657,12 @@ private fun UserIcon() {
     }
 }
 
-private fun userOperationResultCode(result:Int, context: Context): String {
-    return when(result) {
-        UserManager.USER_OPERATION_SUCCESS->context.getString(R.string.success)
-        UserManager.USER_OPERATION_ERROR_UNKNOWN-> context.getString(R.string.unknown_result)
-        UserManager.USER_OPERATION_ERROR_MANAGED_PROFILE-> context.getString(R.string.fail_managed_profile)
-        UserManager.USER_OPERATION_ERROR_CURRENT_USER-> context.getString(R.string.fail_current_user)
-        else->context.getString(R.string.unknown)
+@StringRes
+private fun userOperationResultCode(result:Int): Int =
+    when(result) {
+        UserManager.USER_OPERATION_SUCCESS -> R.string.success
+        UserManager.USER_OPERATION_ERROR_UNKNOWN -> R.string.unknown_error
+        UserManager.USER_OPERATION_ERROR_MANAGED_PROFILE-> R.string.fail_managed_profile
+        UserManager.USER_OPERATION_ERROR_CURRENT_USER-> R.string.fail_current_user
+        else -> R.string.unknown
     }
-}

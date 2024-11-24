@@ -496,7 +496,7 @@ fun DeviceInfo() {
         Text(text = stringResource(R.string.device_info), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT>=34 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
-            CardItem(R.string.financed_device, dpm.isDeviceFinanced.yesOrNo())
+            CardItem(R.string.financed_device, dpm.isDeviceFinanced.yesOrNo)
         }
         if(VERSION.SDK_INT >= 33) {
             val dpmRole = dpm.devicePolicyManagementRoleHolderPackage
@@ -511,10 +511,10 @@ fun DeviceInfo() {
         if(VERSION.SDK_INT >= 24) { encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER] = R.string.es_active_per_user }
         CardItem(R.string.encryption_status, encryptionStatus[dpm.storageEncryptionStatus] ?: R.string.unknown)
         if(VERSION.SDK_INT >= 28) {
-            CardItem(R.string.support_device_id_attestation, dpm.isDeviceIdAttestationSupported.yesOrNo()) { dialog = 1 }
+            CardItem(R.string.support_device_id_attestation, dpm.isDeviceIdAttestationSupported.yesOrNo) { dialog = 1 }
         }
         if (VERSION.SDK_INT >= 30) {
-            CardItem(R.string.support_unique_device_attestation, dpm.isUniqueDeviceAttestationSupported.yesOrNo()) { dialog = 2 }
+            CardItem(R.string.support_unique_device_attestation, dpm.isUniqueDeviceAttestationSupported.yesOrNo) { dialog = 2 }
         }
         val adminList = dpm.activeAdmins
         if(adminList != null) {

@@ -283,10 +283,10 @@ private fun PasswordInfo() {
             CardItem(R.string.current_password_complexity, passwordComplexity[dpm.passwordComplexity] ?: R.string.unknown)
         }
         if(deviceOwner || profileOwner) {
-            CardItem(R.string.password_sufficient, dpm.isActivePasswordSufficient.yesOrNo())
+            CardItem(R.string.password_sufficient, dpm.isActivePasswordSufficient.yesOrNo)
         }
         if(VERSION.SDK_INT >= 28 && profileOwner && dpm.isManagedProfile(receiver)) {
-            CardItem(R.string.unified_password, dpm.isUsingUnifiedPassword(receiver).yesOrNo())
+            CardItem(R.string.unified_password, dpm.isUsingUnifiedPassword(receiver).yesOrNo)
         }
     }
 }
