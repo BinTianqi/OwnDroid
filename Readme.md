@@ -6,10 +6,6 @@
 
 使用安卓的Device Admin和Device Owner特权，完全掌控你的设备。
 
-### 文档
-
-全新的OwnDroid文档：[owndroid.pages.dev](https://owndroid.pages.dev/zh_CN)
-
 ### 优点
 
 - 开源。Device owner权限可能比root权限更危险，闭源软件的安全性没有保证

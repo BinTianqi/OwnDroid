@@ -92,6 +92,7 @@
     <string name="short_support_msg">提供支持的短消息</string>
     <string name="long_support_msg">提供支持的长消息</string>
     <string name="transfer">转移</string>
+    <string name="transfer_ownership_warning">%1$s 特权将被转移至 %2$s</string>
     <string name="activate_device_admin_here">在这里激活Device admin</string>
 
     <!--Receiver-->

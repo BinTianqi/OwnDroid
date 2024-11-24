@@ -239,6 +239,7 @@ private fun toggleDhizukuMode(status: Boolean, context: Context) {
     }
     if(Dhizuku.isPermissionGranted()) {
         sharedPref.edit().putBoolean("dhizuku", true).apply()
+        Dhizuku.init()
         backToHomeStateFlow.value = true
     } else {
         Dhizuku.requestPermission(object: DhizukuRequestPermissionListener() {
@@ -246,6 +247,7 @@ private fun toggleDhizukuMode(status: Boolean, context: Context) {
             override fun onRequestPermission(grantResult: Int) {
                 if(grantResult == PackageManager.PERMISSION_GRANTED) {
                     sharedPref.edit().putBoolean("dhizuku", true).apply()
+                    Dhizuku.init()
                     context.toggleInstallAppActivity()
                     backToHomeStateFlow.value = true
                 } else {
@@ -615,37 +617,66 @@ private fun SupportMsg() {
 private fun TransferOwnership() {
     val context = LocalContext.current
     val focusMgr = LocalFocusManager.current
-    var component by remember { mutableStateOf("") }
+    var input by remember { mutableStateOf("") }
+    val componentName = ComponentName.unflattenFromString(input)
+    var dialog by remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.transfer_ownership), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
-            value = component, onValueChange = { component = it }, label = { Text(stringResource(R.string.target_component_name)) },
+            value = input, onValueChange = { input = it }, label = { Text(stringResource(R.string.target_component_name)) },
             modifier = Modifier.fillMaxWidth(),
+            isError = input != "" && componentName == null,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { focusMgr.clearFocus() })
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
-            onClick = {
-                val dpm = context.getDPM()
-                val receiver = context.getReceiver()
-                try {
-                    dpm.transferOwnership(receiver, ComponentName.unflattenFromString(component)!!, null)
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                } catch(e: Exception) {
-                    e.printStackTrace()
-                    Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
+            onClick = { dialog = true },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = componentName != null
         ) {
             Text(stringResource(R.string.transfer))
         }
         Spacer(Modifier.padding(vertical = 10.dp))
         InfoCard(R.string.info_transfer_ownership)
     }
+    if(dialog) AlertDialog(
+        text = {
+            Text(stringResource(
+                R.string.transfer_ownership_warning,
+                stringResource(if(context.isDeviceOwner) R.string.device_owner else R.string.profile_owner),
+                ComponentName.unflattenFromString(input)!!.packageName
+            ))
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val dpm = context.getDPM()
+                    val receiver = context.getReceiver()
+                    try {
+                        dpm.transferOwnership(receiver, componentName!!, null)
+                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                        dialog = false
+                        backToHomeStateFlow.value = true
+                    } catch(e: Exception) {
+                        e.printStackTrace()
+                        Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
+                    }
+                },
+                colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
+            ) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { dialog = false }) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+        onDismissRequest = { dialog = false }
+    )
 }
 
 private fun activateDeviceAdmin(inputContext:Context,inputComponent:ComponentName) {

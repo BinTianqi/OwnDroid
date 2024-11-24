@@ -97,7 +97,7 @@ class MainActivity : FragmentActivity() {
         toggleInstallAppActivity()
         val vm by viewModels<MyViewModel>()
         if(!vm.initialized) vm.initialize(context)
-        lifecycleScope.launch { setDefaultAffiliationID(context) }
+        lifecycleScope.launch { delay(5000); setDefaultAffiliationID(context) }
         setContent {
             OwnDroidTheme(vm) {
                 Home(vm)

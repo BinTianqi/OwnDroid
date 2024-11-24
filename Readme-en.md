@@ -6,10 +6,6 @@
 
 Use Device admin and Device owner privilege to take full control of your device.
 
-### Docs
-
-A renewed OwnDroid docs are available on [owndroid.pages.dev](https://owndroid.pages.dev)
-
 ### Advantage
 
 - Open source. Device owner privilege could be more dangerous than root, close-source software's security is not guaranteed. 

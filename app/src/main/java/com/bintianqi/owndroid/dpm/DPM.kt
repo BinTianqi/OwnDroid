@@ -17,6 +17,7 @@ import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
 import android.os.Build.VERSION
 import android.os.UserManager
+import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
@@ -116,7 +117,7 @@ private fun binderWrapperDevicePolicyManager(appContext: Context): DevicePolicyM
         val newInterface = IDevicePolicyManager.Stub.asInterface(newBinder)
         field[manager] = newInterface
         return manager
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         dhizukuErrorStatus.value = 1
     }
     return null
@@ -136,7 +137,7 @@ private fun binderWrapperPackageInstaller(appContext: Context): PackageInstaller
         val newInterface = IPackageInstaller.Stub.asInterface(newBinder)
         field[installer] = newInterface
         return installer
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         dhizukuErrorStatus.value = 1
     }
     return null
@@ -343,7 +344,7 @@ fun handleNetworkLogs(context: Context, batchToken: Long) {
                 , timestamp = event.timestamp, type = "dns", hostName = dnsEvent.hostname,
                 hostAddresses = addresses, totalResolvedAddressCount = dnsEvent.totalResolvedAddressCount
             )
-        } catch(e: Exception) {
+        } catch(_: Exception) {
             val connectEvent = event as ConnectEvent
             events += NetworkEventItem(
                 id = if(VERSION.SDK_INT >= 28) event.id else null, packageName = event.packageName, timestamp = event.timestamp, type = "connect",
@@ -416,6 +417,7 @@ fun setDefaultAffiliationID(context: Context) {
                 if(affiliationIDs.isEmpty()) {
                     dpm.setAffiliationIds(receiver, setOf("OwnDroid_default_affiliation_id"))
                     sharedPrefs.edit().putBoolean("default_affiliation_id_set", true).apply()
+                    Log.d("DPM", "Default affiliation id set")
                 }
             }
         } catch(e: Exception) {

@@ -97,6 +97,7 @@
     <string name="short_support_msg">Kısa Mesaj</string>
     <string name="long_support_msg">Uzun Mesaj</string>
     <string name="transfer">Transfer</string>
+    <string name="transfer_ownership_warning">%1$s privilege will be transferred to %2$s</string> <!--TODO-->
     <string name="activate_device_admin_here">Cihaz Yöneticisini Burada Etkinleştir.</string>
 
     <!--Receiver-->

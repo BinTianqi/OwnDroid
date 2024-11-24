@@ -203,11 +203,16 @@ fun ShizukuActivate() {
 
 private fun checkPermission(context: Context): String {
     if(checkShizukuStatus() == -1) { return context.getString(R.string.shizuku_not_started) }
-    val getUid = if(shizukuService.value == null) { return context.getString(R.string.shizuku_not_bind) } else { shizukuService.value!!.uid }
-    return when(getUid) {
-        "2000"->context.getString(R.string.shizuku_activated_shell)
-        "0"->context.getString(R.string.shizuku_activated_root)
-        else->context.getString(R.string.unknown_status) + "\nUID: $getUid"
+    return shizukuService.value.let {
+        if(it == null) {
+            context.getString(R.string.shizuku_not_bind)
+        } else {
+            when(it.uid) {
+                2000 -> context.getString(R.string.shizuku_activated_shell)
+                0 -> context.getString(R.string.shizuku_activated_root)
+                else -> context.getString(R.string.unknown_status) + "\nUID: ${it.uid}"
+            }
+        }
     }
 }
 
@@ -220,7 +225,7 @@ fun checkShizukuStatus(): Int {
             waitGrantPermission = true
             0
         }
-    } catch(e:Exception) { -1 }
+    } catch(_: Exception) { -1 }
     return status
 }
 
