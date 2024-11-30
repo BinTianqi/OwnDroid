@@ -157,14 +157,14 @@ fun Home(vm: MyViewModel) {
         popExitTransition = Animations.navHostPopExitTransition
     ) {
         composable(route = "HomePage") { HomePage(navCtrl) }
-        composable(route = "SystemManage") { SystemManage(navCtrl) }
+        composable(route = "System") { SystemManage(navCtrl) }
         composable(route = "ManagedProfile") { ManagedProfile(navCtrl) }
         composable(route = "Permissions") { DpmPermissions(navCtrl) }
-        composable(route = "ApplicationManage") { ApplicationManage(navCtrl, dialogStatus) }
+        composable(route = "Applications") { ApplicationManage(navCtrl, dialogStatus) }
         composable(route = "UserRestriction") { UserRestriction(navCtrl) }
-        composable(route = "UserManage") { UserManage(navCtrl) }
+        composable(route = "Users") { UserManage(navCtrl) }
         composable(route = "Password") { Password(navCtrl) }
-        composable(route = "AppSetting") { AppSetting(navCtrl, vm) }
+        composable(route = "Settings") { AppSetting(navCtrl, vm) }
         composable(route = "Network") { Network(navCtrl) }
         composable(route = "PackageSelector") { PackageSelector(navCtrl) }
     }
@@ -237,7 +237,7 @@ private fun HomePage(navCtrl:NavHostController) {
                 if(activateType != "") { Text(text = activateType, color = colorScheme.onPrimary) }
             }
         }
-        HomePageItem(R.string.system_manage, R.drawable.mobile_phone_fill0, "SystemManage", navCtrl)
+        HomePageItem(R.string.system, R.drawable.android_fill0, "System", navCtrl)
         if(deviceOwner || profileOwner) { HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network", navCtrl) }
         if(
             (VERSION.SDK_INT < 24 && !deviceOwner) || (
@@ -247,13 +247,13 @@ private fun HomePage(navCtrl:NavHostController) {
         ) {
             HomePageItem(R.string.work_profile, R.drawable.work_fill0, "ManagedProfile", navCtrl)
         }
-        if(deviceOwner || profileOwner) HomePageItem(R.string.app_manager, R.drawable.apps_fill0, "ApplicationManage", navCtrl)
+        if(deviceOwner || profileOwner) HomePageItem(R.string.applications, R.drawable.apps_fill0, "Applications", navCtrl)
         if(VERSION.SDK_INT >= 24 && (profileOwner || deviceOwner)) {
             HomePageItem(R.string.user_restrict, R.drawable.person_off, "UserRestriction", navCtrl)
         }
-        HomePageItem(R.string.user_manager,R.drawable.manage_accounts_fill0,"UserManage", navCtrl)
+        HomePageItem(R.string.users,R.drawable.manage_accounts_fill0,"Users", navCtrl)
         HomePageItem(R.string.password_and_keyguard, R.drawable.password_fill0, "Password", navCtrl)
-        HomePageItem(R.string.setting, R.drawable.settings_fill0, "AppSetting", navCtrl)
+        HomePageItem(R.string.settings, R.drawable.settings_fill0, "Settings", navCtrl)
         Spacer(Modifier.padding(vertical = 20.dp))
     }
 }

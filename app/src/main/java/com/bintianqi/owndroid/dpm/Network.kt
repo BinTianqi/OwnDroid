@@ -165,7 +165,7 @@ fun Network(navCtrl: NavHostController) {
         AlertDialog(
             onDismissRequest = { wifiMacDialog.value = false },
             confirmButton = { TextButton(onClick = { wifiMacDialog.value = false }) { Text(stringResource(R.string.confirm)) } },
-            title = { Text(stringResource(R.string.wifi_mac_addr)) },
+            title = { Text(stringResource(R.string.wifi_mac_address)) },
             text = {
                 val mac = dpm.getWifiMacAddress(receiver)
                 OutlinedTextField(
@@ -199,7 +199,7 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState, wifiMacDia
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 16.dp)
         )
         if(VERSION.SDK_INT >= 24 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            SubPageItem(R.string.wifi_mac_addr, "", R.drawable.wifi_fill0) { wifiMacDialog.value = true }
+            SubPageItem(R.string.wifi_mac_address, "", R.drawable.wifi_fill0) { wifiMacDialog.value = true }
         }
         if(VERSION.SDK_INT >= 30) {
             SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Switches") }

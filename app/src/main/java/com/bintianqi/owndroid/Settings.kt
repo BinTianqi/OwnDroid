@@ -78,7 +78,7 @@ fun AppSetting(navCtrl:NavHostController, vm: MyViewModel) {
 private fun Home(navCtrl: NavHostController) {
     Column(modifier = Modifier.fillMaxSize()) {
         SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Options") }
-        SubPageItem(R.string.theme, "", R.drawable.format_paint_fill0) { navCtrl.navigate("Theme") }
+        SubPageItem(R.string.appearance, "", R.drawable.format_paint_fill0) { navCtrl.navigate("Theme") }
         SubPageItem(R.string.security, "", R.drawable.lock_fill0) { navCtrl.navigate("Auth") }
         SubPageItem(R.string.automation_api, "", R.drawable.apps_fill0) { navCtrl.navigate("Automation") }
         SubPageItem(R.string.about, "", R.drawable.info_fill0) { navCtrl.navigate("About") }
@@ -240,12 +240,12 @@ private fun About() {
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.app_name)+" v$verName ($verCode)", modifier = Modifier.padding(start = 26.dp))
         Spacer(Modifier.padding(vertical = 5.dp))
-        SubPageItem(R.string.source_code, "", R.drawable.open_in_new) { shareLink(context, "https://github.com/BinTianqi/OwnDroid") }
+        SubPageItem(R.string.project_homepage, "GitHub", R.drawable.open_in_new) { shareLink(context, "https://github.com/BinTianqi/OwnDroid") }
     }
 }
 
-fun shareLink(inputContext:Context,link:String) {
+fun shareLink(inputContext: Context, link: String) {
     val uri = Uri.parse(link)
     val intent = Intent(Intent.ACTION_VIEW, uri)
-    inputContext.startActivity(Intent.createChooser(intent, "Open in browser"),null)
+    inputContext.startActivity(Intent.createChooser(intent, "Open in browser"), null)
 }

@@ -125,7 +125,7 @@
 
 
     <!--Системные-->
-    <string name="system_manage">Управление системой</string>
+    <string name="system">Syetem</string> <!--TODO-->
     <string name="disable_cam">Отключить камеру</string>
     <string name="disable_screen_capture">Отключить захват экрана</string>
     <string name="disable_status_bar">Отключить строку состояния</string>
@@ -143,8 +143,8 @@
     <string name="bug_report">Отчет об ошибке</string>
     <string name="confirm_bug_report">Запросить отчет об ошибке?</string>
     <string name="reboot">Перезагрузить</string>
-    <string name="edit_time">Изменить время</string>
-    <string name="edit_timezone">Изменить часовой пояс</string>
+    <string name="change_time">Change time</string> <!--TODO-->
+    <string name="change_timezone">Change timezone</string> <!--TODO-->
     <string name="timezone_id">Идентификатор часового пояса</string>
     <string name="disable_auto_time_zone_before_set">Автоматический часовой пояс должен быть отключен перед установкой пользовательского часового пояса.</string>
     <string name="permission_policy">Политика разрешений</string>
@@ -214,7 +214,7 @@
 
     <!--Сеть-->
     <string name="network">Сеть</string>
-    <string name="wifi_mac_addr">MAC-адрес Wi-Fi</string>
+    <string name="wifi_mac_address">MAC-адрес Wi-Fi</string>
     <string name="min_wifi_security_level">Минимальный уровень безопасности Wi-Fi</string>
     <string name="wifi_security_open">Открытая</string>
     <string name="lockdown_admin_configured_network">Блокировка ети, настроенной администратором</string>
@@ -305,7 +305,7 @@
 
 
     <!--Управление приложениями-->
-    <string name="app_manager">Управление приложениями</string>
+    <string name="applications">Приложения</string>
     <string name="pkg_selector">Выбор пакета</string>
     <string name="loading">Загрузка</string>
     <string name="show_user_app">Показывать пользовательские приложения</string>
@@ -372,8 +372,6 @@
     <string name="some_features_invalid_in_work_profile">Функции в рабочем профиле ограничены.</string>
     <string name="network_internet">Сеть</string>
     <string name="more_connectivity">Другие подключения</string>
-    <string name="applications">Приложения</string>
-    <string name="users">Пользователь</string>
     <string name="media">Медиа</string>
     <string name="other">Другое</string>
     <string name="require_device_owner">Требуется владелец устройства</string>
@@ -444,9 +442,9 @@
 
 
     <!--Управление пользователями-->
-    <string name="user_manager">Управление пользователями</string>
+    <string name="users">Users</string> <!--TODO-->
     <string name="enable_logout">Разрешить выход из системы</string>
-    <string name="edit_username">Изменить имя пользователя</string>
+    <string name="change_username">Change username</string> <!--TODO-->
     <string name="start_user_session_msg">Сообщение о начале сеанса пользователя</string>
     <string name="end_user_session_msg">Сообщение об окончании сеанса пользователя</string>
     <string name="user_info">Информация о пользователе</string>
@@ -465,6 +463,7 @@
     <string name="user_not_exist">User does not exist</string> <!--TODO-->
     <string name="serial_number">Серийный номер</string>
     <string name="secondary_users">Secondary users</string> <!--TODO-->
+    <string name="no_secondary_users">No secondary users</string> <!--TODO-->
     <string name="use_uid">Использовать UID</string>
     <string name="logout_current_user">Выйти из текущего пользователя</string>
     <string name="start_in_background">Запустить в фоновом режиме</string>
@@ -543,15 +542,15 @@
 
 
     <!--Настройки и о программе-->
-    <string name="setting">Настройки</string>
+    <string name="settings">Настройки</string>
     <string name="show_dangerous_features">Показывать опасные функции</string>
     <string name="material_you_color">Цвет Material You</string>
     <string name="dark_theme">Dark theme</string> <!--TODO-->
     <string name="follow_system">Follow system</string> <!--TODO-->
     <string name="black_theme">Black theme</string> <!--TODO-->
     <string name="about">О приложении</string>
-    <string name="source_code">Исходный код</string>
-    <string name="theme">Тема</string>
+    <string name="project_homepage">Project homepage</string> <!--TODO-->
+    <string name="appearance">Appearance</string> <!--TODO-->
 
     <string name="security">Безопасность</string>
     <string name="lock_owndroid">Заблокировать OwnDroid</string>

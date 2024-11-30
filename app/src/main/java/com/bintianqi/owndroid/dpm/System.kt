@@ -147,7 +147,7 @@ fun SystemManage(navCtrl: NavHostController) {
             TopBar(backStackEntry,navCtrl,localNavCtrl) {
                 if(backStackEntry?.destination?.route=="Home"&&scrollState.maxValue > 100) {
                     Text(
-                        text = stringResource(R.string.system_manage),
+                        text = stringResource(R.string.system),
                         modifier = Modifier.alpha((maxOf(scrollState.value-30,0)).toFloat()/80)
                     )
                 }
@@ -196,7 +196,7 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState) {
     var dialog by remember { mutableIntStateOf(0) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
-            text = stringResource(R.string.system_manage),
+            text = stringResource(R.string.system),
             style = typography.headlineLarge,
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 16.dp)
         )
@@ -211,8 +211,8 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState) {
             SubPageItem(R.string.bug_report, "", R.drawable.bug_report_fill0) { dialog = 2 }
         }
         if(VERSION.SDK_INT >= 28 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            SubPageItem(R.string.edit_time, "", R.drawable.schedule_fill0) { navCtrl.navigate("EditTime") }
-            SubPageItem(R.string.edit_timezone, "", R.drawable.schedule_fill0) { navCtrl.navigate("EditTimeZone") }
+            SubPageItem(R.string.change_time, "", R.drawable.schedule_fill0) { navCtrl.navigate("EditTime") }
+            SubPageItem(R.string.change_timezone, "", R.drawable.schedule_fill0) { navCtrl.navigate("EditTimeZone") }
         }
         if(VERSION.SDK_INT >= 23 && (deviceOwner || profileOwner)) {
             SubPageItem(R.string.permission_policy, "", R.drawable.key_fill0) { navCtrl.navigate("PermissionPolicy") }
@@ -438,13 +438,13 @@ private fun EditTime() {
     var inputTime by remember { mutableStateOf("") }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.edit_time), style = typography.headlineLarge)
+        Text(text = stringResource(R.string.change_time), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
             value = inputTime,
             label = { Text(stringResource(R.string.time_unit_ms)) },
             onValueChange = { inputTime = it },
-            supportingText = { Text(stringResource(R.string.info_edit_time)) },
+            supportingText = { Text(stringResource(R.string.info_change_time)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
             modifier = Modifier.fillMaxWidth()
@@ -473,7 +473,7 @@ private fun EditTimeZone() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.edit_timezone), style = typography.headlineLarge, modifier = Modifier.align(Alignment.Start))
+        Text(text = stringResource(R.string.change_timezone), style = typography.headlineLarge, modifier = Modifier.align(Alignment.Start))
         Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
             value = inputTimezone,

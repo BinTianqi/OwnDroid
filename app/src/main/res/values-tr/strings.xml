@@ -126,7 +126,7 @@
     <string name="shizuku_not_bind">Shizuku Bağlantısı Kesildi</string>
 
     <!--System-->
-    <string name="system_manage">Sistem yöneticisi</string>
+    <string name="system">Sistem</string>
     <string name="disable_cam">Kamerayı devre dışı bırak</string>
     <string name="disable_screen_capture">Ekran görüntüsünü devre dışı bırak</string>
     <string name="disable_status_bar">Durum çubuğunu devre dışı bırak</string>
@@ -144,8 +144,8 @@
     <string name="bug_report">Hata raporu</string>
     <string name="confirm_bug_report">Hata raporu iste?</string>
     <string name="reboot">Yeniden başlat</string>
-    <string name="edit_time">Zamanı düzenle</string>
-    <string name="edit_timezone">Saat dilimini düzenle</string>
+    <string name="change_time">Change time</string> <!--TODO-->
+    <string name="change_timezone">Change timezone</string><!--TODO-->
     <string name="timezone_id">Saat dilimi kimliği</string>
     <string name="disable_auto_time_zone_before_set">Özel bir saat dilimi ayarlamadan önce otomatik saat dilimi devre dışı bırakılmalıdır</string>
     <string name="permission_policy">İzin politikası</string>
@@ -215,11 +215,11 @@
 
     <!--Network-->
     <string name="network">Ağ</string>
-    <string name="wifi_mac_addr">Wi-Fi MAC adresi</string>
+    <string name="wifi_mac_address">Wi-Fi MAC adresi</string>
     <string name="min_wifi_security_level">Minimum Wi-Fi güvenlik seviyesi</string>
     <string name="wifi_security_open">Açık</string>
     <string name="lockdown_admin_configured_network">Yönetici tarafından yapılandırılmış ağı kilitle</string>
-    <string name="wifi_ssid_policy">WiFi SSID politikası</string>
+    <string name="wifi_ssid_policy">Wi-Fi SSID politikası</string>
     <string name="ssid_list_is">SSID listesi:</string>
     <string name="already_exist">Zaten mevcut</string>
     <string name="private_dns">Özel DNS</string>
@@ -241,7 +241,7 @@
     <string name="log_file_size_is">Log file size: %1$s</string> <!--TODO-->
     <string name="delete_logs">Delete logs</string> <!--TODO-->
     <string name="export_logs">Export logs</string> <!--TODO-->
-    <string name="wifi_auth_keypair">WiFi anahtar çifti</string>
+    <string name="wifi_auth_keypair">Wi-Fi anahtar çifti</string>
     <string name="keypair">Anahtar çifti</string>
     <string name="preferential_network_service">Tercihli ağ hizmeti</string>
     <string name="network_id">Network ID</string> <!--TODO-->
@@ -302,8 +302,8 @@
     <string name="length_6_to_64">Uzunluk 6 ile 64 karakter arasında olmalıdır</string>
     <string name="delete_work_profile">Delete work profile</string> <!--TODO-->
 
-    <!--AppManager-->
-    <string name="app_manager">Uygulama yöneticisi</string>
+    <!--Applications-->
+    <string name="applications">Uygulamalar</string>
     <string name="pkg_selector">Paket seçici</string>
     <string name="loading">Yükleniyor</string>
     <string name="show_user_app">Kullanıcı uygulamalarını göster</string>
@@ -371,21 +371,19 @@
     <string name="some_features_invalid_in_work_profile">İş profilindeki işlevler sınırlıdır. </string>
     <string name="network_internet">Ağ</string>
     <string name="more_connectivity">Diğer bağlantı</string>
-    <string name="applications">Uygulamalar</string>
-    <string name="users">Kullanıcı</string>
     <string name="media">Medya</string>
     <string name="other">Diğer</string>
     <string name="require_device_owner">Cihaz sahibi gerektirir</string>
     <string name="config_mobile_network">Mobil ağı yapılandır</string>
-    <string name="config_wifi">WiFi\'yi yapılandır</string>
+    <string name="config_wifi">Wi-Fi\'yi yapılandır</string>
     <string name="data_roaming">Veri dolaşımı</string>
     <string name="cellular_2g">2G hücresel</string>
     <string name="ultra_wideband_radio">Ultra geniş bant radyo</string>
-    <string name="add_wifi_conf">WiFi yapılandırması ekle</string>
-    <string name="change_wifi_state">WiFi durumunu değiştir</string>
-    <string name="wifi_direct">WiFi direct</string>
-    <string name="wifi_tethering">WiFi tethering</string>
-    <string name="share_admin_wifi">Yönetici yapılandırılmış WiFi paylaş</string>
+    <string name="add_wifi_conf">Wi-Fi yapılandırması ekle</string>
+    <string name="change_wifi_state">Wi-Fi durumunu değiştir</string>
+    <string name="wifi_direct">Wi-Fi direct</string>
+    <string name="wifi_tethering">Wi-Fi tethering</string>
+    <string name="share_admin_wifi">Yönetici yapılandırılmış Wi-Fi paylaş</string>
     <string name="network_reset">Ağ sıfırlama</string>
     <string name="config_tethering">Tethering yapılandır</string>
     <string name="config_vpn">VPN yapılandır</string>
@@ -441,10 +439,10 @@
     <string name="safe_boot">Güvenli başlangıç</string>
     <string name="debug_features">Hata ayıklama özellikleri</string>
 
-    <!--UserManage-->
-    <string name="user_manager">Kullanıcı yöneticisi</string>
+    <!--Users-->
+    <string name="users">Users</string> <!--TODO-->
     <string name="enable_logout">Enable logout</string> <!--TODO-->
-    <string name="edit_username">Kullanıcı adını düzenle</string>
+    <string name="change_username">Change username</string> <!--TODO-->
     <string name="start_user_session_msg">Kullanıcı oturumunu başlat mesajı</string>
     <string name="end_user_session_msg">Kullanıcı oturumunu sonlandır mesajı</string>
     <string name="user_info">Kullanıcı bilgisi</string>
@@ -460,6 +458,7 @@
     <string name="user_id">Kullanıcı ID</string>
     <string name="user_serial_number">Kullanıcı seri numarası</string>
     <string name="secondary_users">Secondary users</string> <!--TODO-->
+    <string name="no_secondary_users">No secondary users</string> <!--TODO-->
     <string name="user_operation">Kullanıcı işlemi</string>
     <string name="user_not_exist">User does not exist</string> <!--TODO-->
     <string name="serial_number">Seri numarası</string>
@@ -538,15 +537,15 @@
     <string name="activate_reset_password_token_here">Şifre sıfırlama jetonunu burada etkinleştirin.</string>
 
     <!--Settings&About-->
-    <string name="setting">Ayarlar</string>
+    <string name="settings">Ayarlar</string>
     <string name="show_dangerous_features">Show dangerous features</string> <!--TODO-->
     <string name="material_you_color">Material You rengi</string>
     <string name="dark_theme">Dark theme</string> <!--TODO-->
     <string name="follow_system">Follow system</string> <!--TODO-->
     <string name="black_theme">Black theme</string> <!--TODO-->
     <string name="about">Hakkında</string>
-    <string name="source_code">Kaynak kodu</string>
-    <string name="theme">Tema</string>
+    <string name="project_homepage">Project homepage</string> <!--TODO-->
+    <string name="appearance">Appearance</string> <!--TODO-->
 
     <string name="security">Güvenlik</string>
     <string name="lock_owndroid">OwnDroid\'u kilitle</string>

@@ -1,33 +1,49 @@
-# OwnDroid
-
 [简体中文](Readme.md)
 
-### Description
+# OwnDroid
 
-Use Device admin and Device owner privilege to take full control of your device.
+Use Android Device owner privilege to manage your device.
 
-### Advantage
-
-- Open source. Device owner privilege could be more dangerous than root, close-source software's security is not guaranteed. 
-- Easy to use. You can use this utility easily. English docs are also provided.
-- Modern. This app is built with Kotlin and Jetpack Compose, designed with Material Design 3. And some new features on Android 14 is adapted. 
-- Maintaining. This project is updating. Any Issue and PR is welcome. 
-
-### Disadvantage
-
-This software may not have as many features as Google's official [TestDPC](https://github.com/googlesamples/android-testdpc) 
-
-### Features
+## Features
 
 - System
+  - Options: disable camera, disable screenshot, master volume mute, disable USB signal...
+  - Permission policy
+  - _Wipe data_
+  - ...
 - Network
+  - Minimum Wi-Fi security level
+  - Always-on VPN
+  - Network logging
+  - ...
 - Work profile
-- App manage
-- User restrictions
-- User manage
+  - Create work profile
+  - Suspend personal apps
+  - ...
+- Applications
+  - Suspend/hide app
+  - Block app uninstallation
+  - Install/uninstall app
+  - ...
+- User restriction
+  - Network: disable configuring mobile network, disable configuring Wi-Fi, disable SMS, disable outgoing calls...
+  - Connection: disable bluetooth, disable configuring location, disable USB file transfer, disable printing...
+  - Applications: disable installing/uninstalling app...
+  - Users: disable adding/removing/switching user...
+  - Media: disable configuring brightness, disable adjusting volume...
+  - Other: disable modifying accounts, disable configuring locale, disable factory reset, disable debug features...
+- User manager
+  - User information
+  - Start/switch/stop/delete user
+  - Create user
+  - ...
 - Password and keyguard
+  - _Reset password_
+  - Require password complexity
+  - Set screen timeout
+  - ...
 
-### License
+## License
 
 [License.md](LICENSE.md)
 

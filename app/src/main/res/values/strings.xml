@@ -131,7 +131,7 @@
     <string name="shizuku_not_bind">Shizuku disconnected</string>
 
     <!--System-->
-    <string name="system_manage">System manager</string>
+    <string name="system">System</string>
     <string name="disable_cam">Disable camera</string>
     <string name="disable_screen_capture">Disable screen capture</string>
     <string name="disable_status_bar">Disable status bar</string>
@@ -149,8 +149,8 @@
     <string name="bug_report">Bug report</string>
     <string name="confirm_bug_report">Request bug report?</string>
     <string name="reboot">Reboot</string>
-    <string name="edit_time">Edit time</string>
-    <string name="edit_timezone">Edit timezone</string>
+    <string name="change_time">Change time</string>
+    <string name="change_timezone">Change timezone</string>
     <string name="timezone_id">Timezone ID</string>
     <string name="disable_auto_time_zone_before_set">Auto timezone should be disabled before set a custom timezone. </string>
     <string name="permission_policy">Permission policy</string>
@@ -220,11 +220,11 @@
 
     <!--Network-->
     <string name="network">Network</string>
-    <string name="wifi_mac_addr">Wi-Fi Mac address</string>
+    <string name="wifi_mac_address">Wi-Fi Mac address</string>
     <string name="min_wifi_security_level">Minimum Wi-Fi security level</string>
     <string name="wifi_security_open">Open</string>
     <string name="lockdown_admin_configured_network">Lockdown admin configured network</string>
-    <string name="wifi_ssid_policy">WiFi SSID policy</string>
+    <string name="wifi_ssid_policy">Wi-Fi SSID policy</string>
     <string name="ssid_list_is">SSID list:</string>
     <string name="already_exist">Already exist</string>
     <string name="private_dns">Private DNS</string>
@@ -246,7 +246,7 @@
     <string name="log_file_size_is">Log file size: %1$s</string>
     <string name="delete_logs">Delete logs</string>
     <string name="export_logs">Export logs</string>
-    <string name="wifi_auth_keypair">WiFi keypair</string>
+    <string name="wifi_auth_keypair">Wi-Fi keypair</string>
     <string name="keypair">Keypair</string>
     <string name="preferential_network_service">Preferential network service</string>
     <string name="network_id">Network ID</string>
@@ -310,8 +310,8 @@
     <string name="length_6_to_64">The length should be between 6~64 characters</string>
     <string name="delete_work_profile">Delete work profile</string>
 
-    <!--AppManager-->
-    <string name="app_manager">App manager</string>
+    <!--Applications-->
+    <string name="applications">Applications</string>
     <string name="pkg_selector">Package selector</string>
     <string name="loading">Loading</string>
     <string name="show_user_app">Show user apps</string>
@@ -377,21 +377,19 @@
     <string name="some_features_invalid_in_work_profile">Functions in work profile is limited. </string>
     <string name="network_internet">Network</string>
     <string name="more_connectivity">Other connection</string>
-    <string name="applications">Applications</string>
-    <string name="users">User</string>
     <string name="media">Media</string>
     <string name="other">Other</string>
     <string name="require_device_owner">Require device owner</string>
     <string name="config_mobile_network">Configure mobile network</string>
-    <string name="config_wifi">Configure WiFi</string>
+    <string name="config_wifi">Configure Wi-Fi</string>
     <string name="data_roaming">Data roaming</string>
     <string name="cellular_2g">2G cellular</string>
     <string name="ultra_wideband_radio">Ultra wideband radio</string>
-    <string name="add_wifi_conf">Add WiFi config</string>
-    <string name="change_wifi_state">Change WiFi status</string>
-    <string name="wifi_direct">WiFi direct</string>
-    <string name="wifi_tethering">WiFi tethering</string>
-    <string name="share_admin_wifi">Share admin configured WiFi</string>
+    <string name="add_wifi_conf">Add Wi-Fi config</string>
+    <string name="change_wifi_state">Change Wi-Fi status</string>
+    <string name="wifi_direct">Wi-Fi direct</string>
+    <string name="wifi_tethering">Wi-Fi tethering</string>
+    <string name="share_admin_wifi">Share admin configured Wi-Fi</string>
     <string name="network_reset">Reset network</string>
     <string name="config_tethering">Configure tethering</string>
     <string name="config_vpn">Configure VPN</string>
@@ -447,10 +445,10 @@
     <string name="safe_boot">Safe boot</string>
     <string name="debug_features">Debug features</string>
 
-    <!--UserManage-->
-    <string name="user_manager">User manager</string>
+    <!--Users-->
+    <string name="users">Users</string>
     <string name="enable_logout">Enable logout</string>
-    <string name="edit_username">Edit username</string>
+    <string name="change_username">Change username</string>
     <string name="start_user_session_msg">Start user session message</string>
     <string name="end_user_session_msg">End user session message</string>
     <string name="user_info">User info</string>
@@ -466,6 +464,7 @@
     <string name="user_id">UserID</string>
     <string name="user_serial_number">User serial number</string>
     <string name="secondary_users">Secondary users</string>
+    <string name="no_secondary_users">No secondary users</string>
     <string name="user_operation">User operation</string>
     <string name="user_not_exist">User does not exist</string>
     <string name="serial_number">Serial number</string>
@@ -544,15 +543,15 @@
     <string name="activate_reset_password_token_here">Activate reset password token here. </string>
 
     <!--Settings&About-->
-    <string name="setting">Settings</string>
+    <string name="settings">Settings</string>
     <string name="show_dangerous_features">Show dangerous features</string>
     <string name="material_you_color">Material you color</string>
     <string name="dark_theme">Dark theme</string>
     <string name="follow_system">Follow system</string>
     <string name="black_theme">Black theme</string>
     <string name="about">About</string>
-    <string name="source_code">Source code</string>
-    <string name="theme">Theme</string>
+    <string name="project_homepage">Project homepage</string>
+    <string name="appearance">Appearance</string>
 
     <string name="security">Security</string>
     <string name="lock_owndroid">Lock OwnDroid</string>
@@ -622,7 +621,7 @@
     <string name="info_disable_keyguard">Setting the keyguard to disabled has the same effect as choosing "None" as the screen lock type. However, this call has no effect if a password, pin or pattern is currently set.\nIf a password, pin or pattern is set after the keyguard was disabled, the keyguard stops being disabled.</string>
     <string name="info_evict_credential_encryption_key">Evict the user\'s credential encryption key from the keyring. The user\'s credential will need to be entered again in order to derive the credential encryption key that will be stored back in the keyring for future use. In order to secure user data, the user will be stopped and restarted.</string>
     <string name="info_reboot">You can\'t use this function if there is an ongoing call on the device.</string>
-    <string name="info_edit_time">Input UNIX time in milliseconds</string>
+    <string name="info_change_time">Input UNIX time in milliseconds</string>
     <string name="info_permission_policy">Set the default response for future runtime permission requests by applications.</string>
     <string name="info_mte_policy">Set the Memory Tagging Extension policy. Reboot the device to apply changes.</string>
     <string name="info_nearby_app_streaming_policy">App streaming is when the device starts an app on a virtual display and sends a video stream of the app to nearby devices.</string>

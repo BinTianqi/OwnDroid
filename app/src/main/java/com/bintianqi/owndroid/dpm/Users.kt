@@ -95,7 +95,7 @@ fun UserManage(navCtrl: NavHostController) {
             TopBar(backStackEntry, navCtrl, localNavCtrl) {
                 if(backStackEntry?.destination?.route == "Home" && scrollState.maxValue > 100) {
                     Text(
-                        text = stringResource(R.string.user_manager),
+                        text = stringResource(R.string.users),
                         modifier = Modifier.alpha((maxOf(scrollState.value-30, 0)).toFloat() / 80)
                     )
                 }
@@ -134,7 +134,7 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState) {
     var dialog by remember { mutableIntStateOf(0) }
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
         Text(
-            text = stringResource(R.string.user_manager),
+            text = stringResource(R.string.users),
             style = typography.headlineLarge,
             modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 16.dp)
         )
@@ -153,7 +153,7 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState) {
             SubPageItem(R.string.logout_current_user, "", R.drawable.logout_fill0) { dialog = 2 }
         }
         if(deviceOwner || profileOwner) {
-            SubPageItem(R.string.edit_username, "", R.drawable.edit_fill0) { navCtrl.navigate("EditUsername") }
+            SubPageItem(R.string.change_username, "", R.drawable.edit_fill0) { navCtrl.navigate("EditUsername") }
         }
         if(VERSION.SDK_INT >= 23 && (deviceOwner || profileOwner)) {
             SubPageItem(R.string.change_user_icon, "", R.drawable.account_circle_fill0) { navCtrl.navigate("ChangeUserIcon") }
@@ -174,9 +174,13 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState) {
                 val um = context.getSystemService(Context.USER_SERVICE) as UserManager
                 val list = dpm.getSecondaryUsers(receiver)
                 Column {
-                    Text("(" + stringResource(R.string.serial_number) + ")")
-                    list.forEach {
-                        Text(um.getSerialNumberForUser(it).toString())
+                    if(list.isEmpty()) {
+                        Text(stringResource(R.string.no_secondary_users))
+                    } else {
+                        Text("(" + stringResource(R.string.serial_number) + ")")
+                        list.forEach {
+                            Text(um.getSerialNumberForUser(it).toString())
+                        }
                     }
                 }
             }
@@ -492,7 +496,7 @@ private fun Username() {
     var inputUsername by remember { mutableStateOf("") }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.edit_username), style = typography.headlineLarge)
+        Text(text = stringResource(R.string.change_username), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
             value = inputUsername,

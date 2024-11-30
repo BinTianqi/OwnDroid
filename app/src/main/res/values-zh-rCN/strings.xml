@@ -121,7 +121,7 @@
     <string name="bind_shizuku">连接Shizuku</string>
 
     <!--System-->
-    <string name="system_manage">系统</string>
+    <string name="system">系统</string>
     <string name="disable_cam">禁用相机</string>
     <string name="disable_screen_capture">禁止屏幕捕获</string>
     <string name="disable_status_bar">禁用状态栏</string>
@@ -139,8 +139,8 @@
     <string name="bug_report">错误报告</string>
     <string name="confirm_bug_report">请求错误报告？</string>
     <string name="reboot">重启</string>
-    <string name="edit_time">修改时间</string>
-    <string name="edit_timezone">修改时区</string>
+    <string name="change_time">更改时间</string>
+    <string name="change_timezone">更改时区</string>
     <string name="timezone_id">时区ID</string>
     <string name="disable_auto_time_zone_before_set">在设置时区前需要关闭自动时区</string>
     <string name="permission_policy">权限策略</string>
@@ -210,11 +210,11 @@
 
     <!--Network-->
     <string name="network">网络</string>
-    <string name="wifi_mac_addr">Wi-Fi Mac地址</string>
-    <string name="min_wifi_security_level">最低WiFi安全等级</string>
+    <string name="wifi_mac_address">Wi-Fi Mac地址</string>
+    <string name="min_wifi_security_level">最低Wi-Fi安全等级</string>
     <string name="wifi_security_open">开放</string>
     <string name="lockdown_admin_configured_network">锁定由管理员配置的网络</string>
-    <string name="wifi_ssid_policy">WiFi SSID策略</string>
+    <string name="wifi_ssid_policy">Wi-Fi SSID策略</string>
     <string name="ssid_list_is">SSID列表：</string>
     <string name="already_exist">已经存在</string>
     <string name="private_dns">私人DNS</string>
@@ -236,7 +236,7 @@
     <string name="log_file_size_is">日志文件大小：%1$s</string>
     <string name="delete_logs">删除日志</string>
     <string name="export_logs">导出日志</string>
-    <string name="wifi_auth_keypair">WiFi密钥对</string>
+    <string name="wifi_auth_keypair">Wi-Fi密钥对</string>
     <string name="keypair">密钥对</string>
     <string name="preferential_network_service">首选网络服务</string>
     <string name="network_id">网络ID</string>
@@ -297,8 +297,8 @@
     <string name="length_6_to_64">长度应在6~64个字符之间</string>
     <string name="delete_work_profile">删除工作资料</string>
 
-    <!--AppManage-->
-    <string name="app_manager">应用管理</string>
+    <!--Applications-->
+    <string name="applications">应用程序</string>
     <string name="pkg_selector">应用选择器</string>
     <string name="loading">加载中</string>
     <string name="show_user_app">显示用户应用</string>
@@ -363,8 +363,6 @@
     <string name="some_features_invalid_in_work_profile">工作资料中部分功能无效</string>
     <string name="network_internet">网络和互联网</string>
     <string name="more_connectivity">更多连接</string>
-    <string name="applications">应用</string>
-    <string name="users">用户</string>
     <string name="media">媒体</string>
     <string name="other">其他</string>
     <string name="require_device_owner">需要DeviceOwner</string>
@@ -373,11 +371,11 @@
     <string name="data_roaming">数据漫游</string>
     <string name="cellular_2g">使用2G(GSM)</string>
     <string name="ultra_wideband_radio">超宽频段无线电</string>
-    <string name="add_wifi_conf">添加WiFi配置</string>
-    <string name="change_wifi_state">修改WiFi状态</string>
-    <string name="wifi_direct">WiFi直连</string>
-    <string name="wifi_tethering">WiFi共享</string>
-    <string name="share_admin_wifi">分享设备管理器配置的WiFi</string>
+    <string name="add_wifi_conf">添加Wi-Fi配置</string>
+    <string name="change_wifi_state">修改Wi-Fi状态</string>
+    <string name="wifi_direct">Wi-Fi直连</string>
+    <string name="wifi_tethering">Wi-Fi共享</string>
+    <string name="share_admin_wifi">分享设备管理器配置的Wi-Fi</string>
     <string name="network_reset">重置网络</string>
     <string name="config_tethering">配置网络共享</string>
     <string name="config_vpn">配置VPN</string>
@@ -433,10 +431,10 @@
     <string name="safe_boot">安全模式</string>
     <string name="debug_features">调试功能</string>
 
-    <!--UserManage-->
-    <string name="user_manager">用户管理</string>
+    <!--Users-->
+    <string name="users">用户</string>
     <string name="enable_logout">允许登出</string>
-    <string name="edit_username">修改用户名</string>
+    <string name="change_username">更改用户名</string>
     <string name="start_user_session_msg">用户会话开始消息</string>
     <string name="end_user_session_msg">用户会话结束消息</string>
     <string name="user_info">用户信息</string>
@@ -452,6 +450,7 @@
     <string name="user_id">当前UserID</string>
     <string name="user_serial_number">当前用户序列号</string>
     <string name="secondary_users">次要用户</string>
+    <string name="no_secondary_users">无次要用户</string>
     <string name="user_operation">用户操作</string>
     <string name="user_not_exist">用户不存在</string>
     <string name="serial_number">序列号</string>
@@ -530,15 +529,15 @@
     <string name="activate_reset_password_token_here">在这里激活密码重置令牌</string>
 
     <!--Settings&About-->
-    <string name="setting">设置</string>
+    <string name="settings">设置</string>
     <string name="show_dangerous_features">显示危险功能</string>
     <string name="material_you_color">Material you 颜色</string>
     <string name="dark_theme">深色主题</string>
     <string name="follow_system">跟随系统</string>
     <string name="black_theme">黑色主题</string>
     <string name="about">关于</string>
-    <string name="source_code">源代码</string>
-    <string name="theme">主题</string>
+    <string name="project_homepage">项目主页</string>
+    <string name="appearance">外观</string>
 
     <string name="security">安全</string>
     <string name="lock_owndroid">锁定OwnDroid</string>
@@ -608,7 +607,7 @@
     <string name="info_disable_keyguard">禁用锁屏相当于把锁屏方式设置为“无”。在已设置密码或图案时使用这个功能无效。如果在锁屏禁用时设置密码或图案，锁屏将启用</string>
     <string name="info_evict_credential_encryption_key">从密钥环中移除用户的凭证加密密钥。用户需要再次输入凭证才能将密钥存储回密钥环中。为了保护用户数据，用户将重新启动</string>
     <string name="info_reboot">打电话时不能使用此功能</string>
-    <string name="info_edit_time">输入以毫秒为单位的UNIX时间</string>
+    <string name="info_change_time">输入以毫秒为单位的UNIX时间</string>
     <string name="info_permission_policy">设置应用申请运行时权限时的默认选择</string>
     <string name="info_mte_policy">设置内存标记扩展(Memory Tagging Extension)策略。重启设备以应用更改。</string>
     <string name="info_nearby_app_streaming_policy">应用流式传输：当app在虚拟显示器上启动，传输这个app的视频流到附近的设备。</string>

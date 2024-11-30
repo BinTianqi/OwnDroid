@@ -70,11 +70,7 @@ val exportFilePath = MutableStateFlow<String?>(null)
 fun registerActivityResult(context: ComponentActivity){
     getFile = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
         activityResult.data.let {
-            if(it == null){
-                Toast.makeText(context.applicationContext, R.string.file_not_exist, Toast.LENGTH_SHORT).show()
-            } else {
-                fileUriFlow.value = it.data
-            }
+            if(it != null) fileUriFlow.value = it.data
         }
     }
     createManagedProfile = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
