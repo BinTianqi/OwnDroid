@@ -1,8 +1,10 @@
 package com.bintianqi.owndroid
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -10,6 +12,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
+import kotlin.system.exitProcess
 
 class ManageSpaceActivity: FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,11 +20,11 @@ class ManageSpaceActivity: FragmentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         val sharedPref = applicationContext.getSharedPreferences("data", MODE_PRIVATE)
-        val materialYou = sharedPref.getBoolean("material_you", true)
-        val blackTheme = sharedPref.getBoolean("black_theme", false)
         val protected = sharedPref.getBoolean("protect_storage", false)
+        val vm by viewModels<MyViewModel>()
+        if(!vm.initialized) vm.initialize(applicationContext)
         setContent {
-            OwnDroidTheme(materialYou, blackTheme) {
+            OwnDroidTheme(vm) {
                 AlertDialog(
                     title = {
                         Text(stringResource(R.string.clear_storage))
@@ -31,21 +34,26 @@ class ManageSpaceActivity: FragmentActivity() {
                     },
                     onDismissRequest = { finish() },
                     dismissButton = {
-                        if(!protected) TextButton(onClick = { finish() }) {
+                        TextButton(onClick = { finish() }) {
                             Text(stringResource(R.string.cancel))
                         }
                     },
                     confirmButton = {
-                        TextButton(
+                        if(!protected) TextButton(
                             onClick = {
-                                if(!protected) {
-                                    applicationContext.filesDir.deleteRecursively()
+                                filesDir.deleteRecursively()
+                                cacheDir.deleteRecursively()
+                                codeCacheDir.deleteRecursively()
+                                if(Build.VERSION.SDK_INT >= 24) {
+                                    dataDir.resolve("shared_prefs").deleteRecursively()
+                                } else {
                                     sharedPref.edit().clear().apply()
                                 }
                                 finish()
+                                exitProcess(0)
                             }
                         ) {
-                            Text(stringResource(if(protected) R.string.cancel else R.string.confirm))
+                            Text(stringResource(R.string.confirm))
                         }
                     }
                 )

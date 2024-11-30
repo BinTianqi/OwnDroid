@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose)
-    kotlin("plugin.serialization") version "2.0.0"
+    kotlin("plugin.serialization") version "2.0.21"
 }
 
 android {
@@ -24,8 +24,8 @@ android {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 21
         targetSdk = 34
-        versionCode = 32
-        versionName = "6.0"
+        versionCode = 34
+        versionName = "6.2"
         multiDexEnabled = false
     }
 
@@ -68,6 +68,14 @@ android {
     }
 }
 
+kotlin {
+    sourceSets {
+        all {
+            languageSettings.optIn("kotlinx.serialization.ExperimentalSerializationApi")
+        }
+    }
+}
+
 gradle.taskGraph.whenReady {
     project.tasks.findByPath(":app:test")?.enabled = false
     project.tasks.findByPath(":app:lint")?.enabled = false
@@ -76,6 +84,7 @@ gradle.taskGraph.whenReady {
 
 dependencies {
     implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.androidx.compose.bom))
     implementation(libs.accompanist.drawablepainter)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)

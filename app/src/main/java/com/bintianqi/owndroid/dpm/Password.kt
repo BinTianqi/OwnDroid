@@ -32,6 +32,7 @@ import android.app.admin.DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY
 import android.content.Context
 import android.content.Intent
 import android.os.Build.VERSION
+import android.os.UserManager
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ScrollState
@@ -83,6 +84,7 @@ import com.bintianqi.owndroid.toggle
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.InfoCard
 import com.bintianqi.owndroid.ui.Information
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SubPageItem
@@ -200,6 +202,7 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState) {
             },
             text = {
                 val focusMgr = LocalFocusManager.current
+                val um = context.getSystemService(Context.USER_SERVICE) as UserManager
                 Column {
                     OutlinedTextField(
                         value = input,
@@ -217,13 +220,18 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState) {
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
                         textStyle = typography.bodyLarge,
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
                     )
-                    when(dialog) {
-                        4 -> Text(stringResource(R.string.max_pwd_fail_desc))
-                        5 -> Text(stringResource(R.string.pwd_history_desc))
-                    }
-                    Text(stringResource(R.string.zero_means_no_restriction))
+                    Text(stringResource(
+                        when(dialog) {
+                            1 -> R.string.info_screen_timeout
+                            2 -> R.string.info_required_strong_auth_timeout
+                            3 -> R.string.info_password_expiration_timeout
+                            4 -> if(um.isSystemUser) R.string.info_max_failed_password_system_user else R.string.info_max_failed_password_other_user
+                            5 -> R.string.info_password_history_length
+                            else -> R.string.password
+                        }
+                    ))
                 }
             },
             confirmButton = {
@@ -275,10 +283,10 @@ private fun PasswordInfo() {
             CardItem(R.string.current_password_complexity, passwordComplexity[dpm.passwordComplexity] ?: R.string.unknown)
         }
         if(deviceOwner || profileOwner) {
-            CardItem(R.string.password_sufficient, dpm.isActivePasswordSufficient.yesOrNo())
+            CardItem(R.string.password_sufficient, dpm.isActivePasswordSufficient.yesOrNo)
         }
         if(VERSION.SDK_INT >= 28 && profileOwner && dpm.isManagedProfile(receiver)) {
-            CardItem(R.string.unified_password, dpm.isUsingUnifiedPassword(receiver).yesOrNo())
+            CardItem(R.string.unified_password, dpm.isUsingUnifiedPassword(receiver).yesOrNo)
         }
     }
 }
@@ -435,6 +443,7 @@ private fun ResetPassword() {
                 Text(stringResource(R.string.reset_password))
             }
         }
+        InfoCard(R.string.info_reset_password)
         Spacer(Modifier.padding(vertical = 30.dp))
     }
     if(confirmDialog) {

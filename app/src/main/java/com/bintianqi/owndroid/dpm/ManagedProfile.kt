@@ -63,6 +63,7 @@ import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.CopyTextButton
+import com.bintianqi.owndroid.ui.InfoCard
 import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.TopBar
@@ -271,6 +272,7 @@ private fun SuspendPersonalApp() {
         ) {
             Text(stringResource(R.string.apply))
         }
+        InfoCard(R.string.info_profile_maximum_time_off)
     }
 }
 
@@ -321,6 +323,7 @@ private fun IntentFilter() {
         ) {
             Text(stringResource(R.string.clear_cross_profile_filters))
         }
+        InfoCard(R.string.info_cross_profile_intent_filter)
     }
 }
 

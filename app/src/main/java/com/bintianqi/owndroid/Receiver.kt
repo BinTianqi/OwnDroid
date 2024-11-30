@@ -66,7 +66,9 @@ class Receiver : DeviceAdminReceiver() {
     override fun onSecurityLogsAvailable(context: Context, intent: Intent) {
         super.onSecurityLogsAvailable(context, intent)
         if(VERSION.SDK_INT >= 24) {
-            handleSecurityLogs(context)
+            CoroutineScope(Dispatchers.IO).launch {
+                handleSecurityLogs(context)
+            }
         }
     }
 

@@ -23,6 +23,7 @@
     <string name="denied">Reddedildi</string>
     <string name="grant">Ver</string>
     <string name="deny">Reddet</string>
+    <string name="revoke">Revoke</string> <!--TODO-->
     <string name="current_state">Mevcut Durum: %1$s</string>
     <string name="auto">Otomatik</string>
     <string name="password">Şifre</string>
@@ -39,7 +40,6 @@
     <string name="decide_by_user">Kullanıcı Tarafından Karar Ver</string>
     <string name="unsupported">Desteklenmiyor</string>
     <string name="developing">Geliştirilen İşlev</string>
-    <string name="unknown_effect">Bilinmeyen Etki</string>
     <string name="options">Seçenekler</string>
     <string name="copy_command">Komutu Kopyala</string>
     <string name="package_name">Paket Adı</string>
@@ -57,6 +57,12 @@
     <string name="delete">Delete</string> <!--TODO-->
     <string name="yes">Yes</string> <!--TODO-->
     <string name="no">No</string> <!--TODO-->
+    <string name="previous">Previous</string> <!--TODO-->
+    <string name="next">Next</string> <!--TODO-->
+    <string name="on">On</string> <!--TODO-->
+    <string name="off">Off</string> <!--TODO-->
+    <string name="alias">Alias</string> <!--TODO-->
+    <string name="unknown_error">Unknown error</string> <!--TODO-->
 
     <!--Permissions-->
     <string name="click_to_activate">Etkinleştirmek İçin Tıklayın</string>
@@ -85,14 +91,13 @@
     <string name="disable_account_management">Hesap Yönetimini Devre Dışı Bırak</string>
     <string name="account_type">Hesap Türleri</string>
     <string name="transfer_ownership">Sahipliği Devret</string>
-    <string name="transfer_ownership_desc">Cihaz sahibi veya profil sahibi ayrıcalığını başka bir uygulamaya devredin.</string>
-    <string name="target_package_name">Hedef Paket Adı</string>
-    <string name="target_class_name">Hedef Sınıf Adı</string>
+    <string name="target_component_name">Target component name</string> <!--TODO-->
     <string name="device_owner_lock_screen_info">Ekran Kilidi Bilgisi</string>
     <string name="support_msg">Destek Mesajı</string>
     <string name="short_support_msg">Kısa Mesaj</string>
     <string name="long_support_msg">Uzun Mesaj</string>
     <string name="transfer">Transfer</string>
+    <string name="transfer_ownership_warning">%1$s privilege will be transferred to %2$s</string> <!--TODO-->
     <string name="activate_device_admin_here">Cihaz Yöneticisini Burada Etkinleştir.</string>
 
     <!--Receiver-->
@@ -121,7 +126,7 @@
     <string name="shizuku_not_bind">Shizuku Bağlantısı Kesildi</string>
 
     <!--System-->
-    <string name="system_manage">Sistem yöneticisi</string>
+    <string name="system">Sistem</string>
     <string name="disable_cam">Kamerayı devre dışı bırak</string>
     <string name="disable_screen_capture">Ekran görüntüsünü devre dışı bırak</string>
     <string name="disable_status_bar">Durum çubuğunu devre dışı bırak</string>
@@ -139,20 +144,14 @@
     <string name="bug_report">Hata raporu</string>
     <string name="confirm_bug_report">Hata raporu iste?</string>
     <string name="reboot">Yeniden başlat</string>
-    <string name="confirm_reboot">Yeniden başlatmayı onayla?</string>
-    <string name="edit_time">Zamanı düzenle</string>
-    <string name="edit_timezone">Saat dilimini düzenle</string>
-    <string name="view_all_timezones">Tüm saat dilimi kimliklerini görüntüle</string>
-    <string name="hide_all_timezones">Tüm saat dilimi kimliklerini gizle</string>
+    <string name="change_time">Change time</string> <!--TODO-->
+    <string name="change_timezone">Change timezone</string><!--TODO-->
     <string name="timezone_id">Saat dilimi kimliği</string>
     <string name="disable_auto_time_zone_before_set">Özel bir saat dilimi ayarlamadan önce otomatik saat dilimi devre dışı bırakılmalıdır</string>
-    <string name="from_epoch_to_target_time">Epoch\'tan (1970/1/1 00:00:00 UTC) ayarlanmak istenen zamana kadar (ms)</string>
-    <string name="get_current_time">Geçerli saat</string>
     <string name="permission_policy">İzin politikası</string>
     <string name="auto_grant">Otomatik ver</string>
     <string name="auto_deny">Otomatik reddet</string>
     <string name="mte_policy">MTE politikası</string>
-    <string name="mte_policy_desc">MTE: Bellek Etiketleme Uzantısı, Android 14 ve ARMv9 gerektirir</string>
     <string name="nearby_app_streaming">Yakındaki uygulama akış politikası</string>
     <string name="nearby_streaming_policy">Yakındaki akış politikası</string>
     <string name="nearby_notification_streaming">Yakındaki bildirim akış politikası</string>
@@ -216,14 +215,12 @@
 
     <!--Network-->
     <string name="network">Ağ</string>
-    <string name="wifi_mac_addr">Wi-Fi MAC adresi</string>
+    <string name="wifi_mac_address">Wi-Fi MAC adresi</string>
     <string name="min_wifi_security_level">Minimum Wi-Fi güvenlik seviyesi</string>
     <string name="wifi_security_open">Açık</string>
-    <string name="preferential_network_service">Tercihli ağ hizmeti</string>
     <string name="lockdown_admin_configured_network">Yönetici tarafından yapılandırılmış ağı kilitle</string>
-    <string name="wifi_ssid_policy">WiFi SSID politikası</string>
+    <string name="wifi_ssid_policy">Wi-Fi SSID politikası</string>
     <string name="ssid_list_is">SSID listesi:</string>
-    <string name="cannot_be_empty">Boş olamaz</string>
     <string name="already_exist">Zaten mevcut</string>
     <string name="private_dns">Özel DNS</string>
     <string name="dns_provide_hostname">Ana bilgisayar adı sağlayın</string>
@@ -244,8 +241,18 @@
     <string name="log_file_size_is">Log file size: %1$s</string> <!--TODO-->
     <string name="delete_logs">Delete logs</string> <!--TODO-->
     <string name="export_logs">Export logs</string> <!--TODO-->
-    <string name="wifi_auth_keypair">WiFi anahtar çifti</string>
+    <string name="wifi_auth_keypair">Wi-Fi anahtar çifti</string>
     <string name="keypair">Anahtar çifti</string>
+    <string name="preferential_network_service">Tercihli ağ hizmeti</string>
+    <string name="network_id">Network ID</string> <!--TODO-->
+    <string name="allow_fallback_to_default_connection">Allow fallback to default connection</string> <!--TODO-->
+    <string name="block_non_matching_networks">Block non matching networks</string> <!--TODO-->
+    <string name="included_uids">Included UIDs</string> <!--TODO-->
+    <string name="excluded_uids">Excluded UIDs</string> <!--TODO-->
+    <string name="one_uid_per_line">One UID per line</string> <!--TODO-->
+    <string name="failed_to_save_current_config">Failed to save current config</string> <!--TODO-->
+    <string name="save_current_config">Save current config</string> <!--TODO-->
+    <string name="delete_current_config">Delete current config</string> <!--TODO-->
     <string name="override_apn_settings">APN ayarlarını geçersiz kıl</string>
     <string name="total_apn_amount">APN ayarlarının toplamı: %1$s</string>
     <string name="select_a_apn_or_create">Düzenlemek istediğiniz APN ayarını seçin (1~%1$s) veya yeni bir APN ayarı oluşturmak için 0 girin.</string>
@@ -295,8 +302,8 @@
     <string name="length_6_to_64">Uzunluk 6 ile 64 karakter arasında olmalıdır</string>
     <string name="delete_work_profile">Delete work profile</string> <!--TODO-->
 
-    <!--AppManager-->
-    <string name="app_manager">Uygulama yöneticisi</string>
+    <!--Applications-->
+    <string name="applications">Uygulamalar</string>
     <string name="pkg_selector">Paket seçici</string>
     <string name="loading">Yükleniyor</string>
     <string name="show_user_app">Kullanıcı uygulamalarını göster</string>
@@ -319,7 +326,6 @@
     <string name="ucd">Kullanıcı kontrolünü devre dışı bırak</string>
     <string name="ucd_desc">Bunu ayarlarsanız, bu uygulamaların depolama alanını temizleyemez veya zorla durduramazsınız. </string>
     <string name="app_list_is">Uygulama listesi:</string>
-    <string name="clear_list">Listeyi temizle</string>
     <string name="permission_manage">İzin yönetimi</string>
     <string name="cross_profile_package">Profil geçişli paket</string>
     <string name="cross_profile_widget">Profil geçişli widget</string>
@@ -365,21 +371,19 @@
     <string name="some_features_invalid_in_work_profile">İş profilindeki işlevler sınırlıdır. </string>
     <string name="network_internet">Ağ</string>
     <string name="more_connectivity">Diğer bağlantı</string>
-    <string name="applications">Uygulamalar</string>
-    <string name="users">Kullanıcı</string>
     <string name="media">Medya</string>
     <string name="other">Diğer</string>
     <string name="require_device_owner">Cihaz sahibi gerektirir</string>
     <string name="config_mobile_network">Mobil ağı yapılandır</string>
-    <string name="config_wifi">WiFi\'yi yapılandır</string>
+    <string name="config_wifi">Wi-Fi\'yi yapılandır</string>
     <string name="data_roaming">Veri dolaşımı</string>
     <string name="cellular_2g">2G hücresel</string>
     <string name="ultra_wideband_radio">Ultra geniş bant radyo</string>
-    <string name="add_wifi_conf">WiFi yapılandırması ekle</string>
-    <string name="change_wifi_state">WiFi durumunu değiştir</string>
-    <string name="wifi_direct">WiFi direct</string>
-    <string name="wifi_tethering">WiFi tethering</string>
-    <string name="share_admin_wifi">Yönetici yapılandırılmış WiFi paylaş</string>
+    <string name="add_wifi_conf">Wi-Fi yapılandırması ekle</string>
+    <string name="change_wifi_state">Wi-Fi durumunu değiştir</string>
+    <string name="wifi_direct">Wi-Fi direct</string>
+    <string name="wifi_tethering">Wi-Fi tethering</string>
+    <string name="share_admin_wifi">Yönetici yapılandırılmış Wi-Fi paylaş</string>
     <string name="network_reset">Ağ sıfırlama</string>
     <string name="config_tethering">Tethering yapılandır</string>
     <string name="config_vpn">VPN yapılandır</string>
@@ -435,30 +439,33 @@
     <string name="safe_boot">Güvenli başlangıç</string>
     <string name="debug_features">Hata ayıklama özellikleri</string>
 
-    <!--UserManage-->
-    <string name="user_manager">Kullanıcı yöneticisi</string>
+    <!--Users-->
+    <string name="users">Users</string> <!--TODO-->
     <string name="enable_logout">Enable logout</string> <!--TODO-->
-    <string name="edit_username">Kullanıcı adını düzenle</string>
+    <string name="change_username">Change username</string> <!--TODO-->
     <string name="start_user_session_msg">Kullanıcı oturumunu başlat mesajı</string>
     <string name="end_user_session_msg">Kullanıcı oturumunu sonlandır mesajı</string>
     <string name="user_info">Kullanıcı bilgisi</string>
     <string name="support_multiuser">Çoklu kullanıcı desteği</string>
     <string name="system_user">Sistem kullanıcısı</string>
     <string name="admin_user">Yönetici kullanıcısı</string>
-    <string name="headless_system_user">Başsız sistem kullanıcısı</string>
+    <string name="demo_user">Demo user</string> <!--TODO-->
+    <string name="headless_system_user_mode">Headless system user mode</string> <!--TODO-->
+    <string name="creation_time">Creation time</string> <!--TODO-->
     <string name="logout_enabled">Logout enabled</string> <!--TODO-->
     <string name="ephemeral_user">Geçici kullanıcı</string>
     <string name="affiliated_user">Bağlı kullanıcı</string>
     <string name="user_id">Kullanıcı ID</string>
     <string name="user_serial_number">Kullanıcı seri numarası</string>
+    <string name="secondary_users">Secondary users</string> <!--TODO-->
+    <string name="no_secondary_users">No secondary users</string> <!--TODO-->
     <string name="user_operation">Kullanıcı işlemi</string>
+    <string name="user_not_exist">User does not exist</string> <!--TODO-->
     <string name="serial_number">Seri numarası</string>
     <string name="use_uid">UID kullan</string>
     <string name="logout_current_user">Mevcut kullanıcıyı çıkış yap</string>
     <string name="start_in_background">Arka planda başlat</string>
     <string name="user_operation_switch">Değiştir</string>
-    <string name="user_operation_stop">Durdur</string>
-    <string name="user_operation_remove">Kaldır</string>
     <string name="create_user">Kullanıcı oluştur</string>
     <string name="username">Kullanıcı adı</string>
     <string name="create_user_skip_wizard">Sihirbazı atla</string>
@@ -466,7 +473,6 @@
     <string name="create_user_enable_all_system_app">Tüm sistem uygulamalarını etkinleştir</string>
     <string name="serial_number_of_new_user_is">Bu kullanıcının seri numarası: %1$s</string>
     <string name="affiliation_id">Bağlılık ID</string>
-    <string name="include_empty_string">Boş string dahil et</string>
     <string name="change_user_icon">Kullanıcı simgesini değiştir</string>
     <string name="file_picker_instead_gallery">Galeri yerine dosya seçici kullan</string>
     <string name="select_picture" tools:ignore="TypographyEllipsis">Resim seç...</string>
@@ -480,14 +486,11 @@
     <string name="password_info">Şifre Bilgisi</string>
     <string name="reset_pwd_desc">Şifreyi kaldırmak için boş bırakın</string>
     <string name="max_pwd_fail">Maksimum hatalı şifre</string>
-    <string name="max_pwd_fail_desc">Bu sınıra ulaşıldığında, cihaz fabrika ayarlarına sıfırlanacaktır</string>
     <string name="max_pwd_fail_textfield">Maksimum hatalı deneme</string>
     <string name="pwd_expiration_timeout">Şifre geçerlilik süresi</string>
     <string name="max_time_to_lock">Ekran zaman aşımı</string>
     <string name="required_strong_auth_timeout">Gereken güçlü doğrulama zaman aşımı</string>
-    <string name="zero_means_no_restriction">0 means no restriction</string> <!--TODO-->
     <string name="pwd_history">Şifre geçmişi uzunluğu</string>
-    <string name="pwd_history_desc">Belirtilen aralıktaki geçmiş şifreler kullanıcı tarafından ayarlanamaz</string>
     <string name="password_complexity_none">Yok (Şifreye izin verilmez)</string>
     <string name="password_complexity_low">Düşük (Hareket şifresi ve karakter tekrarı izinli)</string>
     <string name="password_complexity_medium">Orta (Tekrar yasak, en az 4 karakter)</string>
@@ -534,16 +537,15 @@
     <string name="activate_reset_password_token_here">Şifre sıfırlama jetonunu burada etkinleştirin.</string>
 
     <!--Settings&About-->
-    <string name="setting">Ayarlar</string>
+    <string name="settings">Ayarlar</string>
     <string name="show_dangerous_features">Show dangerous features</string> <!--TODO-->
     <string name="material_you_color">Material You rengi</string>
-    <string name="dynamic_color_desc">Android 12+</string>
+    <string name="dark_theme">Dark theme</string> <!--TODO-->
+    <string name="follow_system">Follow system</string> <!--TODO-->
+    <string name="black_theme">Black theme</string> <!--TODO-->
     <string name="about">Hakkında</string>
-    <string name="user_guide">Kullanıcı rehberi</string>
-    <string name="source_code">Kaynak kodu</string>
-    <string name="theme">Tema</string>
-    <string name="amoled_black">Siyah tema</string>
-    <string name="blackTheme_desc">Karanlık modun açık olmasını gerektirir</string>
+    <string name="project_homepage">Project homepage</string> <!--TODO-->
+    <string name="appearance">Appearance</string> <!--TODO-->
 
     <string name="security">Güvenlik</string>
     <string name="lock_owndroid">OwnDroid\'u kilitle</string>
@@ -598,4 +600,6 @@
     <string name="version_name">Version name</string> <!--TODO-->
     <string name="version_code">Version code</string> <!--TODO-->
     <string name="parsing_apk_info" tools:ignore="TypographyEllipsis">Parsing APK info...</string>
+
+    <!--TODO: Translate strings start with "info_"-->
 </resources>

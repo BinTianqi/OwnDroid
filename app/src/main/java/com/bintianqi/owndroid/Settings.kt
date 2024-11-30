@@ -4,9 +4,10 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build.VERSION
-import android.util.Base64
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.typography
@@ -22,7 +25,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,7 +33,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -44,7 +48,7 @@ import com.bintianqi.owndroid.ui.TopBar
 import java.security.SecureRandom
 
 @Composable
-fun AppSetting(navCtrl:NavHostController, materialYou: MutableState<Boolean>, blackTheme: MutableState<Boolean>) {
+fun AppSetting(navCtrl:NavHostController, vm: MyViewModel) {
     val localNavCtrl = rememberNavController()
     val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
     Scaffold(
@@ -62,7 +66,7 @@ fun AppSetting(navCtrl:NavHostController, materialYou: MutableState<Boolean>, bl
         ) {
             composable(route = "Home") { Home(localNavCtrl) }
             composable(route = "Options") { Options() }
-            composable(route = "Theme") { ThemeSettings(materialYou, blackTheme) }
+            composable(route = "Theme") { ThemeSettings(vm) }
             composable(route = "Auth") { AuthSettings() }
             composable(route = "Automation") { Automation() }
             composable(route = "About") { About() }
@@ -74,7 +78,7 @@ fun AppSetting(navCtrl:NavHostController, materialYou: MutableState<Boolean>, bl
 private fun Home(navCtrl: NavHostController) {
     Column(modifier = Modifier.fillMaxSize()) {
         SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Options") }
-        SubPageItem(R.string.theme, "", R.drawable.format_paint_fill0) { navCtrl.navigate("Theme") }
+        SubPageItem(R.string.appearance, "", R.drawable.format_paint_fill0) { navCtrl.navigate("Theme") }
         SubPageItem(R.string.security, "", R.drawable.lock_fill0) { navCtrl.navigate("Auth") }
         SubPageItem(R.string.automation_api, "", R.drawable.apps_fill0) { navCtrl.navigate("Automation") }
         SubPageItem(R.string.about, "", R.drawable.info_fill0) { navCtrl.navigate("About") }
@@ -94,27 +98,56 @@ private fun Options() {
 }
 
 @Composable
-private fun ThemeSettings(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>) {
-    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 16.dp)) {
+private fun ThemeSettings(vm: MyViewModel) {
+    val theme by vm.theme.collectAsStateWithLifecycle()
+    var darkThemeMenu by remember { mutableStateOf(false) }
+    val darkThemeTextID = when(theme.darkTheme) {
+        true -> R.string.on
+        false -> R.string.off
+        null -> R.string.follow_system
+    }
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         if(VERSION.SDK_INT >= 31) {
             SwitchItem(
-                R.string.material_you_color, stringResource(R.string.dynamic_color_desc), null,
-                { sharedPref.getBoolean("material_you",true) },
-                {
-                    sharedPref.edit().putBoolean("material_you", it).apply()
-                    materialYou.value = it
-                }, padding = false
+                R.string.material_you_color, "", null,
+                theme.materialYou,
+                { vm.theme.value = theme.copy(materialYou = it) }
             )
         }
-        if(isSystemInDarkTheme()) {
+        Box {
+            SubPageItem(R.string.dark_theme, stringResource(darkThemeTextID)) { darkThemeMenu = true }
+            DropdownMenu(
+                expanded = darkThemeMenu, onDismissRequest = { darkThemeMenu = false },
+                offset = DpOffset(x = 25.dp, y = 0.dp)
+            ) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.follow_system)) },
+                    onClick = {
+                        vm.theme.value = theme.copy(darkTheme = null)
+                        darkThemeMenu = false
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.on)) },
+                    onClick = {
+                        vm.theme.value = theme.copy(darkTheme = true)
+                        darkThemeMenu = false
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.off)) },
+                    onClick = {
+                        vm.theme.value = theme.copy(darkTheme = false)
+                        darkThemeMenu = false
+                    }
+                )
+            }
+        }
+        AnimatedVisibility(theme.darkTheme == true || (theme.darkTheme == null && isSystemInDarkTheme())) {
             SwitchItem(
-                R.string.amoled_black, stringResource(R.string.blackTheme_desc), null,
-                { sharedPref.getBoolean("black_theme",false) },
-                {
-                    sharedPref.edit().putBoolean("black_theme", it).apply()
-                    blackTheme.value = it
-                }, padding = false
+                R.string.black_theme, "", null,
+                theme.blackTheme,
+                { vm.theme.value = theme.copy(blackTheme = it) }
             )
         }
     }
@@ -207,13 +240,12 @@ private fun About() {
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(text = stringResource(R.string.app_name)+" v$verName ($verCode)", modifier = Modifier.padding(start = 26.dp))
         Spacer(Modifier.padding(vertical = 5.dp))
-        SubPageItem(R.string.user_guide, "", R.drawable.open_in_new) { shareLink(context, "https://owndroid.pages.dev") }
-        SubPageItem(R.string.source_code, "", R.drawable.open_in_new) { shareLink(context, "https://github.com/BinTianqi/OwnDroid") }
+        SubPageItem(R.string.project_homepage, "GitHub", R.drawable.open_in_new) { shareLink(context, "https://github.com/BinTianqi/OwnDroid") }
     }
 }
 
-fun shareLink(inputContext:Context,link:String) {
+fun shareLink(inputContext: Context, link: String) {
     val uri = Uri.parse(link)
     val intent = Intent(Intent.ACTION_VIEW, uri)
-    inputContext.startActivity(Intent.createChooser(intent, "Open in browser"),null)
+    inputContext.startActivity(Intent.createChooser(intent, "Open in browser"), null)
 }

@@ -20,8 +20,9 @@
     <string name="whitelist">白名单</string>
     <string name="granted">允许</string>
     <string name="denied">拒绝</string>
-    <string name="grant">允许</string>
+    <string name="grant">授予</string>
     <string name="deny">拒绝</string>
+    <string name="revoke">吊销</string>
     <string name="current_state">当前状态：%1$s</string>
     <string name="auto">自动</string>
     <string name="password">密码</string>
@@ -38,7 +39,6 @@
     <string name="decide_by_user">由用户决定</string>
     <string name="unsupported">不支持</string>
     <string name="developing">功能开发中</string>
-    <string name="unknown_effect">效果未知</string>
     <string name="options">选项</string>
     <string name="copy_command">复制代码</string>
     <string name="unknown_status">未知状态</string>
@@ -54,6 +54,12 @@
     <string name="delete">删除</string>
     <string name="yes">是</string>
     <string name="no">否</string>
+    <string name="previous">上一个</string>
+    <string name="next">下一个</string>
+    <string name="on">开启</string>
+    <string name="off">关闭</string>
+    <string name="alias">别名</string>
+    <string name="unknown_error">未知错误</string>
 
     <!--Permissions-->
     <string name="click_to_activate">点击以激活</string>
@@ -80,14 +86,13 @@
     <string name="disable_account_management">禁用账号管理</string>
     <string name="account_type">账号类型</string>
     <string name="transfer_ownership">转移所有权</string>
-    <string name="transfer_ownership_desc">把Device owner或Profile owner权限转移到另一个应用</string>
-    <string name="target_package_name">目标包名</string>
-    <string name="target_class_name">目标类名</string>
+    <string name="target_component_name">目标组件名</string>
     <string name="device_owner_lock_screen_info">锁屏提示信息</string>
     <string name="support_msg">提供支持的消息</string>
     <string name="short_support_msg">提供支持的短消息</string>
     <string name="long_support_msg">提供支持的长消息</string>
     <string name="transfer">转移</string>
+    <string name="transfer_ownership_warning">%1$s 特权将被转移至 %2$s</string>
     <string name="activate_device_admin_here">在这里激活Device admin</string>
 
     <!--Receiver-->
@@ -116,7 +121,7 @@
     <string name="bind_shizuku">连接Shizuku</string>
 
     <!--System-->
-    <string name="system_manage">系统</string>
+    <string name="system">系统</string>
     <string name="disable_cam">禁用相机</string>
     <string name="disable_screen_capture">禁止屏幕捕获</string>
     <string name="disable_status_bar">禁用状态栏</string>
@@ -134,20 +139,14 @@
     <string name="bug_report">错误报告</string>
     <string name="confirm_bug_report">请求错误报告？</string>
     <string name="reboot">重启</string>
-    <string name="confirm_reboot">确定重启？</string>
-    <string name="edit_time">修改时间</string>
-    <string name="edit_timezone">修改时区</string>
-    <string name="view_all_timezones">显示所有时区ID</string>
-    <string name="hide_all_timezones">隐藏所有时区ID</string>
+    <string name="change_time">更改时间</string>
+    <string name="change_timezone">更改时区</string>
     <string name="timezone_id">时区ID</string>
     <string name="disable_auto_time_zone_before_set">在设置时区前需要关闭自动时区</string>
-    <string name="from_epoch_to_target_time">从Epoch(1970/1/1 00:00:00 UTC)到你想设置的时间(毫秒)</string>
-    <string name="get_current_time">获取当前时间</string>
     <string name="permission_policy">权限策略</string>
     <string name="auto_grant">自动允许</string>
     <string name="auto_deny">自动拒绝</string>
     <string name="mte_policy">MTE策略</string>
-    <string name="mte_policy_desc">MTE：内存标记拓展，安卓14和ARMv9的高端功能</string>
     <string name="nearby_app_streaming">附近应用传输</string>
     <string name="nearby_streaming_policy">附近流式传输策略</string>
     <string name="nearby_notification_streaming">附近通知传输</string>
@@ -211,14 +210,12 @@
 
     <!--Network-->
     <string name="network">网络</string>
-    <string name="wifi_mac_addr">Wi-Fi Mac地址</string>
-    <string name="min_wifi_security_level">最低WiFi安全等级</string>
+    <string name="wifi_mac_address">Wi-Fi Mac地址</string>
+    <string name="min_wifi_security_level">最低Wi-Fi安全等级</string>
     <string name="wifi_security_open">开放</string>
-    <string name="preferential_network_service">优先网络服务</string>
     <string name="lockdown_admin_configured_network">锁定由管理员配置的网络</string>
-    <string name="wifi_ssid_policy">WiFi SSID策略</string>
+    <string name="wifi_ssid_policy">Wi-Fi SSID策略</string>
     <string name="ssid_list_is">SSID列表：</string>
-    <string name="cannot_be_empty">不能为空</string>
     <string name="already_exist">已经存在</string>
     <string name="private_dns">私人DNS</string>
     <string name="dns_provide_hostname">指定主机名</string>
@@ -239,8 +236,18 @@
     <string name="log_file_size_is">日志文件大小：%1$s</string>
     <string name="delete_logs">删除日志</string>
     <string name="export_logs">导出日志</string>
-    <string name="wifi_auth_keypair">WiFi密钥对</string>
+    <string name="wifi_auth_keypair">Wi-Fi密钥对</string>
     <string name="keypair">密钥对</string>
+    <string name="preferential_network_service">首选网络服务</string>
+    <string name="network_id">网络ID</string>
+    <string name="allow_fallback_to_default_connection">允许回落到默认连接</string>
+    <string name="block_non_matching_networks">阻止不匹配的网络</string>
+    <string name="included_uids">包含的UID</string>
+    <string name="excluded_uids">排除的UIDs</string>
+    <string name="one_uid_per_line">一行一个UID</string>
+    <string name="failed_to_save_current_config">保存当前配置失败</string>
+    <string name="save_current_config">保存当前配置</string>
+    <string name="delete_current_config">删除当前配置</string>
     <string name="override_apn_settings">APN设置</string>
     <string name="total_apn_amount">一共有%1$s个APN设置</string>
     <string name="select_a_apn_or_create">选择一个你要修改的APN设置(1~%1$s)或者输入0以新建APN设置</string>
@@ -290,8 +297,8 @@
     <string name="length_6_to_64">长度应在6~64个字符之间</string>
     <string name="delete_work_profile">删除工作资料</string>
 
-    <!--AppManage-->
-    <string name="app_manager">应用管理</string>
+    <!--Applications-->
+    <string name="applications">应用程序</string>
     <string name="pkg_selector">应用选择器</string>
     <string name="loading">加载中</string>
     <string name="show_user_app">显示用户应用</string>
@@ -310,7 +317,6 @@
     <string name="ucd">禁止用户控制</string>
     <string name="ucd_desc">用户将无法清除这些应用的存储空间或强制停止这些应用</string>
     <string name="app_list_is">应用列表：</string>
-    <string name="clear_list">清空列表</string>
     <string name="permission_manage">权限管理</string>
     <string name="cross_profile_package">跨资料应用</string>
     <string name="cross_profile_widget">跨资料微件</string>
@@ -357,8 +363,6 @@
     <string name="some_features_invalid_in_work_profile">工作资料中部分功能无效</string>
     <string name="network_internet">网络和互联网</string>
     <string name="more_connectivity">更多连接</string>
-    <string name="applications">应用</string>
-    <string name="users">用户</string>
     <string name="media">媒体</string>
     <string name="other">其他</string>
     <string name="require_device_owner">需要DeviceOwner</string>
@@ -367,11 +371,11 @@
     <string name="data_roaming">数据漫游</string>
     <string name="cellular_2g">使用2G(GSM)</string>
     <string name="ultra_wideband_radio">超宽频段无线电</string>
-    <string name="add_wifi_conf">添加WiFi配置</string>
-    <string name="change_wifi_state">修改WiFi状态</string>
-    <string name="wifi_direct">WiFi直连</string>
-    <string name="wifi_tethering">WiFi共享</string>
-    <string name="share_admin_wifi">分享设备管理器配置的WiFi</string>
+    <string name="add_wifi_conf">添加Wi-Fi配置</string>
+    <string name="change_wifi_state">修改Wi-Fi状态</string>
+    <string name="wifi_direct">Wi-Fi直连</string>
+    <string name="wifi_tethering">Wi-Fi共享</string>
+    <string name="share_admin_wifi">分享设备管理器配置的Wi-Fi</string>
     <string name="network_reset">重置网络</string>
     <string name="config_tethering">配置网络共享</string>
     <string name="config_vpn">配置VPN</string>
@@ -427,30 +431,33 @@
     <string name="safe_boot">安全模式</string>
     <string name="debug_features">调试功能</string>
 
-    <!--UserManage-->
-    <string name="user_manager">用户管理</string>
+    <!--Users-->
+    <string name="users">用户</string>
     <string name="enable_logout">允许登出</string>
-    <string name="edit_username">修改用户名</string>
+    <string name="change_username">更改用户名</string>
     <string name="start_user_session_msg">用户会话开始消息</string>
     <string name="end_user_session_msg">用户会话结束消息</string>
     <string name="user_info">用户信息</string>
     <string name="support_multiuser">支持多用户</string>
     <string name="system_user">系统用户</string>
     <string name="admin_user">管理员用户</string>
-    <string name="headless_system_user">无头系统用户</string>
+    <string name="demo_user">演示用户</string>
+    <string name="headless_system_user_mode">无头系统用户模式</string>
+    <string name="creation_time">创建时间</string>
     <string name="logout_enabled">用户可登出</string>
     <string name="ephemeral_user">临时用户</string>
     <string name="affiliated_user">附属用户</string>
     <string name="user_id">当前UserID</string>
     <string name="user_serial_number">当前用户序列号</string>
+    <string name="secondary_users">次要用户</string>
+    <string name="no_secondary_users">无次要用户</string>
     <string name="user_operation">用户操作</string>
+    <string name="user_not_exist">用户不存在</string>
     <string name="serial_number">序列号</string>
     <string name="use_uid">使用UID</string>
     <string name="logout_current_user">登出当前用户</string>
     <string name="start_in_background">在后台启动</string>
     <string name="user_operation_switch">切换</string>
-    <string name="user_operation_stop">停止</string>
-    <string name="user_operation_remove">移除</string>
     <string name="create_user">创建用户</string>
     <string name="username">用户名</string>
     <string name="create_user_skip_wizard">跳过创建用户向导</string>
@@ -458,7 +465,6 @@
     <string name="create_user_enable_all_system_app">启用所有系统应用</string>
     <string name="serial_number_of_new_user_is">新用户的序列号：%1$s</string>
     <string name="affiliation_id">附属用户ID</string>
-    <string name="include_empty_string">有空字符串</string>
     <string name="change_user_icon">更换用户头像</string>
     <string name="file_picker_instead_gallery">使用文件选择器而不是相册</string>
     <string name="select_picture" tools:ignore="TypographyEllipsis">选择图片...</string>
@@ -472,14 +478,11 @@
     <string name="password_info">密码信息</string>
     <string name="reset_pwd_desc">留空以清除密码</string>
     <string name="max_pwd_fail">最大密码错误次数</string>
-    <string name="max_pwd_fail_desc">达到该限制会恢复出厂设置</string>
     <string name="max_pwd_fail_textfield">错误次数</string>
     <string name="pwd_expiration_timeout">密码失效超时</string>
     <string name="max_time_to_lock">屏幕超时</string>
     <string name="required_strong_auth_timeout">要求强验证超时</string>
-    <string name="zero_means_no_restriction">0表示不做限制</string>
     <string name="pwd_history">密码历史长度</string>
-    <string name="pwd_history_desc">用户无法设置指定历史范围内之前曾设置过的密码</string>
     <string name="password_complexity_none">无（允许不设密码）</string>
     <string name="password_complexity_low">低（允许图案和连续性）</string>
     <string name="password_complexity_medium">中（无连续性，至少4位）</string>
@@ -526,16 +529,15 @@
     <string name="activate_reset_password_token_here">在这里激活密码重置令牌</string>
 
     <!--Settings&About-->
-    <string name="setting">设置</string>
+    <string name="settings">设置</string>
     <string name="show_dangerous_features">显示危险功能</string>
     <string name="material_you_color">Material you 颜色</string>
-    <string name="dynamic_color_desc">安卓12+</string>
+    <string name="dark_theme">深色主题</string>
+    <string name="follow_system">跟随系统</string>
+    <string name="black_theme">黑色主题</string>
     <string name="about">关于</string>
-    <string name="user_guide">使用教程</string>
-    <string name="source_code">源代码</string>
-    <string name="theme">主题</string>
-    <string name="amoled_black">纯黑夜间主题</string>
-    <string name="blackTheme_desc">需要打开夜间模式</string>
+    <string name="project_homepage">项目主页</string>
+    <string name="appearance">外观</string>
 
     <string name="security">安全</string>
     <string name="lock_owndroid">锁定OwnDroid</string>
@@ -590,4 +592,53 @@
     <string name="version_name">版本名</string>
     <string name="version_code">版本号</string>
     <string name="parsing_apk_info" tools:ignore="TypographyEllipsis">解析APK信息中...</string>
+
+    <string name="info_dhizuku">Dhizuku可以分享Device owner权限给其余应用</string>
+    <string name="info_device_id_attestation">指示设备是否除了密钥证明之外还支持设备标识符证明</string>
+    <string name="info_unique_device_attestation">如果设备上的StrongBox Keymaster可以配置单独的证明证书并且可以使用该证书签署证明记录，则返回true（只有StrongBox安全级别的Keymaster才能使用单独的证明证书进行证明）</string>
+    <string name="info_org_id">设置组织ID后才能获取设备注册专用ID</string>
+    <string name="info_enrollment_specific_id">不同组织ID的设备注册专用ID不同，恢复出厂设置或删除工作资料后不变</string>
+    <string name="info_lock_screen_info">在锁屏界面上显示的一段简短的消息。将会覆盖用户当前设置的锁屏信息，并且防止用户在系统设置中设置新的锁屏信息</string>
+    <string name="info_short_support_message">用户试图使用被管理员禁用的功能时会显示此消息。不应多于200字</string>
+    <string name="info_long_support_message">在设备管理员设置中会显示此消息，不应多于20000字</string>
+    <string name="info_transfer_ownership">转移Device owner或Profile owner权限到另一个app，当前的设备策略会迁移到新的设备管理员</string>
+    <string name="info_backup_service">禁用后用户不能使用备份服务备份或恢复数据。在受管理用户中，需要Device owner和Profile owner同时启用此功能才能使用备份服务</string>
+    <string name="info_common_criteria_mode">当设备处于通用标准模式时，某些设备功能会进行调整以满足通用标准模式所要求的安全级别。</string>
+    <string name="info_disable_keyguard">禁用锁屏相当于把锁屏方式设置为“无”。在已设置密码或图案时使用这个功能无效。如果在锁屏禁用时设置密码或图案，锁屏将启用</string>
+    <string name="info_evict_credential_encryption_key">从密钥环中移除用户的凭证加密密钥。用户需要再次输入凭证才能将密钥存储回密钥环中。为了保护用户数据，用户将重新启动</string>
+    <string name="info_reboot">打电话时不能使用此功能</string>
+    <string name="info_change_time">输入以毫秒为单位的UNIX时间</string>
+    <string name="info_permission_policy">设置应用申请运行时权限时的默认选择</string>
+    <string name="info_mte_policy">设置内存标记扩展(Memory Tagging Extension)策略。重启设备以应用更改。</string>
+    <string name="info_nearby_app_streaming_policy">应用流式传输：当app在虚拟显示器上启动，传输这个app的视频流到附近的设备。</string>
+    <string name="info_nearby_notification_streaming_policy">通知流式传输：预安装的应用把通知数据传输到附近的设备。</string>
+    <string name="info_lock_task_packages">只有在列表中的应用才能开启锁定任务模式。</string>
+    <string name="info_start_lock_task_mode">如果你在锁定任务功能中允许了通知，成功启动锁定任务模式后，OwnDroid会发送一条通知，你可以点击那条通知以退出锁定任务模式。</string>
+    <string name="info_security_log">设备上不能有非附属用户</string>
+    <string name="info_pre_reboot_security_log">并非所有设备都支持重启前安全日志</string>
+    <string name="info_disable_account_management">当某个帐户类型的帐户管理被禁用时，将无法添加或删除该类型的帐户。</string>
+    <string name="info_frp_policy">恢复出厂设置保护(Factory reset protection)策略用于防止不受信任的重置(Fastboot或Recovery)。需要设备支持持久数据块服务(Persistent data block service)</string>
+    <string name="info_wipe_data_in_managed_user">此用户的所有数据将会被清除，但是用户不会被删除。</string>
+    <string name="info_lockdown_admin_configured_network">控制用户是否可以更改管理员配置的网络。启用此锁定后，用户仍然可以配置和连接到其他Wi-Fi，或使用其他Wi-Fi功能（如网络共享）。</string>
+    <string name="info_minimum_wifi_security_level">指定Wi-Fi网络所需的最低安全等级。设备将无法连接到低于最低安全等级的网络。如果当前网络不满足要求，则会断开连接。</string>
+    <string name="info_private_dns_mode_oppertunistic">在此模式下，DNS子系统将在尝试以明文形式进行域名解析之前，尝试与网络提供的DNS服务器进行TLS握手。</string>
+    <string name="info_set_private_dns_host">将对DNS服务器执行连接检查，以确保其有效。\n如果将VPN与私人DNS结合使用，则私人DNS必须可从VPN内部和外部访问。否则设备可能会失去解析域名的能力，因为到DNS服务器的系统流量可能不会通过VPN。</string>
+    <string name="info_always_on_vpn">通过一个指定的app，为当前用户设置一个保持打开的VPN连接。自动授权连接并在重启后保留。\n启用锁定：如果VPN未连接，则禁止使用网络。</string>
+    <string name="info_recommended_global_proxy">这个代理只是一个建议，一些app有可能忽略它。</string>
+    <string name="info_network_log">网络日志包含DNS查询和connect()库调用记录</string>
+    <string name="info_profile_maximum_time_off">用户可以关闭工作资料，如果关闭工作资料的时间超过了在这里设置的时间，会挂起个人应用。设置的时间不能小于72小时，如果小于72小时，按72小时算。</string>
+    <string name="info_cross_profile_intent_filter">添加跨资料Intent过滤器，使工作资料中可以发送的指定Intent到主用户，反之亦然。仅支持Activity Intent</string>
+    <string name="info_suspend_app">挂起的应用无法被打开，通知会被隐藏，不会在最近任务中显示，不能弹窗，不能发送Toast。\n有些应用无法被挂起，比如Device admin、启动器和默认拨号应用。</string>
+    <string name="info_disable_user_control">用户无法清除这些应用的存储空间，也无法强制停止应用</string>
+    <string name="info_keep_uninstalled_apps">这个列表中的应用的APK将会一直保留，即使没有任何用户安装这个应用</string>
+    <string name="info_headless_system_user_mode">无头系统用户模式意味着系统用户运行系统服务和一些系统UI，但它不与任何真实的人相关联，必须创建额外的用户才能与真实的人相关联。</string>
+    <string name="info_user_operation">推荐使用用户序列号来标识用户，如果要使用UID，UID可以是运行在目标用户中任意应用的UID</string>
+    <string name="info_affiliated_id">当Device owner创建并管理用户时，新的用户不是附属用户。Device owner设置和受管理用户完全相同的附属用户ID后，受管理用户成为附属于Device owner的用户</string>
+    <string name="info_reset_password">设置一个新的密码，密码的长度需要4位或以上，不输入密码将会清除现有的密码。长度在6位或以下的纯数字密码将会设置为PIN码。</string>
+    <string name="info_screen_timeout">设置设备锁定前用户活动的最大时间。这限制了用户可以设置的时间长度。\n值为0表示不做限制。</string>
+    <string name="info_password_expiration_timeout">重新启动密码过期倒计时。值为0表示不做限制。</string>
+    <string name="info_max_failed_password_system_user">如果设置为大于零的值，将会在输入一定次数的错误的锁屏密码后将设备恢复出厂设置</string>
+    <string name="info_max_failed_password_other_user">如果设置为大于零的值，将会在输入一定次数的错误的锁屏密码后清除当前用户的所有数据</string>
+    <string name="info_password_history_length">设置后，用户将无法输入与历史记录中任何密码相同的新密码。当前密码将保留，直到用户设置新密码为止，因此更改不会立即生效。值为0表示不做限制。</string>
+    <string name="info_required_strong_auth_timeout">如果用户在这段时间内没有使用强认证（密码、PIN或图案）解锁设备，则要求使用强认证解锁设备。值为0表示OwnDroid不参与控制超时。一般来说，最少1小时，最多72小时。</string>
 </resources>

@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import com.bintianqi.owndroid.dpm.addDeviceAdmin
 import com.bintianqi.owndroid.dpm.createManagedProfile
@@ -22,6 +23,9 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 lateinit var getFile: ActivityResultLauncher<Intent>
@@ -66,17 +70,13 @@ val exportFilePath = MutableStateFlow<String?>(null)
 fun registerActivityResult(context: ComponentActivity){
     getFile = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
         activityResult.data.let {
-            if(it == null){
-                Toast.makeText(context.applicationContext, R.string.file_not_exist, Toast.LENGTH_SHORT).show()
-            }else{
-                fileUriFlow.value = it.data
-            }
+            if(it != null) fileUriFlow.value = it.data
         }
     }
     createManagedProfile = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
     addDeviceAdmin = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         val dpm = context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        if(dpm.isAdminActive(ComponentName(context.applicationContext, Receiver::class.java))){
+        if(dpm.isAdminActive(ComponentName(context.applicationContext, Receiver::class.java))) {
             backToHomeStateFlow.value = true
         }
     }
@@ -123,7 +123,12 @@ fun formatFileSize(bytes: Long): String {
     }
 }
 
-@StringRes
-fun Boolean.yesOrNo(): Int {
-    return if(this) R.string.yes else R.string.no
+val Boolean.yesOrNo
+    @StringRes get() = if(this) R.string.yes else R.string.no
+
+@RequiresApi(26)
+fun parseTimestamp(timestamp: Long): String {
+    val instant = Instant.ofEpochMilli(timestamp)
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())
+    return formatter.format(instant)
 }

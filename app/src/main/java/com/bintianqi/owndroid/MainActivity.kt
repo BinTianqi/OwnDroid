@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -30,7 +31,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -48,6 +48,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -66,12 +67,14 @@ import com.bintianqi.owndroid.dpm.getReceiver
 import com.bintianqi.owndroid.dpm.isDeviceAdmin
 import com.bintianqi.owndroid.dpm.isDeviceOwner
 import com.bintianqi.owndroid.dpm.isProfileOwner
+import com.bintianqi.owndroid.dpm.setDefaultAffiliationID
 import com.bintianqi.owndroid.dpm.toggleInstallAppActivity
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import com.rosan.dhizuku.api.Dhizuku
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 import java.util.Locale
 
@@ -85,19 +88,19 @@ class MainActivity : FragmentActivity() {
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
-        val sharedPref = applicationContext.getSharedPreferences("data", Context.MODE_PRIVATE)
+        val context = applicationContext
+        val sharedPref = context.getSharedPreferences("data", MODE_PRIVATE)
         if (VERSION.SDK_INT >= 28) HiddenApiBypass.setHiddenApiExemptions("")
-        if(sharedPref.getBoolean("auth", false)) {
-            showAuth.value = true
-        }
-        val locale = applicationContext.resources?.configuration?.locale
+        if(sharedPref.getBoolean("auth", false)) showAuth.value = true
+        val locale = context.resources?.configuration?.locale
         zhCN = locale == Locale.SIMPLIFIED_CHINESE || locale == Locale.CHINESE || locale == Locale.CHINA
         toggleInstallAppActivity()
+        val vm by viewModels<MyViewModel>()
+        if(!vm.initialized) vm.initialize(context)
+        lifecycleScope.launch { delay(5000); setDefaultAffiliationID(context) }
         setContent {
-            val materialYou = remember { mutableStateOf(sharedPref.getBoolean("material_you", true)) }
-            val blackTheme = remember { mutableStateOf(sharedPref.getBoolean("black_theme", false)) }
-            OwnDroidTheme(materialYou.value, blackTheme.value) {
-                Home(materialYou, blackTheme)
+            OwnDroidTheme(vm) {
+                Home(vm)
                 if(showAuth.value) {
                     AuthScreen(this, showAuth)
                 }
@@ -107,7 +110,7 @@ class MainActivity : FragmentActivity() {
 
     override fun onResume() {
         super.onResume()
-        val sharedPref = applicationContext.getSharedPreferences("data", Context.MODE_PRIVATE)
+        val sharedPref = applicationContext.getSharedPreferences("data", MODE_PRIVATE)
         if(
             sharedPref.getBoolean("auth", false) &&
             sharedPref.getBoolean("lock_in_background", false)
@@ -128,7 +131,7 @@ class MainActivity : FragmentActivity() {
 
 @ExperimentalMaterial3Api
 @Composable
-fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>) {
+fun Home(vm: MyViewModel) {
     val navCtrl = rememberNavController()
     val context = LocalContext.current
     val dpm = context.getDPM()
@@ -154,14 +157,14 @@ fun Home(materialYou:MutableState<Boolean>, blackTheme:MutableState<Boolean>) {
         popExitTransition = Animations.navHostPopExitTransition
     ) {
         composable(route = "HomePage") { HomePage(navCtrl) }
-        composable(route = "SystemManage") { SystemManage(navCtrl) }
+        composable(route = "System") { SystemManage(navCtrl) }
         composable(route = "ManagedProfile") { ManagedProfile(navCtrl) }
         composable(route = "Permissions") { DpmPermissions(navCtrl) }
-        composable(route = "ApplicationManage") { ApplicationManage(navCtrl, dialogStatus) }
+        composable(route = "Applications") { ApplicationManage(navCtrl, dialogStatus) }
         composable(route = "UserRestriction") { UserRestriction(navCtrl) }
-        composable(route = "UserManage") { UserManage(navCtrl) }
+        composable(route = "Users") { UserManage(navCtrl) }
         composable(route = "Password") { Password(navCtrl) }
-        composable(route = "AppSetting") { AppSetting(navCtrl, materialYou, blackTheme) }
+        composable(route = "Settings") { AppSetting(navCtrl, vm) }
         composable(route = "Network") { Network(navCtrl) }
         composable(route = "PackageSelector") { PackageSelector(navCtrl) }
     }
@@ -234,7 +237,7 @@ private fun HomePage(navCtrl:NavHostController) {
                 if(activateType != "") { Text(text = activateType, color = colorScheme.onPrimary) }
             }
         }
-        HomePageItem(R.string.system_manage, R.drawable.mobile_phone_fill0, "SystemManage", navCtrl)
+        HomePageItem(R.string.system, R.drawable.android_fill0, "System", navCtrl)
         if(deviceOwner || profileOwner) { HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network", navCtrl) }
         if(
             (VERSION.SDK_INT < 24 && !deviceOwner) || (
@@ -244,13 +247,13 @@ private fun HomePage(navCtrl:NavHostController) {
         ) {
             HomePageItem(R.string.work_profile, R.drawable.work_fill0, "ManagedProfile", navCtrl)
         }
-        if(deviceOwner || profileOwner) HomePageItem(R.string.app_manager, R.drawable.apps_fill0, "ApplicationManage", navCtrl)
+        if(deviceOwner || profileOwner) HomePageItem(R.string.applications, R.drawable.apps_fill0, "Applications", navCtrl)
         if(VERSION.SDK_INT >= 24 && (profileOwner || deviceOwner)) {
             HomePageItem(R.string.user_restrict, R.drawable.person_off, "UserRestriction", navCtrl)
         }
-        HomePageItem(R.string.user_manager,R.drawable.manage_accounts_fill0,"UserManage", navCtrl)
+        HomePageItem(R.string.users,R.drawable.manage_accounts_fill0,"Users", navCtrl)
         HomePageItem(R.string.password_and_keyguard, R.drawable.password_fill0, "Password", navCtrl)
-        HomePageItem(R.string.setting, R.drawable.settings_fill0, "AppSetting", navCtrl)
+        HomePageItem(R.string.settings, R.drawable.settings_fill0, "Settings", navCtrl)
         Spacer(Modifier.padding(vertical = 20.dp))
     }
 }

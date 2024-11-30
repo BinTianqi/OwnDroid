@@ -4,10 +4,14 @@ import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -19,7 +23,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
@@ -37,16 +40,25 @@ fun SubPageItem(
     operation: () -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = operation).padding(top = 15.dp, bottom = 15.dp, start = 30.dp, end = 12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = operation)
+            .padding(start = 25.dp, end = 15.dp)
+            .padding(vertical = 12.dp + (if(desc != "") 0 else 3).dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if(icon != null) {
-            Icon(painter = painterResource(icon), contentDescription = stringResource(title), modifier = Modifier.padding(top = 1.dp))
-            Spacer(Modifier.padding(start = 15.dp))
-        }
+        if(icon != null) Icon(
+            painter = painterResource(icon),
+            contentDescription = null,
+            modifier = Modifier.padding(top = 1.dp, end = 20.dp).offset(x = (-2).dp)
+        )
         Column {
-            Text(text = stringResource(title), style = typography.titleLarge, modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
-            if(desc!="") { Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F)) }
+            Text(
+                text = stringResource(title),
+                style = typography.titleLarge,
+                modifier = Modifier.padding(bottom = if(zhCN) 2.dp else 0.dp)
+            )
+            if(desc != "") { Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F)) }
         }
     }
 }
@@ -157,22 +169,22 @@ fun SwitchItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = onClickBlank != null, onClick = onClickBlank?:{})
-            .padding(top = 5.dp, bottom = 5.dp, start = if(padding) 30.dp else 0.dp, end = if(padding) 12.dp else 0.dp)
+            .padding(start = if(padding) 25.dp else 0.dp, end = if(padding) 15.dp else 0.dp, top = 5.dp, bottom = 5.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.align(Alignment.CenterStart)
         ) {
-            if(icon != null) {
-                Icon(painter = painterResource(icon),contentDescription = null)
-                Spacer(Modifier.padding(start = 15.dp))
-            }
-            Column(modifier = Modifier.padding(end = 60.dp)) {
+            if(icon != null) Icon(
+                painter = painterResource(icon),
+                contentDescription = null,
+                modifier = Modifier.padding(end = 20.dp).offset(x = (-2).dp)
+            )
+            Column(modifier = Modifier.padding(end = 60.dp, bottom = if(zhCN) 2.dp else 0.dp)) {
                 Text(text = stringResource(title), style = typography.titleLarge)
-                if(desc!="") {
+                if(desc != "") {
                     Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F))
                 }
-                if(zhCN) { Spacer(Modifier.padding(vertical = 1.dp)) }
             }
         }
         Switch(
@@ -227,16 +239,60 @@ fun CopyTextButton(@StringRes label: Int, content: String) {
 }
 
 @Composable
-fun CardItem(@StringRes title: Int, @StringRes text: Int) {
-    CardItem(title, stringResource(text))
+fun CardItem(@StringRes title: Int, @StringRes text: Int, onClickInfo: (() -> Unit)? = null) {
+    CardItem(title, stringResource(text), onClickInfo)
 }
 
 @Composable
-fun CardItem(@StringRes title: Int, text: String) {
+fun CardItem(@StringRes title: Int, text: String, onClickInfo: (() -> Unit)? = null) {
     Card(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-        Text(text = stringResource(title), style = typography.titleLarge, modifier = Modifier.padding(start = 8.dp, top = 6.dp))
-        SelectionContainer {
-            Text(text = text, modifier = Modifier.padding(start = 8.dp, bottom = 6.dp))
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.fillMaxWidth(0.85F)) {
+                Text(text = stringResource(title), style = typography.titleLarge, modifier = Modifier.padding(start = 8.dp, top = 6.dp))
+                SelectionContainer {
+                    Text(text = text, modifier = Modifier.padding(start = 8.dp, bottom = 6.dp))
+                }
+            }
+            if(onClickInfo != null) IconButton(onClick = onClickInfo) {
+                Icon(imageVector = Icons.Outlined.Info, contentDescription = null)
+            }
         }
+    }
+}
+
+@Composable
+fun ListItem(text: String, onDelete: () -> Unit) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(15)).background(colorScheme.surfaceVariant)
+    ) {
+        Text(text = text, modifier = Modifier.padding(start = 12.dp))
+        IconButton(
+            onClick = onDelete
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.close_fill0),
+                contentDescription = stringResource(R.string.delete)
+            )
+        }
+    }
+}
+
+@Composable
+fun InfoCard(@StringRes strID: Int) {
+    Column(
+        modifier = Modifier
+            .padding(vertical = 8.dp)
+            .clip(RoundedCornerShape(10))
+            .background(color = colorScheme.tertiaryContainer)
+            .padding(8.dp)
+    ) {
+        Icon(imageVector = Icons.Outlined.Info, contentDescription = null, modifier = Modifier.padding(vertical = 4.dp))
+        Text(stringResource(strID))
     }
 }

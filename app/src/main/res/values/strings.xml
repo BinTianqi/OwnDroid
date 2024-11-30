@@ -23,6 +23,7 @@
     <string name="denied">Denied</string>
     <string name="grant">Grant</string>
     <string name="deny">Deny</string>
+    <string name="revoke">Revoke</string>
     <string name="current_state">Current status: %1$s</string>
     <string name="auto">Auto</string>
     <string name="password">Password</string>
@@ -39,7 +40,6 @@
     <string name="decide_by_user">Decide by user</string>
     <string name="unsupported">Unsupported</string>
     <string name="developing">Developing function</string>
-    <string name="unknown_effect">Unknown effect</string>
     <string name="options">Options</string>
     <string name="copy_command">Copy Command</string>
     <string name="package_name">Package name</string>
@@ -57,6 +57,12 @@
     <string name="delete">Delete</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="previous">Previous</string>
+    <string name="next">Next</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
+    <string name="alias">Alias</string>
+    <string name="unknown_error">Unknown error</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
@@ -68,6 +74,7 @@
     <string name="reset_device_policy">Reset device policy</string>
     <string name="activate_device_admin">Activate Device admin</string>
     <string name="activate_device_admin_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
+    <string name="activate_profile_owner_command" translatable="false">dpm set-profile-owner --user %1$s com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="activate_device_owner_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="device_info">Device info</string>
     <string name="support_device_id_attestation">Support Device ID attestation</string>
@@ -86,14 +93,13 @@
     <string name="disable_account_management">Disable account management</string>
     <string name="account_type">Account type</string>
     <string name="transfer_ownership">Transfer Ownership</string>
-    <string name="transfer_ownership_desc">Transfer device owner or profile owner privilege to another app.</string>
-    <string name="target_package_name">Target package name</string>
-    <string name="target_class_name">Target class name</string>
+    <string name="target_component_name">Target component name</string>
     <string name="device_owner_lock_screen_info">Lockscreen info</string>
     <string name="support_msg">Support Message</string>
     <string name="short_support_msg">Short message</string>
     <string name="long_support_msg">Long message</string>
     <string name="transfer">Transfer</string>
+    <string name="transfer_ownership_warning">%1$s privilege will be transferred to %2$s</string>
     <string name="activate_device_admin_here">Activate Device admin here.</string>
 
     <!--Receiver-->
@@ -125,7 +131,7 @@
     <string name="shizuku_not_bind">Shizuku disconnected</string>
 
     <!--System-->
-    <string name="system_manage">System manager</string>
+    <string name="system">System</string>
     <string name="disable_cam">Disable camera</string>
     <string name="disable_screen_capture">Disable screen capture</string>
     <string name="disable_status_bar">Disable status bar</string>
@@ -143,20 +149,14 @@
     <string name="bug_report">Bug report</string>
     <string name="confirm_bug_report">Request bug report?</string>
     <string name="reboot">Reboot</string>
-    <string name="confirm_reboot">Confirm reboot?</string>
-    <string name="edit_time">Edit time</string>
-    <string name="edit_timezone">Edit timezone</string>
-    <string name="view_all_timezones">View all timezones IDs</string>
-    <string name="hide_all_timezones">Hide all timezones IDs</string>
+    <string name="change_time">Change time</string>
+    <string name="change_timezone">Change timezone</string>
     <string name="timezone_id">Timezone ID</string>
     <string name="disable_auto_time_zone_before_set">Auto timezone should be disabled before set a custom timezone. </string>
-    <string name="from_epoch_to_target_time">From Epoch(1970/1/1 00:00:00 UTC) to the time you want to set(ms)</string>
-    <string name="get_current_time">Current time</string>
     <string name="permission_policy">Permission policy</string>
     <string name="auto_grant">Auto grant</string>
     <string name="auto_deny">Auto deny</string>
     <string name="mte_policy">MTE policy</string>
-    <string name="mte_policy_desc">MTE: Memory Tagging Extension, require Android 14 and ARMv9</string>
     <string name="nearby_app_streaming">Nearby App streaming policy</string>
     <string name="nearby_streaming_policy">Nearby streaming policy</string>
     <string name="nearby_notification_streaming">Nearby notification streaming policy</string>
@@ -220,14 +220,12 @@
 
     <!--Network-->
     <string name="network">Network</string>
-    <string name="wifi_mac_addr">Wi-Fi Mac address</string>
-    <string name="min_wifi_security_level">Min Wi-Fi security level</string>
+    <string name="wifi_mac_address">Wi-Fi Mac address</string>
+    <string name="min_wifi_security_level">Minimum Wi-Fi security level</string>
     <string name="wifi_security_open">Open</string>
-    <string name="preferential_network_service">Preferential network service</string>
     <string name="lockdown_admin_configured_network">Lockdown admin configured network</string>
-    <string name="wifi_ssid_policy">WiFi SSID policy</string>
+    <string name="wifi_ssid_policy">Wi-Fi SSID policy</string>
     <string name="ssid_list_is">SSID list:</string>
-    <string name="cannot_be_empty">Cannot be empty</string>
     <string name="already_exist">Already exist</string>
     <string name="private_dns">Private DNS</string>
     <string name="dns_provide_hostname">Provide hostname</string>
@@ -248,8 +246,18 @@
     <string name="log_file_size_is">Log file size: %1$s</string>
     <string name="delete_logs">Delete logs</string>
     <string name="export_logs">Export logs</string>
-    <string name="wifi_auth_keypair">WiFi keypair</string>
+    <string name="wifi_auth_keypair">Wi-Fi keypair</string>
     <string name="keypair">Keypair</string>
+    <string name="preferential_network_service">Preferential network service</string>
+    <string name="network_id">Network ID</string>
+    <string name="allow_fallback_to_default_connection">Allow fallback to default connection</string>
+    <string name="block_non_matching_networks">Block non matching networks</string>
+    <string name="included_uids">Included UIDs</string>
+    <string name="excluded_uids">Excluded UIDs</string>
+    <string name="one_uid_per_line">One UID per line</string>
+    <string name="failed_to_save_current_config">Failed to save current config</string>
+    <string name="save_current_config">Save current config</string>
+    <string name="delete_current_config">Delete current config</string>
     <string name="override_apn_settings">APN settings</string>
     <string name="total_apn_amount">APN settings amount: %1$s</string>
     <string name="select_a_apn_or_create">Select an APN setting you want to edit (1~%1$s) or enter 0 to create a new APN setting. </string>
@@ -302,8 +310,8 @@
     <string name="length_6_to_64">The length should be between 6~64 characters</string>
     <string name="delete_work_profile">Delete work profile</string>
 
-    <!--AppManager-->
-    <string name="app_manager">App manager</string>
+    <!--Applications-->
+    <string name="applications">Applications</string>
     <string name="pkg_selector">Package selector</string>
     <string name="loading">Loading</string>
     <string name="show_user_app">Show user apps</string>
@@ -325,7 +333,6 @@
     <string name="ucd">Disable user control</string>
     <string name="ucd_desc">If you set this, you cannot clear these apps\' storage or force stop them. </string>
     <string name="app_list_is">App list:</string>
-    <string name="clear_list">Clear list</string>
     <string name="permission_manage">Permission manage</string>
     <string name="cross_profile_package">Cross profile package</string>
     <string name="cross_profile_widget">Cross profile widget</string>
@@ -370,21 +377,19 @@
     <string name="some_features_invalid_in_work_profile">Functions in work profile is limited. </string>
     <string name="network_internet">Network</string>
     <string name="more_connectivity">Other connection</string>
-    <string name="applications">Applications</string>
-    <string name="users">User</string>
     <string name="media">Media</string>
     <string name="other">Other</string>
     <string name="require_device_owner">Require device owner</string>
     <string name="config_mobile_network">Configure mobile network</string>
-    <string name="config_wifi">Configure WiFi</string>
+    <string name="config_wifi">Configure Wi-Fi</string>
     <string name="data_roaming">Data roaming</string>
     <string name="cellular_2g">2G cellular</string>
     <string name="ultra_wideband_radio">Ultra wideband radio</string>
-    <string name="add_wifi_conf">Add WiFi config</string>
-    <string name="change_wifi_state">Change WiFi status</string>
-    <string name="wifi_direct">WiFi direct</string>
-    <string name="wifi_tethering">WiFi tethering</string>
-    <string name="share_admin_wifi">Share admin configured WiFi</string>
+    <string name="add_wifi_conf">Add Wi-Fi config</string>
+    <string name="change_wifi_state">Change Wi-Fi status</string>
+    <string name="wifi_direct">Wi-Fi direct</string>
+    <string name="wifi_tethering">Wi-Fi tethering</string>
+    <string name="share_admin_wifi">Share admin configured Wi-Fi</string>
     <string name="network_reset">Reset network</string>
     <string name="config_tethering">Configure tethering</string>
     <string name="config_vpn">Configure VPN</string>
@@ -440,30 +445,33 @@
     <string name="safe_boot">Safe boot</string>
     <string name="debug_features">Debug features</string>
 
-    <!--UserManage-->
-    <string name="user_manager">User manager</string>
+    <!--Users-->
+    <string name="users">Users</string>
     <string name="enable_logout">Enable logout</string>
-    <string name="edit_username">Edit username</string>
+    <string name="change_username">Change username</string>
     <string name="start_user_session_msg">Start user session message</string>
     <string name="end_user_session_msg">End user session message</string>
     <string name="user_info">User info</string>
     <string name="support_multiuser">Support multiuser</string>
     <string name="system_user">System user</string>
     <string name="admin_user">Admin user</string>
-    <string name="headless_system_user">Headless system user</string>
+    <string name="demo_user">Demo user</string>
+    <string name="headless_system_user_mode">Headless system user mode</string>
+    <string name="creation_time">Creation time</string>
     <string name="logout_enabled">Logout enabled</string>
     <string name="ephemeral_user">Ephemeral user</string>
     <string name="affiliated_user">Affiliated user</string>
     <string name="user_id">UserID</string>
     <string name="user_serial_number">User serial number</string>
+    <string name="secondary_users">Secondary users</string>
+    <string name="no_secondary_users">No secondary users</string>
     <string name="user_operation">User operation</string>
+    <string name="user_not_exist">User does not exist</string>
     <string name="serial_number">Serial number</string>
     <string name="use_uid">Use UID</string>
     <string name="logout_current_user">Logout current user</string>
     <string name="start_in_background">Start in background</string>
     <string name="user_operation_switch">Switch</string>
-    <string name="user_operation_stop">Stop</string>
-    <string name="user_operation_remove">Remove</string>
     <string name="create_user">Create user</string>
     <string name="username">Username</string>
     <string name="create_user_skip_wizard">Skip wizard</string>
@@ -471,7 +479,6 @@
     <string name="create_user_enable_all_system_app">Enable all system app</string>
     <string name="serial_number_of_new_user_is">Serial number of this user: %1$s</string>
     <string name="affiliation_id">Affiliation ID</string>
-    <string name="include_empty_string">Include empty string</string>
     <string name="change_user_icon">Change user icon</string>
     <string name="file_picker_instead_gallery">Use file picker instead of gallery</string>
     <string name="select_picture" tools:ignore="TypographyEllipsis">Select image...</string>
@@ -485,14 +492,11 @@
     <string name="password_info">Password Info</string>
     <string name="reset_pwd_desc">Keep empty to remove password</string>
     <string name="max_pwd_fail">Max failed passwords</string>
-    <string name="max_pwd_fail_desc">When reach this limit, the device will be factory reset</string>
     <string name="max_pwd_fail_textfield">Maximum failed attempts</string>
     <string name="pwd_expiration_timeout">Password expiration timeout</string>
     <string name="max_time_to_lock">Screen timeout</string>
     <string name="required_strong_auth_timeout">Required strong auth timeout</string>
-    <string name="zero_means_no_restriction">0 means no restriction</string>
     <string name="pwd_history">Password history length</string>
-    <string name="pwd_history_desc">Historical passwords within the specified range cannot be set by user</string>
     <string name="password_complexity_none">None (No password allowed)</string>
     <string name="password_complexity_low">Low (Gesture password and characters repetition allowed)</string>
     <string name="password_complexity_medium">Medium (Repetition disallowed, 4 characters at least)</string>
@@ -539,16 +543,15 @@
     <string name="activate_reset_password_token_here">Activate reset password token here. </string>
 
     <!--Settings&About-->
-    <string name="setting">Settings</string>
+    <string name="settings">Settings</string>
     <string name="show_dangerous_features">Show dangerous features</string>
     <string name="material_you_color">Material you color</string>
-    <string name="dynamic_color_desc">Android 12+</string>
+    <string name="dark_theme">Dark theme</string>
+    <string name="follow_system">Follow system</string>
+    <string name="black_theme">Black theme</string>
     <string name="about">About</string>
-    <string name="user_guide">User guide</string>
-    <string name="source_code">Source code</string>
-    <string name="theme">Theme</string>
-    <string name="amoled_black">Black theme</string>
-    <string name="blackTheme_desc">Require dark mode on</string>
+    <string name="project_homepage">Project homepage</string>
+    <string name="appearance">Appearance</string>
 
     <string name="security">Security</string>
     <string name="lock_owndroid">Lock OwnDroid</string>
@@ -603,4 +606,53 @@
     <string name="version_name">Version name</string>
     <string name="version_code">Version code</string>
     <string name="parsing_apk_info" tools:ignore="TypographyEllipsis">Parsing APK info...</string>
+
+    <string name="info_dhizuku">Dhizuku is a tool that can share Device owner permissions to other application.</string>
+    <string name="info_device_id_attestation">Indicates if the device supports attestation of device identifiers in addition to key attestation.</string>
+    <string name="info_unique_device_attestation">Yes if the StrongBox Keymaster implementation on the device was provisioned with an individual attestation certificate and can sign attestation records using it (only Keymaster with StrongBox security level can use an individual attestation certificate).</string>
+    <string name="info_org_id">Sets the Enterprise ID. This is a requirement for generating an enrollment-specific ID for the device.</string>
+    <string name="info_enrollment_specific_id">The identifier would be consistent even if the work profile is removed and create again (to the same Organization ID), or the device is factory reset and re-enrolled.</string>
+    <string name="info_lock_screen_info">Show a brief message on your lock screen.\nOverrides any owner information manually set by the user and prevents the user from further changing it.</string>
+    <string name="info_short_support_message">This will be displayed to the user in settings screens where functionality has been disabled by the admin. If the message is longer than 200 characters it may be truncated</string>
+    <string name="info_long_support_message">This will be displayed to the user in the device administrators settings screen. If the message is longer than 20000 characters it may be truncated.</string>
+    <string name="info_transfer_ownership">Changes the current administrator to another one. All policies from the current administrator are migrated to the new administrator.</string>
+    <string name="info_backup_service">Each user has its own backup service which manages the backup and restore mechanisms in that user. Disabling the backup service will prevent data from being backed up or restored.\nFor a managed user its backup functionality is only enabled if both the device owner and the profile owner have enabled the backup service.</string>
+    <string name="info_common_criteria_mode">When the device is in Common Criteria mode, certain device functionalities are tuned to meet the higher security level required by Common Criteria certification.</string>
+    <string name="info_disable_keyguard">Setting the keyguard to disabled has the same effect as choosing "None" as the screen lock type. However, this call has no effect if a password, pin or pattern is currently set.\nIf a password, pin or pattern is set after the keyguard was disabled, the keyguard stops being disabled.</string>
+    <string name="info_evict_credential_encryption_key">Evict the user\'s credential encryption key from the keyring. The user\'s credential will need to be entered again in order to derive the credential encryption key that will be stored back in the keyring for future use. In order to secure user data, the user will be stopped and restarted.</string>
+    <string name="info_reboot">You can\'t use this function if there is an ongoing call on the device.</string>
+    <string name="info_change_time">Input UNIX time in milliseconds</string>
+    <string name="info_permission_policy">Set the default response for future runtime permission requests by applications.</string>
+    <string name="info_mte_policy">Set the Memory Tagging Extension policy. Reboot the device to apply changes.</string>
+    <string name="info_nearby_app_streaming_policy">App streaming is when the device starts an app on a virtual display and sends a video stream of the app to nearby devices.</string>
+    <string name="info_nearby_notification_streaming_policy">Notification streaming is sending notification data from pre-installed apps to nearby devices.</string>
+    <string name="info_lock_task_packages">Only packages in lock task packages list can be launched in lock task mode.</string>
+    <string name="info_start_lock_task_mode">If you allow notifications in Lock task features, OwnDroid will pop a notification when lock task mode start successfully. You can exit lock task mode by click that notification.</string>
+    <string name="info_security_log">If a Device owner use this function, all users should be affiliated.</string>
+    <string name="info_pre_reboot_security_log">Not all devices support pre-reboot security logs.</string>
+    <string name="info_disable_account_management">When account management is disabled for an account type, adding or removing an account of that type will not be possible.</string>
+    <string name="info_frp_policy">FRP can protect the device after untrusted factory reset (in Recovery or Fastboot).\nTo enable this feature, the device must support persistent data block service.</string>
+    <string name="info_wipe_data_in_managed_user">All data of this user will be wiped, but that user won\'t be removed.</string>
+    <string name="info_lockdown_admin_configured_network">Control whether the user can change networks configured by the admin.\nWhen this lockdown is enabled, the user can still configure and connect to other Wi-Fi networks, or use other Wi-Fi capabilities such as tethering.</string>
+    <string name="info_minimum_wifi_security_level">Specify the minimum security level required for Wi-Fi networks. The device may not connect to networks that do not meet the minimum security level. If the current network does not meet the minimum security level set, it will be disconnected.</string>
+    <string name="info_private_dns_mode_oppertunistic">In this mode, the DNS subsystem will attempt a TLS handshake to the network-supplied resolver prior to attempting name resolution in cleartext.</string>
+    <string name="info_set_private_dns_host">It will perform a connectivity check to the resolver, to ensure it is valid.\nIn case a VPN is used in conjunction with Private DNS resolver, the Private DNS resolver must be reachable both from within and outside the VPN. Otherwise, the device may lose the ability to resolve hostnames as system traffic to the resolver may not go through the VPN.</string>
+    <string name="info_always_on_vpn">Configure an always-on VPN connection through a specific application for the current user. This connection is automatically granted and persisted after a reboot.\nEnable lockdown: Disallow networking when the VPN is not connected.</string>
+    <string name="info_recommended_global_proxy">This proxy is only a recommendation and it is possible that some apps will ignore it.</string>
+    <string name="info_network_log">Network logs contain DNS lookup and connect() library call events.\nUse this function in work profile will only retrieve network logs in work profile.\nThere shouldn\'t be unaffiliated user on this device if used by Device owner.</string>
+    <string name="info_profile_maximum_time_off">Set maximum time the profile is allowed to be turned off. If the profile is turned off for longer, personal apps are suspended on the device.\nThe minimum non-zero value corresponds to 72 hours. If an admin sets a smaller non-zero vaulue, 72 hours will be set instead.</string>
+    <string name="info_cross_profile_intent_filter">Add cross profile intent filters so that some intents sent in the managed profile can also be resolved in the parent, or vice versa. Only activity intents are supported.</string>
+    <string name="info_suspend_app">A suspended package will not be able to start activities. Its notifications will be hidden, it will not show up in recent activities, will not be able to show toasts or dialogs or ring the device.\nSome apps cannot be suspended, such as device admins, the active launcher and the default dialer.</string>
+    <string name="info_disable_user_control">User will not be able to clear app data or force-stop packages.</string>
+    <string name="info_keep_uninstalled_apps">Set a list of apps to keep around as APKs even if no user has currently installed it. </string>
+    <string name="info_headless_system_user_mode">Headless system user mode means the system user runs system services and some system UI, but it is not associated with any real person and additional users must be created to be associated with real persons.</string>
+    <string name="info_user_operation">It is recommended to specify a user with serial number, you can also use UID, the UID should be any of the apps in the target user.</string>
+    <string name="info_affiliated_id">When Device owner create a managed user, the managed user isn\'t affiliated. In order to make the managed user affiliated with the Device owner, you should set same affiliated IDs in main user and managed user</string>
+    <string name="info_reset_password">Set a new lockscreen password. The length of this password must be at least 4 digits. Keep it empty to remove password.\nIf you set a numeric password that length is 6 or lower, it will set as PIN</string>
+    <string name="info_screen_timeout">Set the maximum time for user activity until the device will lock. This limits the length that the user can set.\nA value of 0 means there is no restriction.</string>
+    <string name="info_password_expiration_timeout">Restart the countdown for password expiration.\nA value of 0 means there is no restriction.</string>
+    <string name="info_max_failed_password_system_user">Setting this to a value greater than zero enables a policy that the device will be factory reset after too many incorrect device-unlock passwords have been entered.</string>
+    <string name="info_max_failed_password_other_user">Setting this to a value greater than zero enables a policy that will wipe this user after too many incorrect unlock password have been entered.</string>
+    <string name="info_password_history_length">After setting this, the user will not be able to enter a new password that is the same as any password in the history. Note that the current password will remain until the user has set a new one, so the change does not take place immediately.\nA value of 0 means there is no restriction.</string>
+    <string name="info_required_strong_auth_timeout">Determine for how long the user will be able to use secondary, non strong auth for authentication, since last strong method authentication (password, pin or pattern) was used. After the returned timeout the user is required to use strong authentication method.\nA value of 0 means the admin is not participating in controlling the timeout. The minimum and maximum timeouts are platform-defined and are typically 1 hour and 72 hours, respectively.</string>
 </resources>
