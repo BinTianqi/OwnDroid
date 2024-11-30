@@ -68,6 +68,14 @@ android {
     }
 }
 
+kotlin {
+    sourceSets {
+        all {
+            languageSettings.optIn("kotlinx.serialization.ExperimentalSerializationApi")
+        }
+    }
+}
+
 gradle.taskGraph.whenReady {
     project.tasks.findByPath(":app:test")?.enabled = false
     project.tasks.findByPath(":app:lint")?.enabled = false

@@ -239,7 +239,7 @@ private fun toggleDhizukuMode(status: Boolean, context: Context) {
     }
     if(Dhizuku.isPermissionGranted()) {
         sharedPref.edit().putBoolean("dhizuku", true).apply()
-        Dhizuku.init()
+        Dhizuku.init(context)
         backToHomeStateFlow.value = true
     } else {
         Dhizuku.requestPermission(object: DhizukuRequestPermissionListener() {
@@ -247,7 +247,7 @@ private fun toggleDhizukuMode(status: Boolean, context: Context) {
             override fun onRequestPermission(grantResult: Int) {
                 if(grantResult == PackageManager.PERMISSION_GRANTED) {
                     sharedPref.edit().putBoolean("dhizuku", true).apply()
-                    Dhizuku.init()
+                    Dhizuku.init(context)
                     context.toggleInstallAppActivity()
                     backToHomeStateFlow.value = true
                 } else {

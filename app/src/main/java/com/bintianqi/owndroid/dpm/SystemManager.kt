@@ -127,9 +127,11 @@ import com.bintianqi.owndroid.ui.TopBar
 import com.bintianqi.owndroid.uriToStream
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.addJsonObject
+import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.encodeToStream
+import kotlinx.serialization.json.put
 import java.util.Date
 import java.util.TimeZone
 import java.util.concurrent.Executors
@@ -1000,7 +1002,6 @@ private fun CaCert() {
     }
 }
 
-@OptIn(ExperimentalSerializationApi::class)
 @SuppressLint("NewApi")
 @Composable
 private fun SecurityLogs() {
@@ -1053,19 +1054,21 @@ private fun SecurityLogs() {
                     Toast.makeText(context, R.string.no_logs, Toast.LENGTH_SHORT).show()
                     return@Button
                 } else {
-                    val logsList = mutableListOf<SecurityEventItem>()
-                    logs.forEach {
-                        logsList += SecurityEventItem(
-                            id = if(VERSION.SDK_INT >= 28) it.id else null,
-                            tag = it.tag, timeNanos = it.timeNanos,
-                            logLevel = if(VERSION.SDK_INT >= 28) it.logLevel else null,
-                            data = it.data.toString()
-                        )
+                    val securityEvents = buildJsonArray {
+                        logs.forEach { event ->
+                            addJsonObject {
+                                put("time_nanos", event.timeNanos)
+                                put("tag", event.tag)
+                                if(VERSION.SDK_INT >= 28) put("level", event.logLevel)
+                                if(VERSION.SDK_INT >= 28) put("id", event.id)
+                                parseSecurityEventData(event).let { if(it != null) put("data", it) }
+                            }
+                        }
                     }
                     val preRebootSecurityLogs = context.filesDir.resolve("PreRebootSecurityLogs")
                     preRebootSecurityLogs.outputStream().use {
                         val json = Json { ignoreUnknownKeys = true; explicitNulls = false }
-                        json.encodeToStream(logsList, it)
+                        json.encodeToStream(securityEvents, it)
                     }
                     val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
                     intent.addCategory(Intent.CATEGORY_OPENABLE)
