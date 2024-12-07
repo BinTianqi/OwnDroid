@@ -153,7 +153,7 @@ private fun binderWrapperPackageInstaller(appContext: Context): PackageInstaller
 fun Context.getPI(): PackageInstaller {
     val sharedPref = this.getSharedPreferences("data", Context.MODE_PRIVATE)
     if(sharedPref.getBoolean("dhizuku", false)) {
-        if (!Dhizuku.isPermissionGranted()) {
+        if (!dhizukuPermissionGranted()) {
             dhizukuErrorStatus.value = 2
             backToHomeStateFlow.value = true
             return this.packageManager.packageInstaller
@@ -167,7 +167,7 @@ fun Context.getPI(): PackageInstaller {
 fun Context.getDPM(): DevicePolicyManager {
     val sharedPref = this.getSharedPreferences("data", Context.MODE_PRIVATE)
     if(sharedPref.getBoolean("dhizuku", false)) {
-        if (!Dhizuku.isPermissionGranted()) {
+        if (!dhizukuPermissionGranted()) {
             dhizukuErrorStatus.value = 2
             backToHomeStateFlow.value = true
             return this.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
@@ -193,7 +193,7 @@ fun Context.resetDevicePolicy() {
     val dpm = getDPM()
     val receiver = getReceiver()
     RestrictionData.getAllRestrictions().forEach {
-        dpm.clearUserRestriction(receiver, it)
+        dpm.clearUserRestriction(receiver, it.id)
     }
     dpm.accountTypesWithManagementDisabled?.forEach {
         dpm.setAccountManagementDisabled(receiver, it, false)
@@ -428,7 +428,7 @@ fun parseSecurityEventData(event: SecurityLog.SecurityEvent): JsonElement? {
             val payload = event.data as Array<*>
             buildJsonObject {
                 put("mac", payload[0] as String)
-                (payload[2] as String).let { if(it != "") put("reason", it) }
+                (payload[1] as String).let { if(it != "") put("reason", it) }
             }
         }
         SecurityLog.TAG_CAMERA_POLICY_SET -> {
@@ -619,3 +619,11 @@ fun setDefaultAffiliationID(context: Context) {
         }
     }
 }
+
+fun dhizukuPermissionGranted() =
+    try {
+        Dhizuku.isPermissionGranted()
+    } catch(_: Exception) {
+        false
+    }
+

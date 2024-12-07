@@ -90,7 +90,7 @@ import com.bintianqi.owndroid.ui.Information
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.RadioButtonItem
-import com.bintianqi.owndroid.ui.SubPageItem
+import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import java.util.concurrent.Executors
 
@@ -119,7 +119,7 @@ fun ApplicationManage(navCtrl:NavHostController, dialogStatus: MutableIntState) 
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
                         trailingIcon = {
-                            Icon(painter = painterResource(R.drawable.checklist_fill0), contentDescription = null,
+                            Icon(painter = painterResource(R.drawable.list_fill0), contentDescription = null,
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(50))
                                     .clickable(onClick = {
@@ -216,7 +216,7 @@ private fun Home(
         if(VERSION.SDK_INT >= 24 && profileOwner && dpm.isManagedProfile(receiver)) {
             Text(text = stringResource(R.string.scope_is_work_profile), textAlign = TextAlign.Center,modifier = Modifier.fillMaxWidth())
         }
-        SubPageItem(R.string.app_info,"", R.drawable.open_in_new) { 
+        FunctionItem(R.string.app_info,"", R.drawable.open_in_new) {
             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
             intent.setData(Uri.parse("package:$pkgName"))
             startActivity(context, intent, null)
@@ -242,37 +242,37 @@ private fun Home(
             onClickBlank = { appControlAction = 3; appControlDialog = true }
         )
         if((VERSION.SDK_INT >= 33 && profileOwner) || (VERSION.SDK_INT >= 30 && deviceOwner)) {
-            SubPageItem(R.string.ucd, "", R.drawable.do_not_touch_fill0) { navCtrl.navigate("UserControlDisabled") }
+            FunctionItem(R.string.ucd, "", R.drawable.do_not_touch_fill0) { navCtrl.navigate("UserControlDisabled") }
         }
         if(VERSION.SDK_INT>=23) {
-            SubPageItem(R.string.permission_manage, "", R.drawable.key_fill0) { navCtrl.navigate("PermissionManage") }
+            FunctionItem(R.string.permission_manage, "", R.drawable.key_fill0) { navCtrl.navigate("PermissionManage") }
         }
         if(VERSION.SDK_INT >= 30 && profileOwner && dpm.isManagedProfile(receiver)) {
-            SubPageItem(R.string.cross_profile_package, "", R.drawable.work_fill0) { navCtrl.navigate("CrossProfilePackage") }
+            FunctionItem(R.string.cross_profile_package, "", R.drawable.work_fill0) { navCtrl.navigate("CrossProfilePackage") }
         }
         if(profileOwner) { 
-            SubPageItem(R.string.cross_profile_widget, "", R.drawable.widgets_fill0) { navCtrl.navigate("CrossProfileWidget") }
+            FunctionItem(R.string.cross_profile_widget, "", R.drawable.widgets_fill0) { navCtrl.navigate("CrossProfileWidget") }
         }
         if(VERSION.SDK_INT >= 34 && deviceOwner) {
-            SubPageItem(R.string.credential_manage_policy, "", R.drawable.license_fill0) { navCtrl.navigate("CredentialManagePolicy") }
+            FunctionItem(R.string.credential_manage_policy, "", R.drawable.license_fill0) { navCtrl.navigate("CredentialManagePolicy") }
         }
-        SubPageItem(R.string.permitted_accessibility_services, "", R.drawable.settings_accessibility_fill0) { navCtrl.navigate("Accessibility") }
-        SubPageItem(R.string.permitted_ime, "", R.drawable.keyboard_fill0) { navCtrl.navigate("IME") }
-        SubPageItem(R.string.enable_system_app, "", R.drawable.enable_fill0) {
+        FunctionItem(R.string.permitted_accessibility_services, "", R.drawable.settings_accessibility_fill0) { navCtrl.navigate("Accessibility") }
+        FunctionItem(R.string.permitted_ime, "", R.drawable.keyboard_fill0) { navCtrl.navigate("IME") }
+        FunctionItem(R.string.enable_system_app, "", R.drawable.enable_fill0) {
             if(pkgName != "") dialogStatus.intValue = 1
         }
         if(VERSION.SDK_INT >= 28 && deviceOwner) {
-            SubPageItem(R.string.keep_uninstalled_packages, "", R.drawable.delete_fill0) { navCtrl.navigate("KeepUninstalled") }
+            FunctionItem(R.string.keep_uninstalled_packages, "", R.drawable.delete_fill0) { navCtrl.navigate("KeepUninstalled") }
         }
         if(VERSION.SDK_INT >= 28) {
-            SubPageItem(R.string.clear_app_storage, "", R.drawable.mop_fill0) {
+            FunctionItem(R.string.clear_app_storage, "", R.drawable.mop_fill0) {
                 if(pkgName != "") dialogStatus.intValue = 2
             }
         }
-        SubPageItem(R.string.install_app, "", R.drawable.install_mobile_fill0) { navCtrl.navigate("InstallApp") }
-        SubPageItem(R.string.uninstall_app, "", R.drawable.delete_fill0) { navCtrl.navigate("UninstallApp") }
+        FunctionItem(R.string.install_app, "", R.drawable.install_mobile_fill0) { navCtrl.navigate("InstallApp") }
+        FunctionItem(R.string.uninstall_app, "", R.drawable.delete_fill0) { navCtrl.navigate("UninstallApp") }
         if(VERSION.SDK_INT >= 34 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            SubPageItem(R.string.set_default_dialer, "", R.drawable.call_fill0) {
+            FunctionItem(R.string.set_default_dialer, "", R.drawable.call_fill0) {
                 if(pkgName != "") dialogStatus.intValue = 3
             }
         }

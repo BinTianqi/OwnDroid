@@ -58,6 +58,9 @@ jobs:
           name: OwnDroid-CI-${{ env.SHORT_SHA }}-release-signed
           path: app/build/outputs/apk/release/app-release.apk
 
+      - name: Generate and submit dependency graph
+        uses: gradle/actions/dependency-submission@v4
+
   upload-telegram:
     name: Upload Builds
     if: ${{ success() }}

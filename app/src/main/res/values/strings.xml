@@ -94,8 +94,8 @@
     <string name="account_type">Account type</string>
     <string name="transfer_ownership">Transfer Ownership</string>
     <string name="target_component_name">Target component name</string>
-    <string name="device_owner_lock_screen_info">Lockscreen info</string>
-    <string name="support_msg">Support Message</string>
+    <string name="lock_screen_info">Lockscreen info</string>
+    <string name="support_messages">Support Messages</string>
     <string name="short_support_msg">Short message</string>
     <string name="long_support_msg">Long message</string>
     <string name="transfer">Transfer</string>
@@ -181,7 +181,7 @@
     <string name="cert_installed">Certificate installed: %1$s</string>
     <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Select certificate...</string>
     <string name="uninstall_all_user_ca_cert">Uninstall all user CA certificate</string>
-    <string name="security_logs">Security logs</string>
+    <string name="security_logging">Security logging</string>
     <string name="pre_reboot_security_logs">Pre-reboot security logs</string>
     <string name="wipe_data">Wipe data</string>
     <string name="wipe_external_storage">Wipe external storage</string>
@@ -192,7 +192,6 @@
     <string name="wipe_work_profile_warning">Your work profile will be DELETED</string>
     <string name="encryption_status">Encryption status</string>
     <string name="frp_policy">FRP policy</string>
-    <string name="factory_reset_protection_policy">Factory reset protection policy</string>
     <string name="frp_policy_not_supported">FRP policy is not supported on this device</string>
     <string name="enable_frp">Enable FRP</string>
     <string name="account_list_is">"Account list: "</string>
@@ -242,12 +241,11 @@
     <string name="specify_port">Specify port</string>
     <string name="invalid_config">Invalid config</string>
     <string name="exclude_hosts">Exclude hosts</string>
-    <string name="retrieve_net_logs">Network logs</string>
+    <string name="network_logging">Network logging</string>
     <string name="log_file_size_is">Log file size: %1$s</string>
     <string name="delete_logs">Delete logs</string>
     <string name="export_logs">Export logs</string>
     <string name="wifi_auth_keypair">Wi-Fi keypair</string>
-    <string name="keypair">Keypair</string>
     <string name="preferential_network_service">Preferential network service</string>
     <string name="network_id">Network ID</string>
     <string name="allow_fallback_to_default_connection">Allow fallback to default connection</string>
@@ -290,7 +288,6 @@
     <string name="migrate_account">Migrate account</string>
     <string name="account_name">Account name</string>
     <string name="keep_account">Keep account</string>
-    <string name="is_org_owned_profile">Organization owned work profile: %1$s</string>
     <string name="org_owned_work_profile">Organization work profile</string>
     <string name="activate_org_profile_command" tools:ignore="TypographyDashes" translatable="false">
         dpm mark-profile-owner-on-organization-owned-device --user %1$s com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver
@@ -322,7 +319,7 @@
     <string name="always_on_vpn">Always-on VPN</string>
     <string name="enable_lockdown">Enable lockdown</string>
     <string name="clear_current_config">Clear current config</string>
-    <string name="permission">Permission</string>
+    <string name="permissions">Permissions</string>
     <string name="scope_is_work_profile">Scope: work profile</string>
     <string name="app_info">App info</string>
     <string name="not_installed">Not installed</string>
@@ -371,12 +368,12 @@
     <string name="status_fail_timeout">Fail: timeout</string>
 
     <!--UserRestriction-->
-    <string name="user_restrict">User restriction</string>
+    <string name="user_restriction">User restriction</string>
     <string name="profile_owner_is_restricted">Profile owner can use limited function</string>
     <string name="switch_to_disable_feature">Turn on a switch to disable that function. </string>
     <string name="some_features_invalid_in_work_profile">Functions in work profile is limited. </string>
-    <string name="network_internet">Network</string>
-    <string name="more_connectivity">Other connection</string>
+    <string name="network_and_internet">Network</string>
+    <string name="connectivity">Other connection</string>
     <string name="media">Media</string>
     <string name="other">Other</string>
     <string name="require_device_owner">Require device owner</string>
@@ -482,7 +479,6 @@
     <string name="change_user_icon">Change user icon</string>
     <string name="file_picker_instead_gallery">Use file picker instead of gallery</string>
     <string name="select_picture" tools:ignore="TypographyEllipsis">Select image...</string>
-    <string name="unknown_result">Unknown result(may failed)</string>
     <string name="fail_managed_profile">Failed: managed profile</string>
     <string name="fail_current_user">Failed: current user</string>
     <string name="user_session_msg">User session message</string>
@@ -631,7 +627,7 @@
     <string name="info_security_log">If a Device owner use this function, all users should be affiliated.</string>
     <string name="info_pre_reboot_security_log">Not all devices support pre-reboot security logs.</string>
     <string name="info_disable_account_management">When account management is disabled for an account type, adding or removing an account of that type will not be possible.</string>
-    <string name="info_frp_policy">FRP can protect the device after untrusted factory reset (in Recovery or Fastboot).\nTo enable this feature, the device must support persistent data block service.</string>
+    <string name="info_frp_policy">Factory reset protection can protect the device after untrusted factory reset (in Recovery or Fastboot).\nTo enable this feature, the device must support persistent data block service.</string>
     <string name="info_wipe_data_in_managed_user">All data of this user will be wiped, but that user won\'t be removed.</string>
     <string name="info_lockdown_admin_configured_network">Control whether the user can change networks configured by the admin.\nWhen this lockdown is enabled, the user can still configure and connect to other Wi-Fi networks, or use other Wi-Fi capabilities such as tethering.</string>
     <string name="info_minimum_wifi_security_level">Specify the minimum security level required for Wi-Fi networks. The device may not connect to networks that do not meet the minimum security level. If the current network does not meet the minimum security level set, it will be disconnected.</string>

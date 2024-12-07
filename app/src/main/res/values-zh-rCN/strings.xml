@@ -87,8 +87,8 @@
     <string name="account_type">账号类型</string>
     <string name="transfer_ownership">转移所有权</string>
     <string name="target_component_name">目标组件名</string>
-    <string name="device_owner_lock_screen_info">锁屏提示信息</string>
-    <string name="support_msg">提供支持的消息</string>
+    <string name="lock_screen_info">锁屏提示信息</string>
+    <string name="support_messages">提供支持的消息</string>
     <string name="short_support_msg">提供支持的短消息</string>
     <string name="long_support_msg">提供支持的长消息</string>
     <string name="transfer">转移</string>
@@ -172,7 +172,7 @@
     <string name="cert_installed">证书已安装：%1$s</string>
     <string name="select_ca_cert" tools:ignore="TypographyEllipsis">选择证书...</string>
     <string name="uninstall_all_user_ca_cert">卸载所有用户证书</string>
-    <string name="security_logs">安全日志</string>
+    <string name="security_logging">安全日志</string>
     <string name="pre_reboot_security_logs">重启前安全日志</string>
     <string name="wipe_data">清除数据</string>
     <string name="wipe_external_storage">清除外部存储</string>
@@ -183,7 +183,6 @@
     <string name="wipe_work_profile_warning">你的工作资料将会被删除</string>
     <string name="encryption_status">加密状态</string>
     <string name="frp_policy">FRP策略</string>
-    <string name="factory_reset_protection_policy">恢复出厂设置保护策略</string>
     <string name="frp_policy_not_supported">这个设备不支持恢复出厂设置保护策略</string>
     <string name="enable_frp">启用FRP</string>
     <string name="account_list_is">账户列表：</string>
@@ -232,12 +231,11 @@
     <string name="specify_port">指定端口</string>
     <string name="invalid_config">无效配置</string>
     <string name="exclude_hosts">排除列表</string>
-    <string name="retrieve_net_logs">收集网络日志</string>
+    <string name="network_logging">网络日志</string>
     <string name="log_file_size_is">日志文件大小：%1$s</string>
     <string name="delete_logs">删除日志</string>
     <string name="export_logs">导出日志</string>
     <string name="wifi_auth_keypair">Wi-Fi密钥对</string>
-    <string name="keypair">密钥对</string>
     <string name="preferential_network_service">首选网络服务</string>
     <string name="network_id">网络ID</string>
     <string name="allow_fallback_to_default_connection">允许回落到默认连接</string>
@@ -280,7 +278,6 @@
     <string name="migrate_account">迁移账号</string>
     <string name="account_name">账号名</string>
     <string name="keep_account">保留账号</string>
-    <string name="is_org_owned_profile">由组织拥有的工作资料：%1$s</string>
     <string name="org_owned_work_profile">组织拥有的工作资料</string>
     <string name="skip_encryption">跳过加密</string>
     <string name="create">创建</string>
@@ -309,7 +306,7 @@
     <string name="always_on_vpn">VPN保持打开</string>
     <string name="enable_lockdown">启用锁定</string>
     <string name="clear_current_config">清除当前配置</string>
-    <string name="permission">权限</string>
+    <string name="permissions">权限</string>
     <string name="scope_is_work_profile">作用域: 工作资料</string>
     <string name="app_info">应用详情</string>
     <string name="not_installed">未安装</string>
@@ -357,12 +354,12 @@
     <string name="status_fail_timeout">超时</string>
 
     <!--UserRestriction-->
-    <string name="user_restrict">用户限制</string>
+    <string name="user_restriction">用户限制</string>
     <string name="profile_owner_is_restricted">Profile owner无法使用部分功能</string>
     <string name="switch_to_disable_feature">打开开关后会禁用对应的功能</string>
     <string name="some_features_invalid_in_work_profile">工作资料中部分功能无效</string>
-    <string name="network_internet">网络和互联网</string>
-    <string name="more_connectivity">更多连接</string>
+    <string name="network_and_internet">网络和互联网</string>
+    <string name="connectivity">更多连接</string>
     <string name="media">媒体</string>
     <string name="other">其他</string>
     <string name="require_device_owner">需要DeviceOwner</string>
@@ -468,7 +465,6 @@
     <string name="change_user_icon">更换用户头像</string>
     <string name="file_picker_instead_gallery">使用文件选择器而不是相册</string>
     <string name="select_picture" tools:ignore="TypographyEllipsis">选择图片...</string>
-    <string name="unknown_result">未知结果（失败）</string>
     <string name="fail_managed_profile">失败：受管理的资料</string>
     <string name="fail_current_user">失败：当前用户</string>
     <string name="user_session_msg">用户会话消息</string>

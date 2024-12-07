@@ -92,8 +92,8 @@
     <string name="account_type">Hesap Türleri</string>
     <string name="transfer_ownership">Sahipliği Devret</string>
     <string name="target_component_name">Target component name</string> <!--TODO-->
-    <string name="device_owner_lock_screen_info">Ekran Kilidi Bilgisi</string>
-    <string name="support_msg">Destek Mesajı</string>
+    <string name="lock_screen_info">Ekran Kilidi Bilgisi</string>
+    <string name="support_messages">Destek Mesajı</string>
     <string name="short_support_msg">Kısa Mesaj</string>
     <string name="long_support_msg">Uzun Mesaj</string>
     <string name="transfer">Transfer</string>
@@ -177,7 +177,7 @@
     <string name="cert_installed">Yüklenen sertifika: %1$s</string> <!--TODO-->
     <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Sertifika seç...</string> <!--TODO-->
     <string name="uninstall_all_user_ca_cert">Tüm kullanıcı sertifikalarını kaldır</string> <!--TODO-->
-    <string name="security_logs">Güvenlik kayıtları</string>
+    <string name="security_logging">Security logging</string> <!--TODO-->
     <string name="pre_reboot_security_logs">Yeniden başlatmadan önce güvenlik kayıtları</string>
     <string name="wipe_data">Verileri sil</string>
     <string name="wipe_external_storage">Harici depolamayı sil</string>
@@ -188,7 +188,6 @@
     <string name="wipe_work_profile_warning">Your work profile will be DELETED</string> <!--TODO-->
     <string name="encryption_status">Encryption status</string> <!--TODO-->
     <string name="frp_policy">FRP politikası</string>
-    <string name="factory_reset_protection_policy">Fabrika ayarlarına sıfırlama koruma politikası</string>
     <string name="frp_policy_not_supported">FRP politikası bu cihazda desteklenmiyor</string>
     <string name="enable_frp">FRP\'yi etkinleştir</string>
     <string name="account_list_is">"Hesap listesi: "</string>
@@ -237,12 +236,11 @@
     <string name="specify_port">Specify port</string> <!--TODO-->
     <string name="invalid_config">Invalid config</string> <!--TODO-->
     <string name="exclude_hosts">Exclude hosts</string> <!--TODO-->
-    <string name="retrieve_net_logs">Ağ kayıtları</string>
+    <string name="network_logging">Network logging</string> <!--TODO-->
     <string name="log_file_size_is">Log file size: %1$s</string> <!--TODO-->
     <string name="delete_logs">Delete logs</string> <!--TODO-->
     <string name="export_logs">Export logs</string> <!--TODO-->
     <string name="wifi_auth_keypair">Wi-Fi anahtar çifti</string>
-    <string name="keypair">Anahtar çifti</string>
     <string name="preferential_network_service">Tercihli ağ hizmeti</string>
     <string name="network_id">Network ID</string> <!--TODO-->
     <string name="allow_fallback_to_default_connection">Allow fallback to default connection</string> <!--TODO-->
@@ -285,7 +283,6 @@
     <string name="migrate_account">Migrate account</string> <!--TODO-->
     <string name="account_name">Account name</string> <!--TODO-->
     <string name="keep_account">Keep account</string> <!--TODO-->
-    <string name="is_org_owned_profile">Kuruluşa ait iş profili: %1$s</string>
     <string name="org_owned_work_profile">Kuruluş iş profili</string>
     <string name="skip_encryption">Şifrelemeyi atla</string>
     <string name="create">Oluştur</string>
@@ -314,7 +311,7 @@
     <string name="always_on_vpn">Her zaman açık VPN</string>
     <string name="enable_lockdown">Enable lockdown</string> <!--TODO-->
     <string name="clear_current_config">Clear current config</string> <!--TODO-->
-    <string name="permission">İzin</string>
+    <string name="permissions">İzin</string>
     <string name="scope_is_work_profile">Kapsam: iş profili</string>
     <string name="app_info">Uygulama bilgisi</string>
     <string name="not_installed">Yüklü değil</string>
@@ -365,12 +362,12 @@
     <string name="status_fail_timeout">Başarısız: zaman aşımı</string>
 
     <!--UserRestriction-->
-    <string name="user_restrict">Kullanıcı kısıtlaması</string>
+    <string name="user_restriction">Kullanıcı kısıtlaması</string>
     <string name="profile_owner_is_restricted">Profil sahibi sınırlı işlev kullanabilir</string>
     <string name="switch_to_disable_feature">Bu işlevi devre dışı bırakmak için bir anahtar açın. </string>
     <string name="some_features_invalid_in_work_profile">İş profilindeki işlevler sınırlıdır. </string>
-    <string name="network_internet">Ağ</string>
-    <string name="more_connectivity">Diğer bağlantı</string>
+    <string name="network_and_internet">Ağ</string>
+    <string name="connectivity">Diğer bağlantı</string>
     <string name="media">Medya</string>
     <string name="other">Diğer</string>
     <string name="require_device_owner">Cihaz sahibi gerektirir</string>
@@ -476,7 +473,6 @@
     <string name="change_user_icon">Kullanıcı simgesini değiştir</string>
     <string name="file_picker_instead_gallery">Galeri yerine dosya seçici kullan</string>
     <string name="select_picture" tools:ignore="TypographyEllipsis">Resim seç...</string>
-    <string name="unknown_result">Bilinmeyen sonuç (başarısız olabilir)</string>
     <string name="fail_managed_profile">Başarısız: yönetilen profil</string>
     <string name="fail_current_user">Başarısız: mevcut kullanıcı</string>
     <string name="user_session_msg">Kullanıcı oturum mesajı</string>

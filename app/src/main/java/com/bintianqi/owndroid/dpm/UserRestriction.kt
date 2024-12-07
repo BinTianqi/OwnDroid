@@ -6,34 +6,20 @@ import android.os.UserManager
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.ui.Animations
-import com.bintianqi.owndroid.ui.SubPageItem
+import com.bintianqi.owndroid.ui.FunctionItem
+import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.SwitchItem
-import com.bintianqi.owndroid.ui.TopBar
 
 data class Restriction(
     val id: String,
@@ -42,92 +28,29 @@ data class Restriction(
 )
 
 @Composable
-fun UserRestriction(navCtrl: NavHostController) {
-    val localNavCtrl = rememberNavController()
-    val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
-    val scrollState = rememberScrollState()
-    /*val titleMap = mapOf(
-        "Internet" to R.string.network_internet,
-        "Connectivity" to R.string.more_connectivity,
-        "Users" to R.string.users,
-        "Media" to R.string.media,
-        "Applications" to R.string.applications,
-        "Other" to R.string.other
-    )*/
-    Scaffold(
-        topBar = {
-            /*TopAppBar(
-                title = {Text(text = stringResource(titleMap[backStackEntry?.destination?.route]?:R.string.user_restrict))},
-                navigationIcon = {NavIcon{if(backStackEntry?.destination?.route=="Home"){navCtrl.navigateUp()}else{localNavCtrl.navigateUp()}}},
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surfaceVariant)
-            )*/
-            TopBar(backStackEntry,navCtrl,localNavCtrl){
-                if(backStackEntry?.destination?.route=="Home"&&scrollState.maxValue>80){
-                    Text(
-                        text = stringResource(R.string.user_restrict),
-                        modifier = Modifier.alpha((maxOf(scrollState.value-30, 0)).toFloat() / 80)
-                    )
-                }
-            }
-        }
-    ) {
-        NavHost(
-            navController = localNavCtrl, startDestination = "Home",
-            enterTransition = Animations.navHostEnterTransition,
-            exitTransition = Animations.navHostExitTransition,
-            popEnterTransition = Animations.navHostPopEnterTransition,
-            popExitTransition = Animations.navHostPopExitTransition,
-            modifier = Modifier.padding(top = it.calculateTopPadding())
-        ) {
-            composable(route = "Home") { Home(localNavCtrl, scrollState) }
-            composable(route = "Internet") { UserRestrictionPage(RestrictionData.internet()) }
-            composable(route = "Connectivity") { UserRestrictionPage(RestrictionData.connectivity())}
-            composable(route = "Applications") { UserRestrictionPage(RestrictionData.connectivity()) }
-            composable(route = "Users") { UserRestrictionPage(RestrictionData.user()) }
-            composable(route = "Media") { UserRestrictionPage(RestrictionData.media()) }
-            composable(route = "Other") { UserRestrictionPage(RestrictionData.other()) }
-        }
-    }
-}
-
-@Composable
-private fun Home(navCtrl:NavHostController, scrollState: ScrollState) {
+fun UserRestriction(navCtrl:NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
-        Text(
-            text = stringResource(R.string.user_restrict),
-            style = typography.headlineLarge,
-            modifier = Modifier.padding(top = 8.dp, bottom = 7.dp, start = 16.dp)
-        )
+    MyScaffold(R.string.user_restriction, 0.dp, navCtrl) {
         Text(text = stringResource(R.string.switch_to_disable_feature), modifier = Modifier.padding(start = 16.dp))
         if(context.isProfileOwner) { Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.padding(start = 16.dp)) }
         if(context.isProfileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
             Text(text = stringResource(R.string.some_features_invalid_in_work_profile), modifier = Modifier.padding(start = 16.dp))
         }
         Spacer(Modifier.padding(vertical = 2.dp))
-        SubPageItem(R.string.network_internet, "", R.drawable.wifi_fill0) { navCtrl.navigate("Internet") }
-        SubPageItem(R.string.more_connectivity, "", R.drawable.devices_other_fill0) { navCtrl.navigate("Connectivity") }
-        SubPageItem(R.string.applications, "", R.drawable.apps_fill0) { navCtrl.navigate("Applications") }
-        SubPageItem(R.string.users, "", R.drawable.account_circle_fill0) { navCtrl.navigate("Users") }
-        SubPageItem(R.string.media, "", R.drawable.volume_up_fill0) { navCtrl.navigate("Media") }
-        SubPageItem(R.string.other, "", R.drawable.more_horiz_fill0) { navCtrl.navigate("Other") }
-        Spacer(Modifier.padding(vertical = 30.dp))
-    }
-}
-
-@Composable
-private fun UserRestrictionPage(restrictions: List<Restriction>) {
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        restrictions.forEach { UserRestrictionItem(it) }
-        Spacer(Modifier.padding(vertical = 30.dp))
+        FunctionItem(R.string.network_and_internet, "", R.drawable.wifi_fill0) { navCtrl.navigate("UR-Internet") }
+        FunctionItem(R.string.connectivity, "", R.drawable.devices_other_fill0) { navCtrl.navigate("UR-Connectivity") }
+        FunctionItem(R.string.applications, "", R.drawable.apps_fill0) { navCtrl.navigate("UR-Applications") }
+        FunctionItem(R.string.users, "", R.drawable.account_circle_fill0) { navCtrl.navigate("UR-Users") }
+        FunctionItem(R.string.media, "", R.drawable.volume_up_fill0) { navCtrl.navigate("UR-Media") }
+        FunctionItem(R.string.other, "", R.drawable.more_horiz_fill0) { navCtrl.navigate("UR-Other") }
     }
 }
 
 @SuppressLint("NewApi")
 @Composable
-private fun UserRestrictionItem(restriction: Restriction) {
+fun UserRestrictionItem(restriction: Restriction) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -153,7 +76,7 @@ private fun UserRestrictionItem(restriction: Restriction) {
 }
 
 object RestrictionData {
-    fun internet(): List<Restriction> {
+    val internet: List<Restriction> get() {
         val list = mutableListOf<Restriction>()
         list += Restriction(UserManager.DISALLOW_CONFIG_MOBILE_NETWORKS, R.string.config_mobile_network, R.drawable.signal_cellular_alt_fill0)
         list += Restriction(UserManager.DISALLOW_CONFIG_WIFI, R.string.config_wifi, R.drawable.wifi_fill0)
@@ -179,7 +102,7 @@ object RestrictionData {
         list += Restriction(UserManager.DISALLOW_OUTGOING_CALLS, R.string.outgoing_calls, R.drawable.phone_forwarded_fill0)
         return list
     }
-    fun connectivity(): List<Restriction> {
+    val connectivity: List<Restriction> get() {
         val list = mutableListOf<Restriction>()
         if(VERSION.SDK_INT>=26) {
             list += Restriction(UserManager.DISALLOW_BLUETOOTH, R.string.bluetooth, R.drawable.bluetooth_fill0)
@@ -193,7 +116,7 @@ object RestrictionData {
         if(VERSION.SDK_INT>=28) list += Restriction(UserManager.DISALLOW_PRINTING, R.string.printing, R.drawable.print_fill0)
         return list
     }
-    fun application(): List<Restriction> {
+    val applications: List<Restriction> get() {
         val list = mutableListOf<Restriction>()
         list += Restriction(UserManager.DISALLOW_INSTALL_APPS, R.string.install_app, R.drawable.android_fill0)
         if(VERSION.SDK_INT>=29) list += Restriction(UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY, R.string.install_unknown_src_globally, R.drawable.android_fill0)
@@ -203,7 +126,7 @@ object RestrictionData {
         if(VERSION.SDK_INT>=34) list += Restriction(UserManager.DISALLOW_CONFIG_DEFAULT_APPS, R.string.config_default_apps, R.drawable.apps_fill0)
         return list
     }
-    fun media(): List<Restriction> {
+    val media: List<Restriction> get() {
         val list = mutableListOf<Restriction>()
         if(VERSION.SDK_INT>=28) {
             list += Restriction(UserManager.DISALLOW_CONFIG_BRIGHTNESS, R.string.config_brightness, R.drawable.brightness_5_fill0)
@@ -218,7 +141,7 @@ object RestrictionData {
         }
         return list
     }
-    fun user(): List<Restriction> {
+    val users: List<Restriction> get() {
         val list = mutableListOf<Restriction>()
         list += Restriction(UserManager.DISALLOW_ADD_USER, R.string.add_user, R.drawable.account_circle_fill0)
         list += Restriction(UserManager.DISALLOW_REMOVE_USER, R.string.remove_user, R.drawable.account_circle_fill0)
@@ -231,7 +154,7 @@ object RestrictionData {
         }
         return list
     }
-    fun other(): List<Restriction> {
+    val other: List<Restriction> get() {
         val list = mutableListOf<Restriction>()
         if(VERSION.SDK_INT>=26) list += Restriction(UserManager.DISALLOW_AUTOFILL, R.string.autofill, R.drawable.password_fill0)
         list += Restriction(UserManager.DISALLOW_CONFIG_CREDENTIALS, R.string.config_credentials, R.drawable.android_fill0)
@@ -254,14 +177,7 @@ object RestrictionData {
         list += Restriction(UserManager.DISALLOW_DEBUGGING_FEATURES, R.string.debug_features, R.drawable.adb_fill0)
         return list
     }
-    fun getAllRestrictions(): List<String> {
-        val result = mutableListOf<String>()
-        internet().forEach { result.add(it.id) }
-        connectivity().forEach { result.add(it.id) }
-        media().forEach { result.add(it.id) }
-        application().forEach { result.add(it.id) }
-        user().forEach { result.add(it.id) }
-        other().forEach { result.add(it.id) }
-        return result
-    }
+    fun getAllRestrictions(): List<Restriction> =
+         internet + connectivity + media + applications + users + other
+
 }

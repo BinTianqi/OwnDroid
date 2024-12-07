@@ -91,8 +91,8 @@
     <string name="account_type">Тип аккаунта</string>
     <string name="transfer_ownership">Передача прав владения</string>
     <string name="target_component_name">Имя целевого компонента</string>
-    <string name="device_owner_lock_screen_info">Информация на экране блокировки</string>
-    <string name="support_msg">Сообщение поддержки</string>
+    <string name="lock_screen_info">Информация на экране блокировки</string>
+    <string name="support_messages">Сообщение поддержки</string>
     <string name="short_support_msg">Краткое сообщение</string>
     <string name="long_support_msg">Подробное сообщение</string>
     <string name="transfer">Передать</string>
@@ -175,7 +175,7 @@
     <string name="cert_installed">Сертификат установлен: %1$s</string>
     <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Выберите сертификат...</string>
     <string name="uninstall_all_user_ca_cert">Удалить все пользовательские CA-сертификаты</string>
-    <string name="security_logs">Журналы безопасности</string>
+    <string name="security_logging">Security logging</string> <!--TODO-->
     <string name="pre_reboot_security_logs">Журналы безопасности перед перезагрузкой</string>
     <string name="wipe_data">Стереть данные</string>
     <string name="wipe_external_storage">Стереть внешнее хранилище</string>
@@ -186,7 +186,6 @@
     <string name="wipe_work_profile_warning">Ваш рабочий профиль будет УДАЛЕН</string>
     <string name="encryption_status">Статус шифрования</string>
     <string name="frp_policy">Политика FRP</string>
-    <string name="factory_reset_protection_policy">Политика защиты от сброса к заводским настройкам</string>
     <string name="frp_policy_not_supported">Политика FRP не поддерживается на этом устройстве</string>
     <string name="enable_frp">Включить FRP</string>
     <string name="account_list_is">Список аккаунтов: </string>
@@ -236,12 +235,11 @@
     <string name="specify_port">Указать порт</string>
     <string name="invalid_config">Неверная конфигурация</string>
     <string name="exclude_hosts">Исключить хосты</string>
-    <string name="retrieve_net_logs">Журналы сети</string>
+    <string name="network_logging">Network logging</string> <!--TODO-->
     <string name="log_file_size_is">Размер файла журнала: %1$s</string>
     <string name="delete_logs">Удалить журналы</string>
     <string name="export_logs">Экспортировать журналы</string>
     <string name="wifi_auth_keypair">Пара ключей Wi-Fi</string>
-    <string name="keypair">Пара ключей</string>
     <string name="preferential_network_service">Предпочтительная сетевая служба</string>
     <string name="network_id">Идентификатор сети</string>
     <string name="allow_fallback_to_default_connection">Разрешить переход на соединение по умолчанию</string>
@@ -286,7 +284,6 @@
     <string name="migrate_account">Перенести аккаунт</string>
     <string name="account_name">Имя аккаунта</string>
     <string name="keep_account">Сохранить аккаунт</string>
-    <string name="is_org_owned_profile">Рабочий профиль принадлежит организации: %1$s</string>
     <string name="org_owned_work_profile">Рабочий профиль организации</string>
     <string name="skip_encryption">Пропустить шифрование</string>
     <string name="create">Создать</string>
@@ -316,7 +313,7 @@
     <string name="always_on_vpn">Постоянный VPN</string>
     <string name="enable_lockdown">Включить блокировку</string>
     <string name="clear_current_config">Очистить текущую конфигурацию</string>
-    <string name="permission">Разрешение</string>
+    <string name="permissions">Разрешение</string>
     <string name="scope_is_work_profile">Область действия: рабочий профиль</string>
     <string name="app_info">Информация о приложении</string>
     <string name="not_installed">Не установлено</string>
@@ -366,12 +363,12 @@
 
 
     <!--Ограничения пользователя-->
-    <string name="user_restrict">Ограничения пользователя</string>
+    <string name="user_restriction">Ограничения пользователя</string>
     <string name="profile_owner_is_restricted">Владелец профиля может использовать ограниченные функции</string>
     <string name="switch_to_disable_feature">Включите переключатель, чтобы отключить эту функцию.</string>
     <string name="some_features_invalid_in_work_profile">Функции в рабочем профиле ограничены.</string>
-    <string name="network_internet">Сеть</string>
-    <string name="more_connectivity">Другие подключения</string>
+    <string name="network_and_internet">Сеть</string>
+    <string name="connectivity">Другие подключения</string>
     <string name="media">Медиа</string>
     <string name="other">Другое</string>
     <string name="require_device_owner">Требуется владелец устройства</string>
@@ -478,7 +475,6 @@
     <string name="change_user_icon">Изменить значок пользователя</string>
     <string name="file_picker_instead_gallery">Использовать выборщик файлов вместо галереи</string>
     <string name="select_picture" tools:ignore="TypographyEllipsis">Выберите изображение...</string>
-    <string name="unknown_result">Неизвестный результат (возможно, ошибка)</string>
     <string name="fail_managed_profile">Ошибка: управляемый профиль</string>
     <string name="fail_current_user">Ошибка: текущий пользователь</string>
     <string name="user_session_msg">Сообщение о сеансе пользователя</string>

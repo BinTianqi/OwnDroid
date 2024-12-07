@@ -10,14 +10,12 @@ import android.os.IBinder
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,8 +32,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.IUserService
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.MyScaffold
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
@@ -43,7 +43,7 @@ import rikka.shizuku.Shizuku
 private var waitGrantPermission = false
 
 @Composable
-fun ShizukuActivate() {
+fun Shizuku(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -69,19 +69,14 @@ fun ShizukuActivate() {
         shizukuService.value = null
         userServiceControl(context, true)
     }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 8.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        AnimatedVisibility(bindShizuku) {
+    MyScaffold(R.string.shizuku, 0.dp, navCtrl, false) {
+        AnimatedVisibility(visible = bindShizuku, modifier = Modifier.fillMaxWidth()) {
             Button(
                 onClick = {
                     userServiceControl(context, true)
                     outputText = ""
-                }
+                },
+                modifier = Modifier.wrapContentWidth(Alignment.CenterHorizontally)
             ) {
                 Text(stringResource(R.string.bind_shizuku))
             }
@@ -100,7 +95,8 @@ fun ShizukuActivate() {
                 coScope.launch {
                     outputTextScrollState.animateScrollTo(0)
                 }
-            }
+            },
+            modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             Text(text = stringResource(R.string.check_shizuku))
         }
@@ -112,7 +108,8 @@ fun ShizukuActivate() {
                     outputTextScrollState.animateScrollTo(0)
                 }
             },
-            enabled = enabled
+            enabled = enabled,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             Text(text = stringResource(R.string.list_owners))
         }
@@ -123,7 +120,8 @@ fun ShizukuActivate() {
                     outputTextScrollState.animateScrollTo(0)
                 }
             },
-            enabled = enabled
+            enabled = enabled,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             Text(text = stringResource(R.string.list_users))
         }
@@ -134,7 +132,8 @@ fun ShizukuActivate() {
                     outputTextScrollState.animateScrollTo(0)
                 }
             },
-            enabled = enabled
+            enabled = enabled,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             Text(text = stringResource(R.string.list_accounts))
         }
@@ -150,7 +149,8 @@ fun ShizukuActivate() {
                         showDeviceAdminButton = !context.isDeviceAdmin
                     }
                 },
-                enabled = enabled
+                enabled = enabled,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
                 Text(text = stringResource(R.string.activate_device_admin))
             }
@@ -166,7 +166,8 @@ fun ShizukuActivate() {
                         showDeviceOwnerButton = !context.isDeviceOwner
                     }
                 },
-                enabled = enabled
+                enabled = enabled,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
                 Text(text = stringResource(R.string.activate_device_owner))
             }
@@ -186,7 +187,8 @@ fun ShizukuActivate() {
                             showOrgProfileOwnerButton = !dpm.isOrganizationOwnedDeviceWithManagedProfile
                         }
                     },
-                    enabled = enabled
+                    enabled = enabled,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
                     Text(text = stringResource(R.string.activate_org_profile))
                 }
@@ -194,10 +196,8 @@ fun ShizukuActivate() {
         }
         
         SelectionContainer(modifier = Modifier.fillMaxWidth().horizontalScroll(outputTextScrollState)) {
-            Text(text = outputText, softWrap = false, modifier = Modifier.padding(4.dp))
+            Text(text = outputText, softWrap = false, modifier = Modifier.padding(vertical = 9.dp, horizontal = 12.dp))
         }
-        
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 

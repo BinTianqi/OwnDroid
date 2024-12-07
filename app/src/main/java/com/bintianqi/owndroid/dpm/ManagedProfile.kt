@@ -22,21 +22,17 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -55,88 +51,47 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.ui.Animations
+import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.CopyTextButton
 import com.bintianqi.owndroid.ui.InfoCard
-import com.bintianqi.owndroid.ui.SubPageItem
+import com.bintianqi.owndroid.ui.FunctionItem
+import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.SwitchItem
-import com.bintianqi.owndroid.ui.TopBar
+import com.bintianqi.owndroid.yesOrNo
 
 @Composable
-fun ManagedProfile(navCtrl: NavHostController) {
-    val localNavCtrl = rememberNavController()
-    val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
-    Scaffold(
-        topBar = {
-            TopBar(backStackEntry, navCtrl, localNavCtrl)
-        }
-    ) {
-        NavHost(
-            navController = localNavCtrl, startDestination = "Home",
-            enterTransition = Animations.navHostEnterTransition,
-            exitTransition = Animations.navHostExitTransition,
-            popEnterTransition = Animations.navHostPopEnterTransition,
-            popExitTransition = Animations.navHostPopExitTransition,
-            modifier = Modifier.padding(top = it.calculateTopPadding())
-        ) {
-            composable(route = "Home") { Home(localNavCtrl) }
-            composable(route = "OrgOwnedWorkProfile") { OrgOwnedProfile() }
-            composable(route = "CreateWorkProfile") { CreateWorkProfile() }
-            composable(route = "SuspendPersonalApp") { SuspendPersonalApp() }
-            composable(route = "IntentFilter") { IntentFilter() }
-            composable(route = "DeleteWorkProfile") { DeleteWorkProfile() }
-        }
-    }
-}
-
-@Composable
-private fun Home(navCtrl: NavHostController) {
+fun WorkProfile(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val profileOwner = context.isProfileOwner
-    Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-    ) {
-        Text(
-            text = stringResource(R.string.work_profile),
-            style = typography.headlineLarge,
-            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 16.dp)
-        )
+    MyScaffold(R.string.work_profile, 0.dp, navCtrl) {
         if(VERSION.SDK_INT >= 30 && profileOwner && dpm.isManagedProfile(receiver)) {
-            SubPageItem(R.string.org_owned_work_profile, "", R.drawable.corporate_fare_fill0) { navCtrl.navigate("OrgOwnedWorkProfile") }
+            FunctionItem(R.string.org_owned_work_profile, "", R.drawable.corporate_fare_fill0) { navCtrl.navigate("OrgOwnedWorkProfile") }
         }
         if(VERSION.SDK_INT<24 || (VERSION.SDK_INT>=24 && dpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE))) {
-            SubPageItem(R.string.create_work_profile, "", R.drawable.work_fill0) { navCtrl.navigate("CreateWorkProfile") }
+            FunctionItem(R.string.create_work_profile, "", R.drawable.work_fill0) { navCtrl.navigate("CreateWorkProfile") }
         }
         if(dpm.isOrgProfile(receiver)) {
-            SubPageItem(R.string.suspend_personal_app, "", R.drawable.block_fill0) { navCtrl.navigate("SuspendPersonalApp") }
+            FunctionItem(R.string.suspend_personal_app, "", R.drawable.block_fill0) { navCtrl.navigate("SuspendPersonalApp") }
         }
         if(profileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
-            SubPageItem(R.string.intent_filter, "", R.drawable.filter_alt_fill0) { navCtrl.navigate("IntentFilter") }
+            FunctionItem(R.string.intent_filter, "", R.drawable.filter_alt_fill0) { navCtrl.navigate("IntentFilter") }
         }
         if(profileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
-            SubPageItem(R.string.delete_work_profile, "", R.drawable.delete_forever_fill0) { navCtrl.navigate("DeleteWorkProfile") }
+            FunctionItem(R.string.delete_work_profile, "", R.drawable.delete_forever_fill0) { navCtrl.navigate("DeleteWorkProfile") }
         }
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
 @Composable
-private fun CreateWorkProfile() {
+fun CreateWorkProfile(navCtrl: NavHostController) {
     val context = LocalContext.current
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.create_work_profile), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
+    MyScaffold(R.string.create_work_profile, 8.dp, navCtrl) {
         var skipEncrypt by remember { mutableStateOf(false) }
         var offlineProvisioning by remember { mutableStateOf(true) }
         var migrateAccount by remember { mutableStateOf(false) }
@@ -206,14 +161,11 @@ private fun CreateWorkProfile() {
 
 @SuppressLint("NewApi")
 @Composable
-private fun OrgOwnedProfile() {
+fun OrgOwnedProfile(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.org_owned_work_profile), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text = stringResource(R.string.is_org_owned_profile,dpm.isOrganizationOwnedDeviceWithManagedProfile))
+    MyScaffold(R.string.org_owned_work_profile, 8.dp, navCtrl, false) {
+        CardItem(R.string.org_owned_work_profile, dpm.isOrganizationOwnedDeviceWithManagedProfile.yesOrNo)
         Spacer(Modifier.padding(vertical = 5.dp))
         if(!dpm.isOrganizationOwnedDeviceWithManagedProfile) {
             SelectionContainer {
@@ -229,14 +181,13 @@ private fun OrgOwnedProfile() {
 
 @SuppressLint("NewApi")
 @Composable
-private fun SuspendPersonalApp() {
+fun SuspendPersonalApp(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var suspend by remember { mutableStateOf(dpm.getPersonalAppsSuspendedReasons(receiver) != PERSONAL_APPS_NOT_SUSPENDED) }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
+    MyScaffold(R.string.suspend_personal_app, 8.dp, navCtrl) {
         SwitchItem(
             R.string.suspend_personal_app, "", null,
             suspend,
@@ -277,16 +228,13 @@ private fun SuspendPersonalApp() {
 }
 
 @Composable
-private fun IntentFilter() {
+fun IntentFilter(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
+    MyScaffold(R.string.intent_filter, 8.dp, navCtrl) {
         var action by remember { mutableStateOf("") }
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.intent_filter), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
         OutlinedTextField(
             value = action, onValueChange = { action = it },
             label = { Text("Action") },
@@ -328,7 +276,7 @@ private fun IntentFilter() {
 }
 
 @Composable
-private fun DeleteWorkProfile() {
+fun DeleteWorkProfile(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
@@ -337,14 +285,7 @@ private fun DeleteWorkProfile() {
     var euicc by remember { mutableStateOf(false) }
     var silent by remember { mutableStateOf(false) }
     var reason by remember { mutableStateOf("") }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(
-            text = stringResource(R.string.delete_work_profile),
-            style = typography.headlineLarge,
-            modifier = Modifier.padding(6.dp),color = colorScheme.error
-        )
-        Spacer(Modifier.padding(vertical = 5.dp))
+    MyScaffold(R.string.delete_work_profile, 8.dp, navCtrl) {
         CheckBoxItem(R.string.wipe_external_storage, externalStorage, { externalStorage = it })
         if(VERSION.SDK_INT >= 28) { CheckBoxItem(R.string.wipe_euicc, euicc, { euicc = it }) }
         CheckBoxItem(R.string.wipe_silently, silent, { silent = it })
@@ -367,7 +308,6 @@ private fun DeleteWorkProfile() {
         ) {
             Text(stringResource(R.string.delete))
         }
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
     if(warning) {
         LaunchedEffect(Unit) { silent = reason == "" }

@@ -35,25 +35,20 @@ import android.os.Build.VERSION
 import android.os.UserManager
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -65,7 +60,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -75,103 +69,56 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.toggle
-import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.InfoCard
 import com.bintianqi.owndroid.ui.Information
+import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.RadioButtonItem
-import com.bintianqi.owndroid.ui.SubPageItem
-import com.bintianqi.owndroid.ui.TopBar
 import com.bintianqi.owndroid.yesOrNo
-
-@Composable
-fun Password(navCtrl: NavHostController) {
-    val localNavCtrl = rememberNavController()
-    val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
-    val scrollState = rememberScrollState()
-    Scaffold(
-        topBar = {
-            TopBar(backStackEntry,navCtrl,localNavCtrl) {
-                if(backStackEntry?.destination?.route == "Home" && scrollState.maxValue > 100) {
-                    Text(
-                        text = stringResource(R.string.password_and_keyguard),
-                        modifier = Modifier.alpha((maxOf(scrollState.value-30,0)).toFloat()/80)
-                    )
-                }
-            }
-        }
-    ) {
-        NavHost(
-            navController = localNavCtrl, startDestination = "Home",
-            enterTransition = Animations.navHostEnterTransition,
-            exitTransition = Animations.navHostExitTransition,
-            popEnterTransition = Animations.navHostPopEnterTransition,
-            popExitTransition = Animations.navHostPopExitTransition,
-            modifier = Modifier.padding(top = it.calculateTopPadding())
-        ) {
-            composable(route = "Home") { Home(localNavCtrl,scrollState) }
-            composable(route = "PasswordInfo") { PasswordInfo() }
-            composable(route = "ResetPasswordToken") { ResetPasswordToken() }
-            composable(route = "ResetPassword") { ResetPassword() }
-            composable(route = "RequirePasswordComplexity") { PasswordComplexity() }
-            composable(route = "DisableKeyguardFeatures") { DisableKeyguardFeatures() }
-            composable(route = "RequirePasswordQuality") { PasswordQuality() }
-        }
-    }
-}
 
 @SuppressLint("NewApi")
 @Composable
-private fun Home(navCtrl:NavHostController, scrollState: ScrollState) {
+fun Password(navCtrl: NavHostController) {
     val context = LocalContext.current
     val sharedPrefs = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     val deviceAdmin = context.isDeviceAdmin
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
     var dialog by remember { mutableIntStateOf(0) }
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
-        Text(
-            text = stringResource(R.string.password_and_keyguard),
-            style = typography.headlineLarge,
-            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 16.dp)
-        )
-        SubPageItem(R.string.password_info, "", R.drawable.info_fill0) { navCtrl.navigate("PasswordInfo") }
+    MyScaffold(R.string.password_and_keyguard, 0.dp, navCtrl) {
+        FunctionItem(R.string.password_info, "", R.drawable.info_fill0) { navCtrl.navigate("PasswordInfo") }
         if(sharedPrefs.getBoolean("dangerous_features", false)) {
             if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
-                SubPageItem(R.string.reset_password_token, "", R.drawable.key_vertical_fill0) { navCtrl.navigate("ResetPasswordToken") }
+                FunctionItem(R.string.reset_password_token, "", R.drawable.key_vertical_fill0) { navCtrl.navigate("ResetPasswordToken") }
             }
             if(deviceAdmin || deviceOwner || profileOwner) {
-                SubPageItem(R.string.reset_password, "", R.drawable.lock_reset_fill0) { navCtrl.navigate("ResetPassword") }
+                FunctionItem(R.string.reset_password, "", R.drawable.lock_reset_fill0) { navCtrl.navigate("ResetPassword") }
             }
         }
         if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) {
-            SubPageItem(R.string.required_password_complexity, "", R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordComplexity") }
+            FunctionItem(R.string.required_password_complexity, "", R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordComplexity") }
         }
         if(deviceAdmin) {
-            SubPageItem(R.string.disable_keyguard_features, "", R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("DisableKeyguardFeatures") }
+            FunctionItem(R.string.disable_keyguard_features, "", R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("DisableKeyguardFeatures") }
         }
         if(deviceOwner) {
-            SubPageItem(R.string.max_time_to_lock, "", R.drawable.schedule_fill0) { dialog = 1 }
-            SubPageItem(R.string.pwd_expiration_timeout, "", R.drawable.lock_clock_fill0) { dialog = 3 }
-            SubPageItem(R.string.max_pwd_fail, "", R.drawable.no_encryption_fill0) { dialog = 4 }
+            FunctionItem(R.string.max_time_to_lock, "", R.drawable.schedule_fill0) { dialog = 1 }
+            FunctionItem(R.string.pwd_expiration_timeout, "", R.drawable.lock_clock_fill0) { dialog = 3 }
+            FunctionItem(R.string.max_pwd_fail, "", R.drawable.no_encryption_fill0) { dialog = 4 }
         }
         if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
-            SubPageItem(R.string.required_strong_auth_timeout, "", R.drawable.fingerprint_off_fill0) { dialog = 2 }
+            FunctionItem(R.string.required_strong_auth_timeout, "", R.drawable.fingerprint_off_fill0) { dialog = 2 }
         }
         if(deviceAdmin){
-            SubPageItem(R.string.pwd_history, "", R.drawable.history_fill0) { dialog = 5 }
+            FunctionItem(R.string.pwd_history, "", R.drawable.history_fill0) { dialog = 5 }
         }
         if(VERSION.SDK_INT < 31 && (deviceOwner || profileOwner)) {
-            SubPageItem(R.string.required_password_quality, "", R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordQuality") }
+            FunctionItem(R.string.required_password_quality, "", R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordQuality") }
         }
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
     if(dialog != 0) {
         val dpm = context.getDPM()
@@ -263,16 +210,13 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState) {
 }
 
 @Composable
-private fun PasswordInfo() {
+fun PasswordInfo(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.password_info), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
+    MyScaffold(R.string.password_info, 8.dp, navCtrl) {
         if(VERSION.SDK_INT >= 29) {
             val passwordComplexity = mapOf(
                 PASSWORD_COMPLEXITY_NONE to R.string.password_complexity_none,
@@ -293,17 +237,14 @@ private fun PasswordInfo() {
 
 @SuppressLint("NewApi")
 @Composable
-private fun ResetPasswordToken() {
+fun ResetPasswordToken(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     var token by remember { mutableStateOf("") }
     val tokenByteArray = token.toByteArray()
     val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.reset_password_token), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
+    MyScaffold(R.string.reset_password_token, 8.dp, navCtrl) {
         OutlinedTextField(
             value = token, onValueChange = { token = it },
             label = { Text(stringResource(R.string.token)) },
@@ -367,7 +308,7 @@ private fun ResetPasswordToken() {
 }
 
 @Composable
-private fun ResetPassword() {
+fun ResetPassword(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -378,10 +319,7 @@ private fun ResetPassword() {
     val tokenByteArray = token.toByteArray()
     val flags = remember { mutableStateListOf<Int>() }
     var confirmDialog by remember { mutableStateOf(false) }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.reset_password),style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
+    MyScaffold(R.string.reset_password, 8.dp, navCtrl) {
         if(VERSION.SDK_INT >= 26) {
             OutlinedTextField(
                 value = token, onValueChange = { token = it },
@@ -444,7 +382,6 @@ private fun ResetPassword() {
             }
         }
         InfoCard(R.string.info_reset_password)
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
     if(confirmDialog) {
         var confirmPassword by remember { mutableStateOf("") }
@@ -494,7 +431,7 @@ private fun ResetPassword() {
 
 @SuppressLint("NewApi")
 @Composable
-private fun PasswordComplexity() {
+fun PasswordComplexity(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val passwordComplexity = mapOf(
@@ -502,19 +439,12 @@ private fun PasswordComplexity() {
         PASSWORD_COMPLEXITY_LOW to R.string.password_complexity_low,
         PASSWORD_COMPLEXITY_MEDIUM to R.string.password_complexity_medium,
         PASSWORD_COMPLEXITY_HIGH to R.string.password_complexity_high
-    ).toList()
-    var selectedItem by remember { mutableIntStateOf(passwordComplexity[0].first) }
+    )
+    var selectedItem by remember { mutableIntStateOf(PASSWORD_COMPLEXITY_NONE) }
     LaunchedEffect(Unit) { selectedItem = dpm.requiredPasswordComplexity }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.required_password_complexity), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        for(index in 0..3) {
-            RadioButtonItem(
-                passwordComplexity[index].second,
-                selectedItem == passwordComplexity[index].first,
-                { selectedItem = passwordComplexity[index].first }
-            )
+    MyScaffold(R.string.required_password_complexity, 8.dp, navCtrl) {
+        passwordComplexity.forEach {
+            RadioButtonItem(it.value, selectedItem == it.key, { selectedItem = it.key })
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
@@ -533,12 +463,11 @@ private fun PasswordComplexity() {
         ) {
             Text(stringResource(R.string.require_set_new_password))
         }
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
 @Composable
-private fun DisableKeyguardFeatures() {
+fun DisableKeyguardFeatures(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -579,10 +508,7 @@ private fun DisableKeyguardFeatures() {
         }
         calculateCustomFeature()
     }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.disable_keyguard_features), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
+    MyScaffold(R.string.disable_keyguard_features, 8.dp, navCtrl) {
         RadioButtonItem(R.string.enable_all, state == 0, { state = 0 })
         RadioButtonItem(R.string.disable_all, state == 1, { state = 1 })
         RadioButtonItem(R.string.custom, state == 2 , { state = 2 })
@@ -630,12 +556,11 @@ private fun DisableKeyguardFeatures() {
         ) {
             Text(text = stringResource(R.string.apply))
         }
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
 @Composable
-private fun PasswordQuality() {
+fun PasswordQuality(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -647,15 +572,12 @@ private fun PasswordQuality() {
         PASSWORD_QUALITY_ALPHANUMERIC to R.string.password_quality_alphanumeric,
         PASSWORD_QUALITY_BIOMETRIC_WEAK to R.string.password_quality_biometrics_weak,
         PASSWORD_QUALITY_NUMERIC_COMPLEX to R.string.password_quality_numeric_complex
-    ).toList()
-    var selectedItem by remember { mutableIntStateOf(passwordQuality[0].first) }
+    )
+    var selectedItem by remember { mutableIntStateOf(PASSWORD_QUALITY_UNSPECIFIED) }
     LaunchedEffect(Unit) { selectedItem=dpm.getPasswordQuality(receiver) }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.required_password_quality), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        for(index in 1..6) {
-            RadioButtonItem(passwordQuality[index].second, selectedItem == passwordQuality[index].first, { selectedItem = passwordQuality[index].first })
+    MyScaffold(R.string.required_password_quality, 8.dp, navCtrl) {
+        passwordQuality.forEach {
+            RadioButtonItem(it.value, selectedItem == it.key, { selectedItem = it.key })
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
@@ -667,7 +589,6 @@ private fun PasswordQuality() {
         ) {
             Text(stringResource(R.string.apply))
         }
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
