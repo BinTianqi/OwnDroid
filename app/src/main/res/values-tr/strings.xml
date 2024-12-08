@@ -144,8 +144,13 @@
     <string name="bug_report">Hata raporu</string>
     <string name="confirm_bug_report">Hata raporu iste?</string>
     <string name="reboot">Yeniden başlat</string>
-    <string name="change_time">Change time</string> <!--TODO-->
-    <string name="change_timezone">Change timezone</string><!--TODO-->
+    <!--TODO: the following 6 strings-->
+    <string name="change_time">Change time</string>
+    <string name="selector">Selector</string>
+    <string name="manually_input">Manually input</string>
+    <string name="date">Date</string>
+    <string name="time">Time</string>
+    <string name="change_timezone">Change timezone</string>
     <string name="timezone_id">Saat dilimi kimliği</string>
     <string name="disable_auto_time_zone_before_set">Özel bir saat dilimi ayarlamadan önce otomatik saat dilimi devre dışı bırakılmalıdır</string>
     <string name="permission_policy">İzin politikası</string>

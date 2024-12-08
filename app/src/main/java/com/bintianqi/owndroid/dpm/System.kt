@@ -45,15 +45,20 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -63,14 +68,23 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -102,6 +116,7 @@ import com.bintianqi.owndroid.exportFilePath
 import com.bintianqi.owndroid.fileUriFlow
 import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.getFile
+import com.bintianqi.owndroid.humanReadableDate
 import com.bintianqi.owndroid.prepareForNotification
 import com.bintianqi.owndroid.selectedPackage
 import com.bintianqi.owndroid.toggle
@@ -360,6 +375,7 @@ fun Keyguard(navCtrl: NavHostController) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("NewApi")
 @Composable
 fun ChangeTime(navCtrl: NavHostController) {
@@ -367,26 +383,108 @@ fun ChangeTime(navCtrl: NavHostController) {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    var inputTime by remember { mutableStateOf("") }
+    val coroutine = rememberCoroutineScope()
+    val pagerState = rememberPagerState { 2 }
+    var manualInput by remember { mutableStateOf(false) }
+    var inputTime by remember { mutableStateOf("")}
+    var picker by remember { mutableIntStateOf(0) } //0:None, 1:DatePicker, 2:TimePicker
+    val datePickerState = rememberDatePickerState()
+    val timePickerState = rememberTimePickerState()
+    val dateInteractionSource = remember { MutableInteractionSource() }
+    val timeInteractionSource = remember { MutableInteractionSource() }
+    if(dateInteractionSource.collectIsPressedAsState().value) picker = 1
+    if(timeInteractionSource.collectIsPressedAsState().value) picker = 2
+    val isInputLegal = (manualInput && (try { inputTime.toLong() } catch(_: Exception) { -1 }) >= 0) ||
+            (!manualInput && datePickerState.selectedDateMillis != null)
     MyScaffold(R.string.change_time, 8.dp, navCtrl) {
-        OutlinedTextField(
-            value = inputTime,
-            label = { Text(stringResource(R.string.time_unit_ms)) },
-            onValueChange = { inputTime = it },
-            supportingText = { Text(stringResource(R.string.info_change_time)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(Modifier.padding(vertical = 5.dp))
+        SingleChoiceSegmentedButtonRow(
+            modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+        ) {
+            SegmentedButton(
+                selected = !manualInput, shape = SegmentedButtonDefaults.itemShape(0, 2),
+                onClick = {
+                    manualInput = false
+                    coroutine.launch {
+                        pagerState.animateScrollToPage(0)
+                    }
+                }
+            ) {
+                Text(stringResource(R.string.selector))
+            }
+            SegmentedButton(
+                selected = manualInput, shape = SegmentedButtonDefaults.itemShape(1, 2),
+                onClick = {
+                    manualInput = true
+                    coroutine.launch {
+                        pagerState.animateScrollToPage(1)
+                    }
+                }
+            ) {
+                Text(stringResource(R.string.manually_input))
+            }
+        }
+        HorizontalPager(
+            state = pagerState, modifier = Modifier.height(140.dp).padding(top = 4.dp),
+            verticalAlignment = Alignment.Top
+        ) { page ->
+            if(page == 0) Column {
+                OutlinedTextField(
+                    value = datePickerState.selectedDateMillis?.humanReadableDate ?: "",
+                    onValueChange = {}, readOnly = true,
+                    label = { Text(stringResource(R.string.date)) },
+                    interactionSource = dateInteractionSource,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = timePickerState.hour.toString() + ":" + timePickerState.minute.toString(),
+                    onValueChange = {}, readOnly = true,
+                    label = { Text(stringResource(R.string.time)) },
+                    interactionSource = timeInteractionSource,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            if(page == 1) OutlinedTextField(
+                value = inputTime,
+                label = { Text(stringResource(R.string.time_unit_ms)) },
+                onValueChange = { inputTime = it },
+                supportingText = { Text(stringResource(R.string.info_change_time)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
         Button(
-            onClick = { dpm.setTime(receiver, inputTime.toLong()) },
+            onClick = {
+                val timeMillis = if(manualInput) inputTime.toLong()
+                    else datePickerState.selectedDateMillis!! + timePickerState.hour * 3600000 + timePickerState.minute * 60000
+                val result = dpm.setTime(receiver, timeMillis)
+                Toast.makeText(context, if(result) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+            },
             modifier = Modifier.fillMaxWidth(),
-            enabled = inputTime != ""
+            enabled = isInputLegal
         ) {
             Text(stringResource(R.string.apply))
         }
     }
+    if(picker == 1) DatePickerDialog(
+        confirmButton = {
+            TextButton(onClick = { picker = 0; focusMgr.clearFocus() } ) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        onDismissRequest = { picker = 0; focusMgr.clearFocus() }
+    ) {
+        DatePicker(datePickerState)
+    }
+    if(picker == 2) AlertDialog(
+        text = { TimePicker(timePickerState) },
+        confirmButton = {
+            TextButton(onClick = { picker = 0; focusMgr.clearFocus() } ) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        onDismissRequest = { picker = 0; focusMgr.clearFocus() }
+    )
 }
 
 @SuppressLint("NewApi")

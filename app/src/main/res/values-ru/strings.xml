@@ -143,8 +143,13 @@
     <string name="bug_report">Отчет об ошибке</string>
     <string name="confirm_bug_report">Запросить отчет об ошибке?</string>
     <string name="reboot">Перезагрузить</string>
-    <string name="change_time">Change time</string> <!--TODO-->
-    <string name="change_timezone">Change timezone</string> <!--TODO-->
+    <!--TODO: the following 6 strings-->
+    <string name="change_time">Change time</string>
+    <string name="selector">Selector</string>
+    <string name="manually_input">Manually input</string>
+    <string name="date">Date</string>
+    <string name="time">Time</string>
+    <string name="change_timezone">Change timezone</string>
     <string name="timezone_id">Идентификатор часового пояса</string>
     <string name="disable_auto_time_zone_before_set">Автоматический часовой пояс должен быть отключен перед установкой пользовательского часового пояса.</string>
     <string name="permission_policy">Политика разрешений</string>

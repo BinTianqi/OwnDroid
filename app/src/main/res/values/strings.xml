@@ -150,6 +150,10 @@
     <string name="confirm_bug_report">Request bug report?</string>
     <string name="reboot">Reboot</string>
     <string name="change_time">Change time</string>
+    <string name="selector">Selector</string>
+    <string name="manually_input">Manually input</string>
+    <string name="date">Date</string>
+    <string name="time">Time</string>
     <string name="change_timezone">Change timezone</string>
     <string name="timezone_id">Timezone ID</string>
     <string name="disable_auto_time_zone_before_set">Auto timezone should be disabled before set a custom timezone. </string>

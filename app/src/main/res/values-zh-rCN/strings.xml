@@ -140,6 +140,10 @@
     <string name="confirm_bug_report">请求错误报告？</string>
     <string name="reboot">重启</string>
     <string name="change_time">更改时间</string>
+    <string name="selector">选择器</string>
+    <string name="manually_input">手动输入</string>
+    <string name="date">日期</string>
+    <string name="time">时间</string>
     <string name="change_timezone">更改时区</string>
     <string name="timezone_id">时区ID</string>
     <string name="disable_auto_time_zone_before_set">在设置时区前需要关闭自动时区</string>

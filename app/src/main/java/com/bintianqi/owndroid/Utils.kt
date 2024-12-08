@@ -23,9 +23,12 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
+import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import java.util.Date
 import java.util.Locale
 
 lateinit var getFile: ActivityResultLauncher<Intent>
@@ -132,3 +135,10 @@ fun parseTimestamp(timestamp: Long): String {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())
     return formatter.format(instant)
 }
+
+val Long.humanReadableDate: String
+    get() = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault()).format(Date(this))
+
+val Long.humanReadableTime: String
+    get() = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(this))
+
