@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build.VERSION
 import android.widget.Toast
+import androidx.biometric.BiometricManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -19,7 +20,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -117,7 +120,8 @@ fun Appearance(navCtrl: NavHostController, vm: MyViewModel) {
 
 @Composable
 fun AuthSettings(navCtrl: NavHostController) {
-    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val context = LocalContext.current
+    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     var auth by remember{ mutableStateOf(sharedPref.getBoolean("auth",false)) }
     MyScaffold(R.string.security, 0.dp, navCtrl) {
         SwitchItem(
@@ -128,22 +132,24 @@ fun AuthSettings(navCtrl: NavHostController) {
             }
         )
         if(auth) {
+            var bioAuth by remember { mutableIntStateOf(sharedPref.getInt("biometrics_auth", 0)) } // 0:Disabled, 1:Enabled 2:Force enabled
+            LaunchedEffect(Unit) {
+                val bioManager = BiometricManager.from(context)
+                if(bioManager.canAuthenticate(BiometricManager.Authenticators.DEVICE_CREDENTIAL) != BiometricManager.BIOMETRIC_SUCCESS) {
+                    bioAuth = 2
+                    sharedPref.edit().putInt("biometrics_auth", 2).apply()
+                }
+            }
             SwitchItem(
-                R.string.enable_bio_auth, "", null,
-                { sharedPref.getBoolean("bio_auth", false) },
-                { sharedPref.edit().putBoolean("bio_auth", it).apply() }
+                R.string.enable_bio_auth, "", null, bioAuth != 0,
+                { bioAuth = if(it) 1 else 0; sharedPref.edit().putInt("biometrics_auth", bioAuth).apply() }, bioAuth != 2
             )
             SwitchItem(
-                R.string.lock_in_background, stringResource(R.string.developing), null,
+                R.string.lock_in_background, "", null,
                 { sharedPref.getBoolean("lock_in_background", false) },
                 { sharedPref.edit().putBoolean("lock_in_background", it).apply() }
             )
         }
-        SwitchItem(
-            R.string.protect_storage, "", null,
-            { sharedPref.getBoolean("protect_storage", false) },
-            { sharedPref.edit().putBoolean("protect_storage", it).apply() }
-        )
     }
 }
 

@@ -552,12 +552,7 @@
     <string name="lock_owndroid">OwnDroid\'u kilitle</string>
     <string name="enable_bio_auth">Biyometri ile doğrulama</string>
     <string name="authenticate">Doğrula</string>
-    <string name="use_password">Şifre kullan</string>
-    <string name="auth_with_password">OwnDroid\'u şifre ile doğrula</string>
-    <string name="auth_with_bio">OwnDroid\'u biyometri ile doğrula</string>
     <string name="lock_in_background">Arka plana geçince kilitle</string>
-    <string name="protect_storage">Depolamayı koru</string>
-    <string name="storage_is_protected">Depolama korunuyor</string> <!--TODO-->
     <string name="clear_storage">Depolamayı temizle</string>
 
     <string name="automation_api">Automation API</string> <!--TODO-->

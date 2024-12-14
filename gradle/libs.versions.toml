@@ -2,8 +2,8 @@
 agp = "8.7.3"
 kotlin = "2.0.21"
 
-navigation-compose = "2.8.4"
-composeBom = "2024.11.00"
+navigation-compose = "2.8.5"
+composeBom = "2024.12.01"
 accompanist-drawablepainter = "0.35.0-alpha"
 shizuku = "13.1.5"
 biometric = "1.2.0-alpha05"

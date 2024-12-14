@@ -8,6 +8,9 @@ import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -30,6 +33,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -48,6 +52,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -77,7 +84,6 @@ import com.bintianqi.owndroid.dpm.Keyguard
 import com.bintianqi.owndroid.dpm.LockScreenInfo
 import com.bintianqi.owndroid.dpm.LockTaskMode
 import com.bintianqi.owndroid.dpm.MTEPolicy
-import com.bintianqi.owndroid.dpm.WorkProfile
 import com.bintianqi.owndroid.dpm.NearbyStreamingPolicy
 import com.bintianqi.owndroid.dpm.Network
 import com.bintianqi.owndroid.dpm.NetworkLogging
@@ -115,6 +121,7 @@ import com.bintianqi.owndroid.dpm.WifiAuthKeypair
 import com.bintianqi.owndroid.dpm.WifiSecurityLevel
 import com.bintianqi.owndroid.dpm.WifiSsidPolicy
 import com.bintianqi.owndroid.dpm.WipeData
+import com.bintianqi.owndroid.dpm.WorkProfile
 import com.bintianqi.owndroid.dpm.dhizukuErrorStatus
 import com.bintianqi.owndroid.dpm.dhizukuPermissionGranted
 import com.bintianqi.owndroid.dpm.getDPM
@@ -134,20 +141,16 @@ import kotlinx.coroutines.launch
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 import java.util.Locale
 
-var backToHomeStateFlow = MutableStateFlow(false)
+val backToHomeStateFlow = MutableStateFlow(false)
 @ExperimentalMaterial3Api
 class MainActivity : FragmentActivity() {
-    private val showAuth = mutableStateOf(false)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         registerActivityResult(this)
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         val context = applicationContext
-        val sharedPref = context.getSharedPreferences("data", MODE_PRIVATE)
         if (VERSION.SDK_INT >= 28) HiddenApiBypass.setHiddenApiExemptions("")
-        if(sharedPref.getBoolean("auth", false)) showAuth.value = true
         val locale = context.resources?.configuration?.locale
         zhCN = locale == Locale.SIMPLIFIED_CHINESE || locale == Locale.CHINESE || locale == Locale.CHINA
         toggleInstallAppActivity()
@@ -156,10 +159,7 @@ class MainActivity : FragmentActivity() {
         lifecycleScope.launch { delay(5000); setDefaultAffiliationID(context) }
         setContent {
             OwnDroidTheme(vm) {
-                Home(vm)
-                if(showAuth.value) {
-                    AuthScreen(this, showAuth)
-                }
+                Home(this, vm)
             }
         }
     }
@@ -167,12 +167,6 @@ class MainActivity : FragmentActivity() {
     override fun onResume() {
         super.onResume()
         val sharedPref = applicationContext.getSharedPreferences("data", MODE_PRIVATE)
-        if(
-            sharedPref.getBoolean("auth", false) &&
-            sharedPref.getBoolean("lock_in_background", false)
-        ) {
-            showAuth.value = true
-        }
         if (sharedPref.getBoolean("dhizuku", false)) {
             if (Dhizuku.init(applicationContext)) {
                 if (!dhizukuPermissionGranted()) { dhizukuErrorStatus.value = 2 }
@@ -187,7 +181,7 @@ class MainActivity : FragmentActivity() {
 
 @ExperimentalMaterial3Api
 @Composable
-fun Home(vm: MyViewModel) {
+fun Home(activity: FragmentActivity, vm: MyViewModel) {
     val navCtrl = rememberNavController()
     val context = LocalContext.current
     val dpm = context.getDPM()
@@ -196,6 +190,7 @@ fun Home(vm: MyViewModel) {
     val focusMgr = LocalFocusManager.current
     val dialogStatus = remember { mutableIntStateOf(0) }
     val backToHome by backToHomeStateFlow.collectAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(backToHome) {
         if(backToHome) { navCtrl.navigateUp(); backToHomeStateFlow.value = false }
     }
@@ -308,6 +303,28 @@ fun Home(vm: MyViewModel) {
         composable(route = "About") { About(navCtrl) }
 
         composable(route = "PackageSelector") { PackageSelector(navCtrl) }
+
+        composable(
+            route = "Authenticate",
+            enterTransition = { fadeIn(animationSpec = tween(200)) },
+            popExitTransition = { fadeOut(animationSpec = tween(400)) }
+        ) { Authenticate(activity, navCtrl) }
+    }
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if(
+                (event == Lifecycle.Event.ON_RESUME &&
+                        sharedPref.getBoolean("auth", false) &&
+                        sharedPref.getBoolean("lock_in_background", false)) ||
+                (event == Lifecycle.Event.ON_CREATE && sharedPref.getBoolean("auth", false))
+            ) {
+                navCtrl.navigate("Authenticate") { launchSingleTop = true }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
     LaunchedEffect(Unit) {
         val profileInitialized = sharedPref.getBoolean("ManagedProfileActivated", false)

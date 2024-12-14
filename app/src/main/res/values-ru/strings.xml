@@ -557,12 +557,7 @@
     <string name="lock_owndroid">Заблокировать OwnDroid</string>
     <string name="enable_bio_auth">Аутентификация по биометрии</string>
     <string name="authenticate">Аутентифицировать</string>
-    <string name="use_password">Использовать пароль</string>
-    <string name="auth_with_password">Аутентифицировать OwnDroid с помощью пароля</string>
-    <string name="auth_with_bio">Аутентифицировать OwnDroid с помощью биометрии</string>
     <string name="lock_in_background">Блокировать при переключении в фоновый режим</string>
-    <string name="protect_storage">Защитить хранилище</string>
-    <string name="storage_is_protected">Хранилище защищено, вы не можете очистить хранилище OwnDroid</string>
     <string name="clear_storage">Очистить хранилище</string>
 
     <string name="automation_api">API автоматизации</string>

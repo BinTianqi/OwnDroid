@@ -543,12 +543,7 @@
     <string name="lock_owndroid">锁定OwnDroid</string>
     <string name="enable_bio_auth">使用生物识别</string>
     <string name="authenticate">验证</string>
-    <string name="use_password">使用密码</string>
-    <string name="auth_with_password">使用密码进行验证</string>
-    <string name="auth_with_bio">使用生物识别进行验证</string>
     <string name="lock_in_background">处于后台时锁定</string>
-    <string name="protect_storage">保护存储空间</string>
-    <string name="storage_is_protected">存储空间受到保护，你不能清除OwnDroid的存储空间</string>
     <string name="clear_storage">清除存储空间</string>
 
     <string name="automation_api">自动化API</string>
