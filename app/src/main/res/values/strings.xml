@@ -44,7 +44,6 @@
     <string name="copy_command">Copy Command</string>
     <string name="package_name">Package name</string>
     <string name="not_exist">Not exist</string>
-    <string name="unknown_status">Unknown status</string>
     <string name="copy">Copy</string>
     <string name="file_not_exist">File not exist</string>
     <string name="io_exception">IO Exception</string>
@@ -63,6 +62,7 @@
     <string name="off">Off</string>
     <string name="alias">Alias</string>
     <string name="unknown_error">Unknown error</string>
+    <string name="permission_denied">Permission denied</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
@@ -114,21 +114,15 @@
     <string name="dhizuku_mode_disabled">Dhizuku mode disabled</string>
     <!--Shizuku-->
     <string name="shizuku" translatable="false">Shizuku</string>
-    <string name="check_shizuku">Check permission</string>
     <string name="list_owners">List owners</string>
     <string name="list_users">List users</string>
     <string name="list_accounts">List accounts</string>
     <string name="shizuku_not_started">Shizuku not started. </string>
     <string name="dpm_activate_do_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="dpm_activate_da_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
-    <string name="shizuku_activated_shell">Permission granted (Shell)</string>
-    <string name="shizuku_activated_root">Permission granted (Root)</string>
     <string name="activate_device_owner">Activate Device owner</string>
     <string name="activate_org_profile">Activate organization-owned work profile</string>
     <string name="shizuku_service_disconnected">Shizuku service disconnected</string>
-    <string name="invalid_binder">Invalid binder</string>
-    <string name="bind_shizuku">Connect Shizuku</string>
-    <string name="shizuku_not_bind">Shizuku disconnected</string>
 
     <!--System-->
     <string name="system">System</string>

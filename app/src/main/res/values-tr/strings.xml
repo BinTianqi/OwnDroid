@@ -44,7 +44,6 @@
     <string name="copy_command">Komutu Kopyala</string>
     <string name="package_name">Paket Adı</string>
     <string name="not_exist">Mevcut Değil</string>
-    <string name="unknown_status">Bilinmeyen Durum</string>
     <string name="copy">Kopyala</string>
     <string name="file_not_exist">Dosya Mevcut Değil</string>
     <string name="io_exception">G/Ç Hatası</string>
@@ -53,16 +52,18 @@
     <string name="allow_all">Tümünü İzin Ver</string>
     <string name="use_policy">Politika Kullan</string>
     <string name="account">Hesap</string>
-    <string name="warning">Warning</string> <!--TODO-->
-    <string name="delete">Delete</string> <!--TODO-->
-    <string name="yes">Yes</string> <!--TODO-->
-    <string name="no">No</string> <!--TODO-->
-    <string name="previous">Previous</string> <!--TODO-->
-    <string name="next">Next</string> <!--TODO-->
-    <string name="on">On</string> <!--TODO-->
-    <string name="off">Off</string> <!--TODO-->
-    <string name="alias">Alias</string> <!--TODO-->
-    <string name="unknown_error">Unknown error</string> <!--TODO-->
+    <!--TODO-->
+    <string name="warning">Warning</string>
+    <string name="delete">Delete</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="previous">Previous</string>
+    <string name="next">Next</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
+    <string name="alias">Alias</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="permission_denied">Permission denied</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Etkinleştirmek İçin Tıklayın</string>
@@ -111,19 +112,13 @@
     <string name="dhizuku_mode_disabled">Dhizuku mode disabled</string>
 
     <!--Shizuku-->
-    <string name="check_shizuku">İzni Kontrol Et</string>
     <string name="list_owners">Sahipleri Listele</string>
     <string name="list_users">List users</string> <!--TODO-->
     <string name="list_accounts">List accounts</string> <!--TODO-->
     <string name="shizuku_not_started">Shizuku Başlatılmadı. </string>
-    <string name="shizuku_activated_shell">İzin Verildi (Kabuk)</string>
-    <string name="shizuku_activated_root">İzin Verildi (Root)</string>
     <string name="activate_device_owner">Cihaz Sahibini Etkinleştir</string>
     <string name="activate_org_profile">Kuruluş Profili Sahibini Etkinleştir</string>
     <string name="shizuku_service_disconnected">Shizuku Hizmeti Bağlantısı Kesildi</string>
-    <string name="invalid_binder">Geçersiz Bağlayıcı</string>
-    <string name="bind_shizuku">Shizuku\'ya Bağlan</string>
-    <string name="shizuku_not_bind">Shizuku Bağlantısı Kesildi</string>
 
     <!--System-->
     <string name="system">Sistem</string>

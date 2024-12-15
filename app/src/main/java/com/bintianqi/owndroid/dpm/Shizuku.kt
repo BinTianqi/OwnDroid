@@ -3,7 +3,6 @@ package com.bintianqi.owndroid.dpm
 import android.content.ComponentName
 import android.content.Context
 import android.content.ServiceConnection
-import android.content.pm.PackageManager
 import android.os.Binder
 import android.os.Build.VERSION
 import android.os.IBinder
@@ -13,14 +12,14 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,73 +31,52 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.IUserService
+import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.MyScaffold
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
 
-private var waitGrantPermission = false
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Shizuku(navCtrl: NavHostController) {
+fun Shizuku(vm: MyViewModel, navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val coScope = rememberCoroutineScope()
     val outputTextScrollState = rememberScrollState()
-    var enabled by remember { mutableStateOf(false) }
-    var bindShizuku by remember { mutableStateOf(false) }
     var outputText by rememberSaveable { mutableStateOf("") }
     var showDeviceAdminButton by remember { mutableStateOf(!context.isDeviceAdmin) }
     var showDeviceOwnerButton by remember { mutableStateOf(!context.isDeviceOwner) }
     var showOrgProfileOwnerButton by remember { mutableStateOf(true) }
-    val service by shizukuService.collectAsState()
-    LaunchedEffect(service) {
-        if(service == null) {
-            enabled = false
-            bindShizuku = checkShizukuStatus() == 1
+    val binder by vm.shizukuBinder.collectAsStateWithLifecycle()
+    var service by remember { mutableStateOf<IUserService?>(null) }
+    var loading by remember { mutableStateOf(true) }
+    LaunchedEffect(binder) {
+        if(binder != null && binder!!.pingBinder()) {
+            service = IUserService.Stub.asInterface(binder)
+            loading = false
         } else {
-            enabled = true
-            bindShizuku = false
+            service = null
         }
+    }
+    LaunchedEffect(service) {
+        if(service == null && !loading) navCtrl.navigateUp()
     }
     LaunchedEffect(Unit) {
-        shizukuService.value = null
-        userServiceControl(context, true)
+        if(binder == null) bindShizukuService(context, vm.shizukuBinder)
     }
     MyScaffold(R.string.shizuku, 0.dp, navCtrl, false) {
-        AnimatedVisibility(visible = bindShizuku, modifier = Modifier.fillMaxWidth()) {
-            Button(
-                onClick = {
-                    userServiceControl(context, true)
-                    outputText = ""
-                },
-                modifier = Modifier.wrapContentWidth(Alignment.CenterHorizontally)
-            ) {
-                Text(stringResource(R.string.bind_shizuku))
+        if(loading) {
+            Dialog(onDismissRequest = { navCtrl.navigateUp() }) {
+                CircularProgressIndicator()
             }
-        }
-
-        Button(
-            onClick = {
-                outputText = checkPermission(context)
-                if(service != null) {
-                    enabled = true
-                    bindShizuku = false
-                } else {
-                    enabled = false
-                    bindShizuku = checkShizukuStatus() == 1
-                }
-                coScope.launch {
-                    outputTextScrollState.animateScrollTo(0)
-                }
-            },
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        ) {
-            Text(text = stringResource(R.string.check_shizuku))
         }
         
         Button(
@@ -108,7 +86,6 @@ fun Shizuku(navCtrl: NavHostController) {
                     outputTextScrollState.animateScrollTo(0)
                 }
             },
-            enabled = enabled,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             Text(text = stringResource(R.string.list_owners))
@@ -120,7 +97,6 @@ fun Shizuku(navCtrl: NavHostController) {
                     outputTextScrollState.animateScrollTo(0)
                 }
             },
-            enabled = enabled,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             Text(text = stringResource(R.string.list_users))
@@ -132,7 +108,6 @@ fun Shizuku(navCtrl: NavHostController) {
                     outputTextScrollState.animateScrollTo(0)
                 }
             },
-            enabled = enabled,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             Text(text = stringResource(R.string.list_accounts))
@@ -149,7 +124,6 @@ fun Shizuku(navCtrl: NavHostController) {
                         showDeviceAdminButton = !context.isDeviceAdmin
                     }
                 },
-                enabled = enabled,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
                 Text(text = stringResource(R.string.activate_device_admin))
@@ -166,7 +140,6 @@ fun Shizuku(navCtrl: NavHostController) {
                         showDeviceOwnerButton = !context.isDeviceOwner
                     }
                 },
-                enabled = enabled,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
                 Text(text = stringResource(R.string.activate_device_owner))
@@ -187,7 +160,6 @@ fun Shizuku(navCtrl: NavHostController) {
                             showOrgProfileOwnerButton = !dpm.isOrganizationOwnedDeviceWithManagedProfile
                         }
                     },
-                    enabled = enabled,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
                     Text(text = stringResource(R.string.activate_org_profile))
@@ -201,63 +173,24 @@ fun Shizuku(navCtrl: NavHostController) {
     }
 }
 
-private fun checkPermission(context: Context): String {
-    if(checkShizukuStatus() == -1) { return context.getString(R.string.shizuku_not_started) }
-    return shizukuService.value.let {
-        if(it == null) {
-            context.getString(R.string.shizuku_not_bind)
-        } else {
-            when(it.uid) {
-                2000 -> context.getString(R.string.shizuku_activated_shell)
-                0 -> context.getString(R.string.shizuku_activated_root)
-                else -> context.getString(R.string.unknown_status) + "\nUID: ${it.uid}"
-            }
-        }
-    }
-}
-
-fun checkShizukuStatus(): Int {
-    val status = try {
-        if(Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) { waitGrantPermission = false; 1 }
-        else if(Shizuku.shouldShowRequestPermissionRationale()) { 0 }
-        else{
-            if(!waitGrantPermission) { Shizuku.requestPermission(0) }
-            waitGrantPermission = true
-            0
-        }
-    } catch(_: Exception) { -1 }
-    return status
-}
-
-fun userServiceControl(context:Context, status:Boolean) {
-    if(checkShizukuStatus() != 1) { return }
+fun bindShizukuService(context: Context, shizukuBinder: MutableStateFlow<IBinder?>) {
     val userServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(componentName: ComponentName, binder: IBinder) {
-            if (binder.pingBinder()) {
-                shizukuService.value = IUserService.Stub.asInterface(binder)
-            } else {
-                Toast.makeText(context, R.string.invalid_binder, Toast.LENGTH_SHORT).show()
-            }
+            shizukuBinder.value = binder
         }
         override fun onServiceDisconnected(componentName: ComponentName) {
-            shizukuService.value = null
+            shizukuBinder.value = null
             Toast.makeText(context, R.string.shizuku_service_disconnected, Toast.LENGTH_SHORT).show()
         }
     }
-    val userServiceArgs = Shizuku.UserServiceArgs(
-        ComponentName(
-            context.packageName,ShizukuService::class.java.name
-        )
-    )
+    val userServiceArgs = Shizuku.UserServiceArgs(ComponentName(context, ShizukuService::class.java))
         .daemon(false)
-        .processNameSuffix("service")
-        .debuggable(true)
+        .processNameSuffix("shizuku-service")
+        .debuggable(false)
         .version(26)
     try {
-        if(status) {
-            Shizuku.bindUserService(userServiceArgs, userServiceConnection)
-        }else{
-            Shizuku.unbindUserService(userServiceArgs, userServiceConnection, false)
-        }
-    } catch(_: Exception) { }
+        Shizuku.bindUserService(userServiceArgs, userServiceConnection)
+    } catch(e: Exception) {
+        e.printStackTrace()
+    }
 }

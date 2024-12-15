@@ -43,7 +43,6 @@
     <string name="copy_command">Копировать команду</string>
     <string name="package_name">Имя пакета</string>
     <string name="not_exist">Не существует</string>
-    <string name="unknown_status">Неизвестный статус</string>
     <string name="copy">Копировать</string>
     <string name="file_not_exist">Файл не существует</string>
     <string name="io_exception">Ошибка ввода/вывода</string>
@@ -58,10 +57,12 @@
     <string name="no">Нет</string>
     <string name="previous">Предыдущий</string>
     <string name="next">Следующий</string>
-    <string name="on">On</string> <!--TODO-->
-    <string name="off">Off</string> <!--TODO-->
-    <string name="alias">Alias</string> <!--TODO-->
-    <string name="unknown_error">Unknown error</string> <!--TODO-->
+    <!--TODO-->
+    <string name="on">On</string>
+    <string name="off">Off</string>
+    <string name="alias">Alias</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="permission_denied">Permission denied</string>
 
 
     <!--Разрешения-->
@@ -109,19 +110,13 @@
     <string name="dhizuku_permission_not_granted">Разрешение Dhizuku не предоставлено</string>
     <string name="dhizuku_mode_disabled">Режим Dhizuku отключен</string>
     <!--Shizuku-->
-    <string name="check_shizuku">Проверить разрешение</string>
     <string name="list_owners">Список владельцев</string>
     <string name="list_users">Список пользователей</string>
     <string name="list_accounts">Список аккаунтов</string>
     <string name="shizuku_not_started">Shizuku не запущен. </string>
-    <string name="shizuku_activated_shell">Разрешение предоставлено (Shell)</string>
-    <string name="shizuku_activated_root">Разрешение предоставлено (Root)</string>
     <string name="activate_device_owner">Активировать владельца устройства</string>
     <string name="activate_org_profile">Активировать рабочий профиль, принадлежащий организации</string>
     <string name="shizuku_service_disconnected">Служба Shizuku отключена</string>
-    <string name="invalid_binder">Неверный binder</string>
-    <string name="bind_shizuku">Подключить Shizuku</string>
-    <string name="shizuku_not_bind">Shizuku отключен</string>
 
 
     <!--Системные-->

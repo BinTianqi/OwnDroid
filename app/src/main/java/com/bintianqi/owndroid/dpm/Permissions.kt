@@ -37,6 +37,8 @@ import com.bintianqi.owndroid.yesOrNo
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
 import kotlinx.coroutines.launch
+import rikka.shizuku.Shizuku
+import rikka.sui.Sui
 
 @SuppressLint("NewApi")
 @Composable
@@ -76,7 +78,30 @@ fun Permissions(navCtrl: NavHostController) {
                 operation = { navCtrl.navigate("DeviceOwner") }
             )
         }
-        FunctionItem(R.string.shizuku,"") { navCtrl.navigate("Shizuku") }
+        FunctionItem(R.string.shizuku,"") {
+            try {
+                if(Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) { navCtrl.navigate("Shizuku") }
+                else if(Shizuku.shouldShowRequestPermissionRationale()) {
+                    Toast.makeText(context, R.string.permission_denied, Toast.LENGTH_SHORT).show()
+                } else {
+                    Sui.init(context.packageName)
+                    val listener = object: Shizuku.OnRequestPermissionResultListener {
+                        override fun onRequestPermissionResult(requestCode: Int, grantResult: Int) {
+                            if(grantResult == PackageManager.PERMISSION_GRANTED) {
+                                navCtrl.navigate("Shizuku")
+                            } else {
+                                Toast.makeText(context, R.string.permission_denied, Toast.LENGTH_SHORT).show()
+                            }
+                            Shizuku.removeRequestPermissionResultListener(this)
+                        }
+                    }
+                    Shizuku.addRequestPermissionResultListener(listener)
+                    Shizuku.requestPermission(0)
+                }
+            } catch(_: IllegalStateException) {
+                Toast.makeText(context, R.string.shizuku_not_started, Toast.LENGTH_SHORT).show()
+            }
+        }
         FunctionItem(R.string.device_info, "", R.drawable.perm_device_information_fill0) { navCtrl.navigate("DeviceInfo") }
         if((VERSION.SDK_INT >= 26 && deviceOwner) || (VERSION.SDK_INT>=24 && profileOwner)) {
             FunctionItem(R.string.org_name, "", R.drawable.corporate_fare_fill0) { dialog = 2 }

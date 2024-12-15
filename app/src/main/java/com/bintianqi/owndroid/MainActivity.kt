@@ -210,7 +210,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable(route = "HomePage") { HomePage(navCtrl) }
 
         composable(route = "Permissions") { Permissions(navCtrl) }
-        composable(route = "Shizuku") { Shizuku(navCtrl) }
+        composable(route = "Shizuku") { Shizuku(vm, navCtrl) }
         composable(route = "DeviceAdmin") { DeviceAdmin(navCtrl) }
         composable(route = "ProfileOwner") { ProfileOwner(navCtrl) }
         composable(route = "DeviceOwner") { DeviceOwner(navCtrl) }
