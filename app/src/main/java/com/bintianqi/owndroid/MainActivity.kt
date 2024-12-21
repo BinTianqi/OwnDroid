@@ -37,7 +37,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -188,7 +187,6 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
     val receiver = context.getReceiver()
     val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     val focusMgr = LocalFocusManager.current
-    val dialogStatus = remember { mutableIntStateOf(0) }
     val backToHome by backToHomeStateFlow.collectAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(backToHome) {
@@ -227,7 +225,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable(route = "PermissionPolicy") { PermissionPolicy(navCtrl) }
         composable(route = "MTEPolicy") { MTEPolicy(navCtrl) }
         composable(route = "NearbyStreamingPolicy") { NearbyStreamingPolicy(navCtrl) }
-        composable(route = "LockTaskMode") { LockTaskMode(navCtrl) }
+        composable(route = "LockTaskMode") { LockTaskMode(navCtrl, vm) }
         composable(route = "CACert") { CACert(navCtrl) }
         composable(route = "SecurityLogging") { SecurityLogging(navCtrl) }
         composable(route = "DisableAccountManagement") { DisableAccountManagement(navCtrl) }
@@ -241,7 +239,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable(route = "MinWifiSecurityLevel") { WifiSecurityLevel(navCtrl) }
         composable(route = "WifiSsidPolicy") { WifiSsidPolicy(navCtrl) }
         composable(route = "PrivateDNS") { PrivateDNS(navCtrl) }
-        composable(route = "AlwaysOnVpn") { AlwaysOnVPNPackage(navCtrl) }
+        composable(route = "AlwaysOnVpn") { AlwaysOnVPNPackage(navCtrl, vm) }
         composable(route = "RecommendedGlobalProxy") { RecommendedGlobalProxy(navCtrl) }
         composable(route = "NetworkLog") { NetworkLogging(navCtrl) }
         composable(route = "WifiAuthKeypair") { WifiAuthKeypair(navCtrl) }
@@ -255,7 +253,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable(route = "IntentFilter") { IntentFilter(navCtrl) }
         composable(route = "DeleteWorkProfile") { DeleteWorkProfile(navCtrl) }
 
-        composable(route = "Applications") { ApplicationManage(navCtrl, dialogStatus) }
+        composable(route = "Applications") { ApplicationManage(navCtrl, vm) }
 
         composable(route = "UserRestriction") { UserRestriction(navCtrl) }
         composable(route = "UR-Internet") {
@@ -302,7 +300,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable(route = "ApiSettings") { ApiSettings(navCtrl) }
         composable(route = "About") { About(navCtrl) }
 
-        composable(route = "PackageSelector") { PackageSelector(navCtrl) }
+        composable(route = "PackageSelector") { PackageSelector(navCtrl, vm) }
 
         composable(
             route = "Authenticate",

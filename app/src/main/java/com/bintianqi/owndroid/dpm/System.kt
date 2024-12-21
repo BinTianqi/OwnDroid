@@ -3,9 +3,6 @@ package com.bintianqi.owndroid.dpm
 import android.annotation.SuppressLint
 import android.app.ActivityOptions
 import android.app.AlertDialog
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.admin.DevicePolicyManager.FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY
 import android.app.admin.DevicePolicyManager.InstallSystemUpdateCallback
 import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK
@@ -107,10 +104,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.core.app.NotificationCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.bintianqi.owndroid.MyViewModel
+import com.bintianqi.owndroid.NotificationUtils
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.StopLockTaskModeReceiver
 import com.bintianqi.owndroid.exportFile
 import com.bintianqi.owndroid.exportFilePath
 import com.bintianqi.owndroid.fileUriFlow
@@ -118,13 +116,10 @@ import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.getFile
 import com.bintianqi.owndroid.humanReadableDate
 import com.bintianqi.owndroid.isExportingSecurityOrNetworkLogs
-import com.bintianqi.owndroid.prepareForNotification
-import com.bintianqi.owndroid.selectedPackage
 import com.bintianqi.owndroid.toggle
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.InfoCard
-import com.bintianqi.owndroid.ui.Information
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.RadioButtonItem
@@ -522,9 +517,7 @@ fun ChangeTimeZone(navCtrl: NavHostController) {
             Text(stringResource(R.string.apply))
         }
         Spacer(Modifier.padding(vertical = 10.dp))
-        Information {
-            Text(stringResource(R.string.disable_auto_time_zone_before_set))
-        }
+        InfoCard(R.string.disable_auto_time_zone_before_set)
     }
     if(dialog) AlertDialog(
         text = {
@@ -700,12 +693,11 @@ fun NearbyStreamingPolicy(navCtrl: NavHostController) {
 
 @SuppressLint("NewApi")
 @Composable
-fun LockTaskMode(navCtrl: NavHostController) {
+fun LockTaskMode(navCtrl: NavHostController, vm: MyViewModel) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    val coroutine = rememberCoroutineScope()
     var appSelectorRequest by rememberSaveable { mutableIntStateOf(0) }
     MyScaffold(R.string.lock_task_mode, 8.dp, navCtrl, false) {
         val lockTaskFeatures = remember { mutableStateListOf<Int>() }
@@ -784,11 +776,11 @@ fun LockTaskMode(navCtrl: NavHostController) {
                     lockTaskFeatures.forEach { result += it }
                 }
                 try {
-                    dpm.setLockTaskFeatures(receiver,result)
+                    dpm.setLockTaskFeatures(receiver, result)
                     Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                 } catch (e: IllegalArgumentException) {
                     AlertDialog.Builder(context)
-                        .setTitle("Error")
+                        .setTitle(R.string.error)
                         .setMessage(e.message)
                         .setPositiveButton(R.string.confirm) { dialog, _ -> dialog.dismiss() }
                         .show()
@@ -863,11 +855,11 @@ fun LockTaskMode(navCtrl: NavHostController) {
         var startLockTaskApp by rememberSaveable { mutableStateOf("") }
         var startLockTaskActivity by rememberSaveable { mutableStateOf("") }
         var specifyActivity by rememberSaveable { mutableStateOf(false) }
-        val updatePackage by selectedPackage.collectAsState()
+        val updatePackage by vm.selectedPackage.collectAsStateWithLifecycle()
         LaunchedEffect(updatePackage) {
             if(updatePackage != "") {
                 if(appSelectorRequest == 1) inputLockTaskPkg = updatePackage else startLockTaskApp = updatePackage
-                selectedPackage.value = ""
+                vm.selectedPackage.value = ""
             }
         }
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -906,7 +898,8 @@ fun LockTaskMode(navCtrl: NavHostController) {
         Button(
             modifier = Modifier.fillMaxWidth(),
             onClick = {
-                if(!dpm.getLockTaskPackages(receiver).contains(startLockTaskApp)) {
+                if(!NotificationUtils.checkPermission(context)) return@Button
+                if(!dpm.isLockTaskPermitted(startLockTaskApp)) {
                     Toast.makeText(context, R.string.app_not_allowed, Toast.LENGTH_SHORT).show()
                     return@Button
                 }
@@ -915,13 +908,7 @@ fun LockTaskMode(navCtrl: NavHostController) {
                 val launchIntent = if(specifyActivity) Intent().setComponent(ComponentName(startLockTaskApp, startLockTaskActivity))
                     else packageManager.getLaunchIntentForPackage(startLockTaskApp)
                 if (launchIntent != null) {
-                    coroutine.launch {
-                        prepareForNotification(context) {
-                            sendStopLockTaskNotification(context)
-                            context.startActivity(launchIntent, options.toBundle())
-                            Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                        }
-                    }
+                    context.startActivity(launchIntent, options.toBundle())
                 } else {
                     Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
                 }
@@ -1496,24 +1483,4 @@ fun InstallSystemUpdate(navCtrl: NavHostController) {
         Spacer(Modifier.padding(vertical = 10.dp))
         InfoCard(R.string.auto_reboot_after_install_succeed)
     }
-}
-
-@SuppressLint("NewApi")
-private fun sendStopLockTaskNotification(context: Context) {
-    val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    if (VERSION.SDK_INT >= 26) {
-            val channel = NotificationChannel("LockTaskMode", context.getString(R.string.lock_task_mode), NotificationManager.IMPORTANCE_HIGH).apply {
-            description = "Notification channel for stop lock task mode"
-            setShowBadge(false)
-        }
-        nm.createNotificationChannel(channel)
-    }
-    val intent = Intent(context, StopLockTaskModeReceiver::class.java)
-    val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-    val builder = NotificationCompat.Builder(context, "LockTaskMode")
-        .setContentTitle(context.getText(R.string.lock_task_mode))
-        .setSmallIcon(R.drawable.lock_fill0)
-        .addAction(NotificationCompat.Action.Builder(R.drawable.lock_fill0, context.getText(R.string.stop), pendingIntent).build())
-        .setPriority(NotificationCompat.PRIORITY_HIGH)
-    nm.notify(1, builder.build())
 }

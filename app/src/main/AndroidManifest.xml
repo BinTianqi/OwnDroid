@@ -92,10 +92,6 @@
             android:permission="android.permission.BIND_DEVICE_ADMIN">
         </receiver>
         <receiver
-            android:name=".StopLockTaskModeReceiver"
-            android:description="@string/app_name">
-        </receiver>
-        <receiver
             android:name=".ApiReceiver"
             android:exported="true">
             <intent-filter>

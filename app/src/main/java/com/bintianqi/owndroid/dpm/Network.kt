@@ -92,12 +92,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.navigation.NavHostController
+import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.exportFile
 import com.bintianqi.owndroid.exportFilePath
 import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.isExportingSecurityOrNetworkLogs
-import com.bintianqi.owndroid.selectedPackage
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.InfoCard
@@ -400,7 +400,7 @@ fun PrivateDNS(navCtrl: NavHostController) {
 
 @SuppressLint("NewApi")
 @Composable
-fun AlwaysOnVPNPackage(navCtrl: NavHostController) {
+fun AlwaysOnVPNPackage(navCtrl: NavHostController, vm: MyViewModel) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -409,11 +409,11 @@ fun AlwaysOnVPNPackage(navCtrl: NavHostController) {
     val focusMgr = LocalFocusManager.current
     val refresh = { pkgName = dpm.getAlwaysOnVpnPackage(receiver) ?: "" }
     LaunchedEffect(Unit) { refresh() }
-    val updatePackage by selectedPackage.collectAsState()
+    val updatePackage by vm.selectedPackage.collectAsState()
     LaunchedEffect(updatePackage) {
-        if(selectedPackage.value != "") {
-            pkgName = selectedPackage.value
-            selectedPackage.value = ""
+        if(updatePackage != "") {
+            pkgName = updatePackage
+            vm.selectedPackage.value = ""
         }
     }
     val setAlwaysOnVpn: (String?, Boolean)->Boolean = { vpnPkg: String?, lockdownEnabled: Boolean ->

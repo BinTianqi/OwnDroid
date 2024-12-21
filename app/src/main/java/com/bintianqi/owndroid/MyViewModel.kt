@@ -10,6 +10,8 @@ import kotlinx.coroutines.launch
 
 class MyViewModel: ViewModel() {
     val theme = MutableStateFlow(ThemeSettings())
+    val installedPackages = mutableListOf<PackageInfo>()
+    val selectedPackage = MutableStateFlow("")
     val shizukuBinder = MutableStateFlow<IBinder?>(null)
 
     var initialized = false

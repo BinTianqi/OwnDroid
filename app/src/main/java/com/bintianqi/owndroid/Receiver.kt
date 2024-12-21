@@ -1,9 +1,10 @@
 package com.bintianqi.owndroid
 
-import android.annotation.SuppressLint
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.admin.DeviceAdminReceiver
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller.EXTRA_STATUS
@@ -21,8 +22,7 @@ import android.os.Build.VERSION
 import android.os.PersistableBundle
 import android.util.Log
 import android.widget.Toast
-import com.bintianqi.owndroid.dpm.getDPM
-import com.bintianqi.owndroid.dpm.getReceiver
+import androidx.core.app.NotificationCompat
 import com.bintianqi.owndroid.dpm.handleNetworkLogs
 import com.bintianqi.owndroid.dpm.handleSecurityLogs
 import com.bintianqi.owndroid.dpm.isDeviceAdmin
@@ -35,6 +35,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 class Receiver : DeviceAdminReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
+        if(VERSION.SDK_INT >= 26 && intent.action == "com.bintianqi.owndroid.action.STOP_LOCK_TASK_MODE") {
+            val dpm = getManager(context)
+            val receiver = ComponentName(context, this::class.java)
+            val packages = dpm.getLockTaskPackages(receiver)
+            dpm.setLockTaskPackages(receiver, arrayOf())
+            dpm.setLockTaskPackages(receiver, packages)
+        }
+    }
+
     override fun onEnabled(context: Context, intent: Intent) {
         super.onEnabled(context, intent)
         context.toggleInstallAppActivity()
@@ -78,6 +89,26 @@ class Receiver : DeviceAdminReceiver() {
         sp.edit().putBoolean("dhizuku", false).apply()
         context.toggleInstallAppActivity()
     }
+
+    override fun onLockTaskModeEntering(context: Context, intent: Intent, pkg: String) {
+        super.onLockTaskModeEntering(context, intent, pkg)
+        NotificationUtils.registerChannels(context)
+        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val intent = Intent(context, this::class.java).apply { action = "com.bintianqi.owndroid.action.STOP_LOCK_TASK_MODE" }
+        val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+        val builder = NotificationCompat.Builder(context, "LockTaskMode")
+            .setContentTitle(context.getText(R.string.lock_task_mode))
+            .setSmallIcon(R.drawable.lock_fill0)
+            .addAction(NotificationCompat.Action.Builder(null, context.getString(R.string.stop), pendingIntent).build())
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+        nm.notify(1, builder.build())
+    }
+
+    override fun onLockTaskModeExiting(context: Context, intent: Intent) {
+        super.onLockTaskModeExiting(context, intent)
+        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        nm.cancel(1)
+    }
 }
 
 val installAppDone = MutableStateFlow(false)
@@ -103,18 +134,5 @@ class PackageInstallerReceiver: BroadcastReceiver() {
             val text = context.getString(R.string.app_installer_status) + context.getString(toastText)
             Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
         }
-    }
-}
-
-class StopLockTaskModeReceiver: BroadcastReceiver() {
-    @SuppressLint("NewApi")
-    override fun onReceive(context: Context, intent: Intent) {
-        val dpm = context.getDPM()
-        val receiver = context.getReceiver()
-        val packages = dpm.getLockTaskPackages(receiver)
-        dpm.setLockTaskPackages(receiver, arrayOf())
-        dpm.setLockTaskPackages(receiver, packages)
-        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        nm.cancel(1)
     }
 }

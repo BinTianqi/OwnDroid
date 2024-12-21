@@ -28,7 +28,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.writeClipBoard
@@ -77,21 +76,6 @@ fun NavIcon(operation: () -> Unit) {
             .clickable(onClick = operation)
             .padding(5.dp)
     )
-}
-
-@Composable
-fun Information(content: @Composable ()->Unit) {
-    Column(modifier = Modifier.fillMaxWidth().padding(start = 5.dp, top = 20.dp)) {
-        Icon(
-            painter = painterResource(R.drawable.info_fill0),
-            contentDescription = "info",
-            tint = colorScheme.onBackground.copy(alpha = 0.8F)
-        )
-        Spacer(Modifier.padding(vertical = 1.dp))
-        Column(modifier = Modifier.padding(start = 2.dp)) {
-            content()
-        }
-    }
 }
 
 @Composable

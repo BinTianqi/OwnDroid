@@ -64,6 +64,7 @@
     <string name="unknown_error">Unknown error</string>
     <string name="permission_denied">Permission denied</string>
     <string name="api" translatable="false">API</string>
+    <string name="error">Error</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>

@@ -60,6 +60,7 @@
     <string name="alias">别名</string>
     <string name="unknown_error">未知错误</string>
     <string name="permission_denied">无权限</string>
+    <string name="error">错误</string>
 
     <!--Permissions-->
     <string name="click_to_activate">点击以激活</string>

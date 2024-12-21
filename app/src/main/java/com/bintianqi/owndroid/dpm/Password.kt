@@ -75,7 +75,6 @@ import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.InfoCard
-import com.bintianqi.owndroid.ui.Information
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.yesOrNo
@@ -303,7 +302,7 @@ fun ResetPasswordToken(navCtrl: NavHostController) {
             }
         }
         Spacer(Modifier.padding(vertical = 5.dp))
-        Information{ Text(stringResource(R.string.activate_token_not_required_when_no_password)) }
+        InfoCard(R.string.activate_token_not_required_when_no_password)
     }
 }
 

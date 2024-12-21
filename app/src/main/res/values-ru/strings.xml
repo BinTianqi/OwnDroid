@@ -63,6 +63,7 @@
     <string name="alias">Alias</string>
     <string name="unknown_error">Unknown error</string>
     <string name="permission_denied">Permission denied</string>
+    <string name="error">Error</string>
 
 
     <!--Разрешения-->
