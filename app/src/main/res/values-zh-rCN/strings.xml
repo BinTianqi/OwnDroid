@@ -540,8 +540,8 @@
     <string name="lock_in_background">处于后台时锁定</string>
     <string name="clear_storage">清除存储空间</string>
 
-    <string name="automation_api">自动化API</string>
-    <string name="automation_debug">调试模式</string>
+    <string name="api_key">API密钥</string>
+    <string name="api_key_exist">API密钥已存在，设置新的密钥将会覆盖当前密钥</string>
 
     <!--AndroidPermission-->
     <string name="permission_POST_NOTIFICATIONS">发送通知</string>

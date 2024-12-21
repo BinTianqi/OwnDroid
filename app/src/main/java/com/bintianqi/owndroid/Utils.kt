@@ -27,7 +27,6 @@ import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import java.util.Date
 import java.util.Locale
 
@@ -143,7 +142,3 @@ fun parseTimestamp(timestamp: Long): String {
 
 val Long.humanReadableDate: String
     get() = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault()).format(Date(this))
-
-val Long.humanReadableTime: String
-    get() = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(this))
-

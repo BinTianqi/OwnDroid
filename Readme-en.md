@@ -43,6 +43,24 @@ Use Android Device owner privilege to manage your device.
   - Set screen timeout
   - ...
 
+## API
+
+|    ID     | Description      | Extras                                | Minimum Android version |
+|:---------:|------------------|---------------------------------------|:-----------------------:|
+|   HIDE    | Hide an app      | `package`: package name of target app |                         |
+|  UNHIDE   | Unhide an app    | `package`: package name of target app |                         |
+|  SUSPEND  | Suspend an app   | `package`: package name of target app |            7            |
+| UNSUSPEND | Unsuspend an app | `package`: package name of target app |            7            |
+|   LOCK    | Lock screen      |                                       |                         |
+
+Use this API in adb shell
+```shell
+am broadcast -a com.bintianqi.owndroid.action.<ID> -n com.bintianqi.owndroid/.ApiReceiver --es key <API_KEY>
+# Example
+am broadcast -a com.bintianqi.owndroid.action.HIDE -n com.bintianqi.owndroid/.ApiReceiver --es key abcdefg --es package com.example.app
+```
+If the return value is 0, the operation is successful.
+
 ## License
 
 [License.md](LICENSE.md)

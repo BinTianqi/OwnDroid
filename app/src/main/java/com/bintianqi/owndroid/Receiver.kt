@@ -82,7 +82,7 @@ class Receiver : DeviceAdminReceiver() {
 
 val installAppDone = MutableStateFlow(false)
 
-class PackageInstallerReceiver:BroadcastReceiver(){
+class PackageInstallerReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val toastText = when(intent.getIntExtra(EXTRA_STATUS, 999)){
             STATUS_PENDING_USER_ACTION -> R.string.status_pending_action

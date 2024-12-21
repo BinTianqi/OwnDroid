@@ -550,8 +550,9 @@
     <string name="lock_in_background">Arka plana geçince kilitle</string>
     <string name="clear_storage">Depolamayı temizle</string>
 
-    <string name="automation_api">Automation API</string> <!--TODO-->
-    <string name="automation_debug">Debug mode</string> <!--TODO-->
+    <!--TODO-->
+    <string name="api_key">API key</string>
+    <string name="api_key_exist">The API key already exists, setting a new key will overwrite the current key.</string>
 
     <!--AndroidPermission-->
     <string name="permission_POST_NOTIFICATIONS">Bildirim gönder</string>

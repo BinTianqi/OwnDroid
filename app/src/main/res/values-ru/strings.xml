@@ -555,8 +555,9 @@
     <string name="lock_in_background">Блокировать при переключении в фоновый режим</string>
     <string name="clear_storage">Очистить хранилище</string>
 
-    <string name="automation_api">API автоматизации</string>
-    <string name="automation_debug">Режим отладки</string>
+    <!--TODO-->
+    <string name="api_key">API key</string>
+    <string name="api_key_exist">The API key already exists, setting a new key will overwrite the current key.</string>
 
     <!--Разрешения Android-->
     <string name="permission_POST_NOTIFICATIONS">Отправлять уведомления</string>

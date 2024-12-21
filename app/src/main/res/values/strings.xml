@@ -63,6 +63,7 @@
     <string name="alias">Alias</string>
     <string name="unknown_error">Unknown error</string>
     <string name="permission_denied">Permission denied</string>
+    <string name="api" translatable="false">API</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
@@ -553,9 +554,9 @@
     <string name="authenticate">Authenticate</string>
     <string name="lock_in_background">Lock when switch to background</string>
     <string name="clear_storage">Clear storage</string>
-
-    <string name="automation_api">Automation API</string>
-    <string name="automation_debug">Debug mode</string>
+    
+    <string name="api_key">API key</string>
+    <string name="api_key_exist">The API key already exists, setting a new key will overwrite the current key.</string>
 
     <!--AndroidPermission-->
     <string name="permission_POST_NOTIFICATIONS">Post notifications</string>

@@ -32,9 +32,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.core.content.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.ui.FunctionItem
+import com.bintianqi.owndroid.ui.InfoCard
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.SwitchItem
 import java.security.SecureRandom
@@ -45,7 +47,7 @@ fun Settings(navCtrl: NavHostController) {
         FunctionItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Options") }
         FunctionItem(R.string.appearance, "", R.drawable.format_paint_fill0) { navCtrl.navigate("Appearance") }
         FunctionItem(R.string.security, "", R.drawable.lock_fill0) { navCtrl.navigate("AuthSettings") }
-        FunctionItem(R.string.automation_api, "", R.drawable.apps_fill0) { navCtrl.navigate("Automation") }
+        FunctionItem(R.string.api, "", R.drawable.apps_fill0) { navCtrl.navigate("ApiSettings") }
         FunctionItem(R.string.about, "", R.drawable.info_fill0) { navCtrl.navigate("About") }
     }
 }
@@ -154,43 +156,46 @@ fun AuthSettings(navCtrl: NavHostController) {
 }
 
 @Composable
-fun Automation(navCtrl: NavHostController) {
+fun ApiSettings(navCtrl: NavHostController) {
     val context = LocalContext.current
     val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
-    MyScaffold(R.string.automation_api, 8.dp, navCtrl) {
-        Spacer(Modifier.padding(vertical = 5.dp))
-        var key by remember { mutableStateOf("") }
-        OutlinedTextField(
-            value = key, onValueChange = { key = it }, label = { Text("Key")},
-            modifier = Modifier.fillMaxWidth(),
-            trailingIcon = {
-                IconButton(
-                    onClick = {
-                        val charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-                        val sr = SecureRandom()
-                        key = (1..20).map { charset[sr.nextInt(charset.length)] }.joinToString("")
-                    }
-                ) {
-                    Icon(painter = painterResource(R.drawable.casino_fill0), contentDescription = "Random")
-                }
+    MyScaffold(R.string.api, 8.dp, navCtrl) {
+        var enabled by remember { mutableStateOf(sharedPref.getBoolean("enable_api", false)) }
+        LaunchedEffect(enabled) {
+            sharedPref.edit {
+                putBoolean("enable_api", enabled)
+                if(!enabled) remove("api_key")
             }
-        )
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = {
-                sharedPref.edit().putString("automation_key", key).apply()
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-            },
-            enabled = key.length >= 20
-        ) {
-            Text(stringResource(R.string.apply))
         }
-        SwitchItem(
-            R.string.automation_debug, "", null,
-            { sharedPref.getBoolean("automation_debug", false) },
-            { sharedPref.edit().putBoolean("automation_debug", it).apply() },
-            padding = false
-        )
+        SwitchItem(R.string.enable, "", null, enabled, { enabled = it }, padding = false)
+        if(enabled) {
+            var key by remember { mutableStateOf("") }
+            OutlinedTextField(
+                value = key, onValueChange = { key = it }, label = { Text(stringResource(R.string.api_key)) },
+                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp), readOnly = true,
+                trailingIcon = {
+                    IconButton(
+                        onClick = {
+                            val charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+                            val sr = SecureRandom()
+                            key = (1..20).map { charset[sr.nextInt(charset.length)] }.joinToString("")
+                        }
+                    ) {
+                        Icon(painter = painterResource(R.drawable.casino_fill0), contentDescription = "Random")
+                    }
+                }
+            )
+            Button(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                onClick = {
+                    sharedPref.edit().putString("api_key", key).apply()
+                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                }
+            ) {
+                Text(stringResource(R.string.apply))
+            }
+            if(sharedPref.contains("api_key")) InfoCard(R.string.api_key_exist)
+        }
     }
 }
 

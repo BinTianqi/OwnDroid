@@ -43,6 +43,24 @@
   - 设置屏幕超时
   - ...
 
+## API
+
+|    ID     | 描述       | Extras             | 最小安卓版本 |
+|:---------:|----------|--------------------|:------:|
+|   HIDE    | 隐藏一个应用   | `package`: 目标应用的包名 |        |
+|  UNHIDE   | 取消隐藏一个应用 | `package`: 目标应用的包名 |        |
+|  SUSPEND  | 挂起一个应用   | `package`: 目标应用的包名 |   7    |
+| UNSUSPEND | 取消挂起一个应用 | `package`: 目标应用的包名 |   7    |
+|   LOCK    | 锁屏       |                    |        |
+
+在adb shell中使用API
+```shell
+am broadcast -a com.bintianqi.owndroid.action.<ID> -n com.bintianqi.owndroid/.ApiReceiver --es key <API_KEY>
+# 示例
+am broadcast -a com.bintianqi.owndroid.action.HIDE -n com.bintianqi.owndroid/.ApiReceiver --es key abcdefg --es package com.example.app
+```
+如果返回值为0，操作成功
+
 ## 许可证
 
 [License.md](LICENSE.md)

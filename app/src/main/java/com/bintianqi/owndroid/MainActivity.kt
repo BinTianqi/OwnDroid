@@ -299,7 +299,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable(route = "Options") { SettingsOptions(navCtrl) }
         composable(route = "Appearance") { Appearance(navCtrl, vm) }
         composable(route = "AuthSettings") { AuthSettings(navCtrl) }
-        composable(route = "Automation") { Automation(navCtrl) }
+        composable(route = "ApiSettings") { ApiSettings(navCtrl) }
         composable(route = "About") { About(navCtrl) }
 
         composable(route = "PackageSelector") { PackageSelector(navCtrl) }
