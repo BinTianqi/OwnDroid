@@ -68,7 +68,8 @@ fun writeClipBoard(context: Context, string: String):Boolean{
 
 lateinit var requestPermission: ActivityResultLauncher<String>
 lateinit var exportFile: ActivityResultLauncher<Intent>
-val exportFilePath = MutableStateFlow<String?>(null)
+var exportFilePath: String? = null
+var isExportingSecurityOrNetworkLogs = false
 
 fun registerActivityResult(context: ComponentActivity){
     getFile = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
@@ -87,15 +88,19 @@ fun registerActivityResult(context: ComponentActivity){
     exportFile = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val intentData = result.data ?: return@registerForActivityResult
         val uriData = intentData.data ?: return@registerForActivityResult
-        val path = exportFilePath.value ?: return@registerForActivityResult
+        val path = exportFilePath ?: return@registerForActivityResult
         context.contentResolver.openOutputStream(uriData).use { outStream ->
             if(outStream != null) {
+                if(isExportingSecurityOrNetworkLogs) outStream.write("[".encodeToByteArray())
                 File(path).inputStream().use { inStream ->
                     inStream.copyTo(outStream)
                 }
+                if(isExportingSecurityOrNetworkLogs) outStream.write("]".encodeToByteArray())
                 Toast.makeText(context.applicationContext, R.string.success, Toast.LENGTH_SHORT).show()
             }
         }
+        isExportingSecurityOrNetworkLogs = false
+        exportFilePath = null
     }
 }
 

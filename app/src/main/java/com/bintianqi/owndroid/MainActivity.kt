@@ -229,7 +229,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable(route = "NearbyStreamingPolicy") { NearbyStreamingPolicy(navCtrl) }
         composable(route = "LockTaskMode") { LockTaskMode(navCtrl) }
         composable(route = "CACert") { CACert(navCtrl) }
-        composable(route = "SecurityLogs") { SecurityLogging(navCtrl) }
+        composable(route = "SecurityLogging") { SecurityLogging(navCtrl) }
         composable(route = "DisableAccountManagement") { DisableAccountManagement(navCtrl) }
         composable(route = "SystemUpdatePolicy") { SystemUpdatePolicy(navCtrl) }
         composable(route = "InstallSystemUpdate") { InstallSystemUpdate(navCtrl) }

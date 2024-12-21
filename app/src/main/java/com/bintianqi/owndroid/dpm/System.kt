@@ -117,6 +117,7 @@ import com.bintianqi.owndroid.fileUriFlow
 import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.getFile
 import com.bintianqi.owndroid.humanReadableDate
+import com.bintianqi.owndroid.isExportingSecurityOrNetworkLogs
 import com.bintianqi.owndroid.prepareForNotification
 import com.bintianqi.owndroid.selectedPackage
 import com.bintianqi.owndroid.toggle
@@ -1033,7 +1034,8 @@ fun SecurityLogging(navCtrl: NavHostController) {
                     intent.addCategory(Intent.CATEGORY_OPENABLE)
                     intent.setType("application/json")
                     intent.putExtra(Intent.EXTRA_TITLE, "SecurityLogs.json")
-                    exportFilePath.value = logFile.path
+                    exportFilePath = logFile.path
+                    isExportingSecurityOrNetworkLogs = true
                     exportFile.launch(intent)
                 },
                 enabled = fileSize > 0,
@@ -1081,7 +1083,8 @@ fun SecurityLogging(navCtrl: NavHostController) {
                     intent.addCategory(Intent.CATEGORY_OPENABLE)
                     intent.setType("application/json")
                     intent.putExtra(Intent.EXTRA_TITLE, "PreRebootSecurityLogs.json")
-                    exportFilePath.value = preRebootSecurityLogs.path
+                    exportFilePath = preRebootSecurityLogs.path
+                    isExportingSecurityOrNetworkLogs = true
                     exportFile.launch(intent)
                 }
             },

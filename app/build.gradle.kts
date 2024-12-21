@@ -54,15 +54,6 @@ android {
         compose = true
         aidl = true
     }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "/META-INF/**.version"
-            excludes += "kotlin/**"
-            excludes += "**.bin"
-            excludes += "kotlin-tooling-metadata.json"
-        }
-    }
     androidResources {
         generateLocaleConfig = true
     }

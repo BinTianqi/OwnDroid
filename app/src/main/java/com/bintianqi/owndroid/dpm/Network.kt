@@ -96,6 +96,7 @@ import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.exportFile
 import com.bintianqi.owndroid.exportFilePath
 import com.bintianqi.owndroid.formatFileSize
+import com.bintianqi.owndroid.isExportingSecurityOrNetworkLogs
 import com.bintianqi.owndroid.selectedPackage
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.FunctionItem
@@ -585,7 +586,8 @@ fun NetworkLogging(navCtrl: NavHostController) {
                     intent.addCategory(Intent.CATEGORY_OPENABLE)
                     intent.setType("application/json")
                     intent.putExtra(Intent.EXTRA_TITLE, "NetworkLogs.json")
-                    exportFilePath.value = logFile.path
+                    exportFilePath = logFile.path
+                    isExportingSecurityOrNetworkLogs = true
                     exportFile.launch(intent)
                 },
                 enabled = fileSize > 0,
