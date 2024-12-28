@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -22,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -313,5 +316,19 @@ fun MyScaffold(
             )
             content()
         }
+    }
+}
+
+@Composable
+fun UpOrDownTextFieldTrailingIconButton(active: Boolean, onClick: () -> Unit) {
+    val degrees by animateFloatAsState(if(active) 180F else 0F)
+    IconButton(
+        onClick = onClick,
+        modifier = Modifier.clip(RoundedCornerShape(50))
+    ) {
+        Icon(
+            imageVector = Icons.Default.ArrowDropDown, contentDescription = null,
+            modifier = Modifier.rotate(degrees)
+        )
     }
 }

@@ -64,6 +64,7 @@
     <string name="unknown_error">Unknown error</string>
     <string name="permission_denied">Permission denied</string>
     <string name="error">Error</string>
+    <string name="status">Status</string>
 
 
     <!--Разрешения-->
@@ -215,6 +216,19 @@
     <!--Сеть-->
     <string name="network">Сеть</string>
     <string name="wifi_mac_address">MAC-адрес Wi-Fi</string>
+    <!--TODO-->
+    <string name="add_wifi">Add Wi-Fi</string>
+    <string name="current">Current</string>
+    <string name="hidden_ssid">Hidden SSID</string>
+    <string name="ip_settings">IP settings</string>
+    <string name="static_str">Static</string>
+    <string name="ip_address">IP address</string>
+    <string name="gateway_address">Gateway address</string>
+    <string name="dns_servers">DNS servers</string>
+    <string name="mac_randomization">MAC randomization</string>
+    <string name="non_persistent">Non persistent</string>
+    <string name="host">Host</string>
+    <string name="add_network_result_invalid_configuration">Invalid configuration</string>
     <string name="min_wifi_security_level">Минимальный уровень безопасности Wi-Fi</string>
     <string name="wifi_security_open">Открытая</string>
     <string name="lockdown_admin_configured_network">Блокировка ети, настроенной администратором</string>
@@ -235,7 +249,7 @@
     <string name="proxy_type_direct">Прямой прокси</string>
     <string name="specify_port">Указать порт</string>
     <string name="invalid_config">Неверная конфигурация</string>
-    <string name="exclude_hosts">Исключить хосты</string>
+    <string name="excluded_hosts">Исключить хосты</string> <!--TODO-->
     <string name="network_logging">Network logging</string> <!--TODO-->
     <string name="log_file_size_is">Размер файла журнала: %1$s</string>
     <string name="delete_logs">Удалить журналы</string>

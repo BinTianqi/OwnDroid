@@ -1,6 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!--Global-->
     <string name="app_name" translatable="false">OwnDroid</string>
+    <string name="place_holder" translatable="false"/>
     <string name="disabled">Disabled</string>
     <string name="enabled">Enabled</string>
     <string name="disable">Disable</string>
@@ -65,6 +66,7 @@
     <string name="permission_denied">Permission denied</string>
     <string name="api" translatable="false">API</string>
     <string name="error">Error</string>
+    <string name="status">Status</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
@@ -220,6 +222,18 @@
     <!--Network-->
     <string name="network">Network</string>
     <string name="wifi_mac_address">Wi-Fi Mac address</string>
+    <string name="add_wifi">Add Wi-Fi</string>
+    <string name="current">Current</string>
+    <string name="hidden_ssid">Hidden SSID</string>
+    <string name="ip_settings">IP settings</string>
+    <string name="static_str">Static</string>
+    <string name="ip_address">IP address</string>
+    <string name="gateway_address">Gateway address</string>
+    <string name="dns_servers">DNS servers</string>
+    <string name="mac_randomization">MAC randomization</string>
+    <string name="non_persistent">Non persistent</string>
+    <string name="host">Host</string>
+    <string name="add_network_result_invalid_configuration">Invalid configuration</string>
     <string name="min_wifi_security_level">Minimum Wi-Fi security level</string>
     <string name="wifi_security_open">Open</string>
     <string name="lockdown_admin_configured_network">Lockdown admin configured network</string>
@@ -240,7 +254,7 @@
     <string name="proxy_type_direct">Direct proxy</string>
     <string name="specify_port">Specify port</string>
     <string name="invalid_config">Invalid config</string>
-    <string name="exclude_hosts">Exclude hosts</string>
+    <string name="excluded_hosts">Excluded hosts</string>
     <string name="network_logging">Network logging</string>
     <string name="log_file_size_is">Log file size: %1$s</string>
     <string name="delete_logs">Delete logs</string>

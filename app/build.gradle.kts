@@ -86,4 +86,5 @@ dependencies {
     implementation(libs.androidx.fragment)
     implementation(libs.hiddenApiBypass)
     implementation(libs.serialization)
+    implementation(kotlin("reflect"))
 }

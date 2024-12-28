@@ -61,6 +61,7 @@
     <string name="unknown_error">未知错误</string>
     <string name="permission_denied">无权限</string>
     <string name="error">错误</string>
+    <string name="status">状态</string>
 
     <!--Permissions-->
     <string name="click_to_activate">点击以激活</string>
@@ -208,7 +209,19 @@
 
     <!--Network-->
     <string name="network">网络</string>
-    <string name="wifi_mac_address">Wi-Fi Mac地址</string>
+    <string name="wifi_mac_address">Wi-Fi MAC地址</string>
+    <string name="add_wifi">添加Wi-Fi</string>
+    <string name="current">当前</string>
+    <string name="hidden_ssid">隐藏的SSID</string>
+    <string name="ip_settings">IP设置</string>
+    <string name="static_str">静态</string>
+    <string name="ip_address">IP地址</string>
+    <string name="gateway_address">网关地址</string>
+    <string name="dns_servers">DNS服务器</string>
+    <string name="mac_randomization">MAC随机化</string>
+    <string name="non_persistent">非持久</string>
+    <string name="host">主机</string>
+    <string name="add_network_result_invalid_configuration">Invalid configuration</string>
     <string name="min_wifi_security_level">最低Wi-Fi安全等级</string>
     <string name="wifi_security_open">开放</string>
     <string name="lockdown_admin_configured_network">锁定由管理员配置的网络</string>
@@ -229,7 +242,7 @@
     <string name="proxy_type_direct">直连代理</string>
     <string name="specify_port">指定端口</string>
     <string name="invalid_config">无效配置</string>
-    <string name="exclude_hosts">排除列表</string>
+    <string name="excluded_hosts">排除的主机</string>
     <string name="network_logging">网络日志</string>
     <string name="log_file_size_is">日志文件大小：%1$s</string>
     <string name="delete_logs">删除日志</string>
@@ -534,7 +547,7 @@
     <string name="project_homepage">项目主页</string>
     <string name="appearance">外观</string>
 
-    <string name="security">安全</string>
+    <string name="security">安全性</string>
     <string name="lock_owndroid">锁定OwnDroid</string>
     <string name="enable_bio_auth">使用生物识别</string>
     <string name="authenticate">验证</string>

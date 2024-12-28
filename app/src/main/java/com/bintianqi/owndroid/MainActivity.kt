@@ -59,6 +59,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.bintianqi.owndroid.dpm.AddNetwork
 import com.bintianqi.owndroid.dpm.AffiliationID
 import com.bintianqi.owndroid.dpm.AlwaysOnVPNPackage
 import com.bintianqi.owndroid.dpm.ApplicationManage
@@ -236,6 +237,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
 
         composable(route = "Network") { Network(navCtrl) }
         composable(route = "NetworkOptions") { NetworkOptions(navCtrl) }
+        composable(route = "AddWifi") { AddNetwork(navCtrl) }
         composable(route = "MinWifiSecurityLevel") { WifiSecurityLevel(navCtrl) }
         composable(route = "WifiSsidPolicy") { WifiSsidPolicy(navCtrl) }
         composable(route = "PrivateDNS") { PrivateDNS(navCtrl) }

@@ -65,6 +65,7 @@
     <string name="unknown_error">Unknown error</string>
     <string name="permission_denied">Permission denied</string>
     <string name="error">Error</string>
+    <string name="status">Status</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Etkinleştirmek İçin Tıklayın</string>
@@ -216,6 +217,19 @@
     <!--Network-->
     <string name="network">Ağ</string>
     <string name="wifi_mac_address">Wi-Fi MAC adresi</string>
+    <!--TODO-->
+    <string name="add_wifi">Add Wi-Fi</string>
+    <string name="current">Current</string>
+    <string name="hidden_ssid">Hidden SSID</string>
+    <string name="ip_settings">IP settings</string>
+    <string name="static_str">Static</string>
+    <string name="ip_address">IP address</string>
+    <string name="gateway_address">Gateway address</string>
+    <string name="dns_servers">DNS servers</string>
+    <string name="mac_randomization">MAC randomization</string>
+    <string name="non_persistent">Non persistent</string>
+    <string name="host">Host</string>
+    <string name="add_network_result_invalid_configuration">Invalid configuration</string>
     <string name="min_wifi_security_level">Minimum Wi-Fi güvenlik seviyesi</string>
     <string name="wifi_security_open">Açık</string>
     <string name="lockdown_admin_configured_network">Yönetici tarafından yapılandırılmış ağı kilitle</string>
@@ -236,7 +250,7 @@
     <string name="proxy_type_direct">Direct proxy</string> <!--TODO-->
     <string name="specify_port">Specify port</string> <!--TODO-->
     <string name="invalid_config">Invalid config</string> <!--TODO-->
-    <string name="exclude_hosts">Exclude hosts</string> <!--TODO-->
+    <string name="excluded_hosts">Excluded hosts</string> <!--TODO-->
     <string name="network_logging">Network logging</string> <!--TODO-->
     <string name="log_file_size_is">Log file size: %1$s</string> <!--TODO-->
     <string name="delete_logs">Delete logs</string> <!--TODO-->
