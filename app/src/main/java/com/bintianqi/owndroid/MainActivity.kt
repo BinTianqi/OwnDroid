@@ -59,7 +59,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.bintianqi.owndroid.dpm.AddNetwork
 import com.bintianqi.owndroid.dpm.AffiliationID
 import com.bintianqi.owndroid.dpm.AlwaysOnVPNPackage
 import com.bintianqi.owndroid.dpm.ApplicationManage
@@ -111,12 +110,14 @@ import com.bintianqi.owndroid.dpm.SystemManage
 import com.bintianqi.owndroid.dpm.SystemOptions
 import com.bintianqi.owndroid.dpm.SystemUpdatePolicy
 import com.bintianqi.owndroid.dpm.TransferOwnership
+import com.bintianqi.owndroid.dpm.UpdateNetwork
 import com.bintianqi.owndroid.dpm.UserOperation
 import com.bintianqi.owndroid.dpm.UserOptions
 import com.bintianqi.owndroid.dpm.UserRestriction
 import com.bintianqi.owndroid.dpm.UserRestrictionItem
 import com.bintianqi.owndroid.dpm.UserSessionMessage
 import com.bintianqi.owndroid.dpm.Users
+import com.bintianqi.owndroid.dpm.Wifi
 import com.bintianqi.owndroid.dpm.WifiAuthKeypair
 import com.bintianqi.owndroid.dpm.WifiSecurityLevel
 import com.bintianqi.owndroid.dpm.WifiSsidPolicy
@@ -236,8 +237,9 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable(route = "WipeData") { WipeData(navCtrl) }
 
         composable(route = "Network") { Network(navCtrl) }
+        composable(route = "Wifi") { Wifi(navCtrl) }
         composable(route = "NetworkOptions") { NetworkOptions(navCtrl) }
-        composable(route = "AddWifi") { AddNetwork(navCtrl) }
+        composable(route = "UpdateNetwork") { UpdateNetwork(it.arguments!!, navCtrl) }
         composable(route = "MinWifiSecurityLevel") { WifiSecurityLevel(navCtrl) }
         composable(route = "WifiSsidPolicy") { WifiSsidPolicy(navCtrl) }
         composable(route = "PrivateDNS") { PrivateDNS(navCtrl) }

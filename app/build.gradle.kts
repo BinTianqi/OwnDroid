@@ -77,6 +77,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.accompanist.drawablepainter)
+    implementation(libs.accompanist.permissions)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.shizuku.provider)

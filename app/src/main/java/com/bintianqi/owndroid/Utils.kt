@@ -122,3 +122,7 @@ fun parseTimestamp(timestamp: Long): String {
 
 val Long.humanReadableDate: String
     get() = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault()).format(Date(this))
+
+fun Context.showOperationResultToast(success: Boolean) {
+    Toast.makeText(this, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+}

@@ -210,7 +210,12 @@
     <!--Network-->
     <string name="network">网络</string>
     <string name="wifi_mac_address">Wi-Fi MAC地址</string>
-    <string name="add_wifi">添加Wi-Fi</string>
+    <string name="disconnect">断开连接</string>
+    <string name="reconnect">重新连接</string>
+    <string name="saved_networks">已保存的网络</string>
+    <string name="request_location_permission_description">此app需要定位权限以获取已保存的网络，你的地理位置将不会被读取。点击以请求权限</string>
+    <string name="add_network">添加网络</string>
+    <string name="update_network">更新网络</string>
     <string name="current">当前</string>
     <string name="hidden_ssid">隐藏的SSID</string>
     <string name="ip_settings">IP设置</string>

@@ -1,5 +1,6 @@
 package com.bintianqi.owndroid.dpm
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_OFF
@@ -29,6 +30,7 @@ import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
 import android.net.wifi.WifiSsid
 import android.os.Build.VERSION
+import android.os.Bundle
 import android.telephony.TelephonyManager
 import android.telephony.TelephonyManager.UNKNOWN_CARRIER_ID
 import android.telephony.data.ApnSetting.AUTH_TYPE_CHAP
@@ -47,38 +49,54 @@ import android.telephony.data.ApnSetting.PROTOCOL_NON_IP
 import android.telephony.data.ApnSetting.PROTOCOL_PPP
 import android.telephony.data.ApnSetting.PROTOCOL_UNSTRUCTURED
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -88,6 +106,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -101,6 +120,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import androidx.core.os.bundleOf
 import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.R
@@ -108,15 +128,21 @@ import com.bintianqi.owndroid.exportFile
 import com.bintianqi.owndroid.exportFilePath
 import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.isExportingSecurityOrNetworkLogs
+import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.InfoCard
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.MyScaffold
+import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.UpOrDownTextFieldTrailingIconButton
 import com.bintianqi.owndroid.writeClipBoard
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import kotlinx.coroutines.launch
 import java.net.InetAddress
 import kotlin.math.max
 import kotlin.reflect.jvm.jvmErasure
@@ -130,25 +156,15 @@ fun Network(navCtrl:NavHostController) {
     val profileOwner = context.isProfileOwner
     val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     val dhizuku = sharedPref.getBoolean("dhizuku", false)
-    var wifiMacDialog by remember { mutableStateOf(false) }
     MyScaffold(R.string.network, 0.dp, navCtrl) {
-        if(VERSION.SDK_INT >= 24 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            FunctionItem(R.string.wifi_mac_address, "", R.drawable.wifi_fill0) { wifiMacDialog = true }
-        }
+        if(!dhizuku) FunctionItem(R.string.wifi, "", R.drawable.wifi_fill0) { navCtrl.navigate("Wifi") }
         if(VERSION.SDK_INT >= 30) {
             FunctionItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("NetworkOptions") }
-        }
-        FunctionItem(R.string.add_wifi, "", R.drawable.wifi_add_fill0) { navCtrl.navigate("AddWifi") }
-        if(VERSION.SDK_INT >= 33 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            FunctionItem(R.string.min_wifi_security_level, "", R.drawable.wifi_password_fill0) { navCtrl.navigate("MinWifiSecurityLevel") }
-        }
-        if(VERSION.SDK_INT >= 33 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            FunctionItem(R.string.wifi_ssid_policy, "", R.drawable.wifi_fill0) { navCtrl.navigate("WifiSsidPolicy") }
         }
         if(VERSION.SDK_INT >= 29 && deviceOwner) {
             FunctionItem(R.string.private_dns, "", R.drawable.dns_fill0) { navCtrl.navigate("PrivateDNS") }
         }
-        if(VERSION.SDK_INT >= 24 && (deviceOwner || profileOwner)) {
+        if(VERSION.SDK_INT >= 24) {
             FunctionItem(R.string.always_on_vpn, "", R.drawable.vpn_key_fill0) { navCtrl.navigate("AlwaysOnVpn") }
         }
         if(deviceOwner) {
@@ -157,38 +173,15 @@ fun Network(navCtrl:NavHostController) {
         if(VERSION.SDK_INT >= 26 && !dhizuku && (deviceOwner || (profileOwner && dpm.isManagedProfile(receiver)))) {
             FunctionItem(R.string.network_logging, "", R.drawable.description_fill0) { navCtrl.navigate("NetworkLog") }
         }
-        if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) {
+        if(VERSION.SDK_INT >= 31) {
             FunctionItem(R.string.wifi_auth_keypair, "", R.drawable.key_fill0) { navCtrl.navigate("WifiAuthKeypair") }
         }
-        if(VERSION.SDK_INT >= 33 && (deviceOwner || profileOwner)) {
+        if(VERSION.SDK_INT >= 33) {
             FunctionItem(R.string.preferential_network_service, "", R.drawable.globe_fill0) { navCtrl.navigate("PreferentialNetworkService") }
         }
         if(VERSION.SDK_INT >= 28 && deviceOwner) {
             FunctionItem(R.string.override_apn_settings, "", R.drawable.cell_tower_fill0) { navCtrl.navigate("OverrideAPN") }
         }
-    }
-    if(wifiMacDialog && VERSION.SDK_INT >= 24) {
-        val context = LocalContext.current
-        val dpm = context.getDPM()
-        val receiver = context.getReceiver()
-        AlertDialog(
-            onDismissRequest = { wifiMacDialog = false },
-            confirmButton = { TextButton(onClick = { wifiMacDialog = false }) { Text(stringResource(R.string.confirm)) } },
-            title = { Text(stringResource(R.string.wifi_mac_address)) },
-            text = {
-                val mac = dpm.getWifiMacAddress(receiver)
-                OutlinedTextField(
-                    value = mac ?: stringResource(R.string.none),
-                    onValueChange = {}, readOnly = true, modifier = Modifier.fillMaxWidth(), textStyle = typography.bodyLarge,
-                    trailingIcon = {
-                        if(mac != null) IconButton(onClick = { writeClipBoard(context, mac) }) {
-                            Icon(painter = painterResource(R.drawable.content_copy_fill0), contentDescription = stringResource(R.string.copy))
-                        }
-                    }
-                )
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
     }
 }
 
@@ -216,16 +209,265 @@ fun NetworkOptions(navCtrl: NavHostController) {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Wifi(navCtrl: NavHostController) {
+    val context = LocalContext.current
+    val coroutine = rememberCoroutineScope()
+    val pagerState = rememberPagerState { 3 }
+    var tabIndex by rememberSaveable { mutableIntStateOf(0) }
+    tabIndex = pagerState.currentPage
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.wifi)) },
+                navigationIcon = { NavIcon { navCtrl.navigateUp() } }
+            )
+        }
+    ) { paddingValues ->
+        var wifiMacDialog by remember { mutableStateOf(false) }
+        Column(
+            modifier = Modifier.fillMaxSize().padding(paddingValues)
+        ) {
+            TabRow(tabIndex) {
+                Tab(
+                    selected = tabIndex == 0, onClick = { tabIndex = 0; coroutine.launch { pagerState.animateScrollToPage(tabIndex) } },
+                    text = { Text(stringResource(R.string.overview)) }
+                )
+                Tab(
+                    selected = tabIndex == 1, onClick = { tabIndex = 1; coroutine.launch { pagerState.animateScrollToPage(tabIndex) } },
+                    text = { Text(stringResource(R.string.saved_networks)) }
+                )
+                Tab(
+                    selected = tabIndex == 2, onClick = { tabIndex = 2; coroutine.launch { pagerState.animateScrollToPage(tabIndex) } },
+                    text = { Text(stringResource(R.string.add_network)) }
+                )
+            }
+            HorizontalPager(state = pagerState, verticalAlignment = Alignment.Top) { page ->
+                if(page == 0) {
+                    val wm = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+                    val deviceOwner = context.isDeviceOwner
+                    val orgProfileOwner = context.getDPM().isOrgProfile(context.getReceiver())
+                    @Suppress("DEPRECATION") Column(
+                        modifier = Modifier.fillMaxSize().padding(top = 12.dp)
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Button(
+                                onClick = { context.showOperationResultToast(wm.setWifiEnabled(true)) },
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                Text(stringResource(R.string.enable))
+                            }
+                            Button(onClick = { context.showOperationResultToast(wm.setWifiEnabled(false)) }) {
+                                Text(stringResource(R.string.disable))
+                            }
+                        }
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                        ) {
+                            Button(
+                                onClick = { context.showOperationResultToast(wm.disconnect()) },
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                Text(stringResource(R.string.disconnect))
+                            }
+                            Button(onClick = { context.showOperationResultToast(wm.reconnect()) }) {
+                                Text(stringResource(R.string.reconnect))
+                            }
+                        }
+                        if(VERSION.SDK_INT >= 24 && (deviceOwner || orgProfileOwner)) {
+                            FunctionItem(R.string.wifi_mac_address, "", null) { wifiMacDialog = true }
+                        }
+                        if(VERSION.SDK_INT >= 33 && (deviceOwner || orgProfileOwner)) {
+                            FunctionItem(R.string.min_wifi_security_level, "", null) { navCtrl.navigate("MinWifiSecurityLevel") }
+                            FunctionItem(R.string.wifi_ssid_policy, "", null) { navCtrl.navigate("WifiSsidPolicy") }
+                        }
+                    }
+                } else if(page == 1) {
+                    SavedNetworks(navCtrl)
+                } else {
+                    AddNetwork()
+                }
+            }
+        }
+        if(wifiMacDialog && VERSION.SDK_INT >= 24) {
+            val context = LocalContext.current
+            val dpm = context.getDPM()
+            val receiver = context.getReceiver()
+            AlertDialog(
+                onDismissRequest = { wifiMacDialog = false },
+                confirmButton = { TextButton(onClick = { wifiMacDialog = false }) { Text(stringResource(R.string.confirm)) } },
+                text = {
+                    val mac = dpm.getWifiMacAddress(receiver)
+                    OutlinedTextField(
+                        value = mac ?: stringResource(R.string.none), label = { Text(stringResource(R.string.wifi_mac_address)) },
+                        onValueChange = {}, readOnly = true, modifier = Modifier.fillMaxWidth(), textStyle = typography.bodyLarge,
+                        trailingIcon = {
+                            if(mac != null) IconButton(onClick = { writeClipBoard(context, mac) }) {
+                                Icon(painter = painterResource(R.drawable.content_copy_fill0), contentDescription = stringResource(R.string.copy))
+                            }
+                        }
+                    )
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+@Suppress("DEPRECATION")
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+private fun SavedNetworks(navCtrl: NavHostController) {
+    val context = LocalContext.current
+    val wm = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+    val configuredNetworks = remember { mutableStateListOf<WifiConfiguration>() }
+    var networkDetailsDialog by remember { mutableIntStateOf(-1) } // -1:Hidden, 0+:Index of configuredNetworks
+    fun refresh() {
+        configuredNetworks.clear()
+        wm.configuredNetworks.forEach { network ->
+            if(configuredNetworks.none { it.networkId == network.networkId }) configuredNetworks += network
+        }
+    }
+    LaunchedEffect(Unit) { refresh() }
+    Column(
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 8.dp, end = 8.dp, bottom = 60.dp)
+    ) {
+        val locationPermission = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
+        val requestPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+            if(it) refresh()
+        }
+        if(!locationPermission.status.isGranted) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp)
+                    .clip(RoundedCornerShape(15))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .clickable { requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) }
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.LocationOn, contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(start = 8.dp, end = 4.dp))
+                Text(
+                    text = stringResource(R.string.request_location_permission_description),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+        }
+        configuredNetworks.forEachIndexed { index, network ->
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().padding(start = 8.dp, top = 8.dp)
+            ) {
+                Text(text = network.SSID.removeSurrounding("\""), style = typography.titleLarge)
+                IconButton(onClick = { networkDetailsDialog = index }) {
+                    Icon(painter = painterResource(R.drawable.more_horiz_fill0), contentDescription = null)
+                }
+            }
+        }
+    }
+    if(networkDetailsDialog != -1) AlertDialog(
+        text = {
+            val network = configuredNetworks[networkDetailsDialog]
+            val statusText = when(network.status) {
+                WifiConfiguration.Status.CURRENT -> R.string.current
+                WifiConfiguration.Status.DISABLED -> R.string.disabled
+                WifiConfiguration.Status.ENABLED -> R.string.enabled
+                else -> R.string.place_holder
+            }
+            Column {
+                Text(stringResource(R.string.network_id) + ": " + network.networkId.toString())
+                SelectionContainer {
+                    Text("SSID: " + network.SSID)
+                    if(network.BSSID != null) Text("BSSID: " + network.BSSID)
+                }
+                Text(stringResource(R.string.status) + ": " + stringResource(statusText))
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            val success = wm.enableNetwork(network.networkId, false)
+                            Toast.makeText(context, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+                            networkDetailsDialog = -1
+                            refresh()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.49F)
+                    ) {
+                        Text(stringResource(R.string.enable))
+                    }
+                    Button(
+                        onClick = {
+                            val success = wm.disableNetwork(network.networkId)
+                            Toast.makeText(context, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+                            networkDetailsDialog = -1
+                            refresh()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.96F)
+                    ) {
+                        Text(stringResource(R.string.disable))
+                    }
+                }
+                Button(
+                    onClick = {
+                        networkDetailsDialog = -1
+                        val dest = navCtrl.graph.findNode("UpdateNetwork")
+                        if(dest != null)
+                        navCtrl.navigate(dest.id, bundleOf("wifi_configuration" to network))
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.edit))
+                }
+                TextButton(
+                    onClick = {
+                        val success = wm.removeNetwork(network.networkId)
+                        Toast.makeText(context, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+                        networkDetailsDialog = -1
+                        refresh()
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.remove))
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { networkDetailsDialog = -1 }) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        onDismissRequest = { networkDetailsDialog = -1 }
+    )
+}
+
+@Composable
+fun UpdateNetwork(arguments: Bundle, navCtrl: NavHostController) {
+    MyScaffold(R.string.update_network, 0.dp, navCtrl, false) {
+        AddNetwork(arguments.getParcelable("wifi_configuration"), navCtrl)
+    }
+}
+
 @Suppress("DEPRECATION")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddNetwork(navCtrl: NavHostController) {
+private fun AddNetwork(wifiConfig: WifiConfiguration? = null, navCtrl: NavHostController? = null) {
     val context = LocalContext.current
     var resultDialog by remember { mutableStateOf(false) }
     var createdNetworkId by remember { mutableIntStateOf(-1) }
-    var createNetworkResult by remember {mutableIntStateOf(0)}
+    var createNetworkResult by remember { mutableIntStateOf(0) }
     var dropdownMenu by remember { mutableIntStateOf(0) } // 0: None, 1:Status, 2:Security, 3:MAC randomization, 4:Static IP, 5:Proxy
-    var networkId by remember { mutableStateOf("") }
     var status by remember { mutableIntStateOf(WifiConfiguration.Status.ENABLED) }
     var ssid by remember { mutableStateOf("") }
     var hiddenSsid by remember { mutableStateOf(false) }
@@ -240,16 +482,19 @@ fun AddNetwork(navCtrl: NavHostController) {
     var httpProxyHost by remember { mutableStateOf("") }
     var httpProxyPort by remember { mutableStateOf("") }
     var httpProxyExclList by remember { mutableStateOf("") }
-    MyScaffold(R.string.add_wifi, 8.dp, navCtrl) {
-        OutlinedTextField(
-            value = networkId, onValueChange = { networkId = it }, label = { Text(stringResource(R.string.network_id)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            isError = networkId != "" && (try { networkId.toInt(); false } catch(_: NumberFormatException) { true }),
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-        )
+    LaunchedEffect(Unit) {
+        if(wifiConfig != null) {
+            status = wifiConfig.status
+            if(wifiConfig.status == WifiConfiguration.Status.CURRENT) status = WifiConfiguration.Status.ENABLED
+            ssid = wifiConfig.SSID.removeSurrounding("\"")
+        }
+    }
+    Column(
+        modifier = (if(wifiConfig == null) Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 60.dp) else Modifier)
+            .padding(start = 8.dp, end = 8.dp, top = 12.dp)
+    ) {
         ExposedDropdownMenuBox(dropdownMenu == 1, { dropdownMenu = if(it) 1 else 0 }) {
             val statusText = when(status) {
-                WifiConfiguration.Status.CURRENT -> R.string.current
                 WifiConfiguration.Status.DISABLED -> R.string.disabled
                 WifiConfiguration.Status.ENABLED -> R.string.enabled
                 else -> R.string.place_holder
@@ -261,13 +506,6 @@ fun AddNetwork(navCtrl: NavHostController) {
                 modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth().padding(bottom = 16.dp)
             )
             ExposedDropdownMenu(dropdownMenu == 1, { dropdownMenu = 0 }) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.current)) },
-                    onClick = {
-                        status = WifiConfiguration.Status.CURRENT
-                        dropdownMenu = 0
-                    }
-                )
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.disabled)) },
                     onClick = {
@@ -413,7 +651,6 @@ fun AddNetwork(navCtrl: NavHostController) {
                 val wm = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
                 try {
                     val config = WifiConfiguration()
-                    if(networkId != "") config.networkId = networkId.toInt()
                     config.status = status
                     config.SSID = '"' + ssid + '"'
                     config.hiddenSSID = hiddenSsid
@@ -435,12 +672,17 @@ fun AddNetwork(navCtrl: NavHostController) {
                     if(VERSION.SDK_INT >= 26 && useHttpProxy) {
                         config.httpProxy = ProxyInfo.buildDirectProxy(httpProxyHost, httpProxyPort.toInt(), httpProxyExclList.lines())
                     }
-                    if(VERSION.SDK_INT >= 31) {
-                        val result = wm.addNetworkPrivileged(config)
-                        createdNetworkId = result.networkId
-                        createNetworkResult = result.statusCode
+                    if(wifiConfig != null) {
+                        config.networkId = wifiConfig.networkId
+                        createdNetworkId = wm.updateNetwork(config)
                     } else {
-                        createdNetworkId = wm.addNetwork(config)
+                        if(VERSION.SDK_INT >= 31) {
+                            val result = wm.addNetworkPrivileged(config)
+                            createdNetworkId = result.networkId
+                            createNetworkResult = result.statusCode
+                        } else {
+                            createdNetworkId = wm.addNetwork(config)
+                        }
                     }
                     resultDialog = true
                 } catch(e: Exception) {
@@ -454,7 +696,7 @@ fun AddNetwork(navCtrl: NavHostController) {
             },
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
         ) {
-            Text(stringResource(R.string.add))
+            Text(stringResource(if(wifiConfig != null) R.string.update else R.string.add))
         }
         if(resultDialog) AlertDialog(
             text = {
@@ -467,7 +709,12 @@ fun AddNetwork(navCtrl: NavHostController) {
                 Text(stringResource(statusText) + "\n" + stringResource(R.string.network_id) + ": " + createdNetworkId)
             },
             confirmButton = {
-                TextButton(onClick = { resultDialog = false }) {
+                TextButton(
+                    onClick = {
+                        resultDialog = false
+                        if(createdNetworkId != -1) navCtrl?.navigateUp()
+                    }
+                ) {
                     Text(stringResource(R.string.confirm))
                 }
             },

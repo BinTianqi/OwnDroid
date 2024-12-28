@@ -67,6 +67,8 @@
     <string name="api" translatable="false">API</string>
     <string name="error">Error</string>
     <string name="status">Status</string>
+    <string name="edit">Edit</string>
+    <string name="overview">Overview</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
@@ -221,8 +223,14 @@
 
     <!--Network-->
     <string name="network">Network</string>
-    <string name="wifi_mac_address">Wi-Fi Mac address</string>
-    <string name="add_wifi">Add Wi-Fi</string>
+    <string name="wifi_mac_address">Wi-Fi MAC address</string>
+    <string name="wifi" translatable="false">Wi-Fi</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="reconnect">Reconnect</string>
+    <string name="saved_networks">Saved networks</string>
+    <string name="request_location_permission_description">This app need location permission to get saved networks, your geographic location will not be read.\nClick to request the permission.</string>
+    <string name="add_network">Add network</string>
+    <string name="update_network">Update network</string>
     <string name="current">Current</string>
     <string name="hidden_ssid">Hidden SSID</string>
     <string name="ip_settings">IP settings</string>
