@@ -1,6 +1,5 @@
 package com.bintianqi.owndroid
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -47,7 +46,6 @@ class InstallAppActivity: FragmentActivity() {
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         val context = applicationContext
-        val sharedPref = applicationContext.getSharedPreferences("data", Context.MODE_PRIVATE)
         window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         val uri = this.intent.data!!
         var apkInfoText by mutableStateOf(context.getString(R.string.parsing_apk_info))
@@ -97,7 +95,9 @@ class InstallAppActivity: FragmentActivity() {
                         TextButton(
                             onClick = {
                                 status = "installing"
-                                uriToStream(applicationContext, this.intent.data) { stream -> installPackage(applicationContext, stream) }
+                                intent.data?.let {
+                                    uriToStream(applicationContext, it) { stream -> installPackage(applicationContext, stream) }
+                                }
                             },
                             enabled = status != "installing"
                         ) {

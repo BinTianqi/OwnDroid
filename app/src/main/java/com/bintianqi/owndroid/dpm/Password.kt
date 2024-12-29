@@ -9,7 +9,6 @@ import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_FEATURES_ALL
 import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_FEATURES_NONE
 import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_FINGERPRINT
 import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_IRIS
-import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_REMOTE_INPUT
 import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_SECURE_CAMERA
 import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_SECURE_NOTIFICATIONS
 import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_SHORTCUTS_ALL
@@ -55,7 +54,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -70,7 +68,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.toggle
+import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.FunctionItem
@@ -89,34 +87,34 @@ fun Password(navCtrl: NavHostController) {
     val profileOwner = context.isProfileOwner
     var dialog by remember { mutableIntStateOf(0) }
     MyScaffold(R.string.password_and_keyguard, 0.dp, navCtrl) {
-        FunctionItem(R.string.password_info, "", R.drawable.info_fill0) { navCtrl.navigate("PasswordInfo") }
+        FunctionItem(R.string.password_info, icon = R.drawable.info_fill0) { navCtrl.navigate("PasswordInfo") }
         if(sharedPrefs.getBoolean("dangerous_features", false)) {
             if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
-                FunctionItem(R.string.reset_password_token, "", R.drawable.key_vertical_fill0) { navCtrl.navigate("ResetPasswordToken") }
+                FunctionItem(R.string.reset_password_token, icon = R.drawable.key_vertical_fill0) { navCtrl.navigate("ResetPasswordToken") }
             }
             if(deviceAdmin || deviceOwner || profileOwner) {
-                FunctionItem(R.string.reset_password, "", R.drawable.lock_reset_fill0) { navCtrl.navigate("ResetPassword") }
+                FunctionItem(R.string.reset_password, icon = R.drawable.lock_reset_fill0) { navCtrl.navigate("ResetPassword") }
             }
         }
         if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) {
-            FunctionItem(R.string.required_password_complexity, "", R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordComplexity") }
+            FunctionItem(R.string.required_password_complexity, icon = R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordComplexity") }
         }
         if(deviceAdmin) {
-            FunctionItem(R.string.disable_keyguard_features, "", R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("DisableKeyguardFeatures") }
+            FunctionItem(R.string.disable_keyguard_features, icon = R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("DisableKeyguardFeatures") }
         }
         if(deviceOwner) {
-            FunctionItem(R.string.max_time_to_lock, "", R.drawable.schedule_fill0) { dialog = 1 }
-            FunctionItem(R.string.pwd_expiration_timeout, "", R.drawable.lock_clock_fill0) { dialog = 3 }
-            FunctionItem(R.string.max_pwd_fail, "", R.drawable.no_encryption_fill0) { dialog = 4 }
+            FunctionItem(R.string.max_time_to_lock, icon = R.drawable.schedule_fill0) { dialog = 1 }
+            FunctionItem(R.string.pwd_expiration_timeout, icon = R.drawable.lock_clock_fill0) { dialog = 3 }
+            FunctionItem(R.string.max_pwd_fail, icon = R.drawable.no_encryption_fill0) { dialog = 4 }
         }
         if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
-            FunctionItem(R.string.required_strong_auth_timeout, "", R.drawable.fingerprint_off_fill0) { dialog = 2 }
+            FunctionItem(R.string.required_strong_auth_timeout, icon = R.drawable.fingerprint_off_fill0) { dialog = 2 }
         }
         if(deviceAdmin){
-            FunctionItem(R.string.pwd_history, "", R.drawable.history_fill0) { dialog = 5 }
+            FunctionItem(R.string.pwd_history, icon = R.drawable.history_fill0) { dialog = 5 }
         }
         if(VERSION.SDK_INT < 31 && (deviceOwner || profileOwner)) {
-            FunctionItem(R.string.required_password_quality, "", R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordQuality") }
+            FunctionItem(R.string.required_password_quality, icon = R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordQuality") }
         }
     }
     if(dialog != 0) {
@@ -259,12 +257,8 @@ fun ResetPasswordToken(navCtrl: NavHostController) {
         Button(
             onClick = {
                 try {
-                    Toast.makeText(
-                        context,
-                        if(dpm.setResetPasswordToken(receiver, tokenByteArray)) R.string.success else R.string.failed,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }catch(_:SecurityException) {
+                    context.showOperationResultToast(dpm.setResetPasswordToken(receiver, tokenByteArray))
+                } catch(_:SecurityException) {
                     Toast.makeText(context, R.string.security_exception, Toast.LENGTH_SHORT).show()
                 }
             },
@@ -289,13 +283,7 @@ fun ResetPasswordToken(navCtrl: NavHostController) {
                 Text(stringResource(R.string.activate))
             }
             Button(
-                onClick = {
-                    Toast.makeText(
-                        context,
-                        if(dpm.clearResetPasswordToken(receiver)) R.string.success else R.string.failed,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                },
+                onClick = { context.showOperationResultToast(dpm.clearResetPasswordToken(receiver)) },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) {
                 Text(stringResource(R.string.clear))
@@ -316,7 +304,7 @@ fun ResetPassword(navCtrl: NavHostController) {
     var useToken by remember { mutableStateOf(false) }
     var token by remember { mutableStateOf("") }
     val tokenByteArray = token.toByteArray()
-    val flags = remember { mutableStateListOf<Int>() }
+    var flag by remember { mutableIntStateOf(0) }
     var confirmDialog by remember { mutableStateOf(false) }
     MyScaffold(R.string.reset_password, 8.dp, navCtrl) {
         if(VERSION.SDK_INT >= 26) {
@@ -342,15 +330,13 @@ fun ResetPassword(navCtrl: NavHostController) {
         if(VERSION.SDK_INT >= 23) {
             CheckBoxItem(
                 R.string.do_not_ask_credentials_on_boot,
-                RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT in flags,
-                { flags.toggle(it, RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT) }
-            )
+                flag and RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT != 0
+            ) { flag = flag xor RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT }
         }
         CheckBoxItem(
             R.string.reset_password_require_entry,
-            RESET_PASSWORD_REQUIRE_ENTRY in flags,
-            { flags.toggle(it, RESET_PASSWORD_REQUIRE_ENTRY) }
-        )
+            flag and RESET_PASSWORD_REQUIRE_ENTRY != 0
+        ) { flag = flag xor RESET_PASSWORD_REQUIRE_ENTRY }
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT >= 26) {
             Button(
@@ -402,14 +388,12 @@ fun ResetPassword(navCtrl: NavHostController) {
             confirmButton = {
                 TextButton(
                     onClick = {
-                        var resetFlag = 0
-                        flags.forEach { resetFlag += it }
                         val success = if(VERSION.SDK_INT >= 26 && useToken) {
-                            dpm.resetPasswordWithToken(receiver, password, tokenByteArray, resetFlag)
+                            dpm.resetPasswordWithToken(receiver, password, tokenByteArray, flag)
                         } else {
-                            dpm.resetPassword(password, resetFlag)
+                            dpm.resetPassword(password, flag)
                         }
-                        Toast.makeText(context, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+                        context.showOperationResultToast(success)
                         password = ""
                         confirmDialog = false
                     },
@@ -443,13 +427,13 @@ fun PasswordComplexity(navCtrl: NavHostController) {
     LaunchedEffect(Unit) { selectedItem = dpm.requiredPasswordComplexity }
     MyScaffold(R.string.required_password_complexity, 8.dp, navCtrl) {
         passwordComplexity.forEach {
-            RadioButtonItem(it.value, selectedItem == it.key, { selectedItem = it.key })
+            RadioButtonItem(it.value, selectedItem == it.key) { selectedItem = it.key }
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 dpm.requiredPasswordComplexity = selectedItem
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -470,86 +454,52 @@ fun DisableKeyguardFeatures(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    var state by remember { mutableIntStateOf(-1) }
-    var shortcuts by remember { mutableStateOf(false) }
-    var biometrics by remember { mutableStateOf(false) }
-    var iris by remember { mutableStateOf(false) }
-    var face by remember { mutableStateOf(false) }
-    var remote by remember { mutableStateOf(false) }
-    var fingerprint by remember { mutableStateOf(false) }
-    var agents by remember { mutableStateOf(false) }
-    var unredacted by remember { mutableStateOf(false) }
-    var notification by remember { mutableStateOf(false) }
-    var camera by remember { mutableStateOf(false) }
-    var widgets by remember { mutableStateOf(false) }
-    val calculateCustomFeature = {
-        var calculate = dpm.getKeyguardDisabledFeatures(receiver)
-        if(calculate==0) {state=0}
-        else{
-            if(calculate-KEYGUARD_DISABLE_SHORTCUTS_ALL >= 0 && VERSION.SDK_INT >= 34) { shortcuts=true; calculate-= KEYGUARD_DISABLE_SHORTCUTS_ALL }
-            if(calculate-KEYGUARD_DISABLE_BIOMETRICS >= 0 && VERSION.SDK_INT >= 28) { biometrics=true; calculate -= KEYGUARD_DISABLE_BIOMETRICS }
-            if(calculate-KEYGUARD_DISABLE_IRIS >= 0 && VERSION.SDK_INT >= 28) { iris=true; calculate -= KEYGUARD_DISABLE_IRIS }
-            if(calculate-KEYGUARD_DISABLE_FACE >= 0 && VERSION.SDK_INT >= 28) { face=true; calculate -= KEYGUARD_DISABLE_FACE }
-            if(calculate-KEYGUARD_DISABLE_REMOTE_INPUT >= 0 && VERSION.SDK_INT >= 24) { remote=true; calculate -= KEYGUARD_DISABLE_REMOTE_INPUT }
-            if(calculate-KEYGUARD_DISABLE_FINGERPRINT >= 0) { fingerprint=true; calculate -= KEYGUARD_DISABLE_FINGERPRINT }
-            if(calculate-KEYGUARD_DISABLE_TRUST_AGENTS >= 0) { agents=true; calculate -= KEYGUARD_DISABLE_TRUST_AGENTS }
-            if(calculate-KEYGUARD_DISABLE_UNREDACTED_NOTIFICATIONS >= 0) { unredacted=true; calculate -= KEYGUARD_DISABLE_UNREDACTED_NOTIFICATIONS }
-            if(calculate-KEYGUARD_DISABLE_SECURE_NOTIFICATIONS >= 0) { notification=true; calculate -= KEYGUARD_DISABLE_SECURE_NOTIFICATIONS }
-            if(calculate-KEYGUARD_DISABLE_SECURE_CAMERA >= 0) { camera=true; calculate -= KEYGUARD_DISABLE_SECURE_CAMERA }
-            if(calculate-KEYGUARD_DISABLE_WIDGETS_ALL >= 0) { widgets=true; calculate -= KEYGUARD_DISABLE_WIDGETS_ALL }
-        }
+    var flag by remember { mutableIntStateOf(0) }
+    var mode by remember { mutableIntStateOf(0) } // 0:Enable all, 1:Disable all, 2:Custom
+    val flagsLiat = mutableListOf(
+        R.string.disable_keyguard_features_widgets to KEYGUARD_DISABLE_WIDGETS_ALL,
+        R.string.disable_keyguard_features_camera to KEYGUARD_DISABLE_SECURE_CAMERA,
+        R.string.disable_keyguard_features_notification to KEYGUARD_DISABLE_SECURE_NOTIFICATIONS,
+        R.string.disable_keyguard_features_unredacted_notification to KEYGUARD_DISABLE_UNREDACTED_NOTIFICATIONS,
+        R.string.disable_keyguard_features_trust_agents to KEYGUARD_DISABLE_TRUST_AGENTS,
+        R.string.disable_keyguard_features_fingerprint to KEYGUARD_DISABLE_FINGERPRINT
+    )
+    if(VERSION.SDK_INT >= 28) {
+        flagsLiat +=R.string.disable_keyguard_features_face to KEYGUARD_DISABLE_FACE
+        flagsLiat += R.string.disable_keyguard_features_iris to KEYGUARD_DISABLE_IRIS
+        flagsLiat += R.string.disable_keyguard_features_biometrics to KEYGUARD_DISABLE_BIOMETRICS
     }
-    if(state==-1) {
-        state = when(dpm.getKeyguardDisabledFeatures(receiver)) {
+    if(VERSION.SDK_INT >= 34) flagsLiat += R.string.disable_keyguard_features_shortcuts to KEYGUARD_DISABLE_SHORTCUTS_ALL
+    fun refresh() {
+        flag = dpm.getKeyguardDisabledFeatures(receiver)
+        mode = when(flag) {
             KEYGUARD_DISABLE_FEATURES_NONE -> 0
             KEYGUARD_DISABLE_FEATURES_ALL -> 1
             else -> 2
         }
-        calculateCustomFeature()
     }
+    LaunchedEffect(mode) { if(mode != 2) flag = dpm.getKeyguardDisabledFeatures(receiver) }
+    LaunchedEffect(Unit) { refresh() }
     MyScaffold(R.string.disable_keyguard_features, 8.dp, navCtrl) {
-        RadioButtonItem(R.string.enable_all, state == 0, { state = 0 })
-        RadioButtonItem(R.string.disable_all, state == 1, { state = 1 })
-        RadioButtonItem(R.string.custom, state == 2 , { state = 2 })
-        AnimatedVisibility(state==2) {
+        RadioButtonItem(R.string.enable_all, mode == 0) { mode = 0 }
+        RadioButtonItem(R.string.disable_all, mode == 1) { mode = 1 }
+        RadioButtonItem(R.string.custom, mode == 2) { mode = 2 }
+        AnimatedVisibility(mode == 2) {
             Column {
-                CheckBoxItem(R.string.disable_keyguard_features_widgets, widgets, { widgets = it })
-                CheckBoxItem(R.string.disable_keyguard_features_camera, camera, { camera = it })
-                CheckBoxItem(R.string.disable_keyguard_features_notification, notification, { notification = it })
-                CheckBoxItem(R.string.disable_keyguard_features_unredacted_notification, unredacted, { unredacted = it })
-                CheckBoxItem(R.string.disable_keyguard_features_trust_agents, agents, { agents = it })
-                CheckBoxItem(R.string.disable_keyguard_features_fingerprint, fingerprint, { fingerprint = it })
-                if(VERSION.SDK_INT >= 24) { CheckBoxItem(R.string.disable_keyguard_features_remote_input, remote , { remote = it }) }
-                if(VERSION.SDK_INT >= 28) {
-                    CheckBoxItem(R.string.disable_keyguard_features_face, face, { face = it })
-                    CheckBoxItem(R.string.disable_keyguard_features_iris, iris, { iris = it })
-                    CheckBoxItem(R.string.disable_keyguard_features_biometrics, biometrics, { biometrics = it })
+                flagsLiat.forEach {
+                    CheckBoxItem(it.first, flag and it.second == it.second) { checked ->
+                        flag = if(checked) flag or it.second else flag and (flag xor it.second)
+                    }
                 }
-                if(VERSION.SDK_INT >= 34) { CheckBoxItem(R.string.disable_keyguard_features_shortcuts, shortcuts, { shortcuts = it }) }
             }
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                var result = 0
-                if(state==0) { result = 0 }
-                else if(state==1) { result = KEYGUARD_DISABLE_FEATURES_ALL }
-                else{
-                    if(shortcuts && VERSION.SDK_INT >= 34) { result+=KEYGUARD_DISABLE_SHORTCUTS_ALL }
-                    if(biometrics && VERSION.SDK_INT >= 28) { result+=KEYGUARD_DISABLE_BIOMETRICS }
-                    if(iris && VERSION.SDK_INT >= 28) { result+=KEYGUARD_DISABLE_IRIS }
-                    if(face && VERSION.SDK_INT >= 28) { result+=KEYGUARD_DISABLE_FACE }
-                    if(remote && VERSION.SDK_INT >= 24) { result+=KEYGUARD_DISABLE_REMOTE_INPUT }
-                    if(fingerprint) { result+=KEYGUARD_DISABLE_FINGERPRINT }
-                    if(agents) { result+=KEYGUARD_DISABLE_TRUST_AGENTS }
-                    if(unredacted) { result+=KEYGUARD_DISABLE_UNREDACTED_NOTIFICATIONS }
-                    if(notification) { result+=KEYGUARD_DISABLE_SECURE_NOTIFICATIONS }
-                    if(camera) { result+=KEYGUARD_DISABLE_SECURE_CAMERA }
-                    if(widgets) { result+=KEYGUARD_DISABLE_WIDGETS_ALL }
-                }
-                dpm.setKeyguardDisabledFeatures(receiver,result)
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                calculateCustomFeature()
+                val disabledFeatures = if(mode == 0) KEYGUARD_DISABLE_FEATURES_NONE else if(mode == 1) KEYGUARD_DISABLE_FEATURES_ALL else flag
+                dpm.setKeyguardDisabledFeatures(receiver, disabledFeatures)
+                refresh()
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -576,13 +526,13 @@ fun PasswordQuality(navCtrl: NavHostController) {
     LaunchedEffect(Unit) { selectedItem=dpm.getPasswordQuality(receiver) }
     MyScaffold(R.string.required_password_quality, 8.dp, navCtrl) {
         passwordQuality.forEach {
-            RadioButtonItem(it.value, selectedItem == it.key, { selectedItem = it.key })
+            RadioButtonItem(it.value, selectedItem == it.key) { selectedItem = it.key }
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 dpm.setPasswordQuality(receiver,selectedItem)
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
         ) {

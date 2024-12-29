@@ -42,8 +42,8 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import java.io.IOException
 import java.io.InputStream
+import java.io.OutputStream
 
-lateinit var createManagedProfile: ActivityResultLauncher<Intent>
 lateinit var addDeviceAdmin: ActivityResultLauncher<Intent>
 
 val Context.isDeviceOwner: Boolean
@@ -356,15 +356,10 @@ fun handleNetworkLogs(context: Context, batchToken: Long) {
 }
 
 @RequiresApi(24)
-fun handleSecurityLogs(context: Context) {
-    val file = context.filesDir.resolve("SecurityLogs.json")
+fun processSecurityLogs(securityEvents: List<SecurityLog.SecurityEvent>, outputStream: OutputStream) {
     val json = Json { ignoreUnknownKeys = true; explicitNulls = false }
-    val securityEvents = context.getDPM().retrieveSecurityLogs(context.getReceiver())
-    securityEvents ?: return
-    val fileExist = file.exists()
-    val buffer = file.bufferedWriter()
+    val buffer = outputStream.bufferedWriter()
     securityEvents.forEachIndexed { index, event ->
-        if(fileExist && index == 0) buffer.write(",")
         val item = buildJsonObject {
             put("time_nanos", event.timeNanos)
             put("tag", event.tag)

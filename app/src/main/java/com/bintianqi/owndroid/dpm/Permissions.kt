@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.backToHomeStateFlow
+import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.*
 import com.bintianqi.owndroid.writeClipBoard
 import com.bintianqi.owndroid.yesOrNo
@@ -56,9 +57,9 @@ fun Permissions(navCtrl: NavHostController) {
     MyScaffold(R.string.permissions, 0.dp, navCtrl) {
         if(!dpm.isDeviceOwnerApp(context.packageName)) {
             SwitchItem(
-                R.string.dhizuku, "", null,
-                { sharedPref.getBoolean("dhizuku", false) },
-                { toggleDhizukuMode(it, context) },
+                R.string.dhizuku,
+                getState = { sharedPref.getBoolean("dhizuku", false) },
+                onCheckedChange = { toggleDhizukuMode(it, context) },
                 onClickBlank = { dialog = 4 }
             )
         }
@@ -78,7 +79,7 @@ fun Permissions(navCtrl: NavHostController) {
                 operation = { navCtrl.navigate("DeviceOwner") }
             )
         }
-        FunctionItem(R.string.shizuku,"") {
+        FunctionItem(R.string.shizuku) {
             try {
                 if(Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) { navCtrl.navigate("Shizuku") }
                 else if(Shizuku.shouldShowRequestPermissionRationale()) {
@@ -102,24 +103,24 @@ fun Permissions(navCtrl: NavHostController) {
                 Toast.makeText(context, R.string.shizuku_not_started, Toast.LENGTH_SHORT).show()
             }
         }
-        FunctionItem(R.string.device_info, "", R.drawable.perm_device_information_fill0) { navCtrl.navigate("DeviceInfo") }
+        FunctionItem(R.string.device_info, icon = R.drawable.perm_device_information_fill0) { navCtrl.navigate("DeviceInfo") }
         if((VERSION.SDK_INT >= 26 && deviceOwner) || (VERSION.SDK_INT>=24 && profileOwner)) {
-            FunctionItem(R.string.org_name, "", R.drawable.corporate_fare_fill0) { dialog = 2 }
+            FunctionItem(R.string.org_name, icon = R.drawable.corporate_fare_fill0) { dialog = 2 }
         }
         if(VERSION.SDK_INT >= 31 && (profileOwner || deviceOwner)) {
-            FunctionItem(R.string.org_id, "", R.drawable.corporate_fare_fill0) { dialog = 3 }
+            FunctionItem(R.string.org_id, icon = R.drawable.corporate_fare_fill0) { dialog = 3 }
         }
         if(enrollmentSpecificId != "") {
-            FunctionItem(R.string.enrollment_specific_id, "", R.drawable.id_card_fill0) { dialog = 1 }
+            FunctionItem(R.string.enrollment_specific_id, icon = R.drawable.id_card_fill0) { dialog = 1 }
         }
         if(VERSION.SDK_INT >= 24 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            FunctionItem(R.string.lock_screen_info, "", R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("LockScreenInfo") }
+            FunctionItem(R.string.lock_screen_info, icon = R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("LockScreenInfo") }
         }
         if(VERSION.SDK_INT >= 24 && deviceAdmin) {
-            FunctionItem(R.string.support_messages, "", R.drawable.chat_fill0) { navCtrl.navigate("SupportMessages") }
+            FunctionItem(R.string.support_messages, icon = R.drawable.chat_fill0) { navCtrl.navigate("SupportMessages") }
         }
         if(VERSION.SDK_INT >= 28 && (deviceOwner || profileOwner)) {
-            FunctionItem(R.string.transfer_ownership, "", R.drawable.admin_panel_settings_fill0) { navCtrl.navigate("TransferOwnership") }
+            FunctionItem(R.string.transfer_ownership, icon = R.drawable.admin_panel_settings_fill0) { navCtrl.navigate("TransferOwnership") }
         }
     }
     if(dialog != 0) {
@@ -254,7 +255,7 @@ fun LockScreenInfo(navCtrl: NavHostController) {
             onClick = {
                 focusMgr.clearFocus()
                 dpm.setDeviceOwnerLockScreenInfo(receiver,infoText)
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -263,8 +264,8 @@ fun LockScreenInfo(navCtrl: NavHostController) {
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                dpm.setDeviceOwnerLockScreenInfo(receiver,null)
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                dpm.setDeviceOwnerLockScreenInfo(receiver, null)
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -521,7 +522,7 @@ fun SupportMessages(navCtrl: NavHostController) {
                 onClick = {
                     dpm.setShortSupportMessage(receiver, shortMsg)
                     refreshMsg()
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    context.showOperationResultToast(true)
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) {
@@ -531,7 +532,7 @@ fun SupportMessages(navCtrl: NavHostController) {
                 onClick = {
                     dpm.setShortSupportMessage(receiver, null)
                     refreshMsg()
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    context.showOperationResultToast(true)
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) {
@@ -552,7 +553,7 @@ fun SupportMessages(navCtrl: NavHostController) {
                 onClick = {
                     dpm.setLongSupportMessage(receiver, longMsg)
                     refreshMsg()
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    context.showOperationResultToast(true)
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) {
@@ -562,7 +563,7 @@ fun SupportMessages(navCtrl: NavHostController) {
                 onClick = {
                     dpm.setLongSupportMessage(receiver, null)
                     refreshMsg()
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    context.showOperationResultToast(true)
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) {
@@ -615,7 +616,7 @@ fun TransferOwnership(navCtrl: NavHostController) {
                     val receiver = context.getReceiver()
                     try {
                         dpm.transferOwnership(receiver, componentName!!, null)
-                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                        context.showOperationResultToast(true)
                         dialog = false
                         backToHomeStateFlow.value = true
                     } catch(e: Exception) {

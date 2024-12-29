@@ -24,10 +24,10 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.bintianqi.owndroid.dpm.handleNetworkLogs
-import com.bintianqi.owndroid.dpm.handleSecurityLogs
 import com.bintianqi.owndroid.dpm.isDeviceAdmin
 import com.bintianqi.owndroid.dpm.isDeviceOwner
 import com.bintianqi.owndroid.dpm.isProfileOwner
+import com.bintianqi.owndroid.dpm.processSecurityLogs
 import com.bintianqi.owndroid.dpm.toggleInstallAppActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -78,7 +78,13 @@ class Receiver : DeviceAdminReceiver() {
         super.onSecurityLogsAvailable(context, intent)
         if(VERSION.SDK_INT >= 24) {
             CoroutineScope(Dispatchers.IO).launch {
-                handleSecurityLogs(context)
+                val events = getManager(context).retrieveSecurityLogs(ComponentName(context, this@Receiver::class.java)) ?: return@launch
+                val file = context.filesDir.resolve("SecurityLogs.json")
+                val fileExists = file.exists()
+                file.outputStream().use {
+                    if(fileExists) it.write(",".encodeToByteArray())
+                    processSecurityLogs(events, it)
+                }
             }
         }
     }

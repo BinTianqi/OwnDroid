@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build.VERSION
-import android.widget.Toast
 import androidx.biometric.BiometricManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -44,11 +43,11 @@ import java.security.SecureRandom
 @Composable
 fun Settings(navCtrl: NavHostController) {
     MyScaffold(R.string.settings, 0.dp, navCtrl) {
-        FunctionItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Options") }
-        FunctionItem(R.string.appearance, "", R.drawable.format_paint_fill0) { navCtrl.navigate("Appearance") }
-        FunctionItem(R.string.security, "", R.drawable.lock_fill0) { navCtrl.navigate("AuthSettings") }
-        FunctionItem(R.string.api, "", R.drawable.apps_fill0) { navCtrl.navigate("ApiSettings") }
-        FunctionItem(R.string.about, "", R.drawable.info_fill0) { navCtrl.navigate("About") }
+        FunctionItem(title = R.string.options, icon = R.drawable.tune_fill0) { navCtrl.navigate("Options") }
+        FunctionItem(title = R.string.appearance, icon = R.drawable.format_paint_fill0) { navCtrl.navigate("Appearance") }
+        FunctionItem(title = R.string.security, icon = R.drawable.lock_fill0) { navCtrl.navigate("AuthSettings") }
+        FunctionItem(title = R.string.api, icon = R.drawable.apps_fill0) { navCtrl.navigate("ApiSettings") }
+        FunctionItem(title = R.string.about, icon = R.drawable.info_fill0) { navCtrl.navigate("About") }
     }
 }
 
@@ -57,9 +56,9 @@ fun SettingsOptions(navCtrl: NavHostController) {
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     MyScaffold(R.string.options, 0.dp, navCtrl) {
         SwitchItem(
-            R.string.show_dangerous_features, "", R.drawable.warning_fill0,
-            { sharedPref.getBoolean("dangerous_features", false) },
-            { sharedPref.edit().putBoolean("dangerous_features", it).apply() }
+            R.string.show_dangerous_features, icon = R.drawable.warning_fill0,
+            getState = { sharedPref.getBoolean("dangerous_features", false) },
+            onCheckedChange = { sharedPref.edit().putBoolean("dangerous_features", it).apply() }
         )
     }
 }
@@ -75,11 +74,7 @@ fun Appearance(navCtrl: NavHostController, vm: MyViewModel) {
     }
     MyScaffold(R.string.appearance, 0.dp, navCtrl) {
         if(VERSION.SDK_INT >= 31) {
-            SwitchItem(
-                R.string.material_you_color, "", null,
-                theme.materialYou,
-                { vm.theme.value = theme.copy(materialYou = it) }
-            )
+            SwitchItem(R.string.material_you_color, state = theme.materialYou, onCheckedChange = { vm.theme.value = theme.copy(materialYou = it) })
         }
         Box {
             FunctionItem(R.string.dark_theme, stringResource(darkThemeTextID)) { darkThemeMenu = true }
@@ -111,11 +106,7 @@ fun Appearance(navCtrl: NavHostController, vm: MyViewModel) {
             }
         }
         AnimatedVisibility(theme.darkTheme == true || (theme.darkTheme == null && isSystemInDarkTheme())) {
-            SwitchItem(
-                R.string.black_theme, "", null,
-                theme.blackTheme,
-                { vm.theme.value = theme.copy(blackTheme = it) }
-            )
+            SwitchItem(R.string.black_theme, state = theme.blackTheme, onCheckedChange = { vm.theme.value = theme.copy(blackTheme = it) })
         }
     }
 }
@@ -127,8 +118,8 @@ fun AuthSettings(navCtrl: NavHostController) {
     var auth by remember{ mutableStateOf(sharedPref.getBoolean("auth",false)) }
     MyScaffold(R.string.security, 0.dp, navCtrl) {
         SwitchItem(
-            R.string.lock_owndroid, "", null, auth,
-            {
+            R.string.lock_owndroid, state = auth,
+            onCheckedChange = {
                 sharedPref.edit().putBoolean("auth", it).apply()
                 auth = sharedPref.getBoolean("auth", false)
             }
@@ -143,13 +134,13 @@ fun AuthSettings(navCtrl: NavHostController) {
                 }
             }
             SwitchItem(
-                R.string.enable_bio_auth, "", null, bioAuth != 0,
-                { bioAuth = if(it) 1 else 0; sharedPref.edit().putInt("biometrics_auth", bioAuth).apply() }, bioAuth != 2
+                R.string.enable_bio_auth, state = bioAuth != 0,
+                onCheckedChange = { bioAuth = if(it) 1 else 0; sharedPref.edit().putInt("biometrics_auth", bioAuth).apply() }, enabled = bioAuth != 2
             )
             SwitchItem(
-                R.string.lock_in_background, "", null,
-                { sharedPref.getBoolean("lock_in_background", false) },
-                { sharedPref.edit().putBoolean("lock_in_background", it).apply() }
+                R.string.lock_in_background,
+                getState = { sharedPref.getBoolean("lock_in_background", false) },
+                onCheckedChange = { sharedPref.edit().putBoolean("lock_in_background", it).apply() }
             )
         }
     }
@@ -167,7 +158,7 @@ fun ApiSettings(navCtrl: NavHostController) {
                 if(!enabled) remove("api_key")
             }
         }
-        SwitchItem(R.string.enable, "", null, enabled, { enabled = it }, padding = false)
+        SwitchItem(R.string.enable, state = enabled, onCheckedChange = { enabled = it }, padding = false)
         if(enabled) {
             var key by remember { mutableStateOf("") }
             OutlinedTextField(
@@ -189,7 +180,7 @@ fun ApiSettings(navCtrl: NavHostController) {
                 modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
                 onClick = {
                     sharedPref.edit().putString("api_key", key).apply()
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    context.showOperationResultToast(true)
                 }
             ) {
                 Text(stringResource(R.string.apply))

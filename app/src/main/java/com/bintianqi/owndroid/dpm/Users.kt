@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Binder
 import android.os.Build.VERSION
 import android.os.Process
@@ -14,6 +13,8 @@ import android.os.UserHandle
 import android.os.UserManager
 import android.provider.MediaStore
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -40,7 +41,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -59,10 +59,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.fileUriFlow
-import com.bintianqi.owndroid.getFile
 import com.bintianqi.owndroid.parseTimestamp
-import com.bintianqi.owndroid.toggle
+import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.FunctionItem
@@ -82,33 +80,32 @@ fun Users(navCtrl: NavHostController) {
     val profileOwner = context.isProfileOwner
     var dialog by remember { mutableIntStateOf(0) }
     MyScaffold(R.string.users, 0.dp, navCtrl) {
-        FunctionItem(R.string.user_info, "", R.drawable.person_fill0) { navCtrl.navigate("UserInfo") }
+        FunctionItem(R.string.user_info, icon = R.drawable.person_fill0) { navCtrl.navigate("UserInfo") }
         if(deviceOwner && VERSION.SDK_INT >= 28) {
-            FunctionItem(R.string.secondary_users, "", R.drawable.list_fill0) { dialog = 1 }
-            FunctionItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("UserOptions") }
+            FunctionItem(R.string.secondary_users, icon = R.drawable.list_fill0) { dialog = 1 }
+            FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { navCtrl.navigate("UserOptions") }
         }
         if(deviceOwner) {
-            FunctionItem(R.string.user_operation, "", R.drawable.sync_alt_fill0) { navCtrl.navigate("UserOperation") }
+            FunctionItem(R.string.user_operation, icon = R.drawable.sync_alt_fill0) { navCtrl.navigate("UserOperation") }
         }
         if(VERSION.SDK_INT >= 24 && deviceOwner) {
-            FunctionItem(R.string.create_user, "", R.drawable.person_add_fill0) { navCtrl.navigate("CreateUser") }
+            FunctionItem(R.string.create_user, icon = R.drawable.person_add_fill0) { navCtrl.navigate("CreateUser") }
         }
         if(VERSION.SDK_INT >= 28 && profileOwner && dpm.isAffiliatedUser) {
-            FunctionItem(R.string.logout_current_user, "", R.drawable.logout_fill0) { dialog = 2 }
+            FunctionItem(R.string.logout_current_user, icon = R.drawable.logout_fill0) { dialog = 2 }
         }
         if(deviceOwner || profileOwner) {
-            FunctionItem(R.string.change_username, "", R.drawable.edit_fill0) { navCtrl.navigate("ChangeUsername") }
+            FunctionItem(R.string.change_username, icon = R.drawable.edit_fill0) { navCtrl.navigate("ChangeUsername") }
         }
         if(VERSION.SDK_INT >= 23 && (deviceOwner || profileOwner)) {
-            FunctionItem(R.string.change_user_icon, "", R.drawable.account_circle_fill0) { navCtrl.navigate("ChangeUserIcon") }
+            FunctionItem(R.string.change_user_icon, icon = R.drawable.account_circle_fill0) { navCtrl.navigate("ChangeUserIcon") }
         }
         if(VERSION.SDK_INT >= 28 && deviceOwner) {
-            FunctionItem(R.string.user_session_msg, "", R.drawable.notifications_fill0) { navCtrl.navigate("UserSessionMessage") }
+            FunctionItem(R.string.user_session_msg, icon = R.drawable.notifications_fill0) { navCtrl.navigate("UserSessionMessage") }
         }
         if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
-            FunctionItem(R.string.affiliation_id, "", R.drawable.id_card_fill0) { navCtrl.navigate("AffiliationID") }
+            FunctionItem(R.string.affiliation_id, icon = R.drawable.id_card_fill0) { navCtrl.navigate("AffiliationID") }
         }
-        LaunchedEffect(Unit) { fileUriFlow.value = Uri.parse("") }
     }
     if(dialog != 0 && VERSION.SDK_INT >= 28) AlertDialog(
         title = { Text(stringResource(if(dialog == 1) R.string.secondary_users else R.string.logout_current_user)) },
@@ -157,7 +154,7 @@ fun UserOptions(navCtrl: NavHostController) {
     val receiver = context.getReceiver()
     MyScaffold(R.string.options, 0.dp, navCtrl) {
         if(VERSION.SDK_INT >= 28) {
-            SwitchItem(R.string.enable_logout, "", null, { dpm.isLogoutEnabled }, { dpm.setLogoutEnabled(receiver, it) })
+            SwitchItem(R.string.enable_logout, getState = { dpm.isLogoutEnabled }, onCheckedChange = { dpm.setLogoutEnabled(receiver, it) })
         }
     }
 }
@@ -259,9 +256,7 @@ fun UserOperation(navCtrl: NavHostController) {
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                withUserHandle {
-                    Toast.makeText(context, if(dpm.switchUser(receiver, it)) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
-                }
+                withUserHandle { context.showOperationResultToast(dpm.switchUser(receiver, it)) }
             },
             enabled = legalInput,
             modifier = Modifier.fillMaxWidth()
@@ -288,7 +283,7 @@ fun UserOperation(navCtrl: NavHostController) {
                 focusMgr.clearFocus()
                 withUserHandle {
                     if(dpm.removeUser(receiver, it)) {
-                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                        context.showOperationResultToast(true)
                         idInput = ""
                     } else {
                         Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
@@ -313,7 +308,7 @@ fun CreateUser(navCtrl: NavHostController) {
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var userName by remember { mutableStateOf("") }
-    val flags = remember { mutableStateListOf<Int>() }
+    var flag by remember { mutableIntStateOf(0) }
     MyScaffold(R.string.create_user, 8.dp, navCtrl) {
         OutlinedTextField(
             value = userName,
@@ -326,28 +321,25 @@ fun CreateUser(navCtrl: NavHostController) {
         Spacer(Modifier.padding(vertical = 5.dp))
         CheckBoxItem(
             R.string.create_user_skip_wizard,
-            DevicePolicyManager.SKIP_SETUP_WIZARD in flags,
-            { flags.toggle(it, DevicePolicyManager.SKIP_SETUP_WIZARD) }
-        )
+            flag and DevicePolicyManager.SKIP_SETUP_WIZARD != 0
+        ) { flag = flag xor DevicePolicyManager.SKIP_SETUP_WIZARD }
         if(VERSION.SDK_INT >= 28) {
             CheckBoxItem(
                 R.string.create_user_ephemeral_user,
-                DevicePolicyManager.MAKE_USER_EPHEMERAL in flags,
-                { flags.toggle(it, DevicePolicyManager.MAKE_USER_EPHEMERAL) }
-            )
+                flag and DevicePolicyManager.MAKE_USER_EPHEMERAL != 0
+            ) { flag = flag xor DevicePolicyManager.MAKE_USER_EPHEMERAL }
             CheckBoxItem(
                 R.string.create_user_enable_all_system_app,
-                DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED in flags,
-                { flags.toggle(it, DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED) }
-            )
+                flag and DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED != 0
+            ) { flag = flag xor DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED }
         }
         var newUserHandle: UserHandle? by remember { mutableStateOf(null) }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                newUserHandle = dpm.createAndManageUser(receiver, userName, receiver, null, flags.sum())
-                Toast.makeText(context, if(newUserHandle!=null) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+                newUserHandle = dpm.createAndManageUser(receiver, userName, receiver, null, flag)
+                context.showOperationResultToast(newUserHandle != null)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -403,7 +395,7 @@ fun AffiliationID(navCtrl: NavHostController) {
             onClick = {
                 list.removeAll(listOf(""))
                 dpm.setAffiliationIds(receiver, list.toSet())
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(true)
                 refreshIds()
             },
             modifier = Modifier.fillMaxWidth()
@@ -434,7 +426,7 @@ fun ChangeUsername(navCtrl: NavHostController) {
         Button(
             onClick = {
                 dpm.setProfileName(receiver, inputUsername)
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -477,7 +469,6 @@ fun UserSessionMessage(navCtrl: NavHostController) {
                 onClick = {
                     dpm.setStartUserSessionMessage(receiver,start)
                     refreshMsg()
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) {
@@ -487,7 +478,7 @@ fun UserSessionMessage(navCtrl: NavHostController) {
                 onClick = {
                     dpm.setStartUserSessionMessage(receiver,null)
                     refreshMsg()
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    context.showOperationResultToast(true)
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) {
@@ -508,7 +499,7 @@ fun UserSessionMessage(navCtrl: NavHostController) {
                 onClick = {
                     dpm.setEndUserSessionMessage(receiver,end)
                     refreshMsg()
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    context.showOperationResultToast(true)
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) {
@@ -518,7 +509,7 @@ fun UserSessionMessage(navCtrl: NavHostController) {
                 onClick = {
                     dpm.setEndUserSessionMessage(receiver,null)
                     refreshMsg()
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    context.showOperationResultToast(true)
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) {
@@ -536,22 +527,22 @@ fun ChangeUserIcon(navCtrl: NavHostController) {
     val receiver = context.getReceiver()
     var getContent by remember { mutableStateOf(false) }
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
-    val uriState by fileUriFlow.collectAsState()
-    LaunchedEffect(uriState) {
-        if(uriState == Uri.parse("")) return@LaunchedEffect
-        uriToStream(context, fileUriFlow.value) { stream ->
-            bitmap = BitmapFactory.decodeStream(stream)
+    val getFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        it.data?.data?.let {
+            uriToStream(context, it) { stream ->
+                bitmap = BitmapFactory.decodeStream(stream)
+            }
         }
     }
     MyScaffold(R.string.change_user_icon, 8.dp, navCtrl) {
-        CheckBoxItem(R.string.file_picker_instead_gallery, getContent, { getContent = it })
+        CheckBoxItem(R.string.file_picker_instead_gallery, getContent) { getContent = it }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 val intent = Intent(if(getContent) Intent.ACTION_GET_CONTENT else Intent.ACTION_PICK)
                 if(getContent) intent.addCategory(Intent.CATEGORY_OPENABLE)
                 intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*")
-                getFile.launch(intent)
+                getFileLauncher.launch(intent)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -567,7 +558,7 @@ fun ChangeUserIcon(navCtrl: NavHostController) {
                     Button(
                         onClick = {
                             dpm.setUserIcon(receiver, bitmap)
-                            Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                            context.showOperationResultToast(true)
                         }
                     ) {
                         Text(stringResource(R.string.apply))

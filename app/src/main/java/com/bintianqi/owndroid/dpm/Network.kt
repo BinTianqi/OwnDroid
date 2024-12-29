@@ -124,10 +124,7 @@ import androidx.core.os.bundleOf
 import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.exportFile
-import com.bintianqi.owndroid.exportFilePath
 import com.bintianqi.owndroid.formatFileSize
-import com.bintianqi.owndroid.isExportingSecurityOrNetworkLogs
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.FunctionItem
@@ -157,30 +154,30 @@ fun Network(navCtrl:NavHostController) {
     val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     val dhizuku = sharedPref.getBoolean("dhizuku", false)
     MyScaffold(R.string.network, 0.dp, navCtrl) {
-        if(!dhizuku) FunctionItem(R.string.wifi, "", R.drawable.wifi_fill0) { navCtrl.navigate("Wifi") }
+        if(!dhizuku) FunctionItem(R.string.wifi, icon = R.drawable.wifi_fill0) { navCtrl.navigate("Wifi") }
         if(VERSION.SDK_INT >= 30) {
-            FunctionItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("NetworkOptions") }
+            FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { navCtrl.navigate("NetworkOptions") }
         }
         if(VERSION.SDK_INT >= 29 && deviceOwner) {
-            FunctionItem(R.string.private_dns, "", R.drawable.dns_fill0) { navCtrl.navigate("PrivateDNS") }
+            FunctionItem(R.string.private_dns, icon = R.drawable.dns_fill0) { navCtrl.navigate("PrivateDNS") }
         }
         if(VERSION.SDK_INT >= 24) {
-            FunctionItem(R.string.always_on_vpn, "", R.drawable.vpn_key_fill0) { navCtrl.navigate("AlwaysOnVpn") }
+            FunctionItem(R.string.always_on_vpn, icon = R.drawable.vpn_key_fill0) { navCtrl.navigate("AlwaysOnVpn") }
         }
         if(deviceOwner) {
-            FunctionItem(R.string.recommended_global_proxy, "", R.drawable.vpn_key_fill0) { navCtrl.navigate("RecommendedGlobalProxy") }
+            FunctionItem(R.string.recommended_global_proxy, icon = R.drawable.vpn_key_fill0) { navCtrl.navigate("RecommendedGlobalProxy") }
         }
         if(VERSION.SDK_INT >= 26 && !dhizuku && (deviceOwner || (profileOwner && dpm.isManagedProfile(receiver)))) {
-            FunctionItem(R.string.network_logging, "", R.drawable.description_fill0) { navCtrl.navigate("NetworkLog") }
+            FunctionItem(R.string.network_logging, icon = R.drawable.description_fill0) { navCtrl.navigate("NetworkLog") }
         }
         if(VERSION.SDK_INT >= 31) {
-            FunctionItem(R.string.wifi_auth_keypair, "", R.drawable.key_fill0) { navCtrl.navigate("WifiAuthKeypair") }
+            FunctionItem(R.string.wifi_auth_keypair, icon = R.drawable.key_fill0) { navCtrl.navigate("WifiAuthKeypair") }
         }
         if(VERSION.SDK_INT >= 33) {
-            FunctionItem(R.string.preferential_network_service, "", R.drawable.globe_fill0) { navCtrl.navigate("PreferentialNetworkService") }
+            FunctionItem(R.string.preferential_network_service, icon = R.drawable.globe_fill0) { navCtrl.navigate("PreferentialNetworkService") }
         }
         if(VERSION.SDK_INT >= 28 && deviceOwner) {
-            FunctionItem(R.string.override_apn_settings, "", R.drawable.cell_tower_fill0) { navCtrl.navigate("OverrideAPN") }
+            FunctionItem(R.string.override_apn_settings, icon = R.drawable.cell_tower_fill0) { navCtrl.navigate("OverrideAPN") }
         }
     }
 }
@@ -194,8 +191,8 @@ fun NetworkOptions(navCtrl: NavHostController) {
     var dialog by remember { mutableIntStateOf(0) }
     MyScaffold(R.string.options, 0.dp, navCtrl) {
         if(VERSION.SDK_INT>=30 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            SwitchItem(R.string.lockdown_admin_configured_network, "", R.drawable.wifi_password_fill0,
-                { dpm.hasLockdownAdminConfiguredNetworks(receiver) }, { dpm.setConfiguredNetworksLockdownState(receiver,it) },
+            SwitchItem(R.string.lockdown_admin_configured_network, icon = R.drawable.wifi_password_fill0,
+                getState = { dpm.hasLockdownAdminConfiguredNetworks(receiver) }, onCheckedChange = { dpm.setConfiguredNetworksLockdownState(receiver,it) },
                 onClickBlank = { dialog = 1 }
             )
         }
@@ -280,11 +277,11 @@ fun Wifi(navCtrl: NavHostController) {
                             }
                         }
                         if(VERSION.SDK_INT >= 24 && (deviceOwner || orgProfileOwner)) {
-                            FunctionItem(R.string.wifi_mac_address, "", null) { wifiMacDialog = true }
+                            FunctionItem(R.string.wifi_mac_address) { wifiMacDialog = true }
                         }
                         if(VERSION.SDK_INT >= 33 && (deviceOwner || orgProfileOwner)) {
-                            FunctionItem(R.string.min_wifi_security_level, "", null) { navCtrl.navigate("MinWifiSecurityLevel") }
-                            FunctionItem(R.string.wifi_ssid_policy, "", null) { navCtrl.navigate("WifiSsidPolicy") }
+                            FunctionItem(R.string.min_wifi_security_level) { navCtrl.navigate("MinWifiSecurityLevel") }
+                            FunctionItem(R.string.wifi_ssid_policy) { navCtrl.navigate("WifiSsidPolicy") }
                         }
                     }
                 } else if(page == 1) {
@@ -397,8 +394,7 @@ private fun SavedNetworks(navCtrl: NavHostController) {
                 ) {
                     Button(
                         onClick = {
-                            val success = wm.enableNetwork(network.networkId, false)
-                            Toast.makeText(context, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+                            context.showOperationResultToast(wm.enableNetwork(network.networkId, false))
                             networkDetailsDialog = -1
                             refresh()
                         },
@@ -408,8 +404,7 @@ private fun SavedNetworks(navCtrl: NavHostController) {
                     }
                     Button(
                         onClick = {
-                            val success = wm.disableNetwork(network.networkId)
-                            Toast.makeText(context, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+                            context.showOperationResultToast(wm.disableNetwork(network.networkId))
                             networkDetailsDialog = -1
                             refresh()
                         },
@@ -431,8 +426,7 @@ private fun SavedNetworks(navCtrl: NavHostController) {
                 }
                 TextButton(
                     onClick = {
-                        val success = wm.removeNetwork(network.networkId)
-                        Toast.makeText(context, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+                        context.showOperationResultToast(wm.removeNetwork(network.networkId))
                         networkDetailsDialog = -1
                         refresh()
                     },
@@ -526,7 +520,7 @@ private fun AddNetwork(wifiConfig: WifiConfiguration? = null, navCtrl: NavHostCo
             value = ssid, onValueChange = { ssid = it }, label = { Text("SSID") },
             modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
         )
-        CheckBoxItem(R.string.hidden_ssid, hiddenSsid, { hiddenSsid = it })
+        CheckBoxItem(R.string.hidden_ssid, hiddenSsid) { hiddenSsid = it }
         if(VERSION.SDK_INT >= 30) {
             // TODO: more protocols
             val securityTypeTextMap = mutableMapOf(
@@ -731,31 +725,15 @@ fun WifiSecurityLevel(navCtrl: NavHostController) {
     var selectedWifiSecLevel by remember { mutableIntStateOf(0) }
     LaunchedEffect(Unit) { selectedWifiSecLevel = dpm.minimumRequiredWifiSecurityLevel }
     MyScaffold(R.string.min_wifi_security_level, 8.dp, navCtrl) {
-        RadioButtonItem(
-            R.string.wifi_security_open,
-            selectedWifiSecLevel == WIFI_SECURITY_OPEN,
-            { selectedWifiSecLevel = WIFI_SECURITY_OPEN }
-        )
-        RadioButtonItem(
-            "WEP, WPA(2)-PSK",
-            selectedWifiSecLevel == WIFI_SECURITY_PERSONAL,
-            { selectedWifiSecLevel = WIFI_SECURITY_PERSONAL }
-        )
-        RadioButtonItem(
-            "WPA-EAP",
-            selectedWifiSecLevel == WIFI_SECURITY_ENTERPRISE_EAP,
-            { selectedWifiSecLevel = WIFI_SECURITY_ENTERPRISE_EAP }
-        )
-        RadioButtonItem(
-            "WPA3-192bit",
-            selectedWifiSecLevel == WIFI_SECURITY_ENTERPRISE_192,
-            { selectedWifiSecLevel = WIFI_SECURITY_ENTERPRISE_192 }
-        )
+        RadioButtonItem(R.string.wifi_security_open, selectedWifiSecLevel == WIFI_SECURITY_OPEN) { selectedWifiSecLevel = WIFI_SECURITY_OPEN }
+        RadioButtonItem("WEP, WPA(2)-PSK", selectedWifiSecLevel == WIFI_SECURITY_PERSONAL) { selectedWifiSecLevel = WIFI_SECURITY_PERSONAL }
+        RadioButtonItem("WPA-EAP", selectedWifiSecLevel == WIFI_SECURITY_ENTERPRISE_EAP) { selectedWifiSecLevel = WIFI_SECURITY_ENTERPRISE_EAP }
+        RadioButtonItem("WPA3-192bit", selectedWifiSecLevel == WIFI_SECURITY_ENTERPRISE_192) { selectedWifiSecLevel = WIFI_SECURITY_ENTERPRISE_192 }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 dpm.minimumRequiredWifiSecurityLevel = selectedWifiSecLevel
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -781,21 +759,13 @@ fun WifiSsidPolicy(navCtrl: NavHostController) {
             ssidList.addAll(policy?.ssids ?: mutableSetOf())
         }
         LaunchedEffect(Unit) { refreshPolicy() }
-        RadioButtonItem(
-            R.string.none,
-            selectedPolicyType == -1,
-            { selectedPolicyType = -1 }
-        )
-        RadioButtonItem(
-            R.string.whitelist,
-            selectedPolicyType == WIFI_SSID_POLICY_TYPE_ALLOWLIST,
-            { selectedPolicyType = WIFI_SSID_POLICY_TYPE_ALLOWLIST }
-        )
-        RadioButtonItem(
-            R.string.blacklist,
-            selectedPolicyType == WIFI_SSID_POLICY_TYPE_DENYLIST,
-            { selectedPolicyType = WIFI_SSID_POLICY_TYPE_DENYLIST }
-        )
+        RadioButtonItem(R.string.none, selectedPolicyType == -1) { selectedPolicyType = -1 }
+        RadioButtonItem(R.string.whitelist, selectedPolicyType == WIFI_SSID_POLICY_TYPE_ALLOWLIST) {
+            selectedPolicyType = WIFI_SSID_POLICY_TYPE_ALLOWLIST
+        }
+        RadioButtonItem(R.string.blacklist, selectedPolicyType == WIFI_SSID_POLICY_TYPE_DENYLIST) {
+            selectedPolicyType = WIFI_SSID_POLICY_TYPE_DENYLIST
+        }
         AnimatedVisibility(selectedPolicyType != -1) {
             var inputSsid by remember { mutableStateOf("") }
             Column {
@@ -838,7 +808,7 @@ fun WifiSsidPolicy(navCtrl: NavHostController) {
                     WifiSsidPolicy(selectedPolicyType, ssidList.toSet())
                 }
                 refreshPolicy()
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -940,7 +910,7 @@ fun AlwaysOnVPNPackage(navCtrl: NavHostController, vm: MyViewModel) {
     val setAlwaysOnVpn: (String?, Boolean)->Boolean = { vpnPkg: String?, lockdownEnabled: Boolean ->
         try {
             dpm.setAlwaysOnVpnPackage(receiver, vpnPkg, lockdownEnabled)
-            Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+            context.showOperationResultToast(true)
             true
         } catch(e: UnsupportedOperationException) {
             e.printStackTrace()
@@ -971,7 +941,7 @@ fun AlwaysOnVPNPackage(navCtrl: NavHostController, vm: MyViewModel) {
             },
             modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
         )
-        SwitchItem(R.string.enable_lockdown, "", null, lockdown, { lockdown = it }, padding = false)
+        SwitchItem(R.string.enable_lockdown, state = lockdown, onCheckedChange = { lockdown = it }, padding = false)
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = { if(setAlwaysOnVpn(pkgName, lockdown)) refresh() },
@@ -1002,9 +972,9 @@ fun RecommendedGlobalProxy(navCtrl: NavHostController) {
     var proxyPort by remember { mutableStateOf("") }
     var exclList by remember { mutableStateOf("") }
     MyScaffold(R.string.recommended_global_proxy, 8.dp, navCtrl) {
-        RadioButtonItem(R.string.proxy_type_off, proxyType == 0, { proxyType = 0 })
-        RadioButtonItem(R.string.proxy_type_pac, proxyType == 1, { proxyType = 1 })
-        RadioButtonItem(R.string.proxy_type_direct, proxyType == 2, { proxyType = 2 })
+        RadioButtonItem(R.string.proxy_type_off, proxyType == 0) { proxyType = 0 }
+        RadioButtonItem(R.string.proxy_type_pac, proxyType == 1) { proxyType = 1 }
+        RadioButtonItem(R.string.proxy_type_direct, proxyType == 2) { proxyType = 2 }
         AnimatedVisibility(proxyType != 0) {
             OutlinedTextField(
                 value = proxyUri,
@@ -1017,7 +987,7 @@ fun RecommendedGlobalProxy(navCtrl: NavHostController) {
         }
         AnimatedVisibility(proxyType == 1 && VERSION.SDK_INT >= 30) {
             Box(modifier = Modifier.padding(top = 2.dp)) {
-                CheckBoxItem(R.string.specify_port, specifyPort, { specifyPort = it })
+                CheckBoxItem(R.string.specify_port, specifyPort) { specifyPort = it }
             }
         }
         AnimatedVisibility((proxyType == 1 && specifyPort && VERSION.SDK_INT >= 30) || proxyType == 2) {
@@ -1045,7 +1015,7 @@ fun RecommendedGlobalProxy(navCtrl: NavHostController) {
             onClick = {
                 if(proxyType == 0) {
                     dpm.setRecommendedGlobalProxy(receiver, null)
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    context.showOperationResultToast(true)
                     return@Button
                 }
                 if(proxyUri == "") {
@@ -1076,7 +1046,7 @@ fun RecommendedGlobalProxy(navCtrl: NavHostController) {
                     return@Button
                 }
                 dpm.setRecommendedGlobalProxy(receiver, proxyInfo)
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -1094,11 +1064,24 @@ fun NetworkLogging(navCtrl: NavHostController) {
     val receiver = context.getReceiver()
     val logFile = context.filesDir.resolve("NetworkLogs.json")
     var fileSize by remember { mutableLongStateOf(0) }
-    LaunchedEffect(Unit) {
-        fileSize = logFile.length()
+    LaunchedEffect(Unit) { fileSize = logFile.length() }
+    val exportNetworkLogsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        result.data?.data?.let { uri ->
+            context.contentResolver.openOutputStream(uri)?.use { outStream ->
+                outStream.write("[".encodeToByteArray())
+                logFile.inputStream().use { it.copyTo(outStream) }
+                outStream.write("]".encodeToByteArray())
+                context.showOperationResultToast(true)
+            }
+        }
     }
     MyScaffold(R.string.network_logging, 8.dp, navCtrl) {
-        SwitchItem(R.string.enable, "", null, { dpm.isNetworkLoggingEnabled(receiver) }, { dpm.setNetworkLoggingEnabled(receiver,it) }, padding = false)
+        SwitchItem(
+            R.string.enable,
+            getState = { dpm.isNetworkLoggingEnabled(receiver) },
+            onCheckedChange = { dpm.setNetworkLoggingEnabled(receiver,it) },
+            padding = false
+        )
         Text(stringResource(R.string.log_file_size_is, formatFileSize(fileSize)))
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
             Button(
@@ -1107,9 +1090,7 @@ fun NetworkLogging(navCtrl: NavHostController) {
                     intent.addCategory(Intent.CATEGORY_OPENABLE)
                     intent.setType("application/json")
                     intent.putExtra(Intent.EXTRA_TITLE, "NetworkLogs.json")
-                    exportFilePath = logFile.path
-                    isExportingSecurityOrNetworkLogs = true
-                    exportFile.launch(intent)
+                    exportNetworkLogsLauncher.launch(intent)
                 },
                 enabled = fileSize > 0,
                 modifier = Modifier.fillMaxWidth(0.49F)
@@ -1158,19 +1139,13 @@ fun WifiAuthKeypair(navCtrl: NavHostController) {
         Spacer(Modifier.padding(vertical = 5.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Button(
-                onClick = {
-                    val result = dpm.grantKeyPairToWifiAuth(keyPair)
-                    Toast.makeText(context, if(result) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
-                },
+                onClick = { context.showOperationResultToast(dpm.grantKeyPairToWifiAuth(keyPair)) },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) {
                 Text(stringResource(R.string.grant))
             }
             Button(
-                onClick = {
-                    val result = dpm.revokeKeyPairFromWifiAuth(keyPair)
-                    Toast.makeText(context, if(result) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
-                },
+                onClick = { context.showOperationResultToast(dpm.revokeKeyPairFromWifiAuth(keyPair)) },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) {
                 Text(stringResource(R.string.revoke))
@@ -1221,10 +1196,7 @@ fun PreferentialNetworkService(navCtrl: NavHostController) {
     }
     LaunchedEffect(Unit) { initialize() }
     MyScaffold(R.string.preferential_network_service, 8.dp, navCtrl) {
-        SwitchItem(
-            title = R.string.enabled, desc = "", icon = null,
-            state = masterEnabled, onCheckedChange = { masterEnabled = it }, padding = false
-        )
+        SwitchItem(R.string.enabled, state = masterEnabled, onCheckedChange = { masterEnabled = it }, padding = false)
         Row(
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically,
@@ -1272,7 +1244,7 @@ fun PreferentialNetworkService(navCtrl: NavHostController) {
                 onClick = {
                     try {
                         saveCurrentConfig()
-                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                        context.showOperationResultToast(true)
                     } catch(e: Exception) {
                         e.printStackTrace()
                         Toast.makeText(context, R.string.failed_to_save_current_config, Toast.LENGTH_SHORT).show()
@@ -1292,10 +1264,7 @@ fun PreferentialNetworkService(navCtrl: NavHostController) {
                 Icon(imageVector = Icons.Default.Delete, contentDescription = stringResource(R.string.delete_current_config))
             }
         }
-        SwitchItem(
-            title = R.string.enabled, desc = "", icon = null,
-            state = enabled, onCheckedChange = { enabled = it }, padding = false
-        )
+        SwitchItem(title = R.string.enabled, state = enabled, onCheckedChange = { enabled = it }, padding = false)
         OutlinedTextField(
             value = networkId, onValueChange = { networkId = it },
             label = { Text(stringResource(R.string.network_id)) },
@@ -1304,11 +1273,11 @@ fun PreferentialNetworkService(navCtrl: NavHostController) {
             modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
         )
         SwitchItem(
-            title = R.string.allow_fallback_to_default_connection, desc = "", icon = null,
+            title = R.string.allow_fallback_to_default_connection,
             state = allowFallback, onCheckedChange = { allowFallback = it }, padding = false
         )
         if(VERSION.SDK_INT >= 34) SwitchItem(
-            title = R.string.block_non_matching_networks, desc = "", icon = null,
+            title = R.string.block_non_matching_networks,
             state = blockNonMatching, onCheckedChange = { blockNonMatching = it }, padding = false
         )
         OutlinedTextField(
@@ -1328,7 +1297,7 @@ fun PreferentialNetworkService(navCtrl: NavHostController) {
                 dpm.isPreferentialNetworkServiceEnabled = masterEnabled
                 dpm.preferentialNetworkServiceConfigs = configs
                 initialize()
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
         ) {
@@ -1351,7 +1320,11 @@ fun OverrideAPN(navCtrl: NavHostController) {
     MyScaffold(R.string.override_apn_settings, 8.dp, navCtrl) {
         Text(text = stringResource(id = R.string.developing))
         Spacer(Modifier.padding(vertical = 5.dp))
-        SwitchItem(R.string.enable, "", null, { dpm.isOverrideApnEnabled(receiver) }, { dpm.setOverrideApnsEnabled(receiver,it) }, padding = false)
+        SwitchItem(
+            R.string.enable,
+            getState = { dpm.isOverrideApnEnabled(receiver) }, onCheckedChange = { dpm.setOverrideApnsEnabled(receiver,it) },
+            padding = false
+        )
         Text(text = stringResource(R.string.total_apn_amount, setting.size))
         if(setting.isNotEmpty()) {
             Text(text = stringResource(R.string.select_a_apn_or_create, setting.size))
@@ -1468,11 +1441,11 @@ fun OverrideAPN(navCtrl: NavHostController) {
                 }
                 
                 Text(text = stringResource(R.string.auth_type), style = typography.titleLarge)
-                RadioButtonItem(R.string.none, selectedAuthType==AUTH_TYPE_NONE , { selectedAuthType=AUTH_TYPE_NONE })
-                RadioButtonItem("CHAP", selectedAuthType == AUTH_TYPE_CHAP , { selectedAuthType = AUTH_TYPE_CHAP })
-                RadioButtonItem("PAP", selectedAuthType == AUTH_TYPE_PAP, { selectedAuthType = AUTH_TYPE_PAP })
-                RadioButtonItem("PAP/CHAP", selectedAuthType == AUTH_TYPE_PAP_OR_CHAP, { selectedAuthType = AUTH_TYPE_PAP_OR_CHAP })
-                
+                RadioButtonItem(R.string.none, selectedAuthType==AUTH_TYPE_NONE) { selectedAuthType = AUTH_TYPE_NONE }
+                RadioButtonItem("CHAP", selectedAuthType == AUTH_TYPE_CHAP) { selectedAuthType = AUTH_TYPE_CHAP }
+                RadioButtonItem("PAP", selectedAuthType == AUTH_TYPE_PAP) { selectedAuthType = AUTH_TYPE_PAP }
+                RadioButtonItem("PAP/CHAP", selectedAuthType == AUTH_TYPE_PAP_OR_CHAP) { selectedAuthType = AUTH_TYPE_PAP_OR_CHAP }
+
                 if(VERSION.SDK_INT>=29) {
                     val ts = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
                     carrierId = ts.simCarrierId.toString()
@@ -1578,11 +1551,11 @@ fun OverrideAPN(navCtrl: NavHostController) {
                 }
                 
                 Text(text = "MVNO", style = typography.titleLarge)
-                RadioButtonItem("SPN", mvnoType == MVNO_TYPE_SPN, { mvnoType = MVNO_TYPE_SPN })
-                RadioButtonItem("IMSI", mvnoType == MVNO_TYPE_IMSI, { mvnoType = MVNO_TYPE_IMSI })
-                RadioButtonItem("GID", mvnoType == MVNO_TYPE_GID, { mvnoType = MVNO_TYPE_GID })
-                RadioButtonItem("ICCID", mvnoType == MVNO_TYPE_ICCID, { mvnoType = MVNO_TYPE_ICCID })
-                
+                RadioButtonItem("SPN", mvnoType == MVNO_TYPE_SPN) { mvnoType = MVNO_TYPE_SPN }
+                RadioButtonItem("IMSI", mvnoType == MVNO_TYPE_IMSI) { mvnoType = MVNO_TYPE_IMSI }
+                RadioButtonItem("GID", mvnoType == MVNO_TYPE_GID) { mvnoType = MVNO_TYPE_GID }
+                RadioButtonItem("ICCID", mvnoType == MVNO_TYPE_ICCID) { mvnoType = MVNO_TYPE_ICCID }
+
                 Text(text = stringResource(R.string.network_type), style = typography.titleLarge)
                 TextField(
                     value = networkTypeBitmask,
@@ -1625,23 +1598,23 @@ fun OverrideAPN(navCtrl: NavHostController) {
                 }
                 
                 Text(text = stringResource(R.string.protocol), style = typography.titleLarge)
-                RadioButtonItem("IPV4", protocol == PROTOCOL_IP, { protocol = PROTOCOL_IP })
-                RadioButtonItem("IPV6", protocol == PROTOCOL_IPV6, { protocol = PROTOCOL_IPV6 })
-                RadioButtonItem("IPV4/IPV6", protocol == PROTOCOL_IPV4V6, { protocol = PROTOCOL_IPV4V6 })
-                RadioButtonItem("PPP", protocol == PROTOCOL_PPP, { protocol = PROTOCOL_PPP })
+                RadioButtonItem("IPV4", protocol == PROTOCOL_IP) { protocol = PROTOCOL_IP }
+                RadioButtonItem("IPV6", protocol == PROTOCOL_IPV6) { protocol = PROTOCOL_IPV6 }
+                RadioButtonItem("IPV4/IPV6", protocol == PROTOCOL_IPV4V6) { protocol = PROTOCOL_IPV4V6 }
+                RadioButtonItem("PPP", protocol == PROTOCOL_PPP) { protocol = PROTOCOL_PPP }
                 if(VERSION.SDK_INT>=29) {
-                    RadioButtonItem("non-IP", protocol == PROTOCOL_NON_IP, { protocol = PROTOCOL_NON_IP })
-                    RadioButtonItem("Unstructured", protocol == PROTOCOL_UNSTRUCTURED, { protocol = PROTOCOL_UNSTRUCTURED })
+                    RadioButtonItem("non-IP", protocol == PROTOCOL_NON_IP) { protocol = PROTOCOL_NON_IP }
+                    RadioButtonItem("Unstructured", protocol == PROTOCOL_UNSTRUCTURED) { protocol = PROTOCOL_UNSTRUCTURED }
                 }
                 
                 Text(text = stringResource(R.string.roaming_protocol), style = typography.titleLarge)
-                RadioButtonItem("IPV4", roamingProtocol == PROTOCOL_IP, { roamingProtocol = PROTOCOL_IP })
-                RadioButtonItem("IPV6", roamingProtocol == PROTOCOL_IPV6, { roamingProtocol = PROTOCOL_IPV6 })
-                RadioButtonItem("IPV4/IPV6", roamingProtocol == PROTOCOL_IPV4V6, { roamingProtocol = PROTOCOL_IPV4V6 })
-                RadioButtonItem("PPP", roamingProtocol == PROTOCOL_PPP, { roamingProtocol = PROTOCOL_PPP})
+                RadioButtonItem("IPV4", roamingProtocol == PROTOCOL_IP) { roamingProtocol = PROTOCOL_IP }
+                RadioButtonItem("IPV6", roamingProtocol == PROTOCOL_IPV6) { roamingProtocol = PROTOCOL_IPV6 }
+                RadioButtonItem("IPV4/IPV6", roamingProtocol == PROTOCOL_IPV4V6) { roamingProtocol = PROTOCOL_IPV4V6 }
+                RadioButtonItem("PPP", roamingProtocol == PROTOCOL_PPP) { roamingProtocol = PROTOCOL_PPP }
                 if(VERSION.SDK_INT>=29) {
-                    RadioButtonItem("non-IP", roamingProtocol == PROTOCOL_NON_IP, { roamingProtocol = PROTOCOL_NON_IP })
-                    RadioButtonItem("Unstructured", roamingProtocol == PROTOCOL_UNSTRUCTURED, { roamingProtocol = PROTOCOL_UNSTRUCTURED })
+                    RadioButtonItem("non-IP", roamingProtocol == PROTOCOL_NON_IP) { roamingProtocol = PROTOCOL_NON_IP }
+                    RadioButtonItem("Unstructured", roamingProtocol == PROTOCOL_UNSTRUCTURED) { roamingProtocol = PROTOCOL_UNSTRUCTURED }
                 }
                 
                 var finalStep by remember { mutableStateOf(false) }
@@ -1688,20 +1661,14 @@ fun OverrideAPN(navCtrl: NavHostController) {
                     }else{
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Button(
-                                onClick = {
-                                    val success = dpm.updateOverrideApn(receiver,id,result)
-                                    Toast.makeText(context, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
-                                },
-                                Modifier.fillMaxWidth(0.49F)
+                                onClick = { context.showOperationResultToast(dpm.updateOverrideApn(receiver, id, result)) },
+                                modifier = Modifier.fillMaxWidth(0.49F)
                             ) {
                                 Text(stringResource(R.string.update))
                             }
                             Button(
-                                onClick = {
-                                    val success = dpm.removeOverrideApn(receiver,id)
-                                    Toast.makeText(context, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
-                                },
-                                Modifier.fillMaxWidth(0.96F)
+                                onClick = { context.showOperationResultToast(dpm.removeOverrideApn(receiver,id)) },
+                                modifier = Modifier.fillMaxWidth(0.96F)
                             ) {
                                 Text(stringResource(R.string.remove))
                             }

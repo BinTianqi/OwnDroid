@@ -18,6 +18,8 @@ import android.os.Build.VERSION
 import android.os.Looper
 import android.provider.Settings
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
@@ -50,7 +52,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -82,8 +83,7 @@ import com.bintianqi.owndroid.InstallAppActivity
 import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.PackageInstallerReceiver
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.fileUriFlow
-import com.bintianqi.owndroid.getFile
+import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.InfoCard
@@ -200,14 +200,14 @@ private fun Home(navCtrl:NavHostController, pkgName: String) {
         if(VERSION.SDK_INT >= 24 && profileOwner && dpm.isManagedProfile(receiver)) {
             Text(text = stringResource(R.string.scope_is_work_profile), textAlign = TextAlign.Center,modifier = Modifier.fillMaxWidth())
         }
-        FunctionItem(R.string.app_info,"", R.drawable.open_in_new) {
+        FunctionItem(title = R.string.app_info, icon = R.drawable.open_in_new) {
             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
             intent.setData(Uri.parse("package:$pkgName"))
             startActivity(context, intent, null)
         }
         if(VERSION.SDK_INT >= 24) {
             SwitchItem(
-                title = R.string.suspend, desc = "", icon = R.drawable.block_fill0,
+                title = R.string.suspend, icon = R.drawable.block_fill0,
                 state = suspend,
                 onCheckedChange = { appControlAction = 1; appControl(it) },
                 onClickBlank = { appControlAction = 1; dialogStatus = 4 }
@@ -220,48 +220,47 @@ private fun Home(navCtrl:NavHostController, pkgName: String) {
             onClickBlank = { appControlAction = 2; dialogStatus = 4 }
         )
         SwitchItem(
-            title = R.string.block_uninstall, desc = "", icon = R.drawable.delete_forever_fill0,
+            title = R.string.block_uninstall, icon = R.drawable.delete_forever_fill0,
             state = blockUninstall,
             onCheckedChange = { appControlAction = 3; appControl(it) },
             onClickBlank = { appControlAction = 3; dialogStatus = 4 }
         )
         if((VERSION.SDK_INT >= 33 && profileOwner) || (VERSION.SDK_INT >= 30 && deviceOwner)) {
-            FunctionItem(R.string.ucd, "", R.drawable.do_not_touch_fill0) { navCtrl.navigate("UserControlDisabled") }
+            FunctionItem(title = R.string.ucd, icon = R.drawable.do_not_touch_fill0) { navCtrl.navigate("UserControlDisabled") }
         }
         if(VERSION.SDK_INT>=23) {
-            FunctionItem(R.string.permission_manage, "", R.drawable.key_fill0) { navCtrl.navigate("PermissionManage") }
+            FunctionItem(title = R.string.permission_manage, icon = R.drawable.key_fill0) { navCtrl.navigate("PermissionManage") }
         }
         if(VERSION.SDK_INT >= 30 && profileOwner && dpm.isManagedProfile(receiver)) {
-            FunctionItem(R.string.cross_profile_package, "", R.drawable.work_fill0) { navCtrl.navigate("CrossProfilePackage") }
+            FunctionItem(title = R.string.cross_profile_package, icon = R.drawable.work_fill0) { navCtrl.navigate("CrossProfilePackage") }
         }
         if(profileOwner) { 
-            FunctionItem(R.string.cross_profile_widget, "", R.drawable.widgets_fill0) { navCtrl.navigate("CrossProfileWidget") }
+            FunctionItem(title = R.string.cross_profile_widget, icon = R.drawable.widgets_fill0) { navCtrl.navigate("CrossProfileWidget") }
         }
         if(VERSION.SDK_INT >= 34 && deviceOwner) {
-            FunctionItem(R.string.credential_manage_policy, "", R.drawable.license_fill0) { navCtrl.navigate("CredentialManagePolicy") }
+            FunctionItem(title = R.string.credential_manage_policy, icon = R.drawable.license_fill0) { navCtrl.navigate("CredentialManagePolicy") }
         }
-        FunctionItem(R.string.permitted_accessibility_services, "", R.drawable.settings_accessibility_fill0) { navCtrl.navigate("Accessibility") }
-        FunctionItem(R.string.permitted_ime, "", R.drawable.keyboard_fill0) { navCtrl.navigate("IME") }
-        FunctionItem(R.string.enable_system_app, "", R.drawable.enable_fill0) {
+        FunctionItem(title = R.string.permitted_accessibility_services, icon = R.drawable.settings_accessibility_fill0) { navCtrl.navigate("Accessibility") }
+        FunctionItem(title = R.string.permitted_ime, icon = R.drawable.keyboard_fill0) { navCtrl.navigate("IME") }
+        FunctionItem(title = R.string.enable_system_app, icon = R.drawable.enable_fill0) {
             if(pkgName != "") dialogStatus = 1
         }
         if(VERSION.SDK_INT >= 28 && deviceOwner) {
-            FunctionItem(R.string.keep_uninstalled_packages, "", R.drawable.delete_fill0) { navCtrl.navigate("KeepUninstalled") }
+            FunctionItem(title = R.string.keep_uninstalled_packages, icon = R.drawable.delete_fill0) { navCtrl.navigate("KeepUninstalled") }
         }
         if(VERSION.SDK_INT >= 28) {
-            FunctionItem(R.string.clear_app_storage, "", R.drawable.mop_fill0) {
+            FunctionItem(title = R.string.clear_app_storage, icon = R.drawable.mop_fill0) {
                 if(pkgName != "") dialogStatus = 2
             }
         }
-        FunctionItem(R.string.install_app, "", R.drawable.install_mobile_fill0) { navCtrl.navigate("InstallApp") }
-        FunctionItem(R.string.uninstall_app, "", R.drawable.delete_fill0) { navCtrl.navigate("UninstallApp") }
+        FunctionItem(title = R.string.install_app, icon = R.drawable.install_mobile_fill0) { navCtrl.navigate("InstallApp") }
+        FunctionItem(title = R.string.uninstall_app, icon = R.drawable.delete_fill0) { navCtrl.navigate("UninstallApp") }
         if(VERSION.SDK_INT >= 34 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            FunctionItem(R.string.set_default_dialer, "", R.drawable.call_fill0) {
+            FunctionItem(title = R.string.set_default_dialer, icon = R.drawable.call_fill0) {
                 if(pkgName != "") dialogStatus = 3
             }
         }
         Spacer(Modifier.padding(vertical = 30.dp))
-        LaunchedEffect(Unit) { fileUriFlow.value = Uri.parse("") }
     }
     if(dialogStatus == 1) AlertDialog(
         title = { Text(stringResource(R.string.enable_system_app)) },
@@ -279,7 +278,7 @@ private fun Home(navCtrl:NavHostController, pkgName: String) {
                 onClick = {
                     try {
                         dpm.enableSystemApp(receiver, pkgName)
-                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                        context.showOperationResultToast(true)
                     } catch(_: IllegalArgumentException) {
                         Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
                     }
@@ -343,7 +342,7 @@ private fun Home(navCtrl:NavHostController, pkgName: String) {
                 onClick = {
                     try{
                         dpm.setDefaultDialerApplication(pkgName)
-                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                        context.showOperationResultToast(true)
                     } catch(_: IllegalArgumentException) {
                         Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
                     }
@@ -656,25 +655,13 @@ private fun CredentialManagePolicy(pkgName: String) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.credential_manage_policy), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
-        RadioButtonItem(
-            R.string.none,
-            policyType == -1, { policyType = -1 }
-        )
-        RadioButtonItem(
-            R.string.blacklist,
-            policyType == PACKAGE_POLICY_BLOCKLIST,
-            { policyType = PACKAGE_POLICY_BLOCKLIST }
-        )
-        RadioButtonItem(
-            R.string.whitelist,
-            policyType == PACKAGE_POLICY_ALLOWLIST,
-            { policyType = PACKAGE_POLICY_ALLOWLIST }
-        )
+        RadioButtonItem(R.string.none, policyType == -1) { policyType = -1 }
+        RadioButtonItem(R.string.blacklist, policyType == PACKAGE_POLICY_BLOCKLIST) { policyType = PACKAGE_POLICY_BLOCKLIST }
+        RadioButtonItem(R.string.whitelist, policyType == PACKAGE_POLICY_ALLOWLIST){ policyType = PACKAGE_POLICY_ALLOWLIST }
         RadioButtonItem(
             R.string.whitelist_and_system_app,
-            policyType == PACKAGE_POLICY_ALLOWLIST_AND_SYSTEM,
-            { policyType = PACKAGE_POLICY_ALLOWLIST_AND_SYSTEM }
-        )
+            policyType == PACKAGE_POLICY_ALLOWLIST_AND_SYSTEM
+        ) { policyType = PACKAGE_POLICY_ALLOWLIST_AND_SYSTEM }
         Spacer(Modifier.padding(vertical = 5.dp))
         AnimatedVisibility(policyType != -1) {
             Column {
@@ -699,7 +686,7 @@ private fun CredentialManagePolicy(pkgName: String) {
                             } else {
                                 dpm.credentialManagerPolicy = null
                             }
-                            Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                            context.showOperationResultToast(true)
                         } catch(_: IllegalArgumentException) {
                             Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
                         } finally {
@@ -798,8 +785,8 @@ private fun PermittedIME(pkgName: String) {
         Text(text = stringResource(R.string.permitted_ime), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         SwitchItem(
-            R.string.allow_all, "", null, allowAll,
-            {
+            R.string.allow_all, state = allowAll,
+            onCheckedChange = {
                 dpm.setPermittedInputMethods(receiver, if(it) null else listOf())
                 refresh()
             }, padding = false
@@ -918,8 +905,11 @@ private fun UninstallApp(pkgName: String) {
 private fun InstallApp() { 
     val context = LocalContext.current
     val focusMgr = LocalFocusManager.current
-    val selected = fileUriFlow.collectAsState().value != Uri.parse("")
     val sharedPrefs = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    var apkFileUri by remember { mutableStateOf<Uri?>(null) }
+    val getFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        result.data.also { if(it != null) apkFileUri = it.data }
+    }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.install_app), style = typography.headlineLarge)
@@ -930,19 +920,19 @@ private fun InstallApp() {
                 val installApkIntent = Intent(Intent.ACTION_GET_CONTENT)
                 installApkIntent.setType("application/vnd.android.package-archive")
                 installApkIntent.addCategory(Intent.CATEGORY_OPENABLE)
-                getFile.launch(installApkIntent)
+                getFileLauncher.launch(installApkIntent)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.select_apk))
         }
-        AnimatedVisibility(selected) {
+        AnimatedVisibility(apkFileUri != null) {
             Spacer(Modifier.padding(vertical = 3.dp))
             Column(modifier = Modifier.fillMaxWidth()) { 
                 Button(
                     onClick = {
                         val intent = Intent(context, InstallAppActivity::class.java)
-                        intent.data = fileUriFlow.value
+                        intent.data = apkFileUri
                         context.startActivity(intent)
                     },
                     enabled = !sharedPrefs.getBoolean("dhizuku", false) && context.isDeviceOwner,
@@ -953,7 +943,7 @@ private fun InstallApp() {
                 Button(
                     onClick = {
                         val intent = Intent(Intent.ACTION_INSTALL_PACKAGE)
-                        intent.setData(fileUriFlow.value)
+                        intent.setData(apkFileUri)
                         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         context.startActivity(intent)
                     },

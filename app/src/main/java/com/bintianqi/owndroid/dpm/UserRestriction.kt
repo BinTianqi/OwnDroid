@@ -39,12 +39,12 @@ fun UserRestriction(navCtrl:NavHostController) {
             Text(text = stringResource(R.string.some_features_invalid_in_work_profile), modifier = Modifier.padding(start = 16.dp))
         }
         Spacer(Modifier.padding(vertical = 2.dp))
-        FunctionItem(R.string.network_and_internet, "", R.drawable.wifi_fill0) { navCtrl.navigate("UR-Internet") }
-        FunctionItem(R.string.connectivity, "", R.drawable.devices_other_fill0) { navCtrl.navigate("UR-Connectivity") }
-        FunctionItem(R.string.applications, "", R.drawable.apps_fill0) { navCtrl.navigate("UR-Applications") }
-        FunctionItem(R.string.users, "", R.drawable.account_circle_fill0) { navCtrl.navigate("UR-Users") }
-        FunctionItem(R.string.media, "", R.drawable.volume_up_fill0) { navCtrl.navigate("UR-Media") }
-        FunctionItem(R.string.other, "", R.drawable.more_horiz_fill0) { navCtrl.navigate("UR-Other") }
+        FunctionItem(R.string.network_and_internet, icon = R.drawable.wifi_fill0) { navCtrl.navigate("UR-Internet") }
+        FunctionItem(R.string.connectivity, icon = R.drawable.devices_other_fill0) { navCtrl.navigate("UR-Connectivity") }
+        FunctionItem(R.string.applications, icon = R.drawable.apps_fill0) { navCtrl.navigate("UR-Applications") }
+        FunctionItem(R.string.users, icon = R.drawable.account_circle_fill0) { navCtrl.navigate("UR-Users") }
+        FunctionItem(R.string.media, icon = R.drawable.volume_up_fill0) { navCtrl.navigate("UR-Media") }
+        FunctionItem(R.string.other, icon = R.drawable.more_horiz_fill0) { navCtrl.navigate("UR-Other") }
     }
 }
 

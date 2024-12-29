@@ -25,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -41,7 +40,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun FunctionItem(
     @StringRes title: Int,
-    desc: String,
+    desc: String? = null,
     @DrawableRes icon: Int? = null,
     operation: () -> Unit
 ) {
@@ -63,7 +62,7 @@ fun FunctionItem(
                 style = typography.titleLarge,
                 modifier = Modifier.padding(bottom = if(zhCN) 2.dp else 0.dp)
             )
-            if(desc != "") { Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F)) }
+            if(desc != null) { Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F)) }
         }
     }
 }
@@ -85,18 +84,16 @@ fun NavIcon(operation: () -> Unit) {
 fun RadioButtonItem(
     @StringRes text: Int,
     selected: Boolean,
-    operation: () -> Unit,
-    textColor: Color = colorScheme.onBackground
+    operation: () -> Unit
 ) {
-    RadioButtonItem(stringResource(text), selected, operation, textColor)
+    RadioButtonItem(stringResource(text), selected, operation)
 }
 
 @Composable
 fun RadioButtonItem(
     text: String,
     selected: Boolean,
-    operation: () -> Unit,
-    textColor: Color = colorScheme.onBackground
+    operation: () -> Unit
 ) {
     Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
         .fillMaxWidth()
@@ -104,7 +101,7 @@ fun RadioButtonItem(
         .clickable(onClick = operation)
     ) {
         RadioButton(selected = selected, onClick = operation)
-        Text(text = text, color = textColor, modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
+        Text(text = text, modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
     }
 }
 
@@ -112,8 +109,7 @@ fun RadioButtonItem(
 fun CheckBoxItem(
     @StringRes text: Int,
     checked: Boolean,
-    operation: (Boolean) -> Unit,
-    textColor: Color = colorScheme.onBackground
+    operation: (Boolean) -> Unit
 ) {
     Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
         .fillMaxWidth()
@@ -124,7 +120,7 @@ fun CheckBoxItem(
             checked = checked,
             onCheckedChange = operation
         )
-        Text(text = stringResource(text), color = textColor, modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
+        Text(text = stringResource(text), modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
     }
 }
 
@@ -132,26 +128,26 @@ fun CheckBoxItem(
 @Composable
 fun SwitchItem(
     @StringRes title: Int,
-    desc: String,
-    @DrawableRes icon: Int?,
-    getState: ()->Boolean,
+    desc: String? = null,
+    @DrawableRes icon: Int? = null,
+    getState: () -> Boolean,
     onCheckedChange: (Boolean)->Unit,
-    enable: Boolean = true,
+    enabled: Boolean = true,
     onClickBlank: (() -> Unit)? = null,
     padding: Boolean = true
 ) {
     var state by remember { mutableStateOf(getState()) }
-    SwitchItem(title, desc, icon, state, { onCheckedChange(it); state = getState() }, enable, onClickBlank, padding)
+    SwitchItem(title, desc, icon, state, { onCheckedChange(it); state = getState() }, enabled, onClickBlank, padding)
 }
 
 @Composable
 fun SwitchItem(
     @StringRes title: Int,
-    desc: String,
-    @DrawableRes icon: Int?,
+    desc: String? = null,
+    @DrawableRes icon: Int? = null,
     state: Boolean,
-    onCheckedChange: (Boolean)->Unit,
-    enable: Boolean = true,
+    onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean = true,
     onClickBlank: (() -> Unit)? = null,
     padding: Boolean = true
 ) {
@@ -172,14 +168,12 @@ fun SwitchItem(
             )
             Column(modifier = Modifier.padding(end = 60.dp, bottom = if(zhCN) 2.dp else 0.dp)) {
                 Text(text = stringResource(title), style = typography.titleLarge)
-                if(desc != "") {
-                    Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F))
-                }
+                if(desc != null) Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F))
             }
         }
         Switch(
             checked = state, onCheckedChange = { onCheckedChange(it) },
-            modifier = Modifier.align(Alignment.CenterEnd), enabled = enable
+            modifier = Modifier.align(Alignment.CenterEnd), enabled = enabled
         )
     }
 }
