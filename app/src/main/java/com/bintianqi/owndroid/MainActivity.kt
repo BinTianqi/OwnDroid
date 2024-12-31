@@ -77,6 +77,7 @@ import com.bintianqi.owndroid.dpm.DeviceOwner
 import com.bintianqi.owndroid.dpm.DisableAccountManagement
 import com.bintianqi.owndroid.dpm.DisableKeyguardFeatures
 import com.bintianqi.owndroid.dpm.FRPPolicy
+import com.bintianqi.owndroid.dpm.HardwareMonitor
 import com.bintianqi.owndroid.dpm.InstallSystemUpdate
 import com.bintianqi.owndroid.dpm.IntentFilter
 import com.bintianqi.owndroid.dpm.Keyguard
@@ -222,6 +223,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable(route = "System") { SystemManage(navCtrl) }
         composable(route = "SystemOptions") { SystemOptions(navCtrl) }
         composable(route = "Keyguard") { Keyguard(navCtrl) }
+        composable(route = "HardwareMonitor") { HardwareMonitor(navCtrl) }
         composable(route = "ChangeTime") { ChangeTime(navCtrl) }
         composable(route = "ChangeTimeZone") { ChangeTimeZone(navCtrl) }
         composable(route = "PermissionPolicy") { PermissionPolicy(navCtrl) }

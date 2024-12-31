@@ -136,7 +136,19 @@
     <string name="disable_usb_signal">Отключить USB-сигнал</string>
     <string name="keyguard">Блокировка экрана</string>
     <string name="lock_now">Заблокировать экран сейчас</string>
-    <string name="evict_credential_encryptoon_key">Удалить ключ шифрования учетных данных</string>
+    <string name="evict_credential_encryption_key">Удалить ключ шифрования учетных данных</string>
+    <!--TODO: the following 11 strings-->
+    <string name="hardware_monitor">Hardware monitor</string>
+    <string name="refresh_interval">Refresh interval</string>
+    <string name="cpu_temp">CPU temperatures</string>
+    <string name="gpu_temp">GPU temperatures</string>
+    <string name="battery_temp">Battery temperatures</string>
+    <string name="skin_temp">Skin temperatures</string>
+    <string name="undefined">Undefined</string>
+    <string name="cpu_usages">CPU usages</string>
+    <string name="active">Active</string>
+    <string name="total">Total</string>
+    <string name="fan_speeds">Fan speeds</string>
     <string name="bug_report">Отчет об ошибке</string>
     <string name="confirm_bug_report">Запросить отчет об ошибке?</string>
     <string name="reboot">Перезагрузить</string>

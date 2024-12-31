@@ -37,10 +37,12 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build.VERSION
+import android.os.HardwarePropertiesManager
 import android.os.UserManager
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
@@ -78,6 +80,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -87,9 +90,11 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -128,6 +133,7 @@ import java.io.ByteArrayOutputStream
 import java.util.Date
 import java.util.TimeZone
 import java.util.concurrent.Executors
+import kotlin.math.roundToLong
 
 @SuppressLint("NewApi")
 @Composable
@@ -146,6 +152,8 @@ fun SystemManage(navCtrl: NavHostController) {
             FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { navCtrl.navigate("SystemOptions") }
         }
         FunctionItem(R.string.keyguard, icon = R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("Keyguard") }
+        if(VERSION.SDK_INT >= 24 && deviceOwner && !dhizuku)
+            FunctionItem(R.string.hardware_monitor, icon = R.drawable.memory_fill0) { navCtrl.navigate("HardwareMonitor") }
         if(VERSION.SDK_INT >= 24 && deviceOwner) {
             FunctionItem(R.string.reboot, icon = R.drawable.restart_alt_fill0) { dialog = 1 }
         }
@@ -338,7 +346,7 @@ fun Keyguard(navCtrl: NavHostController) {
         var flag by remember { mutableIntStateOf(0) }
         if(VERSION.SDK_INT >= 26 && profileOwner && dpm.isManagedProfile(receiver)) {
             CheckBoxItem(
-                R.string.evict_credential_encryptoon_key,
+                R.string.evict_credential_encryption_key,
                 flag and FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY != 0
             ) { flag = flag xor FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY }
             Spacer(Modifier.padding(vertical = 2.dp))
@@ -354,6 +362,87 @@ fun Keyguard(navCtrl: NavHostController) {
         }
         if(VERSION.SDK_INT >= 26 && profileOwner && dpm.isManagedProfile(receiver)) {
             InfoCard(R.string.info_evict_credential_encryption_key)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@RequiresApi(24)
+@Composable
+fun HardwareMonitor(navCtrl: NavHostController) {
+    val context = LocalContext.current
+    val hpm = context.getSystemService(HardwarePropertiesManager::class.java)
+    var refreshInterval by remember { mutableFloatStateOf(1F) }
+    val refreshIntervalMs = (refreshInterval * 1000).roundToLong()
+    val temperatures = remember { mutableStateMapOf<Int, List<Float>>() }
+    val tempTypeMap = mapOf(
+        HardwarePropertiesManager.DEVICE_TEMPERATURE_CPU to R.string.cpu_temp,
+        HardwarePropertiesManager.DEVICE_TEMPERATURE_GPU to R.string.gpu_temp,
+        HardwarePropertiesManager.DEVICE_TEMPERATURE_BATTERY to R.string.battery_temp,
+        HardwarePropertiesManager.DEVICE_TEMPERATURE_SKIN to R.string.skin_temp
+    )
+    val cpuUsages = remember { mutableStateListOf<Pair<Long, Long>>() }
+    val fanSpeeds = remember { mutableStateListOf<Float>() }
+    fun refresh() {
+        cpuUsages.clear()
+        cpuUsages.addAll(hpm.cpuUsages.map { it.active to it.total })
+        temperatures.clear()
+        tempTypeMap.forEach {
+            temperatures += it.key to hpm.getDeviceTemperatures(it.key, HardwarePropertiesManager.TEMPERATURE_CURRENT).toList()
+        }
+        fanSpeeds.clear()
+        fanSpeeds.addAll(hpm.fanSpeeds.toList())
+    }
+    LaunchedEffect(Unit) {
+        while(true) {
+            refresh()
+            delay(refreshIntervalMs)
+        }
+    }
+    MyScaffold(R.string.hardware_monitor, 8.dp, navCtrl, false) {
+        Text(stringResource(R.string.refresh_interval), style = typography.titleLarge, modifier = Modifier.padding(vertical = 4.dp))
+        Slider(refreshInterval, { refreshInterval = it }, valueRange = 0.5F..2F, steps = 14)
+        Text("${refreshIntervalMs}ms")
+        Spacer(Modifier.padding(vertical = 10.dp))
+        temperatures.forEach { tempMapItem ->
+            Text(stringResource(tempTypeMap[tempMapItem.key]!!), style = typography.titleLarge, modifier = Modifier.padding(vertical = 4.dp))
+            if(tempMapItem.value.isEmpty()) {
+                Text(stringResource(R.string.unsupported))
+            } else {
+                tempMapItem.value.forEachIndexed { index, temp ->
+                    Row(modifier = Modifier.padding(vertical = 4.dp)) {
+                        Text(index.toString(), style = typography.titleMedium, modifier = Modifier.padding(start = 8.dp, end = 12.dp))
+                        Text(if(temp == HardwarePropertiesManager.UNDEFINED_TEMPERATURE) stringResource(R.string.undefined) else temp.toString())
+                    }
+                }
+            }
+            Spacer(Modifier.padding(vertical = 10.dp))
+        }
+        Text(stringResource(R.string.cpu_usages), style = typography.titleLarge, modifier = Modifier.padding(vertical = 4.dp))
+        if(cpuUsages.isEmpty()) {
+            Text(stringResource(R.string.unsupported))
+        } else {
+            cpuUsages.forEachIndexed { index, usage ->
+                Row(modifier = Modifier.padding(vertical = 4.dp)) {
+                    Text(index.toString(), style = typography.titleMedium, modifier = Modifier.padding(start = 8.dp, end = 12.dp))
+                    Column {
+                        Text(stringResource(R.string.active) + ": " + usage.first + "ms")
+                        Text(stringResource(R.string.total) + ": " + usage.second + "ms")
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(stringResource(R.string.fan_speeds), style = typography.titleLarge, modifier = Modifier.padding(vertical = 4.dp))
+        if(fanSpeeds.isEmpty()) {
+            Text(stringResource(R.string.unsupported))
+        } else {
+            fanSpeeds.forEachIndexed { index, speed ->
+                Row(modifier = Modifier.padding(vertical = 4.dp)) {
+                    Text(index.toString(), style = typography.titleMedium, modifier = Modifier.padding(start = 8.dp, end = 12.dp))
+                    Text("$speed RPM")
+                }
+            }
         }
     }
 }
