@@ -6,8 +6,6 @@ on:
       - '**.md'
     tags-ignore:
       - '**'
-    branches-ignore:
-      - 'master'
 
 jobs:
   build:
@@ -63,7 +61,7 @@ jobs:
 
   upload-telegram:
     name: Upload Builds
-    if: ${{ success() }}
+    if: ${{ success() && github.ref_name == 'dev' }}
     runs-on: ubuntu-latest
     needs:
       - build

@@ -1,6 +1,5 @@
 package com.bintianqi.owndroid.dpm
 
-import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
 import android.content.Context
 import android.content.Intent
@@ -15,6 +14,7 @@ import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -299,7 +299,7 @@ fun UserOperation(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(24)
 @Composable
 fun CreateUser(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -350,7 +350,7 @@ fun CreateUser(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(26)
 @Composable
 fun AffiliationID(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -441,7 +441,7 @@ fun ChangeUsername(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(28)
 @Composable
 fun UserSessionMessage(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -519,7 +519,7 @@ fun UserSessionMessage(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(23)
 @Composable
 fun ChangeUserIcon(navCtrl: NavHostController) {
     val context = LocalContext.current

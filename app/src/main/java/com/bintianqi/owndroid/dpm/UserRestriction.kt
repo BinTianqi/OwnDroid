@@ -1,10 +1,10 @@
 package com.bintianqi.owndroid.dpm
 
-import android.annotation.SuppressLint
 import android.os.Build.VERSION
 import android.os.UserManager
 import android.widget.Toast
 import androidx.annotation.DrawableRes
+import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
@@ -48,7 +48,7 @@ fun UserRestriction(navCtrl:NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(24)
 @Composable
 fun UserRestrictionItem(restriction: Restriction) {
     val context = LocalContext.current

@@ -33,6 +33,7 @@ import android.content.Intent
 import android.os.Build.VERSION
 import android.os.UserManager
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -232,7 +233,7 @@ fun PasswordInfo(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(26)
 @Composable
 fun ResetPasswordToken(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -412,7 +413,7 @@ fun ResetPassword(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(31)
 @Composable
 fun PasswordComplexity(navCtrl: NavHostController) {
     val context = LocalContext.current

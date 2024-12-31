@@ -65,6 +65,9 @@
     <string name="permission_denied">Permission denied</string>
     <string name="error">Error</string>
     <string name="status">Status</string>
+    <string name="edit">Edit</string>
+    <string name="overview">Overview</string>
+    <string name="features">Features</string>
 
 
     <!--Разрешения-->
@@ -170,10 +173,7 @@
     <string name="nearby_notification_streaming">Политика потоковой передачи уведомлений Nearby</string>
     <string name="enable_if_secure_enough">Только для одной управляемой учетной записи</string>
     <string name="lock_task_mode">Режим закрепления задачи</string>
-    <string name="lock_task_feature">Функция закрепления задачи</string>
-    <string name="lock_task_packages">Закрепленные пакеты</string>
     <string name="specify_activity">Указать Acitvity</string>
-    <string name="start_lock_task_mode">Запустить режим закрепления задачи</string>
     <string name="app_not_allowed">Приложение не разрешено</string>
     <string name="disable_all">Отключить все</string>
     <!--ltf: функция закрепления задачи-->
@@ -553,7 +553,6 @@
     <string name="disable_keyguard_features_unredacted_notification">Отключить неотредактированные уведомления</string>
     <string name="disable_keyguard_features_trust_agents">Отключить доверенные агенты</string>
     <string name="disable_keyguard_features_fingerprint">Отключить отпечаток пальца</string>
-    <string name="disable_keyguard_features_remote_input">Отключить удаленный ввод</string>
     <string name="disable_keyguard_features_face">Отключить распознавание лица</string>
     <string name="disable_keyguard_features_iris">Отключить сканер радужной оболочки</string>
     <string name="disable_keyguard_features_biometrics">Отключить биометрию</string>

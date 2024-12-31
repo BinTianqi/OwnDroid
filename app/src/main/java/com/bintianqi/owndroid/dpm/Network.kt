@@ -1,7 +1,6 @@
 package com.bintianqi.owndroid.dpm
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_OFF
 import android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_OPPORTUNISTIC
@@ -51,6 +50,7 @@ import android.telephony.data.ApnSetting.PROTOCOL_UNSTRUCTURED
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
@@ -717,7 +717,7 @@ private fun AddNetwork(wifiConfig: WifiConfiguration? = null, navCtrl: NavHostCo
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(33)
 @Composable
 fun WifiSecurityLevel(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -743,7 +743,7 @@ fun WifiSecurityLevel(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(33)
 @Composable
 fun WifiSsidPolicy(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -817,7 +817,7 @@ fun WifiSsidPolicy(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(29)
 @Composable
 fun PrivateDNS(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -889,7 +889,7 @@ fun PrivateDNS(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(24)
 @Composable
 fun AlwaysOnVPNPackage(navCtrl: NavHostController, vm: MyViewModel) {
     val context = LocalContext.current
@@ -1056,7 +1056,7 @@ fun RecommendedGlobalProxy(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(26)
 @Composable
 fun NetworkLogging(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -1112,7 +1112,7 @@ fun NetworkLogging(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(31)
 @Composable
 fun WifiAuthKeypair(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -1154,7 +1154,7 @@ fun WifiAuthKeypair(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(33)
 @Composable
 fun PreferentialNetworkService(navCtrl: NavHostController) {
     val focusMgr = LocalFocusManager.current
@@ -1306,7 +1306,7 @@ fun PreferentialNetworkService(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(28)
 @Composable
 fun OverrideAPN(navCtrl: NavHostController) {
     val context = LocalContext.current

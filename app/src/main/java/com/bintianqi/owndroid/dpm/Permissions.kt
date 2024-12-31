@@ -12,6 +12,7 @@ import android.os.Build.VERSION
 import android.os.RemoteException
 import android.os.UserManager
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
@@ -234,7 +235,7 @@ private fun toggleDhizukuMode(status: Boolean, context: Context) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(24)
 @Composable
 fun LockScreenInfo(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -496,7 +497,7 @@ fun DeviceInfo(navCtrl: NavHostController) {
     )
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(24)
 @Composable
 fun SupportMessages(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -574,7 +575,7 @@ fun SupportMessages(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(28)
 @Composable
 fun TransferOwnership(navCtrl: NavHostController) {
     val context = LocalContext.current

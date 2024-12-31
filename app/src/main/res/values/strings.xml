@@ -69,6 +69,7 @@
     <string name="status">Status</string>
     <string name="edit">Edit</string>
     <string name="overview">Overview</string>
+    <string name="features">Features</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
@@ -177,10 +178,7 @@
     <string name="nearby_notification_streaming">Nearby notification streaming policy</string>
     <string name="enable_if_secure_enough">Same managed account only</string>
     <string name="lock_task_mode">Lock task mode</string>
-    <string name="lock_task_feature">Lock task feature</string>
-    <string name="lock_task_packages">Lock task packages</string>
     <string name="specify_activity">Specify Activity</string>
-    <string name="start_lock_task_mode">Start lock task mode</string>
     <string name="app_not_allowed">App is not allowed</string>
     <string name="disable_all">Disable all</string>
     <!--ltf: lock task feature-->
@@ -556,7 +554,6 @@
     <string name="disable_keyguard_features_unredacted_notification">Disable unredacted notification</string>
     <string name="disable_keyguard_features_trust_agents">Disable trust agents</string>
     <string name="disable_keyguard_features_fingerprint">Disable fingerprint</string>
-    <string name="disable_keyguard_features_remote_input">Disable remote input</string>
     <string name="disable_keyguard_features_face">Disable face</string>
     <string name="disable_keyguard_features_iris">Disable iris</string>
     <string name="disable_keyguard_features_biometrics">Disable biometrics</string>

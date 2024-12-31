@@ -66,6 +66,9 @@
     <string name="permission_denied">Permission denied</string>
     <string name="error">Error</string>
     <string name="status">Status</string>
+    <string name="edit">Edit</string>
+    <string name="overview">Overview</string>
+    <string name="features">Features</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Etkinleştirmek İçin Tıklayın</string>
@@ -171,10 +174,7 @@
     <string name="nearby_notification_streaming">Yakındaki bildirim akış politikası</string>
     <string name="enable_if_secure_enough">Yalnızca aynı yönetilen hesap</string>
     <string name="lock_task_mode">Lock task mode</string> <!--TODO-->
-    <string name="lock_task_feature">Görev kilitleme özelliği</string>
-    <string name="lock_task_packages">Lock task packages</string> <!--TODO-->
     <string name="specify_activity">Specify Activity</string> <!--TODO-->
-    <string name="start_lock_task_mode">Start lock task mode</string> <!--TODO-->
     <string name="app_not_allowed">App is not allowed</string> <!--TODO-->
     <string name="disable_all">Hepsini devre dışı bırak</string>
 
@@ -549,7 +549,6 @@
     <string name="disable_keyguard_features_unredacted_notification">Sansürsüz bildirimleri devre dışı bırak</string>
     <string name="disable_keyguard_features_trust_agents">Güvenilir ajanları devre dışı bırak</string>
     <string name="disable_keyguard_features_fingerprint">Parmak izini devre dışı bırak</string>
-    <string name="disable_keyguard_features_remote_input">Uzaktan girişleri devre dışı bırak</string>
     <string name="disable_keyguard_features_face">Yüz tanımayı devre dışı bırak</string>
     <string name="disable_keyguard_features_iris">İris tarayıcısını devre dışı bırak</string>
     <string name="disable_keyguard_features_biometrics">Biyometrikleri devre dışı bırak</string>

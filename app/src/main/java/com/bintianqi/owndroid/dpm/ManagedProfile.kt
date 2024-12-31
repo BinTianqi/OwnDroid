@@ -1,7 +1,6 @@
 package com.bintianqi.owndroid.dpm
 
 import android.accounts.Account
-import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE
 import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ACCOUNT_TO_MIGRATE
 import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ALLOW_OFFLINE
@@ -21,6 +20,7 @@ import android.os.Build.VERSION
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -59,8 +59,8 @@ import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.CopyTextButton
-import com.bintianqi.owndroid.ui.InfoCard
 import com.bintianqi.owndroid.ui.FunctionItem
+import com.bintianqi.owndroid.ui.InfoCard
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.yesOrNo
@@ -160,7 +160,7 @@ fun CreateWorkProfile(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(30)
 @Composable
 fun OrgOwnedProfile(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -180,7 +180,7 @@ fun OrgOwnedProfile(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(30)
 @Composable
 fun SuspendPersonalApp(navCtrl: NavHostController) {
     val context = LocalContext.current

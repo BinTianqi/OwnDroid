@@ -1,6 +1,5 @@
 package com.bintianqi.owndroid.dpm
 
-import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT
@@ -20,6 +19,7 @@ import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
@@ -413,7 +413,7 @@ private fun Home(navCtrl:NavHostController, pkgName: String) {
 }
 
 
-@SuppressLint("NewApi")
+@RequiresApi(30)
 @Composable
 private fun UserCtrlDisabledPkg(pkgName:String) { 
     val context = LocalContext.current
@@ -456,7 +456,7 @@ private fun UserCtrlDisabledPkg(pkgName:String) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(23)
 @Composable
 private fun PermissionManage(pkgName: String) {
     val context = LocalContext.current
@@ -556,7 +556,7 @@ private fun PermissionManage(pkgName: String) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(30)
 @Composable
 private fun CrossProfilePkg(pkgName: String) { 
     val context = LocalContext.current
@@ -636,7 +636,7 @@ private fun CrossProfileWidget(pkgName: String) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(34)
 @Composable
 private fun CredentialManagePolicy(pkgName: String) { 
     val context = LocalContext.current
@@ -822,7 +822,7 @@ private fun PermittedIME(pkgName: String) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(28)
 @Composable
 private fun KeepUninstalledApp(pkgName: String) { 
     val context = LocalContext.current

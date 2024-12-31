@@ -50,8 +50,10 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -60,9 +62,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
@@ -77,14 +81,18 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -123,6 +131,7 @@ import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.InfoCard
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.MyScaffold
+import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.uriToStream
@@ -133,9 +142,9 @@ import java.io.ByteArrayOutputStream
 import java.util.Date
 import java.util.TimeZone
 import java.util.concurrent.Executors
+import kotlin.collections.addAll
 import kotlin.math.roundToLong
 
-@SuppressLint("NewApi")
 @Composable
 fun SystemManage(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -198,7 +207,7 @@ fun SystemManage(navCtrl: NavHostController) {
             FunctionItem(R.string.wipe_data, icon = R.drawable.device_reset_fill0) { navCtrl.navigate("WipeData") }
         }
     }
-    if(dialog != 0) AlertDialog(
+    if(dialog != 0 &&VERSION.SDK_INT >= 24) AlertDialog(
         onDismissRequest = { dialog = 0 },
         title = { Text(stringResource(if(dialog == 1) R.string.reboot else R.string.bug_report)) },
         text = { Text(stringResource(if(dialog == 1) R.string.info_reboot else R.string.confirm_bug_report)) },
@@ -448,7 +457,7 @@ fun HardwareMonitor(navCtrl: NavHostController) {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("NewApi")
+@RequiresApi(28)
 @Composable
 fun ChangeTime(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -558,7 +567,7 @@ fun ChangeTime(navCtrl: NavHostController) {
     )
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(28)
 @Composable
 fun ChangeTimeZone(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -621,7 +630,7 @@ fun ChangeTimeZone(navCtrl: NavHostController) {
     )
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(23)
 @Composable
 fun PermissionPolicy(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -646,7 +655,7 @@ fun PermissionPolicy(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(34)
 @Composable
 fun MTEPolicy(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -674,7 +683,7 @@ fun MTEPolicy(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(31)
 @Composable
 fun NearbyStreamingPolicy(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -739,206 +748,261 @@ fun NearbyStreamingPolicy(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@OptIn(ExperimentalMaterial3Api::class)
+@RequiresApi(28)
 @Composable
 fun LockTaskMode(navCtrl: NavHostController, vm: MyViewModel) {
+    val coroutine = rememberCoroutineScope()
+    val pagerState = rememberPagerState { 3 }
+    var tabIndex by remember { mutableIntStateOf(0) }
+    tabIndex = pagerState.targetPage
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.lock_task_mode)) },
+                navigationIcon = { NavIcon { navCtrl.navigateUp() } }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier.fillMaxSize().padding(paddingValues)
+        ) {
+            TabRow(tabIndex) {
+                Tab(
+                    tabIndex == 0, onClick = { coroutine.launch { pagerState.animateScrollToPage(0) } },
+                    text = { Text(stringResource(R.string.start)) }
+                )
+                Tab(
+                    tabIndex == 1, onClick = { coroutine.launch { pagerState.animateScrollToPage(1) } },
+                    text = { Text(stringResource(R.string.applications)) }
+                )
+                Tab(
+                    tabIndex == 2, onClick = { coroutine.launch { pagerState.animateScrollToPage(2) } },
+                    text = { Text(stringResource(R.string.features)) }
+                )
+            }
+            HorizontalPager(pagerState, verticalAlignment = Alignment.Top) { page ->
+                Column(
+                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 8.dp, end = 8.dp, bottom = 80.dp)
+                ) {
+                    if(page == 0) StartLockTaskMode(navCtrl, vm)
+                    else if(page == 1) LockTaskPackages(navCtrl, vm)
+                    else LockTaskFeatures()
+                }
+            }
+        }
+    }
+}
+
+@RequiresApi(28)
+@Composable
+private fun ColumnScope.StartLockTaskMode(navCtrl: NavHostController, vm: MyViewModel) {
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    val focusMgr = LocalFocusManager.current
+    var startLockTaskApp by rememberSaveable { mutableStateOf("") }
+    var startLockTaskActivity by rememberSaveable { mutableStateOf("") }
+    var specifyActivity by rememberSaveable { mutableStateOf(false) }
+    val updatePackage by vm.selectedPackage.collectAsStateWithLifecycle()
+    LaunchedEffect(updatePackage) {
+        if(updatePackage != "") {
+            startLockTaskApp = updatePackage
+            vm.selectedPackage.value = ""
+        }
+    }
+    Spacer(Modifier.padding(vertical = 5.dp))
+    OutlinedTextField(
+        value = startLockTaskApp,
+        onValueChange = { startLockTaskApp = it },
+        label = { Text(stringResource(R.string.package_name)) },
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+        trailingIcon = {
+            Icon(painter = painterResource(R.drawable.list_fill0), contentDescription = null,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(50))
+                    .clickable(onClick = {
+                        focusMgr.clearFocus()
+                        navCtrl.navigate("PackageSelector")
+                    })
+                    .padding(3.dp))
+        },
+        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
+    )
+    CheckBoxItem(R.string.specify_activity, specifyActivity) { specifyActivity = it }
+    AnimatedVisibility(specifyActivity) {
+        OutlinedTextField(
+            value = startLockTaskActivity,
+            onValueChange = { startLockTaskActivity = it },
+            label = { Text("Activity") },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+            modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)
+        )
+    }
+    Button(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = {
+            if(!NotificationUtils.checkPermission(context)) return@Button
+            if(!dpm.isLockTaskPermitted(startLockTaskApp)) {
+                Toast.makeText(context, R.string.app_not_allowed, Toast.LENGTH_SHORT).show()
+                return@Button
+            }
+            val options = ActivityOptions.makeBasic().setLockTaskEnabled(true)
+            val packageManager = context.packageManager
+            val launchIntent = if(specifyActivity) Intent().setComponent(ComponentName(startLockTaskApp, startLockTaskActivity))
+            else packageManager.getLaunchIntentForPackage(startLockTaskApp)
+            if (launchIntent != null) {
+                context.startActivity(launchIntent, options.toBundle())
+            } else {
+                Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
+            }
+        }
+    ) {
+        Text(stringResource(R.string.start))
+    }
+    InfoCard(R.string.info_start_lock_task_mode)
+}
+
+@RequiresApi(26)
+@Composable
+private fun ColumnScope.LockTaskPackages(navCtrl: NavHostController, vm: MyViewModel) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    var appSelectorRequest by rememberSaveable { mutableIntStateOf(0) }
-    MyScaffold(R.string.lock_task_mode, 8.dp, navCtrl, false) {
-        var lockTaskFeatures by remember { mutableIntStateOf(0) }
-        var custom by rememberSaveable { mutableStateOf(false) }
-        fun refreshFeature() {
-            lockTaskFeatures = dpm.getLockTaskFeatures(receiver)
-            custom = lockTaskFeatures != 0
+    val lockTaskPackages = remember { mutableStateListOf<String>() }
+    var input by rememberSaveable { mutableStateOf("") }
+    val updatePackage by vm.selectedPackage.collectAsStateWithLifecycle()
+    LaunchedEffect(updatePackage) {
+        if(updatePackage != "") {
+            input = updatePackage
+            vm.selectedPackage.value = ""
         }
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.lock_task_feature), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        LaunchedEffect(Unit) { refreshFeature() }
-        RadioButtonItem(R.string.disable_all, !custom) { custom = false }
-        RadioButtonItem(R.string.custom, custom) { custom = true }
-        AnimatedVisibility(custom) {
-            Column {
-                CheckBoxItem(
-                    R.string.ltf_sys_info,
-                    lockTaskFeatures and LOCK_TASK_FEATURE_SYSTEM_INFO != 0
-                ) { lockTaskFeatures = lockTaskFeatures xor LOCK_TASK_FEATURE_SYSTEM_INFO }
-                CheckBoxItem(
-                    R.string.ltf_notifications,
-                    lockTaskFeatures and LOCK_TASK_FEATURE_NOTIFICATIONS != 0
-                ) { lockTaskFeatures = lockTaskFeatures xor LOCK_TASK_FEATURE_NOTIFICATIONS }
-                CheckBoxItem(
-                    R.string.ltf_home,
-                    lockTaskFeatures and LOCK_TASK_FEATURE_HOME != 0
-                ) { lockTaskFeatures = lockTaskFeatures xor LOCK_TASK_FEATURE_HOME }
-                CheckBoxItem(
-                    R.string.ltf_overview,
-                    lockTaskFeatures and LOCK_TASK_FEATURE_OVERVIEW != 0
-                ) { lockTaskFeatures = lockTaskFeatures xor LOCK_TASK_FEATURE_OVERVIEW }
-                CheckBoxItem(
-                    R.string.ltf_global_actions,
-                    lockTaskFeatures and LOCK_TASK_FEATURE_GLOBAL_ACTIONS != 0
-                ) { lockTaskFeatures = lockTaskFeatures xor LOCK_TASK_FEATURE_GLOBAL_ACTIONS }
-                CheckBoxItem(
-                    R.string.ltf_keyguard,
-                    lockTaskFeatures and LOCK_TASK_FEATURE_KEYGUARD != 0
-                ) { lockTaskFeatures = lockTaskFeatures xor LOCK_TASK_FEATURE_KEYGUARD }
-                if(VERSION.SDK_INT >= 30) {
-                    CheckBoxItem(
-                        R.string.ltf_block_activity_start_in_task,
-                        lockTaskFeatures and LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK != 0
-                    ) { lockTaskFeatures = lockTaskFeatures xor LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK }
-                }
-            }
+    }
+    LaunchedEffect(Unit) { lockTaskPackages.addAll(dpm.getLockTaskPackages(receiver)) }
+    Spacer(Modifier.padding(vertical = 5.dp))
+    if(lockTaskPackages.isEmpty()) Text(text = stringResource(R.string.none))
+    for(i in lockTaskPackages) {
+        ListItem(i) { lockTaskPackages -= i }
+    }
+    OutlinedTextField(
+        value = input,
+        onValueChange = { input = it },
+        label = { Text(stringResource(R.string.package_name)) },
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+        trailingIcon = {
+            Icon(painter = painterResource(R.drawable.list_fill0), contentDescription = null,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(50))
+                    .clickable(onClick = {
+                        focusMgr.clearFocus()
+                        navCtrl.navigate("PackageSelector")
+                    })
+                    .padding(3.dp))
+        },
+        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
+    )
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Button(
+            onClick = {
+                lockTaskPackages.add(input)
+                input = ""
+            },
+            modifier = Modifier.fillMaxWidth(0.49F)
+        ) {
+            Text(stringResource(R.string.add))
         }
         Button(
-            modifier = Modifier.fillMaxWidth(),
             onClick = {
-                try {
-                    dpm.setLockTaskFeatures(receiver, lockTaskFeatures)
-                    context.showOperationResultToast(true)
-                } catch (e: IllegalArgumentException) {
-                    AlertDialog.Builder(context)
-                        .setTitle(R.string.error)
-                        .setMessage(e.message)
-                        .setPositiveButton(R.string.confirm) { dialog, _ -> dialog.dismiss() }
-                        .show()
-                }
-                refreshFeature()
-            }
+                lockTaskPackages.remove(input)
+                input = ""
+            },
+            modifier = Modifier.fillMaxWidth(0.96F)
         ) {
-            Text(stringResource(R.string.apply))
+            Text(stringResource(R.string.remove))
         }
+    }
+    Button(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = {
+            dpm.setLockTaskPackages(receiver, lockTaskPackages.toTypedArray())
+            context.showOperationResultToast(true)
+        }
+    ) {
+        Text(stringResource(R.string.apply))
+    }
+    InfoCard(R.string.info_lock_task_packages)
+}
 
-        val lockTaskPackages = remember { mutableStateListOf<String>() }
-        var inputLockTaskPkg by rememberSaveable { mutableStateOf("") }
-        LaunchedEffect(Unit) { lockTaskPackages.addAll(dpm.getLockTaskPackages(receiver)) }
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.lock_task_packages), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Column(modifier = Modifier.animateContentSize()) {
-            if(lockTaskPackages.isEmpty()) Text(text = stringResource(R.string.none))
-            for(i in lockTaskPackages) {
-                ListItem(i) { lockTaskPackages -= i }
+@RequiresApi(28)
+@Composable
+private fun ColumnScope.LockTaskFeatures() {
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
+    var flags by remember { mutableIntStateOf(0) }
+    var custom by rememberSaveable { mutableStateOf(false) }
+    fun refresh() {
+        flags = dpm.getLockTaskFeatures(receiver)
+        custom = flags != 0
+    }
+    LaunchedEffect(Unit) { refresh() }
+    Spacer(Modifier.padding(vertical = 5.dp))
+    RadioButtonItem(R.string.disable_all, !custom) { custom = false }
+    RadioButtonItem(R.string.custom, custom) { custom = true }
+    AnimatedVisibility(custom) {
+        Column {
+            CheckBoxItem(
+                R.string.ltf_sys_info,
+                flags and LOCK_TASK_FEATURE_SYSTEM_INFO != 0
+            ) { flags = flags xor LOCK_TASK_FEATURE_SYSTEM_INFO }
+            CheckBoxItem(
+                R.string.ltf_notifications,
+                flags and LOCK_TASK_FEATURE_NOTIFICATIONS != 0
+            ) { flags = flags xor LOCK_TASK_FEATURE_NOTIFICATIONS }
+            CheckBoxItem(
+                R.string.ltf_home,
+                flags and LOCK_TASK_FEATURE_HOME != 0
+            ) { flags = flags xor LOCK_TASK_FEATURE_HOME }
+            CheckBoxItem(
+                R.string.ltf_overview,
+                flags and LOCK_TASK_FEATURE_OVERVIEW != 0
+            ) { flags = flags xor LOCK_TASK_FEATURE_OVERVIEW }
+            CheckBoxItem(
+                R.string.ltf_global_actions,
+                flags and LOCK_TASK_FEATURE_GLOBAL_ACTIONS != 0
+            ) { flags = flags xor LOCK_TASK_FEATURE_GLOBAL_ACTIONS }
+            CheckBoxItem(
+                R.string.ltf_keyguard,
+                flags and LOCK_TASK_FEATURE_KEYGUARD != 0
+            ) { flags = flags xor LOCK_TASK_FEATURE_KEYGUARD }
+            if(VERSION.SDK_INT >= 30) {
+                CheckBoxItem(
+                    R.string.ltf_block_activity_start_in_task,
+                    flags and LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK != 0
+                ) { flags = flags xor LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK }
             }
         }
-        OutlinedTextField(
-            value = inputLockTaskPkg,
-            onValueChange = { inputLockTaskPkg = it },
-            label = { Text(stringResource(R.string.package_name)) },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            trailingIcon = {
-                Icon(painter = painterResource(R.drawable.list_fill0), contentDescription = null,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50))
-                        .clickable(onClick = {
-                            focusMgr.clearFocus()
-                            appSelectorRequest = 1
-                            navCtrl.navigate("PackageSelector")
-                        })
-                        .padding(3.dp))
-            },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
-        )
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Button(
-                onClick = {
-                    lockTaskPackages.add(inputLockTaskPkg)
-                    inputLockTaskPkg = ""
-                },
-                modifier = Modifier.fillMaxWidth(0.49F)
-            ) {
-                Text(stringResource(R.string.add))
-            }
-            Button(
-                onClick = {
-                    lockTaskPackages.remove(inputLockTaskPkg)
-                    inputLockTaskPkg = ""
-                },
-                modifier = Modifier.fillMaxWidth(0.96F)
-            ) {
-                Text(stringResource(R.string.remove))
-            }
-        }
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = {
-                dpm.setLockTaskPackages(receiver, lockTaskPackages.toTypedArray())
+    }
+    Button(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = {
+            try {
+                dpm.setLockTaskFeatures(receiver, flags)
                 context.showOperationResultToast(true)
+            } catch (e: IllegalArgumentException) {
+                AlertDialog.Builder(context)
+                    .setTitle(R.string.error)
+                    .setMessage(e.message)
+                    .setPositiveButton(R.string.confirm) { dialog, _ -> dialog.dismiss() }
+                    .show()
             }
-        ) {
-            Text(stringResource(R.string.apply))
+            refresh()
         }
-        InfoCard(R.string.info_lock_task_packages)
-        var startLockTaskApp by rememberSaveable { mutableStateOf("") }
-        var startLockTaskActivity by rememberSaveable { mutableStateOf("") }
-        var specifyActivity by rememberSaveable { mutableStateOf(false) }
-        val updatePackage by vm.selectedPackage.collectAsStateWithLifecycle()
-        LaunchedEffect(updatePackage) {
-            if(updatePackage != "") {
-                if(appSelectorRequest == 1) inputLockTaskPkg = updatePackage else startLockTaskApp = updatePackage
-                vm.selectedPackage.value = ""
-            }
-        }
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.start_lock_task_mode), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        OutlinedTextField(
-            value = startLockTaskApp,
-            onValueChange = { startLockTaskApp = it },
-            label = { Text(stringResource(R.string.package_name)) },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            trailingIcon = {
-                Icon(painter = painterResource(R.drawable.list_fill0), contentDescription = null,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50))
-                        .clickable(onClick = {
-                            focusMgr.clearFocus()
-                            appSelectorRequest = 2
-                            navCtrl.navigate("PackageSelector")
-                        })
-                        .padding(3.dp))
-            },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
-        )
-        CheckBoxItem(R.string.specify_activity, specifyActivity) { specifyActivity = it }
-        AnimatedVisibility(specifyActivity) {
-            OutlinedTextField(
-                value = startLockTaskActivity,
-                onValueChange = { startLockTaskActivity = it },
-                label = { Text("Activity") },
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)
-            )
-        }
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = {
-                if(!NotificationUtils.checkPermission(context)) return@Button
-                if(!dpm.isLockTaskPermitted(startLockTaskApp)) {
-                    Toast.makeText(context, R.string.app_not_allowed, Toast.LENGTH_SHORT).show()
-                    return@Button
-                }
-                val options = ActivityOptions.makeBasic().setLockTaskEnabled(true)
-                val packageManager = context.packageManager
-                val launchIntent = if(specifyActivity) Intent().setComponent(ComponentName(startLockTaskApp, startLockTaskActivity))
-                    else packageManager.getLaunchIntentForPackage(startLockTaskApp)
-                if (launchIntent != null) {
-                    context.startActivity(launchIntent, options.toBundle())
-                } else {
-                    Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
-                }
-            }
-        ) {
-            Text(stringResource(R.string.start))
-        }
-        InfoCard(R.string.info_start_lock_task_mode)
+    ) {
+        Text(stringResource(R.string.apply))
     }
 }
 
@@ -1016,7 +1080,7 @@ fun CACert(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(24)
 @Composable
 fun SecurityLogging(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -1152,7 +1216,7 @@ fun DisableAccountManagement(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(30)
 @Composable
 fun FRPPolicy(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -1244,7 +1308,6 @@ fun FRPPolicy(navCtrl: NavHostController) {
     }
 }
 
-@SuppressLint("NewApi")
 @Composable
 fun WipeData(navCtrl: NavHostController) {
     val context = LocalContext.current
@@ -1305,7 +1368,10 @@ fun WipeData(navCtrl: NavHostController) {
             },
             text = {
                 Text(
-                    text = stringResource(if(userManager.isSystemUser) R.string.wipe_data_warning else R.string.info_wipe_data_in_managed_user),
+                    text = stringResource(
+                        if(VERSION.SDK_INT >= 23 && userManager.isSystemUser) R.string.wipe_data_warning
+                        else R.string.info_wipe_data_in_managed_user
+                    ),
                     color = colorScheme.error
                 )
             },
@@ -1322,7 +1388,7 @@ fun WipeData(navCtrl: NavHostController) {
                 TextButton(
                     onClick = {
                         if(silent && VERSION.SDK_INT >= 29) { flag = flag or WIPE_SILENTLY }
-                        if(wipeDevice) {
+                        if(wipeDevice && VERSION.SDK_INT >= 34) {
                             dpm.wipeDevice(flag)
                         } else {
                             if(VERSION.SDK_INT >= 28 && reason != "") {
