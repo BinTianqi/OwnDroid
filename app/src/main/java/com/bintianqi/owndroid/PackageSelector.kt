@@ -54,24 +54,19 @@ import com.bintianqi.owndroid.ui.NavIcon
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private data class PkgInfo(
+data class PackageInfo(
     val pkgName: String,
     val label: String,
     val icon: Drawable,
     val system: Boolean
 )
 
-private val pkgs = mutableListOf<PkgInfo>()
-
-val selectedPackage = MutableStateFlow("")
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PackageSelector(navCtrl: NavHostController) {
+fun PackageSelector(navCtrl: NavHostController, vm: MyViewModel) {
     val context = LocalContext.current
     val pm = context.packageManager
     val apps = pm.getInstalledApplications(0)
@@ -88,9 +83,9 @@ fun PackageSelector(navCtrl: NavHostController) {
         show = false
         progress = 0
         hideProgress = false
-        pkgs.clear()
+        vm.installedPackages.clear()
         for(pkg in apps) {
-            pkgs += PkgInfo(
+            vm.installedPackages += PackageInfo(
                 pkg.packageName, pkg.loadLabel(pm).toString(), pkg.loadIcon(pm),
                 (pkg.flags and ApplicationInfo.FLAG_SYSTEM) != 0
             )
@@ -181,14 +176,14 @@ fun PackageSelector(navCtrl: NavHostController) {
                 }
             }
             if(show) {
-                items(pkgs) {
+                items(vm.installedPackages) {
                     if(system == it.system) {
                         if(search != "") {
                             if(it.pkgName.contains(search, ignoreCase = true) || it.label.contains(search, ignoreCase = true)) {
-                                PackageItem(it, navCtrl)
+                                PackageItem(it, navCtrl, vm)
                             }
                         } else {
-                            PackageItem(it, navCtrl)
+                            PackageItem(it, navCtrl, vm)
                         }
                     }
                 }
@@ -201,13 +196,13 @@ fun PackageSelector(navCtrl: NavHostController) {
             }
         }
         LaunchedEffect(Unit) {
-            if(pkgs.size == 0) { getPkgList() }
+            if(vm.installedPackages.isEmpty()) { getPkgList() }
         }
     }
 }
 
 @Composable
-private fun PackageItem(pkg: PkgInfo, navCtrl: NavHostController) {
+private fun PackageItem(pkg: PackageInfo, navCtrl: NavHostController, vm: MyViewModel) {
     val focusMgr = LocalFocusManager.current
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -215,7 +210,7 @@ private fun PackageItem(pkg: PkgInfo, navCtrl: NavHostController) {
             .fillMaxWidth()
             .clickable{
                 focusMgr.clearFocus()
-                selectedPackage.value = pkg.pkgName
+                vm.selectedPackage.value = pkg.pkgName
                 navCtrl.navigateUp()
             }
             .padding(horizontal = 8.dp, vertical = 10.dp)

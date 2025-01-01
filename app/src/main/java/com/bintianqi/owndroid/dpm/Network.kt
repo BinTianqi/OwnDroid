@@ -1,6 +1,7 @@
 package com.bintianqi.owndroid.dpm
 
-import android.annotation.SuppressLint
+import android.Manifest
+import android.app.AlertDialog
 import android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_OFF
 import android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_OPPORTUNISTIC
 import android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_PROVIDER_HOSTNAME
@@ -19,10 +20,16 @@ import android.app.admin.WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_DENYLIST
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager.NameNotFoundException
+import android.net.IpConfiguration
+import android.net.LinkAddress
 import android.net.ProxyInfo
+import android.net.StaticIpConfiguration
 import android.net.Uri
+import android.net.wifi.WifiConfiguration
+import android.net.wifi.WifiManager
 import android.net.wifi.WifiSsid
 import android.os.Build.VERSION
+import android.os.Bundle
 import android.telephony.TelephonyManager
 import android.telephony.TelephonyManager.UNKNOWN_CARRIER_ID
 import android.telephony.data.ApnSetting.AUTH_TYPE_CHAP
@@ -41,9 +48,12 @@ import android.telephony.data.ApnSetting.PROTOCOL_NON_IP
 import android.telephony.data.ApnSetting.PROTOCOL_PPP
 import android.telephony.data.ApnSetting.PROTOCOL_UNSTRUCTURED
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,30 +63,42 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -84,11 +106,11 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -98,93 +120,32 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import androidx.core.os.bundleOf
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
+import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.exportFile
-import com.bintianqi.owndroid.exportFilePath
 import com.bintianqi.owndroid.formatFileSize
-import com.bintianqi.owndroid.selectedPackage
-import com.bintianqi.owndroid.ui.Animations
+import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.InfoCard
 import com.bintianqi.owndroid.ui.ListItem
+import com.bintianqi.owndroid.ui.MyScaffold
+import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.RadioButtonItem
-import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.SwitchItem
-import com.bintianqi.owndroid.ui.TopBar
+import com.bintianqi.owndroid.ui.UpOrDownTextFieldTrailingIconButton
 import com.bintianqi.owndroid.writeClipBoard
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import kotlinx.coroutines.launch
+import java.net.InetAddress
 import kotlin.math.max
+import kotlin.reflect.jvm.jvmErasure
 
 @Composable
-fun Network(navCtrl: NavHostController) {
-    val localNavCtrl = rememberNavController()
-    val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
-    val scrollState = rememberScrollState()
-    val wifiMacDialog = remember { mutableStateOf(false) }
-    Scaffold(
-        topBar = {
-            TopBar(backStackEntry,navCtrl,localNavCtrl) {
-                if(backStackEntry?.destination?.route == "Home" && scrollState.maxValue > 80) {
-                    Text(
-                        text = stringResource(R.string.network),
-                        modifier = Modifier.alpha((maxOf(scrollState.value-30,0)).toFloat()/80)
-                    )
-                }
-            }
-        }
-    ) {
-        NavHost(
-            navController = localNavCtrl, startDestination = "Home",
-            enterTransition = Animations.navHostEnterTransition,
-            exitTransition = Animations.navHostExitTransition,
-            popEnterTransition = Animations.navHostPopEnterTransition,
-            popExitTransition = Animations.navHostPopExitTransition,
-            modifier = Modifier.padding(top = it.calculateTopPadding())
-        ) {
-            composable(route = "Home") { Home(localNavCtrl, scrollState, wifiMacDialog) }
-            composable(route = "Switches") { Switches() }
-            composable(route = "MinWifiSecurityLevel") { WifiSecLevel() }
-            composable(route = "WifiSsidPolicy") { WifiSsidPolicy() }
-            composable(route = "PrivateDNS") { PrivateDNS() }
-            composable(route = "AlwaysOnVpn") { AlwaysOnVPNPackage(navCtrl) }
-            composable(route = "RecommendedGlobalProxy") { RecommendedGlobalProxy() }
-            composable(route = "NetworkLog") { NetworkLog() }
-            composable(route = "WifiAuthKeypair") { WifiAuthKeypair() }
-            composable(route = "PreferentialNetworkService") { PreferentialNetworkService() }
-            composable(route = "APN") { APN() }
-        }
-    }
-    if(wifiMacDialog.value && VERSION.SDK_INT >= 24) {
-        val context = LocalContext.current
-        val dpm = context.getDPM()
-        val receiver = context.getReceiver()
-        AlertDialog(
-            onDismissRequest = { wifiMacDialog.value = false },
-            confirmButton = { TextButton(onClick = { wifiMacDialog.value = false }) { Text(stringResource(R.string.confirm)) } },
-            title = { Text(stringResource(R.string.wifi_mac_address)) },
-            text = {
-                val mac = dpm.getWifiMacAddress(receiver)
-                OutlinedTextField(
-                    value = mac ?: stringResource(R.string.none),
-                    onValueChange = {}, readOnly = true, modifier = Modifier.fillMaxWidth(), textStyle = typography.bodyLarge,
-                    trailingIcon = {
-                        if(mac != null) IconButton(onClick = { writeClipBoard(context, mac) }) {
-                            Icon(painter = painterResource(R.drawable.content_copy_fill0), contentDescription = stringResource(R.string.copy))
-                        }
-                    }
-                )
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-}
-
-@Composable
-private fun Home(navCtrl:NavHostController, scrollState: ScrollState, wifiMacDialog: MutableState<Boolean>) {
+fun Network(navCtrl:NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -192,61 +153,46 @@ private fun Home(navCtrl:NavHostController, scrollState: ScrollState, wifiMacDia
     val profileOwner = context.isProfileOwner
     val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     val dhizuku = sharedPref.getBoolean("dhizuku", false)
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
-        Text(
-            text = stringResource(R.string.network),
-            style = typography.headlineLarge,
-            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 16.dp)
-        )
-        if(VERSION.SDK_INT >= 24 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            SubPageItem(R.string.wifi_mac_address, "", R.drawable.wifi_fill0) { wifiMacDialog.value = true }
-        }
+    MyScaffold(R.string.network, 0.dp, navCtrl) {
+        if(!dhizuku) FunctionItem(R.string.wifi, icon = R.drawable.wifi_fill0) { navCtrl.navigate("Wifi") }
         if(VERSION.SDK_INT >= 30) {
-            SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Switches") }
-        }
-        if(VERSION.SDK_INT >= 33 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            SubPageItem(R.string.min_wifi_security_level, "", R.drawable.wifi_password_fill0) { navCtrl.navigate("MinWifiSecurityLevel") }
-        }
-        if(VERSION.SDK_INT >= 33 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            SubPageItem(R.string.wifi_ssid_policy, "", R.drawable.wifi_fill0) { navCtrl.navigate("WifiSsidPolicy") }
+            FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { navCtrl.navigate("NetworkOptions") }
         }
         if(VERSION.SDK_INT >= 29 && deviceOwner) {
-            SubPageItem(R.string.private_dns, "", R.drawable.dns_fill0) { navCtrl.navigate("PrivateDNS") }
+            FunctionItem(R.string.private_dns, icon = R.drawable.dns_fill0) { navCtrl.navigate("PrivateDNS") }
         }
-        if(VERSION.SDK_INT >= 24 && (deviceOwner || profileOwner)) {
-            SubPageItem(R.string.always_on_vpn, "", R.drawable.vpn_key_fill0) { navCtrl.navigate("AlwaysOnVpn") }
+        if(VERSION.SDK_INT >= 24) {
+            FunctionItem(R.string.always_on_vpn, icon = R.drawable.vpn_key_fill0) { navCtrl.navigate("AlwaysOnVpn") }
         }
         if(deviceOwner) {
-            SubPageItem(R.string.recommended_global_proxy, "", R.drawable.vpn_key_fill0) { navCtrl.navigate("RecommendedGlobalProxy") }
+            FunctionItem(R.string.recommended_global_proxy, icon = R.drawable.vpn_key_fill0) { navCtrl.navigate("RecommendedGlobalProxy") }
         }
         if(VERSION.SDK_INT >= 26 && !dhizuku && (deviceOwner || (profileOwner && dpm.isManagedProfile(receiver)))) {
-            SubPageItem(R.string.retrieve_net_logs, "", R.drawable.description_fill0) { navCtrl.navigate("NetworkLog") }
+            FunctionItem(R.string.network_logging, icon = R.drawable.description_fill0) { navCtrl.navigate("NetworkLog") }
         }
-        if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) {
-            SubPageItem(R.string.wifi_auth_keypair, "", R.drawable.key_fill0) { navCtrl.navigate("WifiAuthKeypair") }
+        if(VERSION.SDK_INT >= 31) {
+            FunctionItem(R.string.wifi_auth_keypair, icon = R.drawable.key_fill0) { navCtrl.navigate("WifiAuthKeypair") }
         }
-        if(VERSION.SDK_INT >= 33 && (deviceOwner || profileOwner)) {
-            SubPageItem(R.string.preferential_network_service, "", R.drawable.globe_fill0) { navCtrl.navigate("PreferentialNetworkService") }
+        if(VERSION.SDK_INT >= 33) {
+            FunctionItem(R.string.preferential_network_service, icon = R.drawable.globe_fill0) { navCtrl.navigate("PreferentialNetworkService") }
         }
         if(VERSION.SDK_INT >= 28 && deviceOwner) {
-            SubPageItem(R.string.override_apn_settings, "", R.drawable.cell_tower_fill0) { navCtrl.navigate("APN") }
+            FunctionItem(R.string.override_apn_settings, icon = R.drawable.cell_tower_fill0) { navCtrl.navigate("OverrideAPN") }
         }
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
 @Composable
-private fun Switches() {
+fun NetworkOptions(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
     var dialog by remember { mutableIntStateOf(0) }
-    Column(modifier = Modifier.fillMaxSize()) {
-        Spacer(Modifier.padding(vertical = 5.dp))
+    MyScaffold(R.string.options, 0.dp, navCtrl) {
         if(VERSION.SDK_INT>=30 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            SwitchItem(R.string.lockdown_admin_configured_network, "", R.drawable.wifi_password_fill0,
-                { dpm.hasLockdownAdminConfiguredNetworks(receiver) }, { dpm.setConfiguredNetworksLockdownState(receiver,it) },
+            SwitchItem(R.string.lockdown_admin_configured_network, icon = R.drawable.wifi_password_fill0,
+                getState = { dpm.hasLockdownAdminConfiguredNetworks(receiver) }, onCheckedChange = { dpm.setConfiguredNetworksLockdownState(receiver,it) },
                 onClickBlank = { dialog = 1 }
             )
         }
@@ -260,42 +206,534 @@ private fun Switches() {
     )
 }
 
-@SuppressLint("NewApi")
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun WifiSecLevel() {
+fun Wifi(navCtrl: NavHostController) {
+    val context = LocalContext.current
+    val coroutine = rememberCoroutineScope()
+    val pagerState = rememberPagerState { 3 }
+    var tabIndex by rememberSaveable { mutableIntStateOf(0) }
+    tabIndex = pagerState.currentPage
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.wifi)) },
+                navigationIcon = { NavIcon { navCtrl.navigateUp() } }
+            )
+        }
+    ) { paddingValues ->
+        var wifiMacDialog by remember { mutableStateOf(false) }
+        Column(
+            modifier = Modifier.fillMaxSize().padding(paddingValues)
+        ) {
+            TabRow(tabIndex) {
+                Tab(
+                    selected = tabIndex == 0, onClick = { tabIndex = 0; coroutine.launch { pagerState.animateScrollToPage(tabIndex) } },
+                    text = { Text(stringResource(R.string.overview)) }
+                )
+                Tab(
+                    selected = tabIndex == 1, onClick = { tabIndex = 1; coroutine.launch { pagerState.animateScrollToPage(tabIndex) } },
+                    text = { Text(stringResource(R.string.saved_networks)) }
+                )
+                Tab(
+                    selected = tabIndex == 2, onClick = { tabIndex = 2; coroutine.launch { pagerState.animateScrollToPage(tabIndex) } },
+                    text = { Text(stringResource(R.string.add_network)) }
+                )
+            }
+            HorizontalPager(state = pagerState, verticalAlignment = Alignment.Top) { page ->
+                if(page == 0) {
+                    val wm = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+                    val deviceOwner = context.isDeviceOwner
+                    val orgProfileOwner = context.getDPM().isOrgProfile(context.getReceiver())
+                    @Suppress("DEPRECATION") Column(
+                        modifier = Modifier.fillMaxSize().padding(top = 12.dp)
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Button(
+                                onClick = { context.showOperationResultToast(wm.setWifiEnabled(true)) },
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                Text(stringResource(R.string.enable))
+                            }
+                            Button(onClick = { context.showOperationResultToast(wm.setWifiEnabled(false)) }) {
+                                Text(stringResource(R.string.disable))
+                            }
+                        }
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                        ) {
+                            Button(
+                                onClick = { context.showOperationResultToast(wm.disconnect()) },
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                Text(stringResource(R.string.disconnect))
+                            }
+                            Button(onClick = { context.showOperationResultToast(wm.reconnect()) }) {
+                                Text(stringResource(R.string.reconnect))
+                            }
+                        }
+                        if(VERSION.SDK_INT >= 24 && (deviceOwner || orgProfileOwner)) {
+                            FunctionItem(R.string.wifi_mac_address) { wifiMacDialog = true }
+                        }
+                        if(VERSION.SDK_INT >= 33 && (deviceOwner || orgProfileOwner)) {
+                            FunctionItem(R.string.min_wifi_security_level) { navCtrl.navigate("MinWifiSecurityLevel") }
+                            FunctionItem(R.string.wifi_ssid_policy) { navCtrl.navigate("WifiSsidPolicy") }
+                        }
+                    }
+                } else if(page == 1) {
+                    SavedNetworks(navCtrl)
+                } else {
+                    AddNetwork()
+                }
+            }
+        }
+        if(wifiMacDialog && VERSION.SDK_INT >= 24) {
+            val context = LocalContext.current
+            val dpm = context.getDPM()
+            val receiver = context.getReceiver()
+            AlertDialog(
+                onDismissRequest = { wifiMacDialog = false },
+                confirmButton = { TextButton(onClick = { wifiMacDialog = false }) { Text(stringResource(R.string.confirm)) } },
+                text = {
+                    val mac = dpm.getWifiMacAddress(receiver)
+                    OutlinedTextField(
+                        value = mac ?: stringResource(R.string.none), label = { Text(stringResource(R.string.wifi_mac_address)) },
+                        onValueChange = {}, readOnly = true, modifier = Modifier.fillMaxWidth(), textStyle = typography.bodyLarge,
+                        trailingIcon = {
+                            if(mac != null) IconButton(onClick = { writeClipBoard(context, mac) }) {
+                                Icon(painter = painterResource(R.drawable.content_copy_fill0), contentDescription = stringResource(R.string.copy))
+                            }
+                        }
+                    )
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+@Suppress("DEPRECATION")
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+private fun SavedNetworks(navCtrl: NavHostController) {
+    val context = LocalContext.current
+    val wm = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+    val configuredNetworks = remember { mutableStateListOf<WifiConfiguration>() }
+    var networkDetailsDialog by remember { mutableIntStateOf(-1) } // -1:Hidden, 0+:Index of configuredNetworks
+    fun refresh() {
+        configuredNetworks.clear()
+        wm.configuredNetworks.forEach { network ->
+            if(configuredNetworks.none { it.networkId == network.networkId }) configuredNetworks += network
+        }
+    }
+    LaunchedEffect(Unit) { refresh() }
+    Column(
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 8.dp, end = 8.dp, bottom = 60.dp)
+    ) {
+        val locationPermission = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
+        val requestPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+            if(it) refresh()
+        }
+        if(!locationPermission.status.isGranted) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp)
+                    .clip(RoundedCornerShape(15))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .clickable { requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) }
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.LocationOn, contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(start = 8.dp, end = 4.dp))
+                Text(
+                    text = stringResource(R.string.request_location_permission_description),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+        }
+        configuredNetworks.forEachIndexed { index, network ->
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().padding(start = 8.dp, top = 8.dp)
+            ) {
+                Text(text = network.SSID.removeSurrounding("\""), style = typography.titleLarge)
+                IconButton(onClick = { networkDetailsDialog = index }) {
+                    Icon(painter = painterResource(R.drawable.more_horiz_fill0), contentDescription = null)
+                }
+            }
+        }
+    }
+    if(networkDetailsDialog != -1) AlertDialog(
+        text = {
+            val network = configuredNetworks[networkDetailsDialog]
+            val statusText = when(network.status) {
+                WifiConfiguration.Status.CURRENT -> R.string.current
+                WifiConfiguration.Status.DISABLED -> R.string.disabled
+                WifiConfiguration.Status.ENABLED -> R.string.enabled
+                else -> R.string.place_holder
+            }
+            Column {
+                Text(stringResource(R.string.network_id) + ": " + network.networkId.toString())
+                SelectionContainer {
+                    Text("SSID: " + network.SSID)
+                    if(network.BSSID != null) Text("BSSID: " + network.BSSID)
+                }
+                Text(stringResource(R.string.status) + ": " + stringResource(statusText))
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            context.showOperationResultToast(wm.enableNetwork(network.networkId, false))
+                            networkDetailsDialog = -1
+                            refresh()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.49F)
+                    ) {
+                        Text(stringResource(R.string.enable))
+                    }
+                    Button(
+                        onClick = {
+                            context.showOperationResultToast(wm.disableNetwork(network.networkId))
+                            networkDetailsDialog = -1
+                            refresh()
+                        },
+                        modifier = Modifier.fillMaxWidth(0.96F)
+                    ) {
+                        Text(stringResource(R.string.disable))
+                    }
+                }
+                Button(
+                    onClick = {
+                        networkDetailsDialog = -1
+                        val dest = navCtrl.graph.findNode("UpdateNetwork")
+                        if(dest != null)
+                        navCtrl.navigate(dest.id, bundleOf("wifi_configuration" to network))
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.edit))
+                }
+                TextButton(
+                    onClick = {
+                        context.showOperationResultToast(wm.removeNetwork(network.networkId))
+                        networkDetailsDialog = -1
+                        refresh()
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.remove))
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { networkDetailsDialog = -1 }) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        onDismissRequest = { networkDetailsDialog = -1 }
+    )
+}
+
+@Composable
+fun UpdateNetwork(arguments: Bundle, navCtrl: NavHostController) {
+    MyScaffold(R.string.update_network, 0.dp, navCtrl, false) {
+        AddNetwork(arguments.getParcelable("wifi_configuration"), navCtrl)
+    }
+}
+
+@Suppress("DEPRECATION")
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AddNetwork(wifiConfig: WifiConfiguration? = null, navCtrl: NavHostController? = null) {
+    val context = LocalContext.current
+    var resultDialog by remember { mutableStateOf(false) }
+    var createdNetworkId by remember { mutableIntStateOf(-1) }
+    var createNetworkResult by remember { mutableIntStateOf(0) }
+    var dropdownMenu by remember { mutableIntStateOf(0) } // 0: None, 1:Status, 2:Security, 3:MAC randomization, 4:Static IP, 5:Proxy
+    var status by remember { mutableIntStateOf(WifiConfiguration.Status.ENABLED) }
+    var ssid by remember { mutableStateOf("") }
+    var hiddenSsid by remember { mutableStateOf(false) }
+    var securityType by remember { mutableIntStateOf(WifiConfiguration.SECURITY_TYPE_OPEN) }
+    var password by remember { mutableStateOf("") }
+    var macRandomizationSetting by remember { mutableIntStateOf(WifiConfiguration.RANDOMIZATION_AUTO) }
+    var useStaticIp by remember { mutableStateOf(false) }
+    var ipAddress by remember { mutableStateOf("") }
+    var gatewayAddress by remember { mutableStateOf("") }
+    var dnsServers by remember { mutableStateOf("") }
+    var useHttpProxy by remember { mutableStateOf(false) }
+    var httpProxyHost by remember { mutableStateOf("") }
+    var httpProxyPort by remember { mutableStateOf("") }
+    var httpProxyExclList by remember { mutableStateOf("") }
+    LaunchedEffect(Unit) {
+        if(wifiConfig != null) {
+            status = wifiConfig.status
+            if(wifiConfig.status == WifiConfiguration.Status.CURRENT) status = WifiConfiguration.Status.ENABLED
+            ssid = wifiConfig.SSID.removeSurrounding("\"")
+        }
+    }
+    Column(
+        modifier = (if(wifiConfig == null) Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 60.dp) else Modifier)
+            .padding(start = 8.dp, end = 8.dp, top = 12.dp)
+    ) {
+        ExposedDropdownMenuBox(dropdownMenu == 1, { dropdownMenu = if(it) 1 else 0 }) {
+            val statusText = when(status) {
+                WifiConfiguration.Status.DISABLED -> R.string.disabled
+                WifiConfiguration.Status.ENABLED -> R.string.enabled
+                else -> R.string.place_holder
+            }
+            OutlinedTextField(
+                value = stringResource(statusText), onValueChange = {}, readOnly = true,
+                label = { Text(stringResource(R.string.status)) },
+                trailingIcon = { UpOrDownTextFieldTrailingIconButton(dropdownMenu == 1) {} },
+                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth().padding(bottom = 16.dp)
+            )
+            ExposedDropdownMenu(dropdownMenu == 1, { dropdownMenu = 0 }) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.disabled)) },
+                    onClick = {
+                        status = WifiConfiguration.Status.DISABLED
+                        dropdownMenu = 0
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.enabled)) },
+                    onClick = {
+                        status = WifiConfiguration.Status.ENABLED
+                        dropdownMenu = 0
+                    }
+                )
+            }
+        }
+        OutlinedTextField(
+            value = ssid, onValueChange = { ssid = it }, label = { Text("SSID") },
+            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+        )
+        CheckBoxItem(R.string.hidden_ssid, hiddenSsid) { hiddenSsid = it }
+        if(VERSION.SDK_INT >= 30) {
+            // TODO: more protocols
+            val securityTypeTextMap = mutableMapOf(
+                WifiConfiguration.SECURITY_TYPE_OPEN to stringResource(R.string.wifi_security_open),
+                WifiConfiguration.SECURITY_TYPE_PSK to "PSK"
+            )
+            ExposedDropdownMenuBox(dropdownMenu == 2, { dropdownMenu = if(it) 2 else 0 }) {
+                OutlinedTextField(
+                    value = securityTypeTextMap[securityType] ?: "", onValueChange = {}, label = { Text(stringResource(R.string.security)) },
+                    trailingIcon = { UpOrDownTextFieldTrailingIconButton(dropdownMenu == 1) {} }, readOnly = true,
+                    modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth().padding(vertical = 4.dp)
+                )
+                ExposedDropdownMenu(dropdownMenu == 2, { dropdownMenu = 0 }) {
+                    securityTypeTextMap.forEach {
+                        DropdownMenuItem(text = { Text(it.value) }, onClick = { securityType = it.key; dropdownMenu = 0 })
+                    }
+                }
+            }
+            AnimatedVisibility(securityType == WifiConfiguration.SECURITY_TYPE_PSK) {
+                OutlinedTextField(
+                    value = password, onValueChange = { password = it }, label = { Text(stringResource(R.string.password)) },
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+                )
+            }
+        }
+        if(VERSION.SDK_INT >= 33) {
+            val macRandomizationSettingTextMap = mapOf(
+                WifiConfiguration.RANDOMIZATION_NONE to R.string.none,
+                WifiConfiguration.RANDOMIZATION_PERSISTENT to R.string.persistent,
+                WifiConfiguration.RANDOMIZATION_NON_PERSISTENT to R.string.non_persistent,
+                WifiConfiguration.RANDOMIZATION_AUTO to R.string.auto
+            )
+            ExposedDropdownMenuBox(dropdownMenu == 3, { dropdownMenu = if(it) 3 else 0 }) {
+                OutlinedTextField(
+                    value = stringResource(macRandomizationSettingTextMap[macRandomizationSetting] ?: R.string.place_holder),
+                    onValueChange = {}, readOnly = true,
+                    label = { Text(stringResource(R.string.mac_randomization)) },
+                    trailingIcon = { UpOrDownTextFieldTrailingIconButton(dropdownMenu == 3) {} },
+                    modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth().padding(bottom = 8.dp)
+                )
+                ExposedDropdownMenu(dropdownMenu == 3, { dropdownMenu = 0 }) {
+                    macRandomizationSettingTextMap.forEach {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(it.value)) },
+                            onClick = {
+                                macRandomizationSetting = it.key
+                                dropdownMenu = 0
+                            }
+                        )
+                    }
+                }
+            }
+        }
+        if(VERSION.SDK_INT >= 33) {
+            ExposedDropdownMenuBox(dropdownMenu == 4, { dropdownMenu = if(it) 4 else 0 }) {
+                OutlinedTextField(
+                    value = if(useStaticIp) stringResource(R.string.static_str) else "DHCP",
+                    onValueChange = {}, readOnly = true,
+                    label = { Text(stringResource(R.string.ip_settings)) },
+                    trailingIcon = { UpOrDownTextFieldTrailingIconButton(dropdownMenu == 4) {} },
+                    modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth().padding(bottom = 4.dp)
+                )
+                ExposedDropdownMenu(dropdownMenu == 4, { dropdownMenu = 0 }) {
+                    DropdownMenuItem(text = { Text("DHCP") }, onClick = { useStaticIp = false; dropdownMenu = 0 })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.static_str)) }, onClick = { useStaticIp = true; dropdownMenu = 0 })
+                }
+            }
+            AnimatedVisibility(visible = useStaticIp, modifier = Modifier.padding(bottom = 8.dp)) {
+                Column {
+                    OutlinedTextField(
+                        value = ipAddress, onValueChange = { ipAddress = it },
+                        placeholder = { Text("192.168.1.2/24") }, label = { Text(stringResource(R.string.ip_address)) },
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                    )
+                    OutlinedTextField(
+                        value = gatewayAddress, onValueChange = { gatewayAddress = it },
+                        placeholder = { Text("192.168.1.1") }, label = { Text(stringResource(R.string.gateway_address)) },
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                    )
+                    OutlinedTextField(
+                        value = dnsServers, onValueChange = { dnsServers = it },
+                        label = { Text(stringResource(R.string.dns_servers)) }, minLines = 2,
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                    )
+                }
+            }
+        }
+        if(VERSION.SDK_INT >= 26) {
+            ExposedDropdownMenuBox(dropdownMenu == 5, { dropdownMenu = if(it) 5 else 0 }) {
+                OutlinedTextField(
+                    value = if(useHttpProxy) "HTTP" else stringResource(R.string.none),
+                    onValueChange = {}, readOnly = true,
+                    label = { Text(stringResource(R.string.proxy)) },
+                    trailingIcon = { UpOrDownTextFieldTrailingIconButton(dropdownMenu == 5) {} },
+                    modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth().padding(bottom = 4.dp)
+                )
+                ExposedDropdownMenu(dropdownMenu == 5, { dropdownMenu = 0 }) {
+                    DropdownMenuItem(text = { Text(stringResource(R.string.none)) }, onClick = { useHttpProxy = false; dropdownMenu = 0 })
+                    DropdownMenuItem(text = { Text("HTTP") }, onClick = { useHttpProxy = true; dropdownMenu = 0 })
+                }
+            }
+            AnimatedVisibility(visible = useHttpProxy, modifier = Modifier.padding(bottom = 8.dp)) {
+                Column {
+                    OutlinedTextField(
+                        value = httpProxyHost, onValueChange = { httpProxyHost = it }, label = { Text(stringResource(R.string.host)) },
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                    )
+                    OutlinedTextField(
+                        value = httpProxyPort, onValueChange = { httpProxyPort = it }, label = { Text(stringResource(R.string.port)) },
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                    )
+                    OutlinedTextField(
+                        value = httpProxyExclList, onValueChange = { httpProxyExclList = it }, label = { Text(stringResource(R.string.excluded_hosts)) },
+                        minLines = 2, placeholder = { Text("example.com\n*.example.com") },
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                    )
+                }
+            }
+        }
+        Button(
+            onClick = {
+                val wm = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+                try {
+                    val config = WifiConfiguration()
+                    config.status = status
+                    config.SSID = '"' + ssid + '"'
+                    config.hiddenSSID = hiddenSsid
+                    if(VERSION.SDK_INT >= 30) config.setSecurityParams(securityType)
+                    if(securityType == WifiConfiguration.SECURITY_TYPE_PSK) config.preSharedKey = '"' + password + '"'
+                    if(VERSION.SDK_INT >= 33) config.macRandomizationSetting = macRandomizationSetting
+                    if(VERSION.SDK_INT >= 33 && useStaticIp) {
+                        val ipConf = IpConfiguration.Builder()
+                        val staticIpConf = StaticIpConfiguration.Builder()
+                        val la: LinkAddress
+                        val con = LinkAddress::class.constructors.find { it.parameters.size == 1 && it.parameters[0].type.jvmErasure == String::class }
+                        la = con!!.call(ipAddress)
+                        staticIpConf.setIpAddress(la)
+                        staticIpConf.setGateway(InetAddress.getByName(gatewayAddress))
+                        staticIpConf.setDnsServers(dnsServers.lines().map { InetAddress.getByName(it) })
+                        ipConf.setStaticIpConfiguration(staticIpConf.build())
+                        config.setIpConfiguration(ipConf.build())
+                    }
+                    if(VERSION.SDK_INT >= 26 && useHttpProxy) {
+                        config.httpProxy = ProxyInfo.buildDirectProxy(httpProxyHost, httpProxyPort.toInt(), httpProxyExclList.lines())
+                    }
+                    if(wifiConfig != null) {
+                        config.networkId = wifiConfig.networkId
+                        createdNetworkId = wm.updateNetwork(config)
+                    } else {
+                        if(VERSION.SDK_INT >= 31) {
+                            val result = wm.addNetworkPrivileged(config)
+                            createdNetworkId = result.networkId
+                            createNetworkResult = result.statusCode
+                        } else {
+                            createdNetworkId = wm.addNetwork(config)
+                        }
+                    }
+                    resultDialog = true
+                } catch(e: Exception) {
+                    e.printStackTrace()
+                    AlertDialog.Builder(context)
+                        .setTitle(R.string.error)
+                        .setPositiveButton(R.string.confirm) { dialog, _ -> dialog.cancel() }
+                        .setMessage(e.message ?: "")
+                        .show()
+                }
+            },
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+        ) {
+            Text(stringResource(if(wifiConfig != null) R.string.update else R.string.add))
+        }
+        if(resultDialog) AlertDialog(
+            text = {
+                val statusText = when(createNetworkResult) {
+                    WifiManager.AddNetworkResult.STATUS_SUCCESS -> R.string.success
+                    //WifiManager.AddNetworkResult.STATUS_ADD_WIFI_CONFIG_FAILURE -> R.string.failed
+                    WifiManager.AddNetworkResult.STATUS_INVALID_CONFIGURATION -> R.string.add_network_result_invalid_configuration
+                    else -> R.string.failed
+                }
+                Text(stringResource(statusText) + "\n" + stringResource(R.string.network_id) + ": " + createdNetworkId)
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        resultDialog = false
+                        if(createdNetworkId != -1) navCtrl?.navigateUp()
+                    }
+                ) {
+                    Text(stringResource(R.string.confirm))
+                }
+            },
+            onDismissRequest = { resultDialog = false }
+        )
+    }
+}
+
+@RequiresApi(33)
+@Composable
+fun WifiSecurityLevel(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     var selectedWifiSecLevel by remember { mutableIntStateOf(0) }
     LaunchedEffect(Unit) { selectedWifiSecLevel = dpm.minimumRequiredWifiSecurityLevel }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.min_wifi_security_level), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        RadioButtonItem(
-            R.string.wifi_security_open,
-            selectedWifiSecLevel == WIFI_SECURITY_OPEN,
-            { selectedWifiSecLevel = WIFI_SECURITY_OPEN }
-        )
-        RadioButtonItem(
-            "WEP, WPA(2)-PSK",
-            selectedWifiSecLevel == WIFI_SECURITY_PERSONAL,
-            { selectedWifiSecLevel = WIFI_SECURITY_PERSONAL }
-        )
-        RadioButtonItem(
-            "WPA-EAP",
-            selectedWifiSecLevel == WIFI_SECURITY_ENTERPRISE_EAP,
-            { selectedWifiSecLevel = WIFI_SECURITY_ENTERPRISE_EAP }
-        )
-        RadioButtonItem(
-            "WPA3-192bit",
-            selectedWifiSecLevel == WIFI_SECURITY_ENTERPRISE_192,
-            { selectedWifiSecLevel = WIFI_SECURITY_ENTERPRISE_192 }
-        )
+    MyScaffold(R.string.min_wifi_security_level, 8.dp, navCtrl) {
+        RadioButtonItem(R.string.wifi_security_open, selectedWifiSecLevel == WIFI_SECURITY_OPEN) { selectedWifiSecLevel = WIFI_SECURITY_OPEN }
+        RadioButtonItem("WEP, WPA(2)-PSK", selectedWifiSecLevel == WIFI_SECURITY_PERSONAL) { selectedWifiSecLevel = WIFI_SECURITY_PERSONAL }
+        RadioButtonItem("WPA-EAP", selectedWifiSecLevel == WIFI_SECURITY_ENTERPRISE_EAP) { selectedWifiSecLevel = WIFI_SECURITY_ENTERPRISE_EAP }
+        RadioButtonItem("WPA3-192bit", selectedWifiSecLevel == WIFI_SECURITY_ENTERPRISE_192) { selectedWifiSecLevel = WIFI_SECURITY_ENTERPRISE_192 }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 dpm.minimumRequiredWifiSecurityLevel = selectedWifiSecLevel
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -305,13 +743,13 @@ private fun WifiSecLevel() {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(33)
 @Composable
-private fun WifiSsidPolicy() {
+fun WifiSsidPolicy(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
+    MyScaffold(R.string.wifi_ssid_policy, 8.dp, navCtrl) {
         var selectedPolicyType by remember { mutableIntStateOf(-1) }
         val ssidList = remember { mutableStateListOf<WifiSsid>() }
         val refreshPolicy = {
@@ -321,24 +759,13 @@ private fun WifiSsidPolicy() {
             ssidList.addAll(policy?.ssids ?: mutableSetOf())
         }
         LaunchedEffect(Unit) { refreshPolicy() }
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.wifi_ssid_policy), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        RadioButtonItem(
-            R.string.none,
-            selectedPolicyType == -1,
-            { selectedPolicyType = -1 }
-        )
-        RadioButtonItem(
-            R.string.whitelist,
-            selectedPolicyType == WIFI_SSID_POLICY_TYPE_ALLOWLIST,
-            { selectedPolicyType = WIFI_SSID_POLICY_TYPE_ALLOWLIST }
-        )
-        RadioButtonItem(
-            R.string.blacklist,
-            selectedPolicyType == WIFI_SSID_POLICY_TYPE_DENYLIST,
-            { selectedPolicyType = WIFI_SSID_POLICY_TYPE_DENYLIST }
-        )
+        RadioButtonItem(R.string.none, selectedPolicyType == -1) { selectedPolicyType = -1 }
+        RadioButtonItem(R.string.whitelist, selectedPolicyType == WIFI_SSID_POLICY_TYPE_ALLOWLIST) {
+            selectedPolicyType = WIFI_SSID_POLICY_TYPE_ALLOWLIST
+        }
+        RadioButtonItem(R.string.blacklist, selectedPolicyType == WIFI_SSID_POLICY_TYPE_DENYLIST) {
+            selectedPolicyType = WIFI_SSID_POLICY_TYPE_DENYLIST
+        }
         AnimatedVisibility(selectedPolicyType != -1) {
             var inputSsid by remember { mutableStateOf("") }
             Column {
@@ -381,26 +808,23 @@ private fun WifiSsidPolicy() {
                     WifiSsidPolicy(selectedPolicyType, ssidList.toSet())
                 }
                 refreshPolicy()
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.apply))
         }
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(29)
 @Composable
-private fun PrivateDNS() {
+fun PrivateDNS(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.private_dns), style = typography.headlineLarge)
+    MyScaffold(R.string.private_dns, 8.dp, navCtrl) {
         val dnsStatus = mapOf(
             PRIVATE_DNS_MODE_UNKNOWN to stringResource(R.string.unknown),
             PRIVATE_DNS_MODE_OFF to stringResource(R.string.disabled),
@@ -462,13 +886,12 @@ private fun PrivateDNS() {
             Text(stringResource(R.string.set_dns_host))
         }
         InfoCard(R.string.info_set_private_dns_host)
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(24)
 @Composable
-fun AlwaysOnVPNPackage(navCtrl: NavHostController) {
+fun AlwaysOnVPNPackage(navCtrl: NavHostController, vm: MyViewModel) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -477,17 +900,17 @@ fun AlwaysOnVPNPackage(navCtrl: NavHostController) {
     val focusMgr = LocalFocusManager.current
     val refresh = { pkgName = dpm.getAlwaysOnVpnPackage(receiver) ?: "" }
     LaunchedEffect(Unit) { refresh() }
-    val updatePackage by selectedPackage.collectAsState()
+    val updatePackage by vm.selectedPackage.collectAsState()
     LaunchedEffect(updatePackage) {
-        if(selectedPackage.value != "") {
-            pkgName = selectedPackage.value
-            selectedPackage.value = ""
+        if(updatePackage != "") {
+            pkgName = updatePackage
+            vm.selectedPackage.value = ""
         }
     }
     val setAlwaysOnVpn: (String?, Boolean)->Boolean = { vpnPkg: String?, lockdownEnabled: Boolean ->
         try {
             dpm.setAlwaysOnVpnPackage(receiver, vpnPkg, lockdownEnabled)
-            Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+            context.showOperationResultToast(true)
             true
         } catch(e: UnsupportedOperationException) {
             e.printStackTrace()
@@ -499,9 +922,7 @@ fun AlwaysOnVPNPackage(navCtrl: NavHostController) {
             false
         }
     }
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.always_on_vpn), style = typography.headlineLarge, modifier = Modifier.padding(vertical = 8.dp))
+    MyScaffold(R.string.always_on_vpn, 8.dp, navCtrl) {
         OutlinedTextField(
             value = pkgName,
             onValueChange = { pkgName = it },
@@ -509,7 +930,7 @@ fun AlwaysOnVPNPackage(navCtrl: NavHostController) {
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
             trailingIcon = {
-                Icon(painter = painterResource(R.drawable.checklist_fill0), contentDescription = null,
+                Icon(painter = painterResource(R.drawable.list_fill0), contentDescription = null,
                     modifier = Modifier
                         .clip(RoundedCornerShape(50))
                         .clickable(onClick = {
@@ -520,7 +941,7 @@ fun AlwaysOnVPNPackage(navCtrl: NavHostController) {
             },
             modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
         )
-        SwitchItem(R.string.enable_lockdown, "", null, lockdown, { lockdown = it }, padding = false)
+        SwitchItem(R.string.enable_lockdown, state = lockdown, onCheckedChange = { lockdown = it }, padding = false)
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = { if(setAlwaysOnVpn(pkgName, lockdown)) refresh() },
@@ -536,12 +957,11 @@ fun AlwaysOnVPNPackage(navCtrl: NavHostController) {
             Text(stringResource(R.string.clear_current_config))
         }
         InfoCard(R.string.info_always_on_vpn)
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
 @Composable
-private fun RecommendedGlobalProxy() {
+fun RecommendedGlobalProxy(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -551,13 +971,10 @@ private fun RecommendedGlobalProxy() {
     var specifyPort by remember { mutableStateOf(false) }
     var proxyPort by remember { mutableStateOf("") }
     var exclList by remember { mutableStateOf("") }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.recommended_global_proxy), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        RadioButtonItem(R.string.proxy_type_off, proxyType == 0, { proxyType = 0 })
-        RadioButtonItem(R.string.proxy_type_pac, proxyType == 1, { proxyType = 1 })
-        RadioButtonItem(R.string.proxy_type_direct, proxyType == 2, { proxyType = 2 })
+    MyScaffold(R.string.recommended_global_proxy, 8.dp, navCtrl) {
+        RadioButtonItem(R.string.proxy_type_off, proxyType == 0) { proxyType = 0 }
+        RadioButtonItem(R.string.proxy_type_pac, proxyType == 1) { proxyType = 1 }
+        RadioButtonItem(R.string.proxy_type_direct, proxyType == 2) { proxyType = 2 }
         AnimatedVisibility(proxyType != 0) {
             OutlinedTextField(
                 value = proxyUri,
@@ -570,7 +987,7 @@ private fun RecommendedGlobalProxy() {
         }
         AnimatedVisibility(proxyType == 1 && VERSION.SDK_INT >= 30) {
             Box(modifier = Modifier.padding(top = 2.dp)) {
-                CheckBoxItem(R.string.specify_port, specifyPort, { specifyPort = it })
+                CheckBoxItem(R.string.specify_port, specifyPort) { specifyPort = it }
             }
         }
         AnimatedVisibility((proxyType == 1 && specifyPort && VERSION.SDK_INT >= 30) || proxyType == 2) {
@@ -587,7 +1004,7 @@ private fun RecommendedGlobalProxy() {
             OutlinedTextField(
                 value = exclList,
                 onValueChange = { exclList = it },
-                label = { Text(stringResource(R.string.exclude_hosts)) },
+                label = { Text(stringResource(R.string.excluded_hosts)) },
                 maxLines = 5,
                 minLines = 2,
                 modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
@@ -598,7 +1015,7 @@ private fun RecommendedGlobalProxy() {
             onClick = {
                 if(proxyType == 0) {
                     dpm.setRecommendedGlobalProxy(receiver, null)
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    context.showOperationResultToast(true)
                     return@Button
                 }
                 if(proxyUri == "") {
@@ -629,7 +1046,7 @@ private fun RecommendedGlobalProxy() {
                     return@Button
                 }
                 dpm.setRecommendedGlobalProxy(receiver, proxyInfo)
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -639,22 +1056,32 @@ private fun RecommendedGlobalProxy() {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(26)
 @Composable
-private fun NetworkLog() {
+fun NetworkLogging(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val logFile = context.filesDir.resolve("NetworkLogs.json")
     var fileSize by remember { mutableLongStateOf(0) }
-    LaunchedEffect(Unit) {
-        fileSize = logFile.length()
+    LaunchedEffect(Unit) { fileSize = logFile.length() }
+    val exportNetworkLogsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        result.data?.data?.let { uri ->
+            context.contentResolver.openOutputStream(uri)?.use { outStream ->
+                outStream.write("[".encodeToByteArray())
+                logFile.inputStream().use { it.copyTo(outStream) }
+                outStream.write("]".encodeToByteArray())
+                context.showOperationResultToast(true)
+            }
+        }
     }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.retrieve_net_logs), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        SwitchItem(R.string.enable, "", null, { dpm.isNetworkLoggingEnabled(receiver) }, { dpm.setNetworkLoggingEnabled(receiver,it) }, padding = false)
+    MyScaffold(R.string.network_logging, 8.dp, navCtrl) {
+        SwitchItem(
+            R.string.enable,
+            getState = { dpm.isNetworkLoggingEnabled(receiver) },
+            onCheckedChange = { dpm.setNetworkLoggingEnabled(receiver,it) },
+            padding = false
+        )
         Text(stringResource(R.string.log_file_size_is, formatFileSize(fileSize)))
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
             Button(
@@ -663,8 +1090,7 @@ private fun NetworkLog() {
                     intent.addCategory(Intent.CATEGORY_OPENABLE)
                     intent.setType("application/json")
                     intent.putExtra(Intent.EXTRA_TITLE, "NetworkLogs.json")
-                    exportFilePath.value = logFile.path
-                    exportFile.launch(intent)
+                    exportNetworkLogsLauncher.launch(intent)
                 },
                 enabled = fileSize > 0,
                 modifier = Modifier.fillMaxWidth(0.49F)
@@ -686,17 +1112,14 @@ private fun NetworkLog() {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(31)
 @Composable
-private fun WifiAuthKeypair() {
+fun WifiAuthKeypair(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        var keyPair by remember { mutableStateOf("") }
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.wifi_auth_keypair), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
+    var keyPair by remember { mutableStateOf("") }
+    MyScaffold(R.string.wifi_auth_keypair, 8.dp, navCtrl) {
         OutlinedTextField(
             value = keyPair,
             label = { Text(stringResource(R.string.alias)) },
@@ -716,19 +1139,13 @@ private fun WifiAuthKeypair() {
         Spacer(Modifier.padding(vertical = 5.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Button(
-                onClick = {
-                    val result = dpm.grantKeyPairToWifiAuth(keyPair)
-                    Toast.makeText(context, if(result) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
-                },
+                onClick = { context.showOperationResultToast(dpm.grantKeyPairToWifiAuth(keyPair)) },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) {
                 Text(stringResource(R.string.grant))
             }
             Button(
-                onClick = {
-                    val result = dpm.revokeKeyPairFromWifiAuth(keyPair)
-                    Toast.makeText(context, if(result) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
-                },
+                onClick = { context.showOperationResultToast(dpm.revokeKeyPairFromWifiAuth(keyPair)) },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) {
                 Text(stringResource(R.string.revoke))
@@ -737,9 +1154,9 @@ private fun WifiAuthKeypair() {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(33)
 @Composable
-fun PreferentialNetworkService() {
+fun PreferentialNetworkService(navCtrl: NavHostController) {
     val focusMgr = LocalFocusManager.current
     val context = LocalContext.current
     val dpm = context.getDPM()
@@ -778,14 +1195,8 @@ fun PreferentialNetworkService() {
         refresh()
     }
     LaunchedEffect(Unit) { initialize() }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.preferential_network_service), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        SwitchItem(
-            title = R.string.enabled, desc = "", icon = null,
-            state = masterEnabled, onCheckedChange = { masterEnabled = it }, padding = false
-        )
+    MyScaffold(R.string.preferential_network_service, 8.dp, navCtrl) {
+        SwitchItem(R.string.enabled, state = masterEnabled, onCheckedChange = { masterEnabled = it }, padding = false)
         Row(
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically,
@@ -833,7 +1244,7 @@ fun PreferentialNetworkService() {
                 onClick = {
                     try {
                         saveCurrentConfig()
-                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                        context.showOperationResultToast(true)
                     } catch(e: Exception) {
                         e.printStackTrace()
                         Toast.makeText(context, R.string.failed_to_save_current_config, Toast.LENGTH_SHORT).show()
@@ -853,10 +1264,7 @@ fun PreferentialNetworkService() {
                 Icon(imageVector = Icons.Default.Delete, contentDescription = stringResource(R.string.delete_current_config))
             }
         }
-        SwitchItem(
-            title = R.string.enabled, desc = "", icon = null,
-            state = enabled, onCheckedChange = { enabled = it }, padding = false
-        )
+        SwitchItem(title = R.string.enabled, state = enabled, onCheckedChange = { enabled = it }, padding = false)
         OutlinedTextField(
             value = networkId, onValueChange = { networkId = it },
             label = { Text(stringResource(R.string.network_id)) },
@@ -865,11 +1273,11 @@ fun PreferentialNetworkService() {
             modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
         )
         SwitchItem(
-            title = R.string.allow_fallback_to_default_connection, desc = "", icon = null,
+            title = R.string.allow_fallback_to_default_connection,
             state = allowFallback, onCheckedChange = { allowFallback = it }, padding = false
         )
         if(VERSION.SDK_INT >= 34) SwitchItem(
-            title = R.string.block_non_matching_networks, desc = "", icon = null,
+            title = R.string.block_non_matching_networks,
             state = blockNonMatching, onCheckedChange = { blockNonMatching = it }, padding = false
         )
         OutlinedTextField(
@@ -889,34 +1297,34 @@ fun PreferentialNetworkService() {
                 dpm.isPreferentialNetworkServiceEnabled = masterEnabled
                 dpm.preferentialNetworkServiceConfigs = configs
                 initialize()
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
         ) {
             Text(stringResource(R.string.apply))
         }
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(28)
 @Composable
-private fun APN() {
+fun OverrideAPN(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        val setting = dpm.getOverrideApns(receiver)
-        var inputNum by remember { mutableStateOf("0") }
-        var nextStep by remember { mutableStateOf(false) }
-        val builder = Builder()
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.override_apn_settings), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
+    val setting = dpm.getOverrideApns(receiver)
+    var inputNum by remember { mutableStateOf("0") }
+    var nextStep by remember { mutableStateOf(false) }
+    val builder = Builder()
+    MyScaffold(R.string.override_apn_settings, 8.dp, navCtrl) {
         Text(text = stringResource(id = R.string.developing))
         Spacer(Modifier.padding(vertical = 5.dp))
-        SwitchItem(R.string.enable, "", null, { dpm.isOverrideApnEnabled(receiver) }, { dpm.setOverrideApnsEnabled(receiver,it) }, padding = false)
+        SwitchItem(
+            R.string.enable,
+            getState = { dpm.isOverrideApnEnabled(receiver) }, onCheckedChange = { dpm.setOverrideApnsEnabled(receiver,it) },
+            padding = false
+        )
         Text(text = stringResource(R.string.total_apn_amount, setting.size))
         if(setting.isNotEmpty()) {
             Text(text = stringResource(R.string.select_a_apn_or_create, setting.size))
@@ -1033,11 +1441,11 @@ private fun APN() {
                 }
                 
                 Text(text = stringResource(R.string.auth_type), style = typography.titleLarge)
-                RadioButtonItem(R.string.none, selectedAuthType==AUTH_TYPE_NONE , { selectedAuthType=AUTH_TYPE_NONE })
-                RadioButtonItem("CHAP", selectedAuthType == AUTH_TYPE_CHAP , { selectedAuthType = AUTH_TYPE_CHAP })
-                RadioButtonItem("PAP", selectedAuthType == AUTH_TYPE_PAP, { selectedAuthType = AUTH_TYPE_PAP })
-                RadioButtonItem("PAP/CHAP", selectedAuthType == AUTH_TYPE_PAP_OR_CHAP, { selectedAuthType = AUTH_TYPE_PAP_OR_CHAP })
-                
+                RadioButtonItem(R.string.none, selectedAuthType==AUTH_TYPE_NONE) { selectedAuthType = AUTH_TYPE_NONE }
+                RadioButtonItem("CHAP", selectedAuthType == AUTH_TYPE_CHAP) { selectedAuthType = AUTH_TYPE_CHAP }
+                RadioButtonItem("PAP", selectedAuthType == AUTH_TYPE_PAP) { selectedAuthType = AUTH_TYPE_PAP }
+                RadioButtonItem("PAP/CHAP", selectedAuthType == AUTH_TYPE_PAP_OR_CHAP) { selectedAuthType = AUTH_TYPE_PAP_OR_CHAP }
+
                 if(VERSION.SDK_INT>=29) {
                     val ts = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
                     carrierId = ts.simCarrierId.toString()
@@ -1143,11 +1551,11 @@ private fun APN() {
                 }
                 
                 Text(text = "MVNO", style = typography.titleLarge)
-                RadioButtonItem("SPN", mvnoType == MVNO_TYPE_SPN, { mvnoType = MVNO_TYPE_SPN })
-                RadioButtonItem("IMSI", mvnoType == MVNO_TYPE_IMSI, { mvnoType = MVNO_TYPE_IMSI })
-                RadioButtonItem("GID", mvnoType == MVNO_TYPE_GID, { mvnoType = MVNO_TYPE_GID })
-                RadioButtonItem("ICCID", mvnoType == MVNO_TYPE_ICCID, { mvnoType = MVNO_TYPE_ICCID })
-                
+                RadioButtonItem("SPN", mvnoType == MVNO_TYPE_SPN) { mvnoType = MVNO_TYPE_SPN }
+                RadioButtonItem("IMSI", mvnoType == MVNO_TYPE_IMSI) { mvnoType = MVNO_TYPE_IMSI }
+                RadioButtonItem("GID", mvnoType == MVNO_TYPE_GID) { mvnoType = MVNO_TYPE_GID }
+                RadioButtonItem("ICCID", mvnoType == MVNO_TYPE_ICCID) { mvnoType = MVNO_TYPE_ICCID }
+
                 Text(text = stringResource(R.string.network_type), style = typography.titleLarge)
                 TextField(
                     value = networkTypeBitmask,
@@ -1190,23 +1598,23 @@ private fun APN() {
                 }
                 
                 Text(text = stringResource(R.string.protocol), style = typography.titleLarge)
-                RadioButtonItem("IPV4", protocol == PROTOCOL_IP, { protocol = PROTOCOL_IP })
-                RadioButtonItem("IPV6", protocol == PROTOCOL_IPV6, { protocol = PROTOCOL_IPV6 })
-                RadioButtonItem("IPV4/IPV6", protocol == PROTOCOL_IPV4V6, { protocol = PROTOCOL_IPV4V6 })
-                RadioButtonItem("PPP", protocol == PROTOCOL_PPP, { protocol = PROTOCOL_PPP })
+                RadioButtonItem("IPV4", protocol == PROTOCOL_IP) { protocol = PROTOCOL_IP }
+                RadioButtonItem("IPV6", protocol == PROTOCOL_IPV6) { protocol = PROTOCOL_IPV6 }
+                RadioButtonItem("IPV4/IPV6", protocol == PROTOCOL_IPV4V6) { protocol = PROTOCOL_IPV4V6 }
+                RadioButtonItem("PPP", protocol == PROTOCOL_PPP) { protocol = PROTOCOL_PPP }
                 if(VERSION.SDK_INT>=29) {
-                    RadioButtonItem("non-IP", protocol == PROTOCOL_NON_IP, { protocol = PROTOCOL_NON_IP })
-                    RadioButtonItem("Unstructured", protocol == PROTOCOL_UNSTRUCTURED, { protocol = PROTOCOL_UNSTRUCTURED })
+                    RadioButtonItem("non-IP", protocol == PROTOCOL_NON_IP) { protocol = PROTOCOL_NON_IP }
+                    RadioButtonItem("Unstructured", protocol == PROTOCOL_UNSTRUCTURED) { protocol = PROTOCOL_UNSTRUCTURED }
                 }
                 
                 Text(text = stringResource(R.string.roaming_protocol), style = typography.titleLarge)
-                RadioButtonItem("IPV4", roamingProtocol == PROTOCOL_IP, { roamingProtocol = PROTOCOL_IP })
-                RadioButtonItem("IPV6", roamingProtocol == PROTOCOL_IPV6, { roamingProtocol = PROTOCOL_IPV6 })
-                RadioButtonItem("IPV4/IPV6", roamingProtocol == PROTOCOL_IPV4V6, { roamingProtocol = PROTOCOL_IPV4V6 })
-                RadioButtonItem("PPP", roamingProtocol == PROTOCOL_PPP, { roamingProtocol = PROTOCOL_PPP})
+                RadioButtonItem("IPV4", roamingProtocol == PROTOCOL_IP) { roamingProtocol = PROTOCOL_IP }
+                RadioButtonItem("IPV6", roamingProtocol == PROTOCOL_IPV6) { roamingProtocol = PROTOCOL_IPV6 }
+                RadioButtonItem("IPV4/IPV6", roamingProtocol == PROTOCOL_IPV4V6) { roamingProtocol = PROTOCOL_IPV4V6 }
+                RadioButtonItem("PPP", roamingProtocol == PROTOCOL_PPP) { roamingProtocol = PROTOCOL_PPP }
                 if(VERSION.SDK_INT>=29) {
-                    RadioButtonItem("non-IP", roamingProtocol == PROTOCOL_NON_IP, { roamingProtocol = PROTOCOL_NON_IP })
-                    RadioButtonItem("Unstructured", roamingProtocol == PROTOCOL_UNSTRUCTURED, { roamingProtocol = PROTOCOL_UNSTRUCTURED })
+                    RadioButtonItem("non-IP", roamingProtocol == PROTOCOL_NON_IP) { roamingProtocol = PROTOCOL_NON_IP }
+                    RadioButtonItem("Unstructured", roamingProtocol == PROTOCOL_UNSTRUCTURED) { roamingProtocol = PROTOCOL_UNSTRUCTURED }
                 }
                 
                 var finalStep by remember { mutableStateOf(false) }
@@ -1253,20 +1661,14 @@ private fun APN() {
                     }else{
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Button(
-                                onClick = {
-                                    val success = dpm.updateOverrideApn(receiver,id,result)
-                                    Toast.makeText(context, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
-                                },
-                                Modifier.fillMaxWidth(0.49F)
+                                onClick = { context.showOperationResultToast(dpm.updateOverrideApn(receiver, id, result)) },
+                                modifier = Modifier.fillMaxWidth(0.49F)
                             ) {
                                 Text(stringResource(R.string.update))
                             }
                             Button(
-                                onClick = {
-                                    val success = dpm.removeOverrideApn(receiver,id)
-                                    Toast.makeText(context, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
-                                },
-                                Modifier.fillMaxWidth(0.96F)
+                                onClick = { context.showOperationResultToast(dpm.removeOverrideApn(receiver,id)) },
+                                modifier = Modifier.fillMaxWidth(0.96F)
                             ) {
                                 Text(stringResource(R.string.remove))
                             }
@@ -1275,6 +1677,5 @@ private fun APN() {
                 }
             }
         }
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }

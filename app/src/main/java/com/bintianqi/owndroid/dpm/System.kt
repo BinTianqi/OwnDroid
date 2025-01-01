@@ -3,9 +3,6 @@ package com.bintianqi.owndroid.dpm
 import android.annotation.SuppressLint
 import android.app.ActivityOptions
 import android.app.AlertDialog
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.admin.DevicePolicyManager.FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY
 import android.app.admin.DevicePolicyManager.InstallSystemUpdateCallback
 import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK
@@ -40,22 +37,31 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build.VERSION
+import android.os.HardwarePropertiesManager
 import android.os.UserManager
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -67,22 +73,36 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -90,7 +110,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -99,92 +118,35 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.core.app.NotificationCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
+import com.bintianqi.owndroid.MyViewModel
+import com.bintianqi.owndroid.NotificationUtils
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.StopLockTaskModeReceiver
-import com.bintianqi.owndroid.exportFile
-import com.bintianqi.owndroid.exportFilePath
-import com.bintianqi.owndroid.fileUriFlow
 import com.bintianqi.owndroid.formatFileSize
-import com.bintianqi.owndroid.getFile
-import com.bintianqi.owndroid.prepareForNotification
-import com.bintianqi.owndroid.selectedPackage
-import com.bintianqi.owndroid.toggle
-import com.bintianqi.owndroid.ui.Animations
+import com.bintianqi.owndroid.humanReadableDate
+import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.InfoCard
-import com.bintianqi.owndroid.ui.Information
 import com.bintianqi.owndroid.ui.ListItem
+import com.bintianqi.owndroid.ui.MyScaffold
+import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.RadioButtonItem
-import com.bintianqi.owndroid.ui.SubPageItem
 import com.bintianqi.owndroid.ui.SwitchItem
-import com.bintianqi.owndroid.ui.TopBar
 import com.bintianqi.owndroid.uriToStream
+import com.bintianqi.owndroid.yesOrNo
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.addJsonObject
-import kotlinx.serialization.json.buildJsonArray
-import kotlinx.serialization.json.encodeToStream
-import kotlinx.serialization.json.put
+import java.io.ByteArrayOutputStream
 import java.util.Date
 import java.util.TimeZone
 import java.util.concurrent.Executors
-import kotlin.math.pow
+import kotlin.collections.addAll
+import kotlin.math.roundToLong
 
 @Composable
 fun SystemManage(navCtrl: NavHostController) {
-    val localNavCtrl = rememberNavController()
-    val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
-    val scrollState = rememberScrollState()
-    Scaffold(
-        topBar = {
-            TopBar(backStackEntry,navCtrl,localNavCtrl) {
-                if(backStackEntry?.destination?.route=="Home"&&scrollState.maxValue > 100) {
-                    Text(
-                        text = stringResource(R.string.system),
-                        modifier = Modifier.alpha((maxOf(scrollState.value-30,0)).toFloat()/80)
-                    )
-                }
-            }
-        }
-    ) {
-        NavHost(
-            navController = localNavCtrl, startDestination = "Home",
-            enterTransition = Animations.navHostEnterTransition,
-            exitTransition = Animations.navHostExitTransition,
-            popEnterTransition = Animations.navHostPopEnterTransition,
-            popExitTransition = Animations.navHostPopExitTransition,
-            modifier = Modifier.padding(top = it.calculateTopPadding())
-        ) {
-            composable(route = "Home") { Home(localNavCtrl, scrollState) }
-            composable(route = "Switches") { Switches() }
-            composable(route = "Keyguard") { Keyguard() }
-            composable(route = "EditTime") { EditTime() }
-            composable(route = "EditTimeZone") { EditTimeZone() }
-            composable(route = "PermissionPolicy") { PermissionPolicy() }
-            composable(route = "MTEPolicy") { MTEPolicy() }
-            composable(route = "NearbyStreamingPolicy") { NearbyStreamingPolicy() }
-            composable(route = "LockTaskMode") { LockTaskMode(navCtrl) }
-            composable(route = "CaCert") { CaCert() }
-            composable(route = "SecurityLogs") { SecurityLogs() }
-            composable(route = "DisableAccountManagement") { DisableAccountManagement() }
-            composable(route = "SystemUpdatePolicy") { SysUpdatePolicy() }
-            composable(route = "InstallSystemUpdate") { InstallSystemUpdate() }
-            composable(route = "WipeData") { WipeData() }
-            composable(route = "FRP") { FactoryResetProtection() }
-        }
-    }
-}
-
-@SuppressLint("NewApi")
-@Composable
-private fun Home(navCtrl: NavHostController, scrollState: ScrollState) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -194,63 +156,58 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState) {
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
     var dialog by remember { mutableIntStateOf(0) }
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
-        Text(
-            text = stringResource(R.string.system),
-            style = typography.headlineLarge,
-            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 16.dp)
-        )
+    MyScaffold(R.string.system, 0.dp, navCtrl) {
         if(deviceOwner || profileOwner) {
-            SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Switches") }
+            FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { navCtrl.navigate("SystemOptions") }
         }
-        SubPageItem(R.string.keyguard, "", R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("Keyguard") }
+        FunctionItem(R.string.keyguard, icon = R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("Keyguard") }
+        if(VERSION.SDK_INT >= 24 && deviceOwner && !dhizuku)
+            FunctionItem(R.string.hardware_monitor, icon = R.drawable.memory_fill0) { navCtrl.navigate("HardwareMonitor") }
         if(VERSION.SDK_INT >= 24 && deviceOwner) {
-            SubPageItem(R.string.reboot, "", R.drawable.restart_alt_fill0) { dialog = 1 }
+            FunctionItem(R.string.reboot, icon = R.drawable.restart_alt_fill0) { dialog = 1 }
         }
         if(deviceOwner && ((VERSION.SDK_INT >= 28 && dpm.isAffiliatedUser) || VERSION.SDK_INT >= 24)) {
-            SubPageItem(R.string.bug_report, "", R.drawable.bug_report_fill0) { dialog = 2 }
+            FunctionItem(R.string.bug_report, icon = R.drawable.bug_report_fill0) { dialog = 2 }
         }
         if(VERSION.SDK_INT >= 28 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            SubPageItem(R.string.change_time, "", R.drawable.schedule_fill0) { navCtrl.navigate("EditTime") }
-            SubPageItem(R.string.change_timezone, "", R.drawable.schedule_fill0) { navCtrl.navigate("EditTimeZone") }
+            FunctionItem(R.string.change_time, icon = R.drawable.schedule_fill0) { navCtrl.navigate("ChangeTime") }
+            FunctionItem(R.string.change_timezone, icon = R.drawable.schedule_fill0) { navCtrl.navigate("ChangeTimeZone") }
         }
         if(VERSION.SDK_INT >= 23 && (deviceOwner || profileOwner)) {
-            SubPageItem(R.string.permission_policy, "", R.drawable.key_fill0) { navCtrl.navigate("PermissionPolicy") }
+            FunctionItem(R.string.permission_policy, icon = R.drawable.key_fill0) { navCtrl.navigate("PermissionPolicy") }
         }
         if(VERSION.SDK_INT >= 34 && deviceOwner) {
-            SubPageItem(R.string.mte_policy, "", R.drawable.memory_fill0) { navCtrl.navigate("MTEPolicy") }
+            FunctionItem(R.string.mte_policy, icon = R.drawable.memory_fill0) { navCtrl.navigate("MTEPolicy") }
         }
         if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) {
-            SubPageItem(R.string.nearby_streaming_policy, "", R.drawable.share_fill0) { navCtrl.navigate("NearbyStreamingPolicy") }
+            FunctionItem(R.string.nearby_streaming_policy, icon = R.drawable.share_fill0) { navCtrl.navigate("NearbyStreamingPolicy") }
         }
         if(VERSION.SDK_INT >= 28 && deviceOwner) {
-            SubPageItem(R.string.lock_task_mode, "", R.drawable.lock_fill0) { navCtrl.navigate("LockTaskMode") }
+            FunctionItem(R.string.lock_task_mode, icon = R.drawable.lock_fill0) { navCtrl.navigate("LockTaskMode") }
         }
         if(deviceOwner || profileOwner) {
-            SubPageItem(R.string.ca_cert, "", R.drawable.license_fill0) { navCtrl.navigate("CaCert") }
+            FunctionItem(R.string.ca_cert, icon = R.drawable.license_fill0) { navCtrl.navigate("CACert") }
         }
         if(VERSION.SDK_INT >= 26 && !dhizuku && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            SubPageItem(R.string.security_logs, "", R.drawable.description_fill0) { navCtrl.navigate("SecurityLogs") }
+            FunctionItem(R.string.security_logging, icon = R.drawable.description_fill0) { navCtrl.navigate("SecurityLogging") }
         }
         if(deviceOwner || profileOwner) {
-            SubPageItem(R.string.disable_account_management, "", R.drawable.account_circle_fill0) { navCtrl.navigate("DisableAccountManagement") }
+            FunctionItem(R.string.disable_account_management, icon = R.drawable.account_circle_fill0) { navCtrl.navigate("DisableAccountManagement") }
         }
         if(VERSION.SDK_INT >= 23 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            SubPageItem(R.string.system_update_policy, "", R.drawable.system_update_fill0) { navCtrl.navigate("SystemUpdatePolicy") }
+            FunctionItem(R.string.system_update_policy, icon = R.drawable.system_update_fill0) { navCtrl.navigate("SystemUpdatePolicy") }
         }
         if(VERSION.SDK_INT >= 29 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            SubPageItem(R.string.install_system_update, "", R.drawable.system_update_fill0) { navCtrl.navigate("InstallSystemUpdate") }
+            FunctionItem(R.string.install_system_update, icon = R.drawable.system_update_fill0) { navCtrl.navigate("InstallSystemUpdate") }
         }
         if(VERSION.SDK_INT >= 30 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            SubPageItem(R.string.frp_policy, "", R.drawable.device_reset_fill0) { navCtrl.navigate("FRP") }
+            FunctionItem(R.string.frp_policy, icon = R.drawable.device_reset_fill0) { navCtrl.navigate("FRPPolicy") }
         }
         if(dangerousFeatures && context.isDeviceAdmin && !(VERSION.SDK_INT >= 24 && profileOwner && dpm.isManagedProfile(receiver))) {
-            SubPageItem(R.string.wipe_data, "", R.drawable.device_reset_fill0) { navCtrl.navigate("WipeData") }
+            FunctionItem(R.string.wipe_data, icon = R.drawable.device_reset_fill0) { navCtrl.navigate("WipeData") }
         }
-        Spacer(Modifier.padding(vertical = 30.dp))
-        LaunchedEffect(Unit) { fileUriFlow.value = Uri.parse("") }
     }
-    if(dialog != 0) AlertDialog(
+    if(dialog != 0 &&VERSION.SDK_INT >= 24) AlertDialog(
         onDismissRequest = { dialog = 0 },
         title = { Text(stringResource(if(dialog == 1) R.string.reboot else R.string.bug_report)) },
         text = { Text(stringResource(if(dialog == 1) R.string.info_reboot else R.string.confirm_bug_report)) },
@@ -265,8 +222,7 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState) {
                     if(dialog == 1) {
                         dpm.reboot(receiver)
                     } else {
-                        val result = dpm.requestBugreport(receiver)
-                        Toast.makeText(context, if(result) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+                        context.showOperationResultToast(dpm.requestBugreport(receiver))
                     }
                     dialog = 0
                 }
@@ -279,7 +235,7 @@ private fun Home(navCtrl: NavHostController, scrollState: ScrollState) {
 }
 
 @Composable
-private fun Switches() {
+fun SystemOptions(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -287,64 +243,64 @@ private fun Switches() {
     val profileOwner = context.isProfileOwner
     val um = context.getSystemService(Context.USER_SERVICE) as UserManager
     var dialog by remember { mutableIntStateOf(0) }
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 5.dp))
+    MyScaffold(R.string.options, 0.dp, navCtrl) {
         if(deviceOwner || profileOwner) {
-            SwitchItem(R.string.disable_cam,"", R.drawable.photo_camera_fill0,
-                { dpm.getCameraDisabled(null) }, { dpm.setCameraDisabled(receiver,it) }
+            SwitchItem(R.string.disable_cam, icon = R.drawable.photo_camera_fill0,
+                getState = { dpm.getCameraDisabled(null) }, onCheckedChange = { dpm.setCameraDisabled(receiver,it) }
             )
         }
         if(deviceOwner || profileOwner) {
-            SwitchItem(R.string.disable_screen_capture, "", R.drawable.screenshot_fill0,
-                { dpm.getScreenCaptureDisabled(null) }, { dpm.setScreenCaptureDisabled(receiver,it) }
+            SwitchItem(R.string.disable_screen_capture, icon = R.drawable.screenshot_fill0,
+                getState = { dpm.getScreenCaptureDisabled(null) }, onCheckedChange = { dpm.setScreenCaptureDisabled(receiver,it) }
             )
         }
         if(VERSION.SDK_INT >= 34 && (deviceOwner || (profileOwner && dpm.isAffiliatedUser))) {
-            SwitchItem(R.string.disable_status_bar, "", R.drawable.notifications_fill0,
-                { dpm.isStatusBarDisabled}, { dpm.setStatusBarDisabled(receiver,it) }
+            SwitchItem(R.string.disable_status_bar, icon = R.drawable.notifications_fill0,
+                getState = { dpm.isStatusBarDisabled}, onCheckedChange = { dpm.setStatusBarDisabled(receiver,it) }
             )
         }
         if(deviceOwner || (VERSION.SDK_INT >= 23 && profileOwner && um.isSystemUser) || dpm.isOrgProfile(receiver)) {
             if(VERSION.SDK_INT >= 30) {
-                SwitchItem(R.string.auto_time, "", R.drawable.schedule_fill0,
-                    { dpm.getAutoTimeEnabled(receiver) }, { dpm.setAutoTimeEnabled(receiver,it) }
+                SwitchItem(R.string.auto_time, icon = R.drawable.schedule_fill0,
+                    getState = { dpm.getAutoTimeEnabled(receiver) }, onCheckedChange = { dpm.setAutoTimeEnabled(receiver,it) }
                 )
-                SwitchItem(R.string.auto_timezone, "", R.drawable.globe_fill0,
-                    { dpm.getAutoTimeZoneEnabled(receiver) }, { dpm.setAutoTimeZoneEnabled(receiver,it) }
+                SwitchItem(R.string.auto_timezone, icon = R.drawable.globe_fill0,
+                    getState = { dpm.getAutoTimeZoneEnabled(receiver) }, onCheckedChange = { dpm.setAutoTimeZoneEnabled(receiver,it) }
                 )
-            }else{
-                SwitchItem(R.string.require_auto_time, "", R.drawable.schedule_fill0, { dpm.autoTimeRequired}, { dpm.setAutoTimeRequired(receiver,it) }, padding = false)
+            } else {
+                SwitchItem(R.string.require_auto_time, icon = R.drawable.schedule_fill0,
+                    getState = { dpm.autoTimeRequired}, onCheckedChange = { dpm.setAutoTimeRequired(receiver,it) }, padding = false)
             }
         }
         if(deviceOwner || (profileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && !dpm.isManagedProfile(receiver))))) {
-            SwitchItem(R.string.master_mute, "", R.drawable.volume_up_fill0,
-                { dpm.isMasterVolumeMuted(receiver) }, { dpm.setMasterVolumeMuted(receiver,it) }
+            SwitchItem(R.string.master_mute, icon = R.drawable.volume_up_fill0,
+                getState = { dpm.isMasterVolumeMuted(receiver) }, onCheckedChange = { dpm.setMasterVolumeMuted(receiver,it) }
             )
         }
         if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
-            SwitchItem(R.string.backup_service, "", R.drawable.backup_fill0,
-                { dpm.isBackupServiceEnabled(receiver) }, { dpm.setBackupServiceEnabled(receiver,it) },
+            SwitchItem(R.string.backup_service, icon = R.drawable.backup_fill0,
+                getState = { dpm.isBackupServiceEnabled(receiver) }, onCheckedChange = { dpm.setBackupServiceEnabled(receiver,it) },
                 onClickBlank = { dialog = 1 }
             )
         }
         if(VERSION.SDK_INT >= 24 && profileOwner && dpm.isManagedProfile(receiver)) {
-            SwitchItem(R.string.disable_bt_contact_share, "", R.drawable.account_circle_fill0,
-                { dpm.getBluetoothContactSharingDisabled(receiver) }, { dpm.setBluetoothContactSharingDisabled(receiver,it) },
+            SwitchItem(R.string.disable_bt_contact_share, icon = R.drawable.account_circle_fill0,
+                getState = { dpm.getBluetoothContactSharingDisabled(receiver) },
+                onCheckedChange = { dpm.setBluetoothContactSharingDisabled(receiver,it) }
             )
         }
         if(VERSION.SDK_INT >= 30 && deviceOwner) {
-            SwitchItem(R.string.common_criteria_mode , "",R.drawable.security_fill0,
-                { dpm.isCommonCriteriaModeEnabled(receiver) }, { dpm.setCommonCriteriaModeEnabled(receiver,it) },
+            SwitchItem(R.string.common_criteria_mode , icon =R.drawable.security_fill0,
+                getState = { dpm.isCommonCriteriaModeEnabled(receiver) }, onCheckedChange = { dpm.setCommonCriteriaModeEnabled(receiver,it) },
                 onClickBlank = { dialog = 2 }
             )
         }
         if(VERSION.SDK_INT >= 31 && (deviceOwner || dpm.isOrgProfile(receiver)) && dpm.canUsbDataSignalingBeDisabled()) {
             SwitchItem(
-                R.string.disable_usb_signal, "", R.drawable.usb_fill0, { !dpm.isUsbDataSignalingEnabled },
-                { dpm.isUsbDataSignalingEnabled = !it },
+                R.string.disable_usb_signal, icon = R.drawable.usb_fill0, getState = { !dpm.isUsbDataSignalingEnabled },
+                onCheckedChange = { dpm.isUsbDataSignalingEnabled = !it },
             )
         }
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
     if(dialog != 0) AlertDialog(
         text = {
@@ -364,34 +320,27 @@ private fun Switches() {
 }
 
 @Composable
-private fun Keyguard() {
+fun Keyguard(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
+    MyScaffold(R.string.keyguard, 8.dp, navCtrl) {
         if(VERSION.SDK_INT >= 23) {
-            Text(text = stringResource(R.string.keyguard), style = typography.headlineLarge)
-            Spacer(Modifier.padding(vertical = 5.dp))
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Button(
-                    onClick = {
-                        Toast.makeText(context, if(dpm.setKeyguardDisabled(receiver,true)) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
-                    },
+                    onClick = { context.showOperationResultToast(dpm.setKeyguardDisabled(receiver, true)) },
                     enabled = deviceOwner || (VERSION.SDK_INT >= 28 && profileOwner && dpm.isAffiliatedUser),
                     modifier = Modifier.fillMaxWidth(0.49F)
                 ) {
                     Text(stringResource(R.string.disable))
                 }
                 Button(
-                    onClick = {
-                        Toast.makeText(context, if(dpm.setKeyguardDisabled(receiver,false)) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
-                    },
+                    onClick = { context.showOperationResultToast(dpm.setKeyguardDisabled(receiver, false)) },
                     enabled = deviceOwner || (VERSION.SDK_INT >= 28 && profileOwner && dpm.isAffiliatedUser),
                     modifier = Modifier.fillMaxWidth(0.96F)
                 ) {
@@ -401,15 +350,14 @@ private fun Keyguard() {
             InfoCard(R.string.info_disable_keyguard)
             Spacer(Modifier.padding(vertical = 12.dp))
         }
-        Text(text = stringResource(R.string.lock_now), style = typography.headlineLarge)
+        if(VERSION.SDK_INT >= 23) Text(text = stringResource(R.string.lock_now), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 2.dp))
         var flag by remember { mutableIntStateOf(0) }
         if(VERSION.SDK_INT >= 26 && profileOwner && dpm.isManagedProfile(receiver)) {
             CheckBoxItem(
-                R.string.evict_credential_encryptoon_key,
-                flag == FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY,
-                { flag = if(flag==0) {1}else{0} }
-            )
+                R.string.evict_credential_encryption_key,
+                flag and FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY != 0
+            ) { flag = flag xor FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY }
             Spacer(Modifier.padding(vertical = 2.dp))
         }
         Button(
@@ -424,57 +372,211 @@ private fun Keyguard() {
         if(VERSION.SDK_INT >= 26 && profileOwner && dpm.isManagedProfile(receiver)) {
             InfoCard(R.string.info_evict_credential_encryption_key)
         }
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
-@SuppressLint("NewApi")
+@OptIn(ExperimentalMaterial3Api::class)
+@RequiresApi(24)
 @Composable
-private fun EditTime() {
+fun HardwareMonitor(navCtrl: NavHostController) {
+    val context = LocalContext.current
+    val hpm = context.getSystemService(HardwarePropertiesManager::class.java)
+    var refreshInterval by remember { mutableFloatStateOf(1F) }
+    val refreshIntervalMs = (refreshInterval * 1000).roundToLong()
+    val temperatures = remember { mutableStateMapOf<Int, List<Float>>() }
+    val tempTypeMap = mapOf(
+        HardwarePropertiesManager.DEVICE_TEMPERATURE_CPU to R.string.cpu_temp,
+        HardwarePropertiesManager.DEVICE_TEMPERATURE_GPU to R.string.gpu_temp,
+        HardwarePropertiesManager.DEVICE_TEMPERATURE_BATTERY to R.string.battery_temp,
+        HardwarePropertiesManager.DEVICE_TEMPERATURE_SKIN to R.string.skin_temp
+    )
+    val cpuUsages = remember { mutableStateListOf<Pair<Long, Long>>() }
+    val fanSpeeds = remember { mutableStateListOf<Float>() }
+    fun refresh() {
+        cpuUsages.clear()
+        cpuUsages.addAll(hpm.cpuUsages.map { it.active to it.total })
+        temperatures.clear()
+        tempTypeMap.forEach {
+            temperatures += it.key to hpm.getDeviceTemperatures(it.key, HardwarePropertiesManager.TEMPERATURE_CURRENT).toList()
+        }
+        fanSpeeds.clear()
+        fanSpeeds.addAll(hpm.fanSpeeds.toList())
+    }
+    LaunchedEffect(Unit) {
+        while(true) {
+            refresh()
+            delay(refreshIntervalMs)
+        }
+    }
+    MyScaffold(R.string.hardware_monitor, 8.dp, navCtrl, false) {
+        Text(stringResource(R.string.refresh_interval), style = typography.titleLarge, modifier = Modifier.padding(vertical = 4.dp))
+        Slider(refreshInterval, { refreshInterval = it }, valueRange = 0.5F..2F, steps = 14)
+        Text("${refreshIntervalMs}ms")
+        Spacer(Modifier.padding(vertical = 10.dp))
+        temperatures.forEach { tempMapItem ->
+            Text(stringResource(tempTypeMap[tempMapItem.key]!!), style = typography.titleLarge, modifier = Modifier.padding(vertical = 4.dp))
+            if(tempMapItem.value.isEmpty()) {
+                Text(stringResource(R.string.unsupported))
+            } else {
+                tempMapItem.value.forEachIndexed { index, temp ->
+                    Row(modifier = Modifier.padding(vertical = 4.dp)) {
+                        Text(index.toString(), style = typography.titleMedium, modifier = Modifier.padding(start = 8.dp, end = 12.dp))
+                        Text(if(temp == HardwarePropertiesManager.UNDEFINED_TEMPERATURE) stringResource(R.string.undefined) else temp.toString())
+                    }
+                }
+            }
+            Spacer(Modifier.padding(vertical = 10.dp))
+        }
+        Text(stringResource(R.string.cpu_usages), style = typography.titleLarge, modifier = Modifier.padding(vertical = 4.dp))
+        if(cpuUsages.isEmpty()) {
+            Text(stringResource(R.string.unsupported))
+        } else {
+            cpuUsages.forEachIndexed { index, usage ->
+                Row(modifier = Modifier.padding(vertical = 4.dp)) {
+                    Text(index.toString(), style = typography.titleMedium, modifier = Modifier.padding(start = 8.dp, end = 12.dp))
+                    Column {
+                        Text(stringResource(R.string.active) + ": " + usage.first + "ms")
+                        Text(stringResource(R.string.total) + ": " + usage.second + "ms")
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Text(stringResource(R.string.fan_speeds), style = typography.titleLarge, modifier = Modifier.padding(vertical = 4.dp))
+        if(fanSpeeds.isEmpty()) {
+            Text(stringResource(R.string.unsupported))
+        } else {
+            fanSpeeds.forEachIndexed { index, speed ->
+                Row(modifier = Modifier.padding(vertical = 4.dp)) {
+                    Text(index.toString(), style = typography.titleMedium, modifier = Modifier.padding(start = 8.dp, end = 12.dp))
+                    Text("$speed RPM")
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@RequiresApi(28)
+@Composable
+fun ChangeTime(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    var inputTime by remember { mutableStateOf("") }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.change_time), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        OutlinedTextField(
-            value = inputTime,
-            label = { Text(stringResource(R.string.time_unit_ms)) },
-            onValueChange = { inputTime = it },
-            supportingText = { Text(stringResource(R.string.info_change_time)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(Modifier.padding(vertical = 5.dp))
+    val coroutine = rememberCoroutineScope()
+    val pagerState = rememberPagerState { 2 }
+    var manualInput by remember { mutableStateOf(false) }
+    var inputTime by remember { mutableStateOf("")}
+    var picker by remember { mutableIntStateOf(0) } //0:None, 1:DatePicker, 2:TimePicker
+    val datePickerState = rememberDatePickerState()
+    val timePickerState = rememberTimePickerState()
+    val dateInteractionSource = remember { MutableInteractionSource() }
+    val timeInteractionSource = remember { MutableInteractionSource() }
+    if(dateInteractionSource.collectIsPressedAsState().value) picker = 1
+    if(timeInteractionSource.collectIsPressedAsState().value) picker = 2
+    val isInputLegal = (manualInput && (try { inputTime.toLong() } catch(_: Exception) { -1 }) >= 0) ||
+            (!manualInput && datePickerState.selectedDateMillis != null)
+    MyScaffold(R.string.change_time, 8.dp, navCtrl) {
+        SingleChoiceSegmentedButtonRow(
+            modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+        ) {
+            SegmentedButton(
+                selected = !manualInput, shape = SegmentedButtonDefaults.itemShape(0, 2),
+                onClick = {
+                    manualInput = false
+                    coroutine.launch {
+                        pagerState.animateScrollToPage(0)
+                    }
+                }
+            ) {
+                Text(stringResource(R.string.selector))
+            }
+            SegmentedButton(
+                selected = manualInput, shape = SegmentedButtonDefaults.itemShape(1, 2),
+                onClick = {
+                    manualInput = true
+                    coroutine.launch {
+                        pagerState.animateScrollToPage(1)
+                    }
+                }
+            ) {
+                Text(stringResource(R.string.manually_input))
+            }
+        }
+        HorizontalPager(
+            state = pagerState, modifier = Modifier.height(140.dp).padding(top = 4.dp),
+            verticalAlignment = Alignment.Top
+        ) { page ->
+            if(page == 0) Column {
+                OutlinedTextField(
+                    value = datePickerState.selectedDateMillis?.humanReadableDate ?: "",
+                    onValueChange = {}, readOnly = true,
+                    label = { Text(stringResource(R.string.date)) },
+                    interactionSource = dateInteractionSource,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = timePickerState.hour.toString() + ":" + timePickerState.minute.toString(),
+                    onValueChange = {}, readOnly = true,
+                    label = { Text(stringResource(R.string.time)) },
+                    interactionSource = timeInteractionSource,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            if(page == 1) OutlinedTextField(
+                value = inputTime,
+                label = { Text(stringResource(R.string.time_unit_ms)) },
+                onValueChange = { inputTime = it },
+                supportingText = { Text(stringResource(R.string.info_change_time)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
         Button(
-            onClick = { dpm.setTime(receiver, inputTime.toLong()) },
+            onClick = {
+                val timeMillis = if(manualInput) inputTime.toLong()
+                    else datePickerState.selectedDateMillis!! + timePickerState.hour * 3600000 + timePickerState.minute * 60000
+                context.showOperationResultToast(dpm.setTime(receiver, timeMillis))
+            },
             modifier = Modifier.fillMaxWidth(),
-            enabled = inputTime != ""
+            enabled = isInputLegal
         ) {
             Text(stringResource(R.string.apply))
         }
     }
+    if(picker == 1) DatePickerDialog(
+        confirmButton = {
+            TextButton(onClick = { picker = 0; focusMgr.clearFocus() } ) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        onDismissRequest = { picker = 0; focusMgr.clearFocus() }
+    ) {
+        DatePicker(datePickerState)
+    }
+    if(picker == 2) AlertDialog(
+        text = { TimePicker(timePickerState) },
+        confirmButton = {
+            TextButton(onClick = { picker = 0; focusMgr.clearFocus() } ) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        onDismissRequest = { picker = 0; focusMgr.clearFocus() }
+    )
 }
-@SuppressLint("NewApi")
+
+@RequiresApi(28)
 @Composable
-private fun EditTimeZone() {
+fun ChangeTimeZone(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
     val receiver = context.getReceiver()
     var inputTimezone by remember { mutableStateOf("") }
     var dialog by remember { mutableStateOf(false) }
-    Column(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.change_timezone), style = typography.headlineLarge, modifier = Modifier.align(Alignment.Start))
-        Spacer(Modifier.padding(vertical = 5.dp))
+    MyScaffold(R.string.change_timezone, 8.dp, navCtrl) {
         OutlinedTextField(
             value = inputTimezone,
             label = { Text(stringResource(R.string.timezone_id)) },
@@ -491,17 +593,14 @@ private fun EditTimeZone() {
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                val result = dpm.setTimeZone(receiver, inputTimezone)
-                Toast.makeText(context, if(result) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(dpm.setTimeZone(receiver, inputTimezone))
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.apply))
         }
         Spacer(Modifier.padding(vertical = 10.dp))
-        Information {
-            Text(stringResource(R.string.disable_auto_time_zone_before_set))
-        }
+        InfoCard(R.string.disable_auto_time_zone_before_set)
     }
     if(dialog) AlertDialog(
         text = {
@@ -531,25 +630,22 @@ private fun EditTimeZone() {
     )
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(23)
 @Composable
-private fun PermissionPolicy() {
+fun PermissionPolicy(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        var selectedPolicy by remember { mutableIntStateOf(dpm.getPermissionPolicy(receiver)) }
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.permission_policy), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        RadioButtonItem(R.string.default_stringres, selectedPolicy == PERMISSION_POLICY_PROMPT, { selectedPolicy = PERMISSION_POLICY_PROMPT })
-        RadioButtonItem(R.string.auto_grant, selectedPolicy == PERMISSION_POLICY_AUTO_GRANT, { selectedPolicy = PERMISSION_POLICY_AUTO_GRANT })
-        RadioButtonItem(R.string.auto_deny, selectedPolicy == PERMISSION_POLICY_AUTO_DENY, { selectedPolicy = PERMISSION_POLICY_AUTO_DENY })
+    var selectedPolicy by remember { mutableIntStateOf(dpm.getPermissionPolicy(receiver)) }
+    MyScaffold(R.string.permission_policy, 8.dp, navCtrl) {
+        RadioButtonItem(R.string.default_stringres, selectedPolicy == PERMISSION_POLICY_PROMPT) { selectedPolicy = PERMISSION_POLICY_PROMPT }
+        RadioButtonItem(R.string.auto_grant, selectedPolicy == PERMISSION_POLICY_AUTO_GRANT) { selectedPolicy = PERMISSION_POLICY_AUTO_GRANT }
+        RadioButtonItem(R.string.auto_deny, selectedPolicy == PERMISSION_POLICY_AUTO_DENY) { selectedPolicy = PERMISSION_POLICY_AUTO_DENY }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 dpm.setPermissionPolicy(receiver,selectedPolicy)
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -559,36 +655,21 @@ private fun PermissionPolicy() {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(34)
 @Composable
-private fun MTEPolicy() {
+fun MTEPolicy(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.mte_policy), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        var selectedMtePolicy by remember { mutableIntStateOf(dpm.mtePolicy) }
-        RadioButtonItem(
-            R.string.decide_by_user,
-            selectedMtePolicy == MTE_NOT_CONTROLLED_BY_POLICY,
-            { selectedMtePolicy = MTE_NOT_CONTROLLED_BY_POLICY }
-        )
-        RadioButtonItem(
-            R.string.enabled,
-            selectedMtePolicy == MTE_ENABLED,
-            { selectedMtePolicy = MTE_ENABLED }
-        )
-        RadioButtonItem(
-            R.string.disabled,
-            selectedMtePolicy == MTE_DISABLED,
-            { selectedMtePolicy = MTE_DISABLED }
-        )
+    var selectedMtePolicy by remember { mutableIntStateOf(dpm.mtePolicy) }
+    MyScaffold(R.string.mte_policy, 8.dp, navCtrl) {
+        RadioButtonItem(R.string.decide_by_user, selectedMtePolicy == MTE_NOT_CONTROLLED_BY_POLICY) { selectedMtePolicy = MTE_NOT_CONTROLLED_BY_POLICY }
+        RadioButtonItem(R.string.enabled, selectedMtePolicy == MTE_ENABLED) { selectedMtePolicy = MTE_ENABLED }
+        RadioButtonItem(R.string.disabled, selectedMtePolicy == MTE_DISABLED) { selectedMtePolicy = MTE_DISABLED }
         Button(
             onClick = {
                 try {
                     dpm.mtePolicy = selectedMtePolicy
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    context.showOperationResultToast(true)
                 } catch(_: java.lang.UnsupportedOperationException) {
                     Toast.makeText(context, R.string.unsupported, Toast.LENGTH_SHORT).show()
                 }
@@ -599,45 +680,34 @@ private fun MTEPolicy() {
             Text(stringResource(R.string.apply))
         }
         InfoCard(R.string.info_mte_policy)
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(31)
 @Composable
-private fun NearbyStreamingPolicy() {
+fun NearbyStreamingPolicy(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        var appPolicy by remember { mutableIntStateOf(dpm.nearbyAppStreamingPolicy) }
+    var appPolicy by remember { mutableIntStateOf(dpm.nearbyAppStreamingPolicy) }
+    MyScaffold(R.string.nearby_streaming_policy, 8.dp, navCtrl) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.nearby_app_streaming), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 3.dp))
         RadioButtonItem(
             R.string.decide_by_user,
-            appPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY,
-            { appPolicy = NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY }
-        )
-        RadioButtonItem(
-            R.string.enabled,
-            appPolicy == NEARBY_STREAMING_ENABLED,
-            { appPolicy = NEARBY_STREAMING_ENABLED }
-        )
-        RadioButtonItem(
-            R.string.disabled,
-            appPolicy == NEARBY_STREAMING_DISABLED,
-            { appPolicy = NEARBY_STREAMING_DISABLED }
-        )
+            appPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY
+        ) { appPolicy = NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY }
+        RadioButtonItem(R.string.enabled, appPolicy == NEARBY_STREAMING_ENABLED) { appPolicy = NEARBY_STREAMING_ENABLED }
+        RadioButtonItem(R.string.disabled, appPolicy == NEARBY_STREAMING_DISABLED) { appPolicy = NEARBY_STREAMING_DISABLED }
         RadioButtonItem(
             R.string.enable_if_secure_enough,
-            appPolicy == NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY,
-            { appPolicy = NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY }
-        )
+            appPolicy == NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY
+        ) { appPolicy = NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY }
         Spacer(Modifier.padding(vertical = 3.dp))
         Button(
             onClick = {
                 dpm.nearbyAppStreamingPolicy = appPolicy
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -650,306 +720,316 @@ private fun NearbyStreamingPolicy() {
         Spacer(Modifier.padding(vertical = 3.dp))
         RadioButtonItem(
             R.string.decide_by_user,
-            notificationPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY,
-            { notificationPolicy = NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY }
-        )
+            notificationPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY
+        ) { notificationPolicy = NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY }
         RadioButtonItem(
             R.string.enabled,
-            notificationPolicy == NEARBY_STREAMING_ENABLED,
-            { notificationPolicy = NEARBY_STREAMING_ENABLED }
-        )
+            notificationPolicy == NEARBY_STREAMING_ENABLED
+        ) { notificationPolicy = NEARBY_STREAMING_ENABLED }
         RadioButtonItem(
             R.string.disabled,
-            notificationPolicy == NEARBY_STREAMING_DISABLED,
-            { notificationPolicy = NEARBY_STREAMING_DISABLED }
-        )
+            notificationPolicy == NEARBY_STREAMING_DISABLED
+        ) { notificationPolicy = NEARBY_STREAMING_DISABLED }
         RadioButtonItem(
             R.string.enable_if_secure_enough,
-            notificationPolicy == NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY,
-            { notificationPolicy = NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY }
-        )
+            notificationPolicy == NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY
+        ) { notificationPolicy = NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY }
         Spacer(Modifier.padding(vertical = 3.dp))
         Button(
             onClick = {
                 dpm.nearbyNotificationStreamingPolicy = notificationPolicy
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.apply))
         }
         InfoCard(R.string.info_nearby_notification_streaming_policy)
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
-@SuppressLint("NewApi")
+@OptIn(ExperimentalMaterial3Api::class)
+@RequiresApi(28)
 @Composable
-private fun LockTaskMode(navCtrl: NavHostController) {
+fun LockTaskMode(navCtrl: NavHostController, vm: MyViewModel) {
+    val coroutine = rememberCoroutineScope()
+    val pagerState = rememberPagerState { 3 }
+    var tabIndex by remember { mutableIntStateOf(0) }
+    tabIndex = pagerState.targetPage
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.lock_task_mode)) },
+                navigationIcon = { NavIcon { navCtrl.navigateUp() } }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier.fillMaxSize().padding(paddingValues)
+        ) {
+            TabRow(tabIndex) {
+                Tab(
+                    tabIndex == 0, onClick = { coroutine.launch { pagerState.animateScrollToPage(0) } },
+                    text = { Text(stringResource(R.string.start)) }
+                )
+                Tab(
+                    tabIndex == 1, onClick = { coroutine.launch { pagerState.animateScrollToPage(1) } },
+                    text = { Text(stringResource(R.string.applications)) }
+                )
+                Tab(
+                    tabIndex == 2, onClick = { coroutine.launch { pagerState.animateScrollToPage(2) } },
+                    text = { Text(stringResource(R.string.features)) }
+                )
+            }
+            HorizontalPager(pagerState, verticalAlignment = Alignment.Top) { page ->
+                Column(
+                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 8.dp, end = 8.dp, bottom = 80.dp)
+                ) {
+                    if(page == 0) StartLockTaskMode(navCtrl, vm)
+                    else if(page == 1) LockTaskPackages(navCtrl, vm)
+                    else LockTaskFeatures()
+                }
+            }
+        }
+    }
+}
+
+@RequiresApi(28)
+@Composable
+private fun ColumnScope.StartLockTaskMode(navCtrl: NavHostController, vm: MyViewModel) {
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    val focusMgr = LocalFocusManager.current
+    var startLockTaskApp by rememberSaveable { mutableStateOf("") }
+    var startLockTaskActivity by rememberSaveable { mutableStateOf("") }
+    var specifyActivity by rememberSaveable { mutableStateOf(false) }
+    val updatePackage by vm.selectedPackage.collectAsStateWithLifecycle()
+    LaunchedEffect(updatePackage) {
+        if(updatePackage != "") {
+            startLockTaskApp = updatePackage
+            vm.selectedPackage.value = ""
+        }
+    }
+    Spacer(Modifier.padding(vertical = 5.dp))
+    OutlinedTextField(
+        value = startLockTaskApp,
+        onValueChange = { startLockTaskApp = it },
+        label = { Text(stringResource(R.string.package_name)) },
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+        trailingIcon = {
+            Icon(painter = painterResource(R.drawable.list_fill0), contentDescription = null,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(50))
+                    .clickable(onClick = {
+                        focusMgr.clearFocus()
+                        navCtrl.navigate("PackageSelector")
+                    })
+                    .padding(3.dp))
+        },
+        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
+    )
+    CheckBoxItem(R.string.specify_activity, specifyActivity) { specifyActivity = it }
+    AnimatedVisibility(specifyActivity) {
+        OutlinedTextField(
+            value = startLockTaskActivity,
+            onValueChange = { startLockTaskActivity = it },
+            label = { Text("Activity") },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+            modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)
+        )
+    }
+    Button(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = {
+            if(!NotificationUtils.checkPermission(context)) return@Button
+            if(!dpm.isLockTaskPermitted(startLockTaskApp)) {
+                Toast.makeText(context, R.string.app_not_allowed, Toast.LENGTH_SHORT).show()
+                return@Button
+            }
+            val options = ActivityOptions.makeBasic().setLockTaskEnabled(true)
+            val packageManager = context.packageManager
+            val launchIntent = if(specifyActivity) Intent().setComponent(ComponentName(startLockTaskApp, startLockTaskActivity))
+            else packageManager.getLaunchIntentForPackage(startLockTaskApp)
+            if (launchIntent != null) {
+                context.startActivity(launchIntent, options.toBundle())
+            } else {
+                Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
+            }
+        }
+    ) {
+        Text(stringResource(R.string.start))
+    }
+    InfoCard(R.string.info_start_lock_task_mode)
+}
+
+@RequiresApi(26)
+@Composable
+private fun ColumnScope.LockTaskPackages(navCtrl: NavHostController, vm: MyViewModel) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    val coroutine = rememberCoroutineScope()
-    var appSelectorRequest by rememberSaveable { mutableIntStateOf(0) }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        val lockTaskFeatures = remember { mutableStateListOf<Int>() }
-        var custom by rememberSaveable { mutableStateOf(false) }
-        val refreshFeature = {
-            var calculate = dpm.getLockTaskFeatures(receiver)
-            lockTaskFeatures.clear()
-            if(calculate != 0) {
-                var sq = 10
-                while(sq >= 1) {
-                    val current = (2).toDouble().pow(sq.toDouble()).toInt()
-                    if(calculate - current >= 0) {
-                        lockTaskFeatures += current
-                        calculate -= current
-                    }
-                    sq--
-                }
-                if(calculate - 1 >= 0) { lockTaskFeatures += 1 }
-                custom = true
-            }else{
-                custom = false
-            }
+    val lockTaskPackages = remember { mutableStateListOf<String>() }
+    var input by rememberSaveable { mutableStateOf("") }
+    val updatePackage by vm.selectedPackage.collectAsStateWithLifecycle()
+    LaunchedEffect(updatePackage) {
+        if(updatePackage != "") {
+            input = updatePackage
+            vm.selectedPackage.value = ""
         }
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.lock_task_feature), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        LaunchedEffect(Unit) { refreshFeature() }
-        RadioButtonItem(R.string.disable_all, !custom, { custom = false })
-        RadioButtonItem(R.string.custom, custom, { custom = true })
-        AnimatedVisibility(custom) {
-            Column {
-                CheckBoxItem(
-                    R.string.ltf_sys_info,
-                    LOCK_TASK_FEATURE_SYSTEM_INFO in lockTaskFeatures,
-                    { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_SYSTEM_INFO) }
-                )
-                CheckBoxItem(
-                    R.string.ltf_notifications,
-                    LOCK_TASK_FEATURE_NOTIFICATIONS in lockTaskFeatures,
-                    { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_NOTIFICATIONS) }
-                )
-                CheckBoxItem(
-                    R.string.ltf_home,
-                    LOCK_TASK_FEATURE_HOME in lockTaskFeatures,
-                    { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_HOME) }
-                )
-                CheckBoxItem(
-                    R.string.ltf_overview,
-                    LOCK_TASK_FEATURE_OVERVIEW in lockTaskFeatures,
-                    { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_OVERVIEW) }
-                )
-                CheckBoxItem(
-                    R.string.ltf_global_actions,
-                    LOCK_TASK_FEATURE_GLOBAL_ACTIONS in lockTaskFeatures,
-                    { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_GLOBAL_ACTIONS) }
-                )
-                CheckBoxItem(
-                    R.string.ltf_keyguard,
-                    LOCK_TASK_FEATURE_KEYGUARD in lockTaskFeatures,
-                    { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_KEYGUARD) }
-                )
-                if(VERSION.SDK_INT >= 30) {
-                    CheckBoxItem(
-                        R.string.ltf_block_activity_start_in_task,
-                        LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK in lockTaskFeatures,
-                        { lockTaskFeatures.toggle(it, LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK) }
-                    )
-                }
-            }
+    }
+    LaunchedEffect(Unit) { lockTaskPackages.addAll(dpm.getLockTaskPackages(receiver)) }
+    Spacer(Modifier.padding(vertical = 5.dp))
+    if(lockTaskPackages.isEmpty()) Text(text = stringResource(R.string.none))
+    for(i in lockTaskPackages) {
+        ListItem(i) { lockTaskPackages -= i }
+    }
+    OutlinedTextField(
+        value = input,
+        onValueChange = { input = it },
+        label = { Text(stringResource(R.string.package_name)) },
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+        trailingIcon = {
+            Icon(painter = painterResource(R.drawable.list_fill0), contentDescription = null,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(50))
+                    .clickable(onClick = {
+                        focusMgr.clearFocus()
+                        navCtrl.navigate("PackageSelector")
+                    })
+                    .padding(3.dp))
+        },
+        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
+    )
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Button(
+            onClick = {
+                lockTaskPackages.add(input)
+                input = ""
+            },
+            modifier = Modifier.fillMaxWidth(0.49F)
+        ) {
+            Text(stringResource(R.string.add))
         }
         Button(
-            modifier = Modifier.fillMaxWidth(),
             onClick = {
-                var result = 0
-                if(custom) {
-                    lockTaskFeatures.forEach { result += it }
-                }
-                try {
-                    dpm.setLockTaskFeatures(receiver,result)
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                } catch (e: IllegalArgumentException) {
-                    AlertDialog.Builder(context)
-                        .setTitle("Error")
-                        .setMessage(e.message)
-                        .setPositiveButton(R.string.confirm) { dialog, _ -> dialog.dismiss() }
-                        .show()
-                }
-                refreshFeature()
-            }
+                lockTaskPackages.remove(input)
+                input = ""
+            },
+            modifier = Modifier.fillMaxWidth(0.96F)
         ) {
-            Text(stringResource(R.string.apply))
+            Text(stringResource(R.string.remove))
         }
+    }
+    Button(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = {
+            dpm.setLockTaskPackages(receiver, lockTaskPackages.toTypedArray())
+            context.showOperationResultToast(true)
+        }
+    ) {
+        Text(stringResource(R.string.apply))
+    }
+    InfoCard(R.string.info_lock_task_packages)
+}
 
-        val lockTaskPackages = remember { mutableStateListOf<String>() }
-        var inputLockTaskPkg by rememberSaveable { mutableStateOf("") }
-        LaunchedEffect(Unit) { lockTaskPackages.addAll(dpm.getLockTaskPackages(receiver)) }
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.lock_task_packages), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Column(modifier = Modifier.animateContentSize()) {
-            if(lockTaskPackages.isEmpty()) Text(text = stringResource(R.string.none))
-            for(i in lockTaskPackages) {
-                ListItem(i) { lockTaskPackages -= i }
+@RequiresApi(28)
+@Composable
+private fun ColumnScope.LockTaskFeatures() {
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
+    var flags by remember { mutableIntStateOf(0) }
+    var custom by rememberSaveable { mutableStateOf(false) }
+    fun refresh() {
+        flags = dpm.getLockTaskFeatures(receiver)
+        custom = flags != 0
+    }
+    LaunchedEffect(Unit) { refresh() }
+    Spacer(Modifier.padding(vertical = 5.dp))
+    RadioButtonItem(R.string.disable_all, !custom) { custom = false }
+    RadioButtonItem(R.string.custom, custom) { custom = true }
+    AnimatedVisibility(custom) {
+        Column {
+            CheckBoxItem(
+                R.string.ltf_sys_info,
+                flags and LOCK_TASK_FEATURE_SYSTEM_INFO != 0
+            ) { flags = flags xor LOCK_TASK_FEATURE_SYSTEM_INFO }
+            CheckBoxItem(
+                R.string.ltf_notifications,
+                flags and LOCK_TASK_FEATURE_NOTIFICATIONS != 0
+            ) { flags = flags xor LOCK_TASK_FEATURE_NOTIFICATIONS }
+            CheckBoxItem(
+                R.string.ltf_home,
+                flags and LOCK_TASK_FEATURE_HOME != 0
+            ) { flags = flags xor LOCK_TASK_FEATURE_HOME }
+            CheckBoxItem(
+                R.string.ltf_overview,
+                flags and LOCK_TASK_FEATURE_OVERVIEW != 0
+            ) { flags = flags xor LOCK_TASK_FEATURE_OVERVIEW }
+            CheckBoxItem(
+                R.string.ltf_global_actions,
+                flags and LOCK_TASK_FEATURE_GLOBAL_ACTIONS != 0
+            ) { flags = flags xor LOCK_TASK_FEATURE_GLOBAL_ACTIONS }
+            CheckBoxItem(
+                R.string.ltf_keyguard,
+                flags and LOCK_TASK_FEATURE_KEYGUARD != 0
+            ) { flags = flags xor LOCK_TASK_FEATURE_KEYGUARD }
+            if(VERSION.SDK_INT >= 30) {
+                CheckBoxItem(
+                    R.string.ltf_block_activity_start_in_task,
+                    flags and LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK != 0
+                ) { flags = flags xor LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK }
             }
         }
-        OutlinedTextField(
-            value = inputLockTaskPkg,
-            onValueChange = { inputLockTaskPkg = it },
-            label = { Text(stringResource(R.string.package_name)) },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            trailingIcon = {
-                Icon(painter = painterResource(R.drawable.checklist_fill0), contentDescription = null,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50))
-                        .clickable(onClick = {
-                            focusMgr.clearFocus()
-                            appSelectorRequest = 1
-                            navCtrl.navigate("PackageSelector")
-                        })
-                        .padding(3.dp))
-            },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
-        )
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Button(
-                onClick = {
-                    lockTaskPackages.add(inputLockTaskPkg)
-                    inputLockTaskPkg = ""
-                },
-                modifier = Modifier.fillMaxWidth(0.49F)
-            ) {
-                Text(stringResource(R.string.add))
+    }
+    Button(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = {
+            try {
+                dpm.setLockTaskFeatures(receiver, flags)
+                context.showOperationResultToast(true)
+            } catch (e: IllegalArgumentException) {
+                AlertDialog.Builder(context)
+                    .setTitle(R.string.error)
+                    .setMessage(e.message)
+                    .setPositiveButton(R.string.confirm) { dialog, _ -> dialog.dismiss() }
+                    .show()
             }
-            Button(
-                onClick = {
-                    lockTaskPackages.remove(inputLockTaskPkg)
-                    inputLockTaskPkg = ""
-                },
-                modifier = Modifier.fillMaxWidth(0.96F)
-            ) {
-                Text(stringResource(R.string.remove))
-            }
+            refresh()
         }
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = {
-                dpm.setLockTaskPackages(receiver, lockTaskPackages.toTypedArray())
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-            }
-        ) {
-            Text(stringResource(R.string.apply))
-        }
-        InfoCard(R.string.info_lock_task_packages)
-        var startLockTaskApp by rememberSaveable { mutableStateOf("") }
-        var startLockTaskActivity by rememberSaveable { mutableStateOf("") }
-        var specifyActivity by rememberSaveable { mutableStateOf(false) }
-        val updatePackage by selectedPackage.collectAsState()
-        LaunchedEffect(updatePackage) {
-            if(updatePackage != "") {
-                if(appSelectorRequest == 1) inputLockTaskPkg = updatePackage else startLockTaskApp = updatePackage
-                selectedPackage.value = ""
-            }
-        }
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.start_lock_task_mode), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        OutlinedTextField(
-            value = startLockTaskApp,
-            onValueChange = { startLockTaskApp = it },
-            label = { Text(stringResource(R.string.package_name)) },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            trailingIcon = {
-                Icon(painter = painterResource(R.drawable.checklist_fill0), contentDescription = null,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50))
-                        .clickable(onClick = {
-                            focusMgr.clearFocus()
-                            appSelectorRequest = 2
-                            navCtrl.navigate("PackageSelector")
-                        })
-                        .padding(3.dp))
-            },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
-        )
-        CheckBoxItem(R.string.specify_activity, specifyActivity, { specifyActivity = it })
-        AnimatedVisibility(specifyActivity) {
-            OutlinedTextField(
-                value = startLockTaskActivity,
-                onValueChange = { startLockTaskActivity = it },
-                label = { Text("Activity") },
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)
-            )
-        }
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = {
-                if(!dpm.getLockTaskPackages(receiver).contains(startLockTaskApp)) {
-                    Toast.makeText(context, R.string.app_not_allowed, Toast.LENGTH_SHORT).show()
-                    return@Button
-                }
-                val options = ActivityOptions.makeBasic().setLockTaskEnabled(true)
-                val packageManager = context.packageManager
-                val launchIntent = if(specifyActivity) Intent().setComponent(ComponentName(startLockTaskApp, startLockTaskActivity))
-                    else packageManager.getLaunchIntentForPackage(startLockTaskApp)
-                if (launchIntent != null) {
-                    coroutine.launch {
-                        prepareForNotification(context) {
-                            sendStopLockTaskNotification(context)
-                            context.startActivity(launchIntent, options.toBundle())
-                            Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                } else {
-                    Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
-                }
-            }
-        ) {
-            Text(stringResource(R.string.start))
-        }
-        InfoCard(R.string.info_start_lock_task_mode)
-        Spacer(Modifier.padding(vertical = 30.dp))
+    ) {
+        Text(stringResource(R.string.apply))
     }
 }
 
 @Composable
-private fun CaCert() {
+fun CACert(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val uri by fileUriFlow.collectAsState()
     var exist by remember { mutableStateOf(false) }
-    val uriPath = uri.path ?: ""
-    var caCertByteArray by remember { mutableStateOf(byteArrayOf()) }
-    LaunchedEffect(uri) {
-        if(uri != Uri.parse("")) {
+    var fileUri by remember { mutableStateOf<Uri?>(null) }
+    var caCertByteArray by remember { mutableStateOf(ByteArray(100000)) }
+    val getFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        result.data?.data?.let { uri ->
             uriToStream(context, uri) {
                 val array = it.readBytes()
                 caCertByteArray = if(array.size < 10000) {
                     array
-                }else{
+                } else {
                     byteArrayOf()
                 }
             }
-            exist = dpm.hasCaCertInstalled(receiver, caCertByteArray)
         }
     }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.ca_cert), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        AnimatedVisibility(uriPath != "") {
-            Text(text = uriPath)
-        }
+    MyScaffold(R.string.ca_cert, 8.dp, navCtrl) {
         Text(
-            text = if(uriPath == "") { stringResource(R.string.please_select_ca_cert) } else { stringResource(R.string.cert_installed, exist) },
+            text = if(fileUri == null) { stringResource(R.string.please_select_ca_cert) }
+                else { stringResource(R.string.cert_installed, stringResource(exist.yesOrNo)) },
             modifier = Modifier.animateContentSize()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -958,18 +1038,17 @@ private fun CaCert() {
                 val caCertIntent = Intent(Intent.ACTION_GET_CONTENT)
                 caCertIntent.setType("*/*")
                 caCertIntent.addCategory(Intent.CATEGORY_OPENABLE)
-                getFile.launch(caCertIntent)
+                getFileLauncher.launch(caCertIntent)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.select_ca_cert))
         }
-        AnimatedVisibility(uriPath != "") {
+        AnimatedVisibility(fileUri != null) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Button(
                     onClick = {
-                        val result = dpm.installCaCert(receiver, caCertByteArray)
-                        Toast.makeText(context, if(result) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+                        context.showOperationResultToast(dpm.installCaCert(receiver, caCertByteArray))
                         exist = dpm.hasCaCertInstalled(receiver, caCertByteArray)
                     },
                     modifier = Modifier.fillMaxWidth(0.49F)
@@ -978,12 +1057,11 @@ private fun CaCert() {
                 }
                 Button(
                     onClick = {
-                        if(exist) {
-                            dpm.uninstallCaCert(receiver, caCertByteArray)
-                            exist = dpm.hasCaCertInstalled(receiver, caCertByteArray)
-                            Toast.makeText(context, if(exist) R.string.failed else R.string.success, Toast.LENGTH_SHORT).show()
-                        } else { Toast.makeText(context, R.string.not_exist, Toast.LENGTH_SHORT).show() }
+                        dpm.uninstallCaCert(receiver, caCertByteArray)
+                        exist = dpm.hasCaCertInstalled(receiver, caCertByteArray)
+                        context.showOperationResultToast(true)
                     },
+                    enabled = exist,
                     modifier = Modifier.fillMaxWidth(0.96F)
                 ) {
                     Text(stringResource(R.string.uninstall))
@@ -993,7 +1071,7 @@ private fun CaCert() {
         Button(
             onClick = {
                 dpm.uninstallAllUserCaCerts(receiver)
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -1002,22 +1080,39 @@ private fun CaCert() {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(24)
 @Composable
-private fun SecurityLogs() {
+fun SecurityLogging(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val logFile = context.filesDir.resolve("SecurityLogs.json")
     var fileSize by remember { mutableLongStateOf(0) }
-    LaunchedEffect(Unit) {
-        fileSize = logFile.length()
+    LaunchedEffect(Unit) { fileSize = logFile.length() }
+    var preRebootSecurityLogs by remember { mutableStateOf(byteArrayOf()) }
+    val exportPreRebootSecurityLogs = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        result.data?.data?.let { uri ->
+            context.contentResolver.openOutputStream(uri)?.use { outStream ->
+                preRebootSecurityLogs.inputStream().copyTo(outStream)
+            }
+        }
     }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.security_logs), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        SwitchItem(R.string.enable, "", null, { dpm.isSecurityLoggingEnabled(receiver) }, { dpm.setSecurityLoggingEnabled(receiver, it) }, padding = false)
+    val exportSecurityLogs = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        result.data?.data?.let { uri ->
+            context.contentResolver.openOutputStream(uri)?.use { outStream ->
+                outStream.write("[".toByteArray())
+                logFile.inputStream().use { it.copyTo(outStream) }
+                outStream.write("]".toByteArray())
+                context.showOperationResultToast(true)
+            }
+        }
+    }
+    MyScaffold(R.string.security_logging, 8.dp, navCtrl) {
+        SwitchItem(
+            R.string.enable,
+            getState = { dpm.isSecurityLoggingEnabled(receiver) }, onCheckedChange = { dpm.setSecurityLoggingEnabled(receiver, it) },
+            padding = false
+        )
         Text(stringResource(R.string.log_file_size_is, formatFileSize(fileSize)))
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
             Button(
@@ -1026,8 +1121,7 @@ private fun SecurityLogs() {
                     intent.addCategory(Intent.CATEGORY_OPENABLE)
                     intent.setType("application/json")
                     intent.putExtra(Intent.EXTRA_TITLE, "SecurityLogs.json")
-                    exportFilePath.value = logFile.path
-                    exportFile.launch(intent)
+                    exportSecurityLogs.launch(intent)
                 },
                 enabled = fileSize > 0,
                 modifier = Modifier.fillMaxWidth(0.49F)
@@ -1054,28 +1148,16 @@ private fun SecurityLogs() {
                     Toast.makeText(context, R.string.no_logs, Toast.LENGTH_SHORT).show()
                     return@Button
                 } else {
-                    val securityEvents = buildJsonArray {
-                        logs.forEach { event ->
-                            addJsonObject {
-                                put("time_nanos", event.timeNanos)
-                                put("tag", event.tag)
-                                if(VERSION.SDK_INT >= 28) put("level", event.logLevel)
-                                if(VERSION.SDK_INT >= 28) put("id", event.id)
-                                parseSecurityEventData(event).let { if(it != null) put("data", it) }
-                            }
-                        }
-                    }
-                    val preRebootSecurityLogs = context.filesDir.resolve("PreRebootSecurityLogs")
-                    preRebootSecurityLogs.outputStream().use {
-                        val json = Json { ignoreUnknownKeys = true; explicitNulls = false }
-                        json.encodeToStream(securityEvents, it)
-                    }
+                    val outputStream = ByteArrayOutputStream()
+                    outputStream.write("[".encodeToByteArray())
+                    processSecurityLogs(logs, outputStream)
+                    outputStream.write("]".encodeToByteArray())
+                    preRebootSecurityLogs = outputStream.toByteArray()
                     val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
                     intent.addCategory(Intent.CATEGORY_OPENABLE)
                     intent.setType("application/json")
                     intent.putExtra(Intent.EXTRA_TITLE, "PreRebootSecurityLogs.json")
-                    exportFilePath.value = preRebootSecurityLogs.path
-                    exportFile.launch(intent)
+                    exportPreRebootSecurityLogs.launch(intent)
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -1087,21 +1169,18 @@ private fun SecurityLogs() {
 }
 
 @Composable
-private fun DisableAccountManagement() {
+fun DisableAccountManagement(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.disable_account_management), style = typography.headlineLarge)
+    MyScaffold(R.string.disable_account_management, 8.dp, navCtrl) {
         val list = remember { mutableStateListOf<String>() }
         fun refreshList() {
             list.clear()
             dpm.accountTypesWithManagementDisabled?.forEach { list += it }
         }
         LaunchedEffect(Unit) { refreshList() }
-        Spacer(Modifier.padding(vertical = 5.dp))
         Column(modifier = Modifier.animateContentSize()) {
             if(list.isEmpty()) Text(stringResource(R.string.none))
             for(i in list) {
@@ -1137,9 +1216,9 @@ private fun DisableAccountManagement() {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(30)
 @Composable
-fun FactoryResetProtection() {
+fun FRPPolicy(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
@@ -1165,12 +1244,7 @@ fun FactoryResetProtection() {
             }
         }
     }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.frp_policy), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 3.dp))
-        Text(stringResource(R.string.factory_reset_protection_policy))
-        Spacer(Modifier.padding(vertical = 5.dp))
+    MyScaffold(R.string.frp_policy, 8.dp, navCtrl) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 8.dp)
@@ -1180,7 +1254,7 @@ fun FactoryResetProtection() {
         }
         AnimatedVisibility(usePolicy) {
             Column {
-                CheckBoxItem(R.string.enable_frp, enabled, { enabled = it })
+                CheckBoxItem(R.string.enable_frp, enabled) { enabled = it }
                 Text(stringResource(R.string.account_list_is))
                 Column(modifier = Modifier.animateContentSize()) {
                     if(accountList.isEmpty()) Text(stringResource(R.string.none))
@@ -1231,43 +1305,26 @@ fun FactoryResetProtection() {
         if(unsupported) Text(stringResource(R.string.frp_policy_not_supported))
         Spacer(Modifier.padding(vertical = 6.dp))
         InfoCard(R.string.info_frp_policy)
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
-@SuppressLint("NewApi")
 @Composable
-private fun WipeData() {
+fun WipeData(navCtrl: NavHostController) {
     val context = LocalContext.current
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
+    var flag by remember { mutableIntStateOf(0) }
     var warning by remember { mutableStateOf(false) }
     var wipeDevice by remember { mutableStateOf(false) }
-    var externalStorage by remember { mutableStateOf(false) }
-    var protectionData by remember { mutableStateOf(false) }
-    var euicc by remember { mutableStateOf(false) }
     var silent by remember { mutableStateOf(false) }
     var reason by remember { mutableStateOf("") }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(
-            text = stringResource(R.string.wipe_data),
-            style = typography.headlineLarge,
-            modifier = Modifier.padding(6.dp),color = colorScheme.error
-        )
-        Spacer(Modifier.padding(vertical = 5.dp))
-        CheckBoxItem(
-            R.string.wipe_external_storage,
-            externalStorage, { externalStorage = it }
-        )
-        if(VERSION.SDK_INT >= 22 && context.isDeviceOwner) {
-            CheckBoxItem(R.string.wipe_reset_protection_data,
-                protectionData, { protectionData = it }
-            )
-        }
-        if(VERSION.SDK_INT >= 28) { CheckBoxItem(R.string.wipe_euicc, euicc, { euicc = it }) }
-        if(VERSION.SDK_INT >= 29) { CheckBoxItem(R.string.wipe_silently, silent, { silent = it }) }
+    MyScaffold(R.string.wipe_data, 8.dp, navCtrl) {
+        CheckBoxItem(R.string.wipe_external_storage, flag and WIPE_EXTERNAL_STORAGE != 0) { flag = flag xor WIPE_EXTERNAL_STORAGE }
+        if(VERSION.SDK_INT >= 22 && context.isDeviceOwner) CheckBoxItem(
+            R.string.wipe_reset_protection_data, flag and WIPE_RESET_PROTECTION_DATA != 0) { flag = flag xor WIPE_RESET_PROTECTION_DATA }
+        if(VERSION.SDK_INT >= 28) CheckBoxItem(R.string.wipe_euicc, flag and WIPE_EUICC != 0) { flag = flag xor WIPE_EUICC }
+        if(VERSION.SDK_INT >= 29) CheckBoxItem(R.string.wipe_silently, silent) { silent = it }
         AnimatedVisibility(!silent && VERSION.SDK_INT >= 28) {
             OutlinedTextField(
                 value = reason, onValueChange = { reason = it },
@@ -1302,7 +1359,6 @@ private fun WipeData() {
                 Text("WipeDevice")
             }
         }
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
     if(warning) {
         LaunchedEffect(Unit) { silent = reason == "" }
@@ -1312,7 +1368,10 @@ private fun WipeData() {
             },
             text = {
                 Text(
-                    text = stringResource(if(userManager.isSystemUser) R.string.wipe_data_warning else R.string.info_wipe_data_in_managed_user),
+                    text = stringResource(
+                        if(VERSION.SDK_INT >= 23 && userManager.isSystemUser) R.string.wipe_data_warning
+                        else R.string.info_wipe_data_in_managed_user
+                    ),
                     color = colorScheme.error
                 )
             },
@@ -1328,12 +1387,8 @@ private fun WipeData() {
                 val timerText = if(timer > 0) "(${timer}s)" else ""
                 TextButton(
                     onClick = {
-                        var flag = 0
-                        if(externalStorage) { flag += WIPE_EXTERNAL_STORAGE }
-                        if(protectionData && VERSION.SDK_INT >= 22) { flag += WIPE_RESET_PROTECTION_DATA }
-                        if(euicc && VERSION.SDK_INT >= 28) { flag += WIPE_EUICC }
-                        if(silent && VERSION.SDK_INT >= 29) { flag += WIPE_SILENTLY }
-                        if(wipeDevice) {
+                        if(silent && VERSION.SDK_INT >= 29) { flag = flag or WIPE_SILENTLY }
+                        if(wipeDevice && VERSION.SDK_INT >= 34) {
                             dpm.wipeDevice(flag)
                         } else {
                             if(VERSION.SDK_INT >= 28 && reason != "") {
@@ -1360,31 +1415,28 @@ private fun WipeData() {
 }
 
 @Composable
-private fun SysUpdatePolicy() {
+fun SystemUpdatePolicy(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
+    MyScaffold(R.string.system_update_policy, 8.dp, navCtrl) {
         if(VERSION.SDK_INT >= 23) {
             Column {
                 var selectedPolicy by remember { mutableStateOf(dpm.systemUpdatePolicy?.policyType) }
-                Text(text = stringResource(R.string.system_update_policy), style = typography.headlineLarge)
-                Spacer(Modifier.padding(vertical = 5.dp))
                 RadioButtonItem(
                     R.string.system_update_policy_automatic,
-                    selectedPolicy == TYPE_INSTALL_AUTOMATIC, { selectedPolicy = TYPE_INSTALL_AUTOMATIC }
-                )
+                    selectedPolicy == TYPE_INSTALL_AUTOMATIC
+                ) { selectedPolicy = TYPE_INSTALL_AUTOMATIC }
                 RadioButtonItem(
                     R.string.system_update_policy_install_windowed,
-                    selectedPolicy == TYPE_INSTALL_WINDOWED, { selectedPolicy = TYPE_INSTALL_WINDOWED }
-                )
+                    selectedPolicy == TYPE_INSTALL_WINDOWED
+                ) { selectedPolicy = TYPE_INSTALL_WINDOWED }
                 RadioButtonItem(
                     R.string.system_update_policy_postpone,
-                    selectedPolicy == TYPE_POSTPONE, { selectedPolicy = TYPE_POSTPONE }
-                )
-                RadioButtonItem(R.string.none, selectedPolicy == null, { selectedPolicy = null })
+                    selectedPolicy == TYPE_POSTPONE
+                ) { selectedPolicy = TYPE_POSTPONE }
+                RadioButtonItem(R.string.none, selectedPolicy == null) { selectedPolicy = null }
                 var windowedPolicyStart by remember { mutableStateOf("") }
                 var windowedPolicyEnd by remember { mutableStateOf("") }
                 AnimatedVisibility(selectedPolicy == 2) {
@@ -1422,7 +1474,7 @@ private fun SysUpdatePolicy() {
                                 else -> null
                             }
                         dpm.setSystemUpdatePolicy(receiver,policy)
-                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                        context.showOperationResultToast(true)
                     },
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
                 ) {
@@ -1447,13 +1499,12 @@ private fun SysUpdatePolicy() {
                 }
             }
         }
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
 @SuppressLint("NewApi")
 @Composable
-fun InstallSystemUpdate() {
+fun InstallSystemUpdate(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -1471,30 +1522,30 @@ fun InstallSystemUpdate() {
             Toast.makeText(context, errMsg, Toast.LENGTH_SHORT).show()
         }
     }
-    val uri by fileUriFlow.collectAsState()
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.install_system_update), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
+    var uri by remember { mutableStateOf<Uri?>(null) }
+    val getFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        uri = it.data?.data
+    }
+    MyScaffold(R.string.install_system_update, 8.dp, navCtrl) {
         Button(
             onClick = {
                 val intent = Intent(Intent.ACTION_GET_CONTENT)
                 intent.setType("application/zip")
                 intent.addCategory(Intent.CATEGORY_OPENABLE)
-                getFile.launch(intent)
+                getFileLauncher.launch(intent)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.select_ota_package))
         }
-        AnimatedVisibility(uri != Uri.parse("")) {
+        AnimatedVisibility(uri != null) {
             Button(
                 onClick = {
                     val executor = Executors.newCachedThreadPool()
                     try {
-                        dpm.installSystemUpdate(receiver, uri, executor, callback)
+                        dpm.installSystemUpdate(receiver, uri!!, executor, callback)
                         Toast.makeText(context, R.string.start_install_system_update, Toast.LENGTH_SHORT).show()
-                    }catch(e: Exception) {
+                    } catch(e: Exception) {
                         Toast.makeText(
                             context,
                             context.getString(R.string.install_system_update_failed) + e.cause.toString(),
@@ -1508,29 +1559,6 @@ fun InstallSystemUpdate() {
             }
         }
         Spacer(Modifier.padding(vertical = 10.dp))
-        Information {
-            Text(stringResource(R.string.auto_reboot_after_install_succeed))
-        }
-        Spacer(Modifier.padding(vertical = 30.dp))
+        InfoCard(R.string.auto_reboot_after_install_succeed)
     }
-}
-
-@SuppressLint("NewApi")
-private fun sendStopLockTaskNotification(context: Context) {
-    val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    if (VERSION.SDK_INT >= 26) {
-            val channel = NotificationChannel("LockTaskMode", context.getString(R.string.lock_task_mode), NotificationManager.IMPORTANCE_HIGH).apply {
-            description = "Notification channel for stop lock task mode"
-            setShowBadge(false)
-        }
-        nm.createNotificationChannel(channel)
-    }
-    val intent = Intent(context, StopLockTaskModeReceiver::class.java)
-    val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-    val builder = NotificationCompat.Builder(context, "LockTaskMode")
-        .setContentTitle(context.getText(R.string.lock_task_mode))
-        .setSmallIcon(R.drawable.lock_fill0)
-        .addAction(NotificationCompat.Action.Builder(R.drawable.lock_fill0, context.getText(R.string.stop), pendingIntent).build())
-        .setPriority(NotificationCompat.PRIORITY_HIGH)
-    nm.notify(1, builder.build())
 }

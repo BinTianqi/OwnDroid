@@ -1,14 +1,15 @@
 [versions]
-agp = "8.7.2"
+agp = "8.7.3"
 kotlin = "2.0.21"
 
-navigation-compose = "2.8.3"
-composeBom = "2024.10.01"
+navigation-compose = "2.8.5"
+composeBom = "2024.12.01"
 accompanist-drawablepainter = "0.35.0-alpha"
+accompanist-permissions = "0.37.0"
 shizuku = "13.1.5"
 biometric = "1.2.0-alpha05"
-fragment = "1.8.0-beta01"
-dhizuku = "2.5.2"
+fragment = "1.8.5"
+dhizuku = "2.5.3"
 hiddenApiBypass = "4.3"
 serialization = "1.7.3"
 
@@ -19,6 +20,7 @@ androidx-material3 = { module = "androidx.compose.material3:material3" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
 
 accompanist-drawablepainter = { module = "com.google.accompanist:accompanist-drawablepainter", version.ref = "accompanist-drawablepainter" }
+accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist-permissions" }
 androidx-biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
 
 shizuku-provider = { module = "dev.rikka.shizuku:provider", version.ref = "shizuku" }

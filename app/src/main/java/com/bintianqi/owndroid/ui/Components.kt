@@ -4,13 +4,17 @@ import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -18,13 +22,14 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.writeClipBoard
@@ -33,9 +38,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun SubPageItem(
+fun FunctionItem(
     @StringRes title: Int,
-    desc:String,
+    desc: String? = null,
     @DrawableRes icon: Int? = null,
     operation: () -> Unit
 ) {
@@ -48,8 +53,7 @@ fun SubPageItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         if(icon != null) Icon(
-            painter = painterResource(icon),
-            contentDescription = null,
+            painter = painterResource(icon), contentDescription = null,
             modifier = Modifier.padding(top = 1.dp, end = 20.dp).offset(x = (-2).dp)
         )
         Column {
@@ -58,7 +62,7 @@ fun SubPageItem(
                 style = typography.titleLarge,
                 modifier = Modifier.padding(bottom = if(zhCN) 2.dp else 0.dp)
             )
-            if(desc != "") { Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F)) }
+            if(desc != null) { Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F)) }
         }
     }
 }
@@ -77,36 +81,19 @@ fun NavIcon(operation: () -> Unit) {
 }
 
 @Composable
-fun Information(content: @Composable ()->Unit) {
-    Column(modifier = Modifier.fillMaxWidth().padding(start = 5.dp, top = 20.dp)) {
-        Icon(
-            painter = painterResource(R.drawable.info_fill0),
-            contentDescription = "info",
-            tint = colorScheme.onBackground.copy(alpha = 0.8F)
-        )
-        Spacer(Modifier.padding(vertical = 1.dp))
-        Column(modifier = Modifier.padding(start = 2.dp)) {
-            content()
-        }
-    }
-}
-
-@Composable
 fun RadioButtonItem(
     @StringRes text: Int,
     selected: Boolean,
-    operation: () -> Unit,
-    textColor: Color = colorScheme.onBackground
+    operation: () -> Unit
 ) {
-    RadioButtonItem(stringResource(text), selected, operation, textColor)
+    RadioButtonItem(stringResource(text), selected, operation)
 }
 
 @Composable
 fun RadioButtonItem(
     text: String,
     selected: Boolean,
-    operation: () -> Unit,
-    textColor: Color = colorScheme.onBackground
+    operation: () -> Unit
 ) {
     Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
         .fillMaxWidth()
@@ -114,7 +101,7 @@ fun RadioButtonItem(
         .clickable(onClick = operation)
     ) {
         RadioButton(selected = selected, onClick = operation)
-        Text(text = text, color = textColor, modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
+        Text(text = text, modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
     }
 }
 
@@ -122,8 +109,7 @@ fun RadioButtonItem(
 fun CheckBoxItem(
     @StringRes text: Int,
     checked: Boolean,
-    operation: (Boolean) -> Unit,
-    textColor: Color = colorScheme.onBackground
+    operation: (Boolean) -> Unit
 ) {
     Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
         .fillMaxWidth()
@@ -134,7 +120,7 @@ fun CheckBoxItem(
             checked = checked,
             onCheckedChange = operation
         )
-        Text(text = stringResource(text), color = textColor, modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
+        Text(text = stringResource(text), modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
     }
 }
 
@@ -142,26 +128,26 @@ fun CheckBoxItem(
 @Composable
 fun SwitchItem(
     @StringRes title: Int,
-    desc: String,
-    @DrawableRes icon: Int?,
-    getState: ()->Boolean,
+    desc: String? = null,
+    @DrawableRes icon: Int? = null,
+    getState: () -> Boolean,
     onCheckedChange: (Boolean)->Unit,
-    enable: Boolean = true,
+    enabled: Boolean = true,
     onClickBlank: (() -> Unit)? = null,
     padding: Boolean = true
 ) {
     var state by remember { mutableStateOf(getState()) }
-    SwitchItem(title, desc, icon, state, { onCheckedChange(it); state = getState() }, enable, onClickBlank, padding)
+    SwitchItem(title, desc, icon, state, { onCheckedChange(it); state = getState() }, enabled, onClickBlank, padding)
 }
 
 @Composable
 fun SwitchItem(
     @StringRes title: Int,
-    desc: String,
-    @DrawableRes icon: Int?,
+    desc: String? = null,
+    @DrawableRes icon: Int? = null,
     state: Boolean,
-    onCheckedChange: (Boolean)->Unit,
-    enable: Boolean = true,
+    onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean = true,
     onClickBlank: (() -> Unit)? = null,
     padding: Boolean = true
 ) {
@@ -182,35 +168,14 @@ fun SwitchItem(
             )
             Column(modifier = Modifier.padding(end = 60.dp, bottom = if(zhCN) 2.dp else 0.dp)) {
                 Text(text = stringResource(title), style = typography.titleLarge)
-                if(desc != "") {
-                    Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F))
-                }
+                if(desc != null) Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F))
             }
         }
         Switch(
             checked = state, onCheckedChange = { onCheckedChange(it) },
-            modifier = Modifier.align(Alignment.CenterEnd), enabled = enable
+            modifier = Modifier.align(Alignment.CenterEnd), enabled = enabled
         )
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TopBar(
-    backStackEntry: NavBackStackEntry?,
-    navCtrl: NavHostController,
-    localNavCtrl: NavHostController,
-    title: @Composable ()->Unit = {}
-) {
-    TopAppBar(
-        title = title,
-        navigationIcon = {
-            NavIcon{
-                if(backStackEntry?.destination?.route == "Home") { navCtrl.navigateUp() } else { localNavCtrl.navigateUp() }
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.background)
-    )
 }
 
 @Composable
@@ -287,6 +252,7 @@ fun ListItem(text: String, onDelete: () -> Unit) {
 fun InfoCard(@StringRes strID: Int) {
     Column(
         modifier = Modifier
+            .fillMaxWidth()
             .padding(vertical = 8.dp)
             .clip(RoundedCornerShape(10))
             .background(color = colorScheme.tertiaryContainer)
@@ -294,5 +260,69 @@ fun InfoCard(@StringRes strID: Int) {
     ) {
         Icon(imageVector = Icons.Outlined.Info, contentDescription = null, modifier = Modifier.padding(vertical = 4.dp))
         Text(stringResource(strID))
+    }
+}
+
+@Composable
+fun MyScaffold(
+    @StringRes title: Int,
+    horizonPadding: Dp,
+    navCtrl: NavHostController,
+    displayTitle: Boolean = true,
+    content: @Composable ColumnScope.() -> Unit
+) = MyScaffold(title, horizonPadding, { navCtrl.navigateUp() }, displayTitle, content)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MyScaffold(
+    @StringRes title: Int,
+    horizonPadding: Dp,
+    onNavIconClicked: () -> Unit,
+    displayTitle: Boolean,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    val scrollState = rememberScrollState()
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(title),
+                        modifier = if(displayTitle) Modifier.alpha((maxOf(scrollState.value-90,0)).toFloat()/50) else Modifier
+                    )
+                },
+                navigationIcon = { NavIcon (onNavIconClicked) }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = horizonPadding)
+                .verticalScroll(scrollState)
+                .padding(bottom = 80.dp)
+        ) {
+            if(displayTitle) Text(
+                text = stringResource(title),
+                style = typography.headlineLarge,
+                modifier = Modifier.padding(start = if(horizonPadding == 0.dp) 16.dp else 0.dp,top = 10.dp, bottom = 5.dp)
+            )
+            content()
+        }
+    }
+}
+
+@Composable
+fun UpOrDownTextFieldTrailingIconButton(active: Boolean, onClick: () -> Unit) {
+    val degrees by animateFloatAsState(if(active) 180F else 0F)
+    IconButton(
+        onClick = onClick,
+        modifier = Modifier.clip(RoundedCornerShape(50))
+    ) {
+        Icon(
+            imageVector = Icons.Default.ArrowDropDown, contentDescription = null,
+            modifier = Modifier.rotate(degrees)
+        )
     }
 }

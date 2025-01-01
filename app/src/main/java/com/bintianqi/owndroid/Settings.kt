@@ -4,28 +4,24 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build.VERSION
-import android.widget.Toast
+import androidx.biometric.BiometricManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -35,70 +31,40 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.core.content.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import com.bintianqi.owndroid.ui.Animations
-import com.bintianqi.owndroid.ui.SubPageItem
+import com.bintianqi.owndroid.ui.FunctionItem
+import com.bintianqi.owndroid.ui.InfoCard
+import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.SwitchItem
-import com.bintianqi.owndroid.ui.TopBar
 import java.security.SecureRandom
 
 @Composable
-fun AppSetting(navCtrl:NavHostController, vm: MyViewModel) {
-    val localNavCtrl = rememberNavController()
-    val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
-    Scaffold(
-        topBar = {
-            TopBar(backStackEntry, navCtrl, localNavCtrl)
-        }
-    ) {
-        NavHost(
-            navController = localNavCtrl, startDestination = "Home",
-            enterTransition = Animations.navHostEnterTransition,
-            exitTransition = Animations.navHostExitTransition,
-            popEnterTransition = Animations.navHostPopEnterTransition,
-            popExitTransition = Animations.navHostPopExitTransition,
-            modifier = Modifier.padding(top = it.calculateTopPadding())
-        ) {
-            composable(route = "Home") { Home(localNavCtrl) }
-            composable(route = "Options") { Options() }
-            composable(route = "Theme") { ThemeSettings(vm) }
-            composable(route = "Auth") { AuthSettings() }
-            composable(route = "Automation") { Automation() }
-            composable(route = "About") { About() }
-        }
+fun Settings(navCtrl: NavHostController) {
+    MyScaffold(R.string.settings, 0.dp, navCtrl) {
+        FunctionItem(title = R.string.options, icon = R.drawable.tune_fill0) { navCtrl.navigate("Options") }
+        FunctionItem(title = R.string.appearance, icon = R.drawable.format_paint_fill0) { navCtrl.navigate("Appearance") }
+        FunctionItem(title = R.string.security, icon = R.drawable.lock_fill0) { navCtrl.navigate("AuthSettings") }
+        FunctionItem(title = R.string.api, icon = R.drawable.apps_fill0) { navCtrl.navigate("ApiSettings") }
+        FunctionItem(title = R.string.about, icon = R.drawable.info_fill0) { navCtrl.navigate("About") }
     }
 }
 
 @Composable
-private fun Home(navCtrl: NavHostController) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Options") }
-        SubPageItem(R.string.appearance, "", R.drawable.format_paint_fill0) { navCtrl.navigate("Theme") }
-        SubPageItem(R.string.security, "", R.drawable.lock_fill0) { navCtrl.navigate("Auth") }
-        SubPageItem(R.string.automation_api, "", R.drawable.apps_fill0) { navCtrl.navigate("Automation") }
-        SubPageItem(R.string.about, "", R.drawable.info_fill0) { navCtrl.navigate("About") }
-    }
-}
-
-@Composable
-private fun Options() {
+fun SettingsOptions(navCtrl: NavHostController) {
     val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 16.dp)) {
+    MyScaffold(R.string.options, 0.dp, navCtrl) {
         SwitchItem(
-            R.string.show_dangerous_features, "", R.drawable.warning_fill0,
-            { sharedPref.getBoolean("dangerous_features", false) },
-            { sharedPref.edit().putBoolean("dangerous_features", it).apply() }, padding = false
+            R.string.show_dangerous_features, icon = R.drawable.warning_fill0,
+            getState = { sharedPref.getBoolean("dangerous_features", false) },
+            onCheckedChange = { sharedPref.edit().putBoolean("dangerous_features", it).apply() }
         )
     }
 }
 
 @Composable
-private fun ThemeSettings(vm: MyViewModel) {
+fun Appearance(navCtrl: NavHostController, vm: MyViewModel) {
     val theme by vm.theme.collectAsStateWithLifecycle()
     var darkThemeMenu by remember { mutableStateOf(false) }
     val darkThemeTextID = when(theme.darkTheme) {
@@ -106,16 +72,12 @@ private fun ThemeSettings(vm: MyViewModel) {
         false -> R.string.off
         null -> R.string.follow_system
     }
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+    MyScaffold(R.string.appearance, 0.dp, navCtrl) {
         if(VERSION.SDK_INT >= 31) {
-            SwitchItem(
-                R.string.material_you_color, "", null,
-                theme.materialYou,
-                { vm.theme.value = theme.copy(materialYou = it) }
-            )
+            SwitchItem(R.string.material_you_color, state = theme.materialYou, onCheckedChange = { vm.theme.value = theme.copy(materialYou = it) })
         }
         Box {
-            SubPageItem(R.string.dark_theme, stringResource(darkThemeTextID)) { darkThemeMenu = true }
+            FunctionItem(R.string.dark_theme, stringResource(darkThemeTextID)) { darkThemeMenu = true }
             DropdownMenu(
                 expanded = darkThemeMenu, onDismissRequest = { darkThemeMenu = false },
                 offset = DpOffset(x = 25.dp, y = 0.dp)
@@ -144,103 +106,100 @@ private fun ThemeSettings(vm: MyViewModel) {
             }
         }
         AnimatedVisibility(theme.darkTheme == true || (theme.darkTheme == null && isSystemInDarkTheme())) {
-            SwitchItem(
-                R.string.black_theme, "", null,
-                theme.blackTheme,
-                { vm.theme.value = theme.copy(blackTheme = it) }
-            )
+            SwitchItem(R.string.black_theme, state = theme.blackTheme, onCheckedChange = { vm.theme.value = theme.copy(blackTheme = it) })
         }
     }
 }
 
 @Composable
-private fun AuthSettings() {
-    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    var auth by remember{ mutableStateOf(sharedPref.getBoolean("auth",false)) }
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 16.dp)) {
-        SwitchItem(
-            R.string.lock_owndroid, "", null, auth,
-            {
-                sharedPref.edit().putBoolean("auth", it).apply()
-                auth = sharedPref.getBoolean("auth", false)
-            }, padding = false
-        )
-        if(auth) {
-            SwitchItem(
-                R.string.enable_bio_auth, "", null,
-                { sharedPref.getBoolean("bio_auth", false) },
-                { sharedPref.edit().putBoolean("bio_auth", it).apply() }, padding = false
-            )
-            SwitchItem(
-                R.string.lock_in_background, stringResource(R.string.developing), null,
-                { sharedPref.getBoolean("lock_in_background", false) },
-                { sharedPref.edit().putBoolean("lock_in_background", it).apply() }, padding = false
-            )
-        }
-        SwitchItem(
-            R.string.protect_storage, "", null,
-            { sharedPref.getBoolean("protect_storage", false) },
-            { sharedPref.edit().putBoolean("protect_storage", it).apply() }, padding = false
-        )
-    }
-}
-
-@Composable
-private fun Automation() {
+fun AuthSettings(navCtrl: NavHostController) {
     val context = LocalContext.current
     val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.automation_api), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        var key by remember { mutableStateOf("") }
-        OutlinedTextField(
-            value = key, onValueChange = { key = it }, label = { Text("Key")},
-            modifier = Modifier.fillMaxWidth(),
-            trailingIcon = {
-                IconButton(
-                    onClick = {
-                        val charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-                        val sr = SecureRandom()
-                        key = (1..20).map { charset[sr.nextInt(charset.length)] }.joinToString("")
-                    }
-                ) {
-                    Icon(painter = painterResource(R.drawable.casino_fill0), contentDescription = "Random")
-                }
+    var auth by remember{ mutableStateOf(sharedPref.getBoolean("auth",false)) }
+    MyScaffold(R.string.security, 0.dp, navCtrl) {
+        SwitchItem(
+            R.string.lock_owndroid, state = auth,
+            onCheckedChange = {
+                sharedPref.edit().putBoolean("auth", it).apply()
+                auth = sharedPref.getBoolean("auth", false)
             }
         )
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = {
-                sharedPref.edit().putString("automation_key", key).apply()
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
-            },
-            enabled = key.length >= 20
-        ) {
-            Text(stringResource(R.string.apply))
+        if(auth) {
+            var bioAuth by remember { mutableIntStateOf(sharedPref.getInt("biometrics_auth", 0)) } // 0:Disabled, 1:Enabled 2:Force enabled
+            LaunchedEffect(Unit) {
+                val bioManager = BiometricManager.from(context)
+                if(bioManager.canAuthenticate(BiometricManager.Authenticators.DEVICE_CREDENTIAL) != BiometricManager.BIOMETRIC_SUCCESS) {
+                    bioAuth = 2
+                    sharedPref.edit().putInt("biometrics_auth", 2).apply()
+                }
+            }
+            SwitchItem(
+                R.string.enable_bio_auth, state = bioAuth != 0,
+                onCheckedChange = { bioAuth = if(it) 1 else 0; sharedPref.edit().putInt("biometrics_auth", bioAuth).apply() }, enabled = bioAuth != 2
+            )
+            SwitchItem(
+                R.string.lock_in_background,
+                getState = { sharedPref.getBoolean("lock_in_background", false) },
+                onCheckedChange = { sharedPref.edit().putBoolean("lock_in_background", it).apply() }
+            )
         }
-        SwitchItem(
-            R.string.automation_debug, "", null,
-            { sharedPref.getBoolean("automation_debug", false) },
-            { sharedPref.edit().putBoolean("automation_debug", it).apply() },
-            padding = false
-        )
     }
 }
 
 @Composable
-private fun About() {
+fun ApiSettings(navCtrl: NavHostController) {
+    val context = LocalContext.current
+    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    MyScaffold(R.string.api, 8.dp, navCtrl) {
+        var enabled by remember { mutableStateOf(sharedPref.getBoolean("enable_api", false)) }
+        LaunchedEffect(enabled) {
+            sharedPref.edit {
+                putBoolean("enable_api", enabled)
+                if(!enabled) remove("api_key")
+            }
+        }
+        SwitchItem(R.string.enable, state = enabled, onCheckedChange = { enabled = it }, padding = false)
+        if(enabled) {
+            var key by remember { mutableStateOf("") }
+            OutlinedTextField(
+                value = key, onValueChange = { key = it }, label = { Text(stringResource(R.string.api_key)) },
+                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp), readOnly = true,
+                trailingIcon = {
+                    IconButton(
+                        onClick = {
+                            val charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+                            val sr = SecureRandom()
+                            key = (1..20).map { charset[sr.nextInt(charset.length)] }.joinToString("")
+                        }
+                    ) {
+                        Icon(painter = painterResource(R.drawable.casino_fill0), contentDescription = "Random")
+                    }
+                }
+            )
+            Button(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                onClick = {
+                    sharedPref.edit().putString("api_key", key).apply()
+                    context.showOperationResultToast(true)
+                }
+            ) {
+                Text(stringResource(R.string.apply))
+            }
+            if(sharedPref.contains("api_key")) InfoCard(R.string.api_key_exist)
+        }
+    }
+}
+
+@Composable
+fun About(navCtrl: NavHostController) {
     val context = LocalContext.current
     val pkgInfo = context.packageManager.getPackageInfo(context.packageName,0)
     val verCode = pkgInfo.versionCode
     val verName = pkgInfo.versionName
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.about), style = typography.headlineLarge, modifier = Modifier.padding(start = 26.dp))
+    MyScaffold(R.string.about, 0.dp, navCtrl) {
+        Text(text = stringResource(R.string.app_name)+" v$verName ($verCode)", modifier = Modifier.padding(start = 16.dp))
         Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text = stringResource(R.string.app_name)+" v$verName ($verCode)", modifier = Modifier.padding(start = 26.dp))
-        Spacer(Modifier.padding(vertical = 5.dp))
-        SubPageItem(R.string.project_homepage, "GitHub", R.drawable.open_in_new) { shareLink(context, "https://github.com/BinTianqi/OwnDroid") }
+        FunctionItem(R.string.project_homepage, "GitHub", R.drawable.open_in_new) { shareLink(context, "https://github.com/BinTianqi/OwnDroid") }
     }
 }
 

@@ -44,7 +44,6 @@
     <string name="copy_command">Komutu Kopyala</string>
     <string name="package_name">Paket Adı</string>
     <string name="not_exist">Mevcut Değil</string>
-    <string name="unknown_status">Bilinmeyen Durum</string>
     <string name="copy">Kopyala</string>
     <string name="file_not_exist">Dosya Mevcut Değil</string>
     <string name="io_exception">G/Ç Hatası</string>
@@ -53,16 +52,23 @@
     <string name="allow_all">Tümünü İzin Ver</string>
     <string name="use_policy">Politika Kullan</string>
     <string name="account">Hesap</string>
-    <string name="warning">Warning</string> <!--TODO-->
-    <string name="delete">Delete</string> <!--TODO-->
-    <string name="yes">Yes</string> <!--TODO-->
-    <string name="no">No</string> <!--TODO-->
-    <string name="previous">Previous</string> <!--TODO-->
-    <string name="next">Next</string> <!--TODO-->
-    <string name="on">On</string> <!--TODO-->
-    <string name="off">Off</string> <!--TODO-->
-    <string name="alias">Alias</string> <!--TODO-->
-    <string name="unknown_error">Unknown error</string> <!--TODO-->
+    <!--TODO-->
+    <string name="warning">Warning</string>
+    <string name="delete">Delete</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="previous">Previous</string>
+    <string name="next">Next</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
+    <string name="alias">Alias</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="permission_denied">Permission denied</string>
+    <string name="error">Error</string>
+    <string name="status">Status</string>
+    <string name="edit">Edit</string>
+    <string name="overview">Overview</string>
+    <string name="features">Features</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Etkinleştirmek İçin Tıklayın</string>
@@ -92,8 +98,8 @@
     <string name="account_type">Hesap Türleri</string>
     <string name="transfer_ownership">Sahipliği Devret</string>
     <string name="target_component_name">Target component name</string> <!--TODO-->
-    <string name="device_owner_lock_screen_info">Ekran Kilidi Bilgisi</string>
-    <string name="support_msg">Destek Mesajı</string>
+    <string name="lock_screen_info">Ekran Kilidi Bilgisi</string>
+    <string name="support_messages">Destek Mesajı</string>
     <string name="short_support_msg">Kısa Mesaj</string>
     <string name="long_support_msg">Uzun Mesaj</string>
     <string name="transfer">Transfer</string>
@@ -111,19 +117,13 @@
     <string name="dhizuku_mode_disabled">Dhizuku mode disabled</string>
 
     <!--Shizuku-->
-    <string name="check_shizuku">İzni Kontrol Et</string>
     <string name="list_owners">Sahipleri Listele</string>
     <string name="list_users">List users</string> <!--TODO-->
     <string name="list_accounts">List accounts</string> <!--TODO-->
     <string name="shizuku_not_started">Shizuku Başlatılmadı. </string>
-    <string name="shizuku_activated_shell">İzin Verildi (Kabuk)</string>
-    <string name="shizuku_activated_root">İzin Verildi (Root)</string>
     <string name="activate_device_owner">Cihaz Sahibini Etkinleştir</string>
     <string name="activate_org_profile">Kuruluş Profili Sahibini Etkinleştir</string>
     <string name="shizuku_service_disconnected">Shizuku Hizmeti Bağlantısı Kesildi</string>
-    <string name="invalid_binder">Geçersiz Bağlayıcı</string>
-    <string name="bind_shizuku">Shizuku\'ya Bağlan</string>
-    <string name="shizuku_not_bind">Shizuku Bağlantısı Kesildi</string>
 
     <!--System-->
     <string name="system">Sistem</string>
@@ -140,12 +140,29 @@
     <string name="disable_usb_signal">USB sinyali</string> <!--TODO-->
     <string name="keyguard">Ekran kilidi</string>
     <string name="lock_now">Ekranı şimdi kilitle</string>
-    <string name="evict_credential_encryptoon_key">Kimlik doğrulama şifreleme anahtarını çıkar</string>
+    <string name="evict_credential_encryption_key">Kimlik doğrulama şifreleme anahtarını çıkar</string>
+    <!--TODO: the following 11 strings-->
+    <string name="hardware_monitor">Hardware monitor</string>
+    <string name="refresh_interval">Refresh interval</string>
+    <string name="cpu_temp">CPU temperatures</string>
+    <string name="gpu_temp">GPU temperatures</string>
+    <string name="battery_temp">Battery temperatures</string>
+    <string name="skin_temp">Skin temperatures</string>
+    <string name="undefined">Undefined</string>
+    <string name="cpu_usages">CPU usages</string>
+    <string name="active">Active</string>
+    <string name="total">Total</string>
+    <string name="fan_speeds">Fan speeds</string>
     <string name="bug_report">Hata raporu</string>
     <string name="confirm_bug_report">Hata raporu iste?</string>
     <string name="reboot">Yeniden başlat</string>
-    <string name="change_time">Change time</string> <!--TODO-->
-    <string name="change_timezone">Change timezone</string><!--TODO-->
+    <!--TODO: the following 6 strings-->
+    <string name="change_time">Change time</string>
+    <string name="selector">Selector</string>
+    <string name="manually_input">Manually input</string>
+    <string name="date">Date</string>
+    <string name="time">Time</string>
+    <string name="change_timezone">Change timezone</string>
     <string name="timezone_id">Saat dilimi kimliği</string>
     <string name="disable_auto_time_zone_before_set">Özel bir saat dilimi ayarlamadan önce otomatik saat dilimi devre dışı bırakılmalıdır</string>
     <string name="permission_policy">İzin politikası</string>
@@ -157,10 +174,7 @@
     <string name="nearby_notification_streaming">Yakındaki bildirim akış politikası</string>
     <string name="enable_if_secure_enough">Yalnızca aynı yönetilen hesap</string>
     <string name="lock_task_mode">Lock task mode</string> <!--TODO-->
-    <string name="lock_task_feature">Görev kilitleme özelliği</string>
-    <string name="lock_task_packages">Lock task packages</string> <!--TODO-->
     <string name="specify_activity">Specify Activity</string> <!--TODO-->
-    <string name="start_lock_task_mode">Start lock task mode</string> <!--TODO-->
     <string name="app_not_allowed">App is not allowed</string> <!--TODO-->
     <string name="disable_all">Hepsini devre dışı bırak</string>
 
@@ -177,7 +191,7 @@
     <string name="cert_installed">Yüklenen sertifika: %1$s</string> <!--TODO-->
     <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Sertifika seç...</string> <!--TODO-->
     <string name="uninstall_all_user_ca_cert">Tüm kullanıcı sertifikalarını kaldır</string> <!--TODO-->
-    <string name="security_logs">Güvenlik kayıtları</string>
+    <string name="security_logging">Security logging</string> <!--TODO-->
     <string name="pre_reboot_security_logs">Yeniden başlatmadan önce güvenlik kayıtları</string>
     <string name="wipe_data">Verileri sil</string>
     <string name="wipe_external_storage">Harici depolamayı sil</string>
@@ -188,7 +202,6 @@
     <string name="wipe_work_profile_warning">Your work profile will be DELETED</string> <!--TODO-->
     <string name="encryption_status">Encryption status</string> <!--TODO-->
     <string name="frp_policy">FRP politikası</string>
-    <string name="factory_reset_protection_policy">Fabrika ayarlarına sıfırlama koruma politikası</string>
     <string name="frp_policy_not_supported">FRP politikası bu cihazda desteklenmiyor</string>
     <string name="enable_frp">FRP\'yi etkinleştir</string>
     <string name="account_list_is">"Hesap listesi: "</string>
@@ -216,6 +229,24 @@
     <!--Network-->
     <string name="network">Ağ</string>
     <string name="wifi_mac_address">Wi-Fi MAC adresi</string>
+    <!--TODO-->
+    <string name="disconnect">Disconnect</string>
+    <string name="reconnect">Reconnect</string>
+    <string name="saved_networks">Saved networks</string>
+    <string name="request_location_permission_description">This app need location permission to get saved networks, your geographic location will not be read.\nClick to request the permission.</string>
+    <string name="add_network">Add network</string>
+    <string name="update_network">Update network</string>
+    <string name="current">Current</string>
+    <string name="hidden_ssid">Hidden SSID</string>
+    <string name="ip_settings">IP settings</string>
+    <string name="static_str">Static</string>
+    <string name="ip_address">IP address</string>
+    <string name="gateway_address">Gateway address</string>
+    <string name="dns_servers">DNS servers</string>
+    <string name="mac_randomization">MAC randomization</string>
+    <string name="non_persistent">Non persistent</string>
+    <string name="host">Host</string>
+    <string name="add_network_result_invalid_configuration">Invalid configuration</string>
     <string name="min_wifi_security_level">Minimum Wi-Fi güvenlik seviyesi</string>
     <string name="wifi_security_open">Açık</string>
     <string name="lockdown_admin_configured_network">Yönetici tarafından yapılandırılmış ağı kilitle</string>
@@ -236,13 +267,12 @@
     <string name="proxy_type_direct">Direct proxy</string> <!--TODO-->
     <string name="specify_port">Specify port</string> <!--TODO-->
     <string name="invalid_config">Invalid config</string> <!--TODO-->
-    <string name="exclude_hosts">Exclude hosts</string> <!--TODO-->
-    <string name="retrieve_net_logs">Ağ kayıtları</string>
+    <string name="excluded_hosts">Excluded hosts</string> <!--TODO-->
+    <string name="network_logging">Network logging</string> <!--TODO-->
     <string name="log_file_size_is">Log file size: %1$s</string> <!--TODO-->
     <string name="delete_logs">Delete logs</string> <!--TODO-->
     <string name="export_logs">Export logs</string> <!--TODO-->
     <string name="wifi_auth_keypair">Wi-Fi anahtar çifti</string>
-    <string name="keypair">Anahtar çifti</string>
     <string name="preferential_network_service">Tercihli ağ hizmeti</string>
     <string name="network_id">Network ID</string> <!--TODO-->
     <string name="allow_fallback_to_default_connection">Allow fallback to default connection</string> <!--TODO-->
@@ -285,7 +315,6 @@
     <string name="migrate_account">Migrate account</string> <!--TODO-->
     <string name="account_name">Account name</string> <!--TODO-->
     <string name="keep_account">Keep account</string> <!--TODO-->
-    <string name="is_org_owned_profile">Kuruluşa ait iş profili: %1$s</string>
     <string name="org_owned_work_profile">Kuruluş iş profili</string>
     <string name="skip_encryption">Şifrelemeyi atla</string>
     <string name="create">Oluştur</string>
@@ -314,7 +343,7 @@
     <string name="always_on_vpn">Her zaman açık VPN</string>
     <string name="enable_lockdown">Enable lockdown</string> <!--TODO-->
     <string name="clear_current_config">Clear current config</string> <!--TODO-->
-    <string name="permission">İzin</string>
+    <string name="permissions">İzin</string>
     <string name="scope_is_work_profile">Kapsam: iş profili</string>
     <string name="app_info">Uygulama bilgisi</string>
     <string name="not_installed">Yüklü değil</string>
@@ -365,12 +394,12 @@
     <string name="status_fail_timeout">Başarısız: zaman aşımı</string>
 
     <!--UserRestriction-->
-    <string name="user_restrict">Kullanıcı kısıtlaması</string>
+    <string name="user_restriction">Kullanıcı kısıtlaması</string>
     <string name="profile_owner_is_restricted">Profil sahibi sınırlı işlev kullanabilir</string>
     <string name="switch_to_disable_feature">Bu işlevi devre dışı bırakmak için bir anahtar açın. </string>
     <string name="some_features_invalid_in_work_profile">İş profilindeki işlevler sınırlıdır. </string>
-    <string name="network_internet">Ağ</string>
-    <string name="more_connectivity">Diğer bağlantı</string>
+    <string name="network_and_internet">Ağ</string>
+    <string name="connectivity">Diğer bağlantı</string>
     <string name="media">Medya</string>
     <string name="other">Diğer</string>
     <string name="require_device_owner">Cihaz sahibi gerektirir</string>
@@ -476,7 +505,6 @@
     <string name="change_user_icon">Kullanıcı simgesini değiştir</string>
     <string name="file_picker_instead_gallery">Galeri yerine dosya seçici kullan</string>
     <string name="select_picture" tools:ignore="TypographyEllipsis">Resim seç...</string>
-    <string name="unknown_result">Bilinmeyen sonuç (başarısız olabilir)</string>
     <string name="fail_managed_profile">Başarısız: yönetilen profil</string>
     <string name="fail_current_user">Başarısız: mevcut kullanıcı</string>
     <string name="user_session_msg">Kullanıcı oturum mesajı</string>
@@ -521,7 +549,6 @@
     <string name="disable_keyguard_features_unredacted_notification">Sansürsüz bildirimleri devre dışı bırak</string>
     <string name="disable_keyguard_features_trust_agents">Güvenilir ajanları devre dışı bırak</string>
     <string name="disable_keyguard_features_fingerprint">Parmak izini devre dışı bırak</string>
-    <string name="disable_keyguard_features_remote_input">Uzaktan girişleri devre dışı bırak</string>
     <string name="disable_keyguard_features_face">Yüz tanımayı devre dışı bırak</string>
     <string name="disable_keyguard_features_iris">İris tarayıcısını devre dışı bırak</string>
     <string name="disable_keyguard_features_biometrics">Biyometrikleri devre dışı bırak</string>
@@ -551,16 +578,12 @@
     <string name="lock_owndroid">OwnDroid\'u kilitle</string>
     <string name="enable_bio_auth">Biyometri ile doğrulama</string>
     <string name="authenticate">Doğrula</string>
-    <string name="use_password">Şifre kullan</string>
-    <string name="auth_with_password">OwnDroid\'u şifre ile doğrula</string>
-    <string name="auth_with_bio">OwnDroid\'u biyometri ile doğrula</string>
     <string name="lock_in_background">Arka plana geçince kilitle</string>
-    <string name="protect_storage">Depolamayı koru</string>
-    <string name="storage_is_protected">Depolama korunuyor</string> <!--TODO-->
     <string name="clear_storage">Depolamayı temizle</string>
 
-    <string name="automation_api">Automation API</string> <!--TODO-->
-    <string name="automation_debug">Debug mode</string> <!--TODO-->
+    <!--TODO-->
+    <string name="api_key">API key</string>
+    <string name="api_key_exist">The API key already exists, setting a new key will overwrite the current key.</string>
 
     <!--AndroidPermission-->
     <string name="permission_POST_NOTIFICATIONS">Bildirim gönder</string>

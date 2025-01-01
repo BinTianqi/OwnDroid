@@ -12,8 +12,8 @@ import android.os.Build.VERSION
 import android.os.RemoteException
 import android.os.UserManager
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -23,7 +23,6 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -31,60 +30,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.backToHomeStateFlow
+import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.*
 import com.bintianqi.owndroid.writeClipBoard
 import com.bintianqi.owndroid.yesOrNo
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
 import kotlinx.coroutines.launch
-
-@Composable
-fun DpmPermissions(navCtrl:NavHostController) {
-    val localNavCtrl = rememberNavController()
-    val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
-    val scrollState = rememberScrollState()
-    Scaffold(
-        topBar = {
-            TopBar(backStackEntry,navCtrl,localNavCtrl) {
-                if(backStackEntry?.destination?.route=="Home"&&scrollState.maxValue > 100) {
-                    Text(
-                        text = stringResource(R.string.permission),
-                        modifier = Modifier.alpha((maxOf(scrollState.value-30,0)).toFloat()/80)
-                    )
-                }
-            }
-        }
-    ) {
-        NavHost(
-            navController = localNavCtrl, startDestination = "Home",
-            enterTransition = Animations.navHostEnterTransition,
-            exitTransition = Animations.navHostExitTransition,
-            popEnterTransition = Animations.navHostPopEnterTransition,
-            popExitTransition = Animations.navHostPopExitTransition,
-            modifier = Modifier.padding(top = it.calculateTopPadding())
-        ) {
-            composable(route = "Home") { Home(localNavCtrl,scrollState) }
-            composable(route = "Shizuku") { ShizukuActivate() }
-            composable(route = "DeviceAdmin") { DeviceAdmin() }
-            composable(route = "ProfileOwner") { ProfileOwner() }
-            composable(route = "DeviceOwner") { DeviceOwner() }
-            composable(route = "DeviceInfo") { DeviceInfo() }
-            composable(route = "LockScreenInfo") { LockScreenInfo() }
-            composable(route = "SupportMsg") { SupportMsg() }
-            composable(route = "TransformOwnership") { TransferOwnership() }
-        }
-    }
-}
+import rikka.shizuku.Shizuku
+import rikka.sui.Sui
 
 @SuppressLint("NewApi")
 @Composable
-private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
+fun Permissions(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -95,57 +55,74 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     var dialog by remember { mutableIntStateOf(0) }
     val enrollmentSpecificId = if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) dpm.enrollmentSpecificId else ""
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(listScrollState)) {
-        Text(
-            text = stringResource(R.string.permission),
-            style = typography.headlineLarge,
-            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 16.dp)
-        )
+    MyScaffold(R.string.permissions, 0.dp, navCtrl) {
         if(!dpm.isDeviceOwnerApp(context.packageName)) {
             SwitchItem(
-                R.string.dhizuku, "", null,
-                { sharedPref.getBoolean("dhizuku", false) },
-                { toggleDhizukuMode(it, context) },
+                R.string.dhizuku,
+                getState = { sharedPref.getBoolean("dhizuku", false) },
+                onCheckedChange = { toggleDhizukuMode(it, context) },
                 onClickBlank = { dialog = 4 }
             )
         }
-        SubPageItem(
+        FunctionItem(
             R.string.device_admin, stringResource(if(deviceAdmin) R.string.activated else R.string.deactivated),
-            operation = { localNavCtrl.navigate("DeviceAdmin") }
+            operation = { navCtrl.navigate("DeviceAdmin") }
         )
         if(profileOwner || !userManager.isSystemUser) {
-            SubPageItem(
+            FunctionItem(
                 R.string.profile_owner, stringResource(if(profileOwner) R.string.activated else R.string.deactivated),
-                operation = { localNavCtrl.navigate("ProfileOwner") }
+                operation = { navCtrl.navigate("ProfileOwner") }
             )
         }
         if(!profileOwner && userManager.isSystemUser) {
-            SubPageItem(
+            FunctionItem(
                 R.string.device_owner, stringResource(if(deviceOwner) R.string.activated else R.string.deactivated),
-                operation = { localNavCtrl.navigate("DeviceOwner") }
+                operation = { navCtrl.navigate("DeviceOwner") }
             )
         }
-        SubPageItem(R.string.shizuku,"") { localNavCtrl.navigate("Shizuku") }
-        SubPageItem(R.string.device_info, "", R.drawable.perm_device_information_fill0) { localNavCtrl.navigate("DeviceInfo") }
+        FunctionItem(R.string.shizuku) {
+            try {
+                if(Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) { navCtrl.navigate("Shizuku") }
+                else if(Shizuku.shouldShowRequestPermissionRationale()) {
+                    Toast.makeText(context, R.string.permission_denied, Toast.LENGTH_SHORT).show()
+                } else {
+                    Sui.init(context.packageName)
+                    val listener = object: Shizuku.OnRequestPermissionResultListener {
+                        override fun onRequestPermissionResult(requestCode: Int, grantResult: Int) {
+                            if(grantResult == PackageManager.PERMISSION_GRANTED) {
+                                navCtrl.navigate("Shizuku")
+                            } else {
+                                Toast.makeText(context, R.string.permission_denied, Toast.LENGTH_SHORT).show()
+                            }
+                            Shizuku.removeRequestPermissionResultListener(this)
+                        }
+                    }
+                    Shizuku.addRequestPermissionResultListener(listener)
+                    Shizuku.requestPermission(0)
+                }
+            } catch(_: IllegalStateException) {
+                Toast.makeText(context, R.string.shizuku_not_started, Toast.LENGTH_SHORT).show()
+            }
+        }
+        FunctionItem(R.string.device_info, icon = R.drawable.perm_device_information_fill0) { navCtrl.navigate("DeviceInfo") }
         if((VERSION.SDK_INT >= 26 && deviceOwner) || (VERSION.SDK_INT>=24 && profileOwner)) {
-            SubPageItem(R.string.org_name, "", R.drawable.corporate_fare_fill0) { dialog = 2 }
+            FunctionItem(R.string.org_name, icon = R.drawable.corporate_fare_fill0) { dialog = 2 }
         }
         if(VERSION.SDK_INT >= 31 && (profileOwner || deviceOwner)) {
-            SubPageItem(R.string.org_id, "", R.drawable.corporate_fare_fill0) { dialog = 3 }
+            FunctionItem(R.string.org_id, icon = R.drawable.corporate_fare_fill0) { dialog = 3 }
         }
         if(enrollmentSpecificId != "") {
-            SubPageItem(R.string.enrollment_specific_id, "", R.drawable.id_card_fill0) { dialog = 1 }
+            FunctionItem(R.string.enrollment_specific_id, icon = R.drawable.id_card_fill0) { dialog = 1 }
         }
         if(VERSION.SDK_INT >= 24 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            SubPageItem(R.string.device_owner_lock_screen_info, "", R.drawable.screen_lock_portrait_fill0) { localNavCtrl.navigate("LockScreenInfo") }
+            FunctionItem(R.string.lock_screen_info, icon = R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("LockScreenInfo") }
         }
         if(VERSION.SDK_INT >= 24 && deviceAdmin) {
-            SubPageItem(R.string.support_msg, "", R.drawable.chat_fill0) { localNavCtrl.navigate("SupportMsg") }
+            FunctionItem(R.string.support_messages, icon = R.drawable.chat_fill0) { navCtrl.navigate("SupportMessages") }
         }
         if(VERSION.SDK_INT >= 28 && (deviceOwner || profileOwner)) {
-            SubPageItem(R.string.transfer_ownership, "", R.drawable.admin_panel_settings_fill0) { localNavCtrl.navigate("TransformOwnership") }
+            FunctionItem(R.string.transfer_ownership, icon = R.drawable.admin_panel_settings_fill0) { navCtrl.navigate("TransferOwnership") }
         }
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
     if(dialog != 0) {
         var input by remember { mutableStateOf("") }
@@ -157,7 +134,7 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
                         2 -> R.string.org_name
                         3 -> R.string.org_id
                         4 -> R.string.dhizuku
-                        else -> R.string.permission
+                        else -> R.string.permissions
                     }
                 ))
             },
@@ -176,7 +153,7 @@ private fun Home(localNavCtrl:NavHostController,listScrollState:ScrollState) {
                                     1 -> R.string.enrollment_specific_id
                                     2 -> R.string.org_name
                                     3 -> R.string.org_id
-                                    else -> R.string.permission
+                                    else -> R.string.permissions
                                 }
                             ))
                         },
@@ -237,7 +214,7 @@ private fun toggleDhizukuMode(status: Boolean, context: Context) {
         dhizukuErrorStatus.value = 1
         return
     }
-    if(Dhizuku.isPermissionGranted()) {
+    if(dhizukuPermissionGranted()) {
         sharedPref.edit().putBoolean("dhizuku", true).apply()
         Dhizuku.init(context)
         backToHomeStateFlow.value = true
@@ -258,19 +235,18 @@ private fun toggleDhizukuMode(status: Boolean, context: Context) {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(24)
 @Composable
-private fun LockScreenInfo() {
+fun LockScreenInfo(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var infoText by remember { mutableStateOf(dpm.deviceOwnerLockScreenInfo?.toString() ?: "") }
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
-        Text(text = stringResource(R.string.device_owner_lock_screen_info), style = typography.headlineLarge)
+    MyScaffold(R.string.lock_screen_info, 8.dp, navCtrl) {
         OutlinedTextField(
             value = infoText,
-            label = { Text(stringResource(R.string.device_owner_lock_screen_info)) },
+            label = { Text(stringResource(R.string.lock_screen_info)) },
             onValueChange = { infoText = it },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions { focusMgr.clearFocus() },
@@ -280,7 +256,7 @@ private fun LockScreenInfo() {
             onClick = {
                 focusMgr.clearFocus()
                 dpm.setDeviceOwnerLockScreenInfo(receiver,infoText)
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -289,8 +265,8 @@ private fun LockScreenInfo() {
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                dpm.setDeviceOwnerLockScreenInfo(receiver,null)
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                dpm.setDeviceOwnerLockScreenInfo(receiver, null)
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -302,15 +278,13 @@ private fun LockScreenInfo() {
 }
 
 @Composable
-private fun DeviceAdmin() {
+fun DeviceAdmin(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     var deactivateDialog by remember { mutableStateOf(false) }
     val deviceAdmin = context.isDeviceAdmin
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.device_admin), style = typography.headlineLarge)
+    MyScaffold(R.string.device_admin, 8.dp, navCtrl) {
         Text(text = stringResource(if(context.isDeviceAdmin) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         AnimatedVisibility(deviceAdmin) {
@@ -361,15 +335,13 @@ private fun DeviceAdmin() {
 }
 
 @Composable
-private fun ProfileOwner() {
+fun ProfileOwner(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     var deactivateDialog by remember { mutableStateOf(false) }
     val profileOwner = context.isProfileOwner
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.profile_owner), style = typography.headlineLarge)
+    MyScaffold(R.string.profile_owner, 8.dp, navCtrl) {
         Text(stringResource(if(profileOwner) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT >= 24 && profileOwner) {
@@ -416,14 +388,12 @@ private fun ProfileOwner() {
 }
 
 @Composable
-private fun DeviceOwner() {
+fun DeviceOwner(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     var deactivateDialog by remember { mutableStateOf(false) }
     val deviceOwner = context.isDeviceOwner
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.device_owner), style = typography.headlineLarge)
+    MyScaffold(R.string.device_owner, 8.dp, navCtrl) {
         Text(text = stringResource(if(deviceOwner) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         AnimatedVisibility(deviceOwner) {
@@ -488,15 +458,12 @@ private fun DeviceOwner() {
 }
 
 @Composable
-fun DeviceInfo() {
+fun DeviceInfo(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     var dialog by remember { mutableIntStateOf(0) }
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.device_info), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
+    MyScaffold(R.string.device_info, 8.dp, navCtrl) {
         if(VERSION.SDK_INT>=34 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
             CardItem(R.string.financed_device, dpm.isDeviceFinanced.yesOrNo)
         }
@@ -530,9 +497,9 @@ fun DeviceInfo() {
     )
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(24)
 @Composable
-private fun SupportMsg() {
+fun SupportMessages(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -543,10 +510,7 @@ private fun SupportMsg() {
         longMsg = dpm.getLongSupportMessage(receiver)?.toString() ?: ""
     }
     LaunchedEffect(Unit) { refreshMsg() }
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.support_msg), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
+    MyScaffold(R.string.support_messages, 8.dp, navCtrl) {
         OutlinedTextField(
             value = shortMsg,
             label = { Text(stringResource(R.string.short_support_msg)) },
@@ -559,7 +523,7 @@ private fun SupportMsg() {
                 onClick = {
                     dpm.setShortSupportMessage(receiver, shortMsg)
                     refreshMsg()
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    context.showOperationResultToast(true)
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) {
@@ -569,7 +533,7 @@ private fun SupportMsg() {
                 onClick = {
                     dpm.setShortSupportMessage(receiver, null)
                     refreshMsg()
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    context.showOperationResultToast(true)
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) {
@@ -590,7 +554,7 @@ private fun SupportMsg() {
                 onClick = {
                     dpm.setLongSupportMessage(receiver, longMsg)
                     refreshMsg()
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    context.showOperationResultToast(true)
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) {
@@ -600,7 +564,7 @@ private fun SupportMsg() {
                 onClick = {
                     dpm.setLongSupportMessage(receiver, null)
                     refreshMsg()
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    context.showOperationResultToast(true)
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) {
@@ -608,22 +572,18 @@ private fun SupportMsg() {
             }
         }
         InfoCard(R.string.info_long_support_message)
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(28)
 @Composable
-private fun TransferOwnership() {
+fun TransferOwnership(navCtrl: NavHostController) {
     val context = LocalContext.current
     val focusMgr = LocalFocusManager.current
     var input by remember { mutableStateOf("") }
     val componentName = ComponentName.unflattenFromString(input)
     var dialog by remember { mutableStateOf(false) }
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp)) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.transfer_ownership), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
+    MyScaffold(R.string.transfer_ownership, 8.dp, navCtrl) {
         OutlinedTextField(
             value = input, onValueChange = { input = it }, label = { Text(stringResource(R.string.target_component_name)) },
             modifier = Modifier.fillMaxWidth(),
@@ -657,7 +617,7 @@ private fun TransferOwnership() {
                     val receiver = context.getReceiver()
                     try {
                         dpm.transferOwnership(receiver, componentName!!, null)
-                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                        context.showOperationResultToast(true)
                         dialog = false
                         backToHomeStateFlow.value = true
                     } catch(e: Exception) {

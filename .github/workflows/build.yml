@@ -6,8 +6,6 @@ on:
       - '**.md'
     tags-ignore:
       - '**'
-    branches-ignore:
-      - 'master'
 
 jobs:
   build:
@@ -58,9 +56,12 @@ jobs:
           name: OwnDroid-CI-${{ env.SHORT_SHA }}-release-signed
           path: app/build/outputs/apk/release/app-release.apk
 
+      - name: Generate and submit dependency graph
+        uses: gradle/actions/dependency-submission@v4
+
   upload-telegram:
     name: Upload Builds
-    if: ${{ success() }}
+    if: ${{ success() && github.ref_name == 'dev' }}
     runs-on: ubuntu-latest
     needs:
       - build

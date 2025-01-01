@@ -1,12 +1,10 @@
 package com.bintianqi.owndroid.dpm
 
-import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Binder
 import android.os.Build.VERSION
 import android.os.Process
@@ -14,24 +12,23 @@ import android.os.UserHandle
 import android.os.UserManager
 import android.provider.MediaStore
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
@@ -39,14 +36,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -55,7 +49,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
@@ -65,107 +58,54 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.fileUriFlow
-import com.bintianqi.owndroid.getFile
 import com.bintianqi.owndroid.parseTimestamp
-import com.bintianqi.owndroid.toggle
-import com.bintianqi.owndroid.ui.Animations
+import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.InfoCard
 import com.bintianqi.owndroid.ui.ListItem
-import com.bintianqi.owndroid.ui.SubPageItem
+import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.SwitchItem
-import com.bintianqi.owndroid.ui.TopBar
 import com.bintianqi.owndroid.uriToStream
 import com.bintianqi.owndroid.yesOrNo
 
 @Composable
-fun UserManage(navCtrl: NavHostController) {
-    val localNavCtrl = rememberNavController()
-    val backStackEntry by localNavCtrl.currentBackStackEntryAsState()
-    val scrollState = rememberScrollState()
-    Scaffold(
-        topBar = {
-            TopBar(backStackEntry, navCtrl, localNavCtrl) {
-                if(backStackEntry?.destination?.route == "Home" && scrollState.maxValue > 100) {
-                    Text(
-                        text = stringResource(R.string.users),
-                        modifier = Modifier.alpha((maxOf(scrollState.value-30, 0)).toFloat() / 80)
-                    )
-                }
-            }
-        }
-    ) {
-        NavHost(
-            navController = localNavCtrl, startDestination = "Home",
-            enterTransition = Animations.navHostEnterTransition,
-            exitTransition = Animations.navHostExitTransition,
-            popEnterTransition = Animations.navHostPopEnterTransition,
-            popExitTransition = Animations.navHostPopExitTransition,
-            modifier = Modifier.padding(top = it.calculateTopPadding())
-        ) {
-            composable(route = "Home") { Home(localNavCtrl, scrollState) }
-            composable(route = "UserInfo") { CurrentUserInfo() }
-            composable(route = "Options") { Options() }
-            composable(route = "UserOperation") { UserOperation() }
-            composable(route = "CreateUser") { CreateUser() }
-            composable(route = "EditUsername") { Username() }
-            composable(route = "ChangeUserIcon") { UserIcon() }
-            composable(route = "UserSessionMessage") { UserSessionMessage() }
-            composable(route = "AffiliationID") { AffiliationID() }
-        }
-    }
-}
-
-@Composable
-private fun Home(navCtrl: NavHostController,scrollState: ScrollState) {
+fun Users(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
-    //var logoutDialog by remember { mutableStateOf(false) }
     var dialog by remember { mutableIntStateOf(0) }
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
-        Text(
-            text = stringResource(R.string.users),
-            style = typography.headlineLarge,
-            modifier = Modifier.padding(top = 8.dp, bottom = 5.dp, start = 16.dp)
-        )
-        SubPageItem(R.string.user_info, "", R.drawable.person_fill0) { navCtrl.navigate("UserInfo") }
+    MyScaffold(R.string.users, 0.dp, navCtrl) {
+        FunctionItem(R.string.user_info, icon = R.drawable.person_fill0) { navCtrl.navigate("UserInfo") }
         if(deviceOwner && VERSION.SDK_INT >= 28) {
-            SubPageItem(R.string.secondary_users, "", R.drawable.list_fill0) { dialog = 1 }
-            SubPageItem(R.string.options, "", R.drawable.tune_fill0) { navCtrl.navigate("Options") }
+            FunctionItem(R.string.secondary_users, icon = R.drawable.list_fill0) { dialog = 1 }
+            FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { navCtrl.navigate("UserOptions") }
         }
         if(deviceOwner) {
-            SubPageItem(R.string.user_operation, "", R.drawable.sync_alt_fill0) { navCtrl.navigate("UserOperation") }
+            FunctionItem(R.string.user_operation, icon = R.drawable.sync_alt_fill0) { navCtrl.navigate("UserOperation") }
         }
         if(VERSION.SDK_INT >= 24 && deviceOwner) {
-            SubPageItem(R.string.create_user, "", R.drawable.person_add_fill0) { navCtrl.navigate("CreateUser") }
+            FunctionItem(R.string.create_user, icon = R.drawable.person_add_fill0) { navCtrl.navigate("CreateUser") }
         }
         if(VERSION.SDK_INT >= 28 && profileOwner && dpm.isAffiliatedUser) {
-            SubPageItem(R.string.logout_current_user, "", R.drawable.logout_fill0) { dialog = 2 }
+            FunctionItem(R.string.logout_current_user, icon = R.drawable.logout_fill0) { dialog = 2 }
         }
         if(deviceOwner || profileOwner) {
-            SubPageItem(R.string.change_username, "", R.drawable.edit_fill0) { navCtrl.navigate("EditUsername") }
+            FunctionItem(R.string.change_username, icon = R.drawable.edit_fill0) { navCtrl.navigate("ChangeUsername") }
         }
         if(VERSION.SDK_INT >= 23 && (deviceOwner || profileOwner)) {
-            SubPageItem(R.string.change_user_icon, "", R.drawable.account_circle_fill0) { navCtrl.navigate("ChangeUserIcon") }
+            FunctionItem(R.string.change_user_icon, icon = R.drawable.account_circle_fill0) { navCtrl.navigate("ChangeUserIcon") }
         }
         if(VERSION.SDK_INT >= 28 && deviceOwner) {
-            SubPageItem(R.string.user_session_msg, "", R.drawable.notifications_fill0) { navCtrl.navigate("UserSessionMessage") }
+            FunctionItem(R.string.user_session_msg, icon = R.drawable.notifications_fill0) { navCtrl.navigate("UserSessionMessage") }
         }
         if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
-            SubPageItem(R.string.affiliation_id, "", R.drawable.id_card_fill0) { navCtrl.navigate("AffiliationID") }
+            FunctionItem(R.string.affiliation_id, icon = R.drawable.id_card_fill0) { navCtrl.navigate("AffiliationID") }
         }
-        Spacer(Modifier.padding(vertical = 30.dp))
-        LaunchedEffect(Unit) { fileUriFlow.value = Uri.parse("") }
     }
     if(dialog != 0 && VERSION.SDK_INT >= 28) AlertDialog(
         title = { Text(stringResource(if(dialog == 1) R.string.secondary_users else R.string.logout_current_user)) },
@@ -208,29 +148,26 @@ private fun Home(navCtrl: NavHostController,scrollState: ScrollState) {
 }
 
 @Composable
-private fun Options() {
+fun UserOptions(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+    MyScaffold(R.string.options, 0.dp, navCtrl) {
         if(VERSION.SDK_INT >= 28) {
-            SwitchItem(R.string.enable_logout, "", null, { dpm.isLogoutEnabled }, { dpm.setLogoutEnabled(receiver, it) })
+            SwitchItem(R.string.enable_logout, getState = { dpm.isLogoutEnabled }, onCheckedChange = { dpm.setLogoutEnabled(receiver, it) })
         }
     }
 }
 
 @Composable
-private fun CurrentUserInfo() {
+fun CurrentUserInfo(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     val user = Process.myUserHandle()
     var infoDialog by remember { mutableIntStateOf(0) }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.user_info), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
+    MyScaffold(R.string.user_info, 8.dp, navCtrl) {
         if(VERSION.SDK_INT >= 24) CardItem(R.string.support_multiuser, UserManager.supportsMultipleUsers().yesOrNo)
         if(VERSION.SDK_INT >= 31) CardItem(R.string.headless_system_user_mode, UserManager.isHeadlessSystemUserMode().yesOrNo) { infoDialog = 1 }
         Spacer(Modifier.padding(vertical = 8.dp))
@@ -247,7 +184,6 @@ private fun CurrentUserInfo() {
         }
         CardItem(R.string.user_id, (Binder.getCallingUid() / 100000).toString())
         CardItem(R.string.user_serial_number, userManager.getSerialNumberForUser(Process.myUserHandle()).toString())
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
     if(infoDialog != 0) AlertDialog(
         text = { Text(stringResource(R.string.info_headless_system_user_mode)) },
@@ -261,7 +197,7 @@ private fun CurrentUserInfo() {
 }
 
 @Composable
-private fun UserOperation() {
+fun UserOperation(navCtrl: NavHostController) {
     val context = LocalContext.current
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     val dpm = context.getDPM()
@@ -287,10 +223,7 @@ private fun UserOperation() {
     } catch(_: Exception) {
         false
     }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.user_operation), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
+    MyScaffold(R.string.user_operation, 8.dp, navCtrl) {
         OutlinedTextField(
             value = idInput,
             onValueChange = {
@@ -323,9 +256,7 @@ private fun UserOperation() {
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                withUserHandle {
-                    Toast.makeText(context, if(dpm.switchUser(receiver, it)) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
-                }
+                withUserHandle { context.showOperationResultToast(dpm.switchUser(receiver, it)) }
             },
             enabled = legalInput,
             modifier = Modifier.fillMaxWidth()
@@ -352,7 +283,7 @@ private fun UserOperation() {
                 focusMgr.clearFocus()
                 withUserHandle {
                     if(dpm.removeUser(receiver, it)) {
-                        Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                        context.showOperationResultToast(true)
                         idInput = ""
                     } else {
                         Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
@@ -365,24 +296,20 @@ private fun UserOperation() {
             Text(stringResource(R.string.delete))
         }
         InfoCard(R.string.info_user_operation)
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(24)
 @Composable
-private fun CreateUser() {
+fun CreateUser(navCtrl: NavHostController) {
     val context = LocalContext.current
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var userName by remember { mutableStateOf("") }
-    val flags = remember { mutableStateListOf<Int>() }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.create_user), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
+    var flag by remember { mutableIntStateOf(0) }
+    MyScaffold(R.string.create_user, 8.dp, navCtrl) {
         OutlinedTextField(
             value = userName,
             onValueChange = { userName= it },
@@ -394,28 +321,25 @@ private fun CreateUser() {
         Spacer(Modifier.padding(vertical = 5.dp))
         CheckBoxItem(
             R.string.create_user_skip_wizard,
-            DevicePolicyManager.SKIP_SETUP_WIZARD in flags,
-            { flags.toggle(it, DevicePolicyManager.SKIP_SETUP_WIZARD) }
-        )
+            flag and DevicePolicyManager.SKIP_SETUP_WIZARD != 0
+        ) { flag = flag xor DevicePolicyManager.SKIP_SETUP_WIZARD }
         if(VERSION.SDK_INT >= 28) {
             CheckBoxItem(
                 R.string.create_user_ephemeral_user,
-                DevicePolicyManager.MAKE_USER_EPHEMERAL in flags,
-                { flags.toggle(it, DevicePolicyManager.MAKE_USER_EPHEMERAL) }
-            )
+                flag and DevicePolicyManager.MAKE_USER_EPHEMERAL != 0
+            ) { flag = flag xor DevicePolicyManager.MAKE_USER_EPHEMERAL }
             CheckBoxItem(
                 R.string.create_user_enable_all_system_app,
-                DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED in flags,
-                { flags.toggle(it, DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED) }
-            )
+                flag and DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED != 0
+            ) { flag = flag xor DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED }
         }
         var newUserHandle: UserHandle? by remember { mutableStateOf(null) }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                newUserHandle = dpm.createAndManageUser(receiver, userName, receiver, null, flags.sum())
-                Toast.makeText(context, if(newUserHandle!=null) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+                newUserHandle = dpm.createAndManageUser(receiver, userName, receiver, null, flag)
+                context.showOperationResultToast(newUserHandle != null)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -423,13 +347,12 @@ private fun CreateUser() {
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         if(newUserHandle != null) { Text(text = stringResource(R.string.serial_number_of_new_user_is, userManager.getSerialNumberForUser(newUserHandle))) }
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(26)
 @Composable
-private fun AffiliationID() {
+fun AffiliationID(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -441,10 +364,7 @@ private fun AffiliationID() {
         list.addAll(dpm.getAffiliationIds(receiver))
     }
     LaunchedEffect(Unit) { refreshIds() }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.affiliation_id), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
+    MyScaffold(R.string.affiliation_id, 8.dp, navCtrl) {
         Column(modifier = Modifier.animateContentSize()) {
             if(list.isEmpty()) Text(stringResource(R.string.none))
             for(i in list) {
@@ -475,7 +395,7 @@ private fun AffiliationID() {
             onClick = {
                 list.removeAll(listOf(""))
                 dpm.setAffiliationIds(receiver, list.toSet())
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(true)
                 refreshIds()
             },
             modifier = Modifier.fillMaxWidth()
@@ -483,21 +403,17 @@ private fun AffiliationID() {
             Text(stringResource(R.string.apply))
         }
         InfoCard(R.string.info_affiliated_id)
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
 @Composable
-private fun Username() {
+fun ChangeUsername(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var inputUsername by remember { mutableStateOf("") }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.change_username), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
+    MyScaffold(R.string.change_username, 8.dp, navCtrl) {
         OutlinedTextField(
             value = inputUsername,
             onValueChange = { inputUsername= it },
@@ -510,7 +426,7 @@ private fun Username() {
         Button(
             onClick = {
                 dpm.setProfileName(receiver, inputUsername)
-                Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -525,9 +441,9 @@ private fun Username() {
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(28)
 @Composable
-private fun UserSessionMessage() {
+fun UserSessionMessage(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -539,10 +455,7 @@ private fun UserSessionMessage() {
         end = dpm.getEndUserSessionMessage(receiver)?.toString() ?: ""
     }
     LaunchedEffect(Unit) { refreshMsg() }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.user_session_msg), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
+    MyScaffold(R.string.user_session_msg, 8.dp, navCtrl) {
         OutlinedTextField(
             value = start,
             onValueChange = { start= it },
@@ -556,7 +469,6 @@ private fun UserSessionMessage() {
                 onClick = {
                     dpm.setStartUserSessionMessage(receiver,start)
                     refreshMsg()
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) {
@@ -566,7 +478,7 @@ private fun UserSessionMessage() {
                 onClick = {
                     dpm.setStartUserSessionMessage(receiver,null)
                     refreshMsg()
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    context.showOperationResultToast(true)
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) {
@@ -587,7 +499,7 @@ private fun UserSessionMessage() {
                 onClick = {
                     dpm.setEndUserSessionMessage(receiver,end)
                     refreshMsg()
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    context.showOperationResultToast(true)
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) {
@@ -597,44 +509,40 @@ private fun UserSessionMessage() {
                 onClick = {
                     dpm.setEndUserSessionMessage(receiver,null)
                     refreshMsg()
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                    context.showOperationResultToast(true)
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) {
                 Text(stringResource(R.string.reset))
             }
         }
-        Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
 
-@SuppressLint("NewApi")
+@RequiresApi(23)
 @Composable
-private fun UserIcon() {
+fun ChangeUserIcon(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     var getContent by remember { mutableStateOf(false) }
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
-    val uriState by fileUriFlow.collectAsState()
-    LaunchedEffect(uriState) {
-        if(uriState == Uri.parse("")) return@LaunchedEffect
-        uriToStream(context, fileUriFlow.value) { stream ->
-            bitmap = BitmapFactory.decodeStream(stream)
+    val getFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        it.data?.data?.let {
+            uriToStream(context, it) { stream ->
+                bitmap = BitmapFactory.decodeStream(stream)
+            }
         }
     }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.change_user_icon), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        CheckBoxItem(R.string.file_picker_instead_gallery, getContent, { getContent = it })
+    MyScaffold(R.string.change_user_icon, 8.dp, navCtrl) {
+        CheckBoxItem(R.string.file_picker_instead_gallery, getContent) { getContent = it }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 val intent = Intent(if(getContent) Intent.ACTION_GET_CONTENT else Intent.ACTION_PICK)
                 if(getContent) intent.addCategory(Intent.CATEGORY_OPENABLE)
                 intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*")
-                getFile.launch(intent)
+                getFileLauncher.launch(intent)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -650,7 +558,7 @@ private fun UserIcon() {
                     Button(
                         onClick = {
                             dpm.setUserIcon(receiver, bitmap)
-                            Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show()
+                            context.showOperationResultToast(true)
                         }
                     ) {
                         Text(stringResource(R.string.apply))

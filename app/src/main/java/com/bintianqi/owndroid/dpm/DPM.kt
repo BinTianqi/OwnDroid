@@ -32,26 +32,18 @@ import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.Dhizuku.binderWrapper
 import com.rosan.dhizuku.api.DhizukuBinderWrapper
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.addJsonObject
-import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.decodeFromStream
-import kotlinx.serialization.json.encodeToStream
-import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
 import java.io.IOException
 import java.io.InputStream
-import kotlin.io.path.inputStream
-import kotlin.io.path.notExists
-import kotlin.io.path.outputStream
-import kotlin.io.path.writeText
+import java.io.OutputStream
 
-lateinit var createManagedProfile: ActivityResultLauncher<Intent>
 lateinit var addDeviceAdmin: ActivityResultLauncher<Intent>
 
 val Context.isDeviceOwner: Boolean
@@ -153,7 +145,7 @@ private fun binderWrapperPackageInstaller(appContext: Context): PackageInstaller
 fun Context.getPI(): PackageInstaller {
     val sharedPref = this.getSharedPreferences("data", Context.MODE_PRIVATE)
     if(sharedPref.getBoolean("dhizuku", false)) {
-        if (!Dhizuku.isPermissionGranted()) {
+        if (!dhizukuPermissionGranted()) {
             dhizukuErrorStatus.value = 2
             backToHomeStateFlow.value = true
             return this.packageManager.packageInstaller
@@ -167,7 +159,7 @@ fun Context.getPI(): PackageInstaller {
 fun Context.getDPM(): DevicePolicyManager {
     val sharedPref = this.getSharedPreferences("data", Context.MODE_PRIVATE)
     if(sharedPref.getBoolean("dhizuku", false)) {
-        if (!Dhizuku.isPermissionGranted()) {
+        if (!dhizukuPermissionGranted()) {
             dhizukuErrorStatus.value = 2
             backToHomeStateFlow.value = true
             return this.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
@@ -193,7 +185,7 @@ fun Context.resetDevicePolicy() {
     val dpm = getDPM()
     val receiver = getReceiver()
     RestrictionData.getAllRestrictions().forEach {
-        dpm.clearUserRestriction(receiver, it)
+        dpm.clearUserRestriction(receiver, it.id)
     }
     dpm.accountTypesWithManagementDisabled?.forEach {
         dpm.setAccountManagementDisabled(receiver, it, false)
@@ -331,73 +323,54 @@ fun permissionList(): List<PermissionItem>{
 @RequiresApi(26)
 fun handleNetworkLogs(context: Context, batchToken: Long) {
     val networkEvents = context.getDPM().retrieveNetworkLogs(context.getReceiver(), batchToken) ?: return
-    val file = context.filesDir.toPath().resolve("NetworkLogs.json")
-    if(file.notExists()) file.writeText("[]")
+    val file = context.filesDir.resolve("NetworkLogs.json")
+    val fileExist = file.exists()
     val json = Json { ignoreUnknownKeys = true; explicitNulls = false }
-    var events: MutableList<NetworkEventItem>
-    file.inputStream().use {
-        events = json.decodeFromStream(it)
-    }
-    networkEvents.forEach { event ->
-        try {
-            val dnsEvent = event as DnsEvent
-            val addresses = mutableListOf<String?>()
-            dnsEvent.inetAddresses.forEach { inetAddresses ->
-                addresses += inetAddresses.hostAddress
+    val buffer = file.bufferedWriter()
+    networkEvents.forEachIndexed { index, event ->
+        if(fileExist && index == 0) buffer.write(",")
+        val item = buildJsonObject {
+            if(VERSION.SDK_INT >= 28) put("id", event.id)
+            put("time", event.timestamp)
+            put("package", event.packageName)
+            if(event is DnsEvent) {
+                put("type", "dns")
+                put("host", event.hostname)
+                put("count", event.totalResolvedAddressCount)
+                putJsonArray("addresses") {
+                    event.inetAddresses.forEach { inetAddresses ->
+                        add(inetAddresses.hostAddress)
+                    }
+                }
             }
-            events += NetworkEventItem(
-                id = if(VERSION.SDK_INT >= 28) event.id else null, packageName = event.packageName
-                , timestamp = event.timestamp, type = "dns", hostName = dnsEvent.hostname,
-                hostAddresses = addresses, totalResolvedAddressCount = dnsEvent.totalResolvedAddressCount
-            )
-        } catch(_: Exception) {
-            val connectEvent = event as ConnectEvent
-            events += NetworkEventItem(
-                id = if(VERSION.SDK_INT >= 28) event.id else null, packageName = event.packageName, timestamp = event.timestamp, type = "connect",
-                hostAddress = connectEvent.inetAddress.hostAddress, port = connectEvent.port
-            )
+            if(event is ConnectEvent) {
+                put("type", "connect")
+                put("address", event.inetAddress.hostAddress)
+                put("port", event.port)
+            }
         }
+        buffer.write(json.encodeToString(item))
+        if(index < networkEvents.size - 1) buffer.write(",")
     }
-    file.outputStream().use {
-        json.encodeToStream(events, it)
-    }
+    buffer.close()
 }
 
-@Serializable
-data class NetworkEventItem(
-    val id: Long? = null,
-    @SerialName("package_name") val packageName: String,
-    val timestamp: Long,
-    val type: String,
-    @SerialName("address") val hostAddress: String? = null,
-    val port: Int? = null,
-    @SerialName("host_name") val hostName: String? = null,
-    @SerialName("count") val totalResolvedAddressCount: Int? = null,
-    @SerialName("addresses") val hostAddresses: List<String?>? = null
-)
-
 @RequiresApi(24)
-fun handleSecurityLogs(context: Context) {
-    val file = context.filesDir.resolve("SecurityLogs.json")
+fun processSecurityLogs(securityEvents: List<SecurityLog.SecurityEvent>, outputStream: OutputStream) {
     val json = Json { ignoreUnknownKeys = true; explicitNulls = false }
-    if(!file.exists()) file.writeText("[]")
-    val securityEvents = context.getDPM().retrieveSecurityLogs(context.getReceiver())
-    securityEvents ?: return
-    val logArray = json.parseToJsonElement(file.readText()).jsonArray
-    val newLogs = buildJsonArray {
-        securityEvents.forEach { event ->
-            addJsonObject {
-                put("time_nanos", event.timeNanos)
-                put("tag", event.tag)
-                if(VERSION.SDK_INT >= 28) put("level", event.logLevel)
-                if(VERSION.SDK_INT >= 28) put("id", event.id)
-                parseSecurityEventData(event).let { if(it != null) put("data", it) }
-            }
+    val buffer = outputStream.bufferedWriter()
+    securityEvents.forEachIndexed { index, event ->
+        val item = buildJsonObject {
+            put("time_nanos", event.timeNanos)
+            put("tag", event.tag)
+            if(VERSION.SDK_INT >= 28) put("level", event.logLevel)
+            if(VERSION.SDK_INT >= 28) put("id", event.id)
+            parseSecurityEventData(event).let { if(it != null) put("data", it) }
         }
+        buffer.write(json.encodeToString(item))
+        if(index < securityEvents.size - 1) buffer.write(",")
     }
-    file.outputStream().use {
-        json.encodeToStream(logArray + newLogs, it)
-    }
+    buffer.close()
 }
 
 @RequiresApi(24)
@@ -409,7 +382,7 @@ fun parseSecurityEventData(event: SecurityLog.SecurityEvent): JsonElement? {
             val payload = event.data as Array<*>
             buildJsonObject {
                 put("name", payload[0] as String)
-                put("start_time", payload[1] as Long)
+                put("time", payload[1] as Long)
                 put("uid", payload[2] as Int)
                 put("pid", payload[3] as Int)
                 put("seinfo", payload[4] as String)
@@ -428,7 +401,7 @@ fun parseSecurityEventData(event: SecurityLog.SecurityEvent): JsonElement? {
             val payload = event.data as Array<*>
             buildJsonObject {
                 put("mac", payload[0] as String)
-                (payload[2] as String).let { if(it != "") put("reason", it) }
+                (payload[1] as String).let { if(it != "") put("reason", it) }
             }
         }
         SecurityLog.TAG_CAMERA_POLICY_SET -> {
@@ -456,7 +429,7 @@ fun parseSecurityEventData(event: SecurityLog.SecurityEvent): JsonElement? {
                 put("admin", payload[0] as String)
                 put("admin_user_id", payload[1] as Int)
                 put("target_user_id", payload[2] as Int)
-                put("feature_mask", payload[3] as Int)
+                put("mask", payload[3] as Int)
             }
         }
         SecurityLog.TAG_KEYGUARD_DISMISSED -> null
@@ -521,8 +494,8 @@ fun parseSecurityEventData(event: SecurityLog.SecurityEvent): JsonElement? {
         SecurityLog.TAG_PACKAGE_INSTALLED, SecurityLog.TAG_PACKAGE_UNINSTALLED, SecurityLog.TAG_PACKAGE_UPDATED -> {
             val payload = event.data as Array<*>
             buildJsonObject {
-                put("package_name", payload[0] as String)
-                put("version_code", payload[1] as Long)
+                put("name", payload[0] as String)
+                put("version", payload[1] as Long)
                 put("user_id", payload[2] as Int)
             }
         }
@@ -619,3 +592,11 @@ fun setDefaultAffiliationID(context: Context) {
         }
     }
 }
+
+fun dhizukuPermissionGranted() =
+    try {
+        Dhizuku.isPermissionGranted()
+    } catch(_: Exception) {
+        false
+    }
+

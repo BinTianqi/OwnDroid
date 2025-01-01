@@ -43,7 +43,6 @@
     <string name="copy_command">Копировать команду</string>
     <string name="package_name">Имя пакета</string>
     <string name="not_exist">Не существует</string>
-    <string name="unknown_status">Неизвестный статус</string>
     <string name="copy">Копировать</string>
     <string name="file_not_exist">Файл не существует</string>
     <string name="io_exception">Ошибка ввода/вывода</string>
@@ -58,10 +57,17 @@
     <string name="no">Нет</string>
     <string name="previous">Предыдущий</string>
     <string name="next">Следующий</string>
-    <string name="on">On</string> <!--TODO-->
-    <string name="off">Off</string> <!--TODO-->
-    <string name="alias">Alias</string> <!--TODO-->
-    <string name="unknown_error">Unknown error</string> <!--TODO-->
+    <!--TODO-->
+    <string name="on">On</string>
+    <string name="off">Off</string>
+    <string name="alias">Alias</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="permission_denied">Permission denied</string>
+    <string name="error">Error</string>
+    <string name="status">Status</string>
+    <string name="edit">Edit</string>
+    <string name="overview">Overview</string>
+    <string name="features">Features</string>
 
 
     <!--Разрешения-->
@@ -91,8 +97,8 @@
     <string name="account_type">Тип аккаунта</string>
     <string name="transfer_ownership">Передача прав владения</string>
     <string name="target_component_name">Имя целевого компонента</string>
-    <string name="device_owner_lock_screen_info">Информация на экране блокировки</string>
-    <string name="support_msg">Сообщение поддержки</string>
+    <string name="lock_screen_info">Информация на экране блокировки</string>
+    <string name="support_messages">Сообщение поддержки</string>
     <string name="short_support_msg">Краткое сообщение</string>
     <string name="long_support_msg">Подробное сообщение</string>
     <string name="transfer">Передать</string>
@@ -109,19 +115,13 @@
     <string name="dhizuku_permission_not_granted">Разрешение Dhizuku не предоставлено</string>
     <string name="dhizuku_mode_disabled">Режим Dhizuku отключен</string>
     <!--Shizuku-->
-    <string name="check_shizuku">Проверить разрешение</string>
     <string name="list_owners">Список владельцев</string>
     <string name="list_users">Список пользователей</string>
     <string name="list_accounts">Список аккаунтов</string>
     <string name="shizuku_not_started">Shizuku не запущен. </string>
-    <string name="shizuku_activated_shell">Разрешение предоставлено (Shell)</string>
-    <string name="shizuku_activated_root">Разрешение предоставлено (Root)</string>
     <string name="activate_device_owner">Активировать владельца устройства</string>
     <string name="activate_org_profile">Активировать рабочий профиль, принадлежащий организации</string>
     <string name="shizuku_service_disconnected">Служба Shizuku отключена</string>
-    <string name="invalid_binder">Неверный binder</string>
-    <string name="bind_shizuku">Подключить Shizuku</string>
-    <string name="shizuku_not_bind">Shizuku отключен</string>
 
 
     <!--Системные-->
@@ -139,12 +139,29 @@
     <string name="disable_usb_signal">Отключить USB-сигнал</string>
     <string name="keyguard">Блокировка экрана</string>
     <string name="lock_now">Заблокировать экран сейчас</string>
-    <string name="evict_credential_encryptoon_key">Удалить ключ шифрования учетных данных</string>
+    <string name="evict_credential_encryption_key">Удалить ключ шифрования учетных данных</string>
+    <!--TODO: the following 11 strings-->
+    <string name="hardware_monitor">Hardware monitor</string>
+    <string name="refresh_interval">Refresh interval</string>
+    <string name="cpu_temp">CPU temperatures</string>
+    <string name="gpu_temp">GPU temperatures</string>
+    <string name="battery_temp">Battery temperatures</string>
+    <string name="skin_temp">Skin temperatures</string>
+    <string name="undefined">Undefined</string>
+    <string name="cpu_usages">CPU usages</string>
+    <string name="active">Active</string>
+    <string name="total">Total</string>
+    <string name="fan_speeds">Fan speeds</string>
     <string name="bug_report">Отчет об ошибке</string>
     <string name="confirm_bug_report">Запросить отчет об ошибке?</string>
     <string name="reboot">Перезагрузить</string>
-    <string name="change_time">Change time</string> <!--TODO-->
-    <string name="change_timezone">Change timezone</string> <!--TODO-->
+    <!--TODO: the following 6 strings-->
+    <string name="change_time">Change time</string>
+    <string name="selector">Selector</string>
+    <string name="manually_input">Manually input</string>
+    <string name="date">Date</string>
+    <string name="time">Time</string>
+    <string name="change_timezone">Change timezone</string>
     <string name="timezone_id">Идентификатор часового пояса</string>
     <string name="disable_auto_time_zone_before_set">Автоматический часовой пояс должен быть отключен перед установкой пользовательского часового пояса.</string>
     <string name="permission_policy">Политика разрешений</string>
@@ -156,10 +173,7 @@
     <string name="nearby_notification_streaming">Политика потоковой передачи уведомлений Nearby</string>
     <string name="enable_if_secure_enough">Только для одной управляемой учетной записи</string>
     <string name="lock_task_mode">Режим закрепления задачи</string>
-    <string name="lock_task_feature">Функция закрепления задачи</string>
-    <string name="lock_task_packages">Закрепленные пакеты</string>
     <string name="specify_activity">Указать Acitvity</string>
-    <string name="start_lock_task_mode">Запустить режим закрепления задачи</string>
     <string name="app_not_allowed">Приложение не разрешено</string>
     <string name="disable_all">Отключить все</string>
     <!--ltf: функция закрепления задачи-->
@@ -175,7 +189,7 @@
     <string name="cert_installed">Сертификат установлен: %1$s</string>
     <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Выберите сертификат...</string>
     <string name="uninstall_all_user_ca_cert">Удалить все пользовательские CA-сертификаты</string>
-    <string name="security_logs">Журналы безопасности</string>
+    <string name="security_logging">Security logging</string> <!--TODO-->
     <string name="pre_reboot_security_logs">Журналы безопасности перед перезагрузкой</string>
     <string name="wipe_data">Стереть данные</string>
     <string name="wipe_external_storage">Стереть внешнее хранилище</string>
@@ -186,7 +200,6 @@
     <string name="wipe_work_profile_warning">Ваш рабочий профиль будет УДАЛЕН</string>
     <string name="encryption_status">Статус шифрования</string>
     <string name="frp_policy">Политика FRP</string>
-    <string name="factory_reset_protection_policy">Политика защиты от сброса к заводским настройкам</string>
     <string name="frp_policy_not_supported">Политика FRP не поддерживается на этом устройстве</string>
     <string name="enable_frp">Включить FRP</string>
     <string name="account_list_is">Список аккаунтов: </string>
@@ -215,6 +228,24 @@
     <!--Сеть-->
     <string name="network">Сеть</string>
     <string name="wifi_mac_address">MAC-адрес Wi-Fi</string>
+    <!--TODO-->
+    <string name="disconnect">Disconnect</string>
+    <string name="reconnect">Reconnect</string>
+    <string name="saved_networks">Saved networks</string>
+    <string name="request_location_permission_description">This app need location permission to get saved networks, your geographic location will not be read.\nClick to request the permission.</string>
+    <string name="add_network">Add network</string>
+    <string name="update_network">Update network</string>
+    <string name="current">Current</string>
+    <string name="hidden_ssid">Hidden SSID</string>
+    <string name="ip_settings">IP settings</string>
+    <string name="static_str">Static</string>
+    <string name="ip_address">IP address</string>
+    <string name="gateway_address">Gateway address</string>
+    <string name="dns_servers">DNS servers</string>
+    <string name="mac_randomization">MAC randomization</string>
+    <string name="non_persistent">Non persistent</string>
+    <string name="host">Host</string>
+    <string name="add_network_result_invalid_configuration">Invalid configuration</string>
     <string name="min_wifi_security_level">Минимальный уровень безопасности Wi-Fi</string>
     <string name="wifi_security_open">Открытая</string>
     <string name="lockdown_admin_configured_network">Блокировка ети, настроенной администратором</string>
@@ -235,13 +266,12 @@
     <string name="proxy_type_direct">Прямой прокси</string>
     <string name="specify_port">Указать порт</string>
     <string name="invalid_config">Неверная конфигурация</string>
-    <string name="exclude_hosts">Исключить хосты</string>
-    <string name="retrieve_net_logs">Журналы сети</string>
+    <string name="excluded_hosts">Исключить хосты</string> <!--TODO-->
+    <string name="network_logging">Network logging</string> <!--TODO-->
     <string name="log_file_size_is">Размер файла журнала: %1$s</string>
     <string name="delete_logs">Удалить журналы</string>
     <string name="export_logs">Экспортировать журналы</string>
     <string name="wifi_auth_keypair">Пара ключей Wi-Fi</string>
-    <string name="keypair">Пара ключей</string>
     <string name="preferential_network_service">Предпочтительная сетевая служба</string>
     <string name="network_id">Идентификатор сети</string>
     <string name="allow_fallback_to_default_connection">Разрешить переход на соединение по умолчанию</string>
@@ -286,7 +316,6 @@
     <string name="migrate_account">Перенести аккаунт</string>
     <string name="account_name">Имя аккаунта</string>
     <string name="keep_account">Сохранить аккаунт</string>
-    <string name="is_org_owned_profile">Рабочий профиль принадлежит организации: %1$s</string>
     <string name="org_owned_work_profile">Рабочий профиль организации</string>
     <string name="skip_encryption">Пропустить шифрование</string>
     <string name="create">Создать</string>
@@ -316,7 +345,7 @@
     <string name="always_on_vpn">Постоянный VPN</string>
     <string name="enable_lockdown">Включить блокировку</string>
     <string name="clear_current_config">Очистить текущую конфигурацию</string>
-    <string name="permission">Разрешение</string>
+    <string name="permissions">Разрешение</string>
     <string name="scope_is_work_profile">Область действия: рабочий профиль</string>
     <string name="app_info">Информация о приложении</string>
     <string name="not_installed">Не установлено</string>
@@ -366,12 +395,12 @@
 
 
     <!--Ограничения пользователя-->
-    <string name="user_restrict">Ограничения пользователя</string>
+    <string name="user_restriction">Ограничения пользователя</string>
     <string name="profile_owner_is_restricted">Владелец профиля может использовать ограниченные функции</string>
     <string name="switch_to_disable_feature">Включите переключатель, чтобы отключить эту функцию.</string>
     <string name="some_features_invalid_in_work_profile">Функции в рабочем профиле ограничены.</string>
-    <string name="network_internet">Сеть</string>
-    <string name="more_connectivity">Другие подключения</string>
+    <string name="network_and_internet">Сеть</string>
+    <string name="connectivity">Другие подключения</string>
     <string name="media">Медиа</string>
     <string name="other">Другое</string>
     <string name="require_device_owner">Требуется владелец устройства</string>
@@ -478,7 +507,6 @@
     <string name="change_user_icon">Изменить значок пользователя</string>
     <string name="file_picker_instead_gallery">Использовать выборщик файлов вместо галереи</string>
     <string name="select_picture" tools:ignore="TypographyEllipsis">Выберите изображение...</string>
-    <string name="unknown_result">Неизвестный результат (возможно, ошибка)</string>
     <string name="fail_managed_profile">Ошибка: управляемый профиль</string>
     <string name="fail_current_user">Ошибка: текущий пользователь</string>
     <string name="user_session_msg">Сообщение о сеансе пользователя</string>
@@ -525,7 +553,6 @@
     <string name="disable_keyguard_features_unredacted_notification">Отключить неотредактированные уведомления</string>
     <string name="disable_keyguard_features_trust_agents">Отключить доверенные агенты</string>
     <string name="disable_keyguard_features_fingerprint">Отключить отпечаток пальца</string>
-    <string name="disable_keyguard_features_remote_input">Отключить удаленный ввод</string>
     <string name="disable_keyguard_features_face">Отключить распознавание лица</string>
     <string name="disable_keyguard_features_iris">Отключить сканер радужной оболочки</string>
     <string name="disable_keyguard_features_biometrics">Отключить биометрию</string>
@@ -556,16 +583,12 @@
     <string name="lock_owndroid">Заблокировать OwnDroid</string>
     <string name="enable_bio_auth">Аутентификация по биометрии</string>
     <string name="authenticate">Аутентифицировать</string>
-    <string name="use_password">Использовать пароль</string>
-    <string name="auth_with_password">Аутентифицировать OwnDroid с помощью пароля</string>
-    <string name="auth_with_bio">Аутентифицировать OwnDroid с помощью биометрии</string>
     <string name="lock_in_background">Блокировать при переключении в фоновый режим</string>
-    <string name="protect_storage">Защитить хранилище</string>
-    <string name="storage_is_protected">Хранилище защищено, вы не можете очистить хранилище OwnDroid</string>
     <string name="clear_storage">Очистить хранилище</string>
 
-    <string name="automation_api">API автоматизации</string>
-    <string name="automation_debug">Режим отладки</string>
+    <!--TODO-->
+    <string name="api_key">API key</string>
+    <string name="api_key_exist">The API key already exists, setting a new key will overwrite the current key.</string>
 
     <!--Разрешения Android-->
     <string name="permission_POST_NOTIFICATIONS">Отправлять уведомления</string>

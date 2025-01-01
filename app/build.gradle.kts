@@ -24,8 +24,8 @@ android {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 21
         targetSdk = 34
-        versionCode = 34
-        versionName = "6.2"
+        versionCode = 35
+        versionName = "6.3"
         multiDexEnabled = false
     }
 
@@ -54,15 +54,6 @@ android {
         compose = true
         aidl = true
     }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "/META-INF/**.version"
-            excludes += "kotlin/**"
-            excludes += "**.bin"
-            excludes += "kotlin-tooling-metadata.json"
-        }
-    }
     androidResources {
         generateLocaleConfig = true
     }
@@ -86,6 +77,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.accompanist.drawablepainter)
+    implementation(libs.accompanist.permissions)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.shizuku.provider)
@@ -95,4 +87,5 @@ dependencies {
     implementation(libs.androidx.fragment)
     implementation(libs.hiddenApiBypass)
     implementation(libs.serialization)
+    implementation(kotlin("reflect"))
 }

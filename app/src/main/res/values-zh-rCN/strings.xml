@@ -41,7 +41,6 @@
     <string name="developing">功能开发中</string>
     <string name="options">选项</string>
     <string name="copy_command">复制代码</string>
-    <string name="unknown_status">未知状态</string>
     <string name="copy">复制</string>
     <string name="file_not_exist">文件不存在</string>
     <string name="io_exception">IO异常</string>
@@ -60,6 +59,12 @@
     <string name="off">关闭</string>
     <string name="alias">别名</string>
     <string name="unknown_error">未知错误</string>
+    <string name="permission_denied">无权限</string>
+    <string name="error">错误</string>
+    <string name="status">状态</string>
+    <string name="edit">编辑</string>
+    <string name="overview">概览</string>
+    <string name="features">功能</string>
 
     <!--Permissions-->
     <string name="click_to_activate">点击以激活</string>
@@ -87,8 +92,8 @@
     <string name="account_type">账号类型</string>
     <string name="transfer_ownership">转移所有权</string>
     <string name="target_component_name">目标组件名</string>
-    <string name="device_owner_lock_screen_info">锁屏提示信息</string>
-    <string name="support_msg">提供支持的消息</string>
+    <string name="lock_screen_info">锁屏提示信息</string>
+    <string name="support_messages">提供支持的消息</string>
     <string name="short_support_msg">提供支持的短消息</string>
     <string name="long_support_msg">提供支持的长消息</string>
     <string name="transfer">转移</string>
@@ -106,19 +111,13 @@
     <string name="dhizuku_mode_disabled">Dhizuku模式已禁用</string>
 
     <!--Shizuku-->
-    <string name="check_shizuku">检查Shizuku</string>
     <string name="list_owners">列出Owners</string>
     <string name="list_users">列出用户</string>
     <string name="list_accounts">列出账号</string>
     <string name="shizuku_not_started">服务未启动</string>
-    <string name="shizuku_activated_shell">已授权（Shell）</string>
-    <string name="shizuku_activated_root">已授权（Root）</string>
     <string name="activate_device_owner">激活Device owner</string>
     <string name="activate_org_profile">激活由组织拥有的工作资料</string>
     <string name="shizuku_service_disconnected">Shizuku服务断开连接</string>
-    <string name="shizuku_not_bind">Shizuku未连接</string>
-    <string name="invalid_binder">无效Binder</string>
-    <string name="bind_shizuku">连接Shizuku</string>
 
     <!--System-->
     <string name="system">系统</string>
@@ -135,11 +134,26 @@
     <string name="disable_usb_signal">禁用USB信号</string>
     <string name="keyguard">锁屏</string>
     <string name="lock_now">立即锁屏</string>
-    <string name="evict_credential_encryptoon_key">移除凭证加密密钥</string>
+    <string name="evict_credential_encryption_key">移除凭证加密密钥</string>
+    <string name="hardware_monitor">硬件监视器</string>
+    <string name="refresh_interval">刷新间隔</string>
+    <string name="cpu_temp">CPU温度</string>
+    <string name="gpu_temp">GPU温度</string>
+    <string name="battery_temp">电池温度</string>
+    <string name="skin_temp">表面温度</string>
+    <string name="undefined">未定义</string>
+    <string name="cpu_usages">CPU使用情况</string>
+    <string name="active">活动</string>
+    <string name="total">总计</string>
+    <string name="fan_speeds">Fan speeds</string>
     <string name="bug_report">错误报告</string>
     <string name="confirm_bug_report">请求错误报告？</string>
     <string name="reboot">重启</string>
     <string name="change_time">更改时间</string>
+    <string name="selector">选择器</string>
+    <string name="manually_input">手动输入</string>
+    <string name="date">日期</string>
+    <string name="time">时间</string>
     <string name="change_timezone">更改时区</string>
     <string name="timezone_id">时区ID</string>
     <string name="disable_auto_time_zone_before_set">在设置时区前需要关闭自动时区</string>
@@ -152,10 +166,7 @@
     <string name="nearby_notification_streaming">附近通知传输</string>
     <string name="enable_if_secure_enough">在足够安全时启用</string>
     <string name="lock_task_mode">锁定任务模式</string>
-    <string name="lock_task_feature">锁定任务功能</string>
-    <string name="lock_task_packages">锁定任务应用</string>
     <string name="specify_activity">指定Activity</string>
-    <string name="start_lock_task_mode">启动锁定任务模式</string>
     <string name="app_not_allowed">应用未被允许</string>
     <string name="disable_all">禁用全部</string>
     <string name="ltf_sys_info">允许状态栏信息</string>
@@ -172,7 +183,7 @@
     <string name="cert_installed">证书已安装：%1$s</string>
     <string name="select_ca_cert" tools:ignore="TypographyEllipsis">选择证书...</string>
     <string name="uninstall_all_user_ca_cert">卸载所有用户证书</string>
-    <string name="security_logs">安全日志</string>
+    <string name="security_logging">安全日志</string>
     <string name="pre_reboot_security_logs">重启前安全日志</string>
     <string name="wipe_data">清除数据</string>
     <string name="wipe_external_storage">清除外部存储</string>
@@ -183,7 +194,6 @@
     <string name="wipe_work_profile_warning">你的工作资料将会被删除</string>
     <string name="encryption_status">加密状态</string>
     <string name="frp_policy">FRP策略</string>
-    <string name="factory_reset_protection_policy">恢复出厂设置保护策略</string>
     <string name="frp_policy_not_supported">这个设备不支持恢复出厂设置保护策略</string>
     <string name="enable_frp">启用FRP</string>
     <string name="account_list_is">账户列表：</string>
@@ -210,7 +220,24 @@
 
     <!--Network-->
     <string name="network">网络</string>
-    <string name="wifi_mac_address">Wi-Fi Mac地址</string>
+    <string name="wifi_mac_address">Wi-Fi MAC地址</string>
+    <string name="disconnect">断开连接</string>
+    <string name="reconnect">重新连接</string>
+    <string name="saved_networks">已保存的网络</string>
+    <string name="request_location_permission_description">此app需要定位权限以获取已保存的网络，你的地理位置将不会被读取。点击以请求权限</string>
+    <string name="add_network">添加网络</string>
+    <string name="update_network">更新网络</string>
+    <string name="current">当前</string>
+    <string name="hidden_ssid">隐藏的SSID</string>
+    <string name="ip_settings">IP设置</string>
+    <string name="static_str">静态</string>
+    <string name="ip_address">IP地址</string>
+    <string name="gateway_address">网关地址</string>
+    <string name="dns_servers">DNS服务器</string>
+    <string name="mac_randomization">MAC随机化</string>
+    <string name="non_persistent">非持久</string>
+    <string name="host">主机</string>
+    <string name="add_network_result_invalid_configuration">Invalid configuration</string>
     <string name="min_wifi_security_level">最低Wi-Fi安全等级</string>
     <string name="wifi_security_open">开放</string>
     <string name="lockdown_admin_configured_network">锁定由管理员配置的网络</string>
@@ -231,13 +258,12 @@
     <string name="proxy_type_direct">直连代理</string>
     <string name="specify_port">指定端口</string>
     <string name="invalid_config">无效配置</string>
-    <string name="exclude_hosts">排除列表</string>
-    <string name="retrieve_net_logs">收集网络日志</string>
+    <string name="excluded_hosts">排除的主机</string>
+    <string name="network_logging">网络日志</string>
     <string name="log_file_size_is">日志文件大小：%1$s</string>
     <string name="delete_logs">删除日志</string>
     <string name="export_logs">导出日志</string>
     <string name="wifi_auth_keypair">Wi-Fi密钥对</string>
-    <string name="keypair">密钥对</string>
     <string name="preferential_network_service">首选网络服务</string>
     <string name="network_id">网络ID</string>
     <string name="allow_fallback_to_default_connection">允许回落到默认连接</string>
@@ -280,7 +306,6 @@
     <string name="migrate_account">迁移账号</string>
     <string name="account_name">账号名</string>
     <string name="keep_account">保留账号</string>
-    <string name="is_org_owned_profile">由组织拥有的工作资料：%1$s</string>
     <string name="org_owned_work_profile">组织拥有的工作资料</string>
     <string name="skip_encryption">跳过加密</string>
     <string name="create">创建</string>
@@ -309,7 +334,7 @@
     <string name="always_on_vpn">VPN保持打开</string>
     <string name="enable_lockdown">启用锁定</string>
     <string name="clear_current_config">清除当前配置</string>
-    <string name="permission">权限</string>
+    <string name="permissions">权限</string>
     <string name="scope_is_work_profile">作用域: 工作资料</string>
     <string name="app_info">应用详情</string>
     <string name="not_installed">未安装</string>
@@ -357,12 +382,12 @@
     <string name="status_fail_timeout">超时</string>
 
     <!--UserRestriction-->
-    <string name="user_restrict">用户限制</string>
+    <string name="user_restriction">用户限制</string>
     <string name="profile_owner_is_restricted">Profile owner无法使用部分功能</string>
     <string name="switch_to_disable_feature">打开开关后会禁用对应的功能</string>
     <string name="some_features_invalid_in_work_profile">工作资料中部分功能无效</string>
-    <string name="network_internet">网络和互联网</string>
-    <string name="more_connectivity">更多连接</string>
+    <string name="network_and_internet">网络和互联网</string>
+    <string name="connectivity">更多连接</string>
     <string name="media">媒体</string>
     <string name="other">其他</string>
     <string name="require_device_owner">需要DeviceOwner</string>
@@ -468,7 +493,6 @@
     <string name="change_user_icon">更换用户头像</string>
     <string name="file_picker_instead_gallery">使用文件选择器而不是相册</string>
     <string name="select_picture" tools:ignore="TypographyEllipsis">选择图片...</string>
-    <string name="unknown_result">未知结果（失败）</string>
     <string name="fail_managed_profile">失败：受管理的资料</string>
     <string name="fail_current_user">失败：当前用户</string>
     <string name="user_session_msg">用户会话消息</string>
@@ -513,7 +537,6 @@
     <string name="disable_keyguard_features_unredacted_notification">禁用未经编辑的通知</string>
     <string name="disable_keyguard_features_trust_agents">禁用可信代理</string>
     <string name="disable_keyguard_features_fingerprint">禁用指纹解锁</string>
-    <string name="disable_keyguard_features_remote_input">禁止远程输入(弃用)</string>
     <string name="disable_keyguard_features_face">禁用人脸解锁</string>
     <string name="disable_keyguard_features_iris">禁用虹膜解锁(?)</string>
     <string name="disable_keyguard_features_biometrics">禁用生物识别</string>
@@ -539,20 +562,15 @@
     <string name="project_homepage">项目主页</string>
     <string name="appearance">外观</string>
 
-    <string name="security">安全</string>
+    <string name="security">安全性</string>
     <string name="lock_owndroid">锁定OwnDroid</string>
     <string name="enable_bio_auth">使用生物识别</string>
     <string name="authenticate">验证</string>
-    <string name="use_password">使用密码</string>
-    <string name="auth_with_password">使用密码进行验证</string>
-    <string name="auth_with_bio">使用生物识别进行验证</string>
     <string name="lock_in_background">处于后台时锁定</string>
-    <string name="protect_storage">保护存储空间</string>
-    <string name="storage_is_protected">存储空间受到保护，你不能清除OwnDroid的存储空间</string>
     <string name="clear_storage">清除存储空间</string>
 
-    <string name="automation_api">自动化API</string>
-    <string name="automation_debug">调试模式</string>
+    <string name="api_key">API密钥</string>
+    <string name="api_key_exist">API密钥已存在，设置新的密钥将会覆盖当前密钥</string>
 
     <!--AndroidPermission-->
     <string name="permission_POST_NOTIFICATIONS">发送通知</string>

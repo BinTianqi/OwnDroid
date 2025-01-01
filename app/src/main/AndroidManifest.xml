@@ -20,6 +20,10 @@
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES"/>
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
     <uses-sdk tools:overrideLibrary="rikka.shizuku.provider,rikka.shizuku.api,rikka.shizuku.shared,rikka.shizuku.aidl"/>
     <application
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -51,17 +55,6 @@
             android:name=".ManageSpaceActivity"
             android:windowSoftInputMode="adjustResize|stateHidden"
             android:theme="@style/Theme.Transparent">
-        </activity>
-        <activity
-            android:name=".AutomationActivity"
-            android:exported="true"
-            android:launchMode="singleInstance"
-            android:excludeFromRecents="true"
-            android:windowSoftInputMode="adjustResize|stateHidden"
-            android:theme="@style/Theme.Transparent">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-            </intent-filter>
         </activity>
         <activity
             android:name=".InstallAppActivity"
@@ -103,14 +96,14 @@
             android:permission="android.permission.BIND_DEVICE_ADMIN">
         </receiver>
         <receiver
-            android:name=".StopLockTaskModeReceiver"
-            android:description="@string/app_name">
-        </receiver>
-        <receiver
-                android:name=".AutomationReceiver"
-                android:exported="true">
+            android:name=".ApiReceiver"
+            android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="com.bintianqi.owndroid.action.HIDE"/>
+                <action android:name="com.bintianqi.owndroid.action.UNHIDE"/>
+                <action android:name="com.bintianqi.owndroid.action.SUSPEND"/>
+                <action android:name="com.bintianqi.owndroid.action.UNSUSPEND"/>
+                <action android:name="com.bintianqi.owndroid.action.LOCK"/>
             </intent-filter>
         </receiver>
         <provider
