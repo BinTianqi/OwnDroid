@@ -173,6 +173,8 @@ fun SystemManage(navCtrl: NavHostController) {
             FunctionItem(R.string.change_time, icon = R.drawable.schedule_fill0) { navCtrl.navigate("ChangeTime") }
             FunctionItem(R.string.change_timezone, icon = R.drawable.schedule_fill0) { navCtrl.navigate("ChangeTimeZone") }
         }
+        /*if(VERSION.SDK_INT >= 28 && (deviceOwner || profileOwner))
+            FunctionItem(R.string.key_pairs, icon = R.drawable.key_vertical_fill0) { navCtrl.navigate("KeyPairs") }*/
         if(VERSION.SDK_INT >= 23 && (deviceOwner || profileOwner)) {
             FunctionItem(R.string.permission_policy, icon = R.drawable.key_fill0) { navCtrl.navigate("PermissionPolicy") }
         }
@@ -269,7 +271,7 @@ fun SystemOptions(navCtrl: NavHostController) {
                 )
             } else {
                 SwitchItem(R.string.require_auto_time, icon = R.drawable.schedule_fill0,
-                    getState = { dpm.autoTimeRequired}, onCheckedChange = { dpm.setAutoTimeRequired(receiver,it) }, padding = false)
+                    getState = { dpm.autoTimeRequired }, onCheckedChange = { dpm.setAutoTimeRequired(receiver,it) }, padding = false)
             }
         }
         if(deviceOwner || (profileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && !dpm.isManagedProfile(receiver))))) {
@@ -629,6 +631,186 @@ fun ChangeTimeZone(navCtrl: NavHostController) {
         onDismissRequest = { dialog = false }
     )
 }
+
+/*@RequiresApi(28)
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun KeyPairs(navCtrl: NavHostController) {
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
+    var alias by remember { mutableStateOf("") }
+    var purpose by remember { mutableIntStateOf(0) }
+    //var keySpecType by remember { mutableIntStateOf() }
+    var ecStdName by remember { mutableStateOf("") }
+    var rsaKeySize by remember { mutableStateOf("") }
+    var rsaExponent by remember { mutableStateOf("") }
+    var algorithm by remember { mutableStateOf("") }
+    var idAttestationFlags by remember { mutableIntStateOf(0) }
+    MyScaffold(R.string.key_pairs, 8.dp, navCtrl) {
+        OutlinedTextField(
+            value = alias, onValueChange = { alias = it }, label = { Text(stringResource(R.string.alias)) },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Text(stringResource(R.string.algorithm), style = typography.titleLarge)
+        SingleChoiceSegmentedButtonRow {
+            *//*SegmentedButton(
+                algorithm == "DH", { algorithm = "DH" },
+                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 4)
+            ) {
+                Text("DH")
+            }
+            SegmentedButton(
+                algorithm == "DSA", { algorithm = "DSA" },
+                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 4)
+            ) {
+                Text("DSA")
+            }*//*
+            SegmentedButton(
+                algorithm == "EC", { algorithm = "EC" },
+                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
+            ) {
+                Text("EC")
+            }
+            SegmentedButton(
+                algorithm == "RSA", { algorithm = "RSA" },
+                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
+            ) {
+                Text("RSA")
+            }
+        }
+        AnimatedVisibility(algorithm != "") {
+            Text(stringResource(R.string.key_specification), style = typography.titleLarge)
+        }
+        AnimatedVisibility(algorithm == "EC") {
+            OutlinedTextField(
+                value = ecStdName, onValueChange = { ecStdName = it }, label = { Text(stringResource(R.string.standard_name)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+        AnimatedVisibility(algorithm == "RSA") {
+            Column {
+                OutlinedTextField(
+                    value = rsaKeySize, onValueChange = { rsaKeySize = it }, label = { Text(stringResource(R.string.key_size)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = rsaExponent, onValueChange = { rsaExponent = it }, label = { Text(stringResource(R.string.exponent)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+        Text(stringResource(R.string.key_purpose), style = typography.titleLarge)
+        FlowRow {
+            if(VERSION.SDK_INT >= 23) {
+                InputChip(
+                    purpose and KeyProperties.PURPOSE_ENCRYPT != 0,
+                    { purpose = purpose xor KeyProperties.PURPOSE_ENCRYPT },
+                    { Text(stringResource(R.string.kp_encrypt)) },
+                    Modifier.padding(horizontal = 4.dp)
+                )
+                InputChip(
+                    purpose and KeyProperties.PURPOSE_DECRYPT != 0,
+                    { purpose = purpose xor KeyProperties.PURPOSE_DECRYPT },
+                    { Text(stringResource(R.string.kp_decrypt)) },
+                    Modifier.padding(horizontal = 4.dp)
+                )
+                InputChip(
+                    purpose and KeyProperties.PURPOSE_SIGN != 0,
+                    { purpose = purpose xor KeyProperties.PURPOSE_SIGN },
+                    { Text(stringResource(R.string.kp_sign)) },
+                    Modifier.padding(horizontal = 4.dp)
+                )
+                InputChip(
+                    purpose and KeyProperties.PURPOSE_VERIFY != 0,
+                    { purpose = purpose xor KeyProperties.PURPOSE_VERIFY },
+                    { Text(stringResource(R.string.kp_verify)) },
+                    Modifier.padding(horizontal = 4.dp)
+                )
+            }
+            if(VERSION.SDK_INT >= 28) InputChip(
+                purpose and KeyProperties.PURPOSE_WRAP_KEY != 0,
+                { purpose = purpose xor KeyProperties.PURPOSE_WRAP_KEY },
+                { Text(stringResource(R.string.kp_wrap)) },
+                Modifier.padding(horizontal = 4.dp)
+            )
+            if(VERSION.SDK_INT >= 31) {
+                InputChip(
+                    purpose and KeyProperties.PURPOSE_AGREE_KEY != 0,
+                    { purpose = purpose xor KeyProperties.PURPOSE_AGREE_KEY },
+                    { Text(stringResource(R.string.kp_agree)) },
+                    Modifier.padding(horizontal = 4.dp)
+                )
+                InputChip(
+                    purpose and KeyProperties.PURPOSE_ATTEST_KEY != 0,
+                    { purpose = purpose xor KeyProperties.PURPOSE_ATTEST_KEY },
+                    { Text(stringResource(R.string.kp_attest)) },
+                    Modifier.padding(horizontal = 4.dp)
+                )
+            }
+        }
+        Text(stringResource(R.string.attestation_record_identifiers), style = typography.titleLarge)
+        FlowRow {
+            InputChip(
+                idAttestationFlags and DevicePolicyManager.ID_TYPE_BASE_INFO != 0,
+                { idAttestationFlags = idAttestationFlags xor DevicePolicyManager.ID_TYPE_BASE_INFO },
+                { Text(stringResource(R.string.base_info)) },
+                Modifier.padding(horizontal = 4.dp)
+            )
+            InputChip(
+                idAttestationFlags and DevicePolicyManager.ID_TYPE_SERIAL != 0,
+                { idAttestationFlags = idAttestationFlags xor DevicePolicyManager.ID_TYPE_SERIAL },
+                { Text(stringResource(R.string.serial_number)) },
+                Modifier.padding(horizontal = 4.dp)
+            )
+            InputChip(
+                idAttestationFlags and DevicePolicyManager.ID_TYPE_IMEI != 0,
+                { idAttestationFlags = idAttestationFlags xor DevicePolicyManager.ID_TYPE_IMEI },
+                { Text("IMEI") },
+                Modifier.padding(horizontal = 4.dp)
+            )
+            InputChip(
+                idAttestationFlags and DevicePolicyManager.ID_TYPE_MEID != 0,
+                { idAttestationFlags = idAttestationFlags xor DevicePolicyManager.ID_TYPE_MEID },
+                { Text("MEID") },
+                Modifier.padding(horizontal = 4.dp)
+            )
+            if(VERSION.SDK_INT >= 30) InputChip(
+                idAttestationFlags and DevicePolicyManager.ID_TYPE_INDIVIDUAL_ATTESTATION != 0,
+                { idAttestationFlags = idAttestationFlags xor DevicePolicyManager.ID_TYPE_INDIVIDUAL_ATTESTATION },
+                { Text(stringResource(R.string.individual_certificate)) },
+                Modifier.padding(horizontal = 4.dp)
+            )
+        }
+        Button(
+            onClick = {
+                try {
+                    val aps = if(algorithm == "EC") ECGenParameterSpec(ecStdName)
+                    else RSAKeyGenParameterSpec(rsaKeySize.toInt(), rsaExponent.toBigInteger())
+                    val keySpec = KeyGenParameterSpec.Builder(alias, purpose).run {
+                        setAlgorithmParameterSpec(aps)
+                        this.setAttestationChallenge()
+                        build()
+                    }
+                    dpm.generateKeyPair(receiver, algorithm, keySpec, idAttestationFlags)
+                } catch(e: Exception) {
+                    AlertDialog.Builder(context)
+                        .setTitle(R.string.error)
+                        .setMessage(e.message ?: "")
+                        .setPositiveButton(R.string.confirm) { dialog, _ -> dialog.dismiss() }
+                        .show()
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = alias != "" && purpose != 0 &&
+                    ((algorithm == "EC") || (algorithm == "RSA" && rsaKeySize.all { it.isDigit() } && rsaExponent.all { it.isDigit() }))
+        ) {
+            Text(stringResource(R.string.generate))
+        }
+    }
+}*/
 
 @RequiresApi(23)
 @Composable

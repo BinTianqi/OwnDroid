@@ -361,7 +361,7 @@ fun processSecurityLogs(securityEvents: List<SecurityLog.SecurityEvent>, outputS
     val buffer = outputStream.bufferedWriter()
     securityEvents.forEachIndexed { index, event ->
         val item = buildJsonObject {
-            put("time_nanos", event.timeNanos)
+            put("time", event.timeNanos / 1000)
             put("tag", event.tag)
             if(VERSION.SDK_INT >= 28) put("level", event.logLevel)
             if(VERSION.SDK_INT >= 28) put("id", event.id)

@@ -195,7 +195,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
     LaunchedEffect(backToHome) {
         if(backToHome) { navCtrl.navigateUp(); backToHomeStateFlow.value = false }
     }
-    NavHost(
+    @Suppress("NewApi") NavHost(
         navController = navCtrl,
         startDestination = "HomePage",
         modifier = Modifier
@@ -226,6 +226,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable(route = "HardwareMonitor") { HardwareMonitor(navCtrl) }
         composable(route = "ChangeTime") { ChangeTime(navCtrl) }
         composable(route = "ChangeTimeZone") { ChangeTimeZone(navCtrl) }
+        //composable(route = "KeyPairs") { KeyPairs(navCtrl) }
         composable(route = "PermissionPolicy") { PermissionPolicy(navCtrl) }
         composable(route = "MTEPolicy") { MTEPolicy(navCtrl) }
         composable(route = "NearbyStreamingPolicy") { NearbyStreamingPolicy(navCtrl) }

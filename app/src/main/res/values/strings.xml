@@ -169,6 +169,25 @@
     <string name="change_timezone">Change timezone</string>
     <string name="timezone_id">Timezone ID</string>
     <string name="disable_auto_time_zone_before_set">Auto timezone should be disabled before set a custom timezone. </string>
+    <!--<string name="key_pairs">Key pairs</string>
+    <string name="generate_key_pair">Generate key pair</string>
+    <string name="algorithm">Algorithm</string>
+    <string name="key_specification">Key specification</string>
+    <string name="standard_name">Standard name</string>
+    <string name="key_size">Key size</string>
+    <string name="exponent">Exponent</string>
+    <string name="key_purpose">Key purpose</string>
+    <string name="kp_encrypt">Encrypt</string>
+    <string name="kp_decrypt">Decrypt</string>
+    <string name="kp_sign">Sign</string>
+    <string name="kp_verify">Verify</string>
+    <string name="kp_wrap">Wrap</string>
+    <string name="kp_agree">Agree</string>
+    <string name="kp_attest">Attest</string>
+    <string name="attestation_record_identifiers">Attestation record identifiers</string>
+    <string name="base_info">Base info</string>
+    <string name="individual_certificate">Individual certificate</string>
+    <string name="generate">Generate</string>-->
     <string name="permission_policy">Permission policy</string>
     <string name="auto_grant">Auto grant</string>
     <string name="auto_deny">Auto deny</string>
@@ -585,6 +604,7 @@
     <string name="authenticate">Authenticate</string>
     <string name="lock_in_background">Lock when switch to background</string>
     <string name="clear_storage">Clear storage</string>
+    <string name="skipped_authentication">Skipped authentication because it is unavailable.</string>
     
     <string name="api_key">API key</string>
     <string name="api_key_exist">The API key already exists, setting a new key will overwrite the current key.</string>

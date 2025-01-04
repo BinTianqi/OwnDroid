@@ -57,6 +57,9 @@ android {
     androidResources {
         generateLocaleConfig = true
     }
+    dependenciesInfo {
+        includeInApk = false
+    }
 }
 
 kotlin {
