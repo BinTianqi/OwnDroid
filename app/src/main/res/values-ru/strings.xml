@@ -252,6 +252,33 @@
     <string name="wifi_ssid_policy">Политика SSID Wi-Fi</string>
     <string name="ssid_list_is">Список SSID:</string>
     <string name="already_exist">Уже существует</string>
+    <!--TODO: The following 26 strings-->
+    <string name="network_stats">Network stats</string>
+    <string name="type">Type</string>
+    <string name="summary">Summary</string>
+    <string name="details">Details</string>
+    <string name="target">Target</string>
+    <string name="device">Device</string>
+    <string name="user">User</string>
+    <string name="uid_tag">UID tag</string>
+    <string name="uid_tag_state">UID tag state</string>
+    <string name="network_type">Network type</string>
+    <string name="mobile">Mobile</string>
+    <string name="ethernet">Ethernet</string>
+    <string name="subscriber_id">Subscriber ID</string>
+    <string name="all">All</string>
+    <string name="uninstalled">Uninstalled</string>
+    <string name="tethering">Tethering</string>
+    <string name="choose_an_app" tools:ignore="TypographyEllipsis">Choose an app...</string>
+    <string name="input">Input</string>
+    <string name="query">Query</string>
+    <string name="transmitted">Transmitted</string>
+    <string name="received">Received</string>
+    <string name="state">State</string>
+    <string name="foreground">Foreground</string>
+    <string name="tag">Tag</string>
+    <string name="roaming">Roaming</string>
+    <string name="metered">Metered</string>
     <string name="private_dns">Частный DNS</string>
     <string name="dns_provide_hostname">Укажите имя хоста</string>
     <string name="host_not_serving_dns_tls">Хост не обслуживает DNS через TLS</string>
@@ -299,7 +326,7 @@
     <string name="address">Адрес</string>
     <string name="port">Порт</string>
     <string name="proxy">Прокси</string>
-    <string name="network_type">Тип сети</string>
+    <string name="apn_network_type">Тип сети</string>
     <string name="persistent">Постоянный</string>
     <string name="protocol">Протокол</string>
     <string name="roaming_protocol">Протокол роуминга</string>

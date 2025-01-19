@@ -88,6 +88,8 @@ import com.bintianqi.owndroid.dpm.NearbyStreamingPolicy
 import com.bintianqi.owndroid.dpm.Network
 import com.bintianqi.owndroid.dpm.NetworkLogging
 import com.bintianqi.owndroid.dpm.NetworkOptions
+import com.bintianqi.owndroid.dpm.NetworkStats
+import com.bintianqi.owndroid.dpm.NetworkStatsViewer
 import com.bintianqi.owndroid.dpm.OrgOwnedProfile
 import com.bintianqi.owndroid.dpm.OverrideAPN
 import com.bintianqi.owndroid.dpm.Password
@@ -245,6 +247,8 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable(route = "UpdateNetwork") { UpdateNetwork(it.arguments!!, navCtrl) }
         composable(route = "MinWifiSecurityLevel") { WifiSecurityLevel(navCtrl) }
         composable(route = "WifiSsidPolicy") { WifiSsidPolicy(navCtrl) }
+        composable(route = "NetworkStats") { NetworkStats(navCtrl, vm) }
+        composable(route = "NetworkStatsViewer") { NetworkStatsViewer(navCtrl, it.arguments!!) }
         composable(route = "PrivateDNS") { PrivateDNS(navCtrl) }
         composable(route = "AlwaysOnVpn") { AlwaysOnVPNPackage(navCtrl, vm) }
         composable(route = "RecommendedGlobalProxy") { RecommendedGlobalProxy(navCtrl) }

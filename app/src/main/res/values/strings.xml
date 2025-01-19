@@ -70,6 +70,7 @@
     <string name="edit">Edit</string>
     <string name="overview">Overview</string>
     <string name="features">Features</string>
+    <string name="default_str">Default</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
@@ -276,6 +277,34 @@
     <string name="wifi_ssid_policy">Wi-Fi SSID policy</string>
     <string name="ssid_list_is">SSID list:</string>
     <string name="already_exist">Already exist</string>
+    <string name="network_stats">Network stats</string>
+    <string name="type">Type</string>
+    <string name="summary">Summary</string>
+    <string name="details">Details</string>
+    <string name="target">Target</string>
+    <string name="device">Device</string>
+    <string name="user">User</string>
+    <string name="uid" translatable="false">UID</string>
+    <string name="uid_tag">UID tag</string>
+    <string name="uid_tag_state">UID tag state</string>
+    <string name="network_type">Network type</string>
+    <string name="mobile">Mobile</string>
+    <string name="ethernet">Ethernet</string>
+    <string name="vpn" translatable="false">VPN</string>
+    <string name="subscriber_id">Subscriber ID</string>
+    <string name="all">All</string>
+    <string name="uninstalled">Uninstalled</string>
+    <string name="tethering">Tethering</string>
+    <string name="choose_an_app" tools:ignore="TypographyEllipsis">Choose an app...</string>
+    <string name="input">Input</string>
+    <string name="query">Query</string>
+    <string name="transmitted">Transmitted</string>
+    <string name="received">Received</string>
+    <string name="state">State</string>
+    <string name="foreground">Foreground</string>
+    <string name="tag">Tag</string>
+    <string name="roaming">Roaming</string>
+    <string name="metered">Metered</string>
     <string name="private_dns">Private DNS</string>
     <string name="dns_provide_hostname">Provide hostname</string>
     <string name="host_not_serving_dns_tls">Host not serving</string>
@@ -323,7 +352,7 @@
     <string name="address">Address</string>
     <string name="port">Port</string>
     <string name="proxy">Proxy</string>
-    <string name="network_type">Network type</string>
+    <string name="apn_network_type">Network type</string>
     <string name="persistent">Persistent</string>
     <string name="protocol">Protocol</string>
     <string name="roaming_protocol">Roaming protocol</string>

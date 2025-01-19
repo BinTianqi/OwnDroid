@@ -314,15 +314,10 @@ fun MyScaffold(
 }
 
 @Composable
-fun UpOrDownTextFieldTrailingIconButton(active: Boolean, onClick: () -> Unit) {
+fun ExpandExposedTextFieldIcon(active: Boolean) {
     val degrees by animateFloatAsState(if(active) 180F else 0F)
-    IconButton(
-        onClick = onClick,
-        modifier = Modifier.clip(RoundedCornerShape(50))
-    ) {
-        Icon(
-            imageVector = Icons.Default.ArrowDropDown, contentDescription = null,
-            modifier = Modifier.rotate(degrees)
-        )
-    }
+    Icon(
+        imageVector = Icons.Default.ArrowDropDown, contentDescription = null,
+        modifier = Modifier.rotate(degrees)
+    )
 }
