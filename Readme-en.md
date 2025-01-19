@@ -43,6 +43,57 @@ Use Android Device owner privilege to manage your device.
   - Set screen timeout
   - ...
 
+## Activate
+
+- Shizuku (recommended)
+- Execute command in adb shell: `dpm set-device-owner com.bintianqi.owndroid/.Receiver`
+
+## FAQ
+
+### Activating
+
+#### Already some accounts on the device
+
+```text
+java.lang.IllegalStateException: Not allowed to set the device owner because there are already some accounts on the device
+```
+
+Solutions:
+- Freeze apps who hold those accounts.
+- Delete these accounts.
+- Use LSPosed module [HookDPM](https://github.com/BinTianqi/HookDPM).
+
+#### Already several users on the device
+
+```text
+java.lang.IllegalStateException: Not allowed to set the device owner because there are already several users on the device
+```
+
+Solutions:
+- Delete secondary users.
+- Use LSPosed module [HookDPM](https://github.com/BinTianqi/HookDPM).
+
+> [!NOTE]
+> Some systems have features such as app cloning and children space, which are usually users.
+
+#### MIUI
+
+```text
+java.lang.SecurityException: Neither user 2000 nor current process has android.permission.MANAGE_DEVICE_ADMINS.
+```
+
+Solutions:
+- Enable `USB debugging (Security setting)` in developer options.
+- Execute activating command in root shell.
+
+#### ColorOS
+
+```text
+java.lang.IllegalStateException: Unexpected @ProvisioningPreCondition
+```
+
+Solution: Use OwnDroid testkey version
+
 ## API
 
 |    ID     | Description      | Extras                                | Minimum Android version |
