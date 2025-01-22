@@ -59,6 +59,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.bintianqi.owndroid.dpm.AccountsViewer
 import com.bintianqi.owndroid.dpm.AffiliationID
 import com.bintianqi.owndroid.dpm.AlwaysOnVPNPackage
 import com.bintianqi.owndroid.dpm.ApplicationManage
@@ -213,7 +214,8 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable(route = "HomePage") { HomePage(navCtrl) }
 
         composable(route = "Permissions") { Permissions(navCtrl) }
-        composable(route = "Shizuku") { Shizuku(vm, navCtrl) }
+        composable(route = "Shizuku") { Shizuku(navCtrl, it.arguments!!) }
+        composable(route = "AccountsViewer") { AccountsViewer(navCtrl, it.arguments!!) }
         composable(route = "DeviceAdmin") { DeviceAdmin(navCtrl) }
         composable(route = "ProfileOwner") { ProfileOwner(navCtrl) }
         composable(route = "DeviceOwner") { DeviceOwner(navCtrl) }
@@ -360,7 +362,7 @@ private fun HomePage(navCtrl:NavHostController) {
     val profileOwner = context.isProfileOwner
     val refreshStatus by dhizukuErrorStatus.collectAsState()
     LaunchedEffect(refreshStatus) {
-        activated = context.isDeviceAdmin
+        activated = context.isProfileOwner || context.isDeviceOwner
         activateType = if(sharedPref.getBoolean("dhizuku", false)) context.getString(R.string.dhizuku) + " - " else ""
         activateType += context.getString(
             if(deviceOwner) { R.string.device_owner }

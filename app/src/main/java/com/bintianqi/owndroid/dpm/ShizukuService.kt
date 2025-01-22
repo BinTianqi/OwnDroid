@@ -1,10 +1,18 @@
 package com.bintianqi.owndroid.dpm
 
+import android.accounts.Account
+import android.accounts.AccountManager
+import android.annotation.SuppressLint
+import android.content.Context
+import android.os.Parcelable
+import android.os.UserManager
 import android.system.Os
 import androidx.annotation.Keep
 import com.bintianqi.owndroid.IUserService
+import com.bintianqi.owndroid.getContext
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.lang.Class
 
 @Keep
 class ShizukuService: IUserService.Stub() {
@@ -33,4 +41,10 @@ class ShizukuService: IUserService.Stub() {
     }
 
     override fun getUid(): Int = Os.getuid()
+
+    @SuppressLint("MissingPermission")
+    override fun listAccounts(): Array<Account> {
+        val am = getContext().getSystemService(Context.ACCOUNT_SERVICE) as AccountManager
+        return am.accounts
+    }
 }

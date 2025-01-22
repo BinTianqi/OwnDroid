@@ -1,5 +1,6 @@
 package com.bintianqi.owndroid
 
+import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -84,4 +85,9 @@ val Long.humanReadableDate: String
 
 fun Context.showOperationResultToast(success: Boolean) {
     Toast.makeText(this, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+}
+
+@SuppressLint("PrivateApi")
+fun getContext(): Context {
+    return Class.forName("android.app.ActivityThread").getMethod("currentApplication").invoke(null) as Context
 }

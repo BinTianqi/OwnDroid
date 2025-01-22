@@ -118,6 +118,7 @@
     <string name="activate_device_owner">激活Device owner</string>
     <string name="activate_org_profile">激活由组织拥有的工作资料</string>
     <string name="shizuku_service_disconnected">Shizuku服务断开连接</string>
+    <string name="accounts">账号</string>
 
     <!--System-->
     <string name="system">系统</string>
@@ -661,7 +662,7 @@
     <string name="info_security_log">设备上不能有非附属用户</string>
     <string name="info_pre_reboot_security_log">并非所有设备都支持重启前安全日志</string>
     <string name="info_disable_account_management">当某个帐户类型的帐户管理被禁用时，将无法添加或删除该类型的帐户。</string>
-    <string name="info_frp_policy">恢复出厂设置保护(Factory reset protection)策略用于防止不受信任的重置(Fastboot或Recovery)。需要设备支持持久数据块服务(Persistent data block service)</string>
+    <string name="info_frp_policy">恢复出厂设置保护(Factory reset protection)策略决定哪些帐户可以解锁经过不受信任的恢复出厂设置(fastboot或recovery)的设备。\n要启用此功能，设备必须支持持久数据块服务(Persistent data block service)。\n如果在开发者选项中启用了OEM解锁，则FRP将被禁用。</string>
     <string name="info_wipe_data_in_managed_user">此用户的所有数据将会被清除，但是用户不会被删除。</string>
     <string name="info_lockdown_admin_configured_network">控制用户是否可以更改管理员配置的网络。启用此锁定后，用户仍然可以配置和连接到其他Wi-Fi，或使用其他Wi-Fi功能（如网络共享）。</string>
     <string name="info_minimum_wifi_security_level">指定Wi-Fi网络所需的最低安全等级。设备将无法连接到低于最低安全等级的网络。如果当前网络不满足要求，则会断开连接。</string>

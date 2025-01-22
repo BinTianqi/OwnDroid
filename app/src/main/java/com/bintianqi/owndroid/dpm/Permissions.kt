@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Binder
 import android.os.Build.VERSION
+import android.os.Bundle
 import android.os.RemoteException
 import android.os.UserManager
 import android.widget.Toast
@@ -29,6 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.backToHomeStateFlow
@@ -54,6 +56,7 @@ fun Permissions(navCtrl: NavHostController) {
     val profileOwner = context.isProfileOwner
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     var dialog by remember { mutableIntStateOf(0) }
+    var bindingShizuku by remember { mutableStateOf(false) }
     val enrollmentSpecificId = if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) dpm.enrollmentSpecificId else ""
     MyScaffold(R.string.permissions, 0.dp, navCtrl) {
         if(!dpm.isDeviceOwnerApp(context.packageName)) {
@@ -82,8 +85,19 @@ fun Permissions(navCtrl: NavHostController) {
         }
         FunctionItem(R.string.shizuku) {
             try {
-                if(Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) { navCtrl.navigate("Shizuku") }
-                else if(Shizuku.shouldShowRequestPermissionRationale()) {
+                if(Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+                    bindingShizuku = true
+                    val destination = navCtrl.graph.findNode("Shizuku")!!.id
+                    bindShizukuService(context, { binder ->
+                        val args = Bundle()
+                        args.putBinder("binder", binder)
+                        bindingShizuku = false
+                        navCtrl.navigate(destination, args)
+                    }, {
+                        Toast.makeText(context, R.string.shizuku_service_disconnected, Toast.LENGTH_SHORT).show()
+                        bindingShizuku = false
+                    })
+                } else if(Shizuku.shouldShowRequestPermissionRationale()) {
                     Toast.makeText(context, R.string.permission_denied, Toast.LENGTH_SHORT).show()
                 } else {
                     Sui.init(context.packageName)
@@ -122,6 +136,11 @@ fun Permissions(navCtrl: NavHostController) {
         }
         if(VERSION.SDK_INT >= 28 && (deviceOwner || profileOwner)) {
             FunctionItem(R.string.transfer_ownership, icon = R.drawable.admin_panel_settings_fill0) { navCtrl.navigate("TransferOwnership") }
+        }
+    }
+    if(bindingShizuku) {
+        Dialog(onDismissRequest = { bindingShizuku = false }) {
+            CircularProgressIndicator()
         }
     }
     if(dialog != 0) {

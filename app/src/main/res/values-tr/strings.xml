@@ -124,6 +124,7 @@
     <string name="activate_device_owner">Cihaz Sahibini Etkinleştir</string>
     <string name="activate_org_profile">Kuruluş Profili Sahibini Etkinleştir</string>
     <string name="shizuku_service_disconnected">Shizuku Hizmeti Bağlantısı Kesildi</string>
+    <string name="accounts">Accounts</string> <!--TODO-->
 
     <!--System-->
     <string name="system">Sistem</string>

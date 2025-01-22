@@ -122,7 +122,7 @@
     <string name="activate_device_owner">Активировать владельца устройства</string>
     <string name="activate_org_profile">Активировать рабочий профиль, принадлежащий организации</string>
     <string name="shizuku_service_disconnected">Служба Shizuku отключена</string>
-
+    <string name="accounts">Accounts</string> <!--TODO-->
 
     <!--Системные-->
     <string name="system">Syetem</string> <!--TODO-->

@@ -127,10 +127,10 @@
     <string name="list_accounts">List accounts</string>
     <string name="shizuku_not_started">Shizuku not started. </string>
     <string name="dpm_activate_do_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
-    <string name="dpm_activate_da_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="activate_device_owner">Activate Device owner</string>
     <string name="activate_org_profile">Activate organization-owned work profile</string>
     <string name="shizuku_service_disconnected">Shizuku service disconnected</string>
+    <string name="accounts">Accounts</string>
 
     <!--System-->
     <string name="system">System</string>
@@ -701,7 +701,7 @@
     <string name="info_security_log">If a Device owner use this function, all users should be affiliated.</string>
     <string name="info_pre_reboot_security_log">Not all devices support pre-reboot security logs.</string>
     <string name="info_disable_account_management">When account management is disabled for an account type, adding or removing an account of that type will not be possible.</string>
-    <string name="info_frp_policy">Factory reset protection can protect the device after untrusted factory reset (in Recovery or Fastboot).\nTo enable this feature, the device must support persistent data block service.</string>
+    <string name="info_frp_policy">The factory reset protection policy determines which accounts can unlock a device that has gone through untrusted factory reset(fastboot or recovery).\nTo enable this feature, the device must support persistent data block service.\nFactory reset protection is disabled if OEM unlocking is enabled in Developer Options.</string>
     <string name="info_wipe_data_in_managed_user">All data of this user will be wiped, but that user won\'t be removed.</string>
     <string name="info_lockdown_admin_configured_network">Control whether the user can change networks configured by the admin.\nWhen this lockdown is enabled, the user can still configure and connect to other Wi-Fi networks, or use other Wi-Fi capabilities such as tethering.</string>
     <string name="info_minimum_wifi_security_level">Specify the minimum security level required for Wi-Fi networks. The device may not connect to networks that do not meet the minimum security level. If the current network does not meet the minimum security level set, it will be disconnected.</string>
