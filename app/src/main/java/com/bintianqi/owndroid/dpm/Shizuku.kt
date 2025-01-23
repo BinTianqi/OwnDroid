@@ -151,10 +151,11 @@ fun Shizuku(navCtrl: NavHostController, navArgs: Bundle) {
     }
 }
 
-fun bindShizukuService(
+fun controlShizukuService(
     context: Context,
     onServiceConnected: (IBinder) -> Unit,
-    onServiceDisconnected: () -> Unit
+    onServiceDisconnected: () -> Unit,
+    state: Boolean
 ) {
     val userServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(componentName: ComponentName, binder: IBinder) {
@@ -169,11 +170,8 @@ fun bindShizukuService(
         .processNameSuffix("shizuku-service")
         .debuggable(false)
         .version(26)
-    try {
-        Shizuku.bindUserService(userServiceArgs, userServiceConnection)
-    } catch(e: Exception) {
-        e.printStackTrace()
-    }
+    if(state) Shizuku.bindUserService(userServiceArgs, userServiceConnection)
+    else Shizuku.unbindUserService(userServiceArgs, userServiceConnection, true)
 }
 
 @Composable

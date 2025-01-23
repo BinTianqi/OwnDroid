@@ -68,6 +68,7 @@
     <string name="edit">Edit</string>
     <string name="overview">Overview</string>
     <string name="features">Features</string>
+    <string name="default_str">Default</string>
 
 
     <!--Разрешения-->
@@ -76,6 +77,17 @@
     <string name="activate_jump" tools:ignore="TypographyEllipsis">Активировать...</string>
     <string name="profile_owner">Владелец профиля</string>
     <string name="device_owner">Владелец устройства</string>
+    <!--TODO: translate the following 10 strings-->
+    <string name="delegated_admins">Delegated admins</string>
+    <string name="delegated_scope">delegated scope</string>
+    <string name="manage_application_restrictions">Manage application restrictions</string>
+    <string name="manage_certificates">Manage certificates</string>
+    <string name="select_keychain_certificates">Select KeyChain certificate</string>
+    <string name="install_existing_packages">Install existing packages</string>
+    <string name="manage_uninstalled_packages">Manage uninstalled packages</string>
+    <string name="change_package_state">Change package state</string>
+    <string name="grant_permissions">Grant permissions</string>
+    <string name="add_delegated_admin">Add delegated admin</string>
     <string name="dhizuku_will_be_deactivated">Dhizuku будет деактивирован</string>
     <string name="reset_device_policy">Сбросить политику устройства</string>
     <string name="activate_device_admin">Активировать администратора устройства</string>

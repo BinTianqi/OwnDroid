@@ -4,15 +4,11 @@ import android.accounts.Account
 import android.accounts.AccountManager
 import android.annotation.SuppressLint
 import android.content.Context
-import android.os.Parcelable
-import android.os.UserManager
 import android.system.Os
 import androidx.annotation.Keep
 import com.bintianqi.owndroid.IUserService
 import com.bintianqi.owndroid.getContext
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.lang.Class
+import kotlin.system.exitProcess
 
 @Keep
 class ShizukuService: IUserService.Stub() {
@@ -28,10 +24,10 @@ class ShizukuService: IUserService.Stub() {
             return e.toString()
         }
         try {
-            val outputReader = BufferedReader(InputStreamReader(process.inputStream))
+            val outputReader = process.inputStream.bufferedReader()
             var outputLine: String
             while(outputReader.readLine().also {outputLine = it} != null) { result += "$outputLine\n" }
-            val errorReader = BufferedReader(InputStreamReader(process.errorStream))
+            val errorReader = process.errorStream.bufferedReader()
             var errorLine: String
             while(errorReader.readLine().also {errorLine = it} != null) { result += "$errorLine\n" }
         } catch(e: NullPointerException) {
@@ -46,5 +42,9 @@ class ShizukuService: IUserService.Stub() {
     override fun listAccounts(): Array<Account> {
         val am = getContext().getSystemService(Context.ACCOUNT_SERVICE) as AccountManager
         return am.accounts
+    }
+
+    override fun destroy() {
+        exitProcess(0)
     }
 }

@@ -9,29 +9,42 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Binder
 import android.os.Build.VERSION
-import android.os.Bundle
+import android.os.IBinder
 import android.os.RemoteException
 import android.os.UserManager
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.os.bundleOf
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import androidx.navigation.NavOptions
+import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.backToHomeStateFlow
 import com.bintianqi.owndroid.showOperationResultToast
@@ -87,39 +100,38 @@ fun Permissions(navCtrl: NavHostController) {
             try {
                 if(Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
                     bindingShizuku = true
-                    val destination = navCtrl.graph.findNode("Shizuku")!!.id
-                    bindShizukuService(context, { binder ->
-                        val args = Bundle()
-                        args.putBinder("binder", binder)
+                    fun onBind(binder: IBinder) {
+                        val destinationId = navCtrl.graph.findNode("Shizuku")!!.id
                         bindingShizuku = false
-                        navCtrl.navigate(destination, args)
-                    }, {
-                        Toast.makeText(context, R.string.shizuku_service_disconnected, Toast.LENGTH_SHORT).show()
+                        navCtrl.navigate(destinationId, bundleOf("binder" to binder), NavOptions.Builder().setLaunchSingleTop(true).build())
+                    }
+                    try {
+                        controlShizukuService(context, ::onBind, { bindingShizuku = false }, true)
+                    } catch(e: Exception) {
+                        e.printStackTrace()
                         bindingShizuku = false
-                    })
+                    }
                 } else if(Shizuku.shouldShowRequestPermissionRationale()) {
                     Toast.makeText(context, R.string.permission_denied, Toast.LENGTH_SHORT).show()
                 } else {
                     Sui.init(context.packageName)
-                    val listener = object: Shizuku.OnRequestPermissionResultListener {
-                        override fun onRequestPermissionResult(requestCode: Int, grantResult: Int) {
-                            if(grantResult == PackageManager.PERMISSION_GRANTED) {
-                                navCtrl.navigate("Shizuku")
-                            } else {
-                                Toast.makeText(context, R.string.permission_denied, Toast.LENGTH_SHORT).show()
-                            }
-                            Shizuku.removeRequestPermissionResultListener(this)
+                    fun requestPermissionResultListener(requestCode: Int, grantResult: Int) {
+                        if(grantResult != PackageManager.PERMISSION_GRANTED) {
+                            Toast.makeText(context, R.string.permission_denied, Toast.LENGTH_SHORT).show()
                         }
+                        Shizuku.removeRequestPermissionResultListener(::requestPermissionResultListener)
                     }
-                    Shizuku.addRequestPermissionResultListener(listener)
+                    Shizuku.addRequestPermissionResultListener(::requestPermissionResultListener)
                     Shizuku.requestPermission(0)
                 }
             } catch(_: IllegalStateException) {
                 Toast.makeText(context, R.string.shizuku_not_started, Toast.LENGTH_SHORT).show()
             }
         }
+        if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner))
+            FunctionItem(R.string.delegated_admins) { navCtrl.navigate("DelegatedAdmins") }
         FunctionItem(R.string.device_info, icon = R.drawable.perm_device_information_fill0) { navCtrl.navigate("DeviceInfo") }
-        if((VERSION.SDK_INT >= 26 && deviceOwner) || (VERSION.SDK_INT>=24 && profileOwner)) {
+        if((VERSION.SDK_INT >= 26 && deviceOwner) || (VERSION.SDK_INT >= 24 && profileOwner)) {
             FunctionItem(R.string.org_name, icon = R.drawable.corporate_fare_fill0) { dialog = 2 }
         }
         if(VERSION.SDK_INT >= 31 && (profileOwner || deviceOwner)) {
@@ -473,6 +485,133 @@ fun DeviceOwner(navCtrl: NavHostController) {
                 }
             }
         )
+    }
+}
+
+@Suppress("InlinedApi")
+private enum class DelegatedScope(val id: String, @StringRes val string: Int, val requiresApi: Int = 0) {
+    AppRestrictions(DevicePolicyManager.DELEGATION_APP_RESTRICTIONS, R.string.manage_application_restrictions),
+    BlockUninstall(DevicePolicyManager.DELEGATION_BLOCK_UNINSTALL, R.string.block_uninstall),
+    CertInstall(DevicePolicyManager.DELEGATION_CERT_INSTALL, R.string.manage_certificates),
+    CertSelection(DevicePolicyManager.DELEGATION_CERT_SELECTION, R.string.select_keychain_certificates, 29),
+    EnableSystemApp(DevicePolicyManager.DELEGATION_ENABLE_SYSTEM_APP, R.string.enable_system_app),
+    InstallExistingPackage(DevicePolicyManager.DELEGATION_INSTALL_EXISTING_PACKAGE, R.string.install_existing_packages, 28),
+    KeepUninstalledPackages(DevicePolicyManager.DELEGATION_KEEP_UNINSTALLED_PACKAGES, R.string.manage_uninstalled_packages, 28),
+    NetworkLogging(DevicePolicyManager.DELEGATION_NETWORK_LOGGING, R.string.network_logging, 29),
+    PackageAccess(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS, R.string.change_package_state),
+    PermissionGrant(DevicePolicyManager.DELEGATION_PERMISSION_GRANT, R.string.grant_permissions),
+    SecurityLogging(DevicePolicyManager.DELEGATION_SECURITY_LOGGING, R.string.security_logging, 31)
+}
+
+@RequiresApi(26)
+@Composable
+fun DelegatedAdmins(navCtrl: NavHostController, vm: MyViewModel) {
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
+    var dialog by rememberSaveable { mutableIntStateOf(0) } // 0:None, 1:Edit, 2:Add
+    var inputPackageName by rememberSaveable { mutableStateOf("") }
+    var selectedScopes by rememberSaveable { mutableStateOf(listOf<String>()) }
+    val packages = remember { mutableStateMapOf<String, MutableList<DelegatedScope>>() }
+    fun refresh() {
+        val list = mutableMapOf<String, MutableList<DelegatedScope>>()
+        DelegatedScope.entries.forEach { ds ->
+            if(VERSION.SDK_INT >= ds.requiresApi) {
+                dpm.getDelegatePackages(receiver, ds.id)?.forEach { pkg ->
+                    if(list[pkg] != null) {
+                        list[pkg]!!.add(ds)
+                    } else {
+                        list[pkg] = mutableListOf(ds)
+                    }
+                }
+            }
+        }
+        packages.clear()
+        packages.putAll(list)
+    }
+    LaunchedEffect(Unit) { refresh() }
+    MyScaffold(R.string.delegated_admins, 0.dp, navCtrl) {
+        packages.forEach { (pkg, scopes) ->
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { inputPackageName = pkg; selectedScopes = scopes.map { it.id }; dialog = 1 }
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                Text(pkg, style = typography.titleLarge)
+                Text(scopes.size.toString() + " " + stringResource(R.string.delegated_scope))
+            }
+        }
+        if(packages.isEmpty())
+            Text(
+                stringResource(R.string.none),
+                color = colorScheme.onSurfaceVariant,
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(vertical = 4.dp)
+            )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { inputPackageName = ""; selectedScopes = emptyList(); dialog = 2 }
+                .padding(vertical = 10.dp, horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(Icons.Default.Add, null, modifier = Modifier.padding(end = 12.dp))
+            Text(stringResource(R.string.add_delegated_admin), style = typography.titleLarge)
+        }
+        if(dialog != 0) {
+            val selectedPackage by vm.selectedPackage.collectAsStateWithLifecycle()
+            LaunchedEffect(selectedPackage) {
+                if(selectedPackage != "") {
+                    inputPackageName = selectedPackage
+                    vm.selectedPackage.value = ""
+                }
+            }
+            AlertDialog(
+                text = {
+                    val fm = LocalFocusManager.current
+                    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                        OutlinedTextField(
+                            value = inputPackageName, onValueChange = { inputPackageName = it },
+                            label = { Text(stringResource(R.string.package_name)) },
+                            trailingIcon = {
+                                if(dialog == 2) IconButton({ navCtrl.navigate("PackageSelector") }) {
+                                    Icon(painterResource(R.drawable.list_fill0), null)
+                                }
+                            },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions { fm.clearFocus() },
+                            readOnly = dialog == 1,
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                        )
+                        DelegatedScope.entries.forEach { scope ->
+                            if(VERSION.SDK_INT >= scope.requiresApi) {
+                                CheckBoxItem(scope.string, scope.id in selectedScopes) {
+                                    if(it) selectedScopes += scope.id else selectedScopes -= scope.id
+                                }
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            dpm.setDelegatedScopes(receiver, inputPackageName, selectedScopes)
+                            refresh()
+                            dialog = 0
+                        },
+                        enabled = inputPackageName.isNotBlank()
+                    ) {
+                        Text(stringResource(if(dialog == 1) R.string.apply else R.string.add))
+                    }
+                },
+                dismissButton = {
+                    TextButton({ dialog = 0 }) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                },
+                onDismissRequest = { dialog = 0 }
+            )
+        }
     }
 }
 

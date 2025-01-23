@@ -65,6 +65,7 @@
     <string name="edit">编辑</string>
     <string name="overview">概览</string>
     <string name="features">功能</string>
+    <string name="default_str">默认</string>
 
     <!--Permissions-->
     <string name="click_to_activate">点击以激活</string>
@@ -72,6 +73,16 @@
     <string name="activate_jump" tools:ignore="TypographyEllipsis">激活...</string>
     <string name="profile_owner">Profile owner</string>
     <string name="device_owner">Device owner</string>
+    <string name="delegated_admins">委托管理员</string>
+    <string name="delegated_scope">委托作用域</string>
+    <string name="manage_application_restrictions">管理应用限制</string>
+    <string name="manage_certificates">管理证书</string>
+    <string name="select_keychain_certificates">选择密钥链证书</string>
+    <string name="install_existing_packages">安装存在的软件包</string>
+    <string name="manage_uninstalled_packages">管理已被卸载的软件包</string>
+    <string name="change_package_state">修改软件包状态</string>
+    <string name="grant_permissions">授予权限</string>
+    <string name="add_delegated_admin">添加委托管理员</string>
     <string name="reset_device_policy">重置设备策略</string>
     <string name="dhizuku_will_be_deactivated">Dhizuku将被停用</string>
     <string name="activate_device_admin">激活Device admin</string>
@@ -365,7 +376,7 @@
     <string name="scope_is_work_profile">作用域: 工作资料</string>
     <string name="app_info">应用详情</string>
     <string name="not_installed">未安装</string>
-    <string name="block_uninstall">防卸载</string>
+    <string name="block_uninstall">阻止</string>
     <string name="ucd">禁止用户控制</string>
     <string name="ucd_desc">用户将无法清除这些应用的存储空间或强制停止这些应用</string>
     <string name="app_list_is">应用列表：</string>

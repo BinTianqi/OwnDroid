@@ -71,6 +71,7 @@ import com.bintianqi.owndroid.dpm.ChangeUsername
 import com.bintianqi.owndroid.dpm.CreateUser
 import com.bintianqi.owndroid.dpm.CreateWorkProfile
 import com.bintianqi.owndroid.dpm.CurrentUserInfo
+import com.bintianqi.owndroid.dpm.DelegatedAdmins
 import com.bintianqi.owndroid.dpm.DeleteWorkProfile
 import com.bintianqi.owndroid.dpm.DeviceAdmin
 import com.bintianqi.owndroid.dpm.DeviceInfo
@@ -219,6 +220,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable(route = "DeviceAdmin") { DeviceAdmin(navCtrl) }
         composable(route = "ProfileOwner") { ProfileOwner(navCtrl) }
         composable(route = "DeviceOwner") { DeviceOwner(navCtrl) }
+        composable(route = "DelegatedAdmins") { DelegatedAdmins(navCtrl, vm) }
         composable(route = "DeviceInfo") { DeviceInfo(navCtrl) }
         composable(route = "LockScreenInfo") { LockScreenInfo(navCtrl) }
         composable(route = "SupportMessages") { SupportMessages(navCtrl) }
