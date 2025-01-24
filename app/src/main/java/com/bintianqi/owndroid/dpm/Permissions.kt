@@ -131,7 +131,7 @@ fun Permissions(navCtrl: NavHostController) {
         if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner))
             FunctionItem(R.string.delegated_admins) { navCtrl.navigate("DelegatedAdmins") }
         FunctionItem(R.string.device_info, icon = R.drawable.perm_device_information_fill0) { navCtrl.navigate("DeviceInfo") }
-        if((VERSION.SDK_INT >= 26 && deviceOwner) || (VERSION.SDK_INT >= 24 && profileOwner)) {
+        if(VERSION.SDK_INT >= 24 && (profileOwner || (VERSION.SDK_INT >= 26 && deviceOwner))) {
             FunctionItem(R.string.org_name, icon = R.drawable.corporate_fare_fill0) { dialog = 2 }
         }
         if(VERSION.SDK_INT >= 31 && (profileOwner || deviceOwner)) {

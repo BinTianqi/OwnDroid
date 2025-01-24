@@ -1081,7 +1081,7 @@ fun NetworkStats(navCtrl: NavHostController, vm: MyViewModel) {
             }
         }
         if(VERSION.SDK_INT >= 24 && (target == NetworkStatsTarget.UidTag || target == NetworkStatsTarget.UidTagState))
-        ExposedDropdownMenuBox(
+            ExposedDropdownMenuBox(
             activeTextField == NetworkStatsActiveTextField.Tag,
             { activeTextField == if(it) NetworkStatsActiveTextField.Tag else NetworkStatsActiveTextField.None }
         ) {
@@ -1155,7 +1155,7 @@ fun NetworkStats(navCtrl: NavHostController, vm: MyViewModel) {
                 querying = true
                 coroutine.launch {
                     val buckets = try {
-                        if(queryType == 1) {
+                        @Suppress("NewApi") if(queryType == 1) {
                             if(target == NetworkStatsTarget.Device)
                                 listOf(nsm.querySummaryForDevice(networkType.type, subscriberId, startTime, endTime))
                             else listOf(nsm.querySummaryForUser(networkType.type, subscriberId, startTime, endTime))

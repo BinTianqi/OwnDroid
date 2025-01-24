@@ -176,6 +176,8 @@
     <string name="change_timezone">Change timezone</string>
     <string name="timezone_id">Идентификатор часового пояса</string>
     <string name="disable_auto_time_zone_before_set">Автоматический часовой пояс должен быть отключен перед установкой пользовательского часового пояса.</string>
+    <string name="content_protection_policy">Content protection policy</string> <!--TODO-->
+    <string name="not_controlled_by_policy">Not controlled by policy</string> <!--TODO-->
     <string name="permission_policy">Политика разрешений</string>
     <string name="auto_grant">Автоматически разрешать</string>
     <string name="auto_deny">Автоматически запрещать</string>

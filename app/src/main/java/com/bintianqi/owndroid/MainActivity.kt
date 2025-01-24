@@ -68,6 +68,7 @@ import com.bintianqi.owndroid.dpm.ChangeTime
 import com.bintianqi.owndroid.dpm.ChangeTimeZone
 import com.bintianqi.owndroid.dpm.ChangeUserIcon
 import com.bintianqi.owndroid.dpm.ChangeUsername
+import com.bintianqi.owndroid.dpm.ContentProtectionPolicy
 import com.bintianqi.owndroid.dpm.CreateUser
 import com.bintianqi.owndroid.dpm.CreateWorkProfile
 import com.bintianqi.owndroid.dpm.CurrentUserInfo
@@ -233,6 +234,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable(route = "ChangeTime") { ChangeTime(navCtrl) }
         composable(route = "ChangeTimeZone") { ChangeTimeZone(navCtrl) }
         //composable(route = "KeyPairs") { KeyPairs(navCtrl) }
+        composable(route = "ContentProtectionPolicy") { ContentProtectionPolicy(navCtrl) }
         composable(route = "PermissionPolicy") { PermissionPolicy(navCtrl) }
         composable(route = "MTEPolicy") { MTEPolicy(navCtrl) }
         composable(route = "NearbyStreamingPolicy") { NearbyStreamingPolicy(navCtrl) }
@@ -412,9 +414,8 @@ private fun HomePage(navCtrl:NavHostController) {
             HomePageItem(R.string.system, R.drawable.android_fill0, "System", navCtrl)
             if(deviceOwner || profileOwner) { HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network", navCtrl) }
             if(
-                (VERSION.SDK_INT < 24 && !deviceOwner) || (
-                        VERSION.SDK_INT >= 24 && (dpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE) ||
-                                (profileOwner && dpm.isManagedProfile(receiver)))
+                (VERSION.SDK_INT < 24 && !deviceOwner) || (dpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE) ||
+                                (profileOwner && dpm.isManagedProfile(receiver))
                         )
             ) {
                 HomePageItem(R.string.work_profile, R.drawable.work_fill0, "ManagedProfile", navCtrl)

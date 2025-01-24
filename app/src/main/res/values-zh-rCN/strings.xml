@@ -169,6 +169,8 @@
     <string name="change_timezone">更改时区</string>
     <string name="timezone_id">时区ID</string>
     <string name="disable_auto_time_zone_before_set">在设置时区前需要关闭自动时区</string>
+    <string name="content_protection_policy">内容保护策略</string>
+    <string name="not_controlled_by_policy">不受策略控制</string>
     <string name="permission_policy">权限策略</string>
     <string name="auto_grant">自动允许</string>
     <string name="auto_deny">自动拒绝</string>
@@ -664,6 +666,7 @@
     <string name="info_evict_credential_encryption_key">从密钥环中移除用户的凭证加密密钥。用户需要再次输入凭证才能将密钥存储回密钥环中。为了保护用户数据，用户将重新启动</string>
     <string name="info_reboot">打电话时不能使用此功能</string>
     <string name="info_change_time">输入以毫秒为单位的UNIX时间</string>
+    <string name="info_content_protection_policy">内容保护策略控制对欺骗性应用程序的扫描。</string>
     <string name="info_permission_policy">设置应用申请运行时权限时的默认选择</string>
     <string name="info_mte_policy">设置内存标记扩展(Memory Tagging Extension)策略。重启设备以应用更改。</string>
     <string name="info_nearby_app_streaming_policy">应用流式传输：当app在虚拟显示器上启动，传输这个app的视频流到附近的设备。</string>

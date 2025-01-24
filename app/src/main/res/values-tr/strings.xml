@@ -178,6 +178,8 @@
     <string name="change_timezone">Change timezone</string>
     <string name="timezone_id">Saat dilimi kimliği</string>
     <string name="disable_auto_time_zone_before_set">Özel bir saat dilimi ayarlamadan önce otomatik saat dilimi devre dışı bırakılmalıdır</string>
+    <string name="content_protection_policy">Content protection policy</string> <!--TODO-->
+    <string name="not_controlled_by_policy">Not controlled by policy</string> <!--TODO-->
     <string name="permission_policy">İzin politikası</string>
     <string name="auto_grant">Otomatik ver</string>
     <string name="auto_deny">Otomatik reddet</string>

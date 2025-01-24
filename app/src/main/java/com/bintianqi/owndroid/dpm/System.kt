@@ -3,6 +3,7 @@ package com.bintianqi.owndroid.dpm
 import android.annotation.SuppressLint
 import android.app.ActivityOptions
 import android.app.AlertDialog
+import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY
 import android.app.admin.DevicePolicyManager.InstallSystemUpdateCallback
 import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK
@@ -166,7 +167,7 @@ fun SystemManage(navCtrl: NavHostController) {
         if(VERSION.SDK_INT >= 24 && deviceOwner) {
             FunctionItem(R.string.reboot, icon = R.drawable.restart_alt_fill0) { dialog = 1 }
         }
-        if(deviceOwner && ((VERSION.SDK_INT >= 28 && dpm.isAffiliatedUser) || VERSION.SDK_INT >= 24)) {
+        if(deviceOwner && VERSION.SDK_INT >= 24 && (VERSION.SDK_INT < 28 || dpm.isAffiliatedUser)) {
             FunctionItem(R.string.bug_report, icon = R.drawable.bug_report_fill0) { dialog = 2 }
         }
         if(VERSION.SDK_INT >= 28 && (deviceOwner || dpm.isOrgProfile(receiver))) {
@@ -175,6 +176,8 @@ fun SystemManage(navCtrl: NavHostController) {
         }
         /*if(VERSION.SDK_INT >= 28 && (deviceOwner || profileOwner))
             FunctionItem(R.string.key_pairs, icon = R.drawable.key_vertical_fill0) { navCtrl.navigate("KeyPairs") }*/
+        if(VERSION.SDK_INT >= 35 && (deviceOwner || (profileOwner && dpm.isAffiliatedUser)))
+            FunctionItem(R.string.content_protection_policy, icon = R.drawable.search_fill0) { navCtrl.navigate("ContentProtectionPolicy") }
         if(VERSION.SDK_INT >= 23 && (deviceOwner || profileOwner)) {
             FunctionItem(R.string.permission_policy, icon = R.drawable.key_fill0) { navCtrl.navigate("PermissionPolicy") }
         }
@@ -274,7 +277,7 @@ fun SystemOptions(navCtrl: NavHostController) {
                     getState = { dpm.autoTimeRequired }, onCheckedChange = { dpm.setAutoTimeRequired(receiver,it) }, padding = false)
             }
         }
-        if(deviceOwner || (profileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && !dpm.isManagedProfile(receiver))))) {
+        if(deviceOwner || profileOwner) {
             SwitchItem(R.string.master_mute, icon = R.drawable.volume_up_fill0,
                 getState = { dpm.isMasterVolumeMuted(receiver) }, onCheckedChange = { dpm.setMasterVolumeMuted(receiver,it) }
             )
@@ -811,6 +814,37 @@ fun KeyPairs(navCtrl: NavHostController) {
         }
     }
 }*/
+
+@RequiresApi(35)
+@Composable
+fun ContentProtectionPolicy(navCtrl: NavHostController) {
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
+    var policy by remember { mutableIntStateOf(DevicePolicyManager.CONTENT_PROTECTION_NOT_CONTROLLED_BY_POLICY) }
+    fun refresh() { policy = dpm.getContentProtectionPolicy(receiver) }
+    LaunchedEffect(Unit) { refresh() }
+    MyScaffold(R.string.content_protection_policy, 8.dp, navCtrl) {
+        mapOf(
+            DevicePolicyManager.CONTENT_PROTECTION_NOT_CONTROLLED_BY_POLICY to R.string.not_controlled_by_policy,
+            DevicePolicyManager.CONTENT_PROTECTION_ENABLED to R.string.enabled,
+            DevicePolicyManager.CONTENT_PROTECTION_DISABLED to R.string.disabled
+        ).forEach { (policyId, string) ->
+            RadioButtonItem(string, policy == policyId) { policy = policyId }
+        }
+        Button(
+            onClick = {
+                dpm.setContentProtectionPolicy(receiver, policy)
+                refresh()
+                context.showOperationResultToast(true)
+            },
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+        ) {
+            Text(stringResource(R.string.apply))
+        }
+        InfoCard(R.string.info_content_protection_policy)
+    }
+}
 
 @RequiresApi(23)
 @Composable
@@ -1515,7 +1549,7 @@ fun WipeData(navCtrl: NavHostController) {
             )
         }
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT < 34 || (VERSION.SDK_INT >= 34 && !userManager.isSystemUser)) {
+        if(VERSION.SDK_INT < 34 || !userManager.isSystemUser) {
             Button(
                 onClick = {
                     focusMgr.clearFocus()

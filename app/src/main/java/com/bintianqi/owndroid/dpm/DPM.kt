@@ -375,7 +375,7 @@ fun processSecurityLogs(securityEvents: List<SecurityLog.SecurityEvent>, outputS
 
 @RequiresApi(24)
 fun parseSecurityEventData(event: SecurityLog.SecurityEvent): JsonElement? {
-    return when(event.tag) { //TODO: backup service tag (API35)
+    return when(event.tag) {
         SecurityLog.TAG_ADB_SHELL_CMD -> JsonPrimitive(event.data as String)
         SecurityLog.TAG_ADB_SHELL_INTERACTIVE -> null
         SecurityLog.TAG_APP_PROCESS_START -> {
@@ -387,6 +387,14 @@ fun parseSecurityEventData(event: SecurityLog.SecurityEvent): JsonElement? {
                 put("pid", payload[3] as Int)
                 put("seinfo", payload[4] as String)
                 put("apk_hash", payload[5] as String)
+            }
+        }
+        SecurityLog.TAG_BACKUP_SERVICE_TOGGLED -> {
+            val payload = event.data as Array<*>
+            buildJsonObject {
+                put("admin", payload[0] as String)
+                put("admin_user_id", payload[1] as Int)
+                put("state", payload[2] as Int)
             }
         }
         SecurityLog.TAG_BLUETOOTH_CONNECTION -> {

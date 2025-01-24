@@ -23,7 +23,8 @@ android {
     defaultConfig {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 21
-        targetSdk = 34
+        targetSdk = 35
+        compileSdk = 35
         versionCode = 35
         versionName = "6.3"
         multiDexEnabled = false

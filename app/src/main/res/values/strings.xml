@@ -90,7 +90,6 @@
     <string name="add_delegated_admin">Add delegated admin</string>
     <string name="dhizuku_will_be_deactivated">Dhizuku will be deactivated</string>
     <string name="reset_device_policy">Reset device policy</string>
-    <string name="activate_device_admin">Activate Device admin</string>
     <string name="activate_device_admin_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="activate_profile_owner_command" translatable="false">dpm set-profile-owner --user %1$s com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="activate_device_owner_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
@@ -139,7 +138,6 @@
     <string name="dpm_activate_do_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="activate_device_owner">Activate Device owner</string>
     <string name="activate_org_profile">Activate organization-owned work profile</string>
-    <string name="shizuku_service_disconnected">Shizuku service disconnected</string>
     <string name="accounts">Accounts</string>
 
     <!--System-->
@@ -199,6 +197,8 @@
     <string name="base_info">Base info</string>
     <string name="individual_certificate">Individual certificate</string>
     <string name="generate">Generate</string>-->
+    <string name="content_protection_policy">Content protection policy</string>
+    <string name="not_controlled_by_policy">Not controlled by policy</string>
     <string name="permission_policy">Permission policy</string>
     <string name="auto_grant">Auto grant</string>
     <string name="auto_deny">Auto deny</string>
@@ -702,6 +702,7 @@
     <string name="info_evict_credential_encryption_key">Evict the user\'s credential encryption key from the keyring. The user\'s credential will need to be entered again in order to derive the credential encryption key that will be stored back in the keyring for future use. In order to secure user data, the user will be stopped and restarted.</string>
     <string name="info_reboot">You can\'t use this function if there is an ongoing call on the device.</string>
     <string name="info_change_time">Input UNIX time in milliseconds</string>
+    <string name="info_content_protection_policy">Content protection policy controls scanning for deceptive apps.</string>
     <string name="info_permission_policy">Set the default response for future runtime permission requests by applications.</string>
     <string name="info_mte_policy">Set the Memory Tagging Extension policy. Reboot the device to apply changes.</string>
     <string name="info_nearby_app_streaming_policy">App streaming is when the device starts an app on a virtual display and sends a video stream of the app to nearby devices.</string>

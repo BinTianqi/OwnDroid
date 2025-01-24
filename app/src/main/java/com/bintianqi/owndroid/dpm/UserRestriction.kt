@@ -35,7 +35,7 @@ fun UserRestriction(navCtrl:NavHostController) {
     MyScaffold(R.string.user_restriction, 0.dp, navCtrl) {
         Text(text = stringResource(R.string.switch_to_disable_feature), modifier = Modifier.padding(start = 16.dp))
         if(context.isProfileOwner) { Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.padding(start = 16.dp)) }
-        if(context.isProfileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
+        if(context.isProfileOwner && (VERSION.SDK_INT < 24 || dpm.isManagedProfile(receiver))) {
             Text(text = stringResource(R.string.some_features_invalid_in_work_profile), modifier = Modifier.padding(start = 16.dp))
         }
         Spacer(Modifier.padding(vertical = 2.dp))

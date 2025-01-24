@@ -136,7 +136,7 @@ fun ApplicationManage(navCtrl:NavHostController, vm: MyViewModel) {
             )
         }
     ) {  paddingValues->
-        NavHost(
+        @Suppress("NewApi") NavHost(
             modifier = Modifier.padding(top = paddingValues.calculateTopPadding()),
             navController = localNavCtrl, startDestination = "Home",
             enterTransition = Animations.navHostEnterTransition,
@@ -225,7 +225,7 @@ private fun Home(navCtrl:NavHostController, pkgName: String) {
             onCheckedChange = { appControlAction = 3; appControl(it) },
             onClickBlank = { appControlAction = 3; dialogStatus = 4 }
         )
-        if((VERSION.SDK_INT >= 33 && profileOwner) || (VERSION.SDK_INT >= 30 && deviceOwner)) {
+        if(VERSION.SDK_INT >= 30 && (deviceOwner || (VERSION.SDK_INT >= 33 && profileOwner))) {
             FunctionItem(title = R.string.ucd, icon = R.drawable.do_not_touch_fill0) { navCtrl.navigate("UserControlDisabled") }
         }
         if(VERSION.SDK_INT>=23) {
