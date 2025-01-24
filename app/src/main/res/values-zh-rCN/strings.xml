@@ -85,7 +85,6 @@
     <string name="add_delegated_admin">添加委托管理员</string>
     <string name="reset_device_policy">重置设备策略</string>
     <string name="dhizuku_will_be_deactivated">Dhizuku将被停用</string>
-    <string name="activate_device_admin">激活Device admin</string>
     <string name="device_info">设备信息</string>
     <string name="support_device_id_attestation">支持设备ID认证</string>
     <string name="support_unique_device_attestation">支持唯一设备认证</string>
@@ -128,7 +127,6 @@
     <string name="shizuku_not_started">服务未启动</string>
     <string name="activate_device_owner">激活Device owner</string>
     <string name="activate_org_profile">激活由组织拥有的工作资料</string>
-    <string name="shizuku_service_disconnected">Shizuku服务断开连接</string>
     <string name="accounts">账号</string>
 
     <!--System-->
@@ -449,6 +447,7 @@
     <string name="config_cell_broadcasts">配置小区广播</string>
     <string name="sms">短信</string>
     <string name="outgoing_calls">拨出电话</string>
+    <string name="download_esim">下载eSIM</string>
 
     <string name="bluetooth">蓝牙</string>
     <string name="bt_share">蓝牙分享</string>
@@ -475,6 +474,7 @@
     <string name="add_user">添加用户</string>
     <string name="remove_user">移除用户</string>
     <string name="switch_user">切换用户</string>
+    <string name="create_private_space">创建私密空间</string>
     <string name="set_user_icon">修改用户头像</string>
     <string name="cross_profile_copy">跨用户复制</string>
     <string name="share_into_managed_profile">分享至工作应用</string>
@@ -484,6 +484,7 @@
     <string name="config_credentials">配置凭据</string>
     <string name="content_capture">内容捕获</string>
     <string name="content_suggestions">内容建议</string>
+    <string name="assist_content">辅助内容</string>
     <string name="create_windows">创建窗口</string>
     <string name="set_wallpaper">更换壁纸</string>
     <string name="grant_admin">启用设备管理器</string>
@@ -608,6 +609,7 @@
     <string name="authenticate">验证</string>
     <string name="lock_in_background">处于后台时锁定</string>
     <string name="clear_storage">清除存储空间</string>
+    <string name="skipped_authentication">验证已跳过，因为不可用</string>
 
     <string name="api_key">API密钥</string>
     <string name="api_key_exist">API密钥已存在，设置新的密钥将会覆盖当前密钥</string>

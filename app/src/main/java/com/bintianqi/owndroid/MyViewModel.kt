@@ -2,6 +2,7 @@ package com.bintianqi.owndroid
 
 import android.content.Context
 import android.os.Build
+import android.os.Bundle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,6 +12,7 @@ class MyViewModel: ViewModel() {
     val theme = MutableStateFlow(ThemeSettings())
     val installedPackages = mutableListOf<PackageInfo>()
     val selectedPackage = MutableStateFlow("")
+    val userRestrictions = MutableStateFlow(Bundle())
 
     var initialized = false
     fun initialize(context: Context) {

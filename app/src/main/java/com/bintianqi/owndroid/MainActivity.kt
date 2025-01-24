@@ -274,22 +274,22 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
 
         composable(route = "UserRestriction") { UserRestriction(navCtrl) }
         composable(route = "UR-Internet") {
-            MyScaffold(R.string.network_and_internet, 0.dp, navCtrl) { RestrictionData.internet.forEach { UserRestrictionItem(it) } }
+            MyScaffold(R.string.network_and_internet, 0.dp, navCtrl) { RestrictionData.internet.forEach { UserRestrictionItem(it, vm) } }
         }
         composable(route = "UR-Connectivity") {
-            MyScaffold(R.string.connectivity, 0.dp, navCtrl) { RestrictionData.connectivity.forEach { UserRestrictionItem(it) } }
+            MyScaffold(R.string.connectivity, 0.dp, navCtrl) { RestrictionData.connectivity.forEach { UserRestrictionItem(it, vm) } }
         }
         composable(route = "UR-Applications") {
-            MyScaffold(R.string.applications, 0.dp, navCtrl) { RestrictionData.applications.forEach { UserRestrictionItem(it) } }
+            MyScaffold(R.string.applications, 0.dp, navCtrl) { RestrictionData.applications.forEach { UserRestrictionItem(it, vm) } }
         }
         composable(route = "UR-Users") {
-            MyScaffold(R.string.users, 0.dp, navCtrl) { RestrictionData.users.forEach { UserRestrictionItem(it) } }
+            MyScaffold(R.string.users, 0.dp, navCtrl) { RestrictionData.users.forEach { UserRestrictionItem(it, vm) } }
         }
         composable(route = "UR-Media") {
-            MyScaffold(R.string.media, 0.dp, navCtrl) { RestrictionData.media.forEach { UserRestrictionItem(it) } }
+            MyScaffold(R.string.media, 0.dp, navCtrl) { RestrictionData.media.forEach { UserRestrictionItem(it, vm) } }
         }
         composable(route = "UR-Other") {
-            MyScaffold(R.string.other, 0.dp, navCtrl) { RestrictionData.other.forEach { UserRestrictionItem(it) } }
+            MyScaffold(R.string.other, 0.dp, navCtrl) { RestrictionData.other.forEach { UserRestrictionItem(it, vm) } }
         }
 
         composable(route = "Users") { Users(navCtrl) }

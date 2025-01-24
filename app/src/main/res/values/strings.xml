@@ -484,11 +484,13 @@
     <string name="config_cell_broadcasts">Configure cell broadcasts</string>
     <string name="sms">SMS</string>
     <string name="outgoing_calls">Outgoing calls</string>
+    <string name="download_esim">Download eSIM</string>
 
     <string name="bluetooth">Bluetooth</string>
     <string name="bt_share">Bluetooth sharing</string>
     <string name="share_location">Share location</string>
     <string name="config_location">Configure location</string>
+    <string name="nfc" translatable="false">NFC</string>
     <string name="outgoing_beam">Outgoing Beam</string>
     <string name="usb_file_transfer">USB file transfer</string>
     <string name="mount_physical_media">Mount physical media</string>
@@ -510,6 +512,7 @@
     <string name="add_user">Add user</string>
     <string name="remove_user">Remove user</string>
     <string name="switch_user">Switch user</string>
+    <string name="create_private_space">Create private space</string>
     <string name="set_user_icon">Set user icon</string>
     <string name="cross_profile_copy">Cross profile copy</string>
     <string name="share_into_managed_profile">Share into managed profile</string>
@@ -519,6 +522,7 @@
     <string name="config_credentials">Configure credentials</string>
     <string name="content_capture">Content capture</string>
     <string name="content_suggestions">Content suggestions</string>
+    <string name="assist_content">Assist content</string>
     <string name="create_windows">Create windows</string>
     <string name="set_wallpaper">Set wallpaper</string>
     <string name="grant_admin">Grant device admin</string>

@@ -90,7 +90,6 @@
     <string name="add_delegated_admin">Add delegated admin</string>
     <string name="dhizuku_will_be_deactivated">Dhizuku будет деактивирован</string>
     <string name="reset_device_policy">Сбросить политику устройства</string>
-    <string name="activate_device_admin">Активировать администратора устройства</string>
     <string name="device_info">Информация об устройстве</string>
     <string name="support_device_id_attestation">Поддержка аттестации идентификатора устройства</string>
     <string name="support_unique_device_attestation">Поддержка аттестации уникального устройства</string>
@@ -133,7 +132,6 @@
     <string name="shizuku_not_started">Shizuku не запущен. </string>
     <string name="activate_device_owner">Активировать владельца устройства</string>
     <string name="activate_org_profile">Активировать рабочий профиль, принадлежащий организации</string>
-    <string name="shizuku_service_disconnected">Служба Shizuku отключена</string>
     <string name="accounts">Accounts</string> <!--TODO-->
 
     <!--Системные-->
@@ -463,6 +461,7 @@
     <string name="config_cell_broadcasts">Настроить сотовые оповещения</string>
     <string name="sms">SMS</string>
     <string name="outgoing_calls">Исходящие вызовы</string>
+    <string name="download_esim">Download eSIM</string> <!--TODO-->
 
     <string name="bluetooth">Bluetooth</string>
     <string name="bt_share">Обмен данными по Bluetooth</string>
@@ -489,6 +488,7 @@
     <string name="add_user">Добавить пользователя</string>
     <string name="remove_user">Удалить пользователя</string>
     <string name="switch_user">Переключить пользователя</string>
+    <string name="create_private_space">Create private space</string> <!--TODO-->
     <string name="set_user_icon">Установить значок пользователя</string>
     <string name="cross_profile_copy">Копирование между профилями</string>
     <string name="share_into_managed_profile">Поделиться в управляемом профиле</string>
@@ -498,6 +498,7 @@
     <string name="config_credentials">Настроить учетные данные</string>
     <string name="content_capture">Захват контента</string>
     <string name="content_suggestions">Рекомендации по контенту</string>
+    <string name="assist_content">Assist content</string> <!--TODO-->
     <string name="create_windows">Создать окна</string>
     <string name="set_wallpaper">Установить обои</string>
     <string name="grant_admin">Предоставить права администратора</string>
@@ -626,6 +627,7 @@
     <string name="authenticate">Аутентифицировать</string>
     <string name="lock_in_background">Блокировать при переключении в фоновый режим</string>
     <string name="clear_storage">Очистить хранилище</string>
+    <string name="skipped_authentication">Skipped authentication because it is unavailable.</string> <!--TODO-->
 
     <!--TODO-->
     <string name="api_key">API key</string>
