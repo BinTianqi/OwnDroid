@@ -28,7 +28,6 @@ class ManageSpaceActivity: FragmentActivity() {
         val sharedPref = applicationContext.getSharedPreferences("data", MODE_PRIVATE)
         val authenticate = sharedPref.getBoolean("auth", false)
         val vm by viewModels<MyViewModel>()
-        if(!vm.initialized) vm.initialize(applicationContext)
         fun clearStorage() {
             filesDir.deleteRecursively()
             cacheDir.deleteRecursively()

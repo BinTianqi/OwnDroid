@@ -402,22 +402,9 @@
     <string name="silent_uninstall">静默卸载</string>
     <string name="request_uninstall">请求卸载</string>
     <string name="install_app">安装应用</string>
-    <string name="select_apk" tools:ignore="TypographyEllipsis">选择APK...</string>
-    <string name="silent_install">静默安装</string>
-    <string name="request_install">请求安装</string>
     <string name="enable_system_app">启用系统应用</string>
     <string name="enable_system_app_desc">重新启用一个默认被禁用的系统应用</string>
     <string name="search">搜索</string>
-    <!--App install session status-->
-    <string name="app_installer_status">应用安装器：</string>
-    <string name="status_pending_action">等待用户操作</string>
-    <string name="status_fail_blocked">被阻止</string>
-    <string name="status_fail_aborted">被打断</string>
-    <string name="status_fail_invalid">无效APK</string>
-    <string name="status_fail_conflict">冲突</string>
-    <string name="status_fail_storage">空间不足</string>
-    <string name="status_fail_incompatible">不兼容</string>
-    <string name="status_fail_timeout">超时</string>
 
     <!--UserRestriction-->
     <string name="user_restriction">用户限制</string>
@@ -649,9 +636,18 @@
     <string name="permission_BODY_SENSORS_BACKGROUND">后台使用身体传感器</string>
     <string name="permission_ACTIVITY_RECOGNITION">查看使用情况</string>
 
-    <string name="version_name">版本名</string>
-    <string name="version_code">版本号</string>
-    <string name="parsing_apk_info" tools:ignore="TypographyEllipsis">解析APK信息中...</string>
+    <string name="app_installer">App安装器</string>
+    <string name="mode">模式</string>
+    <string name="full_install">完整安装</string>
+    <string name="inherit_existing">继承已有</string>
+    <string name="packages">软件包</string>
+    <string name="add_packages">添加包</string>
+    <string name="status_failure_blocked">操作被 %1$s 阻止。</string>
+    <string name="status_failure_aborted">操作被打断。</string>
+    <string name="status_failure_invalid">操作失败，因为有一个或多个APK无效。例如，它们可能被篡改，损坏，签名错误，不匹配等。</string>
+    <string name="status_failure_conflict">操作失败，因为它与 %1$s 冲突。例如，存在的权限，不完整的证书等。你可以卸载 %1$s 以解决这个问题。</string>
+    <string name="status_failure_storage">由于存储问题，操作失败。例如，设备空间不足，或外部媒体不可用。你可以尝试清理空间或插入不同的外部媒体。</string>
+    <string name="status_failure_incompatible">操作失败，因为它与设备不兼容。例如，这个app可能需要不存在的硬件功能，它有可能缺少受此设备支持的ABI的本地代码，或它需要高于此设备的SDK版本。</string>
 
     <string name="info_dhizuku">Dhizuku可以分享Device owner权限给其余应用</string>
     <string name="info_device_id_attestation">指示设备是否除了密钥证明之外还支持设备标识符证明</string>

@@ -2,7 +2,6 @@ package com.bintianqi.owndroid.dpm
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.PendingIntent
 import android.app.admin.ConnectEvent
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DnsEvent
@@ -15,7 +14,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.IPackageInstaller
 import android.content.pm.PackageInstaller
-import android.content.pm.PackageManager
 import android.os.Build.VERSION
 import android.os.UserManager
 import android.util.Log
@@ -23,8 +21,6 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
-import com.bintianqi.owndroid.InstallAppActivity
-import com.bintianqi.owndroid.PackageInstallerReceiver
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.backToHomeStateFlow
@@ -40,8 +36,6 @@ import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
-import java.io.IOException
-import java.io.InputStream
 import java.io.OutputStream
 
 lateinit var addDeviceAdmin: ActivityResultLauncher<Intent>
@@ -84,24 +78,6 @@ fun DevicePolicyManager.isOrgProfile(receiver: ComponentName): Boolean {
     return VERSION.SDK_INT >= 30 && this.isProfileOwnerApp("com.bintianqi.owndroid") && isManagedProfile(receiver) && isOrganizationOwnedDeviceWithManagedProfile
 }
 
-@Throws(IOException::class)
-fun installPackage(context: Context, inputStream: InputStream) {
-    val packageInstaller = context.packageManager.packageInstaller
-    val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
-    val sessionId = packageInstaller.createSession(params)
-    val session = packageInstaller.openSession(sessionId)
-    val out = session.openWrite("COSU", 0, -1)
-    val buffer = ByteArray(65536)
-    var c: Int
-    while(inputStream.read(buffer).also{c = it}!=-1) { out.write(buffer, 0, c) }
-    session.fsync(out)
-    inputStream.close()
-    out.close()
-    val intent = Intent(context, PackageInstallerReceiver::class.java)
-    val pendingIntent = PendingIntent.getBroadcast(context, sessionId, intent, PendingIntent.FLAG_IMMUTABLE).intentSender
-    session.commit(pendingIntent)
-}
-
 @SuppressLint("PrivateApi")
 private fun binderWrapperDevicePolicyManager(appContext: Context): DevicePolicyManager? {
     try {
@@ -142,7 +118,7 @@ private fun binderWrapperPackageInstaller(appContext: Context): PackageInstaller
     return null
 }
 
-fun Context.getPI(): PackageInstaller {
+fun Context.getPackageInstaller(): PackageInstaller {
     val sharedPref = this.getSharedPreferences("data", Context.MODE_PRIVATE)
     if(sharedPref.getBoolean("dhizuku", false)) {
         if (!dhizukuPermissionGranted()) {
@@ -244,16 +220,6 @@ fun Context.resetDevicePolicy() {
         dpm.setPasswordQuality(receiver, DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED)
     }
     dpm.setRecommendedGlobalProxy(receiver, null)
-}
-
-fun Context.toggleInstallAppActivity() {
-    val sharedPrefs = getSharedPreferences("data", Context.MODE_PRIVATE)
-    val disable = sharedPrefs.getBoolean("dhizuku", false) || !isDeviceOwner
-    packageManager?.setComponentEnabledSetting(
-        ComponentName(this, InstallAppActivity::class.java),
-        if (disable) PackageManager.COMPONENT_ENABLED_STATE_DISABLED else PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-        PackageManager.DONT_KILL_APP
-    )
 }
 
 data class PermissionItem(
@@ -608,3 +574,29 @@ fun dhizukuPermissionGranted() =
         false
     }
 
+fun parsePackageInstallerMessage(context: Context, result: Intent): String {
+    val status = result.getIntExtra(PackageInstaller.EXTRA_STATUS, 999)
+    val statusMessage = result.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)
+    val otherPackageName = result.getStringExtra(PackageInstaller.EXTRA_OTHER_PACKAGE_NAME)
+    return when(status) {
+        PackageInstaller.STATUS_FAILURE_BLOCKED ->
+            context.getString(
+                R.string.status_failure_blocked,
+                otherPackageName ?: context.getString(R.string.unknown)
+            )
+        PackageInstaller.STATUS_FAILURE_ABORTED ->
+            context.getString(R.string.status_failure_aborted)
+        PackageInstaller.STATUS_FAILURE_INVALID ->
+            context.getString(R.string.status_failure_invalid)
+        PackageInstaller.STATUS_FAILURE_CONFLICT ->
+            context.getString(R.string.status_failure_conflict, otherPackageName ?: "???")
+        PackageInstaller.STATUS_FAILURE_STORAGE ->
+            context.getString(R.string.status_failure_storage) +
+                    result.getStringExtra(PackageInstaller.EXTRA_STORAGE_PATH).let { if(it == null) "" else "\n$it" }
+        PackageInstaller.STATUS_FAILURE_INCOMPATIBLE ->
+            context.getString(R.string.status_failure_incompatible)
+        PackageInstaller.STATUS_FAILURE_TIMEOUT ->
+            context.getString(R.string.timeout)
+        else -> ""
+    } + statusMessage.let { if(it == null) "" else "\n$it" }
+}

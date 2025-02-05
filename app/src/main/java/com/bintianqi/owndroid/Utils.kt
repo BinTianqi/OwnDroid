@@ -31,9 +31,9 @@ fun uriToStream(
     operation: (stream: InputStream)->Unit
 ){
     try {
-        val stream = context.contentResolver.openInputStream(uri)
-        if(stream != null) { operation(stream) }
-        stream?.close()
+        context.contentResolver.openInputStream(uri)?.use {
+            operation(it)
+        }
     }
     catch(_: FileNotFoundException) { Toast.makeText(context, R.string.file_not_exist, Toast.LENGTH_SHORT).show() }
     catch(_: IOException) { Toast.makeText(context, R.string.io_exception, Toast.LENGTH_SHORT).show() }
@@ -91,3 +91,5 @@ fun Context.showOperationResultToast(success: Boolean) {
 fun getContext(): Context {
     return Class.forName("android.app.ActivityThread").getMethod("currentApplication").invoke(null) as Context
 }
+
+const val APK_MIME = "application/vnd.android.package-archive"

@@ -42,18 +42,16 @@
             android:theme="@style/Theme.Transparent">
         </activity>
         <activity
-            android:name=".InstallAppActivity"
+            android:name=".AppInstallerActivity"
+            android:label="@string/app_installer"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize|stateHidden"
             android:excludeFromRecents="true"
-            android:launchMode="singleInstance"
-            android:theme="@style/Theme.Transparent">
+            android:launchMode="singleInstance">
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <action android:name="android.intent.action.VIEW"/>
-                <action android:name="android.intent.action.INSTALL_PACKAGE"/>
-                <data android:scheme="content"/>
-                <data android:scheme="file"/>
+                <action android:name="android.intent.action.SEND"/>
+                <action android:name="android.intent.action.SEND_MULTIPLE"/>
                 <data android:mimeType="application/vnd.android.package-archive"/>
             </intent-filter>
         </activity>
@@ -74,11 +72,6 @@
                 <action android:name="android.app.action.DEVICE_ADMIN_DISABLE_REQUESTED"/>
                 <action android:name="android.app.action.DEVICE_ADMIN_DISABLED"/>
             </intent-filter>
-        </receiver>
-        <receiver
-            android:name=".PackageInstallerReceiver"
-            android:description="@string/app_name"
-            android:permission="android.permission.BIND_DEVICE_ADMIN">
         </receiver>
         <receiver
             android:name=".ApiReceiver"

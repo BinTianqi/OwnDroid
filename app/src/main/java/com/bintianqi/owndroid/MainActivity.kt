@@ -137,7 +137,6 @@ import com.bintianqi.owndroid.dpm.isDeviceAdmin
 import com.bintianqi.owndroid.dpm.isDeviceOwner
 import com.bintianqi.owndroid.dpm.isProfileOwner
 import com.bintianqi.owndroid.dpm.setDefaultAffiliationID
-import com.bintianqi.owndroid.dpm.toggleInstallAppActivity
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
@@ -160,9 +159,7 @@ class MainActivity : FragmentActivity() {
         if (VERSION.SDK_INT >= 28) HiddenApiBypass.setHiddenApiExemptions("")
         val locale = context.resources?.configuration?.locale
         zhCN = locale == Locale.SIMPLIFIED_CHINESE || locale == Locale.CHINESE || locale == Locale.CHINA
-        toggleInstallAppActivity()
         val vm by viewModels<MyViewModel>()
-        if(!vm.initialized) vm.initialize(context)
         lifecycleScope.launch { delay(5000); setDefaultAffiliationID(context) }
         setContent {
             OwnDroidTheme(vm) {
@@ -462,8 +459,6 @@ private fun DhizukuErrorDialog() {
         val context = LocalContext.current
         val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
         LaunchedEffect(Unit) {
-            context.toggleInstallAppActivity()
-            delay(200)
             sharedPref.edit().putBoolean("dhizuku", false).apply()
         }
         AlertDialog(

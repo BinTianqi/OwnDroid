@@ -256,7 +256,6 @@ private fun toggleDhizukuMode(status: Boolean, context: Context) {
                 if(grantResult == PackageManager.PERMISSION_GRANTED) {
                     sharedPref.edit().putBoolean("dhizuku", true).apply()
                     Dhizuku.init(context)
-                    context.toggleInstallAppActivity()
                     backToHomeStateFlow.value = true
                 } else {
                     dhizukuErrorStatus.value = 2

@@ -1,5 +1,6 @@
 package com.bintianqi.owndroid.dpm
 
+import android.app.AlertDialog
 import android.app.PendingIntent
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT
@@ -9,8 +10,11 @@ import android.app.admin.PackagePolicy
 import android.app.admin.PackagePolicy.PACKAGE_POLICY_ALLOWLIST
 import android.app.admin.PackagePolicy.PACKAGE_POLICY_ALLOWLIST_AND_SYSTEM
 import android.app.admin.PackagePolicy.PACKAGE_POLICY_BLOCKLIST
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager.NameNotFoundException
 import android.net.Uri
 import android.os.Build.VERSION
@@ -73,15 +77,17 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.bintianqi.owndroid.InstallAppActivity
+import com.bintianqi.owndroid.APK_MIME
+import com.bintianqi.owndroid.AppInstallerActivity
+import com.bintianqi.owndroid.AppInstallerViewModel
 import com.bintianqi.owndroid.MyViewModel
-import com.bintianqi.owndroid.PackageInstallerReceiver
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.Animations
@@ -153,7 +159,6 @@ fun ApplicationManage(navCtrl:NavHostController, vm: MyViewModel) {
             composable(route = "Accessibility") { PermittedAccessibility(pkgName) }
             composable(route = "IME") { PermittedIME(pkgName) }
             composable(route = "KeepUninstalled") { KeepUninstalledApp(pkgName) }
-            composable(route = "InstallApp") { InstallApp() }
             composable(route = "UninstallApp") { UninstallApp(pkgName) }
         }
     }
@@ -253,7 +258,14 @@ private fun Home(navCtrl:NavHostController, pkgName: String) {
                 if(pkgName != "") dialogStatus = 2
             }
         }
-        FunctionItem(title = R.string.install_app, icon = R.drawable.install_mobile_fill0) { navCtrl.navigate("InstallApp") }
+        val chooseApks = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) {
+            val intent = Intent(context, AppInstallerActivity::class.java)
+            intent.putExtra(Intent.EXTRA_STREAM, it.toTypedArray())
+            startActivity(context, intent, null)
+        }
+        FunctionItem(title = R.string.install_app, icon = R.drawable.install_mobile_fill0) {
+            chooseApks.launch(APK_MIME)
+        }
         FunctionItem(title = R.string.uninstall_app, icon = R.drawable.delete_fill0) { navCtrl.navigate("UninstallApp") }
         if(VERSION.SDK_INT >= 34 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             FunctionItem(title = R.string.set_default_dialer, icon = R.drawable.call_fill0) {
@@ -876,10 +888,39 @@ private fun UninstallApp(pkgName: String) {
         Column(modifier = Modifier.fillMaxWidth()) { 
             Button(
                 onClick = {
-                    val intent = Intent(context, PackageInstallerReceiver::class.java)
-                    val intentSender = PendingIntent.getBroadcast(context, 8, intent, PendingIntent.FLAG_IMMUTABLE).intentSender
-                    val pkgInstaller = context.getPI()
-                    pkgInstaller.uninstall(pkgName, intentSender)
+                    val receiver = object : BroadcastReceiver() {
+                        override fun onReceive(context: Context, intent: Intent) {
+                            val statusExtra = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, 999)
+                            if(statusExtra == PackageInstaller.STATUS_PENDING_USER_ACTION) {
+                                @SuppressWarnings("UnsafeIntentLaunch")
+                                context.startActivity(intent.getParcelableExtra(Intent.EXTRA_INTENT) as Intent?)
+                            } else {
+                                context.unregisterReceiver(this)
+                                if(statusExtra == PackageInstaller.STATUS_SUCCESS) {
+                                    context.showOperationResultToast(true)
+                                } else {
+                                    AlertDialog.Builder(context)
+                                        .setTitle(R.string.failure)
+                                        .setMessage(parsePackageInstallerMessage(context, intent))
+                                        .setPositiveButton(R.string.confirm) { dialog, _ -> dialog.dismiss() }
+                                        .show()
+                                }
+                            }
+                        }
+                    }
+                    ContextCompat.registerReceiver(
+                        context, receiver, IntentFilter(AppInstallerViewModel.ACTION), null,
+                        null, ContextCompat.RECEIVER_EXPORTED
+                    )
+                    val pi = if(VERSION.SDK_INT >= 34) {
+                        PendingIntent.getBroadcast(
+                            context, 0, Intent(AppInstallerViewModel.ACTION),
+                            PendingIntent.FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT or PendingIntent.FLAG_MUTABLE
+                        ).intentSender
+                    } else {
+                        PendingIntent.getBroadcast(context, 0, Intent(AppInstallerViewModel.ACTION), PendingIntent.FLAG_MUTABLE).intentSender
+                    }
+                    context.getPackageInstaller().uninstall(pkgName, pi)
                 },
                 enabled = pkgName != "",
                 modifier = Modifier.fillMaxWidth()
@@ -901,57 +942,3 @@ private fun UninstallApp(pkgName: String) {
     }
 }
 
-@Composable
-private fun InstallApp() { 
-    val context = LocalContext.current
-    val focusMgr = LocalFocusManager.current
-    val sharedPrefs = context.getSharedPreferences("data", Context.MODE_PRIVATE)
-    var apkFileUri by remember { mutableStateOf<Uri?>(null) }
-    val getFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        result.data.also { if(it != null) apkFileUri = it.data }
-    }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.install_app), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = {
-                focusMgr.clearFocus()
-                val installApkIntent = Intent(Intent.ACTION_GET_CONTENT)
-                installApkIntent.setType("application/vnd.android.package-archive")
-                installApkIntent.addCategory(Intent.CATEGORY_OPENABLE)
-                getFileLauncher.launch(installApkIntent)
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.select_apk))
-        }
-        AnimatedVisibility(apkFileUri != null) {
-            Spacer(Modifier.padding(vertical = 3.dp))
-            Column(modifier = Modifier.fillMaxWidth()) { 
-                Button(
-                    onClick = {
-                        val intent = Intent(context, InstallAppActivity::class.java)
-                        intent.data = apkFileUri
-                        context.startActivity(intent)
-                    },
-                    enabled = !sharedPrefs.getBoolean("dhizuku", false) && context.isDeviceOwner,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.silent_install))
-                }
-                Button(
-                    onClick = {
-                        val intent = Intent(Intent.ACTION_INSTALL_PACKAGE)
-                        intent.setData(apkFileUri)
-                        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        context.startActivity(intent)
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.request_install))
-                }
-            }
-        }
-    }
-}
