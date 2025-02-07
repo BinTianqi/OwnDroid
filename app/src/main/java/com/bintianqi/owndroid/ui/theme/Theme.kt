@@ -97,7 +97,7 @@ fun OwnDroidTheme(
     content: @Composable () -> Unit
 ) {
     val theme by vm.theme.collectAsStateWithLifecycle()
-    val darkTheme = theme.darkTheme == true || (theme.darkTheme == null && isSystemInDarkTheme())
+    val darkTheme = theme.darkTheme == 1 || (theme.darkTheme == -1 && isSystemInDarkTheme())
     val context = LocalContext.current
     var colorScheme = when {
         theme.materialYou && VERSION.SDK_INT >= 31 -> {

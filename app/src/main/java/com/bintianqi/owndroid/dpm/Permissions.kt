@@ -46,6 +46,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavOptions
 import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.backToHomeStateFlow
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.*
@@ -63,7 +64,6 @@ fun Permissions(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val deviceAdmin = context.isDeviceAdmin
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
@@ -75,7 +75,7 @@ fun Permissions(navCtrl: NavHostController) {
         if(!dpm.isDeviceOwnerApp(context.packageName)) {
             SwitchItem(
                 R.string.dhizuku,
-                getState = { sharedPref.getBoolean("dhizuku", false) },
+                getState = { SharedPrefs(context).dhizuku },
                 onCheckedChange = { toggleDhizukuMode(it, context) },
                 onClickBlank = { dialog = 4 }
             )
@@ -235,9 +235,9 @@ fun Permissions(navCtrl: NavHostController) {
 }
 
 private fun toggleDhizukuMode(status: Boolean, context: Context) {
-    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val sp = SharedPrefs(context)
     if(!status) {
-        sharedPref.edit().putBoolean("dhizuku", false).apply()
+        sp.dhizuku = false
         backToHomeStateFlow.value = true
         return
     }
@@ -246,7 +246,7 @@ private fun toggleDhizukuMode(status: Boolean, context: Context) {
         return
     }
     if(dhizukuPermissionGranted()) {
-        sharedPref.edit().putBoolean("dhizuku", true).apply()
+        sp.dhizuku = true
         Dhizuku.init(context)
         backToHomeStateFlow.value = true
     } else {
@@ -254,7 +254,7 @@ private fun toggleDhizukuMode(status: Boolean, context: Context) {
             @Throws(RemoteException::class)
             override fun onRequestPermission(grantResult: Int) {
                 if(grantResult == PackageManager.PERMISSION_GRANTED) {
-                    sharedPref.edit().putBoolean("dhizuku", true).apply()
+                    sp.dhizuku = true
                     Dhizuku.init(context)
                     backToHomeStateFlow.value = true
                 } else {
@@ -444,14 +444,14 @@ fun DeviceOwner(navCtrl: NavHostController) {
         }
     }
     if(deactivateDialog) {
+        val sp = SharedPrefs(context)
         var resetPolicy by remember { mutableStateOf(false) }
-        val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
         val coroutine = rememberCoroutineScope()
         AlertDialog(
             title = { Text(stringResource(R.string.deactivate)) },
             text = {
                 Column {
-                    if(sharedPref.getBoolean("dhizuku", false)) Text(stringResource(R.string.dhizuku_will_be_deactivated))
+                    if(sp.dhizuku) Text(stringResource(R.string.dhizuku_will_be_deactivated))
                     Spacer(Modifier.padding(vertical = 4.dp))
                     CheckBoxItem(text = R.string.reset_device_policy, checked = resetPolicy, operation = { resetPolicy = it })
                 }
@@ -470,9 +470,9 @@ fun DeviceOwner(navCtrl: NavHostController) {
                         coroutine.launch {
                             if(resetPolicy) context.resetDevicePolicy()
                             dpm.clearDeviceOwnerApp(context.dpcPackageName)
-                            if(sharedPref.getBoolean("dhizuku", false)) {
+                            if(sp.dhizuku) {
                                 if (!Dhizuku.init(context)) {
-                                    sharedPref.edit().putBoolean("dhizuku", false).apply()
+                                    sp.dhizuku = false
                                     backToHomeStateFlow.value = true
                                 }
                             }

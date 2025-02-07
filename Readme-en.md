@@ -12,6 +12,7 @@ Use Android Device owner privilege to manage your device.
   - _Wipe data_
   - ...
 - Network
+  - Add/modify/delete Wi-Fi
   - Minimum Wi-Fi security level
   - Always-on VPN
   - Network logging

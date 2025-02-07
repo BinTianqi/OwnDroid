@@ -23,6 +23,7 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.Receiver
+import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.backToHomeStateFlow
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.Dhizuku.binderWrapper
@@ -42,10 +43,9 @@ lateinit var addDeviceAdmin: ActivityResultLauncher<Intent>
 
 val Context.isDeviceOwner: Boolean
     get() {
-        val sharedPref = getSharedPreferences("data", Context.MODE_PRIVATE)
         val dpm = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         return dpm.isDeviceOwnerApp(
-            if(sharedPref.getBoolean("dhizuku", false)) {
+            if(SharedPrefs(this).dhizuku) {
                 Dhizuku.getOwnerPackageName()
             } else {
                 "com.bintianqi.owndroid"
@@ -66,8 +66,7 @@ val Context.isDeviceAdmin: Boolean
 
 val Context.dpcPackageName: String
     get() {
-        val sharedPref = getSharedPreferences("data", Context.MODE_PRIVATE)
-        return if(sharedPref.getBoolean("dhizuku", false)) {
+        return if(SharedPrefs(this).dhizuku) {
             Dhizuku.getOwnerPackageName()
         } else {
             "com.bintianqi.owndroid"
@@ -119,8 +118,7 @@ private fun binderWrapperPackageInstaller(appContext: Context): PackageInstaller
 }
 
 fun Context.getPackageInstaller(): PackageInstaller {
-    val sharedPref = this.getSharedPreferences("data", Context.MODE_PRIVATE)
-    if(sharedPref.getBoolean("dhizuku", false)) {
+    if(SharedPrefs(this).dhizuku) {
         if (!dhizukuPermissionGranted()) {
             dhizukuErrorStatus.value = 2
             backToHomeStateFlow.value = true
@@ -133,8 +131,7 @@ fun Context.getPackageInstaller(): PackageInstaller {
 }
 
 fun Context.getDPM(): DevicePolicyManager {
-    val sharedPref = this.getSharedPreferences("data", Context.MODE_PRIVATE)
-    if(sharedPref.getBoolean("dhizuku", false)) {
+    if(SharedPrefs(this).dhizuku) {
         if (!dhizukuPermissionGranted()) {
             dhizukuErrorStatus.value = 2
             backToHomeStateFlow.value = true
@@ -147,8 +144,7 @@ fun Context.getDPM(): DevicePolicyManager {
 }
 
 fun Context.getReceiver(): ComponentName {
-    val sharedPref = this.getSharedPreferences("data", Context.MODE_PRIVATE)
-    return if(sharedPref.getBoolean("dhizuku", false)) {
+    return if(SharedPrefs(this).dhizuku) {
         Dhizuku.getOwnerComponent()
     } else {
         ComponentName(this, Receiver::class.java)
@@ -547,8 +543,8 @@ fun parseSecurityEventData(event: SecurityLog.SecurityEvent): JsonElement? {
 
 fun setDefaultAffiliationID(context: Context) {
     if(VERSION.SDK_INT < 26) return
-    val sharedPrefs = context.getSharedPreferences("data", Context.MODE_PRIVATE)
-    if(!sharedPrefs.getBoolean("default_affiliation_id_set", false)) {
+    val sp = SharedPrefs(context)
+    if(!sp.isDefaultAffiliationIdSet) {
         try {
             val um = context.getSystemService(Context.USER_SERVICE) as UserManager
             if(context.isDeviceOwner || (!um.isSystemUser && context.isProfileOwner)) {
@@ -557,7 +553,7 @@ fun setDefaultAffiliationID(context: Context) {
                 val affiliationIDs = dpm.getAffiliationIds(receiver)
                 if(affiliationIDs.isEmpty()) {
                     dpm.setAffiliationIds(receiver, setOf("OwnDroid_default_affiliation_id"))
-                    sharedPrefs.edit().putBoolean("default_affiliation_id_set", true).apply()
+                    sp.isDefaultAffiliationIdSet = true
                     Log.d("DPM", "Default affiliation id set")
                 }
             }

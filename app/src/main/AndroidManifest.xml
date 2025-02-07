@@ -76,13 +76,6 @@
         <receiver
             android:name=".ApiReceiver"
             android:exported="true">
-            <intent-filter>
-                <action android:name="com.bintianqi.owndroid.action.HIDE"/>
-                <action android:name="com.bintianqi.owndroid.action.UNHIDE"/>
-                <action android:name="com.bintianqi.owndroid.action.SUSPEND"/>
-                <action android:name="com.bintianqi.owndroid.action.UNSUSPEND"/>
-                <action android:name="com.bintianqi.owndroid.action.LOCK"/>
-            </intent-filter>
         </receiver>
         <provider
             android:name="rikka.shizuku.ShizukuProvider"

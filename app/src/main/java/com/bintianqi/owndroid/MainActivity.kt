@@ -1,7 +1,6 @@
 package com.bintianqi.owndroid
 
 import android.app.admin.DevicePolicyManager
-import android.content.Context
 import android.os.Build.VERSION
 import android.os.Bundle
 import android.widget.Toast
@@ -170,12 +169,12 @@ class MainActivity : FragmentActivity() {
 
     override fun onResume() {
         super.onResume()
-        val sharedPref = applicationContext.getSharedPreferences("data", MODE_PRIVATE)
-        if (sharedPref.getBoolean("dhizuku", false)) {
+        val sp = SharedPrefs(applicationContext)
+        if (sp.dhizuku) {
             if (Dhizuku.init(applicationContext)) {
                 if (!dhizukuPermissionGranted()) { dhizukuErrorStatus.value = 2 }
             } else {
-                sharedPref.edit().putBoolean("dhizuku", false).apply()
+                sp.dhizuku = false
                 dhizukuErrorStatus.value = 1
             }
         }
@@ -190,7 +189,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val sp = SharedPrefs(context)
     val focusMgr = LocalFocusManager.current
     val backToHome by backToHomeStateFlow.collectAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -325,10 +324,8 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if(
-                (event == Lifecycle.Event.ON_RESUME &&
-                        sharedPref.getBoolean("auth", false) &&
-                        sharedPref.getBoolean("lock_in_background", false)) ||
-                (event == Lifecycle.Event.ON_CREATE && sharedPref.getBoolean("auth", false))
+                (event == Lifecycle.Event.ON_RESUME && sp.auth && sp.lockInBackground) ||
+                (event == Lifecycle.Event.ON_CREATE && sp.auth)
             ) {
                 navCtrl.navigate("Authenticate") { launchSingleTop = true }
             }
@@ -339,11 +336,10 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         }
     }
     LaunchedEffect(Unit) {
-        val profileInitialized = sharedPref.getBoolean("ManagedProfileActivated", false)
-        val profileNotActivated = !profileInitialized && context.isProfileOwner && (VERSION.SDK_INT < 24 || dpm.isManagedProfile(receiver))
+        val profileNotActivated = !sp.managedProfileActivated && context.isProfileOwner && (VERSION.SDK_INT < 24 || dpm.isManagedProfile(receiver))
         if(profileNotActivated) {
             dpm.setProfileEnabled(receiver)
-            sharedPref.edit().putBoolean("ManagedProfileActivated", true).apply()
+            sp.managedProfileActivated = true
             Toast.makeText(context, R.string.work_profile_activated, Toast.LENGTH_SHORT).show()
         }
     }
@@ -355,7 +351,6 @@ private fun HomePage(navCtrl:NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     var activated by remember { mutableStateOf(false) }
     var activateType by remember { mutableStateOf("") }
     val deviceAdmin = context.isDeviceAdmin
@@ -364,7 +359,7 @@ private fun HomePage(navCtrl:NavHostController) {
     val refreshStatus by dhizukuErrorStatus.collectAsState()
     LaunchedEffect(refreshStatus) {
         activated = context.isProfileOwner || context.isDeviceOwner
-        activateType = if(sharedPref.getBoolean("dhizuku", false)) context.getString(R.string.dhizuku) + " - " else ""
+        activateType = if(SharedPrefs(context).dhizuku) context.getString(R.string.dhizuku) + " - " else ""
         activateType += context.getString(
             if(deviceOwner) { R.string.device_owner }
             else if(profileOwner) {
@@ -456,10 +451,9 @@ fun HomePageItem(name: Int, imgVector: Int, navTo: String, navCtrl: NavHostContr
 private fun DhizukuErrorDialog() {
     val status by dhizukuErrorStatus.collectAsState()
     if (status != 0) {
-        val context = LocalContext.current
-        val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+        val sp = SharedPrefs(LocalContext.current)
         LaunchedEffect(Unit) {
-            sharedPref.edit().putBoolean("dhizuku", false).apply()
+            sp.dhizuku = false
         }
         AlertDialog(
             onDismissRequest = { dhizukuErrorStatus.value = 0 },
@@ -477,7 +471,7 @@ private fun DhizukuErrorDialog() {
                         else -> R.string.failed_to_init_dhizuku
                     }
                 )
-                if(sharedPref.getBoolean("dhizuku", false)) text += "\n" + stringResource(R.string.dhizuku_mode_disabled)
+                if(sp.dhizuku) text += "\n" + stringResource(R.string.dhizuku_mode_disabled)
                 Text(text)
             }
         )

@@ -134,6 +134,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.humanReadableDate
 import com.bintianqi.owndroid.showOperationResultToast
@@ -164,8 +165,7 @@ fun Network(navCtrl:NavHostController) {
     val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
-    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
-    val dhizuku = sharedPref.getBoolean("dhizuku", false)
+    val dhizuku = SharedPrefs(context).dhizuku
     MyScaffold(R.string.network, 0.dp, navCtrl) {
         if(!dhizuku) FunctionItem(R.string.wifi, icon = R.drawable.wifi_fill0) { navCtrl.navigate("Wifi") }
         if(VERSION.SDK_INT >= 30) {

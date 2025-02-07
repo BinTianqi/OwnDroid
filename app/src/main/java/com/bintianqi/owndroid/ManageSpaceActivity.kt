@@ -25,8 +25,7 @@ class ManageSpaceActivity: FragmentActivity() {
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
-        val sharedPref = applicationContext.getSharedPreferences("data", MODE_PRIVATE)
-        val authenticate = sharedPref.getBoolean("auth", false)
+        val authenticate = SharedPrefs(applicationContext).auth
         val vm by viewModels<MyViewModel>()
         fun clearStorage() {
             filesDir.deleteRecursively()
@@ -35,6 +34,7 @@ class ManageSpaceActivity: FragmentActivity() {
             if(Build.VERSION.SDK_INT >= 24) {
                 dataDir.resolve("shared_prefs").deleteRecursively()
             } else {
+                val sharedPref = applicationContext.getSharedPreferences("data", MODE_PRIVATE)
                 sharedPref.edit().clear().apply()
             }
             finish()

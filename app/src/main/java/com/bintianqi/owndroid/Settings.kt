@@ -53,12 +53,12 @@ fun Settings(navCtrl: NavHostController) {
 
 @Composable
 fun SettingsOptions(navCtrl: NavHostController) {
-    val sharedPref = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val sp = SharedPrefs(LocalContext.current)
     MyScaffold(R.string.options, 0.dp, navCtrl) {
         SwitchItem(
             R.string.show_dangerous_features, icon = R.drawable.warning_fill0,
-            getState = { sharedPref.getBoolean("dangerous_features", false) },
-            onCheckedChange = { sharedPref.edit().putBoolean("dangerous_features", it).apply() }
+            getState = { sp.displayDangerousFeatures },
+            onCheckedChange = { sp.displayDangerousFeatures = it }
         )
     }
 }
@@ -68,9 +68,9 @@ fun Appearance(navCtrl: NavHostController, vm: MyViewModel) {
     val theme by vm.theme.collectAsStateWithLifecycle()
     var darkThemeMenu by remember { mutableStateOf(false) }
     val darkThemeTextID = when(theme.darkTheme) {
-        true -> R.string.on
-        false -> R.string.off
-        null -> R.string.follow_system
+        1 -> R.string.on
+        0 -> R.string.off
+        else -> R.string.follow_system
     }
     MyScaffold(R.string.appearance, 0.dp, navCtrl) {
         if(VERSION.SDK_INT >= 31) {
@@ -85,27 +85,27 @@ fun Appearance(navCtrl: NavHostController, vm: MyViewModel) {
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.follow_system)) },
                     onClick = {
-                        vm.theme.value = theme.copy(darkTheme = null)
+                        vm.theme.value = theme.copy(darkTheme = -1)
                         darkThemeMenu = false
                     }
                 )
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.on)) },
                     onClick = {
-                        vm.theme.value = theme.copy(darkTheme = true)
+                        vm.theme.value = theme.copy(darkTheme = 1)
                         darkThemeMenu = false
                     }
                 )
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.off)) },
                     onClick = {
-                        vm.theme.value = theme.copy(darkTheme = false)
+                        vm.theme.value = theme.copy(darkTheme = 0)
                         darkThemeMenu = false
                     }
                 )
             }
         }
-        AnimatedVisibility(theme.darkTheme == true || (theme.darkTheme == null && isSystemInDarkTheme())) {
+        AnimatedVisibility(theme.darkTheme == 1 || (theme.darkTheme == -1 && isSystemInDarkTheme())) {
             SwitchItem(R.string.black_theme, state = theme.blackTheme, onCheckedChange = { vm.theme.value = theme.copy(blackTheme = it) })
         }
     }
@@ -114,33 +114,33 @@ fun Appearance(navCtrl: NavHostController, vm: MyViewModel) {
 @Composable
 fun AuthSettings(navCtrl: NavHostController) {
     val context = LocalContext.current
-    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
-    var auth by remember{ mutableStateOf(sharedPref.getBoolean("auth",false)) }
+    val sp = SharedPrefs(context)
+    var auth by remember{ mutableStateOf(sp.auth) }
     MyScaffold(R.string.security, 0.dp, navCtrl) {
         SwitchItem(
             R.string.lock_owndroid, state = auth,
             onCheckedChange = {
-                sharedPref.edit().putBoolean("auth", it).apply()
-                auth = sharedPref.getBoolean("auth", false)
+                sp.auth = it
+                auth = it
             }
         )
         if(auth) {
-            var bioAuth by remember { mutableIntStateOf(sharedPref.getInt("biometrics_auth", 0)) } // 0:Disabled, 1:Enabled 2:Force enabled
+            var bioAuth by remember { mutableIntStateOf(sp.biometricsAuth) } // 0:Disabled, 1:Enabled 2:Force enabled
             LaunchedEffect(Unit) {
                 val bioManager = BiometricManager.from(context)
                 if(bioManager.canAuthenticate(BiometricManager.Authenticators.DEVICE_CREDENTIAL) != BiometricManager.BIOMETRIC_SUCCESS) {
+                    sp.biometricsAuth = 2
                     bioAuth = 2
-                    sharedPref.edit().putInt("biometrics_auth", 2).apply()
                 }
             }
             SwitchItem(
                 R.string.enable_bio_auth, state = bioAuth != 0,
-                onCheckedChange = { bioAuth = if(it) 1 else 0; sharedPref.edit().putInt("biometrics_auth", bioAuth).apply() }, enabled = bioAuth != 2
+                onCheckedChange = { bioAuth = if(it) 1 else 0; sp.biometricsAuth = bioAuth }, enabled = bioAuth != 2
             )
             SwitchItem(
                 R.string.lock_in_background,
-                getState = { sharedPref.getBoolean("lock_in_background", false) },
-                onCheckedChange = { sharedPref.edit().putBoolean("lock_in_background", it).apply() }
+                getState = { sp.lockInBackground },
+                onCheckedChange = { sp.lockInBackground = it }
             )
         }
     }
@@ -149,16 +149,14 @@ fun AuthSettings(navCtrl: NavHostController) {
 @Composable
 fun ApiSettings(navCtrl: NavHostController) {
     val context = LocalContext.current
-    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val sp = SharedPrefs(context)
     MyScaffold(R.string.api, 8.dp, navCtrl) {
-        var enabled by remember { mutableStateOf(sharedPref.getBoolean("enable_api", false)) }
-        LaunchedEffect(enabled) {
-            sharedPref.edit {
-                putBoolean("enable_api", enabled)
-                if(!enabled) remove("api_key")
-            }
-        }
-        SwitchItem(R.string.enable, state = enabled, onCheckedChange = { enabled = it }, padding = false)
+        var enabled by remember { mutableStateOf(sp.isApiEnabled) }
+        SwitchItem(R.string.enable, state = enabled, onCheckedChange = {
+            enabled = it
+            sp.isApiEnabled = it
+            if(!it) sp.sharedPrefs.edit { remove("api.key") }
+        }, padding = false)
         if(enabled) {
             var key by remember { mutableStateOf("") }
             OutlinedTextField(
@@ -179,13 +177,13 @@ fun ApiSettings(navCtrl: NavHostController) {
             Button(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
                 onClick = {
-                    sharedPref.edit().putString("api_key", key).apply()
+                    sp.apiKey = key
                     context.showOperationResultToast(true)
                 }
             ) {
                 Text(stringResource(R.string.apply))
             }
-            if(sharedPref.contains("api_key")) InfoCard(R.string.api_key_exist)
+            if(sp.apiKey != null) InfoCard(R.string.api_key_exist)
         }
     }
 }

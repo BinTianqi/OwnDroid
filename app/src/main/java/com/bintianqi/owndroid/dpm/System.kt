@@ -124,6 +124,7 @@ import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.NotificationUtils
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.humanReadableDate
 import com.bintianqi.owndroid.showOperationResultToast
@@ -151,9 +152,8 @@ fun SystemManage(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
-    val dhizuku = sharedPref.getBoolean("dhizuku", false)
-    val dangerousFeatures = sharedPref.getBoolean("dangerous_features", false)
+    val sp = SharedPrefs(context)
+    val dhizuku = sp.dhizuku
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
     var dialog by remember { mutableIntStateOf(0) }
@@ -208,7 +208,7 @@ fun SystemManage(navCtrl: NavHostController) {
         if(VERSION.SDK_INT >= 30 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             FunctionItem(R.string.frp_policy, icon = R.drawable.device_reset_fill0) { navCtrl.navigate("FRPPolicy") }
         }
-        if(dangerousFeatures && context.isDeviceAdmin && !(VERSION.SDK_INT >= 24 && profileOwner && dpm.isManagedProfile(receiver))) {
+        if(sp.displayDangerousFeatures && context.isDeviceAdmin && !(VERSION.SDK_INT >= 24 && profileOwner && dpm.isManagedProfile(receiver))) {
             FunctionItem(R.string.wipe_data, icon = R.drawable.device_reset_fill0) { navCtrl.navigate("WipeData") }
         }
     }

@@ -1,6 +1,5 @@
 package com.bintianqi.owndroid
 
-import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.biometric.BiometricManager
@@ -81,9 +80,8 @@ fun Authenticate(activity: FragmentActivity, navCtrl: NavHostController) {
 
 fun startAuth(activity: FragmentActivity, callback: AuthenticationCallback) {
     val context = activity.applicationContext
-    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     val promptInfo = Builder().setTitle(context.getText(R.string.authenticate))
-    if(sharedPref.getInt("biometrics_auth", 0) != 0) {
+    if(SharedPrefs(context).biometricsAuth != 0) {
         promptInfo.setAllowedAuthenticators(BiometricManager.Authenticators.DEVICE_CREDENTIAL or BiometricManager.Authenticators.BIOMETRIC_WEAK)
     } else {
         promptInfo.setAllowedAuthenticators(BiometricManager.Authenticators.DEVICE_CREDENTIAL)

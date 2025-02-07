@@ -74,8 +74,7 @@ class Receiver : DeviceAdminReceiver() {
 
     override fun onTransferOwnershipComplete(context: Context, bundle: PersistableBundle?) {
         super.onTransferOwnershipComplete(context, bundle)
-        val sp = context.getSharedPreferences("data", Context.MODE_PRIVATE)
-        sp.edit().putBoolean("dhizuku", false).apply()
+        SharedPrefs(context).dhizuku = false
     }
 
     override fun onLockTaskModeEntering(context: Context, intent: Intent, pkg: String) {
