@@ -31,21 +31,30 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,10 +62,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.parseTimestamp
@@ -70,6 +82,9 @@ import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.uriToStream
 import com.bintianqi.owndroid.yesOrNo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun Users(navCtrl: NavHostController) {
@@ -202,14 +217,14 @@ fun UserOperation(navCtrl: NavHostController) {
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    var idInput by remember { mutableStateOf("") }
-    var useUid by remember { mutableStateOf(false) }
+    var input by remember { mutableStateOf("") }
     val focusMgr = LocalFocusManager.current
+    var useUserId by remember { mutableStateOf(false) }
     fun withUserHandle(operation: (UserHandle) -> Unit) {
-        val userHandle = if(useUid && VERSION.SDK_INT >= 24) {
-            UserHandle.getUserHandleForUid(idInput.toInt())
+        val userHandle = if(useUserId && VERSION.SDK_INT >= 24) {
+            UserHandle.getUserHandleForUid(input.toInt() * 100000)
         } else {
-            userManager.getUserForSerialNumber(idInput.toLong())
+            userManager.getUserForSerialNumber(input.toLong())
         }
         if(userHandle == null) {
             Toast.makeText(context, R.string.user_not_exist, Toast.LENGTH_SHORT).show()
@@ -217,27 +232,24 @@ fun UserOperation(navCtrl: NavHostController) {
             operation(userHandle)
         }
     }
-    val legalInput = try {
-        idInput.toInt()
-        true
-    } catch(_: Exception) {
-        false
-    }
+    val legalInput = input.toIntOrNull() != null
     MyScaffold(R.string.user_operation, 8.dp, navCtrl) {
+        if(VERSION.SDK_INT >= 24) SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            SegmentedButton(!useUserId, { useUserId = false }, SegmentedButtonDefaults.itemShape(0, 2)) {
+                Text(stringResource(R.string.serial_number))
+            }
+            SegmentedButton(useUserId, { useUserId = true }, SegmentedButtonDefaults.itemShape(1, 2)) {
+                Text(stringResource(R.string.user_id))
+            }
+        }
         OutlinedTextField(
-            value = idInput,
-            onValueChange = {
-                idInput = it
-            },
-            label = { Text(if(useUid) "UID" else stringResource(R.string.serial_number)) },
-            modifier = Modifier.fillMaxWidth(),
+            value = input,
+            onValueChange = { input = it },
+            label = { Text(stringResource(if(useUserId) R.string.user_id else R.string.serial_number)) },
+            modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 8.dp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() })
         )
-        Spacer(Modifier.padding(vertical = 3.dp))
-        if(VERSION.SDK_INT >= 24) {
-            CheckBoxItem(text = R.string.use_uid, checked = useUid, operation = { idInput=""; useUid = it })
-        }
         if(VERSION.SDK_INT >= 28) {
             Button(
                 onClick = {
@@ -250,6 +262,7 @@ fun UserOperation(navCtrl: NavHostController) {
                 enabled = legalInput,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                Icon(Icons.Default.PlayArrow, null, Modifier.padding(end = 4.dp))
                 Text(stringResource(R.string.start_in_background))
             }
         }
@@ -261,6 +274,7 @@ fun UserOperation(navCtrl: NavHostController) {
             enabled = legalInput,
             modifier = Modifier.fillMaxWidth()
         ) {
+            Icon(painterResource(R.drawable.sync_alt_fill0), null, Modifier.padding(end = 4.dp))
             Text(stringResource(R.string.user_operation_switch))
         }
         if(VERSION.SDK_INT >= 28) {
@@ -275,6 +289,7 @@ fun UserOperation(navCtrl: NavHostController) {
                 enabled = legalInput,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                Icon(Icons.Default.Close, null, Modifier.padding(end = 4.dp))
                 Text(stringResource(R.string.stop))
             }
         }
@@ -284,7 +299,7 @@ fun UserOperation(navCtrl: NavHostController) {
                 withUserHandle {
                     if(dpm.removeUser(receiver, it)) {
                         context.showOperationResultToast(true)
-                        idInput = ""
+                        input = ""
                     } else {
                         Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
                     }
@@ -293,9 +308,9 @@ fun UserOperation(navCtrl: NavHostController) {
             enabled = legalInput,
             modifier = Modifier.fillMaxWidth()
         ) {
+            Icon(Icons.Default.Delete, null, Modifier.padding(end = 4.dp))
             Text(stringResource(R.string.delete))
         }
-        InfoCard(R.string.info_user_operation)
     }
 }
 
@@ -308,7 +323,10 @@ fun CreateUser(navCtrl: NavHostController) {
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var userName by remember { mutableStateOf("") }
+    var creating by remember { mutableStateOf(false) }
+    var createdUserSerialNumber by remember { mutableLongStateOf(-1) }
     var flag by remember { mutableIntStateOf(0) }
+    val coroutine = rememberCoroutineScope()
     MyScaffold(R.string.create_user, 8.dp, navCtrl) {
         OutlinedTextField(
             value = userName,
@@ -333,20 +351,39 @@ fun CreateUser(navCtrl: NavHostController) {
                 flag and DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED != 0
             ) { flag = flag xor DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED }
         }
-        var newUserHandle: UserHandle? by remember { mutableStateOf(null) }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                newUserHandle = dpm.createAndManageUser(receiver, userName, receiver, null, flag)
-                context.showOperationResultToast(newUserHandle != null)
+                creating = true
+                coroutine.launch(Dispatchers.IO) {
+                    println(Thread.currentThread().name)
+                    try {
+                        val uh = dpm.createAndManageUser(receiver, userName, receiver, null, flag)
+                        withContext(Dispatchers.Main) {
+                            createdUserSerialNumber = userManager.getSerialNumberForUser(uh)
+                        }
+                    } catch(_: Exception) {
+                        context.showOperationResultToast(false)
+                    }
+                    withContext(Dispatchers.Main) { creating = false }
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.create))
         }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        if(newUserHandle != null) { Text(text = stringResource(R.string.serial_number_of_new_user_is, userManager.getSerialNumberForUser(newUserHandle))) }
+        if(createdUserSerialNumber != -1L) AlertDialog(
+            title = { Text(stringResource(R.string.success)) },
+            text = { Text(stringResource(R.string.serial_number_of_new_user_is, createdUserSerialNumber)) },
+            confirmButton = {
+                TextButton({ createdUserSerialNumber = -1 }) { Text(stringResource(R.string.confirm)) }
+            },
+            onDismissRequest = { createdUserSerialNumber = -1 }
+        )
+        if(creating) Dialog({}, DialogProperties(false, false)) {
+            CircularProgressIndicator()
+        }
     }
 }
 

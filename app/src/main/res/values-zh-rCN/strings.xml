@@ -499,14 +499,12 @@
     <string name="logout_enabled">用户可登出</string>
     <string name="ephemeral_user">临时用户</string>
     <string name="affiliated_user">附属用户</string>
-    <string name="user_id">当前UserID</string>
     <string name="user_serial_number">当前用户序列号</string>
     <string name="secondary_users">次要用户</string>
     <string name="no_secondary_users">无次要用户</string>
     <string name="user_operation">用户操作</string>
     <string name="user_not_exist">用户不存在</string>
     <string name="serial_number">序列号</string>
-    <string name="use_uid">使用UID</string>
     <string name="logout_current_user">登出当前用户</string>
     <string name="start_in_background">在后台启动</string>
     <string name="user_operation_switch">切换</string>
@@ -515,7 +513,7 @@
     <string name="create_user_skip_wizard">跳过创建用户向导</string>
     <string name="create_user_ephemeral_user">临时用户</string>
     <string name="create_user_enable_all_system_app">启用所有系统应用</string>
-    <string name="serial_number_of_new_user_is">新用户的序列号：%1$s</string>
+    <string name="serial_number_of_new_user_is">新用户的序列号：%1$d</string>
     <string name="affiliation_id">附属用户ID</string>
     <string name="change_user_icon">更换用户头像</string>
     <string name="file_picker_instead_gallery">使用文件选择器而不是相册</string>
@@ -689,7 +687,6 @@
     <string name="info_disable_user_control">用户无法清除这些应用的存储空间，也无法强制停止应用</string>
     <string name="info_keep_uninstalled_apps">这个列表中的应用的APK将会一直保留，即使没有任何用户安装这个应用</string>
     <string name="info_headless_system_user_mode">无头系统用户模式意味着系统用户运行系统服务和一些系统UI，但它不与任何真实的人相关联，必须创建额外的用户才能与真实的人相关联。</string>
-    <string name="info_user_operation">推荐使用用户序列号来标识用户，如果要使用UID，UID可以是运行在目标用户中任意应用的UID</string>
     <string name="info_affiliated_id">当Device owner创建并管理用户时，新的用户不是附属用户。Device owner设置和受管理用户完全相同的附属用户ID后，受管理用户成为附属于Device owner的用户</string>
     <string name="info_reset_password">设置一个新的密码，密码的长度需要4位或以上，不输入密码将会清除现有的密码。长度在6位或以下的纯数字密码将会设置为PIN码。</string>
     <string name="info_screen_timeout">设置设备锁定前用户活动的最大时间。这限制了用户可以设置的时间长度。\n值为0表示不做限制。</string>

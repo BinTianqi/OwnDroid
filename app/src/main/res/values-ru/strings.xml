@@ -508,14 +508,12 @@
     <string name="logout_enabled">Выход из системы разрешен</string>
     <string name="ephemeral_user">Временный пользователь</string>
     <string name="affiliated_user">Аффилированный пользователь</string>
-    <string name="user_id">Идентификатор пользователя</string>
     <string name="user_serial_number">Серийный номер пользователя</string>
     <string name="user_operation">Операция с пользователем</string>
     <string name="user_not_exist">Пользователь не существует</string> 
     <string name="serial_number">Серийный номер</string>
     <string name="secondary_users">Вторичные пользователи</string> 
-    <string name="no_secondary_users">Нет вторичных пользователей</string> 
-    <string name="use_uid">Использовать UID</string>
+    <string name="no_secondary_users">Нет вторичных пользователей</string>
     <string name="logout_current_user">Выйти из текущего пользователя</string>
     <string name="start_in_background">Запустить в фоновом режиме</string>
     <string name="user_operation_switch">Переключиться</string>
@@ -524,7 +522,7 @@
     <string name="create_user_skip_wizard">Пропустить мастер настройки</string>
     <string name="create_user_ephemeral_user">Временный пользователь</string>
     <string name="create_user_enable_all_system_app">Включить все системные приложения</string>
-    <string name="serial_number_of_new_user_is">Серийный номер этого пользователя: %1$s</string>
+    <string name="serial_number_of_new_user_is">Серийный номер этого пользователя: %1$d</string>
     <string name="affiliation_id">Аффилированный идентификатор</string>
     <string name="change_user_icon">Изменить значок пользователя</string>
     <string name="file_picker_instead_gallery">Использовать выборщик файлов вместо галереи</string>
@@ -702,7 +700,6 @@
     <string name="info_disable_user_control">Пользователь не сможет очищать данные приложений или принудительно останавливать пакеты.</string>
     <string name="info_keep_uninstalled_apps">Установить список приложений, которые нужно сохранить в виде APK-файлов, даже если ни у одного пользователя в данный момент они не установлены.</string>
     <string name="info_headless_system_user_mode">Режим "безголового" системного пользователя означает, что системный пользователь запускает системные службы и некоторый системный интерфейс, но он не связан с каким-либо реальным человеком, и для связи с реальными людьми должны быть созданы дополнительные пользователи.</string>
-    <string name="info_user_operation">Рекомендуется указать пользователя по серийному номеру, также можно использовать UID, UID должен принадлежать любому из приложений целевого пользователя.</string>
     <string name="info_affiliated_id">Когда владелец устройства создает управляемого пользователя, управляемый пользователь не является аффилированным. Чтобы сделать управляемого пользователя аффилированным с владельцем устройства, вам следует установить одинаковые аффилированные идентификаторы в основном и управляемом пользователях.</string>
     <string name="info_reset_password">Установить новый пароль блокировки экрана. Длина этого пароля должна быть не менее 4 цифр. Оставьте поле пустым, чтобы удалить пароль.\nЕсли вы установите цифровой пароль длиной 6 символов или меньше, он будет установлен как PIN-код.</string>
     <string name="info_screen_timeout">Установить максимальное время бездействия пользователя, по истечении которого устройство будет заблокировано. Это ограничивает время, которое может установить пользователь.\nЗначение 0 означает отсутствие ограничений.</string>

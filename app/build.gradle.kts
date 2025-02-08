@@ -38,6 +38,10 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("defaultSignature")
+            composeCompiler {
+                includeSourceInformation = false
+                includeTraceMarkers = false
+            }
         }
         debug {
             signingConfig = signingConfigs.getByName("defaultSignature")
