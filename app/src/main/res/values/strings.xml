@@ -222,8 +222,6 @@
     <string name="ltf_keyguard">Allow keyguard</string>
     <string name="ltf_block_activity_start_in_task">Block activity start in task</string>
     <string name="ca_cert">CA certificate</string>
-    <string name="please_select_ca_cert">Please select a certificate</string>
-    <string name="cert_installed">Certificate installed: %1$s</string>
     <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Select certificate...</string>
     <string name="uninstall_all_user_ca_cert">Uninstall all user CA certificate</string>
     <string name="security_logging">Security logging</string>
@@ -454,7 +452,6 @@
     <string name="connectivity">Other connection</string>
     <string name="media">Media</string>
     <string name="other">Other</string>
-    <string name="require_device_owner">Require device owner</string>
     <string name="config_mobile_network">Configure mobile network</string>
     <string name="config_wifi">Configure Wi-Fi</string>
     <string name="data_roaming">Data roaming</string>
@@ -637,6 +634,7 @@
     <string name="lock_in_background">Lock when switch to background</string>
     <string name="clear_storage">Clear storage</string>
     <string name="skipped_authentication">Skipped authentication because it is unavailable.</string>
+    <string name="failed_to_authenticate">Failed to authenticate</string>
     
     <string name="api_key">API key</string>
     <string name="api_key_exist">The API key already exists, setting a new key will overwrite the current key.</string>

@@ -15,7 +15,7 @@ android {
         }
     }
     namespace = "com.bintianqi.owndroid"
-    compileSdk = 34
+    compileSdk = 35
 
     lint.checkReleaseBuilds = false
     lint.disable += "All"
@@ -24,9 +24,8 @@ android {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 21
         targetSdk = 35
-        compileSdk = 35
-        versionCode = 35
-        versionName = "6.3"
+        versionCode = 36
+        versionName = "6.4"
         multiDexEnabled = false
     }
 

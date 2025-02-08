@@ -5,6 +5,7 @@
     <string name="disable">禁用</string>
     <string name="enable">启用</string>
     <string name="success">成功</string>
+    <string name="failure">失败</string>
     <string name="failed">失败</string>
     <string name="add">添加</string>
     <string name="remove">移除</string>
@@ -66,6 +67,7 @@
     <string name="overview">概览</string>
     <string name="features">功能</string>
     <string name="default_str">默认</string>
+    <string name="timeout">超时</string>
 
     <!--Permissions-->
     <string name="click_to_activate">点击以激活</string>
@@ -191,8 +193,6 @@
     <string name="package_name">包名</string>
     <string name="not_exist">不存在</string>
     <string name="ca_cert">CA证书</string>
-    <string name="please_select_ca_cert">请选择CA证书</string>
-    <string name="cert_installed">证书已安装：%1$s</string>
     <string name="select_ca_cert" tools:ignore="TypographyEllipsis">选择证书...</string>
     <string name="uninstall_all_user_ca_cert">卸载所有用户证书</string>
     <string name="security_logging">安全日志</string>
@@ -415,7 +415,6 @@
     <string name="connectivity">更多连接</string>
     <string name="media">媒体</string>
     <string name="other">其他</string>
-    <string name="require_device_owner">需要DeviceOwner</string>
     <string name="config_mobile_network">配置移动数据</string>
     <string name="config_wifi">配置Wi-Fi</string>
     <string name="data_roaming">数据漫游</string>
@@ -597,6 +596,7 @@
     <string name="lock_in_background">处于后台时锁定</string>
     <string name="clear_storage">清除存储空间</string>
     <string name="skipped_authentication">验证已跳过，因为不可用</string>
+    <string name="failed_to_authenticate">验证失败</string>
 
     <string name="api_key">API密钥</string>
     <string name="api_key_exist">API密钥已存在，设置新的密钥将会覆盖当前密钥</string>

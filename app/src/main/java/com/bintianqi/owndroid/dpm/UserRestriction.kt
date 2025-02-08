@@ -1,22 +1,20 @@
 package com.bintianqi.owndroid.dpm
 
-import android.os.Build.VERSION
+import android.os.Build
+import android.os.Bundle
 import android.os.UserManager
-import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.R
@@ -31,15 +29,19 @@ data class Restriction(
     val requiresApi: Int = 0
 )
 
+@RequiresApi(24)
 @Composable
-fun UserRestriction(navCtrl:NavHostController) {
+fun UserRestriction(navCtrl:NavHostController, vm: MyViewModel) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
+    LaunchedEffect(Unit) {
+        vm.userRestrictions.value = dpm.getUserRestrictions(receiver)
+    }
     MyScaffold(R.string.user_restriction, 0.dp, navCtrl) {
         Text(text = stringResource(R.string.switch_to_disable_feature), modifier = Modifier.padding(start = 16.dp))
         if(context.isProfileOwner) { Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.padding(start = 16.dp)) }
-        if(context.isProfileOwner && (VERSION.SDK_INT < 24 || dpm.isManagedProfile(receiver))) {
+        if(context.isProfileOwner && dpm.isManagedProfile(receiver)) {
             Text(text = stringResource(R.string.some_features_invalid_in_work_profile), modifier = Modifier.padding(start = 16.dp))
         }
         Spacer(Modifier.padding(vertical = 2.dp))
@@ -54,30 +56,19 @@ fun UserRestriction(navCtrl:NavHostController) {
 
 @RequiresApi(24)
 @Composable
-fun UserRestrictionItem(restriction: Restriction, vm: MyViewModel) {
-    val context = LocalContext.current
-    val userRestrictions by vm.userRestrictions.collectAsStateWithLifecycle()
-    Box(modifier = Modifier.padding(start = 22.dp, end = 16.dp)) {
-        SwitchItem(
-            restriction.name, restriction.id, restriction.icon,
-            userRestrictions.getBoolean(restriction.id),
-            {
-                val dpm = context.getDPM()
-                val receiver = context.getReceiver()
-                try {
-                    if(it) {
-                        dpm.addUserRestriction(receiver, restriction.id)
-                    } else {
-                        dpm.clearUserRestriction(receiver, restriction.id)
-                    }
-                    vm.userRestrictions.value = dpm.getUserRestrictions(receiver)
-                } catch(_: SecurityException) {
-                    if(context.isProfileOwner) {
-                        Toast.makeText(context, R.string.require_device_owner, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }, padding = false
-        )
+fun UserRestrictionScreen(
+    title: Int, items: List<Restriction>, restrictions: Bundle,
+    onRestrictionChange: (String, Boolean) -> Unit, onNavigateUp: () -> Unit
+) {
+    MyScaffold(title, 0.dp, onNavigateUp, false) {
+        items.filter { Build.VERSION.SDK_INT >= it.requiresApi }.forEach { restriction ->
+            SwitchItem(
+                restriction.name, restriction.id, restriction.icon,
+                restrictions.getBoolean(restriction.id), { onRestrictionChange(restriction.id, it) }, padding = true
+            )
+            /*Box(modifier = Modifier.padding(start = 22.dp, end = 16.dp)) {
+            }*/
+        }
     }
 }
 

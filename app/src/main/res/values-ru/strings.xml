@@ -5,6 +5,7 @@
     <string name="disable">Отключить</string>
     <string name="enable">Включить</string>
     <string name="success">Успешно</string>
+    <string name="failure">Failure</string> <!--TODO-->
     <string name="failed">Ошибка</string>
     <string name="add">Добавить</string>
     <string name="remove">Удалить</string>
@@ -69,7 +70,7 @@
     <string name="overview">Обзор</string>
     <string name="features">Особенности</string>
     <string name="default_str">По умолчанию</string>
-
+    <string name="timeout">Timeout</string> <!--TODO-->
 
     <!--Разрешения-->
     <string name="click_to_activate">Нажмите для активации</string>
@@ -194,8 +195,6 @@
     <string name="ltf_keyguard">Разрешить блокировку экрана</string>
     <string name="ltf_block_activity_start_in_task">Блокировать запуск активности в задаче</string>
     <string name="ca_cert">CA-сертификат</string>
-    <string name="please_select_ca_cert">Выберите сертификат</string>
-    <string name="cert_installed">Сертификат установлен: %1$s</string>
     <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Выберите сертификат...</string>
     <string name="uninstall_all_user_ca_cert">Удалить все пользовательские CA-сертификаты</string>
     <string name="security_logging">Журнал безопасности</string> 
@@ -413,6 +412,7 @@
     <string name="silent_uninstall">Тихое удаление</string>
     <string name="request_uninstall">Запросить удаление</string>
     <string name="install_app">Установить приложение</string>
+    <string name="search">Search</string> <!--TODO-->
 
     <!--Ограничения пользователя-->
     <string name="user_restriction">Ограничения пользователя</string>
@@ -423,7 +423,6 @@
     <string name="connectivity">Другие подключения</string>
     <string name="media">Медиа</string>
     <string name="other">Другое</string>
-    <string name="require_device_owner">Требуется владелец устройства</string>
     <string name="config_mobile_network">Настроить мобильную сеть</string>
     <string name="config_wifi">Настроить Wi-Fi</string>
     <string name="data_roaming">Роуминг данных</string>
@@ -608,8 +607,8 @@
     <string name="authenticate">Аутентифицировать</string>
     <string name="lock_in_background">Блокировать при переключении в фоновый режим</string>
     <string name="clear_storage">Очистить хранилище</string>
-    <string name="skipped_authentication">Авторизация пропущена, поскольку она недоступна.</string> 
-
+    <string name="skipped_authentication">Авторизация пропущена, поскольку она недоступна.</string>
+    <string name="failed_to_authenticate">Failed to authenticate</string> <!--TODO-->
     
     <string name="api_key">API ключ</string>
     <string name="api_key_exist">API ключ уже сущетвует, установка нового перезапишет текущий</string>

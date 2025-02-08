@@ -10,12 +10,13 @@ import android.content.pm.PackageInstaller
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -49,6 +50,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
@@ -63,7 +65,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.URLDecoder
 
-class AppInstallerActivity:ComponentActivity() {
+class AppInstallerActivity:FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -82,7 +84,7 @@ class AppInstallerActivity:ComponentActivity() {
                     installing, sessionMode, { vm.sessionMode.value = it },
                     packages, { uri -> vm.packages.update { it.minus(uri) } },
                     { uris -> vm.packages.update { it.plus(uris) } },
-                    vm::startInstallationProcess, writtenPackages, writingPackage,
+                    { vm.startInstallationProcess(this) }, writtenPackages, writingPackage,
                     result, { vm.result.value = null }
                 )
             }
@@ -237,7 +239,19 @@ class AppInstallerViewModel(application: Application): AndroidViewModel(applicat
 
     val writtenPackages = MutableStateFlow(setOf<Uri>())
     val writingPackage = MutableStateFlow<Uri?>(null)
-    fun startInstallationProcess() {
+    fun startInstallationProcess(activity: FragmentActivity) {
+        startAuth(activity, object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                super.onAuthenticationSucceeded(result)
+                startInstall()
+            }
+            override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                super.onAuthenticationError(errorCode, errString)
+                Toast.makeText(activity, R.string.failed_to_authenticate, Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+    private fun startInstall() {
         if(installing.value) return
         installing.value = true
         viewModelScope.launch(Dispatchers.IO) {

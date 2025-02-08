@@ -137,7 +137,6 @@ import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.uriToStream
-import com.bintianqi.owndroid.yesOrNo
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
@@ -1227,62 +1226,23 @@ fun CACert(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    var exist by remember { mutableStateOf(false) }
-    var fileUri by remember { mutableStateOf<Uri?>(null) }
-    var caCertByteArray by remember { mutableStateOf(ByteArray(100000)) }
-    val getFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        result.data?.data?.let { uri ->
-            uriToStream(context, uri) {
-                val array = it.readBytes()
-                caCertByteArray = if(array.size < 10000) {
-                    array
-                } else {
-                    byteArrayOf()
-                }
-            }
+    var dialog by remember { mutableStateOf(false) }
+    var caCertByteArray = remember { byteArrayOf() }
+    val getFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri ?: return@rememberLauncherForActivityResult
+        uriToStream(context, uri) {
+            caCertByteArray = it.readBytes()
         }
+        dialog = true
     }
     MyScaffold(R.string.ca_cert, 8.dp, navCtrl) {
-        Text(
-            text = if(fileUri == null) { stringResource(R.string.please_select_ca_cert) }
-                else { stringResource(R.string.cert_installed, stringResource(exist.yesOrNo)) },
-            modifier = Modifier.animateContentSize()
-        )
-        Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                val caCertIntent = Intent(Intent.ACTION_GET_CONTENT)
-                caCertIntent.setType("*/*")
-                caCertIntent.addCategory(Intent.CATEGORY_OPENABLE)
-                getFileLauncher.launch(caCertIntent)
+                getFileLauncher.launch("*/*")
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
         ) {
             Text(stringResource(R.string.select_ca_cert))
-        }
-        AnimatedVisibility(fileUri != null) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Button(
-                    onClick = {
-                        context.showOperationResultToast(dpm.installCaCert(receiver, caCertByteArray))
-                        exist = dpm.hasCaCertInstalled(receiver, caCertByteArray)
-                    },
-                    modifier = Modifier.fillMaxWidth(0.49F)
-                ) {
-                    Text(stringResource(R.string.install))
-                }
-                Button(
-                    onClick = {
-                        dpm.uninstallCaCert(receiver, caCertByteArray)
-                        exist = dpm.hasCaCertInstalled(receiver, caCertByteArray)
-                        context.showOperationResultToast(true)
-                    },
-                    enabled = exist,
-                    modifier = Modifier.fillMaxWidth(0.96F)
-                ) {
-                    Text(stringResource(R.string.uninstall))
-                }
-            }
         }
         Button(
             onClick = {
@@ -1292,6 +1252,28 @@ fun CACert(navCtrl: NavHostController) {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.uninstall_all_user_ca_cert))
+        }
+        if(dialog) {
+            val exist = dpm.hasCaCertInstalled(receiver, caCertByteArray)
+            AlertDialog(
+                confirmButton = {
+                    TextButton({
+                        if(exist) {
+                            dpm.uninstallCaCert(receiver, caCertByteArray)
+                        } else {
+                            val result = dpm.installCaCert(receiver, caCertByteArray)
+                            context.showOperationResultToast(result)
+                        }
+                        dialog = false
+                    }) {
+                        Text(stringResource(if(exist) R.string.uninstall else R.string.install))
+                    }
+                },
+                dismissButton = {
+                    TextButton({ dialog = false }) { Text(stringResource(R.string.cancel)) }
+                },
+                onDismissRequest = { dialog = false }
+            )
         }
     }
 }

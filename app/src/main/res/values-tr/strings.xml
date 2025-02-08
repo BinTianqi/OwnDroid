@@ -6,6 +6,7 @@
     <string name="disable">Devre Dışı Bırak</string>
     <string name="enable">Etkinleştir</string>
     <string name="success">Başarılı</string>
+    <string name="failure">Failure</string> <!--TODO-->
     <string name="failed">Başarısız</string>
     <string name="add">Ekle</string>
     <string name="remove">Kaldır</string>
@@ -70,6 +71,7 @@
     <string name="overview">Overview</string>
     <string name="features">Features</string>
     <string name="default_str">Default</string>
+    <string name="timeout">Timeout</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Etkinleştirmek İçin Tıklayın</string>
@@ -200,8 +202,6 @@
     <string name="ltf_keyguard">Ekran kilidine izin ver</string>
     <string name="ltf_block_activity_start_in_task">Görevde etkinlik başlatmayı engelle</string>
     <string name="ca_cert">CA sertifikası</string> <!--TODO-->
-    <string name="please_select_ca_cert">Lütfen bir sertifika seçin</string> <!--TODO-->
-    <string name="cert_installed">Yüklenen sertifika: %1$s</string> <!--TODO-->
     <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Sertifika seç...</string> <!--TODO-->
     <string name="uninstall_all_user_ca_cert">Tüm kullanıcı sertifikalarını kaldır</string> <!--TODO-->
     <string name="security_logging">Security logging</string> <!--TODO-->
@@ -428,7 +428,6 @@
     <string name="connectivity">Diğer bağlantı</string>
     <string name="media">Medya</string>
     <string name="other">Diğer</string>
-    <string name="require_device_owner">Cihaz sahibi gerektirir</string>
     <string name="config_mobile_network">Mobil ağı yapılandır</string>
     <string name="config_wifi">Wi-Fi\'yi yapılandır</string>
     <string name="data_roaming">Veri dolaşımı</string>
@@ -610,6 +609,7 @@
     <string name="lock_in_background">Arka plana geçince kilitle</string>
     <string name="clear_storage">Depolamayı temizle</string>
     <string name="skipped_authentication">Skipped authentication because it is unavailable.</string> <!--TODO-->
+    <string name="failed_to_authenticate">Failed to authenticate</string> <!--TODO-->
 
     <!--TODO-->
     <string name="api_key">API key</string>

@@ -1,5 +1,6 @@
 package com.bintianqi.owndroid
 
+import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
 import android.os.Build.VERSION
 import android.os.Bundle
@@ -53,6 +54,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -119,7 +121,7 @@ import com.bintianqi.owndroid.dpm.UpdateNetwork
 import com.bintianqi.owndroid.dpm.UserOperation
 import com.bintianqi.owndroid.dpm.UserOptions
 import com.bintianqi.owndroid.dpm.UserRestriction
-import com.bintianqi.owndroid.dpm.UserRestrictionItem
+import com.bintianqi.owndroid.dpm.UserRestrictionScreen
 import com.bintianqi.owndroid.dpm.UserSessionMessage
 import com.bintianqi.owndroid.dpm.Users
 import com.bintianqi.owndroid.dpm.Wifi
@@ -137,7 +139,6 @@ import com.bintianqi.owndroid.dpm.isDeviceOwner
 import com.bintianqi.owndroid.dpm.isProfileOwner
 import com.bintianqi.owndroid.dpm.setDefaultAffiliationID
 import com.bintianqi.owndroid.ui.Animations
-import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import com.rosan.dhizuku.api.Dhizuku
 import kotlinx.coroutines.delay
@@ -195,6 +196,17 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
     val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(backToHome) {
         if(backToHome) { navCtrl.navigateUp(); backToHomeStateFlow.value = false }
+    }
+    val userRestrictions by vm.userRestrictions.collectAsStateWithLifecycle()
+    fun onUserRestrictionsChange(id: String, status: Boolean) {
+        try {
+            if(status) dpm.addUserRestriction(receiver, id)
+            else dpm.clearUserRestriction(receiver, id)
+            @SuppressLint("NewApi")
+            vm.userRestrictions.value = dpm.getUserRestrictions(receiver)
+        } catch(_: Exception) {
+            context.showOperationResultToast(false)
+        }
     }
     @Suppress("NewApi") NavHost(
         navController = navCtrl,
@@ -268,24 +280,36 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
 
         composable(route = "Applications") { ApplicationManage(navCtrl, vm) }
 
-        composable(route = "UserRestriction") { UserRestriction(navCtrl) }
+        composable(route = "UserRestriction") { UserRestriction(navCtrl, vm) }
         composable(route = "UR-Internet") {
-            MyScaffold(R.string.network_and_internet, 0.dp, navCtrl) { RestrictionData.internet.forEach { UserRestrictionItem(it, vm) } }
+            UserRestrictionScreen(R.string.network_and_internet, RestrictionData.internet, userRestrictions, ::onUserRestrictionsChange) {
+                navCtrl.navigateUp()
+            }
         }
         composable(route = "UR-Connectivity") {
-            MyScaffold(R.string.connectivity, 0.dp, navCtrl) { RestrictionData.connectivity.forEach { UserRestrictionItem(it, vm) } }
+            UserRestrictionScreen(R.string.connectivity, RestrictionData.connectivity, userRestrictions, ::onUserRestrictionsChange) {
+                navCtrl.navigateUp()
+            }
         }
         composable(route = "UR-Applications") {
-            MyScaffold(R.string.applications, 0.dp, navCtrl) { RestrictionData.applications.forEach { UserRestrictionItem(it, vm) } }
+            UserRestrictionScreen(R.string.applications, RestrictionData.applications, userRestrictions, ::onUserRestrictionsChange) {
+                navCtrl.navigateUp()
+            }
         }
         composable(route = "UR-Users") {
-            MyScaffold(R.string.users, 0.dp, navCtrl) { RestrictionData.users.forEach { UserRestrictionItem(it, vm) } }
+            UserRestrictionScreen(R.string.users, RestrictionData.users, userRestrictions, ::onUserRestrictionsChange) {
+                navCtrl.navigateUp()
+            }
         }
         composable(route = "UR-Media") {
-            MyScaffold(R.string.media, 0.dp, navCtrl) { RestrictionData.media.forEach { UserRestrictionItem(it, vm) } }
+            UserRestrictionScreen(R.string.media, RestrictionData.media, userRestrictions, ::onUserRestrictionsChange) {
+                navCtrl.navigateUp()
+            }
         }
         composable(route = "UR-Other") {
-            MyScaffold(R.string.other, 0.dp, navCtrl) { RestrictionData.other.forEach { UserRestrictionItem(it, vm) } }
+            UserRestrictionScreen(R.string.other, RestrictionData.other, userRestrictions, ::onUserRestrictionsChange) {
+                navCtrl.navigateUp()
+            }
         }
 
         composable(route = "Users") { Users(navCtrl) }
