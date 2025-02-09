@@ -12,6 +12,7 @@
   - 清除数据
   - ...
 - 网络
+  - 添加/修改/删除 Wi-Fi
   - 最小Wi-Fi安全等级
   - VPN保持打开
   - 网络日志
@@ -42,6 +43,57 @@
   - 要求密码复杂度
   - 设置屏幕超时
   - ...
+
+## 激活
+
+- Shizuku (推荐)
+- 在ADB命令行中执行命令: `dpm set-device-owner com.bintianqi.owndroid/.Receiver`
+
+## FAQ
+
+### 激活
+
+#### 设备上有账号
+
+```text
+java.lang.IllegalStateException: Not allowed to set the device owner because there are already some accounts on the device
+```
+
+解决办法：
+- 冻结持有这些账号的app。
+- 删除这些账号。
+- 使用LSPosed模块 [HookDPM](https://github.com/BinTianqi/HookDPM)。
+
+#### 设备上有多个用户
+
+```text
+java.lang.IllegalStateException: Not allowed to set the device owner because there are already several users on the device
+```
+
+解决办法：
+- 删除次级用户。
+- 使用LSPosed模块[HookDPM](https://github.com/BinTianqi/HookDPM)。
+
+> [!NOTE]
+> 一些系统有应用克隆、儿童空间等功能，它们通常是用户。
+
+#### MIUI
+
+```text
+java.lang.SecurityException: Neither user 2000 nor current process has android.permission.MANAGE_DEVICE_ADMINS.
+```
+
+解决办法：
+- 在开发者设置中打开`USB debugging (Security setting)`。
+- 在root命令行中执行激活命令
+
+#### ColorOS
+
+```text
+java.lang.IllegalStateException: Unexpected @ProvisioningPreCondition
+```
+
+解决办法：使用 OwnDroid testkey 版本
 
 ## API
 

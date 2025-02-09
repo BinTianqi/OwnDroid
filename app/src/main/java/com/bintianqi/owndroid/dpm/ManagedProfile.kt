@@ -75,16 +75,16 @@ fun WorkProfile(navCtrl: NavHostController) {
         if(VERSION.SDK_INT >= 30 && profileOwner && dpm.isManagedProfile(receiver)) {
             FunctionItem(R.string.org_owned_work_profile, icon = R.drawable.corporate_fare_fill0) { navCtrl.navigate("OrgOwnedWorkProfile") }
         }
-        if(VERSION.SDK_INT<24 || (VERSION.SDK_INT>=24 && dpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE))) {
+        if(VERSION.SDK_INT < 24 || dpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE)) {
             FunctionItem(R.string.create_work_profile, icon = R.drawable.work_fill0) { navCtrl.navigate("CreateWorkProfile") }
         }
         if(dpm.isOrgProfile(receiver)) {
             FunctionItem(R.string.suspend_personal_app, icon = R.drawable.block_fill0) { navCtrl.navigate("SuspendPersonalApp") }
         }
-        if(profileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
+        if(profileOwner && (VERSION.SDK_INT < 24 || dpm.isManagedProfile(receiver))) {
             FunctionItem(R.string.intent_filter, icon = R.drawable.filter_alt_fill0) { navCtrl.navigate("IntentFilter") }
         }
-        if(profileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)))) {
+        if(profileOwner && (VERSION.SDK_INT < 24 || dpm.isManagedProfile(receiver))) {
             FunctionItem(R.string.delete_work_profile, icon = R.drawable.delete_forever_fill0) { navCtrl.navigate("DeleteWorkProfile") }
         }
     }

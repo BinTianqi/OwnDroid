@@ -2,21 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
-    <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_KEYGUARD"/>
-    <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_WIPE_DATA"/>
-    <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS"/>
-    <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_RESET_PASSWORD"/>
-    <uses-permission android:name="android.permission.REQUEST_PASSWORD_COMPLEXITY"/>
-    <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_INPUT_METHODS"/>
-    <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_LOCK_CREDENTIALS"/>
-    <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_APPS_CONTROL"/>
-    <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_SYSTEM_UPDATES"/>
-    <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_LOCK_TASK"/>
-    <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_WIFI"/>
-    <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_RUNTIME_PERMISSIONS"/>
-    <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_ORGANIZATION_IDENTITY"/>
-    <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_PROFILE_INTERACTION"/>
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES"/>
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
@@ -35,7 +20,7 @@
         android:enableOnBackInvokedCallback="true"
         android:testOnly="false"
         android:manageSpaceActivity=".ManageSpaceActivity"
-        tools:targetApi="34">
+        tools:targetApi="35">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -57,18 +42,16 @@
             android:theme="@style/Theme.Transparent">
         </activity>
         <activity
-            android:name=".InstallAppActivity"
+            android:name=".AppInstallerActivity"
+            android:label="@string/app_installer"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize|stateHidden"
             android:excludeFromRecents="true"
-            android:launchMode="singleInstance"
-            android:theme="@style/Theme.Transparent">
+            android:launchMode="singleInstance">
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <action android:name="android.intent.action.VIEW"/>
-                <action android:name="android.intent.action.INSTALL_PACKAGE"/>
-                <data android:scheme="content"/>
-                <data android:scheme="file"/>
+                <action android:name="android.intent.action.SEND"/>
+                <action android:name="android.intent.action.SEND_MULTIPLE"/>
                 <data android:mimeType="application/vnd.android.package-archive"/>
             </intent-filter>
         </activity>
@@ -91,20 +74,8 @@
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".PackageInstallerReceiver"
-            android:description="@string/app_name"
-            android:permission="android.permission.BIND_DEVICE_ADMIN">
-        </receiver>
-        <receiver
             android:name=".ApiReceiver"
             android:exported="true">
-            <intent-filter>
-                <action android:name="com.bintianqi.owndroid.action.HIDE"/>
-                <action android:name="com.bintianqi.owndroid.action.UNHIDE"/>
-                <action android:name="com.bintianqi.owndroid.action.SUSPEND"/>
-                <action android:name="com.bintianqi.owndroid.action.UNSUSPEND"/>
-                <action android:name="com.bintianqi.owndroid.action.LOCK"/>
-            </intent-filter>
         </receiver>
         <provider
             android:name="rikka.shizuku.ShizukuProvider"

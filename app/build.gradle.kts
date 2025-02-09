@@ -15,7 +15,7 @@ android {
         }
     }
     namespace = "com.bintianqi.owndroid"
-    compileSdk = 34
+    compileSdk = 35
 
     lint.checkReleaseBuilds = false
     lint.disable += "All"
@@ -23,9 +23,9 @@ android {
     defaultConfig {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 21
-        targetSdk = 34
-        versionCode = 35
-        versionName = "6.3"
+        targetSdk = 35
+        versionCode = 36
+        versionName = "6.4"
         multiDexEnabled = false
     }
 
@@ -38,6 +38,10 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("defaultSignature")
+            composeCompiler {
+                includeSourceInformation = false
+                includeTraceMarkers = false
+            }
         }
         debug {
             signingConfig = signingConfigs.getByName("defaultSignature")
@@ -56,6 +60,9 @@ android {
     }
     androidResources {
         generateLocaleConfig = true
+    }
+    dependenciesInfo {
+        includeInApk = false
     }
 }
 
@@ -76,6 +83,8 @@ gradle.taskGraph.whenReady {
 dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.accompanist.drawablepainter)
     implementation(libs.accompanist.permissions)
     implementation(libs.androidx.material3)

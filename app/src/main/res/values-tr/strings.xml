@@ -6,6 +6,7 @@
     <string name="disable">Devre Dışı Bırak</string>
     <string name="enable">Etkinleştir</string>
     <string name="success">Başarılı</string>
+    <string name="failure">Failure</string> <!--TODO-->
     <string name="failed">Başarısız</string>
     <string name="add">Ekle</string>
     <string name="remove">Kaldır</string>
@@ -69,6 +70,8 @@
     <string name="edit">Edit</string>
     <string name="overview">Overview</string>
     <string name="features">Features</string>
+    <string name="default_str">Default</string>
+    <string name="timeout">Timeout</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Etkinleştirmek İçin Tıklayın</string>
@@ -76,9 +79,19 @@
     <string name="activate_jump" tools:ignore="TypographyEllipsis">Etkinleştir...</string>
     <string name="profile_owner">Profil Sahibi</string>
     <string name="device_owner">Cihaz Sahibi</string>
+    <!--TODO: translate the following 10 strings-->
+    <string name="delegated_admins">Delegated admins</string>
+    <string name="delegated_scope">delegated scope</string>
+    <string name="manage_application_restrictions">Manage application restrictions</string>
+    <string name="manage_certificates">Manage certificates</string>
+    <string name="select_keychain_certificates">Select KeyChain certificate</string>
+    <string name="install_existing_packages">Install existing packages</string>
+    <string name="manage_uninstalled_packages">Manage uninstalled packages</string>
+    <string name="change_package_state">Change package state</string>
+    <string name="grant_permissions">Grant permissions</string>
+    <string name="add_delegated_admin">Add delegated admin</string>
     <string name="dhizuku_will_be_deactivated">Dhizuku will be deactivated</string> <!--TODO-->
     <string name="reset_device_policy">Reset device policy</string> <!--TODO-->
-    <string name="activate_device_admin">Cihaz Yöneticisini Etkinleştir</string>
     <string name="device_info">Cihaz Bilgisi</string>
     <string name="support_device_id_attestation">Cihaz Kimliği Doğrulama Desteği</string>
     <string name="support_unique_device_attestation">Benzersiz Cihaz Doğrulama Desteği</string>
@@ -123,7 +136,7 @@
     <string name="shizuku_not_started">Shizuku Başlatılmadı. </string>
     <string name="activate_device_owner">Cihaz Sahibini Etkinleştir</string>
     <string name="activate_org_profile">Kuruluş Profili Sahibini Etkinleştir</string>
-    <string name="shizuku_service_disconnected">Shizuku Hizmeti Bağlantısı Kesildi</string>
+    <string name="accounts">Accounts</string> <!--TODO-->
 
     <!--System-->
     <string name="system">Sistem</string>
@@ -165,6 +178,8 @@
     <string name="change_timezone">Change timezone</string>
     <string name="timezone_id">Saat dilimi kimliği</string>
     <string name="disable_auto_time_zone_before_set">Özel bir saat dilimi ayarlamadan önce otomatik saat dilimi devre dışı bırakılmalıdır</string>
+    <string name="content_protection_policy">Content protection policy</string> <!--TODO-->
+    <string name="not_controlled_by_policy">Not controlled by policy</string> <!--TODO-->
     <string name="permission_policy">İzin politikası</string>
     <string name="auto_grant">Otomatik ver</string>
     <string name="auto_deny">Otomatik reddet</string>
@@ -187,8 +202,6 @@
     <string name="ltf_keyguard">Ekran kilidine izin ver</string>
     <string name="ltf_block_activity_start_in_task">Görevde etkinlik başlatmayı engelle</string>
     <string name="ca_cert">CA sertifikası</string> <!--TODO-->
-    <string name="please_select_ca_cert">Lütfen bir sertifika seçin</string> <!--TODO-->
-    <string name="cert_installed">Yüklenen sertifika: %1$s</string> <!--TODO-->
     <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Sertifika seç...</string> <!--TODO-->
     <string name="uninstall_all_user_ca_cert">Tüm kullanıcı sertifikalarını kaldır</string> <!--TODO-->
     <string name="security_logging">Security logging</string> <!--TODO-->
@@ -253,6 +266,33 @@
     <string name="wifi_ssid_policy">Wi-Fi SSID politikası</string>
     <string name="ssid_list_is">SSID listesi:</string>
     <string name="already_exist">Zaten mevcut</string>
+    <!--TODO: The following 26 strings-->
+    <string name="network_stats">Network stats</string>
+    <string name="type">Type</string>
+    <string name="summary">Summary</string>
+    <string name="details">Details</string>
+    <string name="target">Target</string>
+    <string name="device">Device</string>
+    <string name="user">User</string>
+    <string name="uid_tag">UID tag</string>
+    <string name="uid_tag_state">UID tag state</string>
+    <string name="network_type">Network type</string>
+    <string name="mobile">Mobile</string>
+    <string name="ethernet">Ethernet</string>
+    <string name="subscriber_id">Subscriber ID</string>
+    <string name="all">All</string>
+    <string name="uninstalled">Uninstalled</string>
+    <string name="tethering">Tethering</string>
+    <string name="choose_an_app" tools:ignore="TypographyEllipsis">Choose an app...</string>
+    <string name="input">Input</string>
+    <string name="query">Query</string>
+    <string name="transmitted">Transmitted</string>
+    <string name="received">Received</string>
+    <string name="state">State</string>
+    <string name="foreground">Foreground</string>
+    <string name="tag">Tag</string>
+    <string name="roaming">Roaming</string>
+    <string name="metered">Metered</string>
     <string name="private_dns">Özel DNS</string>
     <string name="dns_provide_hostname">Ana bilgisayar adı sağlayın</string>
     <string name="host_not_serving_dns_tls">Ana bilgisayar hizmet vermiyor</string>
@@ -300,7 +340,7 @@
     <string name="address">Adres</string>
     <string name="port">Port</string>
     <string name="proxy">Proxy</string>
-    <string name="network_type">Ağ türü</string>
+    <string name="apn_network_type">Ağ türü</string>
     <string name="persistent">Kalıcı</string>
     <string name="protocol">Protokol</string>
     <string name="roaming_protocol">Dolaşım protokolü</string>
@@ -377,21 +417,7 @@
     <string name="silent_uninstall">Sessiz kaldırma</string>
     <string name="request_uninstall">Kaldırma isteği</string>
     <string name="install_app">Uygulamayı yükle</string>
-    <string name="select_apk" tools:ignore="TypographyEllipsis">APK seç...</string>
-    <string name="silent_install">Sessiz yükleme</string>
-    <string name="request_install">Yükleme isteği</string>
     <string name="search">Search</string> <!--TODO-->
-
-    <!--App install session status-->
-    <string name="app_installer_status">Uygulama yükleyici:</string>
-    <string name="status_pending_action">Bekleyen kullanıcı işlemi</string>
-    <string name="status_fail_blocked">Başarısız: engellendi</string>
-    <string name="status_fail_aborted">Başarısız: iptal edildi</string>
-    <string name="status_fail_invalid">Başarısız: geçersiz APK</string>
-    <string name="status_fail_conflict">Başarısız: çakışma</string>
-    <string name="status_fail_storage">Başarısız: boş alan yok</string>
-    <string name="status_fail_incompatible">Başarısız: uyumsuz</string>
-    <string name="status_fail_timeout">Başarısız: zaman aşımı</string>
 
     <!--UserRestriction-->
     <string name="user_restriction">Kullanıcı kısıtlaması</string>
@@ -402,7 +428,6 @@
     <string name="connectivity">Diğer bağlantı</string>
     <string name="media">Medya</string>
     <string name="other">Diğer</string>
-    <string name="require_device_owner">Cihaz sahibi gerektirir</string>
     <string name="config_mobile_network">Mobil ağı yapılandır</string>
     <string name="config_wifi">Wi-Fi\'yi yapılandır</string>
     <string name="data_roaming">Veri dolaşımı</string>
@@ -421,6 +446,7 @@
     <string name="config_cell_broadcasts">Hücre yayınlarını yapılandır</string>
     <string name="sms">SMS</string>
     <string name="outgoing_calls">Giden aramalar</string>
+    <string name="download_esim">Download eSIM</string> <!--TODO-->
 
     <string name="bluetooth">Bluetooth</string>
     <string name="bt_share">Bluetooth paylaşımı</string>
@@ -447,6 +473,7 @@
     <string name="add_user">Kullanıcı ekle</string>
     <string name="remove_user">Kullanıcıyı kaldır</string>
     <string name="switch_user">Kullanıcıyı değiştir</string>
+    <string name="create_private_space">Create private space</string> <!--TODO-->
     <string name="set_user_icon">Kullanıcı simgesini ayarla</string>
     <string name="cross_profile_copy">Profil geçişli kopyalama</string>
     <string name="share_into_managed_profile">Yönetilen profile paylaş</string>
@@ -456,6 +483,7 @@
     <string name="config_credentials">Kimlik bilgilerini yapılandır</string>
     <string name="content_capture">İçerik yakalama</string>
     <string name="content_suggestions">İçerik önerileri</string>
+    <string name="assist_content">Assist content</string> <!--TODO-->
     <string name="create_windows">Pencere oluştur</string>
     <string name="set_wallpaper">Duvar kağıdı ayarla</string>
     <string name="grant_admin">Cihaz yöneticisi yetkisi ver</string>
@@ -484,14 +512,12 @@
     <string name="logout_enabled">Logout enabled</string> <!--TODO-->
     <string name="ephemeral_user">Geçici kullanıcı</string>
     <string name="affiliated_user">Bağlı kullanıcı</string>
-    <string name="user_id">Kullanıcı ID</string>
     <string name="user_serial_number">Kullanıcı seri numarası</string>
     <string name="secondary_users">Secondary users</string> <!--TODO-->
     <string name="no_secondary_users">No secondary users</string> <!--TODO-->
     <string name="user_operation">Kullanıcı işlemi</string>
     <string name="user_not_exist">User does not exist</string> <!--TODO-->
     <string name="serial_number">Seri numarası</string>
-    <string name="use_uid">UID kullan</string>
     <string name="logout_current_user">Mevcut kullanıcıyı çıkış yap</string>
     <string name="start_in_background">Arka planda başlat</string>
     <string name="user_operation_switch">Değiştir</string>
@@ -500,7 +526,7 @@
     <string name="create_user_skip_wizard">Sihirbazı atla</string>
     <string name="create_user_ephemeral_user">Geçici kullanıcı</string>
     <string name="create_user_enable_all_system_app">Tüm sistem uygulamalarını etkinleştir</string>
-    <string name="serial_number_of_new_user_is">Bu kullanıcının seri numarası: %1$s</string>
+    <string name="serial_number_of_new_user_is">Bu kullanıcının seri numarası: %1$d</string>
     <string name="affiliation_id">Bağlılık ID</string>
     <string name="change_user_icon">Kullanıcı simgesini değiştir</string>
     <string name="file_picker_instead_gallery">Galeri yerine dosya seçici kullan</string>
@@ -580,6 +606,8 @@
     <string name="authenticate">Doğrula</string>
     <string name="lock_in_background">Arka plana geçince kilitle</string>
     <string name="clear_storage">Depolamayı temizle</string>
+    <string name="skipped_authentication">Skipped authentication because it is unavailable.</string> <!--TODO-->
+    <string name="failed_to_authenticate">Failed to authenticate</string> <!--TODO-->
 
     <!--TODO-->
     <string name="api_key">API key</string>
@@ -620,9 +648,19 @@
     <string name="permission_BODY_SENSORS_BACKGROUND">Arka planda vücut sensörlerine eriş</string>
     <string name="permission_ACTIVITY_RECOGNITION">Aktivite tanıma</string>
 
-    <string name="version_name">Version name</string> <!--TODO-->
-    <string name="version_code">Version code</string> <!--TODO-->
-    <string name="parsing_apk_info" tools:ignore="TypographyEllipsis">Parsing APK info...</string>
+    <!--TODO-->
+    <string name="app_installer">App installer</string>
+    <string name="mode">Mode</string>
+    <string name="full_install">Full install</string>
+    <string name="inherit_existing">Inherit existing</string>
+    <string name="packages">Packages</string>
+    <string name="add_packages">Add package(s)</string>
+    <string name="status_failure_blocked">The operation was blocked by: %1$s</string>
+    <string name="status_failure_aborted">The operation was aborted.</string>
+    <string name="status_failure_invalid">The operation failed because one or more of the APKs was invalid. For example, they might be malformed, corrupt, incorrectly signed, mismatched, etc.</string>
+    <string name="status_failure_conflict">The operation failed because it conflicts with %1$s. For example, an existing permission, incompatible certificates, etc. You can uninstall %1$s to fix the issue.</string>
+    <string name="status_failure_storage">The operation failed because of storage issues. For example, the device may be running low on space, or external media may be unavailable. You may try to help free space or insert different external media.</string>
+    <string name="status_failure_incompatible">The operation failed because it is fundamentally incompatible with this device. For example, the app may require a hardware feature that doesn\'t exist, it may be missing native code for the ABIs supported by the device, or it requires a newer SDK version, etc.</string>
 
     <!--TODO: Translate strings start with "info_"-->
 </resources>

@@ -1,22 +1,27 @@
 package com.bintianqi.owndroid.dpm
 
+import android.accounts.Account
 import android.content.ComponentName
 import android.content.Context
 import android.content.ServiceConnection
 import android.os.Binder
 import android.os.Build.VERSION
+import android.os.Bundle
 import android.os.IBinder
-import android.widget.Toast
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,56 +33,39 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.IUserService
-import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.MyScaffold
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Shizuku(vm: MyViewModel, navCtrl: NavHostController) {
+fun Shizuku(navCtrl: NavHostController, navArgs: Bundle) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val coScope = rememberCoroutineScope()
     val outputTextScrollState = rememberScrollState()
     var outputText by rememberSaveable { mutableStateOf("") }
-    var showDeviceAdminButton by remember { mutableStateOf(!context.isDeviceAdmin) }
     var showDeviceOwnerButton by remember { mutableStateOf(!context.isDeviceOwner) }
     var showOrgProfileOwnerButton by remember { mutableStateOf(true) }
-    val binder by vm.shizukuBinder.collectAsStateWithLifecycle()
+    val binder = navArgs.getBinder("binder")!!
     var service by remember { mutableStateOf<IUserService?>(null) }
-    var loading by remember { mutableStateOf(true) }
-    LaunchedEffect(binder) {
-        if(binder != null && binder!!.pingBinder()) {
-            service = IUserService.Stub.asInterface(binder)
-            loading = false
-        } else {
-            service = null
-        }
-    }
-    LaunchedEffect(service) {
-        if(service == null && !loading) navCtrl.navigateUp()
-    }
     LaunchedEffect(Unit) {
-        if(binder == null) bindShizukuService(context, vm.shizukuBinder)
+        service = if(binder.pingBinder()) {
+            IUserService.Stub.asInterface(binder)
+        } else {
+            null
+        }
     }
     MyScaffold(R.string.shizuku, 0.dp, navCtrl, false) {
-        if(loading) {
-            Dialog(onDismissRequest = { navCtrl.navigateUp() }) {
-                CircularProgressIndicator()
-            }
-        }
         
         Button(
             onClick = {
@@ -103,9 +91,16 @@ fun Shizuku(vm: MyViewModel, navCtrl: NavHostController) {
         }
         Button(
             onClick = {
-                coScope.launch{
+                Log.d("Shizuku", "List accounts")
+                try {
+                    val accounts = service!!.listAccounts()
+                    val dest = navCtrl.graph.findNode("AccountsViewer")!!.id
+                    navCtrl.navigate(dest, Bundle().apply { putParcelableArray("accounts", accounts) })
+                } catch(_: Exception) {
                     outputText = service!!.execute("dumpsys account")
-                    outputTextScrollState.animateScrollTo(0)
+                    coScope.launch{
+                        outputTextScrollState.animateScrollTo(0)
+                    }
                 }
             },
             modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -114,23 +109,7 @@ fun Shizuku(vm: MyViewModel, navCtrl: NavHostController) {
         }
         Spacer(Modifier.padding(vertical = 5.dp))
 
-        AnimatedVisibility(showDeviceAdminButton && showDeviceOwnerButton) {
-            Button(
-                onClick = {
-                    coScope.launch{
-                        outputText = service!!.execute(context.getString(R.string.dpm_activate_da_command))
-                        outputTextScrollState.animateScrollTo(0)
-                        delay(500)
-                        showDeviceAdminButton = !context.isDeviceAdmin
-                    }
-                },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text(text = stringResource(R.string.activate_device_admin))
-            }
-        }
-
-        AnimatedVisibility(showDeviceOwnerButton) {
+        AnimatedVisibility(showDeviceOwnerButton, modifier = Modifier.align(Alignment.CenterHorizontally)) {
             Button(
                 onClick = {
                     coScope.launch{
@@ -139,8 +118,7 @@ fun Shizuku(vm: MyViewModel, navCtrl: NavHostController) {
                         delay(500)
                         showDeviceOwnerButton = !context.isDeviceOwner
                     }
-                },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                }
             ) {
                 Text(text = stringResource(R.string.activate_device_owner))
             }
@@ -173,14 +151,18 @@ fun Shizuku(vm: MyViewModel, navCtrl: NavHostController) {
     }
 }
 
-fun bindShizukuService(context: Context, shizukuBinder: MutableStateFlow<IBinder?>) {
+fun controlShizukuService(
+    context: Context,
+    onServiceConnected: (IBinder) -> Unit,
+    onServiceDisconnected: () -> Unit,
+    state: Boolean
+) {
     val userServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(componentName: ComponentName, binder: IBinder) {
-            shizukuBinder.value = binder
+            onServiceConnected(binder)
         }
         override fun onServiceDisconnected(componentName: ComponentName) {
-            shizukuBinder.value = null
-            Toast.makeText(context, R.string.shizuku_service_disconnected, Toast.LENGTH_SHORT).show()
+            onServiceDisconnected()
         }
     }
     val userServiceArgs = Shizuku.UserServiceArgs(ComponentName(context, ShizukuService::class.java))
@@ -188,9 +170,27 @@ fun bindShizukuService(context: Context, shizukuBinder: MutableStateFlow<IBinder
         .processNameSuffix("shizuku-service")
         .debuggable(false)
         .version(26)
-    try {
-        Shizuku.bindUserService(userServiceArgs, userServiceConnection)
-    } catch(e: Exception) {
-        e.printStackTrace()
+    if(state) Shizuku.bindUserService(userServiceArgs, userServiceConnection)
+    else Shizuku.unbindUserService(userServiceArgs, userServiceConnection, true)
+}
+
+@Composable
+fun AccountsViewer(navCtrl: NavHostController, navArgs: Bundle) {
+    val accounts = navArgs.getParcelableArray("accounts") as Array<Account>
+    MyScaffold(R.string.accounts, 8.dp, navCtrl, false) {
+        accounts.forEach {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth().padding(vertical = 4.dp)
+                    .clip(RoundedCornerShape(15)).background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                SelectionContainer {
+                    Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
+                        Text(stringResource(R.string.type) + ": " + it.type)
+                        Text(stringResource(R.string.name) + ": " + it.name)
+                    }
+                }
+            }
+        }
     }
 }

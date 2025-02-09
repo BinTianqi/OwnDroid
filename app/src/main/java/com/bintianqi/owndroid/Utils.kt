@@ -1,5 +1,6 @@
 package com.bintianqi.owndroid
 
+import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -30,9 +31,9 @@ fun uriToStream(
     operation: (stream: InputStream)->Unit
 ){
     try {
-        val stream = context.contentResolver.openInputStream(uri)
-        if(stream != null) { operation(stream) }
-        stream?.close()
+        context.contentResolver.openInputStream(uri)?.use {
+            operation(it)
+        }
     }
     catch(_: FileNotFoundException) { Toast.makeText(context, R.string.file_not_exist, Toast.LENGTH_SHORT).show() }
     catch(_: IOException) { Toast.makeText(context, R.string.io_exception, Toast.LENGTH_SHORT).show() }
@@ -85,3 +86,10 @@ val Long.humanReadableDate: String
 fun Context.showOperationResultToast(success: Boolean) {
     Toast.makeText(this, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
 }
+
+@SuppressLint("PrivateApi")
+fun getContext(): Context {
+    return Class.forName("android.app.ActivityThread").getMethod("currentApplication").invoke(null) as Context
+}
+
+const val APK_MIME = "application/vnd.android.package-archive"

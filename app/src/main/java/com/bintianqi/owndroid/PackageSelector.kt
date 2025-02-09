@@ -1,7 +1,9 @@
 package com.bintianqi.owndroid
 
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
@@ -69,7 +71,8 @@ data class PackageInfo(
 fun PackageSelector(navCtrl: NavHostController, vm: MyViewModel) {
     val context = LocalContext.current
     val pm = context.packageManager
-    val apps = pm.getInstalledApplications(0)
+    val flags = if(Build.VERSION.SDK_INT >= 24) PackageManager.MATCH_DISABLED_COMPONENTS or PackageManager.MATCH_UNINSTALLED_PACKAGES else 0
+    val apps = pm.getInstalledApplications(flags)
     var progress by remember { mutableIntStateOf(0) }
     var show by remember { mutableStateOf(true) }
     var hideProgress by remember { mutableStateOf(true) }
@@ -79,7 +82,7 @@ fun PackageSelector(navCtrl: NavHostController, vm: MyViewModel) {
     val scrollState = rememberLazyListState()
     val focusMgr = LocalFocusManager.current
     val co = rememberCoroutineScope()
-    val getPkgList: suspend ()->Unit = {
+    suspend fun getPkgList() {
         show = false
         progress = 0
         hideProgress = false

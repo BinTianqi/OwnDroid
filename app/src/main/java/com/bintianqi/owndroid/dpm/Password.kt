@@ -69,6 +69,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
@@ -82,14 +83,13 @@ import com.bintianqi.owndroid.yesOrNo
 @Composable
 fun Password(navCtrl: NavHostController) {
     val context = LocalContext.current
-    val sharedPrefs = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     val deviceAdmin = context.isDeviceAdmin
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
     var dialog by remember { mutableIntStateOf(0) }
     MyScaffold(R.string.password_and_keyguard, 0.dp, navCtrl) {
         FunctionItem(R.string.password_info, icon = R.drawable.info_fill0) { navCtrl.navigate("PasswordInfo") }
-        if(sharedPrefs.getBoolean("dangerous_features", false)) {
+        if(SharedPrefs(context).displayDangerousFeatures) {
             if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
                 FunctionItem(R.string.reset_password_token, icon = R.drawable.key_vertical_fill0) { navCtrl.navigate("ResetPasswordToken") }
             }

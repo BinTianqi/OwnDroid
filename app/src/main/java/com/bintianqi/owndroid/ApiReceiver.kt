@@ -1,6 +1,5 @@
 package com.bintianqi.owndroid
 
-import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -9,41 +8,40 @@ import com.bintianqi.owndroid.dpm.getDPM
 import com.bintianqi.owndroid.dpm.getReceiver
 
 class ApiReceiver: BroadcastReceiver() {
-    @SuppressLint("NewApi")
     override fun onReceive(context: Context, intent: Intent) {
-        val sharedPrefs = context.getSharedPreferences("data", Context.MODE_PRIVATE)
-        if(sharedPrefs.getBoolean("enable_api", false)) return
-        val key = sharedPrefs.getString("api_key", null)
-        if(key != null && key == intent.getStringExtra("key")) {
+        val requestKey = intent.getStringExtra("key") ?: ""
+        var log = "OwnDroid API request received. action: ${intent.action}\nkey: $requestKey"
+        val sp = SharedPrefs(context)
+        if(!sp.isApiEnabled) return
+        val key = sp.apiKey
+        if(!key.isNullOrEmpty() && key == requestKey) {
             val dpm = context.getDPM()
             val receiver = context.getReceiver()
-            val app = intent.getStringExtra("package") ?: ""
+            val app = intent.getStringExtra("package")
+            if(!app.isNullOrEmpty()) log += "\npackage: $app"
             try {
+                @SuppressWarnings("NewApi")
                 val ok = when(intent.action) {
                     "com.bintianqi.owndroid.action.HIDE" -> dpm.setApplicationHidden(receiver, app, true)
                     "com.bintianqi.owndroid.action.UNHIDE" -> dpm.setApplicationHidden(receiver, app, false)
                     "com.bintianqi.owndroid.action.SUSPEND" -> dpm.setPackagesSuspended(receiver, arrayOf(app), true).isEmpty()
                     "com.bintianqi.owndroid.action.UNSUSPEND" -> dpm.setPackagesSuspended(receiver, arrayOf(app), false).isEmpty()
-                    "com.bintianqi.owndroid.action.LOCK" -> { dpm.lockNow(); true }
+                    "com.bintianqi.owndroid.action.LOCK" -> { dpm.lockNow(); null }
                     else -> {
-                        Log.w(TAG, "Invalid action")
-                        resultData = "Invalid action"
+                        log += "\nInvalid action"
                         false
                     }
                 }
-                if(!ok) resultCode = 1
+                log += "success: $ok"
             } catch(e: Exception) {
                 e.printStackTrace()
                 val message = (e::class.qualifiedName ?: "Exception") + ": " + (e.message ?: "")
-                Log.w(TAG, message)
-                resultCode = 1
-                resultData = message
+                log += "\n$message"
             }
         } else {
-            Log.w(TAG, "Unauthorized")
-            resultCode = 1
-            resultData = "Unauthorized"
+            log += "\nUnauthorized"
         }
+        Log.d(TAG, log)
     }
     companion object {
         private const val TAG = "API"

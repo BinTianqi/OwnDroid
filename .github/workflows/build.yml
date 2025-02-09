@@ -1,15 +1,21 @@
 name: Build APK
 
 on:
+  workflow_dispatch:
   push:
+    branches: ["master", "dev"]
     paths-ignore:
       - '**.md'
     tags-ignore:
       - '**'
 
+concurrency:
+  group: "main"
+  cancel-in-progress: false
+
 jobs:
   build:
-    name: Build CI
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -61,10 +67,9 @@ jobs:
 
   upload-telegram:
     name: Upload Builds
-    if: ${{ success() && github.ref_name == 'dev' }}
     runs-on: ubuntu-latest
-    needs:
-      - build
+    if: github.ref_name == 'dev'
+    needs: build
     steps:
       - name: Download Artifacts
         uses: actions/download-artifact@v4
@@ -92,6 +97,6 @@ jobs:
           mv ./$RELEASE_SIGNED_PWD/app-release.apk ./$RELEASE_SIGNED_PWD.apk && rm -rf ./$RELEASE_SIGNED_PWD
           ../binaries/telegram-bot-api --api-id=${{ secrets.TELEGRAM_API_APP_ID }} --api-hash=${{ secrets.TELEGRAM_API_HASH }} --local 2>&1 > /dev/null &
           export token=${{ secrets.TELEGRAM_BOT_KEY }}
-          curl -v "http://127.0.0.1:8081/bot$token/sendMediaGroup?chat_id=-1002216379163&media=%5B%7B%22type%22%3A%22document%22%2C%22media%22%3A%22attach%3A%2F%2FreleaseTest%22%7D%2C%7B%22type%22%3A%22document%22%2C%22media%22%3A%22attach%3A%2F%2FreleaseSigned%22%2C%22parse_mode%22%3A%22HTML%22%2C%22caption%22%3A${ESCAPED}%7D%5D" \
+          curl -v "http://127.0.0.1:8081/bot$token/sendMediaGroup?chat_id=-1002203528169&media=%5B%7B%22type%22%3A%22document%22%2C%22media%22%3A%22attach%3A%2F%2FreleaseTest%22%7D%2C%7B%22type%22%3A%22document%22%2C%22media%22%3A%22attach%3A%2F%2FreleaseSigned%22%2C%22parse_mode%22%3A%22HTML%22%2C%22caption%22%3A${ESCAPED}%7D%5D" \
            -F releaseTest="@$RELEASE_TEST_PWD.apk" \
            -F releaseSigned="@$RELEASE_SIGNED_PWD.apk"

@@ -7,6 +7,7 @@
     <string name="disable">Disable</string>
     <string name="enable">Enable</string>
     <string name="success">Success</string>
+    <string name="failure">Failure</string>
     <string name="failed">Failed</string>
     <string name="add">Add</string>
     <string name="remove">Remove</string>
@@ -70,6 +71,8 @@
     <string name="edit">Edit</string>
     <string name="overview">Overview</string>
     <string name="features">Features</string>
+    <string name="default_str">Default</string>
+    <string name="timeout">Timeout</string>
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
@@ -77,9 +80,18 @@
     <string name="activate_jump" tools:ignore="TypographyEllipsis">Activate...</string>
     <string name="profile_owner">Profile owner</string>
     <string name="device_owner">Device owner</string>
+    <string name="delegated_admins">Delegated admins</string>
+    <string name="delegated_scope">delegated scope</string>
+    <string name="manage_application_restrictions">Manage application restrictions</string>
+    <string name="manage_certificates">Manage certificates</string>
+    <string name="select_keychain_certificates">Select KeyChain certificate</string>
+    <string name="install_existing_packages">Install existing packages</string>
+    <string name="manage_uninstalled_packages">Manage uninstalled packages</string>
+    <string name="change_package_state">Change package state</string>
+    <string name="grant_permissions">Grant permissions</string>
+    <string name="add_delegated_admin">Add delegated admin</string>
     <string name="dhizuku_will_be_deactivated">Dhizuku will be deactivated</string>
     <string name="reset_device_policy">Reset device policy</string>
-    <string name="activate_device_admin">Activate Device admin</string>
     <string name="activate_device_admin_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="activate_profile_owner_command" translatable="false">dpm set-profile-owner --user %1$s com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="activate_device_owner_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
@@ -126,10 +138,9 @@
     <string name="list_accounts">List accounts</string>
     <string name="shizuku_not_started">Shizuku not started. </string>
     <string name="dpm_activate_do_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
-    <string name="dpm_activate_da_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="activate_device_owner">Activate Device owner</string>
     <string name="activate_org_profile">Activate organization-owned work profile</string>
-    <string name="shizuku_service_disconnected">Shizuku service disconnected</string>
+    <string name="accounts">Accounts</string>
 
     <!--System-->
     <string name="system">System</string>
@@ -169,6 +180,27 @@
     <string name="change_timezone">Change timezone</string>
     <string name="timezone_id">Timezone ID</string>
     <string name="disable_auto_time_zone_before_set">Auto timezone should be disabled before set a custom timezone. </string>
+    <!--<string name="key_pairs">Key pairs</string>
+    <string name="generate_key_pair">Generate key pair</string>
+    <string name="algorithm">Algorithm</string>
+    <string name="key_specification">Key specification</string>
+    <string name="standard_name">Standard name</string>
+    <string name="key_size">Key size</string>
+    <string name="exponent">Exponent</string>
+    <string name="key_purpose">Key purpose</string>
+    <string name="kp_encrypt">Encrypt</string>
+    <string name="kp_decrypt">Decrypt</string>
+    <string name="kp_sign">Sign</string>
+    <string name="kp_verify">Verify</string>
+    <string name="kp_wrap">Wrap</string>
+    <string name="kp_agree">Agree</string>
+    <string name="kp_attest">Attest</string>
+    <string name="attestation_record_identifiers">Attestation record identifiers</string>
+    <string name="base_info">Base info</string>
+    <string name="individual_certificate">Individual certificate</string>
+    <string name="generate">Generate</string>-->
+    <string name="content_protection_policy">Content protection policy</string>
+    <string name="not_controlled_by_policy">Not controlled by policy</string>
     <string name="permission_policy">Permission policy</string>
     <string name="auto_grant">Auto grant</string>
     <string name="auto_deny">Auto deny</string>
@@ -190,8 +222,6 @@
     <string name="ltf_keyguard">Allow keyguard</string>
     <string name="ltf_block_activity_start_in_task">Block activity start in task</string>
     <string name="ca_cert">CA certificate</string>
-    <string name="please_select_ca_cert">Please select a certificate</string>
-    <string name="cert_installed">Certificate installed: %1$s</string>
     <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Select certificate...</string>
     <string name="uninstall_all_user_ca_cert">Uninstall all user CA certificate</string>
     <string name="security_logging">Security logging</string>
@@ -257,6 +287,34 @@
     <string name="wifi_ssid_policy">Wi-Fi SSID policy</string>
     <string name="ssid_list_is">SSID list:</string>
     <string name="already_exist">Already exist</string>
+    <string name="network_stats">Network stats</string>
+    <string name="type">Type</string>
+    <string name="summary">Summary</string>
+    <string name="details">Details</string>
+    <string name="target">Target</string>
+    <string name="device">Device</string>
+    <string name="user">User</string>
+    <string name="uid" translatable="false">UID</string>
+    <string name="uid_tag">UID tag</string>
+    <string name="uid_tag_state">UID tag state</string>
+    <string name="network_type">Network type</string>
+    <string name="mobile">Mobile</string>
+    <string name="ethernet">Ethernet</string>
+    <string name="vpn" translatable="false">VPN</string>
+    <string name="subscriber_id">Subscriber ID</string>
+    <string name="all">All</string>
+    <string name="uninstalled">Uninstalled</string>
+    <string name="tethering">Tethering</string>
+    <string name="choose_an_app" tools:ignore="TypographyEllipsis">Choose an app...</string>
+    <string name="input">Input</string>
+    <string name="query">Query</string>
+    <string name="transmitted">Transmitted</string>
+    <string name="received">Received</string>
+    <string name="state">State</string>
+    <string name="foreground">Foreground</string>
+    <string name="tag">Tag</string>
+    <string name="roaming">Roaming</string>
+    <string name="metered">Metered</string>
     <string name="private_dns">Private DNS</string>
     <string name="dns_provide_hostname">Provide hostname</string>
     <string name="host_not_serving_dns_tls">Host not serving</string>
@@ -304,7 +362,7 @@
     <string name="address">Address</string>
     <string name="port">Port</string>
     <string name="proxy">Proxy</string>
-    <string name="network_type">Network type</string>
+    <string name="apn_network_type">Network type</string>
     <string name="persistent">Persistent</string>
     <string name="protocol">Protocol</string>
     <string name="roaming_protocol">Roaming protocol</string>
@@ -383,20 +441,7 @@
     <string name="silent_uninstall">Silent uninstall</string>
     <string name="request_uninstall">Request uninstall</string>
     <string name="install_app">Install app</string>
-    <string name="select_apk" tools:ignore="TypographyEllipsis">Select APK...</string>
-    <string name="silent_install">Silent install</string>
-    <string name="request_install">Request install</string>
     <string name="search">Search</string>
-    <!--App install session status-->
-    <string name="app_installer_status">App installer:</string>
-    <string name="status_pending_action">Pending user action</string>
-    <string name="status_fail_blocked">Fail: blocked</string>
-    <string name="status_fail_aborted">Fail: aborted</string>
-    <string name="status_fail_invalid">Fail: invalid APK</string>
-    <string name="status_fail_conflict">Fail: conflict</string>
-    <string name="status_fail_storage">Fail: no space</string>
-    <string name="status_fail_incompatible">Fail: incompatible</string>
-    <string name="status_fail_timeout">Fail: timeout</string>
 
     <!--UserRestriction-->
     <string name="user_restriction">User restriction</string>
@@ -407,7 +452,6 @@
     <string name="connectivity">Other connection</string>
     <string name="media">Media</string>
     <string name="other">Other</string>
-    <string name="require_device_owner">Require device owner</string>
     <string name="config_mobile_network">Configure mobile network</string>
     <string name="config_wifi">Configure Wi-Fi</string>
     <string name="data_roaming">Data roaming</string>
@@ -426,11 +470,13 @@
     <string name="config_cell_broadcasts">Configure cell broadcasts</string>
     <string name="sms">SMS</string>
     <string name="outgoing_calls">Outgoing calls</string>
+    <string name="download_esim">Download eSIM</string>
 
     <string name="bluetooth">Bluetooth</string>
     <string name="bt_share">Bluetooth sharing</string>
     <string name="share_location">Share location</string>
     <string name="config_location">Configure location</string>
+    <string name="nfc" translatable="false">NFC</string>
     <string name="outgoing_beam">Outgoing Beam</string>
     <string name="usb_file_transfer">USB file transfer</string>
     <string name="mount_physical_media">Mount physical media</string>
@@ -452,6 +498,7 @@
     <string name="add_user">Add user</string>
     <string name="remove_user">Remove user</string>
     <string name="switch_user">Switch user</string>
+    <string name="create_private_space">Create private space</string>
     <string name="set_user_icon">Set user icon</string>
     <string name="cross_profile_copy">Cross profile copy</string>
     <string name="share_into_managed_profile">Share into managed profile</string>
@@ -461,6 +508,7 @@
     <string name="config_credentials">Configure credentials</string>
     <string name="content_capture">Content capture</string>
     <string name="content_suggestions">Content suggestions</string>
+    <string name="assist_content">Assist content</string>
     <string name="create_windows">Create windows</string>
     <string name="set_wallpaper">Set wallpaper</string>
     <string name="grant_admin">Grant device admin</string>
@@ -489,14 +537,13 @@
     <string name="logout_enabled">Logout enabled</string>
     <string name="ephemeral_user">Ephemeral user</string>
     <string name="affiliated_user">Affiliated user</string>
-    <string name="user_id">UserID</string>
+    <string name="user_id" translatable="false">User ID</string>
     <string name="user_serial_number">User serial number</string>
     <string name="secondary_users">Secondary users</string>
     <string name="no_secondary_users">No secondary users</string>
     <string name="user_operation">User operation</string>
     <string name="user_not_exist">User does not exist</string>
     <string name="serial_number">Serial number</string>
-    <string name="use_uid">Use UID</string>
     <string name="logout_current_user">Logout current user</string>
     <string name="start_in_background">Start in background</string>
     <string name="user_operation_switch">Switch</string>
@@ -505,7 +552,7 @@
     <string name="create_user_skip_wizard">Skip wizard</string>
     <string name="create_user_ephemeral_user">Ephemeral user</string>
     <string name="create_user_enable_all_system_app">Enable all system app</string>
-    <string name="serial_number_of_new_user_is">Serial number of this user: %1$s</string>
+    <string name="serial_number_of_new_user_is">Serial number of this user: %1$d</string>
     <string name="affiliation_id">Affiliation ID</string>
     <string name="change_user_icon">Change user icon</string>
     <string name="file_picker_instead_gallery">Use file picker instead of gallery</string>
@@ -585,6 +632,8 @@
     <string name="authenticate">Authenticate</string>
     <string name="lock_in_background">Lock when switch to background</string>
     <string name="clear_storage">Clear storage</string>
+    <string name="skipped_authentication">Skipped authentication because it is unavailable.</string>
+    <string name="failed_to_authenticate">Failed to authenticate</string>
     
     <string name="api_key">API key</string>
     <string name="api_key_exist">The API key already exists, setting a new key will overwrite the current key.</string>
@@ -624,9 +673,18 @@
     <string name="permission_BODY_SENSORS_BACKGROUND">Access body sensors in background</string>
     <string name="permission_ACTIVITY_RECOGNITION">Activity recognition</string>
 
-    <string name="version_name">Version name</string>
-    <string name="version_code">Version code</string>
-    <string name="parsing_apk_info" tools:ignore="TypographyEllipsis">Parsing APK info...</string>
+    <string name="app_installer">App installer</string>
+    <string name="mode">Mode</string>
+    <string name="full_install">Full install</string>
+    <string name="inherit_existing">Inherit existing</string>
+    <string name="packages">Packages</string>
+    <string name="add_packages">Add package(s)</string>
+    <string name="status_failure_blocked">The operation was blocked by: %1$s</string>
+    <string name="status_failure_aborted">The operation was aborted.</string>
+    <string name="status_failure_invalid">The operation failed because one or more of the APKs was invalid. For example, they might be malformed, corrupt, incorrectly signed, mismatched, etc.</string>
+    <string name="status_failure_conflict">The operation failed because it conflicts with %1$s. For example, an existing permission, incompatible certificates, etc. You can uninstall %1$s to fix the issue.</string>
+    <string name="status_failure_storage">The operation failed because of storage issues. For example, the device may be running low on space, or external media may be unavailable. You may try to help free space or insert different external media.</string>
+    <string name="status_failure_incompatible">The operation failed because it is fundamentally incompatible with this device. For example, the app may require a hardware feature that doesn\'t exist, it may be missing native code for the ABIs supported by the device, or it requires a newer SDK version, etc.</string>
 
     <string name="info_dhizuku">Dhizuku is a tool that can share Device owner permissions to other application.</string>
     <string name="info_device_id_attestation">Indicates if the device supports attestation of device identifiers in addition to key attestation.</string>
@@ -643,6 +701,7 @@
     <string name="info_evict_credential_encryption_key">Evict the user\'s credential encryption key from the keyring. The user\'s credential will need to be entered again in order to derive the credential encryption key that will be stored back in the keyring for future use. In order to secure user data, the user will be stopped and restarted.</string>
     <string name="info_reboot">You can\'t use this function if there is an ongoing call on the device.</string>
     <string name="info_change_time">Input UNIX time in milliseconds</string>
+    <string name="info_content_protection_policy">Content protection policy controls scanning for deceptive apps.</string>
     <string name="info_permission_policy">Set the default response for future runtime permission requests by applications.</string>
     <string name="info_mte_policy">Set the Memory Tagging Extension policy. Reboot the device to apply changes.</string>
     <string name="info_nearby_app_streaming_policy">App streaming is when the device starts an app on a virtual display and sends a video stream of the app to nearby devices.</string>
@@ -652,7 +711,7 @@
     <string name="info_security_log">If a Device owner use this function, all users should be affiliated.</string>
     <string name="info_pre_reboot_security_log">Not all devices support pre-reboot security logs.</string>
     <string name="info_disable_account_management">When account management is disabled for an account type, adding or removing an account of that type will not be possible.</string>
-    <string name="info_frp_policy">Factory reset protection can protect the device after untrusted factory reset (in Recovery or Fastboot).\nTo enable this feature, the device must support persistent data block service.</string>
+    <string name="info_frp_policy">The factory reset protection policy determines which accounts can unlock a device that has gone through untrusted factory reset(fastboot or recovery).\nTo enable this feature, the device must support persistent data block service.\nFactory reset protection is disabled if OEM unlocking is enabled in Developer Options.</string>
     <string name="info_wipe_data_in_managed_user">All data of this user will be wiped, but that user won\'t be removed.</string>
     <string name="info_lockdown_admin_configured_network">Control whether the user can change networks configured by the admin.\nWhen this lockdown is enabled, the user can still configure and connect to other Wi-Fi networks, or use other Wi-Fi capabilities such as tethering.</string>
     <string name="info_minimum_wifi_security_level">Specify the minimum security level required for Wi-Fi networks. The device may not connect to networks that do not meet the minimum security level. If the current network does not meet the minimum security level set, it will be disconnected.</string>
@@ -667,7 +726,6 @@
     <string name="info_disable_user_control">User will not be able to clear app data or force-stop packages.</string>
     <string name="info_keep_uninstalled_apps">Set a list of apps to keep around as APKs even if no user has currently installed it. </string>
     <string name="info_headless_system_user_mode">Headless system user mode means the system user runs system services and some system UI, but it is not associated with any real person and additional users must be created to be associated with real persons.</string>
-    <string name="info_user_operation">It is recommended to specify a user with serial number, you can also use UID, the UID should be any of the apps in the target user.</string>
     <string name="info_affiliated_id">When Device owner create a managed user, the managed user isn\'t affiliated. In order to make the managed user affiliated with the Device owner, you should set same affiliated IDs in main user and managed user</string>
     <string name="info_reset_password">Set a new lockscreen password. The length of this password must be at least 4 digits. Keep it empty to remove password.\nIf you set a numeric password that length is 6 or lower, it will set as PIN</string>
     <string name="info_screen_timeout">Set the maximum time for user activity until the device will lock. This limits the length that the user can set.\nA value of 0 means there is no restriction.</string>

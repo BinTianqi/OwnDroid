@@ -2,7 +2,6 @@ package com.bintianqi.owndroid.dpm
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.PendingIntent
 import android.app.admin.ConnectEvent
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DnsEvent
@@ -15,7 +14,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.IPackageInstaller
 import android.content.pm.PackageInstaller
-import android.content.pm.PackageManager
 import android.os.Build.VERSION
 import android.os.UserManager
 import android.util.Log
@@ -23,10 +21,9 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
-import com.bintianqi.owndroid.InstallAppActivity
-import com.bintianqi.owndroid.PackageInstallerReceiver
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.Receiver
+import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.backToHomeStateFlow
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.Dhizuku.binderWrapper
@@ -40,18 +37,15 @@ import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
-import java.io.IOException
-import java.io.InputStream
 import java.io.OutputStream
 
 lateinit var addDeviceAdmin: ActivityResultLauncher<Intent>
 
 val Context.isDeviceOwner: Boolean
     get() {
-        val sharedPref = getSharedPreferences("data", Context.MODE_PRIVATE)
         val dpm = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         return dpm.isDeviceOwnerApp(
-            if(sharedPref.getBoolean("dhizuku", false)) {
+            if(SharedPrefs(this).dhizuku) {
                 Dhizuku.getOwnerPackageName()
             } else {
                 "com.bintianqi.owndroid"
@@ -72,8 +66,7 @@ val Context.isDeviceAdmin: Boolean
 
 val Context.dpcPackageName: String
     get() {
-        val sharedPref = getSharedPreferences("data", Context.MODE_PRIVATE)
-        return if(sharedPref.getBoolean("dhizuku", false)) {
+        return if(SharedPrefs(this).dhizuku) {
             Dhizuku.getOwnerPackageName()
         } else {
             "com.bintianqi.owndroid"
@@ -82,24 +75,6 @@ val Context.dpcPackageName: String
 
 fun DevicePolicyManager.isOrgProfile(receiver: ComponentName): Boolean {
     return VERSION.SDK_INT >= 30 && this.isProfileOwnerApp("com.bintianqi.owndroid") && isManagedProfile(receiver) && isOrganizationOwnedDeviceWithManagedProfile
-}
-
-@Throws(IOException::class)
-fun installPackage(context: Context, inputStream: InputStream) {
-    val packageInstaller = context.packageManager.packageInstaller
-    val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
-    val sessionId = packageInstaller.createSession(params)
-    val session = packageInstaller.openSession(sessionId)
-    val out = session.openWrite("COSU", 0, -1)
-    val buffer = ByteArray(65536)
-    var c: Int
-    while(inputStream.read(buffer).also{c = it}!=-1) { out.write(buffer, 0, c) }
-    session.fsync(out)
-    inputStream.close()
-    out.close()
-    val intent = Intent(context, PackageInstallerReceiver::class.java)
-    val pendingIntent = PendingIntent.getBroadcast(context, sessionId, intent, PendingIntent.FLAG_IMMUTABLE).intentSender
-    session.commit(pendingIntent)
 }
 
 @SuppressLint("PrivateApi")
@@ -142,9 +117,8 @@ private fun binderWrapperPackageInstaller(appContext: Context): PackageInstaller
     return null
 }
 
-fun Context.getPI(): PackageInstaller {
-    val sharedPref = this.getSharedPreferences("data", Context.MODE_PRIVATE)
-    if(sharedPref.getBoolean("dhizuku", false)) {
+fun Context.getPackageInstaller(): PackageInstaller {
+    if(SharedPrefs(this).dhizuku) {
         if (!dhizukuPermissionGranted()) {
             dhizukuErrorStatus.value = 2
             backToHomeStateFlow.value = true
@@ -157,8 +131,7 @@ fun Context.getPI(): PackageInstaller {
 }
 
 fun Context.getDPM(): DevicePolicyManager {
-    val sharedPref = this.getSharedPreferences("data", Context.MODE_PRIVATE)
-    if(sharedPref.getBoolean("dhizuku", false)) {
+    if(SharedPrefs(this).dhizuku) {
         if (!dhizukuPermissionGranted()) {
             dhizukuErrorStatus.value = 2
             backToHomeStateFlow.value = true
@@ -171,8 +144,7 @@ fun Context.getDPM(): DevicePolicyManager {
 }
 
 fun Context.getReceiver(): ComponentName {
-    val sharedPref = this.getSharedPreferences("data", Context.MODE_PRIVATE)
-    return if(sharedPref.getBoolean("dhizuku", false)) {
+    return if(SharedPrefs(this).dhizuku) {
         Dhizuku.getOwnerComponent()
     } else {
         ComponentName(this, Receiver::class.java)
@@ -244,16 +216,6 @@ fun Context.resetDevicePolicy() {
         dpm.setPasswordQuality(receiver, DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED)
     }
     dpm.setRecommendedGlobalProxy(receiver, null)
-}
-
-fun Context.toggleInstallAppActivity() {
-    val sharedPrefs = getSharedPreferences("data", Context.MODE_PRIVATE)
-    val disable = sharedPrefs.getBoolean("dhizuku", false) || !isDeviceOwner
-    packageManager?.setComponentEnabledSetting(
-        ComponentName(this, InstallAppActivity::class.java),
-        if (disable) PackageManager.COMPONENT_ENABLED_STATE_DISABLED else PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-        PackageManager.DONT_KILL_APP
-    )
 }
 
 data class PermissionItem(
@@ -361,7 +323,7 @@ fun processSecurityLogs(securityEvents: List<SecurityLog.SecurityEvent>, outputS
     val buffer = outputStream.bufferedWriter()
     securityEvents.forEachIndexed { index, event ->
         val item = buildJsonObject {
-            put("time_nanos", event.timeNanos)
+            put("time", event.timeNanos / 1000)
             put("tag", event.tag)
             if(VERSION.SDK_INT >= 28) put("level", event.logLevel)
             if(VERSION.SDK_INT >= 28) put("id", event.id)
@@ -375,7 +337,7 @@ fun processSecurityLogs(securityEvents: List<SecurityLog.SecurityEvent>, outputS
 
 @RequiresApi(24)
 fun parseSecurityEventData(event: SecurityLog.SecurityEvent): JsonElement? {
-    return when(event.tag) { //TODO: backup service tag (API35)
+    return when(event.tag) {
         SecurityLog.TAG_ADB_SHELL_CMD -> JsonPrimitive(event.data as String)
         SecurityLog.TAG_ADB_SHELL_INTERACTIVE -> null
         SecurityLog.TAG_APP_PROCESS_START -> {
@@ -387,6 +349,14 @@ fun parseSecurityEventData(event: SecurityLog.SecurityEvent): JsonElement? {
                 put("pid", payload[3] as Int)
                 put("seinfo", payload[4] as String)
                 put("apk_hash", payload[5] as String)
+            }
+        }
+        SecurityLog.TAG_BACKUP_SERVICE_TOGGLED -> {
+            val payload = event.data as Array<*>
+            buildJsonObject {
+                put("admin", payload[0] as String)
+                put("admin_user_id", payload[1] as Int)
+                put("state", payload[2] as Int)
             }
         }
         SecurityLog.TAG_BLUETOOTH_CONNECTION -> {
@@ -573,8 +543,8 @@ fun parseSecurityEventData(event: SecurityLog.SecurityEvent): JsonElement? {
 
 fun setDefaultAffiliationID(context: Context) {
     if(VERSION.SDK_INT < 26) return
-    val sharedPrefs = context.getSharedPreferences("data", Context.MODE_PRIVATE)
-    if(!sharedPrefs.getBoolean("default_affiliation_id_set", false)) {
+    val sp = SharedPrefs(context)
+    if(!sp.isDefaultAffiliationIdSet) {
         try {
             val um = context.getSystemService(Context.USER_SERVICE) as UserManager
             if(context.isDeviceOwner || (!um.isSystemUser && context.isProfileOwner)) {
@@ -583,7 +553,7 @@ fun setDefaultAffiliationID(context: Context) {
                 val affiliationIDs = dpm.getAffiliationIds(receiver)
                 if(affiliationIDs.isEmpty()) {
                     dpm.setAffiliationIds(receiver, setOf("OwnDroid_default_affiliation_id"))
-                    sharedPrefs.edit().putBoolean("default_affiliation_id_set", true).apply()
+                    sp.isDefaultAffiliationIdSet = true
                     Log.d("DPM", "Default affiliation id set")
                 }
             }
@@ -600,3 +570,29 @@ fun dhizukuPermissionGranted() =
         false
     }
 
+fun parsePackageInstallerMessage(context: Context, result: Intent): String {
+    val status = result.getIntExtra(PackageInstaller.EXTRA_STATUS, 999)
+    val statusMessage = result.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)
+    val otherPackageName = result.getStringExtra(PackageInstaller.EXTRA_OTHER_PACKAGE_NAME)
+    return when(status) {
+        PackageInstaller.STATUS_FAILURE_BLOCKED ->
+            context.getString(
+                R.string.status_failure_blocked,
+                otherPackageName ?: context.getString(R.string.unknown)
+            )
+        PackageInstaller.STATUS_FAILURE_ABORTED ->
+            context.getString(R.string.status_failure_aborted)
+        PackageInstaller.STATUS_FAILURE_INVALID ->
+            context.getString(R.string.status_failure_invalid)
+        PackageInstaller.STATUS_FAILURE_CONFLICT ->
+            context.getString(R.string.status_failure_conflict, otherPackageName ?: "???")
+        PackageInstaller.STATUS_FAILURE_STORAGE ->
+            context.getString(R.string.status_failure_storage) +
+                    result.getStringExtra(PackageInstaller.EXTRA_STORAGE_PATH).let { if(it == null) "" else "\n$it" }
+        PackageInstaller.STATUS_FAILURE_INCOMPATIBLE ->
+            context.getString(R.string.status_failure_incompatible)
+        PackageInstaller.STATUS_FAILURE_TIMEOUT ->
+            context.getString(R.string.timeout)
+        else -> ""
+    } + statusMessage.let { if(it == null) "" else "\n$it" }
+}

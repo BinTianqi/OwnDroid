@@ -3,6 +3,7 @@ package com.bintianqi.owndroid.dpm
 import android.annotation.SuppressLint
 import android.app.ActivityOptions
 import android.app.AlertDialog
+import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY
 import android.app.admin.DevicePolicyManager.InstallSystemUpdateCallback
 import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK
@@ -123,6 +124,7 @@ import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.NotificationUtils
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.humanReadableDate
 import com.bintianqi.owndroid.showOperationResultToast
@@ -135,7 +137,6 @@ import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.uriToStream
-import com.bintianqi.owndroid.yesOrNo
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
@@ -150,9 +151,8 @@ fun SystemManage(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
-    val dhizuku = sharedPref.getBoolean("dhizuku", false)
-    val dangerousFeatures = sharedPref.getBoolean("dangerous_features", false)
+    val sp = SharedPrefs(context)
+    val dhizuku = sp.dhizuku
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
     var dialog by remember { mutableIntStateOf(0) }
@@ -166,13 +166,17 @@ fun SystemManage(navCtrl: NavHostController) {
         if(VERSION.SDK_INT >= 24 && deviceOwner) {
             FunctionItem(R.string.reboot, icon = R.drawable.restart_alt_fill0) { dialog = 1 }
         }
-        if(deviceOwner && ((VERSION.SDK_INT >= 28 && dpm.isAffiliatedUser) || VERSION.SDK_INT >= 24)) {
+        if(deviceOwner && VERSION.SDK_INT >= 24 && (VERSION.SDK_INT < 28 || dpm.isAffiliatedUser)) {
             FunctionItem(R.string.bug_report, icon = R.drawable.bug_report_fill0) { dialog = 2 }
         }
         if(VERSION.SDK_INT >= 28 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             FunctionItem(R.string.change_time, icon = R.drawable.schedule_fill0) { navCtrl.navigate("ChangeTime") }
             FunctionItem(R.string.change_timezone, icon = R.drawable.schedule_fill0) { navCtrl.navigate("ChangeTimeZone") }
         }
+        /*if(VERSION.SDK_INT >= 28 && (deviceOwner || profileOwner))
+            FunctionItem(R.string.key_pairs, icon = R.drawable.key_vertical_fill0) { navCtrl.navigate("KeyPairs") }*/
+        if(VERSION.SDK_INT >= 35 && (deviceOwner || (profileOwner && dpm.isAffiliatedUser)))
+            FunctionItem(R.string.content_protection_policy, icon = R.drawable.search_fill0) { navCtrl.navigate("ContentProtectionPolicy") }
         if(VERSION.SDK_INT >= 23 && (deviceOwner || profileOwner)) {
             FunctionItem(R.string.permission_policy, icon = R.drawable.key_fill0) { navCtrl.navigate("PermissionPolicy") }
         }
@@ -203,7 +207,7 @@ fun SystemManage(navCtrl: NavHostController) {
         if(VERSION.SDK_INT >= 30 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             FunctionItem(R.string.frp_policy, icon = R.drawable.device_reset_fill0) { navCtrl.navigate("FRPPolicy") }
         }
-        if(dangerousFeatures && context.isDeviceAdmin && !(VERSION.SDK_INT >= 24 && profileOwner && dpm.isManagedProfile(receiver))) {
+        if(sp.displayDangerousFeatures && context.isDeviceAdmin && !(VERSION.SDK_INT >= 24 && profileOwner && dpm.isManagedProfile(receiver))) {
             FunctionItem(R.string.wipe_data, icon = R.drawable.device_reset_fill0) { navCtrl.navigate("WipeData") }
         }
     }
@@ -269,10 +273,10 @@ fun SystemOptions(navCtrl: NavHostController) {
                 )
             } else {
                 SwitchItem(R.string.require_auto_time, icon = R.drawable.schedule_fill0,
-                    getState = { dpm.autoTimeRequired}, onCheckedChange = { dpm.setAutoTimeRequired(receiver,it) }, padding = false)
+                    getState = { dpm.autoTimeRequired }, onCheckedChange = { dpm.setAutoTimeRequired(receiver,it) }, padding = false)
             }
         }
-        if(deviceOwner || (profileOwner && (VERSION.SDK_INT < 24 || (VERSION.SDK_INT >= 24 && !dpm.isManagedProfile(receiver))))) {
+        if(deviceOwner || profileOwner) {
             SwitchItem(R.string.master_mute, icon = R.drawable.volume_up_fill0,
                 getState = { dpm.isMasterVolumeMuted(receiver) }, onCheckedChange = { dpm.setMasterVolumeMuted(receiver,it) }
             )
@@ -628,6 +632,217 @@ fun ChangeTimeZone(navCtrl: NavHostController) {
         },
         onDismissRequest = { dialog = false }
     )
+}
+
+/*@RequiresApi(28)
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun KeyPairs(navCtrl: NavHostController) {
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
+    var alias by remember { mutableStateOf("") }
+    var purpose by remember { mutableIntStateOf(0) }
+    //var keySpecType by remember { mutableIntStateOf() }
+    var ecStdName by remember { mutableStateOf("") }
+    var rsaKeySize by remember { mutableStateOf("") }
+    var rsaExponent by remember { mutableStateOf("") }
+    var algorithm by remember { mutableStateOf("") }
+    var idAttestationFlags by remember { mutableIntStateOf(0) }
+    MyScaffold(R.string.key_pairs, 8.dp, navCtrl) {
+        OutlinedTextField(
+            value = alias, onValueChange = { alias = it }, label = { Text(stringResource(R.string.alias)) },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Text(stringResource(R.string.algorithm), style = typography.titleLarge)
+        SingleChoiceSegmentedButtonRow {
+            *//*SegmentedButton(
+                algorithm == "DH", { algorithm = "DH" },
+                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 4)
+            ) {
+                Text("DH")
+            }
+            SegmentedButton(
+                algorithm == "DSA", { algorithm = "DSA" },
+                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 4)
+            ) {
+                Text("DSA")
+            }*//*
+            SegmentedButton(
+                algorithm == "EC", { algorithm = "EC" },
+                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
+            ) {
+                Text("EC")
+            }
+            SegmentedButton(
+                algorithm == "RSA", { algorithm = "RSA" },
+                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
+            ) {
+                Text("RSA")
+            }
+        }
+        AnimatedVisibility(algorithm != "") {
+            Text(stringResource(R.string.key_specification), style = typography.titleLarge)
+        }
+        AnimatedVisibility(algorithm == "EC") {
+            OutlinedTextField(
+                value = ecStdName, onValueChange = { ecStdName = it }, label = { Text(stringResource(R.string.standard_name)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+        AnimatedVisibility(algorithm == "RSA") {
+            Column {
+                OutlinedTextField(
+                    value = rsaKeySize, onValueChange = { rsaKeySize = it }, label = { Text(stringResource(R.string.key_size)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = rsaExponent, onValueChange = { rsaExponent = it }, label = { Text(stringResource(R.string.exponent)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+        Text(stringResource(R.string.key_purpose), style = typography.titleLarge)
+        FlowRow {
+            if(VERSION.SDK_INT >= 23) {
+                InputChip(
+                    purpose and KeyProperties.PURPOSE_ENCRYPT != 0,
+                    { purpose = purpose xor KeyProperties.PURPOSE_ENCRYPT },
+                    { Text(stringResource(R.string.kp_encrypt)) },
+                    Modifier.padding(horizontal = 4.dp)
+                )
+                InputChip(
+                    purpose and KeyProperties.PURPOSE_DECRYPT != 0,
+                    { purpose = purpose xor KeyProperties.PURPOSE_DECRYPT },
+                    { Text(stringResource(R.string.kp_decrypt)) },
+                    Modifier.padding(horizontal = 4.dp)
+                )
+                InputChip(
+                    purpose and KeyProperties.PURPOSE_SIGN != 0,
+                    { purpose = purpose xor KeyProperties.PURPOSE_SIGN },
+                    { Text(stringResource(R.string.kp_sign)) },
+                    Modifier.padding(horizontal = 4.dp)
+                )
+                InputChip(
+                    purpose and KeyProperties.PURPOSE_VERIFY != 0,
+                    { purpose = purpose xor KeyProperties.PURPOSE_VERIFY },
+                    { Text(stringResource(R.string.kp_verify)) },
+                    Modifier.padding(horizontal = 4.dp)
+                )
+            }
+            if(VERSION.SDK_INT >= 28) InputChip(
+                purpose and KeyProperties.PURPOSE_WRAP_KEY != 0,
+                { purpose = purpose xor KeyProperties.PURPOSE_WRAP_KEY },
+                { Text(stringResource(R.string.kp_wrap)) },
+                Modifier.padding(horizontal = 4.dp)
+            )
+            if(VERSION.SDK_INT >= 31) {
+                InputChip(
+                    purpose and KeyProperties.PURPOSE_AGREE_KEY != 0,
+                    { purpose = purpose xor KeyProperties.PURPOSE_AGREE_KEY },
+                    { Text(stringResource(R.string.kp_agree)) },
+                    Modifier.padding(horizontal = 4.dp)
+                )
+                InputChip(
+                    purpose and KeyProperties.PURPOSE_ATTEST_KEY != 0,
+                    { purpose = purpose xor KeyProperties.PURPOSE_ATTEST_KEY },
+                    { Text(stringResource(R.string.kp_attest)) },
+                    Modifier.padding(horizontal = 4.dp)
+                )
+            }
+        }
+        Text(stringResource(R.string.attestation_record_identifiers), style = typography.titleLarge)
+        FlowRow {
+            InputChip(
+                idAttestationFlags and DevicePolicyManager.ID_TYPE_BASE_INFO != 0,
+                { idAttestationFlags = idAttestationFlags xor DevicePolicyManager.ID_TYPE_BASE_INFO },
+                { Text(stringResource(R.string.base_info)) },
+                Modifier.padding(horizontal = 4.dp)
+            )
+            InputChip(
+                idAttestationFlags and DevicePolicyManager.ID_TYPE_SERIAL != 0,
+                { idAttestationFlags = idAttestationFlags xor DevicePolicyManager.ID_TYPE_SERIAL },
+                { Text(stringResource(R.string.serial_number)) },
+                Modifier.padding(horizontal = 4.dp)
+            )
+            InputChip(
+                idAttestationFlags and DevicePolicyManager.ID_TYPE_IMEI != 0,
+                { idAttestationFlags = idAttestationFlags xor DevicePolicyManager.ID_TYPE_IMEI },
+                { Text("IMEI") },
+                Modifier.padding(horizontal = 4.dp)
+            )
+            InputChip(
+                idAttestationFlags and DevicePolicyManager.ID_TYPE_MEID != 0,
+                { idAttestationFlags = idAttestationFlags xor DevicePolicyManager.ID_TYPE_MEID },
+                { Text("MEID") },
+                Modifier.padding(horizontal = 4.dp)
+            )
+            if(VERSION.SDK_INT >= 30) InputChip(
+                idAttestationFlags and DevicePolicyManager.ID_TYPE_INDIVIDUAL_ATTESTATION != 0,
+                { idAttestationFlags = idAttestationFlags xor DevicePolicyManager.ID_TYPE_INDIVIDUAL_ATTESTATION },
+                { Text(stringResource(R.string.individual_certificate)) },
+                Modifier.padding(horizontal = 4.dp)
+            )
+        }
+        Button(
+            onClick = {
+                try {
+                    val aps = if(algorithm == "EC") ECGenParameterSpec(ecStdName)
+                    else RSAKeyGenParameterSpec(rsaKeySize.toInt(), rsaExponent.toBigInteger())
+                    val keySpec = KeyGenParameterSpec.Builder(alias, purpose).run {
+                        setAlgorithmParameterSpec(aps)
+                        this.setAttestationChallenge()
+                        build()
+                    }
+                    dpm.generateKeyPair(receiver, algorithm, keySpec, idAttestationFlags)
+                } catch(e: Exception) {
+                    AlertDialog.Builder(context)
+                        .setTitle(R.string.error)
+                        .setMessage(e.message ?: "")
+                        .setPositiveButton(R.string.confirm) { dialog, _ -> dialog.dismiss() }
+                        .show()
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = alias != "" && purpose != 0 &&
+                    ((algorithm == "EC") || (algorithm == "RSA" && rsaKeySize.all { it.isDigit() } && rsaExponent.all { it.isDigit() }))
+        ) {
+            Text(stringResource(R.string.generate))
+        }
+    }
+}*/
+
+@RequiresApi(35)
+@Composable
+fun ContentProtectionPolicy(navCtrl: NavHostController) {
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
+    var policy by remember { mutableIntStateOf(DevicePolicyManager.CONTENT_PROTECTION_NOT_CONTROLLED_BY_POLICY) }
+    fun refresh() { policy = dpm.getContentProtectionPolicy(receiver) }
+    LaunchedEffect(Unit) { refresh() }
+    MyScaffold(R.string.content_protection_policy, 8.dp, navCtrl) {
+        mapOf(
+            DevicePolicyManager.CONTENT_PROTECTION_NOT_CONTROLLED_BY_POLICY to R.string.not_controlled_by_policy,
+            DevicePolicyManager.CONTENT_PROTECTION_ENABLED to R.string.enabled,
+            DevicePolicyManager.CONTENT_PROTECTION_DISABLED to R.string.disabled
+        ).forEach { (policyId, string) ->
+            RadioButtonItem(string, policy == policyId) { policy = policyId }
+        }
+        Button(
+            onClick = {
+                dpm.setContentProtectionPolicy(receiver, policy)
+                refresh()
+                context.showOperationResultToast(true)
+            },
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+        ) {
+            Text(stringResource(R.string.apply))
+        }
+        InfoCard(R.string.info_content_protection_policy)
+    }
 }
 
 @RequiresApi(23)
@@ -1011,62 +1226,23 @@ fun CACert(navCtrl: NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    var exist by remember { mutableStateOf(false) }
-    var fileUri by remember { mutableStateOf<Uri?>(null) }
-    var caCertByteArray by remember { mutableStateOf(ByteArray(100000)) }
-    val getFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        result.data?.data?.let { uri ->
-            uriToStream(context, uri) {
-                val array = it.readBytes()
-                caCertByteArray = if(array.size < 10000) {
-                    array
-                } else {
-                    byteArrayOf()
-                }
-            }
+    var dialog by remember { mutableStateOf(false) }
+    var caCertByteArray = remember { byteArrayOf() }
+    val getFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri ?: return@rememberLauncherForActivityResult
+        uriToStream(context, uri) {
+            caCertByteArray = it.readBytes()
         }
+        dialog = true
     }
     MyScaffold(R.string.ca_cert, 8.dp, navCtrl) {
-        Text(
-            text = if(fileUri == null) { stringResource(R.string.please_select_ca_cert) }
-                else { stringResource(R.string.cert_installed, stringResource(exist.yesOrNo)) },
-            modifier = Modifier.animateContentSize()
-        )
-        Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                val caCertIntent = Intent(Intent.ACTION_GET_CONTENT)
-                caCertIntent.setType("*/*")
-                caCertIntent.addCategory(Intent.CATEGORY_OPENABLE)
-                getFileLauncher.launch(caCertIntent)
+                getFileLauncher.launch("*/*")
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
         ) {
             Text(stringResource(R.string.select_ca_cert))
-        }
-        AnimatedVisibility(fileUri != null) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Button(
-                    onClick = {
-                        context.showOperationResultToast(dpm.installCaCert(receiver, caCertByteArray))
-                        exist = dpm.hasCaCertInstalled(receiver, caCertByteArray)
-                    },
-                    modifier = Modifier.fillMaxWidth(0.49F)
-                ) {
-                    Text(stringResource(R.string.install))
-                }
-                Button(
-                    onClick = {
-                        dpm.uninstallCaCert(receiver, caCertByteArray)
-                        exist = dpm.hasCaCertInstalled(receiver, caCertByteArray)
-                        context.showOperationResultToast(true)
-                    },
-                    enabled = exist,
-                    modifier = Modifier.fillMaxWidth(0.96F)
-                ) {
-                    Text(stringResource(R.string.uninstall))
-                }
-            }
         }
         Button(
             onClick = {
@@ -1076,6 +1252,28 @@ fun CACert(navCtrl: NavHostController) {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.uninstall_all_user_ca_cert))
+        }
+        if(dialog) {
+            val exist = dpm.hasCaCertInstalled(receiver, caCertByteArray)
+            AlertDialog(
+                confirmButton = {
+                    TextButton({
+                        if(exist) {
+                            dpm.uninstallCaCert(receiver, caCertByteArray)
+                        } else {
+                            val result = dpm.installCaCert(receiver, caCertByteArray)
+                            context.showOperationResultToast(result)
+                        }
+                        dialog = false
+                    }) {
+                        Text(stringResource(if(exist) R.string.uninstall else R.string.install))
+                    }
+                },
+                dismissButton = {
+                    TextButton({ dialog = false }) { Text(stringResource(R.string.cancel)) }
+                },
+                onDismissRequest = { dialog = false }
+            )
         }
     }
 }
@@ -1333,7 +1531,7 @@ fun WipeData(navCtrl: NavHostController) {
             )
         }
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT < 34 || (VERSION.SDK_INT >= 34 && !userManager.isSystemUser)) {
+        if(VERSION.SDK_INT < 34 || !userManager.isSystemUser) {
             Button(
                 onClick = {
                     focusMgr.clearFocus()

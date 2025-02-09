@@ -1,7 +1,7 @@
 package com.bintianqi.owndroid
 
+import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
-import android.content.Context
 import android.os.Build.VERSION
 import android.os.Bundle
 import android.widget.Toast
@@ -54,11 +54,13 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.bintianqi.owndroid.dpm.AccountsViewer
 import com.bintianqi.owndroid.dpm.AffiliationID
 import com.bintianqi.owndroid.dpm.AlwaysOnVPNPackage
 import com.bintianqi.owndroid.dpm.ApplicationManage
@@ -67,9 +69,11 @@ import com.bintianqi.owndroid.dpm.ChangeTime
 import com.bintianqi.owndroid.dpm.ChangeTimeZone
 import com.bintianqi.owndroid.dpm.ChangeUserIcon
 import com.bintianqi.owndroid.dpm.ChangeUsername
+import com.bintianqi.owndroid.dpm.ContentProtectionPolicy
 import com.bintianqi.owndroid.dpm.CreateUser
 import com.bintianqi.owndroid.dpm.CreateWorkProfile
 import com.bintianqi.owndroid.dpm.CurrentUserInfo
+import com.bintianqi.owndroid.dpm.DelegatedAdmins
 import com.bintianqi.owndroid.dpm.DeleteWorkProfile
 import com.bintianqi.owndroid.dpm.DeviceAdmin
 import com.bintianqi.owndroid.dpm.DeviceInfo
@@ -88,6 +92,8 @@ import com.bintianqi.owndroid.dpm.NearbyStreamingPolicy
 import com.bintianqi.owndroid.dpm.Network
 import com.bintianqi.owndroid.dpm.NetworkLogging
 import com.bintianqi.owndroid.dpm.NetworkOptions
+import com.bintianqi.owndroid.dpm.NetworkStats
+import com.bintianqi.owndroid.dpm.NetworkStatsViewer
 import com.bintianqi.owndroid.dpm.OrgOwnedProfile
 import com.bintianqi.owndroid.dpm.OverrideAPN
 import com.bintianqi.owndroid.dpm.Password
@@ -115,7 +121,7 @@ import com.bintianqi.owndroid.dpm.UpdateNetwork
 import com.bintianqi.owndroid.dpm.UserOperation
 import com.bintianqi.owndroid.dpm.UserOptions
 import com.bintianqi.owndroid.dpm.UserRestriction
-import com.bintianqi.owndroid.dpm.UserRestrictionItem
+import com.bintianqi.owndroid.dpm.UserRestrictionScreen
 import com.bintianqi.owndroid.dpm.UserSessionMessage
 import com.bintianqi.owndroid.dpm.Users
 import com.bintianqi.owndroid.dpm.Wifi
@@ -132,9 +138,7 @@ import com.bintianqi.owndroid.dpm.isDeviceAdmin
 import com.bintianqi.owndroid.dpm.isDeviceOwner
 import com.bintianqi.owndroid.dpm.isProfileOwner
 import com.bintianqi.owndroid.dpm.setDefaultAffiliationID
-import com.bintianqi.owndroid.dpm.toggleInstallAppActivity
 import com.bintianqi.owndroid.ui.Animations
-import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import com.rosan.dhizuku.api.Dhizuku
 import kotlinx.coroutines.delay
@@ -155,9 +159,7 @@ class MainActivity : FragmentActivity() {
         if (VERSION.SDK_INT >= 28) HiddenApiBypass.setHiddenApiExemptions("")
         val locale = context.resources?.configuration?.locale
         zhCN = locale == Locale.SIMPLIFIED_CHINESE || locale == Locale.CHINESE || locale == Locale.CHINA
-        toggleInstallAppActivity()
         val vm by viewModels<MyViewModel>()
-        if(!vm.initialized) vm.initialize(context)
         lifecycleScope.launch { delay(5000); setDefaultAffiliationID(context) }
         setContent {
             OwnDroidTheme(vm) {
@@ -168,12 +170,12 @@ class MainActivity : FragmentActivity() {
 
     override fun onResume() {
         super.onResume()
-        val sharedPref = applicationContext.getSharedPreferences("data", MODE_PRIVATE)
-        if (sharedPref.getBoolean("dhizuku", false)) {
+        val sp = SharedPrefs(applicationContext)
+        if (sp.dhizuku) {
             if (Dhizuku.init(applicationContext)) {
                 if (!dhizukuPermissionGranted()) { dhizukuErrorStatus.value = 2 }
             } else {
-                sharedPref.edit().putBoolean("dhizuku", false).apply()
+                sp.dhizuku = false
                 dhizukuErrorStatus.value = 1
             }
         }
@@ -188,14 +190,25 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val sp = SharedPrefs(context)
     val focusMgr = LocalFocusManager.current
     val backToHome by backToHomeStateFlow.collectAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(backToHome) {
         if(backToHome) { navCtrl.navigateUp(); backToHomeStateFlow.value = false }
     }
-    NavHost(
+    val userRestrictions by vm.userRestrictions.collectAsStateWithLifecycle()
+    fun onUserRestrictionsChange(id: String, status: Boolean) {
+        try {
+            if(status) dpm.addUserRestriction(receiver, id)
+            else dpm.clearUserRestriction(receiver, id)
+            @SuppressLint("NewApi")
+            vm.userRestrictions.value = dpm.getUserRestrictions(receiver)
+        } catch(_: Exception) {
+            context.showOperationResultToast(false)
+        }
+    }
+    @Suppress("NewApi") NavHost(
         navController = navCtrl,
         startDestination = "HomePage",
         modifier = Modifier
@@ -211,10 +224,12 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable(route = "HomePage") { HomePage(navCtrl) }
 
         composable(route = "Permissions") { Permissions(navCtrl) }
-        composable(route = "Shizuku") { Shizuku(vm, navCtrl) }
+        composable(route = "Shizuku") { Shizuku(navCtrl, it.arguments!!) }
+        composable(route = "AccountsViewer") { AccountsViewer(navCtrl, it.arguments!!) }
         composable(route = "DeviceAdmin") { DeviceAdmin(navCtrl) }
         composable(route = "ProfileOwner") { ProfileOwner(navCtrl) }
         composable(route = "DeviceOwner") { DeviceOwner(navCtrl) }
+        composable(route = "DelegatedAdmins") { DelegatedAdmins(navCtrl, vm) }
         composable(route = "DeviceInfo") { DeviceInfo(navCtrl) }
         composable(route = "LockScreenInfo") { LockScreenInfo(navCtrl) }
         composable(route = "SupportMessages") { SupportMessages(navCtrl) }
@@ -226,6 +241,8 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable(route = "HardwareMonitor") { HardwareMonitor(navCtrl) }
         composable(route = "ChangeTime") { ChangeTime(navCtrl) }
         composable(route = "ChangeTimeZone") { ChangeTimeZone(navCtrl) }
+        //composable(route = "KeyPairs") { KeyPairs(navCtrl) }
+        composable(route = "ContentProtectionPolicy") { ContentProtectionPolicy(navCtrl) }
         composable(route = "PermissionPolicy") { PermissionPolicy(navCtrl) }
         composable(route = "MTEPolicy") { MTEPolicy(navCtrl) }
         composable(route = "NearbyStreamingPolicy") { NearbyStreamingPolicy(navCtrl) }
@@ -244,6 +261,8 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable(route = "UpdateNetwork") { UpdateNetwork(it.arguments!!, navCtrl) }
         composable(route = "MinWifiSecurityLevel") { WifiSecurityLevel(navCtrl) }
         composable(route = "WifiSsidPolicy") { WifiSsidPolicy(navCtrl) }
+        composable(route = "NetworkStats") { NetworkStats(navCtrl, vm) }
+        composable(route = "NetworkStatsViewer") { NetworkStatsViewer(navCtrl, it.arguments!!) }
         composable(route = "PrivateDNS") { PrivateDNS(navCtrl) }
         composable(route = "AlwaysOnVpn") { AlwaysOnVPNPackage(navCtrl, vm) }
         composable(route = "RecommendedGlobalProxy") { RecommendedGlobalProxy(navCtrl) }
@@ -261,24 +280,36 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
 
         composable(route = "Applications") { ApplicationManage(navCtrl, vm) }
 
-        composable(route = "UserRestriction") { UserRestriction(navCtrl) }
+        composable(route = "UserRestriction") { UserRestriction(navCtrl, vm) }
         composable(route = "UR-Internet") {
-            MyScaffold(R.string.network_and_internet, 0.dp, navCtrl) { RestrictionData.internet.forEach { UserRestrictionItem(it) } }
+            UserRestrictionScreen(R.string.network_and_internet, RestrictionData.internet, userRestrictions, ::onUserRestrictionsChange) {
+                navCtrl.navigateUp()
+            }
         }
         composable(route = "UR-Connectivity") {
-            MyScaffold(R.string.connectivity, 0.dp, navCtrl) { RestrictionData.connectivity.forEach { UserRestrictionItem(it) } }
+            UserRestrictionScreen(R.string.connectivity, RestrictionData.connectivity, userRestrictions, ::onUserRestrictionsChange) {
+                navCtrl.navigateUp()
+            }
         }
         composable(route = "UR-Applications") {
-            MyScaffold(R.string.applications, 0.dp, navCtrl) { RestrictionData.applications.forEach { UserRestrictionItem(it) } }
+            UserRestrictionScreen(R.string.applications, RestrictionData.applications, userRestrictions, ::onUserRestrictionsChange) {
+                navCtrl.navigateUp()
+            }
         }
         composable(route = "UR-Users") {
-            MyScaffold(R.string.users, 0.dp, navCtrl) { RestrictionData.users.forEach { UserRestrictionItem(it) } }
+            UserRestrictionScreen(R.string.users, RestrictionData.users, userRestrictions, ::onUserRestrictionsChange) {
+                navCtrl.navigateUp()
+            }
         }
         composable(route = "UR-Media") {
-            MyScaffold(R.string.media, 0.dp, navCtrl) { RestrictionData.media.forEach { UserRestrictionItem(it) } }
+            UserRestrictionScreen(R.string.media, RestrictionData.media, userRestrictions, ::onUserRestrictionsChange) {
+                navCtrl.navigateUp()
+            }
         }
         composable(route = "UR-Other") {
-            MyScaffold(R.string.other, 0.dp, navCtrl) { RestrictionData.other.forEach { UserRestrictionItem(it) } }
+            UserRestrictionScreen(R.string.other, RestrictionData.other, userRestrictions, ::onUserRestrictionsChange) {
+                navCtrl.navigateUp()
+            }
         }
 
         composable(route = "Users") { Users(navCtrl) }
@@ -317,10 +348,8 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if(
-                (event == Lifecycle.Event.ON_RESUME &&
-                        sharedPref.getBoolean("auth", false) &&
-                        sharedPref.getBoolean("lock_in_background", false)) ||
-                (event == Lifecycle.Event.ON_CREATE && sharedPref.getBoolean("auth", false))
+                (event == Lifecycle.Event.ON_RESUME && sp.auth && sp.lockInBackground) ||
+                (event == Lifecycle.Event.ON_CREATE && sp.auth)
             ) {
                 navCtrl.navigate("Authenticate") { launchSingleTop = true }
             }
@@ -331,11 +360,10 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         }
     }
     LaunchedEffect(Unit) {
-        val profileInitialized = sharedPref.getBoolean("ManagedProfileActivated", false)
-        val profileNotActivated = !profileInitialized && context.isProfileOwner && (VERSION.SDK_INT < 24 || dpm.isManagedProfile(receiver))
+        val profileNotActivated = !sp.managedProfileActivated && context.isProfileOwner && (VERSION.SDK_INT < 24 || dpm.isManagedProfile(receiver))
         if(profileNotActivated) {
             dpm.setProfileEnabled(receiver)
-            sharedPref.edit().putBoolean("ManagedProfileActivated", true).apply()
+            sp.managedProfileActivated = true
             Toast.makeText(context, R.string.work_profile_activated, Toast.LENGTH_SHORT).show()
         }
     }
@@ -347,7 +375,6 @@ private fun HomePage(navCtrl:NavHostController) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     var activated by remember { mutableStateOf(false) }
     var activateType by remember { mutableStateOf("") }
     val deviceAdmin = context.isDeviceAdmin
@@ -355,8 +382,8 @@ private fun HomePage(navCtrl:NavHostController) {
     val profileOwner = context.isProfileOwner
     val refreshStatus by dhizukuErrorStatus.collectAsState()
     LaunchedEffect(refreshStatus) {
-        activated = context.isDeviceAdmin
-        activateType = if(sharedPref.getBoolean("dhizuku", false)) context.getString(R.string.dhizuku) + " - " else ""
+        activated = context.isProfileOwner || context.isDeviceOwner
+        activateType = if(SharedPrefs(context).dhizuku) context.getString(R.string.dhizuku) + " - " else ""
         activateType += context.getString(
             if(deviceOwner) { R.string.device_owner }
             else if(profileOwner) {
@@ -403,9 +430,8 @@ private fun HomePage(navCtrl:NavHostController) {
             HomePageItem(R.string.system, R.drawable.android_fill0, "System", navCtrl)
             if(deviceOwner || profileOwner) { HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network", navCtrl) }
             if(
-                (VERSION.SDK_INT < 24 && !deviceOwner) || (
-                        VERSION.SDK_INT >= 24 && (dpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE) ||
-                                (profileOwner && dpm.isManagedProfile(receiver)))
+                (VERSION.SDK_INT < 24 && !deviceOwner) || (dpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE) ||
+                                (profileOwner && dpm.isManagedProfile(receiver))
                         )
             ) {
                 HomePageItem(R.string.work_profile, R.drawable.work_fill0, "ManagedProfile", navCtrl)
@@ -449,12 +475,9 @@ fun HomePageItem(name: Int, imgVector: Int, navTo: String, navCtrl: NavHostContr
 private fun DhizukuErrorDialog() {
     val status by dhizukuErrorStatus.collectAsState()
     if (status != 0) {
-        val context = LocalContext.current
-        val sharedPref = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+        val sp = SharedPrefs(LocalContext.current)
         LaunchedEffect(Unit) {
-            context.toggleInstallAppActivity()
-            delay(200)
-            sharedPref.edit().putBoolean("dhizuku", false).apply()
+            sp.dhizuku = false
         }
         AlertDialog(
             onDismissRequest = { dhizukuErrorStatus.value = 0 },
@@ -472,7 +495,7 @@ private fun DhizukuErrorDialog() {
                         else -> R.string.failed_to_init_dhizuku
                     }
                 )
-                if(sharedPref.getBoolean("dhizuku", false)) text += "\n" + stringResource(R.string.dhizuku_mode_disabled)
+                if(sp.dhizuku) text += "\n" + stringResource(R.string.dhizuku_mode_disabled)
                 Text(text)
             }
         )
