@@ -518,7 +518,7 @@
     <string name="user_operation">Kullanıcı işlemi</string>
     <string name="user_not_exist">User does not exist</string> <!--TODO-->
     <string name="serial_number">Seri numarası</string>
-    <string name="logout_current_user">Mevcut kullanıcıyı çıkış yap</string>
+    <string name="logout">Logout</string> <!--TODO-->
     <string name="start_in_background">Arka planda başlat</string>
     <string name="user_operation_switch">Değiştir</string>
     <string name="create_user">Kullanıcı oluştur</string>

@@ -95,6 +95,9 @@ fun Users(navCtrl: NavHostController) {
     val profileOwner = context.isProfileOwner
     var dialog by remember { mutableIntStateOf(0) }
     MyScaffold(R.string.users, 0.dp, navCtrl) {
+        if(VERSION.SDK_INT >= 28 && profileOwner && dpm.isAffiliatedUser) {
+            FunctionItem(R.string.logout, icon = R.drawable.logout_fill0) { dialog = 2 }
+        }
         FunctionItem(R.string.user_info, icon = R.drawable.person_fill0) { navCtrl.navigate("UserInfo") }
         if(deviceOwner && VERSION.SDK_INT >= 28) {
             FunctionItem(R.string.secondary_users, icon = R.drawable.list_fill0) { dialog = 1 }
@@ -105,9 +108,6 @@ fun Users(navCtrl: NavHostController) {
         }
         if(VERSION.SDK_INT >= 24 && deviceOwner) {
             FunctionItem(R.string.create_user, icon = R.drawable.person_add_fill0) { navCtrl.navigate("CreateUser") }
-        }
-        if(VERSION.SDK_INT >= 28 && profileOwner && dpm.isAffiliatedUser) {
-            FunctionItem(R.string.logout_current_user, icon = R.drawable.logout_fill0) { dialog = 2 }
         }
         if(deviceOwner || profileOwner) {
             FunctionItem(R.string.change_username, icon = R.drawable.edit_fill0) { navCtrl.navigate("ChangeUsername") }
@@ -123,21 +123,18 @@ fun Users(navCtrl: NavHostController) {
         }
     }
     if(dialog != 0 && VERSION.SDK_INT >= 28) AlertDialog(
-        title = { Text(stringResource(if(dialog == 1) R.string.secondary_users else R.string.logout_current_user)) },
+        title = { Text(stringResource(if(dialog == 1) R.string.secondary_users else R.string.logout)) },
         text = {
             if(dialog == 1) {
                 val um = context.getSystemService(Context.USER_SERVICE) as UserManager
                 val list = dpm.getSecondaryUsers(receiver)
-                Column {
-                    if(list.isEmpty()) {
-                        Text(stringResource(R.string.no_secondary_users))
-                    } else {
-                        Text("(" + stringResource(R.string.serial_number) + ")")
-                        list.forEach {
-                            Text(um.getSerialNumberForUser(it).toString())
-                        }
-                    }
+                if(list.isEmpty()) {
+                    Text(stringResource(R.string.no_secondary_users))
+                } else {
+                    Text("(" + stringResource(R.string.serial_number) + ")\n" + list.joinToString("\n") { um.getSerialNumberForUser(it).toString() })
                 }
+            } else {
+                Text(stringResource(R.string.info_logout))
             }
         },
         confirmButton = {
@@ -357,7 +354,6 @@ fun CreateUser(navCtrl: NavHostController) {
                 focusMgr.clearFocus()
                 creating = true
                 coroutine.launch(Dispatchers.IO) {
-                    println(Thread.currentThread().name)
                     try {
                         val uh = dpm.createAndManageUser(receiver, userName, receiver, null, flag)
                         withContext(Dispatchers.Main) {

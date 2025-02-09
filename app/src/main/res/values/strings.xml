@@ -544,7 +544,7 @@
     <string name="user_operation">User operation</string>
     <string name="user_not_exist">User does not exist</string>
     <string name="serial_number">Serial number</string>
-    <string name="logout_current_user">Logout current user</string>
+    <string name="logout">Logout</string>
     <string name="start_in_background">Start in background</string>
     <string name="user_operation_switch">Switch</string>
     <string name="create_user">Create user</string>
@@ -726,6 +726,7 @@
     <string name="info_disable_user_control">User will not be able to clear app data or force-stop packages.</string>
     <string name="info_keep_uninstalled_apps">Set a list of apps to keep around as APKs even if no user has currently installed it. </string>
     <string name="info_headless_system_user_mode">Headless system user mode means the system user runs system services and some system UI, but it is not associated with any real person and additional users must be created to be associated with real persons.</string>
+    <string name="info_logout">If the current user is not switched by OwnDroid, this function cannot be used.</string>
     <string name="info_affiliated_id">When Device owner create a managed user, the managed user isn\'t affiliated. In order to make the managed user affiliated with the Device owner, you should set same affiliated IDs in main user and managed user</string>
     <string name="info_reset_password">Set a new lockscreen password. The length of this password must be at least 4 digits. Keep it empty to remove password.\nIf you set a numeric password that length is 6 or lower, it will set as PIN</string>
     <string name="info_screen_timeout">Set the maximum time for user activity until the device will lock. This limits the length that the user can set.\nA value of 0 means there is no restriction.</string>

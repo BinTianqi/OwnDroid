@@ -13,6 +13,7 @@ Use Android Device owner privilege to manage your device.
   - ...
 - Network
   - Add/modify/delete Wi-Fi
+  - Network stats
   - Minimum Wi-Fi security level
   - Always-on VPN
   - Network logging
@@ -112,6 +113,17 @@ am broadcast -a com.bintianqi.owndroid.action.<ID> -n com.bintianqi.owndroid/.Ap
 am broadcast -a com.bintianqi.owndroid.action.HIDE -n com.bintianqi.owndroid/.ApiReceiver --es key abcdefg --es package com.example.app
 ```
 If the return value is 0, the operation is successful.
+
+## Build
+
+You can use Gradle in command line to build OwnDroid.
+```shell
+# Use testkey for signing (default)
+./gradlew build
+# Use your custom .jks key for signing
+./gradlew build -PStoreFile="/path/to/your/jks/file" -PStorePassword="YOUR_KEYSTORE_PASSWORD" -PKeyPassword="YOUR_KEY_PASSWORD" -PKeyAlias="YOUR_KEY_ALIAS"
+```
+(Use `./gradlew.bat` instead on Windows)
 
 ## License
 

@@ -259,6 +259,7 @@ private fun Home(navCtrl:NavHostController, pkgName: String) {
             }
         }
         val chooseApks = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) {
+            if(it.isEmpty()) return@rememberLauncherForActivityResult
             val intent = Intent(context, AppInstallerActivity::class.java)
             intent.putExtra(Intent.EXTRA_STREAM, it.toTypedArray())
             startActivity(context, intent, null)

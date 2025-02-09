@@ -256,7 +256,7 @@
     <string name="wifi_ssid_policy">Wi-Fi SSID策略</string>
     <string name="ssid_list_is">SSID列表：</string>
     <string name="already_exist">已经存在</string>
-    <string name="network_stats">Network stats</string>
+    <string name="network_stats">网络统计</string>
     <string name="type">类型</string>
     <string name="summary">摘要</string>
     <string name="details">详情</string>
@@ -505,7 +505,7 @@
     <string name="user_operation">用户操作</string>
     <string name="user_not_exist">用户不存在</string>
     <string name="serial_number">序列号</string>
-    <string name="logout_current_user">登出当前用户</string>
+    <string name="logout">登出</string>
     <string name="start_in_background">在后台启动</string>
     <string name="user_operation_switch">切换</string>
     <string name="create_user">创建用户</string>
@@ -687,6 +687,7 @@
     <string name="info_disable_user_control">用户无法清除这些应用的存储空间，也无法强制停止应用</string>
     <string name="info_keep_uninstalled_apps">这个列表中的应用的APK将会一直保留，即使没有任何用户安装这个应用</string>
     <string name="info_headless_system_user_mode">无头系统用户模式意味着系统用户运行系统服务和一些系统UI，但它不与任何真实的人相关联，必须创建额外的用户才能与真实的人相关联。</string>
+    <string name="info_logout">如果当前用户不是由OwnDroid切换的，无法使用此功能。</string>
     <string name="info_affiliated_id">当Device owner创建并管理用户时，新的用户不是附属用户。Device owner设置和受管理用户完全相同的附属用户ID后，受管理用户成为附属于Device owner的用户</string>
     <string name="info_reset_password">设置一个新的密码，密码的长度需要4位或以上，不输入密码将会清除现有的密码。长度在6位或以下的纯数字密码将会设置为PIN码。</string>
     <string name="info_screen_timeout">设置设备锁定前用户活动的最大时间。这限制了用户可以设置的时间长度。\n值为0表示不做限制。</string>

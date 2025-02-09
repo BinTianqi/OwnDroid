@@ -13,6 +13,7 @@
   - ...
 - 网络
   - 添加/修改/删除 Wi-Fi
+  - 网络统计
   - 最小Wi-Fi安全等级
   - VPN保持打开
   - 网络日志
@@ -112,6 +113,20 @@ am broadcast -a com.bintianqi.owndroid.action.<ID> -n com.bintianqi.owndroid/.Ap
 am broadcast -a com.bintianqi.owndroid.action.HIDE -n com.bintianqi.owndroid/.ApiReceiver --es key abcdefg --es package com.example.app
 ```
 如果返回值为0，操作成功
+
+## 构建
+
+你可以在命令行中使用Gradle以构建OwnDroid
+```shell
+# 使用testkey签名（默认）
+./gradlew build
+# 使用你的jks密钥签名
+./gradlew build -PStoreFile="/path/to/your/jks/file" -PStorePassword="YOUR_KEYSTORE_PASSWORD" -PKeyPassword="YOUR_KEY_PASSWORD" -PKeyAlias="YOUR_KEY_ALIAS"
+```
+（在Windows系统中应使用`./gradlew.bat`)
+
+> [!TIP]
+> 在中国大陆下载Gradle速度慢？打开`gradle/wrapper/gradle-wrapper.properties`文件，注释官方下载地址，取消注释一个镜像地址。
 
 ## 许可证
 
