@@ -5,7 +5,7 @@
     <string name="disable">Отключить</string>
     <string name="enable">Включить</string>
     <string name="success">Успешно</string>
-    <string name="failure">Failure</string> <!--TODO-->
+    <string name="failure">Ошибка</string>
     <string name="failed">Ошибка</string>
     <string name="add">Добавить</string>
     <string name="remove">Удалить</string>
@@ -70,7 +70,7 @@
     <string name="overview">Обзор</string>
     <string name="features">Особенности</string>
     <string name="default_str">По умолчанию</string>
-    <string name="timeout">Timeout</string> <!--TODO-->
+    <string name="timeout">Таймаут</string>
 
     <!--Разрешения-->
     <string name="click_to_activate">Нажмите для активации</string>
@@ -412,7 +412,7 @@
     <string name="silent_uninstall">Тихое удаление</string>
     <string name="request_uninstall">Запросить удаление</string>
     <string name="install_app">Установить приложение</string>
-    <string name="search">Search</string> <!--TODO-->
+    <string name="search">Поиск</string>
 
     <!--Ограничения пользователя-->
     <string name="user_restriction">Ограничения пользователя</string>
@@ -605,8 +605,8 @@
     <string name="authenticate">Аутентифицировать</string>
     <string name="lock_in_background">Блокировать при переключении в фоновый режим</string>
     <string name="clear_storage">Очистить хранилище</string>
-    <string name="skipped_authentication">Авторизация пропущена, поскольку она недоступна.</string>
-    <string name="failed_to_authenticate">Failed to authenticate</string> <!--TODO-->
+    <string name="skipped_authentication">Аутентификация пропущена, поскольку она недоступна.</string>
+    <string name="failed_to_authenticate">Ошибка аутентификации</string>
     
     <string name="api_key">API ключ</string>
     <string name="api_key_exist">API ключ уже сущетвует, установка нового перезапишет текущий</string>
@@ -646,19 +646,18 @@
     <string name="permission_BODY_SENSORS_BACKGROUND">Доступ к датчикам тела в фоновом режиме</string>
     <string name="permission_ACTIVITY_RECOGNITION">Распознавание активности</string>
 
-    <!--TODO-->
-    <string name="app_installer">App installer</string>
-    <string name="mode">Mode</string>
-    <string name="full_install">Full install</string>
-    <string name="inherit_existing">Inherit existing</string>
-    <string name="packages">Packages</string>
-    <string name="add_packages">Add package(s)</string>
-    <string name="status_failure_blocked">The operation was blocked by: %1$s</string>
-    <string name="status_failure_aborted">The operation was aborted.</string>
-    <string name="status_failure_invalid">The operation failed because one or more of the APKs was invalid. For example, they might be malformed, corrupt, incorrectly signed, mismatched, etc.</string>
-    <string name="status_failure_conflict">The operation failed because it conflicts with %1$s. For example, an existing permission, incompatible certificates, etc. You can uninstall %1$s to fix the issue.</string>
-    <string name="status_failure_storage">The operation failed because of storage issues. For example, the device may be running low on space, or external media may be unavailable. You may try to help free space or insert different external media.</string>
-    <string name="status_failure_incompatible">The operation failed because it is fundamentally incompatible with this device. For example, the app may require a hardware feature that doesn\'t exist, it may be missing native code for the ABIs supported by the device, or it requires a newer SDK version, etc.</string>
+    <string name="app_installer">Установщик приложений</string>
+    <string name="mode">Режим</string>
+    <string name="full_install">Полная установка</string>
+    <string name="inherit_existing">Наследовать существующие</string>
+    <string name="packages">Пакеты</string>
+    <string name="add_packages">Добавить пакет(ы)</string>
+    <string name="status_failure_blocked">Операция была заблокирована: %1$s</string>
+    <string name="status_failure_aborted">Операция была прервана.</string>
+    <string name="status_failure_invalid">Операция не удалась, так как один или несколько APK-файлов были недействительны. Например, они могут быть повреждены, содержать ошибки, неправильно подписаны, не соответствовать и т.д.</string>
+    <string name="status_failure_conflict">Операция не удалась из-за конфликта с %1$s. Например, существующее разрешение, несовместимые сертификаты и т.д. Вы можете удалить %1$s, чтобы исправить проблему.</string>
+    <string name="status_failure_storage">Операция не удалась из-за проблем с хранилищем. Например, на устройстве может быть недостаточно места или внешние носители могут быть недоступны. Вы можете попытаться освободить место или вставить другой внешний носитель.</string>
+    <string name="status_failure_incompatible">Операция не удалась, так как она принципиально несовместима с этим устройством. Например, приложению может потребоваться аппаратная функция, которой нет, в нем может отсутствовать собственный код для ABI, поддерживаемых устройством, или ему требуется более новая версия SDK и т.д.</string>
 
     <string name="info_dhizuku">Dhizuku это инструмент позволяющий делиться правами Владельца устройства с другими приложениями.</string>
     <string name="info_device_id_attestation">Указывает, поддерживает ли устройство проверку идентификаторов устройств в дополнение к проверке ключей.</string>
