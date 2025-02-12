@@ -32,29 +32,32 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.InfoCard
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.SwitchItem
+import kotlinx.serialization.Serializable
 import java.security.SecureRandom
 
+@Serializable object Settings
+
 @Composable
-fun Settings(navCtrl: NavHostController) {
-    MyScaffold(R.string.settings, 0.dp, navCtrl) {
-        FunctionItem(title = R.string.options, icon = R.drawable.tune_fill0) { navCtrl.navigate("Options") }
-        FunctionItem(title = R.string.appearance, icon = R.drawable.format_paint_fill0) { navCtrl.navigate("Appearance") }
-        FunctionItem(title = R.string.security, icon = R.drawable.lock_fill0) { navCtrl.navigate("AuthSettings") }
-        FunctionItem(title = R.string.api, icon = R.drawable.apps_fill0) { navCtrl.navigate("ApiSettings") }
-        FunctionItem(title = R.string.about, icon = R.drawable.info_fill0) { navCtrl.navigate("About") }
+fun SettingsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
+    MyScaffold(R.string.settings, 0.dp, onNavigateUp) {
+        FunctionItem(title = R.string.options, icon = R.drawable.tune_fill0) { onNavigate(SettingsOptions) }
+        FunctionItem(title = R.string.appearance, icon = R.drawable.format_paint_fill0) { onNavigate(Appearance) }
+        FunctionItem(title = R.string.security, icon = R.drawable.lock_fill0) { onNavigate(AuthSettings) }
+        FunctionItem(title = R.string.api, icon = R.drawable.apps_fill0) { onNavigate(ApiSettings) }
+        FunctionItem(title = R.string.about, icon = R.drawable.info_fill0) { onNavigate(About) }
     }
 }
 
+@Serializable object SettingsOptions
+
 @Composable
-fun SettingsOptions(navCtrl: NavHostController) {
+fun SettingsOptionsScreen(onNavigateUp: () -> Unit) {
     val sp = SharedPrefs(LocalContext.current)
-    MyScaffold(R.string.options, 0.dp, navCtrl) {
+    MyScaffold(R.string.options, 0.dp, onNavigateUp) {
         SwitchItem(
             R.string.show_dangerous_features, icon = R.drawable.warning_fill0,
             getState = { sp.displayDangerousFeatures },
@@ -63,18 +66,19 @@ fun SettingsOptions(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object Appearance
+
 @Composable
-fun Appearance(navCtrl: NavHostController, vm: MyViewModel) {
-    val theme by vm.theme.collectAsStateWithLifecycle()
+fun AppearanceScreen(onNavigateUp: () -> Unit, theme: ThemeSettings, onThemeChange: (ThemeSettings) -> Unit) {
     var darkThemeMenu by remember { mutableStateOf(false) }
     val darkThemeTextID = when(theme.darkTheme) {
         1 -> R.string.on
         0 -> R.string.off
         else -> R.string.follow_system
     }
-    MyScaffold(R.string.appearance, 0.dp, navCtrl) {
+    MyScaffold(R.string.appearance, 0.dp, onNavigateUp) {
         if(VERSION.SDK_INT >= 31) {
-            SwitchItem(R.string.material_you_color, state = theme.materialYou, onCheckedChange = { vm.theme.value = theme.copy(materialYou = it) })
+            SwitchItem(R.string.material_you_color, state = theme.materialYou, onCheckedChange = { onThemeChange(theme.copy(materialYou = it)) })
         }
         Box {
             FunctionItem(R.string.dark_theme, stringResource(darkThemeTextID)) { darkThemeMenu = true }
@@ -85,38 +89,40 @@ fun Appearance(navCtrl: NavHostController, vm: MyViewModel) {
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.follow_system)) },
                     onClick = {
-                        vm.theme.value = theme.copy(darkTheme = -1)
+                        onThemeChange(theme.copy(darkTheme = -1))
                         darkThemeMenu = false
                     }
                 )
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.on)) },
                     onClick = {
-                        vm.theme.value = theme.copy(darkTheme = 1)
+                        onThemeChange(theme.copy(darkTheme = 1))
                         darkThemeMenu = false
                     }
                 )
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.off)) },
                     onClick = {
-                        vm.theme.value = theme.copy(darkTheme = 0)
+                        onThemeChange(theme.copy(darkTheme = 0))
                         darkThemeMenu = false
                     }
                 )
             }
         }
         AnimatedVisibility(theme.darkTheme == 1 || (theme.darkTheme == -1 && isSystemInDarkTheme())) {
-            SwitchItem(R.string.black_theme, state = theme.blackTheme, onCheckedChange = { vm.theme.value = theme.copy(blackTheme = it) })
+            SwitchItem(R.string.black_theme, state = theme.blackTheme, onCheckedChange = { onThemeChange(theme.copy(blackTheme = it)) })
         }
     }
 }
 
+@Serializable object AuthSettings
+
 @Composable
-fun AuthSettings(navCtrl: NavHostController) {
+fun AuthSettingsScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val sp = SharedPrefs(context)
     var auth by remember{ mutableStateOf(sp.auth) }
-    MyScaffold(R.string.security, 0.dp, navCtrl) {
+    MyScaffold(R.string.security, 0.dp, onNavigateUp) {
         SwitchItem(
             R.string.lock_owndroid, state = auth,
             onCheckedChange = {
@@ -146,11 +152,13 @@ fun AuthSettings(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object ApiSettings
+
 @Composable
-fun ApiSettings(navCtrl: NavHostController) {
+fun ApiSettings(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val sp = SharedPrefs(context)
-    MyScaffold(R.string.api, 8.dp, navCtrl) {
+    MyScaffold(R.string.api, 8.dp, onNavigateUp) {
         var enabled by remember { mutableStateOf(sp.isApiEnabled) }
         SwitchItem(R.string.enable, state = enabled, onCheckedChange = {
             enabled = it
@@ -188,13 +196,15 @@ fun ApiSettings(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object About
+
 @Composable
-fun About(navCtrl: NavHostController) {
+fun AboutScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val pkgInfo = context.packageManager.getPackageInfo(context.packageName,0)
     val verCode = pkgInfo.versionCode
     val verName = pkgInfo.versionName
-    MyScaffold(R.string.about, 0.dp, navCtrl) {
+    MyScaffold(R.string.about, 0.dp, onNavigateUp) {
         Text(text = stringResource(R.string.app_name)+" v$verName ($verCode)", modifier = Modifier.padding(start = 16.dp))
         Spacer(Modifier.padding(vertical = 5.dp))
         FunctionItem(R.string.project_homepage, "GitHub", R.drawable.open_in_new) { shareLink(context, "https://github.com/BinTianqi/OwnDroid") }

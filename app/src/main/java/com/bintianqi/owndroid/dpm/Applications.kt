@@ -79,16 +79,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startActivity
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.APK_MIME
 import com.bintianqi.owndroid.AppInstallerActivity
 import com.bintianqi.owndroid.AppInstallerViewModel
-import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ChoosePackageContract
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.FunctionItem
@@ -97,20 +95,20 @@ import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SwitchItem
+import kotlinx.serialization.Serializable
 import java.util.concurrent.Executors
+
+@Serializable
+object Applications
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ApplicationManage(navCtrl:NavHostController, vm: MyViewModel) {
+fun ApplicationsScreen(onNavigateUp: () -> Unit) {
     val focusMgr = LocalFocusManager.current
-    val localNavCtrl = rememberNavController()
+    val navController = rememberNavController()
     var pkgName by rememberSaveable { mutableStateOf("") }
-    val updatePackage by vm.selectedPackage.collectAsStateWithLifecycle()
-    LaunchedEffect(updatePackage) {
-        if(updatePackage != "") {
-            pkgName = updatePackage
-            vm.selectedPackage.value = ""
-        }
+    val choosePackage = rememberLauncherForActivityResult(ChoosePackageContract()) {result ->
+        result?.let { pkgName = it }
     }
     Scaffold(
         topBar = {
@@ -129,7 +127,7 @@ fun ApplicationManage(navCtrl:NavHostController, vm: MyViewModel) {
                                     .clip(RoundedCornerShape(50))
                                     .clickable(onClick = {
                                         focusMgr.clearFocus()
-                                        navCtrl.navigate("PackageSelector")
+                                        choosePackage.launch(null)
                                     })
                                     .padding(3.dp))
                         },
@@ -137,35 +135,37 @@ fun ApplicationManage(navCtrl:NavHostController, vm: MyViewModel) {
                         singleLine = true
                     )
                 },
-                navigationIcon = { NavIcon { navCtrl.navigateUp() } },
+                navigationIcon = { NavIcon(onNavigateUp) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.background)
             )
         }
     ) {  paddingValues->
         @Suppress("NewApi") NavHost(
             modifier = Modifier.padding(top = paddingValues.calculateTopPadding()),
-            navController = localNavCtrl, startDestination = "Home",
+            navController = navController, startDestination = Home,
             enterTransition = Animations.navHostEnterTransition,
             exitTransition = Animations.navHostExitTransition,
             popEnterTransition = Animations.navHostPopEnterTransition,
             popExitTransition = Animations.navHostPopExitTransition
         ) {
-            composable(route = "Home") { Home(localNavCtrl, pkgName) }
-            composable(route = "UserControlDisabled") { UserCtrlDisabledPkg(pkgName) }
-            composable(route = "PermissionManage") { PermissionManage(pkgName) }
-            composable(route = "CrossProfilePackage") { CrossProfilePkg(pkgName) }
-            composable(route = "CrossProfileWidget") { CrossProfileWidget(pkgName) }
-            composable(route = "CredentialManagePolicy") { CredentialManagePolicy(pkgName) }
-            composable(route = "Accessibility") { PermittedAccessibility(pkgName) }
-            composable(route = "IME") { PermittedIME(pkgName) }
-            composable(route = "KeepUninstalled") { KeepUninstalledApp(pkgName) }
-            composable(route = "UninstallApp") { UninstallApp(pkgName) }
+            composable<Home> { HomeScreen(pkgName) { navController.navigate(it) } }
+            composable<UserControlDisabledPackages> { UserControlDisabledPackagesScreen(pkgName) }
+            composable<PermissionManager> { PermissionManagerScreen(pkgName) }
+            composable<CrossProfilePackages> { CrossProfilePackagesScreen(pkgName) }
+            composable<CrossProfileWidgetProviders> { CrossProfileWidgetProvidersScreen(pkgName) }
+            composable<CredentialManagerPolicy> { CredentialManagerPolicyScreen(pkgName) }
+            composable<PermittedAccessibilityServices> { PermittedAccessibilityServicesScreen(pkgName) }
+            composable<PermittedInputMethods> { PermittedInputMethodsScreen(pkgName) }
+            composable<KeepUninstalledPackages> { KeepUninstalledPackagesScreen(pkgName) }
+            composable<UninstallPackage> { UninstallPackageScreen(pkgName) }
         }
     }
 }
 
+@Serializable private object Home
+
 @Composable
-private fun Home(navCtrl:NavHostController, pkgName: String) {
+private fun HomeScreen(pkgName: String, onNavigate: (Any) -> Unit) {
     var dialogStatus by remember { mutableIntStateOf(0) }
     val context = LocalContext.current
     val dpm = context.getDPM()
@@ -231,27 +231,29 @@ private fun Home(navCtrl:NavHostController, pkgName: String) {
             onClickBlank = { appControlAction = 3; dialogStatus = 4 }
         )
         if(VERSION.SDK_INT >= 30 && (deviceOwner || (VERSION.SDK_INT >= 33 && profileOwner))) {
-            FunctionItem(title = R.string.ucd, icon = R.drawable.do_not_touch_fill0) { navCtrl.navigate("UserControlDisabled") }
+            FunctionItem(title = R.string.ucd, icon = R.drawable.do_not_touch_fill0) { onNavigate(UserControlDisabledPackages) }
         }
         if(VERSION.SDK_INT>=23) {
-            FunctionItem(title = R.string.permission_manage, icon = R.drawable.key_fill0) { navCtrl.navigate("PermissionManage") }
+            FunctionItem(title = R.string.permission_manage, icon = R.drawable.key_fill0) { onNavigate(PermissionManager) }
         }
         if(VERSION.SDK_INT >= 30 && profileOwner && dpm.isManagedProfile(receiver)) {
-            FunctionItem(title = R.string.cross_profile_package, icon = R.drawable.work_fill0) { navCtrl.navigate("CrossProfilePackage") }
+            FunctionItem(title = R.string.cross_profile_package, icon = R.drawable.work_fill0) { onNavigate(CrossProfilePackages) }
         }
         if(profileOwner) { 
-            FunctionItem(title = R.string.cross_profile_widget, icon = R.drawable.widgets_fill0) { navCtrl.navigate("CrossProfileWidget") }
+            FunctionItem(title = R.string.cross_profile_widget, icon = R.drawable.widgets_fill0) { onNavigate(CrossProfileWidgetProviders) }
         }
         if(VERSION.SDK_INT >= 34 && deviceOwner) {
-            FunctionItem(title = R.string.credential_manage_policy, icon = R.drawable.license_fill0) { navCtrl.navigate("CredentialManagePolicy") }
+            FunctionItem(title = R.string.credential_manage_policy, icon = R.drawable.license_fill0) { onNavigate(CredentialManagerPolicy) }
         }
-        FunctionItem(title = R.string.permitted_accessibility_services, icon = R.drawable.settings_accessibility_fill0) { navCtrl.navigate("Accessibility") }
-        FunctionItem(title = R.string.permitted_ime, icon = R.drawable.keyboard_fill0) { navCtrl.navigate("IME") }
+        FunctionItem(title = R.string.permitted_accessibility_services, icon = R.drawable.settings_accessibility_fill0) {
+            onNavigate(PermittedAccessibilityServices)
+        }
+        FunctionItem(title = R.string.permitted_ime, icon = R.drawable.keyboard_fill0) { onNavigate(PermittedInputMethods) }
         FunctionItem(title = R.string.enable_system_app, icon = R.drawable.enable_fill0) {
             if(pkgName != "") dialogStatus = 1
         }
         if(VERSION.SDK_INT >= 28 && deviceOwner) {
-            FunctionItem(title = R.string.keep_uninstalled_packages, icon = R.drawable.delete_fill0) { navCtrl.navigate("KeepUninstalled") }
+            FunctionItem(title = R.string.keep_uninstalled_packages, icon = R.drawable.delete_fill0) { onNavigate(KeepUninstalledPackages) }
         }
         if(VERSION.SDK_INT >= 28) {
             FunctionItem(title = R.string.clear_app_storage, icon = R.drawable.mop_fill0) {
@@ -267,7 +269,7 @@ private fun Home(navCtrl:NavHostController, pkgName: String) {
         FunctionItem(title = R.string.install_app, icon = R.drawable.install_mobile_fill0) {
             chooseApks.launch(APK_MIME)
         }
-        FunctionItem(title = R.string.uninstall_app, icon = R.drawable.delete_fill0) { navCtrl.navigate("UninstallApp") }
+        FunctionItem(title = R.string.uninstall_app, icon = R.drawable.delete_fill0) { onNavigate(UninstallPackage) }
         if(VERSION.SDK_INT >= 34 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             FunctionItem(title = R.string.set_default_dialer, icon = R.drawable.call_fill0) {
                 if(pkgName != "") dialogStatus = 3
@@ -425,10 +427,11 @@ private fun Home(navCtrl:NavHostController, pkgName: String) {
     LaunchedEffect(dialogStatus) { focusMgr.clearFocus() }
 }
 
+@Serializable private object UserControlDisabledPackages
 
 @RequiresApi(30)
 @Composable
-private fun UserCtrlDisabledPkg(pkgName:String) { 
+private fun UserControlDisabledPackagesScreen(pkgName:String) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -469,9 +472,11 @@ private fun UserCtrlDisabledPkg(pkgName:String) {
     }
 }
 
+@Serializable private object PermissionManager
+
 @RequiresApi(23)
 @Composable
-private fun PermissionManage(pkgName: String) {
+private fun PermissionManagerScreen(pkgName: String) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -569,9 +574,11 @@ private fun PermissionManage(pkgName: String) {
     }
 }
 
+@Serializable private object CrossProfilePackages
+
 @RequiresApi(30)
 @Composable
-private fun CrossProfilePkg(pkgName: String) { 
+private fun CrossProfilePackagesScreen(pkgName: String) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -610,8 +617,10 @@ private fun CrossProfilePkg(pkgName: String) {
     }
 }
 
+@Serializable private object CrossProfileWidgetProviders
+
 @Composable
-private fun CrossProfileWidget(pkgName: String) { 
+private fun CrossProfileWidgetProvidersScreen(pkgName: String) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -649,9 +658,11 @@ private fun CrossProfileWidget(pkgName: String) {
     }
 }
 
+@Serializable private object CredentialManagerPolicy
+
 @RequiresApi(34)
 @Composable
-private fun CredentialManagePolicy(pkgName: String) { 
+private fun CredentialManagerPolicyScreen(pkgName: String) { // TODO: rename "manage" to "manager"
     val context = LocalContext.current
     val dpm = context.getDPM()
     var policy: PackagePolicy?
@@ -716,8 +727,10 @@ private fun CredentialManagePolicy(pkgName: String) {
     }
 }
 
+@Serializable private object PermittedAccessibilityServices
+
 @Composable
-private fun PermittedAccessibility(pkgName: String) { 
+private fun PermittedAccessibilityServicesScreen(pkgName: String) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -779,8 +792,10 @@ private fun PermittedAccessibility(pkgName: String) {
     }
 }
 
+@Serializable private object PermittedInputMethods
+
 @Composable
-private fun PermittedIME(pkgName: String) { 
+private fun PermittedInputMethodsScreen(pkgName: String) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -835,9 +850,11 @@ private fun PermittedIME(pkgName: String) {
     }
 }
 
+@Serializable private object KeepUninstalledPackages
+
 @RequiresApi(28)
 @Composable
-private fun KeepUninstalledApp(pkgName: String) { 
+private fun KeepUninstalledPackagesScreen(pkgName: String) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -879,8 +896,10 @@ private fun KeepUninstalledApp(pkgName: String) {
     }
 }
 
+@Serializable private object UninstallPackage
+
 @Composable
-private fun UninstallApp(pkgName: String) { 
+private fun UninstallPackageScreen(pkgName: String) {
     val context = LocalContext.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
         Spacer(Modifier.padding(vertical = 10.dp))

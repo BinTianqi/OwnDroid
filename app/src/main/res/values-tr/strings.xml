@@ -373,8 +373,6 @@
 
     <!--Applications-->
     <string name="applications">Uygulamalar</string>
-    <string name="pkg_selector">Paket seçici</string>
-    <string name="loading">Yükleniyor</string>
     <string name="show_user_app">Kullanıcı uygulamalarını göster</string>
     <string name="show_system_app">Sistem uygulamalarını göster</string>
     <string name="suspend">Askıya al</string>
@@ -424,7 +422,6 @@
     <string name="profile_owner_is_restricted">Profil sahibi sınırlı işlev kullanabilir</string>
     <string name="switch_to_disable_feature">Bu işlevi devre dışı bırakmak için bir anahtar açın. </string>
     <string name="some_features_invalid_in_work_profile">İş profilindeki işlevler sınırlıdır. </string>
-    <string name="network_and_internet">Ağ</string>
     <string name="connectivity">Diğer bağlantı</string>
     <string name="media">Medya</string>
     <string name="other">Diğer</string>
@@ -647,6 +644,8 @@
     <string name="permission_BODY_SENSORS">Vücut sensörlerine eriş</string>
     <string name="permission_BODY_SENSORS_BACKGROUND">Arka planda vücut sensörlerine eriş</string>
     <string name="permission_ACTIVITY_RECOGNITION">Aktivite tanıma</string>
+
+    <string name="package_chooser">Package chooser</string> <!--TODO-->
 
     <!--TODO-->
     <string name="app_installer">App installer</string>

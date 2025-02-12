@@ -73,7 +73,8 @@ class AppInstallerActivity:FragmentActivity() {
         val vm by viewModels<AppInstallerViewModel>()
         vm.initialize(intent)
         setContent {
-            OwnDroidTheme(myVm) {
+            val theme by myVm.theme.collectAsStateWithLifecycle()
+            OwnDroidTheme(theme) {
                 val installing by vm.installing.collectAsStateWithLifecycle()
                 val sessionMode by vm.sessionMode.collectAsStateWithLifecycle()
                 val packages by vm.packages.collectAsStateWithLifecycle()

@@ -9,8 +9,6 @@ import kotlinx.coroutines.launch
 
 class MyViewModel(application: Application): AndroidViewModel(application) {
     val theme = MutableStateFlow(ThemeSettings())
-    val installedPackages = mutableListOf<PackageInfo>()
-    val selectedPackage = MutableStateFlow("")
     val userRestrictions = MutableStateFlow(Bundle())
 
     init {

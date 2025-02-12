@@ -1,6 +1,5 @@
 package com.bintianqi.owndroid.dpm
 
-import android.accounts.Account
 import android.content.ComponentName
 import android.content.Context
 import android.content.ServiceConnection
@@ -37,17 +36,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.IUserService
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.MyScaffold
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import rikka.shizuku.Shizuku
+
+@Serializable object ShizukuScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Shizuku(navCtrl: NavHostController, navArgs: Bundle) {
+fun ShizukuScreen(navArgs: Bundle, onNavigateUp: () -> Unit, onNavigateToAccountsViewer: (Accounts) -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -65,7 +66,7 @@ fun Shizuku(navCtrl: NavHostController, navArgs: Bundle) {
             null
         }
     }
-    MyScaffold(R.string.shizuku, 0.dp, navCtrl, false) {
+    MyScaffold(R.string.shizuku, 0.dp, onNavigateUp, false) {
         
         Button(
             onClick = {
@@ -93,9 +94,10 @@ fun Shizuku(navCtrl: NavHostController, navArgs: Bundle) {
             onClick = {
                 Log.d("Shizuku", "List accounts")
                 try {
-                    val accounts = service!!.listAccounts()
-                    val dest = navCtrl.graph.findNode("AccountsViewer")!!.id
-                    navCtrl.navigate(dest, Bundle().apply { putParcelableArray("accounts", accounts) })
+                    val accounts = service!!.listAccounts().map {
+                        Accounts.Account(it.type, it.name)
+                    }
+                    onNavigateToAccountsViewer(Accounts(accounts))
                 } catch(_: Exception) {
                     outputText = service!!.execute("dumpsys account")
                     coScope.launch{
@@ -174,11 +176,17 @@ fun controlShizukuService(
     else Shizuku.unbindUserService(userServiceArgs, userServiceConnection, true)
 }
 
+@Serializable
+data class Accounts(
+    val list: List<Account>
+) {
+    @Serializable data class Account(val type: String, val name: String)
+}
+
 @Composable
-fun AccountsViewer(navCtrl: NavHostController, navArgs: Bundle) {
-    val accounts = navArgs.getParcelableArray("accounts") as Array<Account>
-    MyScaffold(R.string.accounts, 8.dp, navCtrl, false) {
-        accounts.forEach {
+fun AccountsScreen(accounts: Accounts, onNavigateUp: () -> Unit) {
+    MyScaffold(R.string.accounts, 8.dp, onNavigateUp, false) {
+        accounts.list.forEach {
             Column(
                 modifier = Modifier
                     .fillMaxWidth().padding(vertical = 4.dp)

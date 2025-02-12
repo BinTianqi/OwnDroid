@@ -32,7 +32,7 @@ class ApiReceiver: BroadcastReceiver() {
                         false
                     }
                 }
-                log += "success: $ok"
+                log += "\nsuccess: $ok"
             } catch(e: Exception) {
                 e.printStackTrace()
                 val message = (e::class.qualifiedName ?: "Exception") + ": " + (e.message ?: "")

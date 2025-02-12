@@ -362,8 +362,6 @@
 
     <!--Applications-->
     <string name="applications">应用程序</string>
-    <string name="pkg_selector">应用选择器</string>
-    <string name="loading">加载中</string>
     <string name="show_user_app">显示用户应用</string>
     <string name="show_system_app">显示系统应用</string>
     <string name="suspend">挂起</string>
@@ -411,7 +409,6 @@
     <string name="profile_owner_is_restricted">Profile owner无法使用部分功能</string>
     <string name="switch_to_disable_feature">打开开关后会禁用对应的功能</string>
     <string name="some_features_invalid_in_work_profile">工作资料中部分功能无效</string>
-    <string name="network_and_internet">网络和互联网</string>
     <string name="connectivity">更多连接</string>
     <string name="media">媒体</string>
     <string name="other">其他</string>

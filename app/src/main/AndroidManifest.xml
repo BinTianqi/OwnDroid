@@ -25,7 +25,8 @@
             android:name=".MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize|stateHidden"
-            android:theme="@style/Theme.OwnDroid">
+            android:theme="@style/Theme.OwnDroid"
+            android:launchMode="singleInstance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.app.action.PROVISIONING_SUCCESSFUL" />
@@ -55,6 +56,11 @@
                 <data android:mimeType="application/vnd.android.package-archive"/>
             </intent-filter>
         </activity>
+        <activity
+            android:name=".PackageChooserActivity"
+            android:label="@string/package_chooser"
+            android:exported="false"
+            android:launchMode="singleInstance"/>
         <receiver
             android:name=".Receiver"
             android:description="@string/app_name"

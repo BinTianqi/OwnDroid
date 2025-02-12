@@ -56,80 +56,147 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.bintianqi.owndroid.dpm.AccountsViewer
-import com.bintianqi.owndroid.dpm.AffiliationID
-import com.bintianqi.owndroid.dpm.AlwaysOnVPNPackage
-import com.bintianqi.owndroid.dpm.ApplicationManage
-import com.bintianqi.owndroid.dpm.CACert
+import androidx.navigation.toRoute
+import com.bintianqi.owndroid.dpm.Accounts
+import com.bintianqi.owndroid.dpm.AccountsScreen
+import com.bintianqi.owndroid.dpm.AddNetwork
+import com.bintianqi.owndroid.dpm.AddNetworkScreen
+import com.bintianqi.owndroid.dpm.AffiliationId
+import com.bintianqi.owndroid.dpm.AffiliationIdScreen
+import com.bintianqi.owndroid.dpm.AlwaysOnVpnPackage
+import com.bintianqi.owndroid.dpm.AlwaysOnVpnPackageScreen
+import com.bintianqi.owndroid.dpm.Applications
+import com.bintianqi.owndroid.dpm.ApplicationsScreen
+import com.bintianqi.owndroid.dpm.CaCert
+import com.bintianqi.owndroid.dpm.CaCertScreen
 import com.bintianqi.owndroid.dpm.ChangeTime
+import com.bintianqi.owndroid.dpm.ChangeTimeScreen
 import com.bintianqi.owndroid.dpm.ChangeTimeZone
+import com.bintianqi.owndroid.dpm.ChangeTimeZoneScreen
 import com.bintianqi.owndroid.dpm.ChangeUserIcon
+import com.bintianqi.owndroid.dpm.ChangeUserIconScreen
 import com.bintianqi.owndroid.dpm.ChangeUsername
+import com.bintianqi.owndroid.dpm.ChangeUsernameScreen
 import com.bintianqi.owndroid.dpm.ContentProtectionPolicy
+import com.bintianqi.owndroid.dpm.ContentProtectionPolicyScreen
 import com.bintianqi.owndroid.dpm.CreateUser
+import com.bintianqi.owndroid.dpm.CreateUserScreen
 import com.bintianqi.owndroid.dpm.CreateWorkProfile
-import com.bintianqi.owndroid.dpm.CurrentUserInfo
+import com.bintianqi.owndroid.dpm.CreateWorkProfileScreen
+import com.bintianqi.owndroid.dpm.CrossProfileIntentFilter
+import com.bintianqi.owndroid.dpm.CrossProfileIntentFilterScreen
 import com.bintianqi.owndroid.dpm.DelegatedAdmins
+import com.bintianqi.owndroid.dpm.DelegatedAdminsScreen
 import com.bintianqi.owndroid.dpm.DeleteWorkProfile
+import com.bintianqi.owndroid.dpm.DeleteWorkProfileScreen
 import com.bintianqi.owndroid.dpm.DeviceAdmin
+import com.bintianqi.owndroid.dpm.DeviceAdminScreen
 import com.bintianqi.owndroid.dpm.DeviceInfo
+import com.bintianqi.owndroid.dpm.DeviceInfoScreen
 import com.bintianqi.owndroid.dpm.DeviceOwner
+import com.bintianqi.owndroid.dpm.DeviceOwnerScreen
 import com.bintianqi.owndroid.dpm.DisableAccountManagement
-import com.bintianqi.owndroid.dpm.DisableKeyguardFeatures
-import com.bintianqi.owndroid.dpm.FRPPolicy
+import com.bintianqi.owndroid.dpm.DisableAccountManagementScreen
+import com.bintianqi.owndroid.dpm.FrpPolicy
+import com.bintianqi.owndroid.dpm.FrpPolicyScreen
 import com.bintianqi.owndroid.dpm.HardwareMonitor
+import com.bintianqi.owndroid.dpm.HardwareMonitorScreen
 import com.bintianqi.owndroid.dpm.InstallSystemUpdate
-import com.bintianqi.owndroid.dpm.IntentFilter
+import com.bintianqi.owndroid.dpm.InstallSystemUpdateScreen
 import com.bintianqi.owndroid.dpm.Keyguard
+import com.bintianqi.owndroid.dpm.KeyguardDisabledFeatures
+import com.bintianqi.owndroid.dpm.KeyguardDisabledFeaturesScreen
+import com.bintianqi.owndroid.dpm.KeyguardScreen
 import com.bintianqi.owndroid.dpm.LockScreenInfo
+import com.bintianqi.owndroid.dpm.LockScreenInfoScreen
 import com.bintianqi.owndroid.dpm.LockTaskMode
-import com.bintianqi.owndroid.dpm.MTEPolicy
+import com.bintianqi.owndroid.dpm.LockTaskModeScreen
+import com.bintianqi.owndroid.dpm.MtePolicy
+import com.bintianqi.owndroid.dpm.MtePolicyScreen
 import com.bintianqi.owndroid.dpm.NearbyStreamingPolicy
+import com.bintianqi.owndroid.dpm.NearbyStreamingPolicyScreen
 import com.bintianqi.owndroid.dpm.Network
 import com.bintianqi.owndroid.dpm.NetworkLogging
+import com.bintianqi.owndroid.dpm.NetworkLoggingScreen
 import com.bintianqi.owndroid.dpm.NetworkOptions
-import com.bintianqi.owndroid.dpm.NetworkStats
+import com.bintianqi.owndroid.dpm.NetworkOptionsScreen
+import com.bintianqi.owndroid.dpm.NetworkScreen
+import com.bintianqi.owndroid.dpm.NetworkStatsScreen
 import com.bintianqi.owndroid.dpm.NetworkStatsViewer
-import com.bintianqi.owndroid.dpm.OrgOwnedProfile
-import com.bintianqi.owndroid.dpm.OverrideAPN
+import com.bintianqi.owndroid.dpm.NetworkStatsViewerScreen
+import com.bintianqi.owndroid.dpm.OrganizationOwnedProfile
+import com.bintianqi.owndroid.dpm.OrganizationOwnedProfileScreen
+import com.bintianqi.owndroid.dpm.OverrideApn
+import com.bintianqi.owndroid.dpm.OverrideApnScreen
 import com.bintianqi.owndroid.dpm.Password
-import com.bintianqi.owndroid.dpm.PasswordComplexity
 import com.bintianqi.owndroid.dpm.PasswordInfo
-import com.bintianqi.owndroid.dpm.PasswordQuality
+import com.bintianqi.owndroid.dpm.PasswordInfoScreen
+import com.bintianqi.owndroid.dpm.PasswordScreen
 import com.bintianqi.owndroid.dpm.PermissionPolicy
+import com.bintianqi.owndroid.dpm.PermissionPolicyScreen
 import com.bintianqi.owndroid.dpm.Permissions
+import com.bintianqi.owndroid.dpm.PermissionsScreen
 import com.bintianqi.owndroid.dpm.PreferentialNetworkService
-import com.bintianqi.owndroid.dpm.PrivateDNS
+import com.bintianqi.owndroid.dpm.PreferentialNetworkServiceScreen
+import com.bintianqi.owndroid.dpm.PrivateDns
+import com.bintianqi.owndroid.dpm.PrivateDnsScreen
 import com.bintianqi.owndroid.dpm.ProfileOwner
+import com.bintianqi.owndroid.dpm.ProfileOwnerScreen
+import com.bintianqi.owndroid.dpm.QueryNetworkStats
 import com.bintianqi.owndroid.dpm.RecommendedGlobalProxy
+import com.bintianqi.owndroid.dpm.RecommendedGlobalProxyScreen
+import com.bintianqi.owndroid.dpm.RequiredPasswordComplexity
+import com.bintianqi.owndroid.dpm.RequiredPasswordComplexityScreen
+import com.bintianqi.owndroid.dpm.RequiredPasswordQuality
+import com.bintianqi.owndroid.dpm.RequiredPasswordQualityScreen
 import com.bintianqi.owndroid.dpm.ResetPassword
+import com.bintianqi.owndroid.dpm.ResetPasswordScreen
 import com.bintianqi.owndroid.dpm.ResetPasswordToken
-import com.bintianqi.owndroid.dpm.RestrictionData
+import com.bintianqi.owndroid.dpm.ResetPasswordTokenScreen
+import com.bintianqi.owndroid.dpm.Restriction
 import com.bintianqi.owndroid.dpm.SecurityLogging
-import com.bintianqi.owndroid.dpm.Shizuku
-import com.bintianqi.owndroid.dpm.SupportMessages
+import com.bintianqi.owndroid.dpm.SecurityLoggingScreen
+import com.bintianqi.owndroid.dpm.SetSystemUpdatePolicy
+import com.bintianqi.owndroid.dpm.ShizukuScreen
+import com.bintianqi.owndroid.dpm.SupportMessage
+import com.bintianqi.owndroid.dpm.SupportMessageScreen
 import com.bintianqi.owndroid.dpm.SuspendPersonalApp
-import com.bintianqi.owndroid.dpm.SystemManage
+import com.bintianqi.owndroid.dpm.SuspendPersonalAppScreen
+import com.bintianqi.owndroid.dpm.SystemManager
+import com.bintianqi.owndroid.dpm.SystemManagerScreen
 import com.bintianqi.owndroid.dpm.SystemOptions
+import com.bintianqi.owndroid.dpm.SystemOptionsScreen
 import com.bintianqi.owndroid.dpm.SystemUpdatePolicy
 import com.bintianqi.owndroid.dpm.TransferOwnership
-import com.bintianqi.owndroid.dpm.UpdateNetwork
+import com.bintianqi.owndroid.dpm.TransferOwnershipScreen
+import com.bintianqi.owndroid.dpm.UserInfo
+import com.bintianqi.owndroid.dpm.UserInfoScreen
 import com.bintianqi.owndroid.dpm.UserOperation
-import com.bintianqi.owndroid.dpm.UserOptions
+import com.bintianqi.owndroid.dpm.UserOperationScreen
 import com.bintianqi.owndroid.dpm.UserRestriction
+import com.bintianqi.owndroid.dpm.UserRestrictionOptions
+import com.bintianqi.owndroid.dpm.UserRestrictionOptionsScreen
 import com.bintianqi.owndroid.dpm.UserRestrictionScreen
 import com.bintianqi.owndroid.dpm.UserSessionMessage
+import com.bintianqi.owndroid.dpm.UserSessionMessageScreen
 import com.bintianqi.owndroid.dpm.Users
-import com.bintianqi.owndroid.dpm.Wifi
+import com.bintianqi.owndroid.dpm.UsersOptions
+import com.bintianqi.owndroid.dpm.UsersOptionsScreen
+import com.bintianqi.owndroid.dpm.UsersScreen
+import com.bintianqi.owndroid.dpm.WiFi
 import com.bintianqi.owndroid.dpm.WifiAuthKeypair
+import com.bintianqi.owndroid.dpm.WifiAuthKeypairScreen
+import com.bintianqi.owndroid.dpm.WifiScreen
 import com.bintianqi.owndroid.dpm.WifiSecurityLevel
-import com.bintianqi.owndroid.dpm.WifiSsidPolicy
+import com.bintianqi.owndroid.dpm.WifiSecurityLevelScreen
+import com.bintianqi.owndroid.dpm.WifiSsidPolicyScreen
 import com.bintianqi.owndroid.dpm.WipeData
+import com.bintianqi.owndroid.dpm.WipeDataScreen
 import com.bintianqi.owndroid.dpm.WorkProfile
+import com.bintianqi.owndroid.dpm.WorkProfileScreen
 import com.bintianqi.owndroid.dpm.dhizukuErrorStatus
 import com.bintianqi.owndroid.dpm.dhizukuPermissionGranted
 import com.bintianqi.owndroid.dpm.getDPM
@@ -144,6 +211,7 @@ import com.rosan.dhizuku.api.Dhizuku
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 import java.util.Locale
 
@@ -162,7 +230,8 @@ class MainActivity : FragmentActivity() {
         val vm by viewModels<MyViewModel>()
         lifecycleScope.launch { delay(5000); setDefaultAffiliationID(context) }
         setContent {
-            OwnDroidTheme(vm) {
+            val theme by vm.theme.collectAsStateWithLifecycle()
+            OwnDroidTheme(theme) {
                 Home(this, vm)
             }
         }
@@ -208,9 +277,10 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
             context.showOperationResultToast(false)
         }
     }
+    fun navigateUp() { navCtrl.navigateUp() }
     @Suppress("NewApi") NavHost(
         navController = navCtrl,
-        startDestination = "HomePage",
+        startDestination = Home,
         modifier = Modifier
             .fillMaxSize()
             .background(colorScheme.background)
@@ -221,129 +291,121 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         popEnterTransition = Animations.navHostPopEnterTransition,
         popExitTransition = Animations.navHostPopExitTransition
     ) {
-        composable(route = "HomePage") { HomePage(navCtrl) }
+        composable<Home> { HomeScreen { navCtrl.navigate(it) } }
 
-        composable(route = "Permissions") { Permissions(navCtrl) }
-        composable(route = "Shizuku") { Shizuku(navCtrl, it.arguments!!) }
-        composable(route = "AccountsViewer") { AccountsViewer(navCtrl, it.arguments!!) }
-        composable(route = "DeviceAdmin") { DeviceAdmin(navCtrl) }
-        composable(route = "ProfileOwner") { ProfileOwner(navCtrl) }
-        composable(route = "DeviceOwner") { DeviceOwner(navCtrl) }
-        composable(route = "DelegatedAdmins") { DelegatedAdmins(navCtrl, vm) }
-        composable(route = "DeviceInfo") { DeviceInfo(navCtrl) }
-        composable(route = "LockScreenInfo") { LockScreenInfo(navCtrl) }
-        composable(route = "SupportMessages") { SupportMessages(navCtrl) }
-        composable(route = "TransferOwnership") { TransferOwnership(navCtrl) }
-
-        composable(route = "System") { SystemManage(navCtrl) }
-        composable(route = "SystemOptions") { SystemOptions(navCtrl) }
-        composable(route = "Keyguard") { Keyguard(navCtrl) }
-        composable(route = "HardwareMonitor") { HardwareMonitor(navCtrl) }
-        composable(route = "ChangeTime") { ChangeTime(navCtrl) }
-        composable(route = "ChangeTimeZone") { ChangeTimeZone(navCtrl) }
-        //composable(route = "KeyPairs") { KeyPairs(navCtrl) }
-        composable(route = "ContentProtectionPolicy") { ContentProtectionPolicy(navCtrl) }
-        composable(route = "PermissionPolicy") { PermissionPolicy(navCtrl) }
-        composable(route = "MTEPolicy") { MTEPolicy(navCtrl) }
-        composable(route = "NearbyStreamingPolicy") { NearbyStreamingPolicy(navCtrl) }
-        composable(route = "LockTaskMode") { LockTaskMode(navCtrl, vm) }
-        composable(route = "CACert") { CACert(navCtrl) }
-        composable(route = "SecurityLogging") { SecurityLogging(navCtrl) }
-        composable(route = "DisableAccountManagement") { DisableAccountManagement(navCtrl) }
-        composable(route = "SystemUpdatePolicy") { SystemUpdatePolicy(navCtrl) }
-        composable(route = "InstallSystemUpdate") { InstallSystemUpdate(navCtrl) }
-        composable(route = "FRPPolicy") { FRPPolicy(navCtrl) }
-        composable(route = "WipeData") { WipeData(navCtrl) }
-
-        composable(route = "Network") { Network(navCtrl) }
-        composable(route = "Wifi") { Wifi(navCtrl) }
-        composable(route = "NetworkOptions") { NetworkOptions(navCtrl) }
-        composable(route = "UpdateNetwork") { UpdateNetwork(it.arguments!!, navCtrl) }
-        composable(route = "MinWifiSecurityLevel") { WifiSecurityLevel(navCtrl) }
-        composable(route = "WifiSsidPolicy") { WifiSsidPolicy(navCtrl) }
-        composable(route = "NetworkStats") { NetworkStats(navCtrl, vm) }
-        composable(route = "NetworkStatsViewer") { NetworkStatsViewer(navCtrl, it.arguments!!) }
-        composable(route = "PrivateDNS") { PrivateDNS(navCtrl) }
-        composable(route = "AlwaysOnVpn") { AlwaysOnVPNPackage(navCtrl, vm) }
-        composable(route = "RecommendedGlobalProxy") { RecommendedGlobalProxy(navCtrl) }
-        composable(route = "NetworkLog") { NetworkLogging(navCtrl) }
-        composable(route = "WifiAuthKeypair") { WifiAuthKeypair(navCtrl) }
-        composable(route = "PreferentialNetworkService") { PreferentialNetworkService(navCtrl) }
-        composable(route = "OverrideAPN") { OverrideAPN(navCtrl) }
-
-        composable(route = "WorkProfile") { WorkProfile(navCtrl) }
-        composable(route = "OrgOwnedWorkProfile") { OrgOwnedProfile(navCtrl) }
-        composable(route = "CreateWorkProfile") { CreateWorkProfile(navCtrl) }
-        composable(route = "SuspendPersonalApp") { SuspendPersonalApp(navCtrl) }
-        composable(route = "IntentFilter") { IntentFilter(navCtrl) }
-        composable(route = "DeleteWorkProfile") { DeleteWorkProfile(navCtrl) }
-
-        composable(route = "Applications") { ApplicationManage(navCtrl, vm) }
-
-        composable(route = "UserRestriction") { UserRestriction(navCtrl, vm) }
-        composable(route = "UR-Internet") {
-            UserRestrictionScreen(R.string.network_and_internet, RestrictionData.internet, userRestrictions, ::onUserRestrictionsChange) {
-                navCtrl.navigateUp()
+        composable<Permissions> {
+            PermissionsScreen(::navigateUp, { navCtrl.navigate(it) }) {
+                val dest = navCtrl.graph.findNode(ShizukuScreen)!!.id
+                navCtrl.navigate(dest, it)
             }
         }
-        composable(route = "UR-Connectivity") {
-            UserRestrictionScreen(R.string.connectivity, RestrictionData.connectivity, userRestrictions, ::onUserRestrictionsChange) {
-                navCtrl.navigateUp()
+        composable<ShizukuScreen> { ShizukuScreen(it.arguments!!, ::navigateUp) { navCtrl.navigate(it) } }
+        composable<Accounts>(mapOf(serializableNavTypePair<List<Accounts.Account>>())) { AccountsScreen(it.toRoute(), ::navigateUp) }
+        composable<DeviceAdmin> { DeviceAdminScreen(::navigateUp) }
+        composable<ProfileOwner> { ProfileOwnerScreen(::navigateUp) }
+        composable<DeviceOwner> { DeviceOwnerScreen(::navigateUp) }
+        composable<DelegatedAdmins> { DelegatedAdminsScreen(::navigateUp) }
+        composable<DeviceInfo> { DeviceInfoScreen(::navigateUp) }
+        composable<LockScreenInfo> { LockScreenInfoScreen(::navigateUp) }
+        composable<SupportMessage> { SupportMessageScreen(::navigateUp) }
+        composable<TransferOwnership> { TransferOwnershipScreen(::navigateUp) }
+
+        composable<SystemManager> { SystemManagerScreen(::navigateUp) { navCtrl.navigate(it) } }
+        composable<SystemOptions> { SystemOptionsScreen(::navigateUp) }
+        composable<Keyguard> { KeyguardScreen(::navigateUp) }
+        composable<HardwareMonitor> { HardwareMonitorScreen(::navigateUp) }
+        composable<ChangeTime> { ChangeTimeScreen(::navigateUp) }
+        composable<ChangeTimeZone> { ChangeTimeZoneScreen(::navigateUp) }
+        //composable<> { KeyPairs(::navigateUp) }
+        composable<ContentProtectionPolicy> { ContentProtectionPolicyScreen(::navigateUp) }
+        composable<PermissionPolicy> { PermissionPolicyScreen(::navigateUp) }
+        composable<MtePolicy> { MtePolicyScreen(::navigateUp) }
+        composable<NearbyStreamingPolicy> { NearbyStreamingPolicyScreen(::navigateUp) }
+        composable<LockTaskMode> { LockTaskModeScreen(::navigateUp) }
+        composable<CaCert> { CaCertScreen(::navigateUp) }
+        composable<SecurityLogging> { SecurityLoggingScreen(::navigateUp) }
+        composable<DisableAccountManagement> { DisableAccountManagementScreen(::navigateUp) }
+        composable<SetSystemUpdatePolicy> { SystemUpdatePolicy(::navigateUp) }
+        composable<InstallSystemUpdate> { InstallSystemUpdateScreen(::navigateUp) }
+        composable<FrpPolicy> { FrpPolicyScreen(::navigateUp) }
+        composable<WipeData> { WipeDataScreen(::navigateUp) }
+
+        composable<Network> { NetworkScreen(::navigateUp) { navCtrl.navigate(it) } }
+        composable<WiFi> {
+            WifiScreen(::navigateUp, { navCtrl.navigate(it) }) {
+                val dest = navCtrl.graph.findNode(AddNetwork)!!.id
+                navCtrl.navigate(dest, it)
             }
         }
-        composable(route = "UR-Applications") {
-            UserRestrictionScreen(R.string.applications, RestrictionData.applications, userRestrictions, ::onUserRestrictionsChange) {
-                navCtrl.navigateUp()
+        composable<NetworkOptions> { NetworkOptionsScreen(::navigateUp) }
+        composable<AddNetwork> { AddNetworkScreen(it.arguments!!, ::navigateUp) }
+        composable<WifiSecurityLevel> { WifiSecurityLevelScreen(::navigateUp) }
+        composable<WifiSsidPolicyScreen> { WifiSsidPolicyScreen(::navigateUp) }
+        composable<QueryNetworkStats> { NetworkStatsScreen(::navigateUp) { navCtrl.navigate(it) } }
+        composable<NetworkStatsViewer>(mapOf(serializableNavTypePair<List<NetworkStatsViewer.Data>>())) {
+            NetworkStatsViewerScreen(it.toRoute()) { navCtrl.navigateUp() }
+        }
+        composable<PrivateDns> { PrivateDnsScreen(::navigateUp) }
+        composable<AlwaysOnVpnPackage> { AlwaysOnVpnPackageScreen(::navigateUp) }
+        composable<RecommendedGlobalProxy> { RecommendedGlobalProxyScreen(::navigateUp) }
+        composable<NetworkLogging> { NetworkLoggingScreen(::navigateUp) }
+        composable<WifiAuthKeypair> { WifiAuthKeypairScreen(::navigateUp) }
+        composable<PreferentialNetworkService> { PreferentialNetworkServiceScreen(::navigateUp) }
+        composable<OverrideApn> { OverrideApnScreen(::navigateUp) }
+
+        composable<WorkProfile> { WorkProfileScreen(::navigateUp) { navCtrl.navigate(it) } }
+        composable<OrganizationOwnedProfile> { OrganizationOwnedProfileScreen(::navigateUp) }
+        composable<CreateWorkProfile> { CreateWorkProfileScreen(::navigateUp) }
+        composable<SuspendPersonalApp> { SuspendPersonalAppScreen(::navigateUp) }
+        composable<CrossProfileIntentFilter> { CrossProfileIntentFilterScreen(::navigateUp) }
+        composable<DeleteWorkProfile> { DeleteWorkProfileScreen(::navigateUp) }
+
+        composable<Applications> { ApplicationsScreen(::navigateUp) }
+
+        composable<UserRestriction> {
+            LaunchedEffect(Unit) {
+                vm.userRestrictions.value = dpm.getUserRestrictions(receiver)
+            }
+            UserRestrictionScreen(::navigateUp) { title, items ->
+                navCtrl.navigate(UserRestrictionOptions(title, items))
             }
         }
-        composable(route = "UR-Users") {
-            UserRestrictionScreen(R.string.users, RestrictionData.users, userRestrictions, ::onUserRestrictionsChange) {
-                navCtrl.navigateUp()
-            }
-        }
-        composable(route = "UR-Media") {
-            UserRestrictionScreen(R.string.media, RestrictionData.media, userRestrictions, ::onUserRestrictionsChange) {
-                navCtrl.navigateUp()
-            }
-        }
-        composable(route = "UR-Other") {
-            UserRestrictionScreen(R.string.other, RestrictionData.other, userRestrictions, ::onUserRestrictionsChange) {
-                navCtrl.navigateUp()
-            }
+        composable<UserRestrictionOptions>(mapOf(serializableNavTypePair<List<Restriction>>())) {
+            UserRestrictionOptionsScreen(it.toRoute(), userRestrictions, ::onUserRestrictionsChange, ::navigateUp)
         }
 
-        composable(route = "Users") { Users(navCtrl) }
-        composable(route = "UserInfo") { CurrentUserInfo(navCtrl) }
-        composable(route = "UserOptions") { UserOptions(navCtrl) }
-        composable(route = "UserOperation") { UserOperation(navCtrl) }
-        composable(route = "CreateUser") { CreateUser(navCtrl) }
-        composable(route = "ChangeUsername") { ChangeUsername(navCtrl) }
-        composable(route = "ChangeUserIcon") { ChangeUserIcon(navCtrl) }
-        composable(route = "UserSessionMessage") { UserSessionMessage(navCtrl) }
-        composable(route = "AffiliationID") { AffiliationID(navCtrl) }
+        composable<Users> { UsersScreen(::navigateUp) { navCtrl.navigate(it) } }
+        composable<UserInfo> { UserInfoScreen(::navigateUp) }
+        composable<UsersOptions> { UsersOptionsScreen(::navigateUp) }
+        composable<UserOperation> { UserOperationScreen(::navigateUp) }
+        composable<CreateUser> { CreateUserScreen(::navigateUp) }
+        composable<ChangeUsername> { ChangeUsernameScreen(::navigateUp) }
+        composable<ChangeUserIcon> { ChangeUserIconScreen(::navigateUp) }
+        composable<UserSessionMessage> { UserSessionMessageScreen(::navigateUp) }
+        composable<AffiliationId> { AffiliationIdScreen(::navigateUp) }
 
-        composable(route = "Password") { Password(navCtrl) }
-        composable(route = "PasswordInfo") { PasswordInfo(navCtrl) }
-        composable(route = "ResetPasswordToken") { ResetPasswordToken(navCtrl) }
-        composable(route = "ResetPassword") { ResetPassword(navCtrl) }
-        composable(route = "RequirePasswordComplexity") { PasswordComplexity(navCtrl) }
-        composable(route = "DisableKeyguardFeatures") { DisableKeyguardFeatures(navCtrl) }
-        composable(route = "RequirePasswordQuality") { PasswordQuality(navCtrl) }
+        composable<Password> { PasswordScreen(::navigateUp) { navCtrl.navigate(it) } }
+        composable<PasswordInfo> { PasswordInfoScreen(::navigateUp) }
+        composable<ResetPasswordToken> { ResetPasswordTokenScreen(::navigateUp) }
+        composable<ResetPassword> { ResetPasswordScreen(::navigateUp) }
+        composable<RequiredPasswordComplexity> { RequiredPasswordComplexityScreen(::navigateUp) }
+        composable<KeyguardDisabledFeatures> { KeyguardDisabledFeaturesScreen(::navigateUp) }
+        composable<RequiredPasswordQuality> { RequiredPasswordQualityScreen(::navigateUp) }
 
-        composable(route = "Settings") { Settings(navCtrl) }
-        composable(route = "Options") { SettingsOptions(navCtrl) }
-        composable(route = "Appearance") { Appearance(navCtrl, vm) }
-        composable(route = "AuthSettings") { AuthSettings(navCtrl) }
-        composable(route = "ApiSettings") { ApiSettings(navCtrl) }
-        composable(route = "About") { About(navCtrl) }
+        composable<Settings> { SettingsScreen(::navigateUp) { navCtrl.navigate(it) } }
+        composable<SettingsOptions> { SettingsOptionsScreen(::navigateUp) }
+        composable<Appearance> {
+            val theme by vm.theme.collectAsStateWithLifecycle()
+            AppearanceScreen(::navigateUp, theme) { vm.theme.value = it }
+        }
+        composable<AuthSettings> { AuthSettingsScreen(::navigateUp) }
+        composable<ApiSettings> { ApiSettings(::navigateUp) }
+        composable<About> { AboutScreen(::navigateUp) }
 
-        composable(route = "PackageSelector") { PackageSelector(navCtrl, vm) }
-
-        composable(
-            route = "Authenticate",
+        composable<Authenticate>(
             enterTransition = { fadeIn(animationSpec = tween(200)) },
             popExitTransition = { fadeOut(animationSpec = tween(400)) }
-        ) { Authenticate(activity, navCtrl) }
+        ) { AuthenticateScreen(activity, ::navigateUp) }
     }
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -351,7 +413,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
                 (event == Lifecycle.Event.ON_RESUME && sp.auth && sp.lockInBackground) ||
                 (event == Lifecycle.Event.ON_CREATE && sp.auth)
             ) {
-                navCtrl.navigate("Authenticate") { launchSingleTop = true }
+                navCtrl.navigate(Authenticate) { launchSingleTop = true }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -370,8 +432,10 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
     DhizukuErrorDialog()
 }
 
+@Serializable private object Home
+
 @Composable
-private fun HomePage(navCtrl:NavHostController) {
+private fun HomeScreen(onNavigate: (Any) -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -406,7 +470,7 @@ private fun HomePage(navCtrl:NavHostController) {
                     .padding(vertical = 8.dp, horizontal = 8.dp)
                     .clip(RoundedCornerShape(15))
                     .background(color = colorScheme.primary)
-                    .clickable(onClick = { navCtrl.navigate("Permissions") })
+                    .clickable(onClick = { onNavigate(Permissions) })
                     .padding(vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -427,33 +491,33 @@ private fun HomePage(navCtrl:NavHostController) {
                     if(activateType != "") { Text(text = activateType, color = colorScheme.onPrimary) }
                 }
             }
-            HomePageItem(R.string.system, R.drawable.android_fill0, "System", navCtrl)
-            if(deviceOwner || profileOwner) { HomePageItem(R.string.network, R.drawable.wifi_fill0, "Network", navCtrl) }
+            HomePageItem(R.string.system, R.drawable.android_fill0) { onNavigate(SystemManager) }
+            if(deviceOwner || profileOwner) { HomePageItem(R.string.network, R.drawable.wifi_fill0) { onNavigate(Network) } }
             if(
                 (VERSION.SDK_INT < 24 && !deviceOwner) || (dpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE) ||
                                 (profileOwner && dpm.isManagedProfile(receiver))
                         )
             ) {
-                HomePageItem(R.string.work_profile, R.drawable.work_fill0, "ManagedProfile", navCtrl)
+                HomePageItem(R.string.work_profile, R.drawable.work_fill0) { onNavigate(WorkProfile) }
             }
-            if(deviceOwner || profileOwner) HomePageItem(R.string.applications, R.drawable.apps_fill0, "Applications", navCtrl)
+            if(deviceOwner || profileOwner) HomePageItem(R.string.applications, R.drawable.apps_fill0) { onNavigate(Applications) }
             if(VERSION.SDK_INT >= 24 && (profileOwner || deviceOwner)) {
-                HomePageItem(R.string.user_restriction, R.drawable.person_off, "UserRestriction", navCtrl)
+                HomePageItem(R.string.user_restriction, R.drawable.person_off) { onNavigate(UserRestriction) }
             }
-            HomePageItem(R.string.users,R.drawable.manage_accounts_fill0,"Users", navCtrl)
-            HomePageItem(R.string.password_and_keyguard, R.drawable.password_fill0, "Password", navCtrl)
-            HomePageItem(R.string.settings, R.drawable.settings_fill0, "Settings", navCtrl)
+            HomePageItem(R.string.users,R.drawable.manage_accounts_fill0) { onNavigate(Users) }
+            HomePageItem(R.string.password_and_keyguard, R.drawable.password_fill0) { onNavigate(Password) }
+            HomePageItem(R.string.settings, R.drawable.settings_fill0) { onNavigate(Settings) }
             Spacer(Modifier.padding(vertical = 20.dp))
         }
     }
 }
 
 @Composable
-fun HomePageItem(name: Int, imgVector: Int, navTo: String, navCtrl: NavHostController) {
+fun HomePageItem(name: Int, imgVector: Int, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = { navCtrl.navigate(navTo) })
+            .clickable(onClick = onClick)
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

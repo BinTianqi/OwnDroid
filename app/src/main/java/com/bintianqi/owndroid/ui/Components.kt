@@ -30,7 +30,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.writeClipBoard
 import com.bintianqi.owndroid.zhCN
@@ -263,22 +262,13 @@ fun InfoCard(@StringRes strID: Int) {
     }
 }
 
-@Composable
-fun MyScaffold(
-    @StringRes title: Int,
-    horizonPadding: Dp,
-    navCtrl: NavHostController,
-    displayTitle: Boolean = true,
-    content: @Composable ColumnScope.() -> Unit
-) = MyScaffold(title, horizonPadding, { navCtrl.navigateUp() }, displayTitle, content)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyScaffold(
     @StringRes title: Int,
     horizonPadding: Dp,
     onNavIconClicked: () -> Unit,
-    displayTitle: Boolean,
+    displayTitle: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val scrollState = rememberScrollState()

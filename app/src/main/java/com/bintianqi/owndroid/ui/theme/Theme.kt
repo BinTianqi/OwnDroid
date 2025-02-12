@@ -6,14 +6,12 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bintianqi.owndroid.MyViewModel
+import com.bintianqi.owndroid.ThemeSettings
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -93,10 +91,9 @@ private val darkScheme = darkColorScheme(
 
 @Composable
 fun OwnDroidTheme(
-    vm: MyViewModel,
+    theme: ThemeSettings,
     content: @Composable () -> Unit
 ) {
-    val theme by vm.theme.collectAsStateWithLifecycle()
     val darkTheme = theme.darkTheme == 1 || (theme.darkTheme == -1 && isSystemInDarkTheme())
     val context = LocalContext.current
     var colorScheme = when {

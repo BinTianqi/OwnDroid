@@ -119,9 +119,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavHostController
-import com.bintianqi.owndroid.MyViewModel
+import com.bintianqi.owndroid.ChoosePackageContract
 import com.bintianqi.owndroid.NotificationUtils
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SharedPrefs
@@ -139,6 +137,7 @@ import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.uriToStream
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import java.io.ByteArrayOutputStream
 import java.util.Date
 import java.util.TimeZone
@@ -146,8 +145,10 @@ import java.util.concurrent.Executors
 import kotlin.collections.addAll
 import kotlin.math.roundToLong
 
+@Serializable object SystemManager
+
 @Composable
-fun SystemManage(navCtrl: NavHostController) {
+fun SystemManagerScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -156,13 +157,13 @@ fun SystemManage(navCtrl: NavHostController) {
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
     var dialog by remember { mutableIntStateOf(0) }
-    MyScaffold(R.string.system, 0.dp, navCtrl) {
+    MyScaffold(R.string.system, 0.dp, onNavigateUp) {
         if(deviceOwner || profileOwner) {
-            FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { navCtrl.navigate("SystemOptions") }
+            FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { onNavigate(SystemOptions) }
         }
-        FunctionItem(R.string.keyguard, icon = R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("Keyguard") }
+        FunctionItem(R.string.keyguard, icon = R.drawable.screen_lock_portrait_fill0) { onNavigate(Keyguard) }
         if(VERSION.SDK_INT >= 24 && deviceOwner && !dhizuku)
-            FunctionItem(R.string.hardware_monitor, icon = R.drawable.memory_fill0) { navCtrl.navigate("HardwareMonitor") }
+            FunctionItem(R.string.hardware_monitor, icon = R.drawable.memory_fill0) { onNavigate(HardwareMonitor) }
         if(VERSION.SDK_INT >= 24 && deviceOwner) {
             FunctionItem(R.string.reboot, icon = R.drawable.restart_alt_fill0) { dialog = 1 }
         }
@@ -170,45 +171,45 @@ fun SystemManage(navCtrl: NavHostController) {
             FunctionItem(R.string.bug_report, icon = R.drawable.bug_report_fill0) { dialog = 2 }
         }
         if(VERSION.SDK_INT >= 28 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            FunctionItem(R.string.change_time, icon = R.drawable.schedule_fill0) { navCtrl.navigate("ChangeTime") }
-            FunctionItem(R.string.change_timezone, icon = R.drawable.schedule_fill0) { navCtrl.navigate("ChangeTimeZone") }
+            FunctionItem(R.string.change_time, icon = R.drawable.schedule_fill0) { onNavigate(ChangeTime) }
+            FunctionItem(R.string.change_timezone, icon = R.drawable.schedule_fill0) { onNavigate(ChangeTimeZone) }
         }
         /*if(VERSION.SDK_INT >= 28 && (deviceOwner || profileOwner))
             FunctionItem(R.string.key_pairs, icon = R.drawable.key_vertical_fill0) { navCtrl.navigate("KeyPairs") }*/
         if(VERSION.SDK_INT >= 35 && (deviceOwner || (profileOwner && dpm.isAffiliatedUser)))
-            FunctionItem(R.string.content_protection_policy, icon = R.drawable.search_fill0) { navCtrl.navigate("ContentProtectionPolicy") }
+            FunctionItem(R.string.content_protection_policy, icon = R.drawable.search_fill0) { onNavigate(ContentProtectionPolicy) }
         if(VERSION.SDK_INT >= 23 && (deviceOwner || profileOwner)) {
-            FunctionItem(R.string.permission_policy, icon = R.drawable.key_fill0) { navCtrl.navigate("PermissionPolicy") }
+            FunctionItem(R.string.permission_policy, icon = R.drawable.key_fill0) { onNavigate(PermissionPolicy) }
         }
         if(VERSION.SDK_INT >= 34 && deviceOwner) {
-            FunctionItem(R.string.mte_policy, icon = R.drawable.memory_fill0) { navCtrl.navigate("MTEPolicy") }
+            FunctionItem(R.string.mte_policy, icon = R.drawable.memory_fill0) { onNavigate(MtePolicy) }
         }
         if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) {
-            FunctionItem(R.string.nearby_streaming_policy, icon = R.drawable.share_fill0) { navCtrl.navigate("NearbyStreamingPolicy") }
+            FunctionItem(R.string.nearby_streaming_policy, icon = R.drawable.share_fill0) { onNavigate(NearbyStreamingPolicy) }
         }
         if(VERSION.SDK_INT >= 28 && deviceOwner) {
-            FunctionItem(R.string.lock_task_mode, icon = R.drawable.lock_fill0) { navCtrl.navigate("LockTaskMode") }
+            FunctionItem(R.string.lock_task_mode, icon = R.drawable.lock_fill0) { onNavigate(LockTaskMode) }
         }
         if(deviceOwner || profileOwner) {
-            FunctionItem(R.string.ca_cert, icon = R.drawable.license_fill0) { navCtrl.navigate("CACert") }
+            FunctionItem(R.string.ca_cert, icon = R.drawable.license_fill0) { onNavigate(CaCert) }
         }
         if(VERSION.SDK_INT >= 26 && !dhizuku && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            FunctionItem(R.string.security_logging, icon = R.drawable.description_fill0) { navCtrl.navigate("SecurityLogging") }
+            FunctionItem(R.string.security_logging, icon = R.drawable.description_fill0) { onNavigate(SecurityLogging) }
         }
         if(deviceOwner || profileOwner) {
-            FunctionItem(R.string.disable_account_management, icon = R.drawable.account_circle_fill0) { navCtrl.navigate("DisableAccountManagement") }
+            FunctionItem(R.string.disable_account_management, icon = R.drawable.account_circle_fill0) { onNavigate(DisableAccountManagement) }
         }
         if(VERSION.SDK_INT >= 23 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            FunctionItem(R.string.system_update_policy, icon = R.drawable.system_update_fill0) { navCtrl.navigate("SystemUpdatePolicy") }
+            FunctionItem(R.string.system_update_policy, icon = R.drawable.system_update_fill0) { onNavigate(SetSystemUpdatePolicy) }
         }
         if(VERSION.SDK_INT >= 29 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            FunctionItem(R.string.install_system_update, icon = R.drawable.system_update_fill0) { navCtrl.navigate("InstallSystemUpdate") }
+            FunctionItem(R.string.install_system_update, icon = R.drawable.system_update_fill0) { onNavigate(InstallSystemUpdate) }
         }
         if(VERSION.SDK_INT >= 30 && (deviceOwner || dpm.isOrgProfile(receiver))) {
-            FunctionItem(R.string.frp_policy, icon = R.drawable.device_reset_fill0) { navCtrl.navigate("FRPPolicy") }
+            FunctionItem(R.string.frp_policy, icon = R.drawable.device_reset_fill0) { onNavigate(FrpPolicy) }
         }
         if(sp.displayDangerousFeatures && context.isDeviceAdmin && !(VERSION.SDK_INT >= 24 && profileOwner && dpm.isManagedProfile(receiver))) {
-            FunctionItem(R.string.wipe_data, icon = R.drawable.device_reset_fill0) { navCtrl.navigate("WipeData") }
+            FunctionItem(R.string.wipe_data, icon = R.drawable.device_reset_fill0) { onNavigate(WipeData) }
         }
     }
     if(dialog != 0 &&VERSION.SDK_INT >= 24) AlertDialog(
@@ -238,8 +239,10 @@ fun SystemManage(navCtrl: NavHostController) {
     )
 }
 
+@Serializable object SystemOptions
+
 @Composable
-fun SystemOptions(navCtrl: NavHostController) {
+fun SystemOptionsScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -247,7 +250,7 @@ fun SystemOptions(navCtrl: NavHostController) {
     val profileOwner = context.isProfileOwner
     val um = context.getSystemService(Context.USER_SERVICE) as UserManager
     var dialog by remember { mutableIntStateOf(0) }
-    MyScaffold(R.string.options, 0.dp, navCtrl) {
+    MyScaffold(R.string.options, 0.dp, onNavigateUp) {
         if(deviceOwner || profileOwner) {
             SwitchItem(R.string.disable_cam, icon = R.drawable.photo_camera_fill0,
                 getState = { dpm.getCameraDisabled(null) }, onCheckedChange = { dpm.setCameraDisabled(receiver,it) }
@@ -323,14 +326,16 @@ fun SystemOptions(navCtrl: NavHostController) {
     )
 }
 
+@Serializable object Keyguard
+
 @Composable
-fun Keyguard(navCtrl: NavHostController) {
+fun KeyguardScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
-    MyScaffold(R.string.keyguard, 8.dp, navCtrl) {
+    MyScaffold(R.string.keyguard, 8.dp, onNavigateUp) {
         if(VERSION.SDK_INT >= 23) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -379,10 +384,12 @@ fun Keyguard(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object HardwareMonitor
+
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(24)
 @Composable
-fun HardwareMonitor(navCtrl: NavHostController) {
+fun HardwareMonitorScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val hpm = context.getSystemService(HardwarePropertiesManager::class.java)
     var refreshInterval by remember { mutableFloatStateOf(1F) }
@@ -412,7 +419,7 @@ fun HardwareMonitor(navCtrl: NavHostController) {
             delay(refreshIntervalMs)
         }
     }
-    MyScaffold(R.string.hardware_monitor, 8.dp, navCtrl, false) {
+    MyScaffold(R.string.hardware_monitor, 8.dp, onNavigateUp, false) {
         Text(stringResource(R.string.refresh_interval), style = typography.titleLarge, modifier = Modifier.padding(vertical = 4.dp))
         Slider(refreshInterval, { refreshInterval = it }, valueRange = 0.5F..2F, steps = 14)
         Text("${refreshIntervalMs}ms")
@@ -460,10 +467,12 @@ fun HardwareMonitor(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object ChangeTime
+
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(28)
 @Composable
-fun ChangeTime(navCtrl: NavHostController) {
+fun ChangeTimeScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -481,7 +490,7 @@ fun ChangeTime(navCtrl: NavHostController) {
     if(timeInteractionSource.collectIsPressedAsState().value) picker = 2
     val isInputLegal = (manualInput && (try { inputTime.toLong() } catch(_: Exception) { -1 }) >= 0) ||
             (!manualInput && datePickerState.selectedDateMillis != null)
-    MyScaffold(R.string.change_time, 8.dp, navCtrl) {
+    MyScaffold(R.string.change_time, 8.dp, onNavigateUp) {
         SingleChoiceSegmentedButtonRow(
             modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
         ) {
@@ -571,16 +580,18 @@ fun ChangeTime(navCtrl: NavHostController) {
     )
 }
 
+@Serializable object ChangeTimeZone
+
 @RequiresApi(28)
 @Composable
-fun ChangeTimeZone(navCtrl: NavHostController) {
+fun ChangeTimeZoneScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
     val receiver = context.getReceiver()
     var inputTimezone by remember { mutableStateOf("") }
     var dialog by remember { mutableStateOf(false) }
-    MyScaffold(R.string.change_timezone, 8.dp, navCtrl) {
+    MyScaffold(R.string.change_timezone, 8.dp, onNavigateUp) {
         OutlinedTextField(
             value = inputTimezone,
             label = { Text(stringResource(R.string.timezone_id)) },
@@ -814,16 +825,18 @@ fun KeyPairs(navCtrl: NavHostController) {
     }
 }*/
 
+@Serializable object ContentProtectionPolicy
+
 @RequiresApi(35)
 @Composable
-fun ContentProtectionPolicy(navCtrl: NavHostController) {
+fun ContentProtectionPolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     var policy by remember { mutableIntStateOf(DevicePolicyManager.CONTENT_PROTECTION_NOT_CONTROLLED_BY_POLICY) }
     fun refresh() { policy = dpm.getContentProtectionPolicy(receiver) }
     LaunchedEffect(Unit) { refresh() }
-    MyScaffold(R.string.content_protection_policy, 8.dp, navCtrl) {
+    MyScaffold(R.string.content_protection_policy, 8.dp, onNavigateUp) {
         mapOf(
             DevicePolicyManager.CONTENT_PROTECTION_NOT_CONTROLLED_BY_POLICY to R.string.not_controlled_by_policy,
             DevicePolicyManager.CONTENT_PROTECTION_ENABLED to R.string.enabled,
@@ -845,14 +858,16 @@ fun ContentProtectionPolicy(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object PermissionPolicy
+
 @RequiresApi(23)
 @Composable
-fun PermissionPolicy(navCtrl: NavHostController) {
+fun PermissionPolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     var selectedPolicy by remember { mutableIntStateOf(dpm.getPermissionPolicy(receiver)) }
-    MyScaffold(R.string.permission_policy, 8.dp, navCtrl) {
+    MyScaffold(R.string.permission_policy, 8.dp, onNavigateUp) {
         RadioButtonItem(R.string.default_stringres, selectedPolicy == PERMISSION_POLICY_PROMPT) { selectedPolicy = PERMISSION_POLICY_PROMPT }
         RadioButtonItem(R.string.auto_grant, selectedPolicy == PERMISSION_POLICY_AUTO_GRANT) { selectedPolicy = PERMISSION_POLICY_AUTO_GRANT }
         RadioButtonItem(R.string.auto_deny, selectedPolicy == PERMISSION_POLICY_AUTO_DENY) { selectedPolicy = PERMISSION_POLICY_AUTO_DENY }
@@ -870,13 +885,15 @@ fun PermissionPolicy(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object MtePolicy
+
 @RequiresApi(34)
 @Composable
-fun MTEPolicy(navCtrl: NavHostController) {
+fun MtePolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     var selectedMtePolicy by remember { mutableIntStateOf(dpm.mtePolicy) }
-    MyScaffold(R.string.mte_policy, 8.dp, navCtrl) {
+    MyScaffold(R.string.mte_policy, 8.dp, onNavigateUp) {
         RadioButtonItem(R.string.decide_by_user, selectedMtePolicy == MTE_NOT_CONTROLLED_BY_POLICY) { selectedMtePolicy = MTE_NOT_CONTROLLED_BY_POLICY }
         RadioButtonItem(R.string.enabled, selectedMtePolicy == MTE_ENABLED) { selectedMtePolicy = MTE_ENABLED }
         RadioButtonItem(R.string.disabled, selectedMtePolicy == MTE_DISABLED) { selectedMtePolicy = MTE_DISABLED }
@@ -898,13 +915,15 @@ fun MTEPolicy(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object NearbyStreamingPolicy
+
 @RequiresApi(31)
 @Composable
-fun NearbyStreamingPolicy(navCtrl: NavHostController) {
+fun NearbyStreamingPolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     var appPolicy by remember { mutableIntStateOf(dpm.nearbyAppStreamingPolicy) }
-    MyScaffold(R.string.nearby_streaming_policy, 8.dp, navCtrl) {
+    MyScaffold(R.string.nearby_streaming_policy, 8.dp, onNavigateUp) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.nearby_app_streaming), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 3.dp))
@@ -963,10 +982,12 @@ fun NearbyStreamingPolicy(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object LockTaskMode
+
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(28)
 @Composable
-fun LockTaskMode(navCtrl: NavHostController, vm: MyViewModel) {
+fun LockTaskModeScreen(onNavigateUp: () -> Unit) {
     val coroutine = rememberCoroutineScope()
     val pagerState = rememberPagerState { 3 }
     var tabIndex by remember { mutableIntStateOf(0) }
@@ -975,7 +996,7 @@ fun LockTaskMode(navCtrl: NavHostController, vm: MyViewModel) {
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.lock_task_mode)) },
-                navigationIcon = { NavIcon { navCtrl.navigateUp() } }
+                navigationIcon = { NavIcon(onNavigateUp) }
             )
         }
     ) { paddingValues ->
@@ -1000,8 +1021,8 @@ fun LockTaskMode(navCtrl: NavHostController, vm: MyViewModel) {
                 Column(
                     modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 8.dp, end = 8.dp, bottom = 80.dp)
                 ) {
-                    if(page == 0) StartLockTaskMode(navCtrl, vm)
-                    else if(page == 1) LockTaskPackages(navCtrl, vm)
+                    if(page == 0) StartLockTaskMode()
+                    else if(page == 1) LockTaskPackages()
                     else LockTaskFeatures()
                 }
             }
@@ -1011,19 +1032,15 @@ fun LockTaskMode(navCtrl: NavHostController, vm: MyViewModel) {
 
 @RequiresApi(28)
 @Composable
-private fun ColumnScope.StartLockTaskMode(navCtrl: NavHostController, vm: MyViewModel) {
+private fun ColumnScope.StartLockTaskMode() {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
     var startLockTaskApp by rememberSaveable { mutableStateOf("") }
     var startLockTaskActivity by rememberSaveable { mutableStateOf("") }
     var specifyActivity by rememberSaveable { mutableStateOf(false) }
-    val updatePackage by vm.selectedPackage.collectAsStateWithLifecycle()
-    LaunchedEffect(updatePackage) {
-        if(updatePackage != "") {
-            startLockTaskApp = updatePackage
-            vm.selectedPackage.value = ""
-        }
+    val choosePackage = rememberLauncherForActivityResult(ChoosePackageContract()) { result ->
+        result?.let { startLockTaskApp = it }
     }
     Spacer(Modifier.padding(vertical = 5.dp))
     OutlinedTextField(
@@ -1036,10 +1053,7 @@ private fun ColumnScope.StartLockTaskMode(navCtrl: NavHostController, vm: MyView
             Icon(painter = painterResource(R.drawable.list_fill0), contentDescription = null,
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
-                    .clickable(onClick = {
-                        focusMgr.clearFocus()
-                        navCtrl.navigate("PackageSelector")
-                    })
+                    .clickable { choosePackage.launch(null) }
                     .padding(3.dp))
         },
         modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
@@ -1081,19 +1095,15 @@ private fun ColumnScope.StartLockTaskMode(navCtrl: NavHostController, vm: MyView
 
 @RequiresApi(26)
 @Composable
-private fun ColumnScope.LockTaskPackages(navCtrl: NavHostController, vm: MyViewModel) {
+private fun ColumnScope.LockTaskPackages() {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     val lockTaskPackages = remember { mutableStateListOf<String>() }
     var input by rememberSaveable { mutableStateOf("") }
-    val updatePackage by vm.selectedPackage.collectAsStateWithLifecycle()
-    LaunchedEffect(updatePackage) {
-        if(updatePackage != "") {
-            input = updatePackage
-            vm.selectedPackage.value = ""
-        }
+    val choosePackage = rememberLauncherForActivityResult(ChoosePackageContract()) { result ->
+        result?.let { input = it }
     }
     LaunchedEffect(Unit) { lockTaskPackages.addAll(dpm.getLockTaskPackages(receiver)) }
     Spacer(Modifier.padding(vertical = 5.dp))
@@ -1111,10 +1121,7 @@ private fun ColumnScope.LockTaskPackages(navCtrl: NavHostController, vm: MyViewM
             Icon(painter = painterResource(R.drawable.list_fill0), contentDescription = null,
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
-                    .clickable(onClick = {
-                        focusMgr.clearFocus()
-                        navCtrl.navigate("PackageSelector")
-                    })
+                    .clickable { choosePackage.launch(null) }
                     .padding(3.dp))
         },
         modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
@@ -1221,8 +1228,10 @@ private fun ColumnScope.LockTaskFeatures() {
     }
 }
 
+@Serializable object CaCert
+
 @Composable
-fun CACert(navCtrl: NavHostController) {
+fun CaCertScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -1235,7 +1244,7 @@ fun CACert(navCtrl: NavHostController) {
         }
         dialog = true
     }
-    MyScaffold(R.string.ca_cert, 8.dp, navCtrl) {
+    MyScaffold(R.string.ca_cert, 8.dp, onNavigateUp) {
         Button(
             onClick = {
                 getFileLauncher.launch("*/*")
@@ -1278,9 +1287,11 @@ fun CACert(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object SecurityLogging
+
 @RequiresApi(24)
 @Composable
-fun SecurityLogging(navCtrl: NavHostController) {
+fun SecurityLoggingScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -1305,7 +1316,7 @@ fun SecurityLogging(navCtrl: NavHostController) {
             }
         }
     }
-    MyScaffold(R.string.security_logging, 8.dp, navCtrl) {
+    MyScaffold(R.string.security_logging, 8.dp, onNavigateUp) {
         SwitchItem(
             R.string.enable,
             getState = { dpm.isSecurityLoggingEnabled(receiver) }, onCheckedChange = { dpm.setSecurityLoggingEnabled(receiver, it) },
@@ -1366,13 +1377,15 @@ fun SecurityLogging(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object DisableAccountManagement
+
 @Composable
-fun DisableAccountManagement(navCtrl: NavHostController) {
+fun DisableAccountManagementScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    MyScaffold(R.string.disable_account_management, 8.dp, navCtrl) {
+    MyScaffold(R.string.disable_account_management, 8.dp, onNavigateUp) {
         val list = remember { mutableStateListOf<String>() }
         fun refreshList() {
             list.clear()
@@ -1414,9 +1427,11 @@ fun DisableAccountManagement(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object FrpPolicy
+
 @RequiresApi(30)
 @Composable
-fun FRPPolicy(navCtrl: NavHostController) {
+fun FrpPolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
@@ -1442,7 +1457,7 @@ fun FRPPolicy(navCtrl: NavHostController) {
             }
         }
     }
-    MyScaffold(R.string.frp_policy, 8.dp, navCtrl) {
+    MyScaffold(R.string.frp_policy, 8.dp, onNavigateUp) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 8.dp)
@@ -1506,8 +1521,10 @@ fun FRPPolicy(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object WipeData
+
 @Composable
-fun WipeData(navCtrl: NavHostController) {
+fun WipeDataScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     val dpm = context.getDPM()
@@ -1517,7 +1534,7 @@ fun WipeData(navCtrl: NavHostController) {
     var wipeDevice by remember { mutableStateOf(false) }
     var silent by remember { mutableStateOf(false) }
     var reason by remember { mutableStateOf("") }
-    MyScaffold(R.string.wipe_data, 8.dp, navCtrl) {
+    MyScaffold(R.string.wipe_data, 8.dp, onNavigateUp) {
         CheckBoxItem(R.string.wipe_external_storage, flag and WIPE_EXTERNAL_STORAGE != 0) { flag = flag xor WIPE_EXTERNAL_STORAGE }
         if(VERSION.SDK_INT >= 22 && context.isDeviceOwner) CheckBoxItem(
             R.string.wipe_reset_protection_data, flag and WIPE_RESET_PROTECTION_DATA != 0) { flag = flag xor WIPE_RESET_PROTECTION_DATA }
@@ -1612,13 +1629,15 @@ fun WipeData(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object SetSystemUpdatePolicy
+
 @Composable
-fun SystemUpdatePolicy(navCtrl: NavHostController) {
+fun SystemUpdatePolicy(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    MyScaffold(R.string.system_update_policy, 8.dp, navCtrl) {
+    MyScaffold(R.string.system_update_policy, 8.dp, onNavigateUp) {
         if(VERSION.SDK_INT >= 23) {
             Column {
                 var selectedPolicy by remember { mutableStateOf(dpm.systemUpdatePolicy?.policyType) }
@@ -1700,9 +1719,11 @@ fun SystemUpdatePolicy(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object InstallSystemUpdate
+
 @SuppressLint("NewApi")
 @Composable
-fun InstallSystemUpdate(navCtrl: NavHostController) {
+fun InstallSystemUpdateScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -1724,7 +1745,7 @@ fun InstallSystemUpdate(navCtrl: NavHostController) {
     val getFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         uri = it.data?.data
     }
-    MyScaffold(R.string.install_system_update, 8.dp, navCtrl) {
+    MyScaffold(R.string.install_system_update, 8.dp, onNavigateUp) {
         Button(
             onClick = {
                 val intent = Intent(Intent.ACTION_GET_CONTENT)

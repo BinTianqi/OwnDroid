@@ -108,7 +108,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -130,9 +129,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavHostController
-import com.bintianqi.owndroid.MyViewModel
+import com.bintianqi.owndroid.ChoosePackageContract
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.formatFileSize
@@ -154,57 +151,62 @@ import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import java.net.InetAddress
 import kotlin.math.max
 import kotlin.reflect.jvm.jvmErasure
 
+@Serializable object Network
+
 @Composable
-fun Network(navCtrl:NavHostController) {
+fun NetworkScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
     val dhizuku = SharedPrefs(context).dhizuku
-    MyScaffold(R.string.network, 0.dp, navCtrl) {
-        if(!dhizuku) FunctionItem(R.string.wifi, icon = R.drawable.wifi_fill0) { navCtrl.navigate("Wifi") }
+    MyScaffold(R.string.network, 0.dp, onNavigateUp) {
+        if(!dhizuku) FunctionItem(R.string.wifi, icon = R.drawable.wifi_fill0) { onNavigate(WiFi) }
         if(VERSION.SDK_INT >= 30) {
-            FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { navCtrl.navigate("NetworkOptions") }
+            FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { onNavigate(NetworkOptions) }
         }
         if(VERSION.SDK_INT >= 23 && (deviceOwner || profileOwner))
-            FunctionItem(R.string.network_stats, icon = R.drawable.query_stats_fill0) { navCtrl.navigate("NetworkStats") }
+            FunctionItem(R.string.network_stats, icon = R.drawable.query_stats_fill0) { onNavigate(QueryNetworkStats) }
         if(VERSION.SDK_INT >= 29 && deviceOwner) {
-            FunctionItem(R.string.private_dns, icon = R.drawable.dns_fill0) { navCtrl.navigate("PrivateDNS") }
+            FunctionItem(R.string.private_dns, icon = R.drawable.dns_fill0) { onNavigate(PrivateDns) }
         }
         if(VERSION.SDK_INT >= 24) {
-            FunctionItem(R.string.always_on_vpn, icon = R.drawable.vpn_key_fill0) { navCtrl.navigate("AlwaysOnVpn") }
+            FunctionItem(R.string.always_on_vpn, icon = R.drawable.vpn_key_fill0) { onNavigate(AlwaysOnVpnPackage) }
         }
         if(deviceOwner) {
-            FunctionItem(R.string.recommended_global_proxy, icon = R.drawable.vpn_key_fill0) { navCtrl.navigate("RecommendedGlobalProxy") }
+            FunctionItem(R.string.recommended_global_proxy, icon = R.drawable.vpn_key_fill0) { onNavigate(RecommendedGlobalProxy) }
         }
         if(VERSION.SDK_INT >= 26 && !dhizuku && (deviceOwner || (profileOwner && dpm.isManagedProfile(receiver)))) {
-            FunctionItem(R.string.network_logging, icon = R.drawable.description_fill0) { navCtrl.navigate("NetworkLog") }
+            FunctionItem(R.string.network_logging, icon = R.drawable.description_fill0) { onNavigate(NetworkLogging) }
         }
         if(VERSION.SDK_INT >= 31) {
-            FunctionItem(R.string.wifi_auth_keypair, icon = R.drawable.key_fill0) { navCtrl.navigate("WifiAuthKeypair") }
+            FunctionItem(R.string.wifi_auth_keypair, icon = R.drawable.key_fill0) { onNavigate(WifiAuthKeypair) }
         }
         if(VERSION.SDK_INT >= 33) {
-            FunctionItem(R.string.preferential_network_service, icon = R.drawable.globe_fill0) { navCtrl.navigate("PreferentialNetworkService") }
+            FunctionItem(R.string.preferential_network_service, icon = R.drawable.globe_fill0) { onNavigate(PreferentialNetworkService) }
         }
         if(VERSION.SDK_INT >= 28 && deviceOwner) {
-            FunctionItem(R.string.override_apn_settings, icon = R.drawable.cell_tower_fill0) { navCtrl.navigate("OverrideAPN") }
+            FunctionItem(R.string.override_apn_settings, icon = R.drawable.cell_tower_fill0) { onNavigate(OverrideApn) }
         }
     }
 }
 
+@Serializable object NetworkOptions
+
 @Composable
-fun NetworkOptions(navCtrl: NavHostController) {
+fun NetworkOptionsScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
     var dialog by remember { mutableIntStateOf(0) }
-    MyScaffold(R.string.options, 0.dp, navCtrl) {
+    MyScaffold(R.string.options, 0.dp, onNavigateUp) {
         if(VERSION.SDK_INT>=30 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SwitchItem(R.string.lockdown_admin_configured_network, icon = R.drawable.wifi_password_fill0,
                 getState = { dpm.hasLockdownAdminConfiguredNetworks(receiver) }, onCheckedChange = { dpm.setConfiguredNetworksLockdownState(receiver,it) },
@@ -221,9 +223,11 @@ fun NetworkOptions(navCtrl: NavHostController) {
     )
 }
 
+@Serializable object WiFi
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Wifi(navCtrl: NavHostController) {
+fun WifiScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit, onNavigateToUpdateNetwork: (Bundle) -> Unit) {
     val context = LocalContext.current
     val coroutine = rememberCoroutineScope()
     val pagerState = rememberPagerState { 3 }
@@ -233,7 +237,7 @@ fun Wifi(navCtrl: NavHostController) {
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.wifi)) },
-                navigationIcon = { NavIcon { navCtrl.navigateUp() } }
+                navigationIcon = { NavIcon(onNavigateUp) }
             )
         }
     ) { paddingValues ->
@@ -295,14 +299,14 @@ fun Wifi(navCtrl: NavHostController) {
                             FunctionItem(R.string.wifi_mac_address) { wifiMacDialog = true }
                         }
                         if(VERSION.SDK_INT >= 33 && (deviceOwner || orgProfileOwner)) {
-                            FunctionItem(R.string.min_wifi_security_level) { navCtrl.navigate("MinWifiSecurityLevel") }
-                            FunctionItem(R.string.wifi_ssid_policy) { navCtrl.navigate("WifiSsidPolicy") }
+                            FunctionItem(R.string.min_wifi_security_level) { onNavigate(WifiSecurityLevel) }
+                            FunctionItem(R.string.wifi_ssid_policy) { onNavigate(WifiSsidPolicyScreen) }
                         }
                     }
                 } else if(page == 1) {
-                    SavedNetworks(navCtrl)
+                    SavedNetworks(onNavigateToUpdateNetwork)
                 } else {
-                    AddNetwork()
+                    AddNetworkScreen(null) {}
                 }
             }
         }
@@ -334,7 +338,7 @@ fun Wifi(navCtrl: NavHostController) {
 @Suppress("DEPRECATION")
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-private fun SavedNetworks(navCtrl: NavHostController) {
+private fun SavedNetworks(onNavigateToUpdateNetwork: (Bundle) -> Unit) {
     val context = LocalContext.current
     val wm = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
     val configuredNetworks = remember { mutableStateListOf<WifiConfiguration>() }
@@ -431,9 +435,7 @@ private fun SavedNetworks(navCtrl: NavHostController) {
                 Button(
                     onClick = {
                         networkDetailsDialog = -1
-                        val dest = navCtrl.graph.findNode("UpdateNetwork")
-                        if(dest != null)
-                        navCtrl.navigate(dest.id, bundleOf("wifi_configuration" to network))
+                        onNavigateToUpdateNetwork(bundleOf("wifi_configuration" to network))
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -461,17 +463,20 @@ private fun SavedNetworks(navCtrl: NavHostController) {
     )
 }
 
+@Serializable
+object AddNetwork
+
 @Composable
-fun UpdateNetwork(arguments: Bundle, navCtrl: NavHostController) {
-    MyScaffold(R.string.update_network, 0.dp, navCtrl, false) {
-        AddNetwork(arguments.getParcelable("wifi_configuration"), navCtrl)
+fun AddNetworkScreen(data: Bundle, onNavigateUp: () -> Unit) {
+    MyScaffold(R.string.update_network, 0.dp, onNavigateUp, false) {
+        AddNetworkScreen(data.getParcelable("wifi_configuration"), onNavigateUp)
     }
 }
 
 @Suppress("DEPRECATION")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AddNetwork(wifiConfig: WifiConfiguration? = null, navCtrl: NavHostController? = null) {
+private fun AddNetworkScreen(wifiConfig: WifiConfiguration? = null, onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     var resultDialog by remember { mutableStateOf(false) }
     var createdNetworkId by remember { mutableIntStateOf(-1) }
@@ -721,7 +726,7 @@ private fun AddNetwork(wifiConfig: WifiConfiguration? = null, navCtrl: NavHostCo
                 TextButton(
                     onClick = {
                         resultDialog = false
-                        if(createdNetworkId != -1) navCtrl?.navigateUp()
+                        if(createdNetworkId != -1) onNavigateUp()
                     }
                 ) {
                     Text(stringResource(R.string.confirm))
@@ -732,14 +737,16 @@ private fun AddNetwork(wifiConfig: WifiConfiguration? = null, navCtrl: NavHostCo
     }
 }
 
+@Serializable object WifiSecurityLevel
+
 @RequiresApi(33)
 @Composable
-fun WifiSecurityLevel(navCtrl: NavHostController) {
+fun WifiSecurityLevelScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     var selectedWifiSecLevel by remember { mutableIntStateOf(0) }
     LaunchedEffect(Unit) { selectedWifiSecLevel = dpm.minimumRequiredWifiSecurityLevel }
-    MyScaffold(R.string.min_wifi_security_level, 8.dp, navCtrl) {
+    MyScaffold(R.string.min_wifi_security_level, 8.dp, onNavigateUp) {
         RadioButtonItem(R.string.wifi_security_open, selectedWifiSecLevel == WIFI_SECURITY_OPEN) { selectedWifiSecLevel = WIFI_SECURITY_OPEN }
         RadioButtonItem("WEP, WPA(2)-PSK", selectedWifiSecLevel == WIFI_SECURITY_PERSONAL) { selectedWifiSecLevel = WIFI_SECURITY_PERSONAL }
         RadioButtonItem("WPA-EAP", selectedWifiSecLevel == WIFI_SECURITY_ENTERPRISE_EAP) { selectedWifiSecLevel = WIFI_SECURITY_ENTERPRISE_EAP }
@@ -758,13 +765,15 @@ fun WifiSecurityLevel(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object WifiSsidPolicyScreen
+
 @RequiresApi(33)
 @Composable
-fun WifiSsidPolicy(navCtrl: NavHostController) {
+fun WifiSsidPolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
-    MyScaffold(R.string.wifi_ssid_policy, 8.dp, navCtrl) {
+    MyScaffold(R.string.wifi_ssid_policy, 8.dp, onNavigateUp) {
         var selectedPolicyType by remember { mutableIntStateOf(-1) }
         val ssidList = remember { mutableStateListOf<WifiSsid>() }
         val refreshPolicy = {
@@ -862,10 +871,12 @@ fun NetworkStats.toBucketList(): List<NetworkStats.Bucket> {
     return list
 }
 
+@Serializable object QueryNetworkStats
+
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(23)
 @Composable
-fun NetworkStats(navCtrl: NavHostController, vm: MyViewModel) {
+fun NetworkStatsScreen(onNavigateUp: () -> Unit, onNavigateToViewer: (NetworkStatsViewer) -> Unit) {
     val context = LocalContext.current
     val deviceOwner = context.isDeviceOwner
     val nsm = context.getSystemService(NetworkStatsManager::class.java)
@@ -884,7 +895,7 @@ fun NetworkStats(navCtrl: NavHostController, vm: MyViewModel) {
     val endTimeTextFieldInteractionSource = remember { MutableInteractionSource() }
     if(startTimeTextFieldInteractionSource.collectIsPressedAsState().value) activeTextField = NetworkStatsActiveTextField.StartTime
     if(endTimeTextFieldInteractionSource.collectIsPressedAsState().value) activeTextField = NetworkStatsActiveTextField.EndTime
-    MyScaffold(R.string.network_stats, 8.dp, navCtrl) {
+    MyScaffold(R.string.network_stats, 8.dp, onNavigateUp) {
         ExposedDropdownMenuBox(
             activeTextField == NetworkStatsActiveTextField.Type,
             { activeTextField = if(it) NetworkStatsActiveTextField.Type else NetworkStatsActiveTextField.Type }
@@ -1028,12 +1039,12 @@ fun NetworkStats(navCtrl: NavHostController, vm: MyViewModel) {
             var uidText by rememberSaveable { mutableStateOf(context.getString(NetworkStatsUID.All.strRes)) }
             var readOnly by rememberSaveable { mutableStateOf(true) }
             if(!readOnly && uidText.toIntOrNull() != null) uid = uidText.toInt()
-            if(VERSION.SDK_INT >= 24) {
-                val selectedPackage by vm.selectedPackage.collectAsStateWithLifecycle()
-                if(readOnly && selectedPackage != "") {
+            val choosePackage = rememberLauncherForActivityResult(ChoosePackageContract()) {
+                it ?: return@rememberLauncherForActivityResult
+                if(VERSION.SDK_INT >= 24 && readOnly) {
                     try {
-                        uid = context.packageManager.getPackageUid(selectedPackage, 0)
-                        uidText = "$selectedPackage ($uid)"
+                        uid = context.packageManager.getPackageUid(it, 0)
+                        uidText = "$it ($uid)"
                     } catch(_: NameNotFoundException) {
                         context.showOperationResultToast(false)
                     }
@@ -1066,8 +1077,8 @@ fun NetworkStats(navCtrl: NavHostController, vm: MyViewModel) {
                     text = { Text(stringResource(R.string.choose_an_app)) },
                     onClick = {
                         readOnly = true
-                        navCtrl.navigate("PackageSelector")
                         activeTextField = NetworkStatsActiveTextField.None
+                        choosePackage.launch(null)
                     }
                 )
                 DropdownMenuItem(
@@ -1186,28 +1197,18 @@ fun NetworkStats(navCtrl: NavHostController, vm: MyViewModel) {
                     } else {
                         val bundle = Bundle()
                         bundle.putInt("size", buckets.size)
-                        buckets.forEachIndexed { index, bucket ->
-                            val subBundle = bundleOf(
-                                "rx_bytes" to bucket.rxBytes,
-                                "rx_packets" to bucket.rxPackets,
-                                "tx_bytes" to bucket.txBytes,
-                                "tx_packets" to bucket.txPackets,
-                                "uid" to bucket.uid,
-                                "state" to bucket.state,
-                                "start_time" to bucket.startTimeStamp,
-                                "end_time" to bucket.endTimeStamp
+                        val stats = buckets.map {
+                            NetworkStatsViewer.Data(
+                                it.rxBytes, it.rxPackets, it.txBytes, it.txPackets,
+                                it.uid, it.state, it.startTimeStamp, it.endTimeStamp,
+                                if(VERSION.SDK_INT >= 24) it.tag else null,
+                                if(VERSION.SDK_INT >= 24) it.roaming else null,
+                                if(VERSION.SDK_INT >= 26) it.metered else null
                             )
-                            if(VERSION.SDK_INT >= 24) {
-                                subBundle.putInt("tag", bucket.tag)
-                                subBundle.putInt("roaming", bucket.roaming)
-                            }
-                            if(VERSION.SDK_INT >= 26) subBundle.putInt("metered", bucket.metered)
-                            bundle.putBundle(index.toString(), subBundle)
                         }
                         withContext(Dispatchers.Main) {
                             querying = false
-                            val nodeId = navCtrl.graph.findNode("NetworkStatsViewer")?.id
-                            if(nodeId != null) navCtrl.navigate(nodeId, bundle)
+                            onNavigateToViewer(NetworkStatsViewer(stats))
                         }
                     }
                 }
@@ -1245,12 +1246,32 @@ fun NetworkStats(navCtrl: NavHostController, vm: MyViewModel) {
     }
 }
 
+@Serializable
+data class NetworkStatsViewer(
+    val stats: List<Data>
+) {
+    @Serializable
+    data class Data(
+        val rxBytes: Long,
+        val rxPackets: Long,
+        val txBytes: Long,
+        val txPackets: Long,
+        val uid: Int,
+        val state: Int,
+        val startTime: Long,
+        val endTime: Long,
+        val tag: Int?,
+        val roaming: Int?,
+        val metered: Int?
+    )
+}
+
 @RequiresApi(23)
 @Composable
-fun NetworkStatsViewer(navCtrl: NavHostController, navArgs: Bundle) {
+fun NetworkStatsViewerScreen(nsv: NetworkStatsViewer, onNavigateUp: () -> Unit) {
     var index by remember { mutableIntStateOf(0) }
-    val size = navArgs.getInt("size", 1)
-    MyScaffold(R.string.place_holder, 8.dp, navCtrl, false) {
+    val size = nsv.stats.size
+    MyScaffold(R.string.place_holder, 8.dp, onNavigateUp, false) {
         if(size > 1) Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 8.dp)
@@ -1269,70 +1290,75 @@ fun NetworkStatsViewer(navCtrl: NavHostController, navArgs: Bundle) {
                 Icon(imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight, contentDescription = null)
             }
         }
-        val data = navArgs.getBundle(index.toString())!!
+        val data = nsv.stats[index]
         Text(
-            data.getLong("start_time").humanReadableDate + "  ~  " + data.getLong("end_time").humanReadableDate,
+            data.startTime.humanReadableDate + "  ~  " + data.endTime.humanReadableDate,
             modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 8.dp)
         )
-        val txBytes = data.getLong("tx_bytes")
+        val txBytes = data.txBytes
         Text(stringResource(R.string.transmitted), style = typography.titleLarge)
         Column(modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)) {
             Text("$txBytes bytes")
             Text(formatFileSize(txBytes))
-            Text(data.getLong("tx_packets").toString() + " packets")
+            Text(data.txPackets.toString() + " packets")
         }
-        val rxBytes = data.getLong("rx_bytes")
+        val rxBytes = data.rxBytes
         Text(stringResource(R.string.received), style = typography.titleLarge)
         Column(modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)) {
             Text("$rxBytes bytes")
             Text(formatFileSize(rxBytes))
-            Text(data.getLong("rx_packets").toString() + " packets")
+            Text(data.rxPackets.toString() + " packets")
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
-            val textMap = mapOf(
-                NetworkStats.Bucket.STATE_ALL to R.string.all,
-                NetworkStats.Bucket.STATE_DEFAULT to R.string.default_str,
-                NetworkStats.Bucket.STATE_FOREGROUND to R.string.foreground
-            )
+            val text = when(data.state) {
+                NetworkStats.Bucket.STATE_ALL -> R.string.all
+                NetworkStats.Bucket.STATE_DEFAULT -> R.string.default_str
+                NetworkStats.Bucket.STATE_FOREGROUND -> R.string.foreground
+                else -> R.string.unknown
+            }
             Text(stringResource(R.string.state), style = typography.titleMedium, modifier = Modifier.padding(end = 8.dp))
-            Text(stringResource(textMap[data.getInt("state")] ?: R.string.unknown))
+            Text(stringResource(text))
         }
         if(VERSION.SDK_INT >= 24) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                val tag = data.getInt("tag")
+                val tag = data.tag
                 Text(stringResource(R.string.tag), style = typography.titleMedium, modifier = Modifier.padding(end = 8.dp))
                 Text(if(tag == NetworkStats.Bucket.TAG_NONE) stringResource(R.string.all) else tag.toString())
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                val textMap = mapOf(
-                    NetworkStats.Bucket.ROAMING_ALL to R.string.all,
-                    NetworkStats.Bucket.ROAMING_YES to R.string.yes,
-                    NetworkStats.Bucket.ROAMING_NO to R.string.no
-                )
+                val text = when(data.roaming) {
+                    NetworkStats.Bucket.ROAMING_ALL -> R.string.all
+                    NetworkStats.Bucket.ROAMING_YES -> R.string.yes
+                    NetworkStats.Bucket.ROAMING_NO -> R.string.no
+                    else -> R.string.unknown
+                }
                 Text(stringResource(R.string.roaming), style = typography.titleMedium, modifier = Modifier.padding(end = 8.dp))
-                Text(stringResource(textMap[data.getInt("roaming")] ?: R.string.unknown))
+                Text(stringResource(text))
             }
         }
         if(VERSION.SDK_INT >= 26) Row(verticalAlignment = Alignment.CenterVertically) {
-            val textMap = mapOf(
-                NetworkStats.Bucket.METERED_ALL to R.string.all,
-                NetworkStats.Bucket.METERED_YES to R.string.yes,
-                NetworkStats.Bucket.METERED_NO to R.string.no
-            )
+            val text = when(data.metered) {
+                NetworkStats.Bucket.METERED_ALL -> R.string.all
+                NetworkStats.Bucket.METERED_YES -> R.string.yes
+                NetworkStats.Bucket.METERED_NO -> R.string.no
+                else -> R.string.unknown
+            }
             Text(stringResource(R.string.metered), style = typography.titleMedium, modifier = Modifier.padding(end = 8.dp))
-            Text(stringResource(textMap[data.getInt("metered")] ?: R.string.unknown))
+            Text(stringResource(text))
         }
     }
 }
 
+@Serializable object PrivateDns
+
 @RequiresApi(29)
 @Composable
-fun PrivateDNS(navCtrl: NavHostController) {
+fun PrivateDnsScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    MyScaffold(R.string.private_dns, 8.dp, navCtrl) {
+    MyScaffold(R.string.private_dns, 8.dp, onNavigateUp) {
         val dnsStatus = mapOf(
             PRIVATE_DNS_MODE_UNKNOWN to stringResource(R.string.unknown),
             PRIVATE_DNS_MODE_OFF to stringResource(R.string.disabled),
@@ -1397,9 +1423,11 @@ fun PrivateDNS(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object AlwaysOnVpnPackage
+
 @RequiresApi(24)
 @Composable
-fun AlwaysOnVPNPackage(navCtrl: NavHostController, vm: MyViewModel) {
+fun AlwaysOnVpnPackageScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -1408,12 +1436,8 @@ fun AlwaysOnVPNPackage(navCtrl: NavHostController, vm: MyViewModel) {
     val focusMgr = LocalFocusManager.current
     val refresh = { pkgName = dpm.getAlwaysOnVpnPackage(receiver) ?: "" }
     LaunchedEffect(Unit) { refresh() }
-    val updatePackage by vm.selectedPackage.collectAsState()
-    LaunchedEffect(updatePackage) {
-        if(updatePackage != "") {
-            pkgName = updatePackage
-            vm.selectedPackage.value = ""
-        }
+    val choosePackage = rememberLauncherForActivityResult(ChoosePackageContract()) { result ->
+        result?.let { pkgName = it }
     }
     val setAlwaysOnVpn: (String?, Boolean)->Boolean = { vpnPkg: String?, lockdownEnabled: Boolean ->
         try {
@@ -1430,7 +1454,7 @@ fun AlwaysOnVPNPackage(navCtrl: NavHostController, vm: MyViewModel) {
             false
         }
     }
-    MyScaffold(R.string.always_on_vpn, 8.dp, navCtrl) {
+    MyScaffold(R.string.always_on_vpn, 8.dp, onNavigateUp) {
         OutlinedTextField(
             value = pkgName,
             onValueChange = { pkgName = it },
@@ -1441,10 +1465,7 @@ fun AlwaysOnVPNPackage(navCtrl: NavHostController, vm: MyViewModel) {
                 Icon(painter = painterResource(R.drawable.list_fill0), contentDescription = null,
                     modifier = Modifier
                         .clip(RoundedCornerShape(50))
-                        .clickable(onClick = {
-                            focusMgr.clearFocus()
-                            navCtrl.navigate("PackageSelector")
-                        })
+                        .clickable { choosePackage.launch(null) }
                         .padding(3.dp))
             },
             modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
@@ -1468,8 +1489,10 @@ fun AlwaysOnVPNPackage(navCtrl: NavHostController, vm: MyViewModel) {
     }
 }
 
+@Serializable object RecommendedGlobalProxy
+
 @Composable
-fun RecommendedGlobalProxy(navCtrl: NavHostController) {
+fun RecommendedGlobalProxyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -1479,7 +1502,7 @@ fun RecommendedGlobalProxy(navCtrl: NavHostController) {
     var specifyPort by remember { mutableStateOf(false) }
     var proxyPort by remember { mutableStateOf("") }
     var exclList by remember { mutableStateOf("") }
-    MyScaffold(R.string.recommended_global_proxy, 8.dp, navCtrl) {
+    MyScaffold(R.string.recommended_global_proxy, 8.dp, onNavigateUp) {
         RadioButtonItem(R.string.proxy_type_off, proxyType == 0) { proxyType = 0 }
         RadioButtonItem(R.string.proxy_type_pac, proxyType == 1) { proxyType = 1 }
         RadioButtonItem(R.string.proxy_type_direct, proxyType == 2) { proxyType = 2 }
@@ -1564,9 +1587,11 @@ fun RecommendedGlobalProxy(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object NetworkLogging
+
 @RequiresApi(26)
 @Composable
-fun NetworkLogging(navCtrl: NavHostController) {
+fun NetworkLoggingScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -1583,7 +1608,7 @@ fun NetworkLogging(navCtrl: NavHostController) {
             }
         }
     }
-    MyScaffold(R.string.network_logging, 8.dp, navCtrl) {
+    MyScaffold(R.string.network_logging, 8.dp, onNavigateUp) {
         SwitchItem(
             R.string.enable,
             getState = { dpm.isNetworkLoggingEnabled(receiver) },
@@ -1620,14 +1645,16 @@ fun NetworkLogging(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object WifiAuthKeypair
+
 @RequiresApi(31)
 @Composable
-fun WifiAuthKeypair(navCtrl: NavHostController) {
+fun WifiAuthKeypairScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
     var keyPair by remember { mutableStateOf("") }
-    MyScaffold(R.string.wifi_auth_keypair, 8.dp, navCtrl) {
+    MyScaffold(R.string.wifi_auth_keypair, 8.dp, onNavigateUp) {
         OutlinedTextField(
             value = keyPair,
             label = { Text(stringResource(R.string.alias)) },
@@ -1662,9 +1689,11 @@ fun WifiAuthKeypair(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object PreferentialNetworkService
+
 @RequiresApi(33)
 @Composable
-fun PreferentialNetworkService(navCtrl: NavHostController) {
+fun PreferentialNetworkServiceScreen(onNavigateUp: () -> Unit) {
     val focusMgr = LocalFocusManager.current
     val context = LocalContext.current
     val dpm = context.getDPM()
@@ -1703,7 +1732,7 @@ fun PreferentialNetworkService(navCtrl: NavHostController) {
         refresh()
     }
     LaunchedEffect(Unit) { initialize() }
-    MyScaffold(R.string.preferential_network_service, 8.dp, navCtrl) {
+    MyScaffold(R.string.preferential_network_service, 8.dp, onNavigateUp) {
         SwitchItem(R.string.enabled, state = masterEnabled, onCheckedChange = { masterEnabled = it }, padding = false)
         Row(
             horizontalArrangement = Arrangement.SpaceAround,
@@ -1814,9 +1843,11 @@ fun PreferentialNetworkService(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object OverrideApn
+
 @RequiresApi(28)
 @Composable
-fun OverrideAPN(navCtrl: NavHostController) {
+fun OverrideApnScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -1825,7 +1856,7 @@ fun OverrideAPN(navCtrl: NavHostController) {
     var inputNum by remember { mutableStateOf("0") }
     var nextStep by remember { mutableStateOf(false) }
     val builder = Builder()
-    MyScaffold(R.string.override_apn_settings, 8.dp, navCtrl) {
+    MyScaffold(R.string.override_apn_settings, 8.dp, onNavigateUp) {
         Text(text = stringResource(id = R.string.developing))
         Spacer(Modifier.padding(vertical = 5.dp))
         SwitchItem(

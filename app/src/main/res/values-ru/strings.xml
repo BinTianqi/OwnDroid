@@ -369,8 +369,6 @@
 
     <!--Управление приложениями-->
     <string name="applications">Приложения</string>
-    <string name="pkg_selector">Выбор пакета</string>
-    <string name="loading">Загрузка</string>
     <string name="show_user_app">Показывать пользовательские приложения</string>
     <string name="show_system_app">Показывать системные приложения</string>
     <string name="suspend">Приостановить</string>
@@ -419,7 +417,6 @@
     <string name="profile_owner_is_restricted">Владелец профиля может использовать ограниченные функции</string>
     <string name="switch_to_disable_feature">Включите переключатель, чтобы отключить эту функцию.</string>
     <string name="some_features_invalid_in_work_profile">Функции в рабочем профиле ограничены.</string>
-    <string name="network_and_internet">Сеть</string>
     <string name="connectivity">Другие подключения</string>
     <string name="media">Медиа</string>
     <string name="other">Другое</string>
@@ -645,6 +642,8 @@
     <string name="permission_BODY_SENSORS">Доступ к датчикам тела</string>
     <string name="permission_BODY_SENSORS_BACKGROUND">Доступ к датчикам тела в фоновом режиме</string>
     <string name="permission_ACTIVITY_RECOGNITION">Распознавание активности</string>
+
+    <string name="package_chooser">Package chooser</string> <!--TODO-->
 
     <string name="app_installer">Установщик приложений</string>
     <string name="mode">Режим</string>

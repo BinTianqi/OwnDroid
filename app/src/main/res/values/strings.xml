@@ -398,8 +398,6 @@
 
     <!--Applications-->
     <string name="applications">Applications</string>
-    <string name="pkg_selector">Package selector</string>
-    <string name="loading">Loading</string>
     <string name="show_user_app">Show user apps</string>
     <string name="show_system_app">Show system apps</string>
     <string name="suspend">Suspend</string>
@@ -448,7 +446,6 @@
     <string name="profile_owner_is_restricted">Profile owner can use limited function</string>
     <string name="switch_to_disable_feature">Turn on a switch to disable that function. </string>
     <string name="some_features_invalid_in_work_profile">Functions in work profile is limited. </string>
-    <string name="network_and_internet">Network</string>
     <string name="connectivity">Other connection</string>
     <string name="media">Media</string>
     <string name="other">Other</string>
@@ -672,6 +669,8 @@
     <string name="permission_BODY_SENSORS">Access body sensors</string>
     <string name="permission_BODY_SENSORS_BACKGROUND">Access body sensors in background</string>
     <string name="permission_ACTIVITY_RECOGNITION">Activity recognition</string>
+
+    <string name="package_chooser">Package chooser</string>
 
     <string name="app_installer">App installer</string>
     <string name="mode">Mode</string>

@@ -10,18 +10,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.SwitchItem
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Restriction(
     val id: String,
     @StringRes val name: Int,
@@ -29,45 +28,59 @@ data class Restriction(
     val requiresApi: Int = 0
 )
 
+@Serializable object UserRestriction
+
 @RequiresApi(24)
 @Composable
-fun UserRestriction(navCtrl:NavHostController, vm: MyViewModel) {
+fun UserRestrictionScreen(onNavigateUp: () -> Unit, onNavigate: (Int, List<Restriction>) -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    LaunchedEffect(Unit) {
-        vm.userRestrictions.value = dpm.getUserRestrictions(receiver)
-    }
-    MyScaffold(R.string.user_restriction, 0.dp, navCtrl) {
+    MyScaffold(R.string.user_restriction, 0.dp, onNavigateUp) {
         Text(text = stringResource(R.string.switch_to_disable_feature), modifier = Modifier.padding(start = 16.dp))
         if(context.isProfileOwner) { Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.padding(start = 16.dp)) }
         if(context.isProfileOwner && dpm.isManagedProfile(receiver)) {
             Text(text = stringResource(R.string.some_features_invalid_in_work_profile), modifier = Modifier.padding(start = 16.dp))
         }
         Spacer(Modifier.padding(vertical = 2.dp))
-        FunctionItem(R.string.network_and_internet, icon = R.drawable.wifi_fill0) { navCtrl.navigate("UR-Internet") }
-        FunctionItem(R.string.connectivity, icon = R.drawable.devices_other_fill0) { navCtrl.navigate("UR-Connectivity") }
-        FunctionItem(R.string.applications, icon = R.drawable.apps_fill0) { navCtrl.navigate("UR-Applications") }
-        FunctionItem(R.string.users, icon = R.drawable.account_circle_fill0) { navCtrl.navigate("UR-Users") }
-        FunctionItem(R.string.media, icon = R.drawable.volume_up_fill0) { navCtrl.navigate("UR-Media") }
-        FunctionItem(R.string.other, icon = R.drawable.more_horiz_fill0) { navCtrl.navigate("UR-Other") }
+        FunctionItem(R.string.network, icon = R.drawable.language_fill0) {
+            onNavigate(R.string.network, RestrictionData.internet)
+        }
+        FunctionItem(R.string.connectivity, icon = R.drawable.devices_other_fill0) {
+            onNavigate(R.string.connectivity, RestrictionData.connectivity)
+        }
+        FunctionItem(R.string.applications, icon = R.drawable.apps_fill0) {
+            onNavigate(R.string.applications, RestrictionData.applications)
+        }
+        FunctionItem(R.string.users, icon = R.drawable.account_circle_fill0) {
+            onNavigate(R.string.users, RestrictionData.users)
+        }
+        FunctionItem(R.string.media, icon = R.drawable.volume_up_fill0) {
+            onNavigate(R.string.media, RestrictionData.media)
+        }
+        FunctionItem(R.string.other, icon = R.drawable.more_horiz_fill0) {
+            onNavigate(R.string.other, RestrictionData.other)
+        }
     }
 }
 
+@Serializable
+data class UserRestrictionOptions(
+    val title: Int, val items: List<Restriction>
+)
+
 @RequiresApi(24)
 @Composable
-fun UserRestrictionScreen(
-    title: Int, items: List<Restriction>, restrictions: Bundle,
+fun UserRestrictionOptionsScreen(
+    data: UserRestrictionOptions, restrictions: Bundle,
     onRestrictionChange: (String, Boolean) -> Unit, onNavigateUp: () -> Unit
 ) {
-    MyScaffold(title, 0.dp, onNavigateUp, false) {
-        items.filter { Build.VERSION.SDK_INT >= it.requiresApi }.forEach { restriction ->
+    MyScaffold(data.title, 0.dp, onNavigateUp, false) {
+        data.items.filter { Build.VERSION.SDK_INT >= it.requiresApi }.forEach { restriction ->
             SwitchItem(
                 restriction.name, restriction.id, restriction.icon,
                 restrictions.getBoolean(restriction.id), { onRestrictionChange(restriction.id, it) }, padding = true
             )
-            /*Box(modifier = Modifier.padding(start = 22.dp, end = 16.dp)) {
-            }*/
         }
     }
 }

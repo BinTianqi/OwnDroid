@@ -85,7 +85,7 @@ java.lang.SecurityException: Neither user 2000 nor current process has android.p
 ```
 
 解决办法：
-- 在开发者设置中打开`USB debugging (Security setting)`。
+- 在开发者设置中打开`USB调试（安全设置）`。
 - 在root命令行中执行激活命令
 
 #### ColorOS
