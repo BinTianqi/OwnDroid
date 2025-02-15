@@ -40,11 +40,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
@@ -122,14 +125,12 @@ fun ApplicationsScreen(onNavigateUp: () -> Unit) {
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
                         trailingIcon = {
-                            Icon(painter = painterResource(R.drawable.list_fill0), contentDescription = null,
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(50))
-                                    .clickable(onClick = {
-                                        focusMgr.clearFocus()
-                                        choosePackage.launch(null)
-                                    })
-                                    .padding(3.dp))
+                            IconButton({
+                                focusMgr.clearFocus()
+                                choosePackage.launch(null)
+                            }) {
+                                Icon(Icons.AutoMirrored.Default.List, stringResource(R.string.package_chooser))
+                            }
                         },
                         textStyle = typography.bodyLarge,
                         singleLine = true
@@ -173,13 +174,8 @@ private fun HomeScreen(pkgName: String, onNavigate: (Any) -> Unit) {
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
     var suspend by remember { mutableStateOf(false) }
-    suspend = try{ if(VERSION.SDK_INT >= 24) dpm.isPackageSuspended(receiver, pkgName) else false }
-        catch(_: NameNotFoundException) { false }
-        catch(_: IllegalArgumentException) { false }
     var hide by remember { mutableStateOf(false) }
-    hide = dpm.isApplicationHidden(receiver, pkgName)
     var blockUninstall by remember { mutableStateOf(false) }
-    blockUninstall = dpm.isUninstallBlocked(receiver,pkgName)
     var appControlAction by remember { mutableIntStateOf(0) }
     val focusMgr = LocalFocusManager.current
     val appControl: (Boolean) -> Unit = {
@@ -197,6 +193,13 @@ private fun HomeScreen(pkgName: String, onNavigate: (Any) -> Unit) {
             2 -> hide = dpm.isApplicationHidden(receiver,pkgName)
             3 -> blockUninstall = dpm.isUninstallBlocked(receiver,pkgName)
         }
+    }
+    LaunchedEffect(pkgName) {
+        suspend = try{ if(VERSION.SDK_INT >= 24) dpm.isPackageSuspended(receiver, pkgName) else false }
+            catch(_: NameNotFoundException) { false }
+            catch(_: IllegalArgumentException) { false }
+        hide = dpm.isApplicationHidden(receiver, pkgName)
+        blockUninstall = dpm.isUninstallBlocked(receiver,pkgName)
     }
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())

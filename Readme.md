@@ -4,6 +4,11 @@
 
 使用安卓Device owner特权管理你的设备。
 
+## 下载
+
+[IzzyOnDroid F-Droid Repository](https://apt.izzysoft.de/fdroid/index/apk/com.bintianqi.owndroid)
+[Releases on GitHub](https://github.com/BinTianqi/OwnDroid/releases)
+
 ## 功能
 
 - 系统

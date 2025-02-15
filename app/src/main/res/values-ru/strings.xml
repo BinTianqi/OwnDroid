@@ -649,6 +649,12 @@
     <string name="mode">Режим</string>
     <string name="full_install">Полная установка</string>
     <string name="inherit_existing">Наследовать существующие</string>
+    <!--TODO： 5 new strings-->
+    <string name="keep_original_enabled_setting">Keep original enabled setting</string>
+    <string name="dont_kill_app">Don\'t kill app</string>
+    <string name="install_location">Install location</string>
+    <string name="internal_only">Internal only</string>
+    <string name="prefer_external">Prefer external</string>
     <string name="packages">Пакеты</string>
     <string name="add_packages">Добавить пакет(ы)</string>
     <string name="status_failure_blocked">Операция была заблокирована: %1$s</string>

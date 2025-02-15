@@ -676,6 +676,11 @@
     <string name="mode">Mode</string>
     <string name="full_install">Full install</string>
     <string name="inherit_existing">Inherit existing</string>
+    <string name="keep_original_enabled_setting">Keep original enabled setting</string>
+    <string name="dont_kill_app">Don\'t kill app</string>
+    <string name="install_location">Install location</string>
+    <string name="internal_only">Internal only</string>
+    <string name="prefer_external">Prefer external</string>
     <string name="packages">Packages</string>
     <string name="add_packages">Add package(s)</string>
     <string name="status_failure_blocked">The operation was blocked by: %1$s</string>

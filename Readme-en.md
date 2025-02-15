@@ -4,6 +4,11 @@
 
 Use Android Device owner privilege to manage your device.
 
+## Download
+
+[IzzyOnDroid F-Droid Repository](https://apt.izzysoft.de/fdroid/index/apk/com.bintianqi.owndroid)
+[Releases on GitHub](https://github.com/BinTianqi/OwnDroid/releases)
+
 ## Features
 
 - System

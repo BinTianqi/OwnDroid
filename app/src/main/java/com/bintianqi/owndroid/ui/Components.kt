@@ -100,6 +100,21 @@ fun RadioButtonItem(
 }
 
 @Composable
+fun FullWidthRadioButtonItem(
+    text: Int,
+    selected: Boolean,
+    operation: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().clickable(onClick = operation)
+    ) {
+        RadioButton(selected = selected, onClick = operation, modifier = Modifier.padding(horizontal = 4.dp))
+        Text(text = stringResource(text), modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
+    }
+}
+
+@Composable
 fun CheckBoxItem(
     @StringRes text: Int,
     checked: Boolean,
@@ -118,6 +133,20 @@ fun CheckBoxItem(
     }
 }
 
+@Composable
+fun FullWidthCheckBoxItem(
+    @StringRes text: Int,
+    checked: Boolean,
+    operation: (Boolean) -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().clickable { operation(!checked) }
+    ) {
+        Checkbox(checked = checked, onCheckedChange = operation, modifier = Modifier.padding(horizontal = 4.dp))
+        Text(text = stringResource(text), modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
+    }
+}
 
 @Composable
 fun SwitchItem(

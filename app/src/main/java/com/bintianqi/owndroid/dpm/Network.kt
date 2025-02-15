@@ -20,7 +20,6 @@ import android.app.admin.WifiSsidPolicy.WIFI_SSID_POLICY_TYPE_DENYLIST
 import android.app.usage.NetworkStats
 import android.app.usage.NetworkStatsManager
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager.NameNotFoundException
 import android.net.ConnectivityManager
 import android.net.IpConfiguration
@@ -82,6 +81,8 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -343,10 +344,12 @@ private fun SavedNetworks(onNavigateToUpdateNetwork: (Bundle) -> Unit) {
     val wm = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
     val configuredNetworks = remember { mutableStateListOf<WifiConfiguration>() }
     var networkDetailsDialog by remember { mutableIntStateOf(-1) } // -1:Hidden, 0+:Index of configuredNetworks
+    val coroutine = rememberCoroutineScope()
     fun refresh() {
         configuredNetworks.clear()
-        wm.configuredNetworks.forEach { network ->
-            if(configuredNetworks.none { it.networkId == network.networkId }) configuredNetworks += network
+        coroutine.launch(Dispatchers.IO) {
+            val list = wm.configuredNetworks.distinctBy { it.networkId }
+            withContext(Dispatchers.Main) { configuredNetworks.addAll(list) }
         }
     }
     LaunchedEffect(Unit) { refresh() }
@@ -439,6 +442,7 @@ private fun SavedNetworks(onNavigateToUpdateNetwork: (Bundle) -> Unit) {
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    Icon(Icons.Default.Edit, null)
                     Text(stringResource(R.string.edit))
                 }
                 TextButton(
@@ -450,6 +454,7 @@ private fun SavedNetworks(onNavigateToUpdateNetwork: (Bundle) -> Unit) {
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    Icon(Icons.Outlined.Delete, null)
                     Text(stringResource(R.string.remove))
                 }
             }

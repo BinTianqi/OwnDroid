@@ -196,7 +196,9 @@ fun UserInfoScreen(onNavigateUp: () -> Unit) {
         if(VERSION.SDK_INT >= 23) CardItem(R.string.system_user, userManager.isSystemUser.yesOrNo)
         if(VERSION.SDK_INT >= 34) CardItem(R.string.admin_user, userManager.isAdminUser.yesOrNo)
         if(VERSION.SDK_INT >= 25) CardItem(R.string.demo_user, userManager.isDemoUser.yesOrNo)
-        if(VERSION.SDK_INT >= 26) CardItem(R.string.creation_time, parseTimestamp(userManager.getUserCreationTime(user)))
+        if(VERSION.SDK_INT >= 26) userManager.getUserCreationTime(user).let {
+            if(it != 0L) CardItem(R.string.creation_time, parseTimestamp(it))
+        }
         if (VERSION.SDK_INT >= 28) {
             CardItem(R.string.logout_enabled, dpm.isLogoutEnabled.yesOrNo)
             if(context.isDeviceOwner || context.isProfileOwner) {

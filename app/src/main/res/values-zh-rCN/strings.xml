@@ -631,10 +631,16 @@
     <string name="permission_BODY_SENSORS_BACKGROUND">后台使用身体传感器</string>
     <string name="permission_ACTIVITY_RECOGNITION">查看使用情况</string>
 
+    <string name="package_chooser">包选择器</string>
     <string name="app_installer">App安装器</string>
     <string name="mode">模式</string>
     <string name="full_install">完整安装</string>
     <string name="inherit_existing">继承已有</string>
+    <string name="keep_original_enabled_setting">保持原始启用设置</string>
+    <string name="dont_kill_app">不要杀死app</string>
+    <string name="install_location">安装位置</string>
+    <string name="internal_only">仅内部</string>
+    <string name="prefer_external">外部优先</string>
     <string name="packages">软件包</string>
     <string name="add_packages">添加包</string>
     <string name="status_failure_blocked">操作被 %1$s 阻止。</string>
