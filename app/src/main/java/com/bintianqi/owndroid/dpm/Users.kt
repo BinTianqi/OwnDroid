@@ -2,7 +2,6 @@ package com.bintianqi.owndroid.dpm
 
 import android.app.admin.DevicePolicyManager
 import android.content.Context
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Binder
@@ -10,13 +9,11 @@ import android.os.Build.VERSION
 import android.os.Process
 import android.os.UserHandle
 import android.os.UserManager
-import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -36,7 +33,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,7 +52,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
@@ -115,7 +110,16 @@ fun UsersScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
             FunctionItem(R.string.change_username, icon = R.drawable.edit_fill0) { onNavigate(ChangeUsername) }
         }
         if(VERSION.SDK_INT >= 23 && (deviceOwner || profileOwner)) {
-            FunctionItem(R.string.change_user_icon, icon = R.drawable.account_circle_fill0) { onNavigate(ChangeUserIcon) }
+            var changeUserIconDialog by remember { mutableStateOf(false) }
+            var bitmap: Bitmap? by remember { mutableStateOf(null) }
+            val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
+                if(it != null) uriToStream(context, it) { stream ->
+                    bitmap = BitmapFactory.decodeStream(stream)
+                    if(bitmap != null) changeUserIconDialog = true
+                }
+            }
+            FunctionItem(R.string.change_user_icon, icon = R.drawable.account_circle_fill0) { launcher.launch("image/*") }
+            if(changeUserIconDialog == true) ChangeUserIconDialog(bitmap!!) { changeUserIconDialog = false }
         }
         if(VERSION.SDK_INT >= 28 && deviceOwner) {
             FunctionItem(R.string.user_session_msg, icon = R.drawable.notifications_fill0) { onNavigate(UserSessionMessage) }
@@ -568,56 +572,36 @@ fun UserSessionMessageScreen(onNavigateUp: () -> Unit) {
     }
 }
 
-@Serializable object ChangeUserIcon
-
 @RequiresApi(23)
 @Composable
-fun ChangeUserIconScreen(onNavigateUp: () -> Unit) {
+private fun ChangeUserIconDialog(bitmap: Bitmap, onClose: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    var getContent by remember { mutableStateOf(false) }
-    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
-    val getFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        it.data?.data?.let {
-            uriToStream(context, it) { stream ->
-                bitmap = BitmapFactory.decodeStream(stream)
+    AlertDialog(
+        title = { Text(stringResource(R.string.change_user_icon)) },
+        text = {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                Image(
+                    bitmap = bitmap.asImageBitmap(), contentDescription = null,
+                    modifier = Modifier.size(80.dp).clip(RoundedCornerShape(50))
+                )
             }
-        }
-    }
-    MyScaffold(R.string.change_user_icon, 8.dp, onNavigateUp) {
-        CheckBoxItem(R.string.file_picker_instead_gallery, getContent) { getContent = it }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = {
-                val intent = Intent(if(getContent) Intent.ACTION_GET_CONTENT else Intent.ACTION_PICK)
-                if(getContent) intent.addCategory(Intent.CATEGORY_OPENABLE)
-                intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*")
-                getFileLauncher.launch(intent)
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.select_picture))
-        }
-        AnimatedVisibility(visible = bitmap != null, modifier = Modifier.align(Alignment.CenterHorizontally)) {
-            Card(modifier = Modifier.padding(top = 8.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(10.dp)) {
-                    Image(
-                        bitmap = bitmap!!.asImageBitmap(), contentDescription = "User icon",
-                        modifier = Modifier.padding(end = 12.dp).size(80.dp).clip(RoundedCornerShape(50))
-                    )
-                    Button(
-                        onClick = {
-                            dpm.setUserIcon(receiver, bitmap)
-                            context.showOperationResultToast(true)
-                        }
-                    ) {
-                        Text(stringResource(R.string.apply))
-                    }
-                }
+        },
+        confirmButton = {
+            TextButton({
+                context.getDPM().setUserIcon(context.getReceiver(), bitmap)
+                context.showOperationResultToast(true)
+                onClose()
+            }) {
+                Text(stringResource(R.string.confirm))
             }
-        }
-    }
+        },
+        dismissButton = {
+            TextButton(onClose) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+        onDismissRequest = onClose
+    )
 }
 
 @StringRes

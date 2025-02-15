@@ -1598,14 +1598,12 @@ fun NetworkLoggingScreen(onNavigateUp: () -> Unit) {
     val logFile = context.filesDir.resolve("NetworkLogs.json")
     var fileSize by remember { mutableLongStateOf(0) }
     LaunchedEffect(Unit) { fileSize = logFile.length() }
-    val exportNetworkLogsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        result.data?.data?.let { uri ->
-            context.contentResolver.openOutputStream(uri)?.use { outStream ->
-                outStream.write("[".encodeToByteArray())
-                logFile.inputStream().use { it.copyTo(outStream) }
-                outStream.write("]".encodeToByteArray())
-                context.showOperationResultToast(true)
-            }
+    val exportNetworkLogsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        if(uri != null) context.contentResolver.openOutputStream(uri)?.use { outStream ->
+            outStream.write("[".encodeToByteArray())
+            logFile.inputStream().use { it.copyTo(outStream) }
+            outStream.write("]".encodeToByteArray())
+            context.showOperationResultToast(true)
         }
     }
     MyScaffold(R.string.network_logging, 8.dp, onNavigateUp) {
@@ -1619,11 +1617,7 @@ fun NetworkLoggingScreen(onNavigateUp: () -> Unit) {
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
             Button(
                 onClick = {
-                    val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
-                    intent.addCategory(Intent.CATEGORY_OPENABLE)
-                    intent.setType("application/json")
-                    intent.putExtra(Intent.EXTRA_TITLE, "NetworkLogs.json")
-                    exportNetworkLogsLauncher.launch(intent)
+                    exportNetworkLogsLauncher.launch("NetworkLogs.json")
                 },
                 enabled = fileSize > 0,
                 modifier = Modifier.fillMaxWidth(0.49F)

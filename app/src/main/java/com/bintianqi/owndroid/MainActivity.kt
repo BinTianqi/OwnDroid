@@ -76,8 +76,6 @@ import com.bintianqi.owndroid.dpm.ChangeTime
 import com.bintianqi.owndroid.dpm.ChangeTimeScreen
 import com.bintianqi.owndroid.dpm.ChangeTimeZone
 import com.bintianqi.owndroid.dpm.ChangeTimeZoneScreen
-import com.bintianqi.owndroid.dpm.ChangeUserIcon
-import com.bintianqi.owndroid.dpm.ChangeUserIconScreen
 import com.bintianqi.owndroid.dpm.ChangeUsername
 import com.bintianqi.owndroid.dpm.ChangeUsernameScreen
 import com.bintianqi.owndroid.dpm.ContentProtectionPolicy
@@ -255,31 +253,19 @@ class MainActivity : FragmentActivity() {
 @ExperimentalMaterial3Api
 @Composable
 fun Home(activity: FragmentActivity, vm: MyViewModel) {
-    val navCtrl = rememberNavController()
+    val navController = rememberNavController()
     val context = LocalContext.current
-    val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val sp = SharedPrefs(context)
     val focusMgr = LocalFocusManager.current
     val backToHome by backToHomeStateFlow.collectAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(backToHome) {
-        if(backToHome) { navCtrl.navigateUp(); backToHomeStateFlow.value = false }
+        if(backToHome) { navController.navigateUp(); backToHomeStateFlow.value = false }
     }
     val userRestrictions by vm.userRestrictions.collectAsStateWithLifecycle()
-    fun onUserRestrictionsChange(id: String, status: Boolean) {
-        try {
-            if(status) dpm.addUserRestriction(receiver, id)
-            else dpm.clearUserRestriction(receiver, id)
-            @SuppressLint("NewApi")
-            vm.userRestrictions.value = dpm.getUserRestrictions(receiver)
-        } catch(_: Exception) {
-            context.showOperationResultToast(false)
-        }
-    }
-    fun navigateUp() { navCtrl.navigateUp() }
+    fun navigateUp() { navController.navigateUp() }
     @Suppress("NewApi") NavHost(
-        navController = navCtrl,
+        navController = navController,
         startDestination = Home,
         modifier = Modifier
             .fillMaxSize()
@@ -291,15 +277,15 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         popEnterTransition = Animations.navHostPopEnterTransition,
         popExitTransition = Animations.navHostPopExitTransition
     ) {
-        composable<Home> { HomeScreen { navCtrl.navigate(it) } }
+        composable<Home> { HomeScreen { navController.navigate(it) } }
 
         composable<Permissions> {
-            PermissionsScreen(::navigateUp, { navCtrl.navigate(it) }) {
-                val dest = navCtrl.graph.findNode(ShizukuScreen)!!.id
-                navCtrl.navigate(dest, it)
+            PermissionsScreen(::navigateUp, { navController.navigate(it) }) {
+                val dest = navController.graph.findNode(ShizukuScreen)!!.id
+                navController.navigate(dest, it)
             }
         }
-        composable<ShizukuScreen> { ShizukuScreen(it.arguments!!, ::navigateUp) { navCtrl.navigate(it) } }
+        composable<ShizukuScreen> { ShizukuScreen(it.arguments!!, ::navigateUp) { navController.navigate(it) } }
         composable<Accounts>(mapOf(serializableNavTypePair<List<Accounts.Account>>())) { AccountsScreen(it.toRoute(), ::navigateUp) }
         composable<DeviceAdmin> { DeviceAdminScreen(::navigateUp) }
         composable<ProfileOwner> { ProfileOwnerScreen(::navigateUp) }
@@ -310,7 +296,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable<SupportMessage> { SupportMessageScreen(::navigateUp) }
         composable<TransferOwnership> { TransferOwnershipScreen(::navigateUp) }
 
-        composable<SystemManager> { SystemManagerScreen(::navigateUp) { navCtrl.navigate(it) } }
+        composable<SystemManager> { SystemManagerScreen(::navigateUp) { navController.navigate(it) } }
         composable<SystemOptions> { SystemOptionsScreen(::navigateUp) }
         composable<Keyguard> { KeyguardScreen(::navigateUp) }
         composable<HardwareMonitor> { HardwareMonitorScreen(::navigateUp) }
@@ -330,20 +316,20 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable<FrpPolicy> { FrpPolicyScreen(::navigateUp) }
         composable<WipeData> { WipeDataScreen(::navigateUp) }
 
-        composable<Network> { NetworkScreen(::navigateUp) { navCtrl.navigate(it) } }
+        composable<Network> { NetworkScreen(::navigateUp) { navController.navigate(it) } }
         composable<WiFi> {
-            WifiScreen(::navigateUp, { navCtrl.navigate(it) }) {
-                val dest = navCtrl.graph.findNode(AddNetwork)!!.id
-                navCtrl.navigate(dest, it)
+            WifiScreen(::navigateUp, { navController.navigate(it) }) {
+                val dest = navController.graph.findNode(AddNetwork)!!.id
+                navController.navigate(dest, it)
             }
         }
         composable<NetworkOptions> { NetworkOptionsScreen(::navigateUp) }
         composable<AddNetwork> { AddNetworkScreen(it.arguments!!, ::navigateUp) }
         composable<WifiSecurityLevel> { WifiSecurityLevelScreen(::navigateUp) }
         composable<WifiSsidPolicyScreen> { WifiSsidPolicyScreen(::navigateUp) }
-        composable<QueryNetworkStats> { NetworkStatsScreen(::navigateUp) { navCtrl.navigate(it) } }
+        composable<QueryNetworkStats> { NetworkStatsScreen(::navigateUp) { navController.navigate(it) } }
         composable<NetworkStatsViewer>(mapOf(serializableNavTypePair<List<NetworkStatsViewer.Data>>())) {
-            NetworkStatsViewerScreen(it.toRoute()) { navCtrl.navigateUp() }
+            NetworkStatsViewerScreen(it.toRoute()) { navController.navigateUp() }
         }
         composable<PrivateDns> { PrivateDnsScreen(::navigateUp) }
         composable<AlwaysOnVpnPackage> { AlwaysOnVpnPackageScreen(::navigateUp) }
@@ -353,7 +339,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable<PreferentialNetworkService> { PreferentialNetworkServiceScreen(::navigateUp) }
         composable<OverrideApn> { OverrideApnScreen(::navigateUp) }
 
-        composable<WorkProfile> { WorkProfileScreen(::navigateUp) { navCtrl.navigate(it) } }
+        composable<WorkProfile> { WorkProfileScreen(::navigateUp) { navController.navigate(it) } }
         composable<OrganizationOwnedProfile> { OrganizationOwnedProfileScreen(::navigateUp) }
         composable<CreateWorkProfile> { CreateWorkProfileScreen(::navigateUp) }
         composable<SuspendPersonalApp> { SuspendPersonalAppScreen(::navigateUp) }
@@ -364,27 +350,36 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
 
         composable<UserRestriction> {
             LaunchedEffect(Unit) {
-                vm.userRestrictions.value = dpm.getUserRestrictions(receiver)
+                vm.userRestrictions.value = context.getDPM().getUserRestrictions(receiver)
             }
             UserRestrictionScreen(::navigateUp) { title, items ->
-                navCtrl.navigate(UserRestrictionOptions(title, items))
+                navController.navigate(UserRestrictionOptions(title, items))
             }
         }
         composable<UserRestrictionOptions>(mapOf(serializableNavTypePair<List<Restriction>>())) {
-            UserRestrictionOptionsScreen(it.toRoute(), userRestrictions, ::onUserRestrictionsChange, ::navigateUp)
+            UserRestrictionOptionsScreen(it.toRoute(), userRestrictions, ::navigateUp) { id, status ->
+                try {
+                    val dpm = context.getDPM()
+                    if(status) dpm.addUserRestriction(receiver, id)
+                    else dpm.clearUserRestriction(receiver, id)
+                    @SuppressLint("NewApi")
+                    vm.userRestrictions.value = dpm.getUserRestrictions(receiver)
+                } catch(_: Exception) {
+                    context.showOperationResultToast(false)
+                }
+            }
         }
 
-        composable<Users> { UsersScreen(::navigateUp) { navCtrl.navigate(it) } }
+        composable<Users> { UsersScreen(::navigateUp) { navController.navigate(it) } }
         composable<UserInfo> { UserInfoScreen(::navigateUp) }
         composable<UsersOptions> { UsersOptionsScreen(::navigateUp) }
         composable<UserOperation> { UserOperationScreen(::navigateUp) }
         composable<CreateUser> { CreateUserScreen(::navigateUp) }
         composable<ChangeUsername> { ChangeUsernameScreen(::navigateUp) }
-        composable<ChangeUserIcon> { ChangeUserIconScreen(::navigateUp) }
         composable<UserSessionMessage> { UserSessionMessageScreen(::navigateUp) }
         composable<AffiliationId> { AffiliationIdScreen(::navigateUp) }
 
-        composable<Password> { PasswordScreen(::navigateUp) { navCtrl.navigate(it) } }
+        composable<Password> { PasswordScreen(::navigateUp) { navController.navigate(it) } }
         composable<PasswordInfo> { PasswordInfoScreen(::navigateUp) }
         composable<ResetPasswordToken> { ResetPasswordTokenScreen(::navigateUp) }
         composable<ResetPassword> { ResetPasswordScreen(::navigateUp) }
@@ -392,7 +387,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable<KeyguardDisabledFeatures> { KeyguardDisabledFeaturesScreen(::navigateUp) }
         composable<RequiredPasswordQuality> { RequiredPasswordQualityScreen(::navigateUp) }
 
-        composable<Settings> { SettingsScreen(::navigateUp) { navCtrl.navigate(it) } }
+        composable<Settings> { SettingsScreen(::navigateUp) { navController.navigate(it) } }
         composable<SettingsOptions> { SettingsOptionsScreen(::navigateUp) }
         composable<Appearance> {
             val theme by vm.theme.collectAsStateWithLifecycle()
@@ -409,11 +404,12 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
     }
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
+            val sp = SharedPrefs(context)
             if(
                 (event == Lifecycle.Event.ON_RESUME && sp.auth && sp.lockInBackground) ||
                 (event == Lifecycle.Event.ON_CREATE && sp.auth)
             ) {
-                navCtrl.navigate(Authenticate) { launchSingleTop = true }
+                navController.navigate(Authenticate) { launchSingleTop = true }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -422,6 +418,8 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         }
     }
     LaunchedEffect(Unit) {
+        val dpm = context.getDPM()
+        val sp = SharedPrefs(context)
         val profileNotActivated = !sp.managedProfileActivated && context.isProfileOwner && (VERSION.SDK_INT < 24 || dpm.isManagedProfile(receiver))
         if(profileNotActivated) {
             dpm.setProfileEnabled(receiver)

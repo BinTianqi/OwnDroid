@@ -241,7 +241,8 @@ class AppInstallerViewModel(application: Application): AndroidViewModel(applicat
     val writtenPackages = MutableStateFlow(setOf<Uri>())
     val writingPackage = MutableStateFlow<Uri?>(null)
     fun startInstallationProcess(activity: FragmentActivity) {
-        startAuth(activity, object : BiometricPrompt.AuthenticationCallback() {
+        val sp = SharedPrefs(getApplication<Application>())
+        if(sp.auth) startAuth(activity, object : BiometricPrompt.AuthenticationCallback() {
             override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                 super.onAuthenticationSucceeded(result)
                 startInstall()
@@ -251,6 +252,7 @@ class AppInstallerViewModel(application: Application): AndroidViewModel(applicat
                 Toast.makeText(activity, R.string.failed_to_authenticate, Toast.LENGTH_SHORT).show()
             }
         })
+        else startInstall()
     }
     private fun startInstall() {
         if(installing.value) return

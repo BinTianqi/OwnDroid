@@ -69,8 +69,9 @@ fun SettingsOptionsScreen(onNavigateUp: () -> Unit) {
 @Serializable object Appearance
 
 @Composable
-fun AppearanceScreen(onNavigateUp: () -> Unit, theme: ThemeSettings, onThemeChange: (ThemeSettings) -> Unit) {
+fun AppearanceScreen(onNavigateUp: () -> Unit, currentTheme: ThemeSettings, onThemeChange: (ThemeSettings) -> Unit) {
     var darkThemeMenu by remember { mutableStateOf(false) }
+    var theme by remember { mutableStateOf(currentTheme) }
     val darkThemeTextID = when(theme.darkTheme) {
         1 -> R.string.on
         0 -> R.string.off
@@ -78,7 +79,11 @@ fun AppearanceScreen(onNavigateUp: () -> Unit, theme: ThemeSettings, onThemeChan
     }
     MyScaffold(R.string.appearance, 0.dp, onNavigateUp) {
         if(VERSION.SDK_INT >= 31) {
-            SwitchItem(R.string.material_you_color, state = theme.materialYou, onCheckedChange = { onThemeChange(theme.copy(materialYou = it)) })
+            SwitchItem(
+                R.string.material_you_color,
+                state = theme.materialYou,
+                onCheckedChange = { theme = theme.copy(materialYou = it) }
+            )
         }
         Box {
             FunctionItem(R.string.dark_theme, stringResource(darkThemeTextID)) { darkThemeMenu = true }
@@ -89,28 +94,33 @@ fun AppearanceScreen(onNavigateUp: () -> Unit, theme: ThemeSettings, onThemeChan
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.follow_system)) },
                     onClick = {
-                        onThemeChange(theme.copy(darkTheme = -1))
+                        theme = theme.copy(darkTheme = -1)
                         darkThemeMenu = false
                     }
                 )
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.on)) },
                     onClick = {
-                        onThemeChange(theme.copy(darkTheme = 1))
+                        theme = theme.copy(darkTheme = 1)
                         darkThemeMenu = false
                     }
                 )
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.off)) },
                     onClick = {
-                        onThemeChange(theme.copy(darkTheme = 0))
+                        theme = theme.copy(darkTheme = 0)
                         darkThemeMenu = false
                     }
                 )
             }
         }
         AnimatedVisibility(theme.darkTheme == 1 || (theme.darkTheme == -1 && isSystemInDarkTheme())) {
-            SwitchItem(R.string.black_theme, state = theme.blackTheme, onCheckedChange = { onThemeChange(theme.copy(blackTheme = it)) })
+            SwitchItem(R.string.black_theme, state = theme.blackTheme, onCheckedChange = { theme = theme.copy(blackTheme = it) })
+        }
+        AnimatedVisibility(theme != currentTheme, Modifier.fillMaxWidth().padding(8.dp)) {
+            Button({onThemeChange(theme)}) {
+                Text(stringResource(R.string.apply))
+            }
         }
     }
 }

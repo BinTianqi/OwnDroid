@@ -1299,21 +1299,17 @@ fun SecurityLoggingScreen(onNavigateUp: () -> Unit) {
     var fileSize by remember { mutableLongStateOf(0) }
     LaunchedEffect(Unit) { fileSize = logFile.length() }
     var preRebootSecurityLogs by remember { mutableStateOf(byteArrayOf()) }
-    val exportPreRebootSecurityLogs = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        result.data?.data?.let { uri ->
-            context.contentResolver.openOutputStream(uri)?.use { outStream ->
-                preRebootSecurityLogs.inputStream().copyTo(outStream)
-            }
+    val exportPreRebootSecurityLogs = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        if(uri != null) context.contentResolver.openOutputStream(uri)?.use { outStream ->
+            preRebootSecurityLogs.inputStream().copyTo(outStream)
         }
     }
-    val exportSecurityLogs = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        result.data?.data?.let { uri ->
-            context.contentResolver.openOutputStream(uri)?.use { outStream ->
-                outStream.write("[".toByteArray())
-                logFile.inputStream().use { it.copyTo(outStream) }
-                outStream.write("]".toByteArray())
-                context.showOperationResultToast(true)
-            }
+    val exportSecurityLogs = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        if(uri != null) context.contentResolver.openOutputStream(uri)?.use { outStream ->
+            outStream.write("[".toByteArray())
+            logFile.inputStream().use { it.copyTo(outStream) }
+            outStream.write("]".toByteArray())
+            context.showOperationResultToast(true)
         }
     }
     MyScaffold(R.string.security_logging, 8.dp, onNavigateUp) {
@@ -1326,11 +1322,7 @@ fun SecurityLoggingScreen(onNavigateUp: () -> Unit) {
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
             Button(
                 onClick = {
-                    val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
-                    intent.addCategory(Intent.CATEGORY_OPENABLE)
-                    intent.setType("application/json")
-                    intent.putExtra(Intent.EXTRA_TITLE, "SecurityLogs.json")
-                    exportSecurityLogs.launch(intent)
+                    exportSecurityLogs.launch("SecurityLogs.json")
                 },
                 enabled = fileSize > 0,
                 modifier = Modifier.fillMaxWidth(0.49F)
@@ -1362,11 +1354,7 @@ fun SecurityLoggingScreen(onNavigateUp: () -> Unit) {
                     processSecurityLogs(logs, outputStream)
                     outputStream.write("]".encodeToByteArray())
                     preRebootSecurityLogs = outputStream.toByteArray()
-                    val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
-                    intent.addCategory(Intent.CATEGORY_OPENABLE)
-                    intent.setType("application/json")
-                    intent.putExtra(Intent.EXTRA_TITLE, "PreRebootSecurityLogs.json")
-                    exportPreRebootSecurityLogs.launch(intent)
+                    exportPreRebootSecurityLogs.launch("PreRebootSecurityLogs.json")
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -1742,16 +1730,11 @@ fun InstallSystemUpdateScreen(onNavigateUp: () -> Unit) {
         }
     }
     var uri by remember { mutableStateOf<Uri?>(null) }
-    val getFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        uri = it.data?.data
-    }
+    val getFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri = it }
     MyScaffold(R.string.install_system_update, 8.dp, onNavigateUp) {
         Button(
             onClick = {
-                val intent = Intent(Intent.ACTION_GET_CONTENT)
-                intent.setType("application/zip")
-                intent.addCategory(Intent.CATEGORY_OPENABLE)
-                getFileLauncher.launch(intent)
+                getFileLauncher.launch("application/zip")
             },
             modifier = Modifier.fillMaxWidth()
         ) {

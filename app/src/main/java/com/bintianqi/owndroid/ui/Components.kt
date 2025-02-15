@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
@@ -67,16 +68,10 @@ fun FunctionItem(
 }
 
 @Composable
-fun NavIcon(operation: () -> Unit) {
-    Icon(
-        painter = painterResource(R.drawable.arrow_back_fill0),
-        contentDescription = "Back arrow",
-        modifier = Modifier
-            .padding(horizontal = 6.dp)
-            .clip(RoundedCornerShape(50))
-            .clickable(onClick = operation)
-            .padding(5.dp)
-    )
+fun NavIcon(onClick: () -> Unit) {
+    IconButton(onClick) {
+        Icon(Icons.AutoMirrored.Default.ArrowBack, null)
+    }
 }
 
 @Composable

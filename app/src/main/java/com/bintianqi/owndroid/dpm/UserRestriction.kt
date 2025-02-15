@@ -73,7 +73,7 @@ data class UserRestrictionOptions(
 @Composable
 fun UserRestrictionOptionsScreen(
     data: UserRestrictionOptions, restrictions: Bundle,
-    onRestrictionChange: (String, Boolean) -> Unit, onNavigateUp: () -> Unit
+    onNavigateUp: () -> Unit, onRestrictionChange: (String, Boolean) -> Unit
 ) {
     MyScaffold(data.title, 0.dp, onNavigateUp, false) {
         data.items.filter { Build.VERSION.SDK_INT >= it.requiresApi }.forEach { restriction ->
