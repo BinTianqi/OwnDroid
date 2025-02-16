@@ -2,7 +2,6 @@ package com.bintianqi.owndroid.dpm
 
 import android.annotation.SuppressLint
 import android.app.KeyguardManager
-import android.app.admin.DevicePolicyManager.ACTION_SET_NEW_PASSWORD
 import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_BIOMETRICS
 import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_FACE
 import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_FEATURES_ALL
@@ -29,7 +28,6 @@ import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED
 import android.app.admin.DevicePolicyManager.RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT
 import android.app.admin.DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY
 import android.content.Context
-import android.content.Intent
 import android.os.Build.VERSION
 import android.os.UserManager
 import android.widget.Toast
@@ -67,12 +65,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
-import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
+import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.InfoCard
 import com.bintianqi.owndroid.ui.MyScaffold
@@ -219,15 +218,17 @@ fun PasswordInfoScreen(onNavigateUp: () -> Unit) {
     val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
+    var dialog by remember { mutableIntStateOf(0) } // 0:none, 1:password complexity
     MyScaffold(R.string.password_info, 8.dp, onNavigateUp) {
         if(VERSION.SDK_INT >= 29) {
-            val passwordComplexity = mapOf(
-                PASSWORD_COMPLEXITY_NONE to R.string.password_complexity_none,
-                PASSWORD_COMPLEXITY_LOW to R.string.password_complexity_low,
-                PASSWORD_COMPLEXITY_MEDIUM to R.string.password_complexity_medium,
-                PASSWORD_COMPLEXITY_HIGH to R.string.password_complexity_high
-            )
-            CardItem(R.string.current_password_complexity, passwordComplexity[dpm.passwordComplexity] ?: R.string.unknown)
+            val text = when(dpm.passwordComplexity) {
+                PASSWORD_COMPLEXITY_NONE -> R.string.none
+                PASSWORD_COMPLEXITY_LOW -> R.string.low
+                PASSWORD_COMPLEXITY_MEDIUM -> R.string.medium
+                PASSWORD_COMPLEXITY_HIGH -> R.string.high
+                else -> R.string.unknown
+            }
+            CardItem(R.string.current_password_complexity, text) { dialog = 1 }
         }
         if(deviceOwner || profileOwner) {
             CardItem(R.string.password_sufficient, dpm.isActivePasswordSufficient.yesOrNo)
@@ -236,6 +237,15 @@ fun PasswordInfoScreen(onNavigateUp: () -> Unit) {
             CardItem(R.string.unified_password, dpm.isUsingUnifiedPassword(receiver).yesOrNo)
         }
     }
+    if(dialog != 0) AlertDialog(
+        text = { Text(stringResource(R.string.info_password_complexity)) },
+        confirmButton = {
+            TextButton({ dialog = 0 }) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        onDismissRequest = { dialog = 0 }
+    )
 }
 
 @Serializable object ResetPasswordToken
@@ -430,34 +440,29 @@ fun RequiredPasswordComplexityScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val passwordComplexity = mapOf(
-        PASSWORD_COMPLEXITY_NONE to R.string.password_complexity_none,
-        PASSWORD_COMPLEXITY_LOW to R.string.password_complexity_low,
-        PASSWORD_COMPLEXITY_MEDIUM to R.string.password_complexity_medium,
-        PASSWORD_COMPLEXITY_HIGH to R.string.password_complexity_high
+        PASSWORD_COMPLEXITY_NONE to R.string.none,
+        PASSWORD_COMPLEXITY_LOW to R.string.low,
+        PASSWORD_COMPLEXITY_MEDIUM to R.string.medium,
+        PASSWORD_COMPLEXITY_HIGH to R.string.high
     )
     var selectedItem by remember { mutableIntStateOf(PASSWORD_COMPLEXITY_NONE) }
     LaunchedEffect(Unit) { selectedItem = dpm.requiredPasswordComplexity }
-    MyScaffold(R.string.required_password_complexity, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.required_password_complexity, 0.dp, onNavigateUp) {
         passwordComplexity.forEach {
-            RadioButtonItem(it.value, selectedItem == it.key) { selectedItem = it.key }
+            FullWidthRadioButtonItem(it.value, selectedItem == it.key) { selectedItem = it.key }
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 dpm.requiredPasswordComplexity = selectedItem
+                selectedItem = dpm.requiredPasswordComplexity
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 8.dp)
         ) {
             Text(text = stringResource(R.string.apply))
         }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = { context.startActivity(Intent(ACTION_SET_NEW_PASSWORD)) },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.require_set_new_password))
-        }
+        InfoCard(R.string.info_password_complexity, 8.dp)
     }
 }
 
@@ -494,20 +499,19 @@ fun KeyguardDisabledFeaturesScreen(onNavigateUp: () -> Unit) {
     }
     LaunchedEffect(mode) { if(mode != 2) flag = dpm.getKeyguardDisabledFeatures(receiver) }
     LaunchedEffect(Unit) { refresh() }
-    MyScaffold(R.string.disable_keyguard_features, 8.dp, onNavigateUp) {
-        RadioButtonItem(R.string.enable_all, mode == 0) { mode = 0 }
-        RadioButtonItem(R.string.disable_all, mode == 1) { mode = 1 }
-        RadioButtonItem(R.string.custom, mode == 2) { mode = 2 }
+    MyScaffold(R.string.disable_keyguard_features, 0.dp, onNavigateUp) {
+        FullWidthRadioButtonItem(R.string.enable_all, mode == 0) { mode = 0 }
+        FullWidthRadioButtonItem(R.string.disable_all, mode == 1) { mode = 1 }
+        FullWidthRadioButtonItem(R.string.custom, mode == 2) { mode = 2 }
         AnimatedVisibility(mode == 2) {
             Column {
                 flagsLiat.forEach {
-                    CheckBoxItem(it.first, flag and it.second == it.second) { checked ->
+                    FullWidthCheckBoxItem(it.first, flag and it.second == it.second) { checked ->
                         flag = if(checked) flag or it.second else flag and (flag xor it.second)
                     }
                 }
             }
         }
-        Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 val disabledFeatures = if(mode == 0) KEYGUARD_DISABLE_FEATURES_NONE else if(mode == 1) KEYGUARD_DISABLE_FEATURES_ALL else flag
@@ -515,7 +519,7 @@ fun KeyguardDisabledFeaturesScreen(onNavigateUp: () -> Unit) {
                 refresh()
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
         ) {
             Text(text = stringResource(R.string.apply))
         }

@@ -118,7 +118,10 @@ fun UsersScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
                     if(bitmap != null) changeUserIconDialog = true
                 }
             }
-            FunctionItem(R.string.change_user_icon, icon = R.drawable.account_circle_fill0) { launcher.launch("image/*") }
+            FunctionItem(R.string.change_user_icon, icon = R.drawable.account_circle_fill0) {
+                Toast.makeText(context, R.string.select_an_image, Toast.LENGTH_SHORT).show()
+                launcher.launch("image/*")
+            }
             if(changeUserIconDialog == true) ChangeUserIconDialog(bitmap!!) { changeUserIconDialog = false }
         }
         if(VERSION.SDK_INT >= 28 && deviceOwner) {
@@ -432,7 +435,8 @@ fun AffiliationIdScreen(onNavigateUp: () -> Unit) {
                     onClick = {
                         list += input
                         input = ""
-                    }
+                    },
+                    enabled = input.isNotEmpty()
                 ) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(R.string.add))
                 }
@@ -453,7 +457,7 @@ fun AffiliationIdScreen(onNavigateUp: () -> Unit) {
         ) {
             Text(stringResource(R.string.apply))
         }
-        InfoCard(R.string.info_affiliated_id)
+        InfoCard(R.string.info_affiliation_id)
     }
 }
 

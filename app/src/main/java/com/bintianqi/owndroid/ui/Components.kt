@@ -272,12 +272,12 @@ fun ListItem(text: String, onDelete: () -> Unit) {
 }
 
 @Composable
-fun InfoCard(@StringRes strID: Int) {
+fun InfoCard(@StringRes strID: Int, horizonPadding: Dp = 0.dp) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .clip(RoundedCornerShape(10))
+            .padding(vertical = 8.dp, horizontal = horizonPadding)
+            .clip(RoundedCornerShape(12.dp))
             .background(color = colorScheme.tertiaryContainer)
             .padding(8.dp)
     ) {

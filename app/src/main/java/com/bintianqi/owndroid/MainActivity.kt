@@ -62,6 +62,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.bintianqi.owndroid.dpm.Accounts
 import com.bintianqi.owndroid.dpm.AccountsScreen
+import com.bintianqi.owndroid.dpm.AddDelegatedAdmin
+import com.bintianqi.owndroid.dpm.AddDelegatedAdminScreen
 import com.bintianqi.owndroid.dpm.AddNetwork
 import com.bintianqi.owndroid.dpm.AddNetworkScreen
 import com.bintianqi.owndroid.dpm.AffiliationId
@@ -167,7 +169,7 @@ import com.bintianqi.owndroid.dpm.SystemManager
 import com.bintianqi.owndroid.dpm.SystemManagerScreen
 import com.bintianqi.owndroid.dpm.SystemOptions
 import com.bintianqi.owndroid.dpm.SystemOptionsScreen
-import com.bintianqi.owndroid.dpm.SystemUpdatePolicy
+import com.bintianqi.owndroid.dpm.SystemUpdatePolicyScreen
 import com.bintianqi.owndroid.dpm.TransferOwnership
 import com.bintianqi.owndroid.dpm.TransferOwnershipScreen
 import com.bintianqi.owndroid.dpm.UserInfo
@@ -264,6 +266,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
     }
     val userRestrictions by vm.userRestrictions.collectAsStateWithLifecycle()
     fun navigateUp() { navController.navigateUp() }
+    fun navigate(destination: Any) { navController.navigate(destination) }
     @Suppress("NewApi") NavHost(
         navController = navController,
         startDestination = Home,
@@ -290,13 +293,14 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable<DeviceAdmin> { DeviceAdminScreen(::navigateUp) }
         composable<ProfileOwner> { ProfileOwnerScreen(::navigateUp) }
         composable<DeviceOwner> { DeviceOwnerScreen(::navigateUp) }
-        composable<DelegatedAdmins> { DelegatedAdminsScreen(::navigateUp) }
+        composable<DelegatedAdmins> { DelegatedAdminsScreen(::navigateUp, ::navigate) }
+        composable<AddDelegatedAdmin>{ AddDelegatedAdminScreen(it.toRoute(), ::navigateUp) }
         composable<DeviceInfo> { DeviceInfoScreen(::navigateUp) }
         composable<LockScreenInfo> { LockScreenInfoScreen(::navigateUp) }
         composable<SupportMessage> { SupportMessageScreen(::navigateUp) }
         composable<TransferOwnership> { TransferOwnershipScreen(::navigateUp) }
 
-        composable<SystemManager> { SystemManagerScreen(::navigateUp) { navController.navigate(it) } }
+        composable<SystemManager> { SystemManagerScreen(::navigateUp, ::navigate) }
         composable<SystemOptions> { SystemOptionsScreen(::navigateUp) }
         composable<Keyguard> { KeyguardScreen(::navigateUp) }
         composable<HardwareMonitor> { HardwareMonitorScreen(::navigateUp) }
@@ -311,12 +315,12 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable<CaCert> { CaCertScreen(::navigateUp) }
         composable<SecurityLogging> { SecurityLoggingScreen(::navigateUp) }
         composable<DisableAccountManagement> { DisableAccountManagementScreen(::navigateUp) }
-        composable<SetSystemUpdatePolicy> { SystemUpdatePolicy(::navigateUp) }
+        composable<SetSystemUpdatePolicy> { SystemUpdatePolicyScreen(::navigateUp) }
         composable<InstallSystemUpdate> { InstallSystemUpdateScreen(::navigateUp) }
         composable<FrpPolicy> { FrpPolicyScreen(::navigateUp) }
         composable<WipeData> { WipeDataScreen(::navigateUp) }
 
-        composable<Network> { NetworkScreen(::navigateUp) { navController.navigate(it) } }
+        composable<Network> { NetworkScreen(::navigateUp, ::navigate) }
         composable<WiFi> {
             WifiScreen(::navigateUp, { navController.navigate(it) }) {
                 val dest = navController.graph.findNode(AddNetwork)!!.id
@@ -327,7 +331,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable<AddNetwork> { AddNetworkScreen(it.arguments!!, ::navigateUp) }
         composable<WifiSecurityLevel> { WifiSecurityLevelScreen(::navigateUp) }
         composable<WifiSsidPolicyScreen> { WifiSsidPolicyScreen(::navigateUp) }
-        composable<QueryNetworkStats> { NetworkStatsScreen(::navigateUp) { navController.navigate(it) } }
+        composable<QueryNetworkStats> { NetworkStatsScreen(::navigateUp, ::navigate) }
         composable<NetworkStatsViewer>(mapOf(serializableNavTypePair<List<NetworkStatsViewer.Data>>())) {
             NetworkStatsViewerScreen(it.toRoute()) { navController.navigateUp() }
         }
@@ -339,7 +343,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable<PreferentialNetworkService> { PreferentialNetworkServiceScreen(::navigateUp) }
         composable<OverrideApn> { OverrideApnScreen(::navigateUp) }
 
-        composable<WorkProfile> { WorkProfileScreen(::navigateUp) { navController.navigate(it) } }
+        composable<WorkProfile> { WorkProfileScreen(::navigateUp, ::navigate) }
         composable<OrganizationOwnedProfile> { OrganizationOwnedProfileScreen(::navigateUp) }
         composable<CreateWorkProfile> { CreateWorkProfileScreen(::navigateUp) }
         composable<SuspendPersonalApp> { SuspendPersonalAppScreen(::navigateUp) }
@@ -370,7 +374,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
             }
         }
 
-        composable<Users> { UsersScreen(::navigateUp) { navController.navigate(it) } }
+        composable<Users> { UsersScreen(::navigateUp, ::navigate) }
         composable<UserInfo> { UserInfoScreen(::navigateUp) }
         composable<UsersOptions> { UsersOptionsScreen(::navigateUp) }
         composable<UserOperation> { UserOperationScreen(::navigateUp) }
@@ -379,7 +383,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable<UserSessionMessage> { UserSessionMessageScreen(::navigateUp) }
         composable<AffiliationId> { AffiliationIdScreen(::navigateUp) }
 
-        composable<Password> { PasswordScreen(::navigateUp) { navController.navigate(it) } }
+        composable<Password> { PasswordScreen(::navigateUp, ::navigate) }
         composable<PasswordInfo> { PasswordInfoScreen(::navigateUp) }
         composable<ResetPasswordToken> { ResetPasswordTokenScreen(::navigateUp) }
         composable<ResetPassword> { ResetPasswordScreen(::navigateUp) }
@@ -387,7 +391,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable<KeyguardDisabledFeatures> { KeyguardDisabledFeaturesScreen(::navigateUp) }
         composable<RequiredPasswordQuality> { RequiredPasswordQualityScreen(::navigateUp) }
 
-        composable<Settings> { SettingsScreen(::navigateUp) { navController.navigate(it) } }
+        composable<Settings> { SettingsScreen(::navigateUp, ::navigate) }
         composable<SettingsOptions> { SettingsOptionsScreen(::navigateUp) }
         composable<Appearance> {
             val theme by vm.theme.collectAsStateWithLifecycle()

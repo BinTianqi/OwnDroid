@@ -555,8 +555,7 @@
     <string name="serial_number_of_new_user_is">Serial number of this user: %1$d</string>
     <string name="affiliation_id">Affiliation ID</string>
     <string name="change_user_icon">Change user icon</string>
-    <string name="file_picker_instead_gallery">Use file picker instead of gallery</string>
-    <string name="select_picture" tools:ignore="TypographyEllipsis">Select image...</string>
+    <string name="select_an_image">Select an image</string>
     <string name="fail_managed_profile">Failed: managed profile</string>
     <string name="fail_current_user">Failed: current user</string>
     <string name="user_session_msg">User session message</string>
@@ -571,10 +570,9 @@
     <string name="max_time_to_lock">Screen timeout</string>
     <string name="required_strong_auth_timeout">Required strong auth timeout</string>
     <string name="pwd_history">Password history length</string>
-    <string name="password_complexity_none">None (No password allowed)</string>
-    <string name="password_complexity_low">Low (Gesture password and characters repetition allowed)</string>
-    <string name="password_complexity_medium">Medium (Repetition disallowed, 4 characters at least)</string>
-    <string name="password_complexity_high">High (Repetition disallowed, 6 characters at least)</string>
+    <string name="low">Low</string>
+    <string name="medium">Medium</string>
+    <string name="high">High</string>
     <string name="current_password_complexity">Current password complexity</string>
     <string name="password_sufficient">Password complexity sufficient</string>
     <string name="unified_password">Unified password</string>
@@ -592,7 +590,6 @@
     <string name="reset_password_require_entry">Require entry</string>
     <string name="reset_password_with_token">Reset password with token</string>
     <string name="required_password_complexity">Required password complexity</string>
-    <string name="require_set_new_password">Request to set a new password</string>
     <string name="disable_keyguard_features">Keyguard features</string>
     <string name="enable_all">Enable all</string>
     <string name="disable_keyguard_features_widgets">Disable widget</string>
@@ -734,7 +731,8 @@
     <string name="info_keep_uninstalled_apps">Set a list of apps to keep around as APKs even if no user has currently installed it. </string>
     <string name="info_headless_system_user_mode">Headless system user mode means the system user runs system services and some system UI, but it is not associated with any real person and additional users must be created to be associated with real persons.</string>
     <string name="info_logout">If the current user is not switched by OwnDroid, this function cannot be used.</string>
-    <string name="info_affiliated_id">When Device owner create a managed user, the managed user isn\'t affiliated. In order to make the managed user affiliated with the Device owner, you should set same affiliated IDs in main user and managed user</string>
+    <string name="info_affiliation_id">When Device owner create a managed user, the managed user isn\'t affiliated. In order to make the managed user affiliated with the Device owner, you should set same affiliated IDs in main user and managed user</string>
+    <string name="info_password_complexity">None: no password\nLow: pattern, PIN (with repeating or ordered sequences)\nMedium: PIN (with no repeating or ordered sequences, length at least 4), alphabetic (length at least 4), alphanumeric (length at least 4)\nHigh: PIN (with no repeating or ordered sequences, length at least 8), alphabetic (length at least 6), alphanumeric (length at least 6)</string>
     <string name="info_reset_password">Set a new lockscreen password. The length of this password must be at least 4 digits. Keep it empty to remove password.\nIf you set a numeric password that length is 6 or lower, it will set as PIN</string>
     <string name="info_screen_timeout">Set the maximum time for user activity until the device will lock. This limits the length that the user can set.\nA value of 0 means there is no restriction.</string>
     <string name="info_password_expiration_timeout">Restart the countdown for password expiration.\nA value of 0 means there is no restriction.</string>

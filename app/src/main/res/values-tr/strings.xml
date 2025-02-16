@@ -530,8 +530,7 @@
     <string name="serial_number_of_new_user_is">Bu kullanıcının seri numarası: %1$d</string>
     <string name="affiliation_id">Bağlılık ID</string>
     <string name="change_user_icon">Kullanıcı simgesini değiştir</string>
-    <string name="file_picker_instead_gallery">Galeri yerine dosya seçici kullan</string>
-    <string name="select_picture" tools:ignore="TypographyEllipsis">Resim seç...</string>
+    <string name="select_an_image">Select an image</string> <!--TODO-->
     <string name="fail_managed_profile">Başarısız: yönetilen profil</string>
     <string name="fail_current_user">Başarısız: mevcut kullanıcı</string>
     <string name="user_session_msg">Kullanıcı oturum mesajı</string>
@@ -546,10 +545,10 @@
     <string name="max_time_to_lock">Ekran zaman aşımı</string>
     <string name="required_strong_auth_timeout">Gereken güçlü doğrulama zaman aşımı</string>
     <string name="pwd_history">Şifre geçmişi uzunluğu</string>
-    <string name="password_complexity_none">Yok (Şifreye izin verilmez)</string>
-    <string name="password_complexity_low">Düşük (Hareket şifresi ve karakter tekrarı izinli)</string>
-    <string name="password_complexity_medium">Orta (Tekrar yasak, en az 4 karakter)</string>
-    <string name="password_complexity_high">Yüksek (Tekrar yasak, en az 6 karakter)</string>
+    <!--TODO: 3 strings-->
+    <string name="low">Low</string>
+    <string name="medium">Medium</string>
+    <string name="high">High</string>
     <string name="current_password_complexity">Mevcut şifre karmaşıklığı</string>
     <string name="password_sufficient">Şifre karmaşıklığı yeterli mi</string>
     <string name="unified_password">Birleşik şifre</string>
@@ -567,7 +566,6 @@
     <string name="reset_password_require_entry">Giriş gerektir</string>
     <string name="reset_password_with_token">Jeton ile şifreyi sıfırla</string>
     <string name="required_password_complexity">Gereken şifre karmaşıklığı</string>
-    <string name="require_set_new_password">Yeni şifre ayarlanmasını iste</string>
     <string name="disable_keyguard_features">Kilit ekranı özellikleri</string>
     <string name="enable_all">Tümünü etkinleştir</string>
     <string name="disable_keyguard_features_widgets">Widget\'ı devre dışı bırak</string>

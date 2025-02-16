@@ -133,6 +133,7 @@ import com.bintianqi.owndroid.humanReadableDate
 import com.bintianqi.owndroid.parseDate
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.InfoCard
 import com.bintianqi.owndroid.ui.ListItem
@@ -847,13 +848,13 @@ fun ContentProtectionPolicyScreen(onNavigateUp: () -> Unit) {
     var policy by remember { mutableIntStateOf(DevicePolicyManager.CONTENT_PROTECTION_NOT_CONTROLLED_BY_POLICY) }
     fun refresh() { policy = dpm.getContentProtectionPolicy(receiver) }
     LaunchedEffect(Unit) { refresh() }
-    MyScaffold(R.string.content_protection_policy, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.content_protection_policy, 0.dp, onNavigateUp) {
         mapOf(
             DevicePolicyManager.CONTENT_PROTECTION_NOT_CONTROLLED_BY_POLICY to R.string.not_controlled_by_policy,
             DevicePolicyManager.CONTENT_PROTECTION_ENABLED to R.string.enabled,
             DevicePolicyManager.CONTENT_PROTECTION_DISABLED to R.string.disabled
         ).forEach { (policyId, string) ->
-            RadioButtonItem(string, policy == policyId) { policy = policyId }
+            FullWidthRadioButtonItem(string, policy == policyId) { policy = policyId }
         }
         Button(
             onClick = {
@@ -861,11 +862,11 @@ fun ContentProtectionPolicyScreen(onNavigateUp: () -> Unit) {
                 refresh()
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 8.dp)
         ) {
             Text(stringResource(R.string.apply))
         }
-        InfoCard(R.string.info_content_protection_policy)
+        InfoCard(R.string.info_content_protection_policy, 8.dp)
     }
 }
 
@@ -878,21 +879,27 @@ fun PermissionPolicyScreen(onNavigateUp: () -> Unit) {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     var selectedPolicy by remember { mutableIntStateOf(dpm.getPermissionPolicy(receiver)) }
-    MyScaffold(R.string.permission_policy, 8.dp, onNavigateUp) {
-        RadioButtonItem(R.string.default_stringres, selectedPolicy == PERMISSION_POLICY_PROMPT) { selectedPolicy = PERMISSION_POLICY_PROMPT }
-        RadioButtonItem(R.string.auto_grant, selectedPolicy == PERMISSION_POLICY_AUTO_GRANT) { selectedPolicy = PERMISSION_POLICY_AUTO_GRANT }
-        RadioButtonItem(R.string.auto_deny, selectedPolicy == PERMISSION_POLICY_AUTO_DENY) { selectedPolicy = PERMISSION_POLICY_AUTO_DENY }
+    MyScaffold(R.string.permission_policy, 0.dp, onNavigateUp) {
+        FullWidthRadioButtonItem(R.string.default_stringres, selectedPolicy == PERMISSION_POLICY_PROMPT) {
+            selectedPolicy = PERMISSION_POLICY_PROMPT
+        }
+        FullWidthRadioButtonItem(R.string.auto_grant, selectedPolicy == PERMISSION_POLICY_AUTO_GRANT) {
+            selectedPolicy = PERMISSION_POLICY_AUTO_GRANT
+        }
+        FullWidthRadioButtonItem(R.string.auto_deny, selectedPolicy == PERMISSION_POLICY_AUTO_DENY) {
+            selectedPolicy = PERMISSION_POLICY_AUTO_DENY
+        }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 dpm.setPermissionPolicy(receiver,selectedPolicy)
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
         ) {
             Text(stringResource(R.string.apply))
         }
-        InfoCard(R.string.info_permission_policy)
+        InfoCard(R.string.info_permission_policy, 8.dp)
     }
 }
 
@@ -904,10 +911,12 @@ fun MtePolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     var selectedMtePolicy by remember { mutableIntStateOf(dpm.mtePolicy) }
-    MyScaffold(R.string.mte_policy, 8.dp, onNavigateUp) {
-        RadioButtonItem(R.string.decide_by_user, selectedMtePolicy == MTE_NOT_CONTROLLED_BY_POLICY) { selectedMtePolicy = MTE_NOT_CONTROLLED_BY_POLICY }
-        RadioButtonItem(R.string.enabled, selectedMtePolicy == MTE_ENABLED) { selectedMtePolicy = MTE_ENABLED }
-        RadioButtonItem(R.string.disabled, selectedMtePolicy == MTE_DISABLED) { selectedMtePolicy = MTE_DISABLED }
+    MyScaffold(R.string.mte_policy, 0.dp, onNavigateUp) {
+        FullWidthRadioButtonItem(R.string.decide_by_user, selectedMtePolicy == MTE_NOT_CONTROLLED_BY_POLICY) {
+            selectedMtePolicy = MTE_NOT_CONTROLLED_BY_POLICY
+        }
+        FullWidthRadioButtonItem(R.string.enabled, selectedMtePolicy == MTE_ENABLED) { selectedMtePolicy = MTE_ENABLED }
+        FullWidthRadioButtonItem(R.string.disabled, selectedMtePolicy == MTE_DISABLED) { selectedMtePolicy = MTE_DISABLED }
         Button(
             onClick = {
                 try {
@@ -918,11 +927,11 @@ fun MtePolicyScreen(onNavigateUp: () -> Unit) {
                 }
                 selectedMtePolicy = dpm.mtePolicy
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 8.dp)
         ) {
             Text(stringResource(R.string.apply))
         }
-        InfoCard(R.string.info_mte_policy)
+        InfoCard(R.string.info_mte_policy, 8.dp)
     }
 }
 
@@ -934,62 +943,64 @@ fun NearbyStreamingPolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     var appPolicy by remember { mutableIntStateOf(dpm.nearbyAppStreamingPolicy) }
-    MyScaffold(R.string.nearby_streaming_policy, 8.dp, onNavigateUp) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.nearby_app_streaming), style = typography.titleLarge)
-        Spacer(Modifier.padding(vertical = 3.dp))
-        RadioButtonItem(
+    MyScaffold(R.string.nearby_streaming_policy, 0.dp, onNavigateUp, false) {
+        Text(
+            stringResource(R.string.nearby_app_streaming),
+            Modifier.padding(start = 8.dp, top = 10.dp, bottom = 4.dp), style = typography.titleLarge
+        )
+        FullWidthRadioButtonItem(
             R.string.decide_by_user,
             appPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY
         ) { appPolicy = NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY }
-        RadioButtonItem(R.string.enabled, appPolicy == NEARBY_STREAMING_ENABLED) { appPolicy = NEARBY_STREAMING_ENABLED }
-        RadioButtonItem(R.string.disabled, appPolicy == NEARBY_STREAMING_DISABLED) { appPolicy = NEARBY_STREAMING_DISABLED }
-        RadioButtonItem(
+        FullWidthRadioButtonItem(R.string.enabled, appPolicy == NEARBY_STREAMING_ENABLED) { appPolicy = NEARBY_STREAMING_ENABLED }
+        FullWidthRadioButtonItem(R.string.disabled, appPolicy == NEARBY_STREAMING_DISABLED) { appPolicy = NEARBY_STREAMING_DISABLED }
+        FullWidthRadioButtonItem(
             R.string.enable_if_secure_enough,
             appPolicy == NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY
         ) { appPolicy = NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY }
-        Spacer(Modifier.padding(vertical = 3.dp))
         Button(
             onClick = {
                 dpm.nearbyAppStreamingPolicy = appPolicy
+                appPolicy = dpm.nearbyAppStreamingPolicy
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 8.dp)
         ) {
             Text(stringResource(R.string.apply))
         }
-        InfoCard(R.string.info_nearby_app_streaming_policy)
+        InfoCard(R.string.info_nearby_app_streaming_policy, 8.dp)
         var notificationPolicy by remember { mutableIntStateOf(dpm.nearbyNotificationStreamingPolicy) }
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.nearby_notification_streaming), style = typography.titleLarge)
-        Spacer(Modifier.padding(vertical = 3.dp))
-        RadioButtonItem(
+        Text(
+            stringResource(R.string.nearby_notification_streaming),
+            Modifier.padding(start = 8.dp, top = 10.dp, bottom = 4.dp), style = typography.titleLarge
+        )
+        FullWidthRadioButtonItem(
             R.string.decide_by_user,
             notificationPolicy == NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY
         ) { notificationPolicy = NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY }
-        RadioButtonItem(
+        FullWidthRadioButtonItem(
             R.string.enabled,
             notificationPolicy == NEARBY_STREAMING_ENABLED
         ) { notificationPolicy = NEARBY_STREAMING_ENABLED }
-        RadioButtonItem(
+        FullWidthRadioButtonItem(
             R.string.disabled,
             notificationPolicy == NEARBY_STREAMING_DISABLED
         ) { notificationPolicy = NEARBY_STREAMING_DISABLED }
-        RadioButtonItem(
+        FullWidthRadioButtonItem(
             R.string.enable_if_secure_enough,
             notificationPolicy == NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY
         ) { notificationPolicy = NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY }
-        Spacer(Modifier.padding(vertical = 3.dp))
         Button(
             onClick = {
                 dpm.nearbyNotificationStreamingPolicy = notificationPolicy
+                notificationPolicy = dpm.nearbyNotificationStreamingPolicy
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 8.dp)
         ) {
             Text(stringResource(R.string.apply))
         }
-        InfoCard(R.string.info_nearby_notification_streaming_policy)
+        InfoCard(R.string.info_nearby_notification_streaming_policy, 8.dp)
     }
 }
 
@@ -1586,7 +1597,8 @@ fun FrpPolicyScreen(onNavigateUp: () -> Unit) {
                             onClick = {
                                 accountList += inputAccount
                                 inputAccount = ""
-                            }
+                            },
+                            enabled = inputAccount.isNotBlank()
                         ) {
                             Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(R.string.add))
                         }
@@ -1733,87 +1745,81 @@ fun WipeDataScreen(onNavigateUp: () -> Unit) {
 
 @Serializable object SetSystemUpdatePolicy
 
+@RequiresApi(23)
 @Composable
-fun SystemUpdatePolicy(onNavigateUp: () -> Unit) {
+fun SystemUpdatePolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    MyScaffold(R.string.system_update_policy, 8.dp, onNavigateUp) {
-        if(VERSION.SDK_INT >= 23) {
-            Column {
-                var selectedPolicy by remember { mutableStateOf(dpm.systemUpdatePolicy?.policyType) }
-                RadioButtonItem(
-                    R.string.system_update_policy_automatic,
-                    selectedPolicy == TYPE_INSTALL_AUTOMATIC
-                ) { selectedPolicy = TYPE_INSTALL_AUTOMATIC }
-                RadioButtonItem(
-                    R.string.system_update_policy_install_windowed,
-                    selectedPolicy == TYPE_INSTALL_WINDOWED
-                ) { selectedPolicy = TYPE_INSTALL_WINDOWED }
-                RadioButtonItem(
-                    R.string.system_update_policy_postpone,
-                    selectedPolicy == TYPE_POSTPONE
-                ) { selectedPolicy = TYPE_POSTPONE }
-                RadioButtonItem(R.string.none, selectedPolicy == null) { selectedPolicy = null }
-                var windowedPolicyStart by remember { mutableStateOf("") }
-                var windowedPolicyEnd by remember { mutableStateOf("") }
-                AnimatedVisibility(selectedPolicy == 2) {
-                    Column {
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            OutlinedTextField(
-                                value = windowedPolicyStart,
-                                label = { Text(stringResource(R.string.start_time)) },
-                                onValueChange = { windowedPolicyStart = it },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                                keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                                modifier = Modifier.fillMaxWidth(0.49F)
-                            )
-                            OutlinedTextField(
-                                value = windowedPolicyEnd,
-                                onValueChange = {windowedPolicyEnd = it },
-                                label = { Text(stringResource(R.string.end_time)) },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                                keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                                modifier = Modifier.fillMaxWidth(0.96F).padding(bottom = 2.dp)
-                            )
-                        }
-                        Text(text = stringResource(R.string.minutes_in_one_day))
-                    }
+    MyScaffold(R.string.system_update_policy, 0.dp, onNavigateUp) {
+        var selectedPolicy by remember { mutableStateOf(dpm.systemUpdatePolicy?.policyType) }
+        FullWidthRadioButtonItem(
+            R.string.system_update_policy_automatic,
+            selectedPolicy == TYPE_INSTALL_AUTOMATIC
+        ) { selectedPolicy = TYPE_INSTALL_AUTOMATIC }
+        FullWidthRadioButtonItem(
+            R.string.system_update_policy_install_windowed,
+            selectedPolicy == TYPE_INSTALL_WINDOWED
+        ) { selectedPolicy = TYPE_INSTALL_WINDOWED }
+        FullWidthRadioButtonItem(
+            R.string.system_update_policy_postpone,
+            selectedPolicy == TYPE_POSTPONE
+        ) { selectedPolicy = TYPE_POSTPONE }
+        FullWidthRadioButtonItem(R.string.none, selectedPolicy == null) { selectedPolicy = null }
+        var windowedPolicyStart by remember { mutableStateOf("") }
+        var windowedPolicyEnd by remember { mutableStateOf("") }
+        AnimatedVisibility(selectedPolicy == 2) {
+            Column(Modifier.padding(horizontal = 8.dp)) {
+                Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), Arrangement.SpaceBetween) {
+                    OutlinedTextField(
+                        value = windowedPolicyStart,
+                        label = { Text(stringResource(R.string.start_time)) },
+                        onValueChange = { windowedPolicyStart = it },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+                        modifier = Modifier.fillMaxWidth(0.49F)
+                    )
+                    OutlinedTextField(
+                        value = windowedPolicyEnd,
+                        onValueChange = {windowedPolicyEnd = it },
+                        label = { Text(stringResource(R.string.end_time)) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+                        modifier = Modifier.fillMaxWidth(0.96F).padding(bottom = 2.dp)
+                    )
                 }
-                Button(
-                    onClick = {
-                        val policy =
-                            when(selectedPolicy) {
-                                TYPE_INSTALL_AUTOMATIC-> SystemUpdatePolicy.createAutomaticInstallPolicy()
-                                TYPE_INSTALL_WINDOWED-> SystemUpdatePolicy.createWindowedInstallPolicy(windowedPolicyStart.toInt(), windowedPolicyEnd.toInt())
-                                TYPE_POSTPONE-> SystemUpdatePolicy.createPostponeInstallPolicy()
-                                else -> null
-                            }
-                        dpm.setSystemUpdatePolicy(receiver,policy)
-                        context.showOperationResultToast(true)
-                    },
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
-                ) {
-                    Text(stringResource(R.string.apply))
-                }
+                Text(stringResource(R.string.minutes_in_one_day), color = colorScheme.onSurfaceVariant, style = typography.bodyMedium)
             }
         }
+        Button(
+            onClick = {
+                val policy =
+                    when(selectedPolicy) {
+                        TYPE_INSTALL_AUTOMATIC-> SystemUpdatePolicy.createAutomaticInstallPolicy()
+                        TYPE_INSTALL_WINDOWED-> SystemUpdatePolicy.createWindowedInstallPolicy(windowedPolicyStart.toInt(), windowedPolicyEnd.toInt())
+                        TYPE_POSTPONE-> SystemUpdatePolicy.createPostponeInstallPolicy()
+                        else -> null
+                    }
+                dpm.setSystemUpdatePolicy(receiver,policy)
+                context.showOperationResultToast(true)
+            },
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 8.dp)
+        ) {
+            Text(stringResource(R.string.apply))
+        }
         if(VERSION.SDK_INT >= 26) {
-            Spacer(Modifier.padding(vertical = 10.dp))
             val sysUpdateInfo = dpm.getPendingSystemUpdate(receiver)
-            Column {
+            Column(Modifier.padding(8.dp)) {
                 if(sysUpdateInfo != null) {
                     Text(text = stringResource(R.string.update_received_time, Date(sysUpdateInfo.receivedTime)))
-                    val securityStateDesc = when(sysUpdateInfo.securityPatchState) {
-                        SystemUpdateInfo.SECURITY_PATCH_STATE_UNKNOWN -> stringResource(R.string.unknown)
-                        SystemUpdateInfo.SECURITY_PATCH_STATE_TRUE -> "true"
-                        else->"false"
+                    val securityPatchStateText = when(sysUpdateInfo.securityPatchState) {
+                        SystemUpdateInfo.SECURITY_PATCH_STATE_FALSE -> R.string.no
+                        SystemUpdateInfo.SECURITY_PATCH_STATE_TRUE -> R.string.yes
+                        else -> R.string.unknown
                     }
-                    Text(text = stringResource(R.string.is_security_patch, securityStateDesc))
-                }else{
+                    Text(text = stringResource(R.string.is_security_patch, stringResource(securityPatchStateText)))
+                } else {
                     Text(text = stringResource(R.string.no_system_update))
                 }
             }

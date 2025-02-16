@@ -516,8 +516,7 @@
     <string name="serial_number_of_new_user_is">新用户的序列号：%1$d</string>
     <string name="affiliation_id">附属用户ID</string>
     <string name="change_user_icon">更换用户头像</string>
-    <string name="file_picker_instead_gallery">使用文件选择器而不是相册</string>
-    <string name="select_picture" tools:ignore="TypographyEllipsis">选择图片...</string>
+    <string name="select_an_image">选择一个图片</string>
     <string name="fail_managed_profile">失败：受管理的资料</string>
     <string name="fail_current_user">失败：当前用户</string>
     <string name="user_session_msg">用户会话消息</string>
@@ -532,10 +531,9 @@
     <string name="max_time_to_lock">屏幕超时</string>
     <string name="required_strong_auth_timeout">要求强验证超时</string>
     <string name="pwd_history">密码历史长度</string>
-    <string name="password_complexity_none">无（允许不设密码）</string>
-    <string name="password_complexity_low">低（允许图案和连续性）</string>
-    <string name="password_complexity_medium">中（无连续性，至少4位）</string>
-    <string name="password_complexity_high">高（无连续性，至少6位）</string>
+    <string name="low">低</string>
+    <string name="medium">中</string>
+    <string name="high">高</string>
     <string name="current_password_complexity">当前密码复杂度</string>
     <string name="password_sufficient">密码符合复杂度要求</string>
     <string name="unified_password">一致的密码</string>
@@ -553,7 +551,6 @@
     <string name="reset_password_require_entry">不允许其他设备管理员重置密码直至用户输入一次密码</string>
     <string name="reset_password_with_token">使用令牌重置密码</string>
     <string name="required_password_complexity">密码复杂度要求</string>
-    <string name="require_set_new_password">要求设置新密码</string>
     <string name="disable_keyguard_features">锁屏功能</string>
     <string name="enable_all">启用全部</string>
     <string name="disable_keyguard_features_widgets">禁用小工具(安卓5以下)</string>
@@ -694,7 +691,8 @@
     <string name="info_keep_uninstalled_apps">这个列表中的应用的APK将会一直保留，即使没有任何用户安装这个应用</string>
     <string name="info_headless_system_user_mode">无头系统用户模式意味着系统用户运行系统服务和一些系统UI，但它不与任何真实的人相关联，必须创建额外的用户才能与真实的人相关联。</string>
     <string name="info_logout">如果当前用户不是由OwnDroid切换的，无法使用此功能。</string>
-    <string name="info_affiliated_id">当Device owner创建并管理用户时，新的用户不是附属用户。Device owner设置和受管理用户完全相同的附属用户ID后，受管理用户成为附属于Device owner的用户</string>
+    <string name="info_affiliation_id">当Device owner创建并管理用户时，新的用户不是附属用户。Device owner设置和受管理用户完全相同的附属用户ID后，受管理用户成为附属于Device owner的用户</string>
+    <string name="info_password_complexity">无：无密码\n低：图案，PIN（有重复或有序序列）\n中：PIN（没有重复或有序序列，最低长度4），字母（最低长度4），字母与数字（最低长度4）\n高：PIN（没有重复或有序序列，最低长度8），字母（最低长度6），字母与数字（最低长度6）</string>
     <string name="info_reset_password">设置一个新的密码，密码的长度需要4位或以上，不输入密码将会清除现有的密码。长度在6位或以下的纯数字密码将会设置为PIN码。</string>
     <string name="info_screen_timeout">设置设备锁定前用户活动的最大时间。这限制了用户可以设置的时间长度。\n值为0表示不做限制。</string>
     <string name="info_password_expiration_timeout">重新启动密码过期倒计时。值为0表示不做限制。</string>

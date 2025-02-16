@@ -121,6 +121,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -483,6 +485,7 @@ fun AddNetworkScreen(data: Bundle, onNavigateUp: () -> Unit) {
 @Composable
 private fun AddNetworkScreen(wifiConfig: WifiConfiguration? = null, onNavigateUp: () -> Unit) {
     val context = LocalContext.current
+    val fm = LocalFocusManager.current
     var resultDialog by remember { mutableStateOf(false) }
     var createdNetworkId by remember { mutableIntStateOf(-1) }
     var createNetworkResult by remember { mutableIntStateOf(0) }
@@ -614,21 +617,29 @@ private fun AddNetworkScreen(wifiConfig: WifiConfiguration? = null, onNavigateUp
                 }
             }
             AnimatedVisibility(visible = useStaticIp, modifier = Modifier.padding(bottom = 8.dp)) {
+                val gatewayFr = FocusRequester()
+                val dnsFr = FocusRequester()
                 Column {
                     OutlinedTextField(
                         value = ipAddress, onValueChange = { ipAddress = it },
                         placeholder = { Text("192.168.1.2/24") }, label = { Text(stringResource(R.string.ip_address)) },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions { gatewayFr.requestFocus() },
                         modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
                     )
                     OutlinedTextField(
                         value = gatewayAddress, onValueChange = { gatewayAddress = it },
                         placeholder = { Text("192.168.1.1") }, label = { Text(stringResource(R.string.gateway_address)) },
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions { dnsFr.requestFocus() },
+                        modifier = Modifier.focusRequester(gatewayFr).fillMaxWidth().padding(bottom = 4.dp)
                     )
                     OutlinedTextField(
                         value = dnsServers, onValueChange = { dnsServers = it },
                         label = { Text(stringResource(R.string.dns_servers)) }, minLines = 2,
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions { fm.clearFocus() },
+                        modifier = Modifier.focusRequester(dnsFr).fillMaxWidth().padding(bottom = 4.dp)
                     )
                 }
             }
@@ -648,19 +659,27 @@ private fun AddNetworkScreen(wifiConfig: WifiConfiguration? = null, onNavigateUp
                 }
             }
             AnimatedVisibility(visible = useHttpProxy, modifier = Modifier.padding(bottom = 8.dp)) {
+                val portFr = FocusRequester()
+                val exclListFr = FocusRequester()
                 Column {
                     OutlinedTextField(
                         value = httpProxyHost, onValueChange = { httpProxyHost = it }, label = { Text(stringResource(R.string.host)) },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions { portFr.requestFocus() },
                         modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
                     )
                     OutlinedTextField(
                         value = httpProxyPort, onValueChange = { httpProxyPort = it }, label = { Text(stringResource(R.string.port)) },
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next, keyboardType = KeyboardType.Number),
+                        keyboardActions = KeyboardActions { exclListFr.requestFocus() },
+                        modifier = Modifier.focusRequester(portFr).fillMaxWidth().padding(bottom = 4.dp)
                     )
                     OutlinedTextField(
                         value = httpProxyExclList, onValueChange = { httpProxyExclList = it }, label = { Text(stringResource(R.string.excluded_hosts)) },
                         minLines = 2, placeholder = { Text("example.com\n*.example.com") },
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions { fm.clearFocus() },
+                        modifier = Modifier.focusRequester(exclListFr).fillMaxWidth().padding(bottom = 4.dp)
                     )
                 }
             }
@@ -884,6 +903,7 @@ fun NetworkStats.toBucketList(): List<NetworkStats.Bucket> {
 fun NetworkStatsScreen(onNavigateUp: () -> Unit, onNavigateToViewer: (NetworkStatsViewer) -> Unit) {
     val context = LocalContext.current
     val deviceOwner = context.isDeviceOwner
+    val fm = LocalFocusManager.current
     val nsm = context.getSystemService(NetworkStatsManager::class.java)
     val coroutine = rememberCoroutineScope()
     var activeTextField by remember { mutableStateOf(NetworkStatsActiveTextField.None) } //0:None, 1:Network type, 2:Start time, 3:End time
@@ -999,6 +1019,8 @@ fun NetworkStatsScreen(onNavigateUp: () -> Unit, onNavigateToViewer: (NetworkSta
                 label = { Text(stringResource(R.string.subscriber_id)) },
                 isError = !readOnly && subscriberId.isNullOrBlank(),
                 trailingIcon = { ExpandExposedTextFieldIcon(activeTextField == NetworkStatsActiveTextField.SubscriberId) },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions { fm.clearFocus() },
                 modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth().padding(bottom = 4.dp)
             )
             ExposedDropdownMenu(

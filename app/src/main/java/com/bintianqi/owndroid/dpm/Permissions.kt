@@ -20,18 +20,17 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -497,7 +496,7 @@ fun DeviceOwnerScreen(onNavigateUp: () -> Unit) {
 }
 
 @Suppress("InlinedApi")
-private enum class DelegatedScope(val id: String, @StringRes val string: Int, val requiresApi: Int = 0) {
+enum class DelegatedScope(val id: String, @StringRes val string: Int, val requiresApi: Int = 0) {
     AppRestrictions(DevicePolicyManager.DELEGATION_APP_RESTRICTIONS, R.string.manage_application_restrictions),
     BlockUninstall(DevicePolicyManager.DELEGATION_BLOCK_UNINSTALL, R.string.block_uninstall),
     CertInstall(DevicePolicyManager.DELEGATION_CERT_INSTALL, R.string.manage_certificates),
@@ -515,13 +514,10 @@ private enum class DelegatedScope(val id: String, @StringRes val string: Int, va
 
 @RequiresApi(26)
 @Composable
-fun DelegatedAdminsScreen(onNavigateUp: () -> Unit) {
+fun DelegatedAdminsScreen(onNavigateUp: () -> Unit, onNavigate: (AddDelegatedAdmin) -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    var dialog by rememberSaveable { mutableIntStateOf(0) } // 0:None, 1:Edit, 2:Add
-    var inputPackageName by rememberSaveable { mutableStateOf("") }
-    var selectedScopes by rememberSaveable { mutableStateOf(listOf<String>()) }
     val packages = remember { mutableStateMapOf<String, MutableList<DelegatedScope>>() }
     fun refresh() {
         val list = mutableMapOf<String, MutableList<DelegatedScope>>()
@@ -542,81 +538,91 @@ fun DelegatedAdminsScreen(onNavigateUp: () -> Unit) {
     LaunchedEffect(Unit) { refresh() }
     MyScaffold(R.string.delegated_admins, 0.dp, onNavigateUp) {
         packages.forEach { (pkg, scopes) ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { inputPackageName = pkg; selectedScopes = scopes.map { it.id }; dialog = 1 }
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            Row(
+                Modifier.fillMaxWidth().padding(vertical = 8.dp).padding(start = 14.dp, end = 8.dp),
+                Arrangement.SpaceBetween
             ) {
-                Text(pkg, style = typography.titleLarge)
-                Text(scopes.size.toString() + " " + stringResource(R.string.delegated_scope))
+                Column {
+                    Text(pkg, style = typography.titleMedium)
+                    Text(
+                        scopes.size.toString() + " " + stringResource(R.string.delegated_scope),
+                        color = colorScheme.onSurfaceVariant, style = typography.bodyMedium
+                    )
+                }
+                IconButton({ onNavigate(AddDelegatedAdmin(pkg, scopes)) }) {
+                    Icon(Icons.Outlined.Edit, stringResource(R.string.edit))
+                }
             }
         }
-        if(packages.isEmpty())
-            Text(
-                stringResource(R.string.none),
-                color = colorScheme.onSurfaceVariant,
-                modifier = Modifier.align(Alignment.CenterHorizontally).padding(vertical = 4.dp)
-            )
+        if(packages.isEmpty()) Text(
+            stringResource(R.string.none),
+            color = colorScheme.onSurfaceVariant,
+            modifier = Modifier.align(Alignment.CenterHorizontally).padding(vertical = 4.dp)
+        )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { inputPackageName = ""; selectedScopes = emptyList(); dialog = 2 }
-                .padding(vertical = 10.dp, horizontal = 12.dp),
+                .clickable { onNavigate(AddDelegatedAdmin()) }
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(Icons.Default.Add, null, modifier = Modifier.padding(end = 12.dp))
-            Text(stringResource(R.string.add_delegated_admin), style = typography.titleLarge)
+            Text(stringResource(R.string.add_delegated_admin), style = typography.titleMedium)
         }
-        if(dialog != 0) {
-            val choosePackage = rememberLauncherForActivityResult(ChoosePackageContract()) { result ->
-                result?.let { inputPackageName = it }
+    }
+}
+
+@Serializable data class AddDelegatedAdmin(val pkg: String = "", val scopes: List<DelegatedScope> = emptyList())
+
+@RequiresApi(26)
+@Composable
+fun AddDelegatedAdminScreen(data: AddDelegatedAdmin, onNavigateUp: () -> Unit) {
+    val updateMode = data.pkg.isNotEmpty()
+    val fm = LocalFocusManager.current
+    val context = LocalContext.current
+    var input by remember { mutableStateOf(data.pkg) }
+    val scopes = remember { mutableStateListOf(*data.scopes.toTypedArray()) }
+    val choosePackage = rememberLauncherForActivityResult(ChoosePackageContract()) { result ->
+        result?.let { input = it }
+    }
+    MyScaffold(if(updateMode) R.string.place_holder else R.string.add_delegated_admin, 0.dp, onNavigateUp, !updateMode) {
+        OutlinedTextField(
+            value = input, onValueChange = { input = it },
+            label = { Text(stringResource(R.string.package_name)) },
+            trailingIcon = {
+                if(!updateMode) IconButton({ choosePackage.launch(null) }) {
+                    Icon(painterResource(R.drawable.list_fill0), null)
+                }
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions { fm.clearFocus() },
+            readOnly = updateMode,
+            modifier = Modifier.fillMaxWidth().padding(8.dp)
+        )
+        DelegatedScope.entries.filter { VERSION.SDK_INT >= it.requiresApi }.forEach {scope ->
+            FullWidthCheckBoxItem(scope.string, scope in scopes) {
+                if(it) scopes += scope else scopes -= scope
             }
-            AlertDialog(
-                text = {
-                    val fm = LocalFocusManager.current
-                    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                        OutlinedTextField(
-                            value = inputPackageName, onValueChange = { inputPackageName = it },
-                            label = { Text(stringResource(R.string.package_name)) },
-                            trailingIcon = {
-                                if(dialog == 2) IconButton({ choosePackage.launch(null) }) {
-                                    Icon(painterResource(R.drawable.list_fill0), null)
-                                }
-                            },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
-                            keyboardActions = KeyboardActions { fm.clearFocus() },
-                            readOnly = dialog == 1,
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
-                        )
-                        DelegatedScope.entries.forEach { scope ->
-                            if(VERSION.SDK_INT >= scope.requiresApi) {
-                                CheckBoxItem(scope.string, scope.id in selectedScopes) {
-                                    if(it) selectedScopes += scope.id else selectedScopes -= scope.id
-                                }
-                            }
-                        }
-                    }
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            dpm.setDelegatedScopes(receiver, inputPackageName, selectedScopes)
-                            refresh()
-                            dialog = 0
-                        },
-                        enabled = inputPackageName.isNotBlank()
-                    ) {
-                        Text(stringResource(if(dialog == 1) R.string.apply else R.string.add))
-                    }
-                },
-                dismissButton = {
-                    TextButton({ dialog = 0 }) {
-                        Text(stringResource(R.string.cancel))
-                    }
-                },
-                onDismissRequest = { dialog = 0 }
-            )
+        }
+        Button(
+            onClick = {
+                context.getDPM().setDelegatedScopes(context.getReceiver(), input, scopes.map { it.id })
+                onNavigateUp()
+            },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+            enabled = input.isNotBlank() && (!updateMode || scopes.toList() != data.scopes)
+        ) {
+            Text(stringResource(if(updateMode) R.string.update else R.string.add))
+        }
+        if(updateMode) Button(
+            onClick = {
+                context.getDPM().setDelegatedScopes(context.getReceiver(), input, emptyList())
+                onNavigateUp()
+            },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+            colors = ButtonDefaults.buttonColors(colorScheme.error, colorScheme.onError)
+        ) {
+            Text(stringResource(R.string.delete))
         }
     }
 }

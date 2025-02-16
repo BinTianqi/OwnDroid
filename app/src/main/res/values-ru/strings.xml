@@ -526,8 +526,7 @@
     <string name="serial_number_of_new_user_is">Серийный номер этого пользователя: %1$d</string>
     <string name="affiliation_id">Аффилированный идентификатор</string>
     <string name="change_user_icon">Изменить значок пользователя</string>
-    <string name="file_picker_instead_gallery">Использовать выборщик файлов вместо галереи</string>
-    <string name="select_picture" tools:ignore="TypographyEllipsis">Выберите изображение...</string>
+    <string name="select_an_image">Select an image</string> <!--TODO-->
     <string name="fail_managed_profile">Ошибка: управляемый профиль</string>
     <string name="fail_current_user">Ошибка: текущий пользователь</string>
     <string name="user_session_msg">Сообщение о сеансе пользователя</string>
@@ -544,10 +543,10 @@
     <string name="max_time_to_lock">Время ожидания экрана</string>
     <string name="required_strong_auth_timeout">Время ожидания строгой аутентификации</string>
     <string name="pwd_history">Длина истории паролей</string>
-    <string name="password_complexity_none">Нет (разрешено отсутствие пароля)</string>
-    <string name="password_complexity_low">Низкая (графический ключ и повторение символов разрешены)</string>
-    <string name="password_complexity_medium">Средняя (повторение запрещено, минимум 4 символа)</string>
-    <string name="password_complexity_high">Высокая (повторение запрещено, минимум 6 символов)</string>
+    <!--TODO: 3 strings-->
+    <string name="low">Low</string>
+    <string name="medium">Medium</string>
+    <string name="high">High</string>
     <string name="current_password_complexity">Текущая сложность пароля</string>
     <string name="password_sufficient">Сложность пароля достаточна</string>
     <string name="unified_password">Единый пароль</string>
@@ -565,7 +564,6 @@
     <string name="reset_password_require_entry">Требовать ввод</string>
     <string name="reset_password_with_token">Сбросить пароль с помощью токена</string>
     <string name="required_password_complexity">Требуемая сложность пароля</string>
-    <string name="require_set_new_password">Запрос на установку нового пароля</string>
     <string name="disable_keyguard_features">Функции блокировки экрана (Keyguard)</string>
     <string name="enable_all">Включить все</string>
     <string name="disable_keyguard_features_widgets">Отключить виджеты</string>
@@ -709,7 +707,8 @@
     <string name="info_keep_uninstalled_apps">Установить список приложений, которые нужно сохранить в виде APK-файлов, даже если ни у одного пользователя в данный момент они не установлены.</string>
     <string name="info_headless_system_user_mode">Режим "безголового" системного пользователя означает, что системный пользователь запускает системные службы и некоторый системный интерфейс, но он не связан с каким-либо реальным человеком, и для связи с реальными людьми должны быть созданы дополнительные пользователи.</string>
     <string name="info_logout">If the current user is not switched by OwnDroid, this function cannot be used.</string> <!--TODO-->
-    <string name="info_affiliated_id">Когда владелец устройства создает управляемого пользователя, управляемый пользователь не является аффилированным. Чтобы сделать управляемого пользователя аффилированным с владельцем устройства, вам следует установить одинаковые аффилированные идентификаторы в основном и управляемом пользователях.</string>
+    <string name="info_affiliation_id">Когда владелец устройства создает управляемого пользователя, управляемый пользователь не является аффилированным. Чтобы сделать управляемого пользователя аффилированным с владельцем устройства, вам следует установить одинаковые аффилированные идентификаторы в основном и управляемом пользователях.</string>
+    <!--TODO--><string name="info_password_complexity">None: no password\nLow: pattern, PIN (with repeating or ordered sequences)\nMedium: PIN (with no repeating or ordered sequences, length at least 4), alphabetic (length at least 4), alphanumeric (length at least 4)\nHigh: PIN (with no repeating or ordered sequences, length at least 8), alphabetic (length at least 6), alphanumeric (length at least 6)</string>
     <string name="info_reset_password">Установить новый пароль блокировки экрана. Длина этого пароля должна быть не менее 4 цифр. Оставьте поле пустым, чтобы удалить пароль.\nЕсли вы установите цифровой пароль длиной 6 символов или меньше, он будет установлен как PIN-код.</string>
     <string name="info_screen_timeout">Установить максимальное время бездействия пользователя, по истечении которого устройство будет заблокировано. Это ограничивает время, которое может установить пользователь.\nЗначение 0 означает отсутствие ограничений.</string>
     <string name="info_password_expiration_timeout">Перезапустить отсчет времени истечения срока действия пароля.\nЗначение 0 означает отсутствие ограничений.</string>
