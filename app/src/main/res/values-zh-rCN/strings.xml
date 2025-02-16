@@ -193,7 +193,10 @@
     <string name="package_name">包名</string>
     <string name="not_exist">不存在</string>
     <string name="ca_cert">CA证书</string>
-    <string name="select_ca_cert" tools:ignore="TypographyEllipsis">选择证书...</string>
+    <string name="no_ca_cert">没有已安装的CA证书</string>
+    <string name="parse_cert_failed">解析证书失败</string>
+    <string name="export">导出</string>
+    <string name="select_ca_cert">选择一个CA证书</string>
     <string name="uninstall_all_user_ca_cert">卸载所有用户证书</string>
     <string name="security_logging">安全日志</string>
     <string name="pre_reboot_security_logs">重启前安全日志</string>

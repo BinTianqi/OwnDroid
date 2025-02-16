@@ -67,16 +67,21 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -125,6 +130,7 @@ import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.humanReadableDate
+import com.bintianqi.owndroid.parseDate
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.FunctionItem
@@ -135,10 +141,15 @@ import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.uriToStream
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import java.io.ByteArrayOutputStream
+import java.security.MessageDigest
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
 import java.util.Date
 import java.util.TimeZone
 import java.util.concurrent.Executors
@@ -1228,62 +1239,165 @@ private fun ColumnScope.LockTaskFeatures() {
     }
 }
 
+data class CaCertInfo(
+    val hash: String,
+    val data: ByteArray
+)
+
 @Serializable object CaCert
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalStdlibApi::class)
 @Composable
 fun CaCertScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    var dialog by remember { mutableStateOf(false) }
-    var caCertByteArray = remember { byteArrayOf() }
-    val getFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri ?: return@rememberLauncherForActivityResult
-        uriToStream(context, uri) {
-            caCertByteArray = it.readBytes()
+    /** 0:none, 1:install, 2:info, 3:uninstall all */
+    var dialog by remember { mutableIntStateOf(0) }
+    var caCertByteArray by remember { mutableStateOf(byteArrayOf()) }
+    val coroutine = rememberCoroutineScope()
+    val getCertLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {uri ->
+        if(uri != null) {
+            uriToStream(context, uri) {
+                caCertByteArray = it.readBytes()
+            }
+            dialog = 1
         }
-        dialog = true
     }
-    MyScaffold(R.string.ca_cert, 8.dp, onNavigateUp) {
-        Button(
-            onClick = {
-                getFileLauncher.launch("*/*")
-            },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
-        ) {
-            Text(stringResource(R.string.select_ca_cert))
+    val exportCertLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
+        if(uri != null) {
+            context.contentResolver.openOutputStream(uri)?.use {
+                it.write(caCertByteArray)
+            }
+            context.showOperationResultToast(true)
         }
-        Button(
-            onClick = {
-                dpm.uninstallAllUserCaCerts(receiver)
-                context.showOperationResultToast(true)
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.uninstall_all_user_ca_cert))
+    }
+    val caCerts = remember { mutableStateListOf<CaCertInfo>() }
+    fun refresh() {
+        caCerts.clear()
+        coroutine.launch(Dispatchers.IO) {
+            val md = MessageDigest.getInstance("SHA-256")
+            dpm.getInstalledCaCerts(receiver).forEach { ba ->
+                val hash = md.digest(ba).toHexString()
+                withContext(Dispatchers.Main) { caCerts += CaCertInfo(hash, ba) }
+            }
         }
-        if(dialog) {
-            val exist = dpm.hasCaCertInstalled(receiver, caCertByteArray)
-            AlertDialog(
-                confirmButton = {
-                    TextButton({
-                        if(exist) {
-                            dpm.uninstallCaCert(receiver, caCertByteArray)
-                        } else {
-                            val result = dpm.installCaCert(receiver, caCertByteArray)
-                            context.showOperationResultToast(result)
-                        }
-                        dialog = false
-                    }) {
-                        Text(stringResource(if(exist) R.string.uninstall else R.string.install))
+    }
+    LaunchedEffect(Unit) { refresh() }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.ca_cert)) },
+                navigationIcon = { NavIcon(onNavigateUp) },
+                actions = {
+                    IconButton({ dialog = 3 }) {
+                        Icon(Icons.Outlined.Delete, stringResource(R.string.delete))
                     }
-                },
-                dismissButton = {
-                    TextButton({ dialog = false }) { Text(stringResource(R.string.cancel)) }
-                },
-                onDismissRequest = { dialog = false }
+                }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton({
+                Toast.makeText(context, R.string.select_ca_cert, Toast.LENGTH_SHORT).show()
+                getCertLauncher.launch(arrayOf("*/*"))
+            }) {
+                Icon(Icons.Default.Add, stringResource(R.string.install))
+            }
         }
+    ) { paddingValues ->
+        LazyColumn(
+            Modifier.fillMaxSize().padding(paddingValues),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            items(caCerts, { it.hash }) { cert ->
+                Column(
+                    Modifier.fillMaxWidth().clickable{
+                        caCertByteArray = cert.data
+                        dialog = 2
+                    }.animateItem().padding(vertical = 10.dp, horizontal = 8.dp)
+                ) {
+                    Text(cert.hash.substring(0..7))
+                }
+                HorizontalDivider()
+            }
+            item {
+                if(caCerts.isEmpty()) Text(stringResource(R.string.no_ca_cert), Modifier.padding(top = 8.dp), colorScheme.onSurfaceVariant)
+                else Spacer(Modifier.padding(vertical = 30.dp))
+            }
+        }
+        if(dialog != 0) AlertDialog(
+            text = {
+                if(dialog == 3) Text(stringResource(R.string.uninstall_all_user_ca_cert))
+                else {
+                    var text = ""
+                    val sha256 = MessageDigest.getInstance("SHA-256").digest(caCertByteArray).toHexString()
+                    try {
+                        val cf = CertificateFactory.getInstance("X.509")
+                        val cert = cf.generateCertificate(caCertByteArray.inputStream()) as X509Certificate
+                        text = "Serial number\n" + cert.serialNumber.toString(16) + "\n\n" +
+                                "Subject\n" + cert.subjectX500Principal.name + "\n\n" +
+                                "Issuer\n" + cert.issuerX500Principal.name + "\n\n" +
+                                "Issued on: " + parseDate(cert.notBefore) + "\n" +
+                                "Expires on: " + parseDate(cert.notAfter) + "\n\n" +
+                                "SHA-256 fingerprint" + "\n$sha256"
+                    } catch(e: Exception) {
+                        e.printStackTrace()
+                        text = stringResource(R.string.parse_cert_failed)
+                    }
+                    Column(Modifier.verticalScroll(rememberScrollState())) {
+                        SelectionContainer {
+                            Text(text)
+                        }
+                        if(dialog == 2) Row(Modifier.fillMaxWidth().padding(top = 4.dp), Arrangement.SpaceBetween) {
+                            TextButton(
+                                onClick = {
+                                    dpm.uninstallCaCert(receiver, caCertByteArray)
+                                    refresh()
+                                    dialog = 0
+                                },
+                                modifier = Modifier.fillMaxWidth(0.49F),
+                                colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
+                            ) {
+                                Text(stringResource(R.string.uninstall))
+                            }
+                            FilledTonalButton(
+                                onClick = {
+                                    exportCertLauncher.launch(sha256.substring(0..7) + ".0")
+                                },
+                                modifier = Modifier.fillMaxWidth(0.96F)
+                            ) {
+                                Text(stringResource(R.string.export))
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton({
+                    try {
+                        if(dialog == 1) {
+                            context.showOperationResultToast(dpm.installCaCert(receiver, caCertByteArray))
+                        }
+                        if(dialog == 3) {
+                            dpm.uninstallAllUserCaCerts(receiver)
+                        }
+                        refresh()
+                        dialog = 0
+                    } catch(e: Exception) {
+                        e.printStackTrace()
+                        context.showOperationResultToast(false)
+                    }
+                }) {
+                    Text(stringResource(if(dialog == 1) R.string.install else R.string.confirm))
+                }
+            },
+            dismissButton = {
+                if(dialog != 2) TextButton({ dialog = 0 }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+            onDismissRequest = { dialog = 0 }
+        )
     }
 }
 

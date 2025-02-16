@@ -195,7 +195,11 @@
     <string name="ltf_keyguard">Разрешить блокировку экрана</string>
     <string name="ltf_block_activity_start_in_task">Блокировать запуск активности в задаче</string>
     <string name="ca_cert">CA-сертификат</string>
-    <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Выберите сертификат...</string>
+    <!--TODO: 4 strings-->
+    <string name="no_ca_cert">No user CA certificate installed</string>
+    <string name="parse_cert_failed">Failed to parse certificate</string>
+    <string name="export">Export</string>
+    <string name="select_ca_cert">Select a CA certificate</string>
     <string name="uninstall_all_user_ca_cert">Удалить все пользовательские CA-сертификаты</string>
     <string name="security_logging">Журнал безопасности</string> 
     <string name="pre_reboot_security_logs">Журналы безопасности перед перезагрузкой</string>

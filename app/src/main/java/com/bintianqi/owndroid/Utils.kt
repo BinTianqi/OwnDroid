@@ -87,6 +87,9 @@ fun parseTimestamp(timestamp: Long): String {
     return formatter.format(instant)
 }
 
+fun parseDate(date: Date)
+    = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(date)
+
 val Long.humanReadableDate: String
     get() = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault()).format(Date(this))
 

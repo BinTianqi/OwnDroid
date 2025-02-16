@@ -201,8 +201,12 @@
     <string name="ltf_global_actions">Küresel eylemlere izin ver</string>
     <string name="ltf_keyguard">Ekran kilidine izin ver</string>
     <string name="ltf_block_activity_start_in_task">Görevde etkinlik başlatmayı engelle</string>
-    <string name="ca_cert">CA sertifikası</string> <!--TODO-->
-    <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Sertifika seç...</string> <!--TODO-->
+    <string name="ca_cert">CA sertifikası</string>
+    <!--TODO: 4 strings-->
+    <string name="no_ca_cert">No user CA certificate installed</string>
+    <string name="parse_cert_failed">Failed to parse certificate</string>
+    <string name="export">Export</string>
+    <string name="select_ca_cert">Select a CA certificate</string>
     <string name="uninstall_all_user_ca_cert">Tüm kullanıcı sertifikalarını kaldır</string> <!--TODO-->
     <string name="security_logging">Security logging</string> <!--TODO-->
     <string name="pre_reboot_security_logs">Yeniden başlatmadan önce güvenlik kayıtları</string>

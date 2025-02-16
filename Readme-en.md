@@ -14,6 +14,7 @@ Use Android Device owner privilege to manage your device.
 - System
   - Options: disable camera, disable screenshot, master volume mute, disable USB signal...
   - Permission policy
+  - Manage CA certificates
   - _Wipe data_
   - ...
 - Network

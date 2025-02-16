@@ -222,7 +222,10 @@
     <string name="ltf_keyguard">Allow keyguard</string>
     <string name="ltf_block_activity_start_in_task">Block activity start in task</string>
     <string name="ca_cert">CA certificate</string>
-    <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Select certificate...</string>
+    <string name="no_ca_cert">No user CA certificate installed</string>
+    <string name="parse_cert_failed">Failed to parse certificate</string>
+    <string name="export">Export</string>
+    <string name="select_ca_cert">Select a CA certificate</string>
     <string name="uninstall_all_user_ca_cert">Uninstall all user CA certificate</string>
     <string name="security_logging">Security logging</string>
     <string name="pre_reboot_security_logs">Pre-reboot security logs</string>
