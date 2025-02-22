@@ -39,7 +39,6 @@
     <string name="apply">应用</string>
     <string name="decide_by_user">由用户决定</string>
     <string name="unsupported">不支持</string>
-    <string name="developing">功能开发中</string>
     <string name="options">选项</string>
     <string name="copy_command">复制代码</string>
     <string name="copy">复制</string>
@@ -312,28 +311,26 @@
     <string name="block_non_matching_networks">阻止不匹配的网络</string>
     <string name="included_uids">包含的UID</string>
     <string name="excluded_uids">排除的UIDs</string>
-    <string name="one_uid_per_line">一行一个UID</string>
-    <string name="override_apn_settings">APN设置</string>
-    <string name="total_apn_amount">一共有%1$s个APN设置</string>
-    <string name="select_a_apn_or_create">选择一个你要修改的APN设置(1~%1$s)或者输入0以新建APN设置</string>
-    <string name="no_apn_you_should_create_one">当前没有APN设置，你可以新建一个APN设置</string>
-    <string name="previous_step">上一步</string>
-    <string name="next_step">下一步</string>
+    <string name="one_uid_per_line">每行一个UID</string>
+    <string name="override_apn">覆盖APN</string>
+    <string name="apn_setting">APN设置</string>
+    <string name="apn_name">APN名称</string>
+    <string name="entry_name">条目名称</string>
     <string name="name">名称</string>
-    <string name="user_name">用户名</string>
     <string name="profile_id">资料ID</string>
-    <string name="auth_type">验证类型</string>
-    <string name="apn_type">APN类型</string>
-    <string name="bitmask">位掩码</string>
+    <string name="auth_type">认证类型</string>
     <string name="description">描述</string>
     <string name="mms_proxy">MMS代理</string>
     <string name="address">地址</string>
     <string name="port">端口</string>
     <string name="proxy">代理</string>
-    <string name="apn_network_type">网络类型</string>
-    <string name="persistent">持久的</string>
+    <string name="persistent">持久化</string>
     <string name="protocol">协议</string>
     <string name="roaming_protocol">漫游协议</string>
+    <string name="carrier_id">运营商ID</string>
+    <string name="mvno_type">MVNO类型</string>
+    <string name="network_type_bitmask">网络类型位掩码</string>
+    <string name="always_on">总是开启</string>
     <string name="update">更新</string>
 
     <!--WorkProfile-->

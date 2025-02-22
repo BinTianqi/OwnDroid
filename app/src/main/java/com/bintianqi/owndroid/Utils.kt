@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import com.bintianqi.owndroid.dpm.addDeviceAdmin
 import kotlinx.serialization.encodeToString
@@ -134,4 +135,8 @@ fun exportLogs(context: Context, uri: Uri) {
         else proc.waitFor()
         context.showOperationResultToast(proc.exitValue() == 0)
     }
+}
+
+fun <T> NavHostController.navigate(route: T, args: Bundle) {
+    navigate(graph.findNode(route)!!.id, args)
 }

@@ -1,6 +1,7 @@
 package com.bintianqi.owndroid.dpm
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_OFF
 import android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_OPPORTUNISTIC
@@ -32,23 +33,7 @@ import android.net.wifi.WifiManager
 import android.net.wifi.WifiSsid
 import android.os.Build.VERSION
 import android.os.Bundle
-import android.telephony.TelephonyManager
-import android.telephony.TelephonyManager.UNKNOWN_CARRIER_ID
-import android.telephony.data.ApnSetting.AUTH_TYPE_CHAP
-import android.telephony.data.ApnSetting.AUTH_TYPE_NONE
-import android.telephony.data.ApnSetting.AUTH_TYPE_PAP
-import android.telephony.data.ApnSetting.AUTH_TYPE_PAP_OR_CHAP
-import android.telephony.data.ApnSetting.Builder
-import android.telephony.data.ApnSetting.MVNO_TYPE_GID
-import android.telephony.data.ApnSetting.MVNO_TYPE_ICCID
-import android.telephony.data.ApnSetting.MVNO_TYPE_IMSI
-import android.telephony.data.ApnSetting.MVNO_TYPE_SPN
-import android.telephony.data.ApnSetting.PROTOCOL_IP
-import android.telephony.data.ApnSetting.PROTOCOL_IPV4V6
-import android.telephony.data.ApnSetting.PROTOCOL_IPV6
-import android.telephony.data.ApnSetting.PROTOCOL_NON_IP
-import android.telephony.data.ApnSetting.PROTOCOL_PPP
-import android.telephony.data.ApnSetting.PROTOCOL_UNSTRUCTURED
+import android.telephony.data.ApnSetting
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -56,6 +41,7 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -63,6 +49,8 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -80,6 +68,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.LocationOn
@@ -88,9 +77,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -106,7 +97,6 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
@@ -123,6 +113,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
@@ -132,7 +123,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import com.bintianqi.owndroid.ChoosePackageContract
 import com.bintianqi.owndroid.R
@@ -196,7 +186,7 @@ fun NetworkScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
             FunctionItem(R.string.preferential_network_service, icon = R.drawable.globe_fill0) { onNavigate(PreferentialNetworkService) }
         }
         if(VERSION.SDK_INT >= 28 && deviceOwner) {
-            FunctionItem(R.string.override_apn_settings, icon = R.drawable.cell_tower_fill0) { onNavigate(OverrideApn) }
+            FunctionItem(R.string.override_apn, icon = R.drawable.cell_tower_fill0) { onNavigate(OverrideApn) }
         }
     }
 }
@@ -1880,374 +1870,397 @@ fun AddPreferentialNetworkServiceConfigScreen(route: AddPreferentialNetworkServi
 
 @RequiresApi(28)
 @Composable
-fun OverrideApnScreen(onNavigateUp: () -> Unit) {
+fun OverrideApnScreen(onNavigateUp: () -> Unit, onNavigateToAddSetting: (Bundle) -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val focusMgr = LocalFocusManager.current
-    val setting = dpm.getOverrideApns(receiver)
-    var inputNum by remember { mutableStateOf("0") }
-    var nextStep by remember { mutableStateOf(false) }
-    val builder = Builder()
-    MyScaffold(R.string.override_apn_settings, 8.dp, onNavigateUp) {
-        Text(text = stringResource(id = R.string.developing))
-        Spacer(Modifier.padding(vertical = 5.dp))
+    var enabled by remember { mutableStateOf(false) }
+    val settings = remember { mutableStateListOf<ApnSetting>() }
+    fun refresh() {
+        enabled = dpm.isOverrideApnEnabled(receiver)
+        settings.clear()
+        settings.addAll(dpm.getOverrideApns(receiver))
+    }
+    LaunchedEffect(Unit) { refresh() }
+    MyScaffold(R.string.override_apn, 0.dp, onNavigateUp, false) {
         SwitchItem(
-            R.string.enable,
-            getState = { dpm.isOverrideApnEnabled(receiver) }, onCheckedChange = { dpm.setOverrideApnsEnabled(receiver,it) },
-            padding = false
+            R.string.enable, state = enabled,
+            onCheckedChange = {
+                dpm.setOverrideApnsEnabled(receiver, it)
+                refresh()
+            }
         )
-        Text(text = stringResource(R.string.total_apn_amount, setting.size))
-        if(setting.isNotEmpty()) {
-            Text(text = stringResource(R.string.select_a_apn_or_create, setting.size))
-            TextField(
-                value = inputNum,
-                label = { Text("APN") },
-                onValueChange = { inputNum = it },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
-                enabled = !nextStep
+        settings.forEach {
+            Row(
+                Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
+                Arrangement.SpaceBetween, Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(it.id.toString())
+                    Text(it.apnName.toString(), color = MaterialTheme.colorScheme.onSurfaceVariant, style = typography.bodyMedium)
+                    Text(it.entryName.toString(), color = MaterialTheme.colorScheme.onSurfaceVariant, style = typography.bodyMedium)
+                }
+                IconButton({
+                    onNavigateToAddSetting(bundleOf("setting" to it))
+                }) {
+                    Icon(Icons.Default.Edit, null)
+                }
+            }
+        }
+        Row(
+            Modifier.fillMaxWidth().clickable {
+                onNavigateToAddSetting(Bundle())
+            }.padding(horizontal = 8.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(Icons.Default.Add, null, Modifier.padding(horizontal = 8.dp))
+            Text(stringResource(R.string.add_config), style = typography.labelLarge)
+        }
+    }
+}
+
+private data class ApnType(val id: Int, val name: String, val requiresApi: Int = 0)
+@SuppressLint("InlinedApi")
+private val apnTypes = listOf(
+    ApnType(ApnSetting.TYPE_DEFAULT, "Default"), ApnType(ApnSetting.TYPE_MMS, "MMS"), ApnType(ApnSetting.TYPE_SUPL, "SUPL"),
+    ApnType(ApnSetting.TYPE_DUN, "DUN"), ApnType(ApnSetting.TYPE_HIPRI, "HiPri"), ApnType(ApnSetting.TYPE_FOTA, "FOTA"),
+    ApnType(ApnSetting.TYPE_IMS, "IMS"), ApnType(ApnSetting.TYPE_CBS, "CBS"), ApnType(ApnSetting.TYPE_IA, "IA"),
+    ApnType(ApnSetting.TYPE_EMERGENCY, "Emergency"), ApnType(ApnSetting.TYPE_MCX, "MCX", 29), ApnType(ApnSetting.TYPE_XCAP, "XCAP", 30),
+    ApnType(ApnSetting.TYPE_BIP, "BIP", 31), ApnType(ApnSetting.TYPE_VSIM, "VSIM", 31), ApnType(ApnSetting.TYPE_ENTERPRISE, "Enterprise", 33),
+    ApnType(ApnSetting.TYPE_RCS, "RCS", 35) // TODO: Adapt A16 later
+)
+
+@Serializable object AddApnSetting
+
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@RequiresApi(28)
+@Composable
+fun AddApnSettingScreen(origin: ApnSetting?, onNavigateUp: () -> Unit) {
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
+    val fm = LocalFocusManager.current
+    var dropdown by remember { mutableIntStateOf(0) } // 1:Auth type, 2:MVNO type, 3:Protocol, 4:Roaming protocol
+    var dialog by remember { mutableIntStateOf(0) } // 1:Proxy, 2:MMS proxy
+    var enabled by remember { mutableStateOf(true) }
+    var apnName by remember { mutableStateOf(origin?.apnName ?: "") }
+    var entryName by remember { mutableStateOf(origin?.entryName ?: "") }
+    var apnType by remember { mutableIntStateOf(origin?.apnTypeBitmask ?: 0) }
+    var profileId by remember { mutableStateOf(if(VERSION.SDK_INT >= 33) origin?.profileId?.toString() ?: "" else "") }
+    var carrierId by remember { mutableStateOf(if(VERSION.SDK_INT >= 29) origin?.carrierId?.toString() ?: "" else "") }
+    var authType by remember { mutableIntStateOf(origin?.authType ?: ApnSetting.AUTH_TYPE_NONE) }
+    var user by remember { mutableStateOf(origin?.user ?: "") }
+    var password by remember { mutableStateOf(origin?.password ?: "") }
+    var proxyAddress by remember { mutableStateOf(if(VERSION.SDK_INT >= 29) origin?.proxyAddressAsString ?: "" else "") }
+    var proxyPort by remember { mutableStateOf(if(VERSION.SDK_INT >= 29) origin?.proxyPort?.toString() ?: "" else "") }
+    var mmsProxyAddress by remember { mutableStateOf(if(VERSION.SDK_INT >= 29) origin?.mmsProxyAddressAsString ?: "" else "") }
+    var mmsProxyPort by remember { mutableStateOf(if(VERSION.SDK_INT >= 29) origin?.mmsProxyPort?.toString() ?: "" else "") }
+    var mmsc by remember { mutableStateOf(origin?.mmsc?.toString() ?: "") }
+    var mtuV4 by remember { mutableStateOf(if(VERSION.SDK_INT >= 33) origin?.mtuV4?.toString() ?: "" else "") }
+    var mtuV6 by remember { mutableStateOf(if(VERSION.SDK_INT >= 33) origin?.mtuV6?.toString() ?: "" else "") }
+    var mvnoType by remember { mutableIntStateOf(origin?.mvnoType ?: ApnSetting.MVNO_TYPE_SPN) }
+    var networkTypeBitmask by remember { mutableStateOf(origin?.networkTypeBitmask?.toString() ?: "") }
+    var operatorNumeric by remember { mutableStateOf(origin?.operatorNumeric ?: "") }
+    var protocol by remember { mutableIntStateOf(origin?.protocol ?: ApnSetting.PROTOCOL_IP) }
+    var roamingProtocol by remember { mutableIntStateOf(origin?.roamingProtocol ?: ApnSetting.PROTOCOL_IP) }
+    var persistent by remember { mutableStateOf(if(VERSION.SDK_INT >= 33) origin?.isPersistent == true else false) }
+    var alwaysOn by remember { mutableStateOf(VERSION.SDK_INT >= 35 && origin?.isAlwaysOn == true) }
+    var errorMessage: String? by remember { mutableStateOf(null) }
+    MyScaffold(R.string.apn_setting, 8.dp, onNavigateUp, false) {
+        val protocolMap = mapOf(
+            ApnSetting.PROTOCOL_IP to "IPv4", ApnSetting.PROTOCOL_IPV6 to "IPv6",
+            ApnSetting.PROTOCOL_IPV4V6 to "IPv4/v6", ApnSetting.PROTOCOL_PPP to "PPP"
+        ).let {
+            if(VERSION.SDK_INT >= 29) {
+                it.plus(listOf(ApnSetting.PROTOCOL_NON_IP to "Non-IP", ApnSetting.PROTOCOL_UNSTRUCTURED to "Unstructured"))
+            } else it
+        }
+        SwitchItem(R.string.enabled, state = enabled, onCheckedChange = { enabled = it }, padding = false)
+        OutlinedTextField(
+            apnName, { apnName = it }, Modifier.fillMaxWidth(),
+            label = { Text(stringResource(R.string.apn_name) + " (*)") },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions { fm.clearFocus() }
+        )
+        OutlinedTextField(
+            entryName, { entryName = it }, Modifier.fillMaxWidth().padding(vertical = 4.dp),
+            label = { Text(stringResource(R.string.entry_name) + " (*)") },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions { fm.clearFocus() }
+        )
+        Text(stringResource(R.string.type) + " (*)", Modifier.padding(vertical = 4.dp), style = typography.titleLarge)
+        FlowRow(Modifier.padding(bottom = 4.dp)) {
+            apnTypes.filter { VERSION.SDK_INT >= it.requiresApi }.forEach {
+                FilterChip(
+                    apnType and it.id == it.id, {
+                        apnType = if(apnType and it.id == it.id) apnType and (apnType xor it.id) else apnType or it.id
+                    },
+                    { Text(it.name) }, Modifier.padding(horizontal = 4.dp)
+                )
+            }
+        }
+        if(VERSION.SDK_INT >= 33) OutlinedTextField(
+            profileId, { profileId = it }, Modifier.fillMaxWidth(),
+            label = { Text(stringResource(R.string.profile_id)) }, isError = profileId.isNotEmpty() && profileId.toIntOrNull() == null,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions { fm.clearFocus() }
+        )
+        if(VERSION.SDK_INT >= 29) OutlinedTextField(
+            carrierId, { carrierId = it }, Modifier.fillMaxWidth().padding(vertical = 4.dp),
+            label = { Text(stringResource(R.string.carrier_id)) },
+            isError = carrierId.isNotEmpty() && carrierId.toIntOrNull() == null,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions { fm.clearFocus() }
+        )
+        Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), Arrangement.SpaceBetween, Alignment.CenterVertically) {
+            val rotate by animateFloatAsState(if(dropdown == 1) 180F else 0F)
+            val authTypeMap = mapOf(
+                ApnSetting.AUTH_TYPE_NONE to stringResource(R.string.none), ApnSetting.AUTH_TYPE_PAP to "PAP",
+                ApnSetting.AUTH_TYPE_CHAP to "CHAP", ApnSetting.AUTH_TYPE_PAP_OR_CHAP to "PAP/CHAP"
             )
-        }else{
-            Text(text = stringResource(R.string.no_apn_you_should_create_one))
+            Text(stringResource(R.string.auth_type))
+            Row(Modifier.clickable { dropdown = 1 }.padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(authTypeMap[authType]!!, Modifier.padding(2.dp))
+                Icon(Icons.Default.ArrowDropDown, null, Modifier.padding(start = 4.dp).rotate(rotate))
+                DropdownMenu(dropdown == 1, { dropdown = 0 }) {
+                    authTypeMap.forEach {
+                        DropdownMenuItem({ Text(it.value) }, { authType = it.key; dropdown = 0 })
+                    }
+                }
+            }
+        }
+        OutlinedTextField(
+            user, { user = it }, Modifier.fillMaxWidth(),
+            label = { Text(stringResource(R.string.user)) },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions { fm.clearFocus() }
+        )
+        OutlinedTextField(
+            password, { password = it }, Modifier.fillMaxWidth(),
+            label = { Text(stringResource(R.string.password)) },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions { fm.clearFocus() }
+        )
+        if(VERSION.SDK_INT >= 29) {
+            Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                Column {
+                    Text(stringResource(R.string.proxy), Modifier.padding(end = 8.dp))
+                    Text(
+                        if(proxyAddress.isEmpty()) stringResource(R.string.none) else "$proxyAddress:$proxyPort",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, style = typography.bodyMedium
+                    )
+                }
+                TextButton({ dialog = 1 }) { Text(stringResource(R.string.edit)) }
+            }
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column {
+                    Text(stringResource(R.string.mms_proxy), Modifier.padding(end = 8.dp))
+                    Text(
+                        if(mmsProxyAddress.isEmpty()) stringResource(R.string.none) else "$mmsProxyAddress:$mmsProxyPort",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, style = typography.bodyMedium
+                    )
+                }
+                TextButton({ dialog = 2 }) { Text(stringResource(R.string.edit)) }
+            }
+        }
+        OutlinedTextField(
+            mmsc, { mmsc = it }, Modifier.fillMaxWidth(),
+            label = { Text("MMSC") },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions { fm.clearFocus() }
+        )
+        if(VERSION.SDK_INT >= 33) Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), Arrangement.SpaceBetween) {
+            val fr = FocusRequester()
+            OutlinedTextField(
+                mtuV4, { mtuV4 = it }, Modifier.fillMaxWidth(0.49F),
+                label = { Text("MTU (IPv4)") },
+                isError = !mtuV4.isEmpty() && mtuV4.toIntOrNull() == null,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions { fr.requestFocus() }
+            )
+            OutlinedTextField(
+                mtuV6, { mtuV6 = it }, Modifier.focusRequester(fr).fillMaxWidth(0.96F),
+                label = { Text("MTU (IPv6)") },
+                isError = !mtuV6.isEmpty() && mtuV6.toIntOrNull() == null,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions { fm.clearFocus() }
+            )
+        }
+        Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), Arrangement.SpaceBetween, Alignment.CenterVertically) {
+            val rotate by animateFloatAsState(if(dropdown == 2) 180F else 0F)
+            val mvnoTypeMap = mapOf(
+                ApnSetting.MVNO_TYPE_SPN to "SPM", ApnSetting.MVNO_TYPE_IMSI to "IMSI",
+                ApnSetting.MVNO_TYPE_GID to "GID", ApnSetting.MVNO_TYPE_ICCID to "ICCID"
+            )
+            Text(stringResource(R.string.mvno_type))
+            Row(Modifier.clickable { dropdown = 2 }.padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(mvnoTypeMap[mvnoType]!!, Modifier.padding(4.dp))
+                Icon(Icons.Default.ArrowDropDown, null, Modifier.padding(start = 4.dp).rotate(rotate))
+                DropdownMenu(dropdown == 2, { dropdown = 0 }) {
+                    mvnoTypeMap.forEach {
+                        DropdownMenuItem({ Text(it.value) }, { mvnoType = it.key; dropdown = 0 })
+                    }
+                }
+            }
+        }
+        OutlinedTextField(
+            networkTypeBitmask, { networkTypeBitmask = it }, Modifier.fillMaxWidth(),
+            label = { Text(stringResource(R.string.network_type_bitmask)) },
+            isError = networkTypeBitmask.isNotEmpty() && networkTypeBitmask.toIntOrNull() == null,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions { fm.clearFocus() }
+        )
+        OutlinedTextField(
+            operatorNumeric, { operatorNumeric = it }, Modifier.fillMaxWidth().padding(vertical = 4.dp),
+            label = { Text("Numeric operator ID") },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions { fm.clearFocus() }
+        )
+        Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), Arrangement.SpaceBetween, Alignment.CenterVertically) {
+            val rotate by animateFloatAsState(if(dropdown == 3) 180F else 0F)
+            Text(stringResource(R.string.protocol))
+            Row(Modifier.clickable { dropdown = 3 }.padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(protocolMap[protocol]!!, Modifier.padding(2.dp))
+                Icon(Icons.Default.ArrowDropDown, null, Modifier.padding(start = 4.dp).rotate(rotate))
+                DropdownMenu(dropdown == 3, { dropdown = 0 }) {
+                    protocolMap.forEach {
+                        DropdownMenuItem({ Text(it.value) }, { protocol = it.key; dropdown = 0 })
+                    }
+                }
+            }
+        }
+        Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), Arrangement.SpaceBetween, Alignment.CenterVertically) {
+            val rotate by animateFloatAsState(if(dropdown == 4) 180F else 0F)
+            Text(stringResource(R.string.roaming_protocol))
+            Row(Modifier.clickable { dropdown = 4 }.padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(protocolMap[roamingProtocol]!!, Modifier.padding(2.dp))
+                Icon(Icons.Default.ArrowDropDown, null, Modifier.padding(start = 4.dp).rotate(rotate))
+                DropdownMenu(dropdown == 4, { dropdown = 0 }) {
+                    protocolMap.forEach {
+                        DropdownMenuItem({ Text(it.value) }, { roamingProtocol = it.key; dropdown = 0 })
+                    }
+                }
+            }
+        }
+        if(VERSION.SDK_INT >= 33) Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
+            Text(stringResource(R.string.persistent))
+            Switch(persistent, { persistent = it })
+        }
+        Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
+            Text(stringResource(R.string.always_on))
+            Switch(alwaysOn, { alwaysOn = it })
         }
         Button(
-            onClick = { focusMgr.clearFocus(); nextStep =! nextStep },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = inputNum != "" && (nextStep || inputNum=="0" || setting[inputNum.toInt()-1] != null)
+            {
+                try {
+                    val setting = ApnSetting.Builder().apply {
+                        setCarrierEnabled(enabled)
+                        setApnName(apnName)
+                        setEntryName(entryName)
+                        setApnTypeBitmask(apnType)
+                        setAuthType(authType)
+                        setUser(user)
+                        setPassword(password)
+                        if(VERSION.SDK_INT >= 33) profileId.toIntOrNull()?.let { setProfileId(it) }
+                        if(VERSION.SDK_INT >= 29) {
+                            carrierId.toIntOrNull()?.let { setCarrierId(it) }
+                            setProxyAddress(proxyAddress)
+                            proxyPort.toIntOrNull()?.let { setProxyPort(it) }
+                            setMmsProxyAddress(mmsProxyAddress)
+                            mmsProxyPort.toIntOrNull()?.let { setMmsProxyPort(it) }
+                        }
+                        setMmsc(Uri.parse(mmsc))
+                        if(VERSION.SDK_INT >= 33) {
+                            mtuV4.toIntOrNull()?.let { setMtuV4(it) }
+                            mtuV6.toIntOrNull()?.let { setMtuV6(it) }
+                        }
+                        setMvnoType(mvnoType)
+                        networkTypeBitmask.toIntOrNull()?.let { setNetworkTypeBitmask(it) }
+                        setOperatorNumeric(operatorNumeric)
+                        setProtocol(protocol)
+                        setRoamingProtocol(roamingProtocol)
+                        if(VERSION.SDK_INT >= 33) setPersistent(persistent)
+                        if(VERSION.SDK_INT >= 35) setAlwaysOn(alwaysOn)
+                    }.build()
+                    if(origin == null) {
+                        dpm.addOverrideApn(receiver, setting)
+                    } else {
+                        dpm.updateOverrideApn(receiver, origin.id, setting)
+                    }
+                    onNavigateUp()
+                } catch(e: Exception) {
+                    errorMessage = (e::class.qualifiedName ?: "") + "\n" + (e.message ?: "")
+                }
+            },
+            Modifier.fillMaxWidth().padding(vertical = 4.dp)
         ) {
-            Text(stringResource(if(nextStep) R.string.previous_step else R.string.next_step))
+            Text(stringResource(if(origin != null) R.string.update else R.string.add))
         }
-        var result = Builder().build()
-        AnimatedVisibility(nextStep) {
-            var carrierEnabled by remember { mutableStateOf(false) }
-            var inputApnName by remember { mutableStateOf("") }
-            var user by remember { mutableStateOf("") }
-            var profileId by remember { mutableStateOf("") }
-            var selectedAuthType by remember { mutableIntStateOf(AUTH_TYPE_NONE) }
-            var carrierId by remember { mutableStateOf("$UNKNOWN_CARRIER_ID") }
-            var apnTypeBitmask by remember { mutableStateOf("") }
-            var entryName by remember { mutableStateOf("") }
-            var mmsProxyAddress by remember { mutableStateOf("") }
-            var mmsProxyPort by remember { mutableStateOf("") }
-            var proxyAddress by remember { mutableStateOf("") }
-            var proxyPort by remember { mutableStateOf("") }
-            var mmsc by remember { mutableStateOf("") }
-            var mtuV4 by remember { mutableStateOf("") }
-            var mtuV6 by remember { mutableStateOf("") }
-            var mvnoType by remember { mutableIntStateOf(-1) }
-            var networkTypeBitmask by remember { mutableStateOf("") }
-            var operatorNumeric by remember { mutableStateOf("") }
-            var password by remember { mutableStateOf("") }
-            var persistent by remember { mutableStateOf(false) }
-            var protocol by remember { mutableIntStateOf(-1) }
-            var roamingProtocol by remember { mutableIntStateOf(-1) }
-            var id by remember { mutableIntStateOf(0) }
-            
-            if(inputNum!="0") {
-                val current = setting[inputNum.toInt()-1]
-                id = current.id
-                carrierEnabled = current.isEnabled
-                inputApnName = current.apnName
-                user = current.user
-                if(VERSION.SDK_INT>=33) {profileId = current.profileId.toString() }
-                selectedAuthType = current.authType
-                apnTypeBitmask = current.apnTypeBitmask.toString()
-                entryName = current.entryName
-                if(VERSION.SDK_INT>=29) {mmsProxyAddress = current.mmsProxyAddressAsString}
-                mmsProxyPort = current.mmsProxyPort.toString()
-                if(VERSION.SDK_INT>=29) {proxyAddress = current.proxyAddressAsString}
-                proxyPort = current.proxyPort.toString()
-                mmsc = current.mmsc.toString()
-                if(VERSION.SDK_INT>=33) { mtuV4 = current.mtuV4.toString(); mtuV6 = current.mtuV6.toString() }
-                mvnoType = current.mvnoType
-                networkTypeBitmask = current.networkTypeBitmask.toString()
-                operatorNumeric = current.operatorNumeric
-                password = current.password
-                if(VERSION.SDK_INT>=33) {persistent = current.isPersistent}
-                protocol = current.protocol
-                roamingProtocol = current.roamingProtocol
-            }
-            
-            Column {
-                
-                Text(text = "APN", style = typography.titleLarge)
-                TextField(
-                    value = inputApnName,
-                    onValueChange = {inputApnName=it },
-                    label = { Text(stringResource(R.string.name)) },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = stringResource(R.string.enable), style = typography.titleLarge)
-                    Switch(checked = carrierEnabled, onCheckedChange = {carrierEnabled=it })
-                }
-                
-                Text(text = stringResource(R.string.user_name), style = typography.titleLarge)
-                TextField(
-                    value = user,
-                    onValueChange = { user=it },
-                    label = { Text(stringResource(R.string.user_name)) },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
-                )
-                
-                if(VERSION.SDK_INT>=33) {
-                    Text(text = stringResource(R.string.profile_id), style = typography.titleLarge)
-                    TextField(
-                        value = profileId,
-                        onValueChange = { profileId=it },
-                        label = { Text("ID") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                        modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
-                    )
-                }
-                
-                Text(text = stringResource(R.string.auth_type), style = typography.titleLarge)
-                RadioButtonItem(R.string.none, selectedAuthType==AUTH_TYPE_NONE) { selectedAuthType = AUTH_TYPE_NONE }
-                RadioButtonItem("CHAP", selectedAuthType == AUTH_TYPE_CHAP) { selectedAuthType = AUTH_TYPE_CHAP }
-                RadioButtonItem("PAP", selectedAuthType == AUTH_TYPE_PAP) { selectedAuthType = AUTH_TYPE_PAP }
-                RadioButtonItem("PAP/CHAP", selectedAuthType == AUTH_TYPE_PAP_OR_CHAP) { selectedAuthType = AUTH_TYPE_PAP_OR_CHAP }
-
-                if(VERSION.SDK_INT>=29) {
-                    val ts = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-                    carrierId = ts.simCarrierId.toString()
-                    Text(text = "CarrierID", style = typography.titleLarge)
-                    TextField(
-                        value = carrierId,
-                        onValueChange = { carrierId=it },
-                        label = { Text("ID") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                        modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
-                    )
-                }
-                
-                Text(text = stringResource(R.string.apn_type), style = typography.titleLarge)
-                TextField(
-                    value = apnTypeBitmask,
-                    onValueChange = { apnTypeBitmask=it },
-                    label = { Text(stringResource(R.string.bitmask)) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
-                )
-                
-                Text(text = stringResource(R.string.description), style = typography.titleLarge)
-                TextField(
-                    value = entryName,
-                    onValueChange = {entryName=it },
-                    label = { Text(stringResource(R.string.description)) },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
-                )
-                
-                Text(text = stringResource(R.string.mms_proxy), style = typography.titleLarge)
-                if(VERSION.SDK_INT>=29) {
-                    TextField(
-                        value = mmsProxyAddress,
-                        onValueChange = { mmsProxyAddress=it },
-                        label = { Text(stringResource(R.string.address)) },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                        modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
-                    )
-                }
-                TextField(
-                    value = mmsProxyPort,
-                    onValueChange = { mmsProxyPort=it },
-                    label = { Text(stringResource(R.string.port)) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
-                )
-                
-                Text(text = stringResource(R.string.proxy), style = typography.titleLarge)
-                if(VERSION.SDK_INT>=29) {
-                    TextField(
-                        value = proxyAddress,
-                        onValueChange = { proxyAddress=it },
-                        label = { Text(stringResource(R.string.address)) },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                        modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
-                    )
-                }
-                TextField(
-                    value = proxyPort,
-                    onValueChange = { proxyPort=it },
-                    label = { Text(stringResource(R.string.port)) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
-                )
-                
-                Text(text = "MMSC", style = typography.titleLarge)
-                TextField(
-                    value = mmsc,
-                    onValueChange = { mmsc=it },
-                    label = { Text("Uri") },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
-                )
-                
-                if(VERSION.SDK_INT>=33) {
-                    Text(text = "MTU", style = typography.titleLarge)
-                    TextField(
-                        value = mtuV4,
-                        onValueChange = { mtuV4=it },
-                        label = { Text("IPV4") },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                        modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
-                    )
-                    TextField(
-                        value = mtuV6,
-                        onValueChange = { mtuV6=it },
-                        label = { Text("IPV6") },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                        modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
-                    )
-                }
-                
-                Text(text = "MVNO", style = typography.titleLarge)
-                RadioButtonItem("SPN", mvnoType == MVNO_TYPE_SPN) { mvnoType = MVNO_TYPE_SPN }
-                RadioButtonItem("IMSI", mvnoType == MVNO_TYPE_IMSI) { mvnoType = MVNO_TYPE_IMSI }
-                RadioButtonItem("GID", mvnoType == MVNO_TYPE_GID) { mvnoType = MVNO_TYPE_GID }
-                RadioButtonItem("ICCID", mvnoType == MVNO_TYPE_ICCID) { mvnoType = MVNO_TYPE_ICCID }
-
-                Text(text = stringResource(R.string.apn_network_type), style = typography.titleLarge)
-                TextField(
-                    value = networkTypeBitmask,
-                    onValueChange = { networkTypeBitmask=it },
-                    label = { Text(stringResource(R.string.bitmask)) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
-                )
-                
-                Text(text = "OperatorNumeric", style = typography.titleLarge)
-                TextField(
-                    value = operatorNumeric,
-                    onValueChange = { operatorNumeric=it },
-                    label = { Text("ID") },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
-                )
-                
-                Text(text = stringResource(R.string.password), style = typography.titleLarge)
-                TextField(
-                    value = password,
-                    onValueChange = { password=it },
-                    label = { Text(stringResource(R.string.password)) },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp)
-                )
-                
-                if(VERSION.SDK_INT>=33) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+        if(origin != null) Button(
+            {
+                dpm.removeOverrideApn(receiver, origin.id)
+                onNavigateUp()
+            },
+            Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.onError)
+        ) {
+            Text(stringResource(R.string.delete))
+        }
+        if(dialog != 0) {
+            var address by remember { mutableStateOf((if(dialog == 1) proxyAddress else mmsProxyAddress)) }
+            var port by remember { mutableStateOf((if(dialog == 1) proxyPort else mmsProxyPort)) }
+            val fr = FocusRequester()
+            AlertDialog(
+                title = { Text(if(dialog == 1) "Proxy" else "MMS proxy") },
+                text = {
+                    val fm = LocalFocusManager.current
+                    Column {
+                        OutlinedTextField(
+                            address, { address = it }, Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                            textStyle = typography.bodyLarge,
+                            label = { Text(stringResource(R.string.address)) },
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            keyboardActions = KeyboardActions { fr.requestFocus() }
+                        )
+                        OutlinedTextField(
+                            port, { port = it }, Modifier.fillMaxWidth().focusRequester(fr),
+                            textStyle = typography.bodyLarge,
+                            isError = port.isNotEmpty() && port.toIntOrNull() == null,
+                            label = { Text(stringResource(R.string.port)) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions { fm.clearFocus() }
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        {
+                            if(dialog == 1) {
+                                proxyAddress = address
+                                proxyPort = port
+                            } else {
+                                mmsProxyAddress = address
+                                mmsProxyPort = port
+                            }
+                            dialog = 0
+                        }
                     ) {
-                        Text(text = stringResource(R.string.persistent), style = typography.titleLarge)
-                        Switch(checked = persistent, onCheckedChange = { persistent=it })
+                        Text(stringResource(R.string.confirm))
                     }
-                }
-                
-                Text(text = stringResource(R.string.protocol), style = typography.titleLarge)
-                RadioButtonItem("IPV4", protocol == PROTOCOL_IP) { protocol = PROTOCOL_IP }
-                RadioButtonItem("IPV6", protocol == PROTOCOL_IPV6) { protocol = PROTOCOL_IPV6 }
-                RadioButtonItem("IPV4/IPV6", protocol == PROTOCOL_IPV4V6) { protocol = PROTOCOL_IPV4V6 }
-                RadioButtonItem("PPP", protocol == PROTOCOL_PPP) { protocol = PROTOCOL_PPP }
-                if(VERSION.SDK_INT>=29) {
-                    RadioButtonItem("non-IP", protocol == PROTOCOL_NON_IP) { protocol = PROTOCOL_NON_IP }
-                    RadioButtonItem("Unstructured", protocol == PROTOCOL_UNSTRUCTURED) { protocol = PROTOCOL_UNSTRUCTURED }
-                }
-                
-                Text(text = stringResource(R.string.roaming_protocol), style = typography.titleLarge)
-                RadioButtonItem("IPV4", roamingProtocol == PROTOCOL_IP) { roamingProtocol = PROTOCOL_IP }
-                RadioButtonItem("IPV6", roamingProtocol == PROTOCOL_IPV6) { roamingProtocol = PROTOCOL_IPV6 }
-                RadioButtonItem("IPV4/IPV6", roamingProtocol == PROTOCOL_IPV4V6) { roamingProtocol = PROTOCOL_IPV4V6 }
-                RadioButtonItem("PPP", roamingProtocol == PROTOCOL_PPP) { roamingProtocol = PROTOCOL_PPP }
-                if(VERSION.SDK_INT>=29) {
-                    RadioButtonItem("non-IP", roamingProtocol == PROTOCOL_NON_IP) { roamingProtocol = PROTOCOL_NON_IP }
-                    RadioButtonItem("Unstructured", roamingProtocol == PROTOCOL_UNSTRUCTURED) { roamingProtocol = PROTOCOL_UNSTRUCTURED }
-                }
-                
-                var finalStep by remember { mutableStateOf(false) }
-                Button(
-                    onClick = {
-                        if(!finalStep) {
-                            builder.setCarrierEnabled(carrierEnabled)
-                            builder.setApnName(inputApnName)
-                            builder.setUser(user)
-                            if(VERSION.SDK_INT>=33) { builder.setProfileId(profileId.toInt()) }
-                            builder.setAuthType(selectedAuthType)
-                            if(VERSION.SDK_INT>=29) { builder.setCarrierId(carrierId.toInt()) }
-                            builder.setApnTypeBitmask(apnTypeBitmask.toInt())
-                            builder.setEntryName(entryName)
-                            if(VERSION.SDK_INT>=29) { builder.setMmsProxyAddress(mmsProxyAddress) }
-                            builder.setMmsProxyPort(mmsProxyPort.toInt())
-                            if(VERSION.SDK_INT>=29) { builder.setProxyAddress(proxyAddress) }
-                            builder.setProxyPort(proxyPort.toInt())
-                            builder.setMmsc(mmsc.toUri())
-                            if(VERSION.SDK_INT>=33) { builder.setMtuV4(mtuV4.toInt()); builder.setMtuV6(mtuV6.toInt()) }
-                            builder.setMvnoType(mvnoType)
-                            builder.setNetworkTypeBitmask(networkTypeBitmask.toInt())
-                            builder.setOperatorNumeric(operatorNumeric)
-                            builder.setPassword(password)
-                            if(VERSION.SDK_INT>=33) { builder.setPersistent(persistent) }
-                            builder.setProtocol(protocol)
-                            builder.setRoamingProtocol(roamingProtocol)
-                            result = builder.build()
-                        }
-                        finalStep=!finalStep
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(if(finalStep) R.string.previous_step else R.string.next_step))
-                }
-                AnimatedVisibility(finalStep) {
-                    if(inputNum=="0") {
-                        Button(
-                            onClick = { dpm.addOverrideApn(receiver,result) },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(stringResource(R.string.create))
-                        }
-                    }else{
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Button(
-                                onClick = { context.showOperationResultToast(dpm.updateOverrideApn(receiver, id, result)) },
-                                modifier = Modifier.fillMaxWidth(0.49F)
-                            ) {
-                                Text(stringResource(R.string.update))
-                            }
-                            Button(
-                                onClick = { context.showOperationResultToast(dpm.removeOverrideApn(receiver,id)) },
-                                modifier = Modifier.fillMaxWidth(0.96F)
-                            ) {
-                                Text(stringResource(R.string.remove))
-                            }
-                        }
-                    }
-                }
-            }
+                },
+                dismissButton = {
+                    TextButton({ dialog = 0 }) { Text(stringResource(R.string.cancel)) }
+                },
+                onDismissRequest = { dialog = 0 }
+            )
         }
+        if(errorMessage != null) AlertDialog(
+            title = { Text(stringResource(R.string.error)) },
+            text = { Text(errorMessage ?: "") },
+            confirmButton = {
+                TextButton({ errorMessage = null }) { Text(stringResource(R.string.confirm)) }
+            },
+            onDismissRequest = { errorMessage = null }
+        )
     }
 }

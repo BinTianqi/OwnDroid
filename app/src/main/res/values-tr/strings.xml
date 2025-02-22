@@ -40,7 +40,6 @@
     <string name="apply">Uygula</string>
     <string name="decide_by_user">Kullanıcı Tarafından Karar Ver</string>
     <string name="unsupported">Desteklenmiyor</string>
-    <string name="developing">Geliştirilen İşlev</string>
     <string name="options">Seçenekler</string>
     <string name="copy_command">Komutu Kopyala</string>
     <string name="package_name">Paket Adı</string>
@@ -318,34 +317,34 @@
     <string name="export_logs">Export logs</string> <!--TODO-->
     <string name="wifi_auth_keypair">Wi-Fi anahtar çifti</string>
     <string name="preferential_network_service">Tercihli ağ hizmeti</string>
-    <string name="add_config">Add config</string> <!--TODO-->
-    <string name="network_id">Network ID</string> <!--TODO-->
-    <string name="allow_fallback_to_default_connection">Allow fallback to default connection</string> <!--TODO-->
-    <string name="block_non_matching_networks">Block non matching networks</string> <!--TODO-->
-    <string name="included_uids">Included UIDs</string> <!--TODO-->
-    <string name="excluded_uids">Excluded UIDs</string> <!--TODO-->
-    <string name="one_uid_per_line">One UID per line</string> <!--TODO-->
-    <string name="override_apn_settings">APN ayarlarını geçersiz kıl</string>
-    <string name="total_apn_amount">APN ayarlarının toplamı: %1$s</string>
-    <string name="select_a_apn_or_create">Düzenlemek istediğiniz APN ayarını seçin (1~%1$s) veya yeni bir APN ayarı oluşturmak için 0 girin.</string>
-    <string name="no_apn_you_should_create_one">APN ayarı yok. Yeni bir tane oluşturulacak.</string>
-    <string name="previous_step">Önceki adım</string>
-    <string name="next_step">Sonraki adım</string>
+    <!--TODO: following 11 strings-->
+    <string name="add_config">Add config</string>
+    <string name="network_id">Network ID</string>
+    <string name="allow_fallback_to_default_connection">Allow fallback to default connection</string>
+    <string name="block_non_matching_networks">Block non matching networks</string>
+    <string name="included_uids">Included UIDs</string>
+    <string name="excluded_uids">Excluded UIDs</string>
+    <string name="one_uid_per_line">One UID per line</string>
+    <string name="override_apn">Override APN</string>
+    <string name="apn_setting">APN setting</string>
+    <string name="apn_name">APN name</string>
+    <string name="entry_name">Entry name</string>
     <string name="name">İsim</string>
-    <string name="user_name">Kullanıcı adı</string>
     <string name="profile_id">Profil Kimliği</string>
     <string name="auth_type">Kimlik doğrulama türü</string>
-    <string name="apn_type">APN türü</string>
-    <string name="bitmask">Bitmask</string>
     <string name="description">Açıklama</string>
     <string name="mms_proxy">MMS proxy</string>
     <string name="address">Adres</string>
     <string name="port">Port</string>
     <string name="proxy">Proxy</string>
-    <string name="apn_network_type">Ağ türü</string>
     <string name="persistent">Kalıcı</string>
     <string name="protocol">Protokol</string>
     <string name="roaming_protocol">Dolaşım protokolü</string>
+    <!--TODO: following 4 strings-->
+    <string name="carrier_id">Carrier ID</string>
+    <string name="mvno_type">MVNO type</string>
+    <string name="network_type_bitmask">Network type bitmask</string>
+    <string name="always_on">Always on</string>
     <string name="update">Güncelle</string>
 
     <!--WorkProfile-->

@@ -39,7 +39,6 @@
     <string name="apply">Применить</string>
     <string name="decide_by_user">Определять пользователем</string>
     <string name="unsupported">Не поддерживается</string>
-    <string name="developing">Разрабатываемая функция</string>
     <string name="options">Опции</string>
     <string name="copy_command">Копировать команду</string>
     <string name="package_name">Имя пакета</string>
@@ -318,29 +317,28 @@
     <string name="included_uids">Включенные UID</string>
     <string name="excluded_uids">Исключенные UID</string>
     <string name="one_uid_per_line">Один UID на строку</string>
-    <string name="override_apn_settings">Настройки APN</string>
-    <string name="total_apn_amount">Количество настроек APN: %1$s</string>
-    <string name="select_a_apn_or_create">Выберите настройку APN для редактирования (1~%1$s) или введите 0, чтобы создать новую настройку APN.</string>
-    <string name="no_apn_you_should_create_one">Нет настроек APN. Будет создана новая.</string>
-    <string name="previous_step">Предыдущий шаг</string>
-    <string name="next_step">Следующий шаг</string>
+    <!--TODO: following 4 strings-->
+    <string name="override_apn">Override APN</string>
+    <string name="apn_setting">APN setting</string>
+    <string name="apn_name">APN name</string>
+    <string name="entry_name">Entry name</string>
     <string name="name">Имя</string>
-    <string name="user_name">Имя пользователя</string>
     <string name="profile_id">Идентификатор профиля</string>
     <string name="auth_type">Тип аутентификации</string>
-    <string name="apn_type">Тип APN</string>
-    <string name="bitmask">Битовая маска</string>
     <string name="description">Описание</string>
     <string name="mms_proxy">MMS-прокси</string>
     <string name="address">Адрес</string>
     <string name="port">Порт</string>
     <string name="proxy">Прокси</string>
-    <string name="apn_network_type">Тип сети</string>
     <string name="persistent">Постоянный</string>
     <string name="protocol">Протокол</string>
     <string name="roaming_protocol">Протокол роуминга</string>
+    <!--TODO: following 4 strings-->
+    <string name="carrier_id">Carrier ID</string>
+    <string name="mvno_type">MVNO type</string>
+    <string name="network_type_bitmask">Network type bitmask</string>
+    <string name="always_on">Always on</string>
     <string name="update">Обновить</string>
-
 
 
     <!--Рабочий профиль-->

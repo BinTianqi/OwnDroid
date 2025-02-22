@@ -62,6 +62,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.bintianqi.owndroid.dpm.Accounts
 import com.bintianqi.owndroid.dpm.AccountsScreen
+import com.bintianqi.owndroid.dpm.AddApnSetting
+import com.bintianqi.owndroid.dpm.AddApnSettingScreen
 import com.bintianqi.owndroid.dpm.AddDelegatedAdmin
 import com.bintianqi.owndroid.dpm.AddDelegatedAdminScreen
 import com.bintianqi.owndroid.dpm.AddNetwork
@@ -285,10 +287,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable<Home> { HomeScreen { navController.navigate(it) } }
 
         composable<Permissions> {
-            PermissionsScreen(::navigateUp, { navController.navigate(it) }) {
-                val dest = navController.graph.findNode(ShizukuScreen)!!.id
-                navController.navigate(dest, it)
-            }
+            PermissionsScreen(::navigateUp, { navController.navigate(it) }) { navController.navigate(ShizukuScreen, it) }
         }
         composable<ShizukuScreen> { ShizukuScreen(it.arguments!!, ::navigateUp) { navController.navigate(it) } }
         composable<Accounts>(mapOf(serializableNavTypePair<List<Accounts.Account>>())) { AccountsScreen(it.toRoute(), ::navigateUp) }
@@ -323,12 +322,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable<WipeData> { WipeDataScreen(::navigateUp) }
 
         composable<Network> { NetworkScreen(::navigateUp, ::navigate) }
-        composable<WiFi> {
-            WifiScreen(::navigateUp, { navController.navigate(it) }) {
-                val dest = navController.graph.findNode(AddNetwork)!!.id
-                navController.navigate(dest, it)
-            }
-        }
+        composable<WiFi> { WifiScreen(::navigateUp, { navController.navigate(it) }) { navController.navigate(AddNetwork, it)} }
         composable<NetworkOptions> { NetworkOptionsScreen(::navigateUp) }
         composable<AddNetwork> { AddNetworkScreen(it.arguments!!, ::navigateUp) }
         composable<WifiSecurityLevel> { WifiSecurityLevelScreen(::navigateUp) }
@@ -344,7 +338,8 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable<WifiAuthKeypair> { WifiAuthKeypairScreen(::navigateUp) }
         composable<PreferentialNetworkService> { PreferentialNetworkServiceScreen(::navigateUp, ::navigate) }
         composable<AddPreferentialNetworkServiceConfig> { AddPreferentialNetworkServiceConfigScreen(it.toRoute(), ::navigateUp) }
-        composable<OverrideApn> { OverrideApnScreen(::navigateUp) }
+        composable<OverrideApn> { OverrideApnScreen(::navigateUp) { navController.navigate(AddApnSetting, it) } }
+        composable<AddApnSetting> { AddApnSettingScreen(it.arguments?.getParcelable("setting"), ::navigateUp) }
 
         composable<WorkProfile> { WorkProfileScreen(::navigateUp, ::navigate) }
         composable<OrganizationOwnedProfile> { OrganizationOwnedProfileScreen(::navigateUp) }

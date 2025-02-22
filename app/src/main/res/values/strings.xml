@@ -41,7 +41,6 @@
     <string name="apply">Apply</string>
     <string name="decide_by_user">Decide by user</string>
     <string name="unsupported">Unsupported</string>
-    <string name="developing">Developing function</string>
     <string name="options">Options</string>
     <string name="copy_command">Copy Command</string>
     <string name="package_name">Package name</string>
@@ -346,27 +345,25 @@
     <string name="included_uids">Included UIDs</string>
     <string name="excluded_uids">Excluded UIDs</string>
     <string name="one_uid_per_line">One UID per line</string>
-    <string name="override_apn_settings">APN settings</string>
-    <string name="total_apn_amount">APN settings amount: %1$s</string>
-    <string name="select_a_apn_or_create">Select an APN setting you want to edit (1~%1$s) or enter 0 to create a new APN setting. </string>
-    <string name="no_apn_you_should_create_one">No APN settings. Will create a new one. </string>
-    <string name="previous_step">Previous step</string>
-    <string name="next_step">Next step</string>
+    <string name="override_apn">Override APN</string>
+    <string name="apn_setting">APN setting</string>
+    <string name="apn_name">APN name</string>
+    <string name="entry_name">Entry name</string>
     <string name="name">Name</string>
-    <string name="user_name">User name</string>
     <string name="profile_id">Profile ID</string>
     <string name="auth_type">Auth type</string>
-    <string name="apn_type">APN type</string>
-    <string name="bitmask">Bitmask</string>
     <string name="description">Description</string>
     <string name="mms_proxy">MMS proxy</string>
     <string name="address">Address</string>
     <string name="port">Port</string>
     <string name="proxy">Proxy</string>
-    <string name="apn_network_type">Network type</string>
     <string name="persistent">Persistent</string>
     <string name="protocol">Protocol</string>
     <string name="roaming_protocol">Roaming protocol</string>
+    <string name="carrier_id">Carrier ID</string>
+    <string name="mvno_type">MVNO type</string>
+    <string name="network_type_bitmask">Network type bitmask</string>
+    <string name="always_on">Always on</string>
     <string name="update">Update</string>
 
     <!--WorkProfile-->
