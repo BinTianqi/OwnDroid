@@ -306,15 +306,13 @@
     <string name="export_logs">导出日志</string>
     <string name="wifi_auth_keypair">Wi-Fi密钥对</string>
     <string name="preferential_network_service">首选网络服务</string>
+    <string name="add_config">添加配置</string>
     <string name="network_id">网络ID</string>
     <string name="allow_fallback_to_default_connection">允许回落到默认连接</string>
     <string name="block_non_matching_networks">阻止不匹配的网络</string>
     <string name="included_uids">包含的UID</string>
     <string name="excluded_uids">排除的UIDs</string>
     <string name="one_uid_per_line">一行一个UID</string>
-    <string name="failed_to_save_current_config">保存当前配置失败</string>
-    <string name="save_current_config">保存当前配置</string>
-    <string name="delete_current_config">删除当前配置</string>
     <string name="override_apn_settings">APN设置</string>
     <string name="total_apn_amount">一共有%1$s个APN设置</string>
     <string name="select_a_apn_or_create">选择一个你要修改的APN设置(1~%1$s)或者输入0以新建APN设置</string>

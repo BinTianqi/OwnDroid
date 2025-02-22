@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build.VERSION
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.biometric.BiometricManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -38,16 +40,27 @@ import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.SwitchItem
 import kotlinx.serialization.Serializable
 import java.security.SecureRandom
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Serializable object Settings
 
 @Composable
 fun SettingsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
+    val context = LocalContext.current
+    val exportLogsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) {
+        if(it != null) exportLogs(context, it)
+    }
     MyScaffold(R.string.settings, 0.dp, onNavigateUp) {
         FunctionItem(title = R.string.options, icon = R.drawable.tune_fill0) { onNavigate(SettingsOptions) }
         FunctionItem(title = R.string.appearance, icon = R.drawable.format_paint_fill0) { onNavigate(Appearance) }
         FunctionItem(title = R.string.security, icon = R.drawable.lock_fill0) { onNavigate(AuthSettings) }
         FunctionItem(title = R.string.api, icon = R.drawable.apps_fill0) { onNavigate(ApiSettings) }
+        FunctionItem(title = R.string.export_logs, icon = R.drawable.description_fill0) {
+            val time = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault()).format(Date(System.currentTimeMillis()))
+            exportLogsLauncher.launch("owndroid_log_$time")
+        }
         FunctionItem(title = R.string.about, icon = R.drawable.info_fill0) { onNavigate(About) }
     }
 }

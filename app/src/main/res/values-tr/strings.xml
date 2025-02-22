@@ -318,15 +318,13 @@
     <string name="export_logs">Export logs</string> <!--TODO-->
     <string name="wifi_auth_keypair">Wi-Fi anahtar çifti</string>
     <string name="preferential_network_service">Tercihli ağ hizmeti</string>
+    <string name="add_config">Add config</string> <!--TODO-->
     <string name="network_id">Network ID</string> <!--TODO-->
     <string name="allow_fallback_to_default_connection">Allow fallback to default connection</string> <!--TODO-->
     <string name="block_non_matching_networks">Block non matching networks</string> <!--TODO-->
     <string name="included_uids">Included UIDs</string> <!--TODO-->
     <string name="excluded_uids">Excluded UIDs</string> <!--TODO-->
     <string name="one_uid_per_line">One UID per line</string> <!--TODO-->
-    <string name="failed_to_save_current_config">Failed to save current config</string> <!--TODO-->
-    <string name="save_current_config">Save current config</string> <!--TODO-->
-    <string name="delete_current_config">Delete current config</string> <!--TODO-->
     <string name="override_apn_settings">APN ayarlarını geçersiz kıl</string>
     <string name="total_apn_amount">APN ayarlarının toplamı: %1$s</string>
     <string name="select_a_apn_or_create">Düzenlemek istediğiniz APN ayarını seçin (1~%1$s) veya yeni bir APN ayarı oluşturmak için 0 girin.</string>

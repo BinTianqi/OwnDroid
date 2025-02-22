@@ -339,15 +339,13 @@
     <string name="export_logs">Export logs</string>
     <string name="wifi_auth_keypair">Wi-Fi keypair</string>
     <string name="preferential_network_service">Preferential network service</string>
+    <string name="add_config">Add config</string>
     <string name="network_id">Network ID</string>
     <string name="allow_fallback_to_default_connection">Allow fallback to default connection</string>
     <string name="block_non_matching_networks">Block non matching networks</string>
     <string name="included_uids">Included UIDs</string>
     <string name="excluded_uids">Excluded UIDs</string>
     <string name="one_uid_per_line">One UID per line</string>
-    <string name="failed_to_save_current_config">Failed to save current config</string>
-    <string name="save_current_config">Save current config</string>
-    <string name="delete_current_config">Delete current config</string>
     <string name="override_apn_settings">APN settings</string>
     <string name="total_apn_amount">APN settings amount: %1$s</string>
     <string name="select_a_apn_or_create">Select an APN setting you want to edit (1~%1$s) or enter 0 to create a new APN setting. </string>

@@ -8,7 +8,9 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Process
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContract
@@ -28,6 +30,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 import kotlin.reflect.typeOf
 
 var zhCN = true
@@ -121,4 +124,14 @@ class ChoosePackageContract: ActivityResultContract<Nothing?, String?>() {
         Intent(context, PackageChooserActivity::class.java)
     override fun parseResult(resultCode: Int, intent: Intent?): String? =
         intent?.getStringExtra("package")
+}
+
+fun exportLogs(context: Context, uri: Uri) {
+    context.contentResolver.openOutputStream(uri)?.use { output ->
+        val proc = Runtime.getRuntime().exec("logcat -d")
+        proc.inputStream.copyTo(output)
+        if(Build.VERSION.SDK_INT >= 26) proc.waitFor(2L, TimeUnit.SECONDS)
+        else proc.waitFor()
+        context.showOperationResultToast(proc.exitValue() == 0)
+    }
 }

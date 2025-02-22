@@ -66,6 +66,8 @@ import com.bintianqi.owndroid.dpm.AddDelegatedAdmin
 import com.bintianqi.owndroid.dpm.AddDelegatedAdminScreen
 import com.bintianqi.owndroid.dpm.AddNetwork
 import com.bintianqi.owndroid.dpm.AddNetworkScreen
+import com.bintianqi.owndroid.dpm.AddPreferentialNetworkServiceConfig
+import com.bintianqi.owndroid.dpm.AddPreferentialNetworkServiceConfigScreen
 import com.bintianqi.owndroid.dpm.AffiliationId
 import com.bintianqi.owndroid.dpm.AffiliationIdScreen
 import com.bintianqi.owndroid.dpm.AlwaysOnVpnPackage
@@ -340,7 +342,8 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         composable<RecommendedGlobalProxy> { RecommendedGlobalProxyScreen(::navigateUp) }
         composable<NetworkLogging> { NetworkLoggingScreen(::navigateUp) }
         composable<WifiAuthKeypair> { WifiAuthKeypairScreen(::navigateUp) }
-        composable<PreferentialNetworkService> { PreferentialNetworkServiceScreen(::navigateUp) }
+        composable<PreferentialNetworkService> { PreferentialNetworkServiceScreen(::navigateUp, ::navigate) }
+        composable<AddPreferentialNetworkServiceConfig> { AddPreferentialNetworkServiceConfigScreen(it.toRoute(), ::navigateUp) }
         composable<OverrideApn> { OverrideApnScreen(::navigateUp) }
 
         composable<WorkProfile> { WorkProfileScreen(::navigateUp, ::navigate) }
@@ -507,7 +510,7 @@ private fun HomeScreen(onNavigate: (Any) -> Unit) {
                 HomePageItem(R.string.user_restriction, R.drawable.person_off) { onNavigate(UserRestriction) }
             }
             HomePageItem(R.string.users,R.drawable.manage_accounts_fill0) { onNavigate(Users) }
-            HomePageItem(R.string.password_and_keyguard, R.drawable.password_fill0) { onNavigate(Password) }
+            if(deviceOwner || profileOwner) HomePageItem(R.string.password_and_keyguard, R.drawable.password_fill0) { onNavigate(Password) }
             HomePageItem(R.string.settings, R.drawable.settings_fill0) { onNavigate(Settings) }
             Spacer(Modifier.padding(vertical = 20.dp))
         }

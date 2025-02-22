@@ -311,15 +311,13 @@
     <string name="export_logs">Экспортировать журналы</string>
     <string name="wifi_auth_keypair">Пара ключей Wi-Fi</string>
     <string name="preferential_network_service">Предпочтительная сетевая служба</string>
+    <string name="add_config">Add config</string> <!--TODO-->
     <string name="network_id">Идентификатор сети</string>
     <string name="allow_fallback_to_default_connection">Разрешить переход на соединение по умолчанию</string>
     <string name="block_non_matching_networks">Блокировать несоответствующие сети</string>
     <string name="included_uids">Включенные UID</string>
     <string name="excluded_uids">Исключенные UID</string>
     <string name="one_uid_per_line">Один UID на строку</string>
-    <string name="failed_to_save_current_config">Не удалось сохранить текущую конфигурацию</string>
-    <string name="save_current_config">Сохранить текущую конфигурацию</string>
-    <string name="delete_current_config">Удалить текущую конфигурацию</string>
     <string name="override_apn_settings">Настройки APN</string>
     <string name="total_apn_amount">Количество настроек APN: %1$s</string>
     <string name="select_a_apn_or_create">Выберите настройку APN для редактирования (1~%1$s) или введите 0, чтобы создать новую настройку APN.</string>

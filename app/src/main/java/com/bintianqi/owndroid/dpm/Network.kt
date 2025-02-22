@@ -80,7 +80,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.LocationOn
@@ -99,6 +98,9 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -156,7 +158,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import java.net.InetAddress
-import kotlin.math.max
 import kotlin.reflect.jvm.jvmErasure
 
 @Serializable object Network
@@ -1714,122 +1715,95 @@ fun WifiAuthKeypairScreen(onNavigateUp: () -> Unit) {
 
 @RequiresApi(33)
 @Composable
-fun PreferentialNetworkServiceScreen(onNavigateUp: () -> Unit) {
-    val focusMgr = LocalFocusManager.current
+fun PreferentialNetworkServiceScreen(onNavigateUp: () -> Unit, onNavigate: (AddPreferentialNetworkServiceConfig) -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     var masterEnabled by remember { mutableStateOf(false) }
     val configs = remember { mutableStateListOf<PreferentialNetworkServiceConfig>() }
-    var index by remember { mutableIntStateOf(-1) }
-    var enabled by remember { mutableStateOf(false) }
-    var networkId by remember { mutableStateOf("") }
-    var allowFallback by remember { mutableStateOf(false) }
-    var blockNonMatching by remember { mutableStateOf(false) }
-    var excludedUids by remember { mutableStateOf("") }
-    var includedUids by remember { mutableStateOf("") }
     fun refresh() {
-        val config = configs.getOrNull(index)
-        enabled = config?.isEnabled == true
-        networkId = config?.networkId?.toString() ?: ""
-        allowFallback = config?.isFallbackToDefaultConnectionAllowed == true
-        if(VERSION.SDK_INT >= 34) blockNonMatching = config?.shouldBlockNonMatchingNetworks() == true
-        includedUids = config?.includedUids?.joinToString("\n") ?: ""
-        excludedUids = config?.excludedUids?.joinToString("\n") ?: ""
-    }
-    fun saveCurrentConfig() {
-        val builder = PreferentialNetworkServiceConfig.Builder()
-        builder.setEnabled(enabled)
-        builder.setNetworkId(networkId.toInt())
-        builder.setFallbackToDefaultConnectionAllowed(allowFallback)
-        if(VERSION.SDK_INT >= 34) builder.setShouldBlockNonMatchingNetworks(blockNonMatching)
-        builder.setIncludedUids(includedUids.lines().dropWhile { it == "" }.map { it.toInt() }.toIntArray())
-        builder.setExcludedUids(excludedUids.lines().dropWhile { it == "" }.map { it.toInt() }.toIntArray())
-        if(index < configs.size) configs[index] = builder.build() else configs += builder.build()
-    }
-    fun initialize() {
         masterEnabled = dpm.isPreferentialNetworkServiceEnabled
+        configs.clear()
         configs.addAll(dpm.preferentialNetworkServiceConfigs)
-        index = max(0, configs.size - 1)
-        refresh()
     }
-    LaunchedEffect(Unit) { initialize() }
-    MyScaffold(R.string.preferential_network_service, 8.dp, onNavigateUp) {
-        SwitchItem(R.string.enabled, state = masterEnabled, onCheckedChange = { masterEnabled = it }, padding = false)
-        Row(
-            horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
-        ) {
-            IconButton(
-                onClick = {
-                    try {
-                        saveCurrentConfig()
-                        index -= 1
-                        refresh()
-                    } catch(e: Exception) {
-                        e.printStackTrace()
-                        Toast.makeText(context, R.string.failed_to_save_current_config, Toast.LENGTH_SHORT).show()
-                    }
-                },
-                enabled = index > 0
+    LaunchedEffect(Unit) { refresh() }
+    MyScaffold(R.string.preferential_network_service, 0.dp, onNavigateUp, false) {
+        SwitchItem(R.string.enabled, state = masterEnabled, onCheckedChange = {
+            dpm.isPreferentialNetworkServiceEnabled = it
+            refresh()
+        })
+        Spacer(Modifier.padding(vertical = 4.dp))
+        configs.forEachIndexed { index, config ->
+            Row(
+                Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
+                Arrangement.SpaceBetween, Alignment.CenterVertically
             ) {
-                Icon(imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft, contentDescription = stringResource(R.string.previous))
-            }
-            Text("${index + 1} / ${configs.size}")
-            IconButton(
-                onClick = {
-                    try {
-                        saveCurrentConfig()
-                        index += 1
-                        refresh()
-                    } catch(e: Exception) {
-                        e.printStackTrace()
-                        Toast.makeText(context, R.string.failed_to_save_current_config, Toast.LENGTH_SHORT).show()
-                    }
+                Column {
+                    Text(index.toString())
                 }
-            ) {
-                Icon(
-                    imageVector = if(index + 1 >= configs.size) Icons.Default.Add else Icons.AutoMirrored.Default.KeyboardArrowRight,
-                    contentDescription = stringResource(R.string.previous)
-                )
+                IconButton({
+                    onNavigate(AddPreferentialNetworkServiceConfig(
+                        enabled = config.isEnabled,
+                        id = config.networkId,
+                        allowFallback = config.isFallbackToDefaultConnectionAllowed,
+                        blockNonMatching = if(VERSION.SDK_INT >= 34) config.shouldBlockNonMatchingNetworks() else false,
+                        excludedUids = config.excludedUids.toList(),
+                        includedUids = config.includedUids.toList(),
+                        index = index
+                    ))
+                }) {
+                    Icon(Icons.Default.Edit, stringResource(R.string.edit))
+                }
             }
         }
         Row(
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
+            Modifier.fillMaxWidth()
+                .padding(top = 4.dp)
+                .clickable { onNavigate(AddPreferentialNetworkServiceConfig()) }
+                .padding(horizontal = 8.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(
-                onClick = {
-                    try {
-                        saveCurrentConfig()
-                        context.showOperationResultToast(true)
-                    } catch(e: Exception) {
-                        e.printStackTrace()
-                        Toast.makeText(context, R.string.failed_to_save_current_config, Toast.LENGTH_SHORT).show()
-                    }
-                },
-                modifier = Modifier.padding(end = 10.dp)
-            ) {
-                Icon(painter = painterResource(R.drawable.save_fill0), contentDescription = stringResource(R.string.save_current_config))
-            }
-            IconButton(
-                onClick = {
-                    if(index < configs.size) configs.removeAt(index)
-                    if(index > 0) index -= 1
-                    refresh()
-                }
-            ) {
-                Icon(imageVector = Icons.Default.Delete, contentDescription = stringResource(R.string.delete_current_config))
-            }
+            Icon(Icons.Default.Add, null, Modifier.padding(horizontal = 8.dp))
+            Text(stringResource(R.string.add_config))
         }
+    }
+}
+
+@Serializable data class AddPreferentialNetworkServiceConfig(
+    val enabled: Boolean = true,
+    val id: Int = -1,
+    val allowFallback: Boolean = false,
+    val blockNonMatching: Boolean = false,
+    val excludedUids: List<Int> = emptyList(),
+    val includedUids: List<Int> = emptyList(),
+    val index: Int = -1
+)
+
+@RequiresApi(33)
+@Composable
+fun AddPreferentialNetworkServiceConfigScreen(route: AddPreferentialNetworkServiceConfig,onNavigateUp: () -> Unit) {
+    val updateMode = route.index != -1
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    var enabled by remember { mutableStateOf(route.enabled) }
+    var id by remember { mutableIntStateOf(route.id) }
+    var allowFallback by remember { mutableStateOf(route.allowFallback) }
+    var blockNonMatching by remember { mutableStateOf(route.blockNonMatching) }
+    var excludedUids by remember { mutableStateOf(route.excludedUids.joinToString("\n")) }
+    var includedUids by remember { mutableStateOf(route.includedUids.joinToString("\n")) }
+    MyScaffold(R.string.preferential_network_service, 8.dp, onNavigateUp, false) {
         SwitchItem(title = R.string.enabled, state = enabled, onCheckedChange = { enabled = it }, padding = false)
-        OutlinedTextField(
-            value = networkId, onValueChange = { networkId = it },
-            label = { Text(stringResource(R.string.network_id)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions { focusMgr.clearFocus() },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
-        )
+        AnimatedVisibility(enabled) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("ID", Modifier.padding(end = 8.dp), style = typography.titleLarge)
+                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                    for(i in 1..5) {
+                        SegmentedButton(id == i, { id = i }, SegmentedButtonDefaults.itemShape(i - 1, 5)) {
+                            Text(i.toString())
+                        }
+                    }
+                }
+            }
+        }
         SwitchItem(
             title = R.string.allow_fallback_to_default_connection,
             state = allowFallback, onCheckedChange = { allowFallback = it }, padding = false
@@ -1838,28 +1812,66 @@ fun PreferentialNetworkServiceScreen(onNavigateUp: () -> Unit) {
             title = R.string.block_non_matching_networks,
             state = blockNonMatching, onCheckedChange = { blockNonMatching = it }, padding = false
         )
+        val includedUidsLegal = includedUids.lines().filter { it.isNotBlank() }.let {
+            it.isEmpty() || (it.all { it.toIntOrNull() != null } && excludedUids.isBlank())
+        }
         OutlinedTextField(
             value = includedUids, onValueChange = { includedUids = it }, minLines = 2,
             label = { Text(stringResource(R.string.included_uids)) },
             supportingText = { Text(stringResource(R.string.one_uid_per_line)) },
+            isError = !includedUidsLegal,
             modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
         )
+        val excludedUidsLegal = excludedUids.lines().filter { it.isNotBlank() }.let {
+            it.isEmpty() || (it.all { it.toIntOrNull() != null } && includedUids.isBlank())
+        }
         OutlinedTextField(
             value = excludedUids, onValueChange = { excludedUids = it }, minLines = 2,
             label = { Text(stringResource(R.string.excluded_uids)) },
             supportingText = { Text(stringResource(R.string.one_uid_per_line)) },
+            isError = !excludedUidsLegal,
             modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
         )
         Button(
             onClick = {
-                dpm.isPreferentialNetworkServiceEnabled = masterEnabled
-                dpm.preferentialNetworkServiceConfigs = configs
-                initialize()
-                context.showOperationResultToast(true)
+                try {
+                    val config = PreferentialNetworkServiceConfig.Builder().apply {
+                        setEnabled(enabled)
+                        if(enabled) setNetworkId(id.toInt())
+                        setFallbackToDefaultConnectionAllowed(allowFallback)
+                        setExcludedUids(excludedUids.lines().filter { it.isNotBlank() }.map { it.toInt() }.toIntArray())
+                        setIncludedUids(includedUids.lines().filter { it.isNotBlank() }.map { it.toInt() }.toIntArray())
+                        if(VERSION.SDK_INT >= 34) setShouldBlockNonMatchingNetworks(blockNonMatching)
+                    }.build()
+                    val configs = dpm.preferentialNetworkServiceConfigs
+                    if(updateMode) configs[route.index] = config
+                    else configs += config
+                    dpm.preferentialNetworkServiceConfigs = configs
+                    onNavigateUp()
+                } catch(e: Exception) {
+                    context.showOperationResultToast(false)
+                    e.printStackTrace()
+                }
             },
-            modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
+            enabled = includedUidsLegal && excludedUidsLegal,
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
         ) {
-            Text(stringResource(R.string.apply))
+            Text(stringResource(if(updateMode) R.string.update else R.string.add))
+        }
+        if(updateMode) Button(
+            onClick = {
+                try {
+                    dpm.preferentialNetworkServiceConfigs = dpm.preferentialNetworkServiceConfigs.drop(route.index)
+                    onNavigateUp()
+                } catch(e: Exception) {
+                    context.showOperationResultToast(false)
+                    e.printStackTrace()
+                }
+            },
+            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.onError),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.delete))
         }
     }
 }

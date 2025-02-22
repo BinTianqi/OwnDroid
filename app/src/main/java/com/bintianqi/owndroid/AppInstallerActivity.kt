@@ -146,12 +146,12 @@ private fun AppInstaller(
         var tab by remember { mutableIntStateOf(0) }
         val pagerState = rememberPagerState { 2 }
         val scrollState = rememberScrollState()
+        tab = pagerState.targetPage
         Column(modifier = Modifier.padding(paddingValues)) {
             TabRow(tab) {
                 Tab(
                     tab == 0,
                     onClick = {
-                        tab = 0
                         coroutine.launch { scrollState.animateScrollTo(0) }
                         coroutine.launch { pagerState.animateScrollToPage(0) }
                     },
@@ -160,7 +160,6 @@ private fun AppInstaller(
                 Tab(
                     tab == 1,
                     onClick = {
-                        tab = 1
                         coroutine.launch { scrollState.animateScrollTo(0) }
                         coroutine.launch { pagerState.animateScrollToPage(1) }
                     },
