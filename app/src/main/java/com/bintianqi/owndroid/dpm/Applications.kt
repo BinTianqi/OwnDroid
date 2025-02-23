@@ -2,7 +2,6 @@ package com.bintianqi.owndroid.dpm
 
 import android.app.AlertDialog
 import android.app.PendingIntent
-import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT
 import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED
 import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED
@@ -15,7 +14,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageInstaller
-import android.content.pm.PackageManager.NameNotFoundException
 import android.net.Uri
 import android.os.Build.VERSION
 import android.os.Looper
@@ -50,11 +48,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -88,8 +86,8 @@ import androidx.navigation.compose.rememberNavController
 import com.bintianqi.owndroid.APK_MIME
 import com.bintianqi.owndroid.AppInstallerActivity
 import com.bintianqi.owndroid.AppInstallerViewModel
-import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ChoosePackageContract
+import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.FunctionItem
@@ -117,13 +115,13 @@ fun ApplicationsScreen(onNavigateUp: () -> Unit) {
         topBar = {
             TopAppBar(
                 title = {
-                    TextField(
+                    OutlinedTextField(
                         value = pkgName,
                         onValueChange = { pkgName = it },
                         label = { Text(stringResource(R.string.package_name)) },
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+                        keyboardActions = KeyboardActions { focusMgr.clearFocus() },
                         trailingIcon = {
                             IconButton({
                                 focusMgr.clearFocus()
@@ -137,7 +135,7 @@ fun ApplicationsScreen(onNavigateUp: () -> Unit) {
                     )
                 },
                 navigationIcon = { NavIcon(onNavigateUp) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.background)
+                colors = TopAppBarDefaults.topAppBarColors(colorScheme.surfaceContainer)
             )
         }
     ) {  paddingValues->
@@ -167,6 +165,7 @@ fun ApplicationsScreen(onNavigateUp: () -> Unit) {
 
 @Composable
 private fun HomeScreen(pkgName: String, onNavigate: (Any) -> Unit) {
+    /** 1:Enable system app, 2:Clear app storage, 3:Set default dialer, 4:App control, 5:Install existing app */
     var dialogStatus by remember { mutableIntStateOf(0) }
     val context = LocalContext.current
     val dpm = context.getDPM()
@@ -176,31 +175,26 @@ private fun HomeScreen(pkgName: String, onNavigate: (Any) -> Unit) {
     var suspend by remember { mutableStateOf(false) }
     var hide by remember { mutableStateOf(false) }
     var blockUninstall by remember { mutableStateOf(false) }
-    var appControlAction by remember { mutableIntStateOf(0) }
+    var appControlAction by remember { mutableIntStateOf(0) } // 1:Suspend, 2:Hide, 3:Block uninstall
     val focusMgr = LocalFocusManager.current
-    val appControl: (Boolean) -> Unit = {
-        when(appControlAction) {
-            1 -> if(VERSION.SDK_INT >= 24) dpm.setPackagesSuspended(receiver, arrayOf(pkgName), it)
-            2 -> dpm.setApplicationHidden(receiver, pkgName, it)
-            3 -> dpm.setUninstallBlocked(receiver, pkgName, it)
+    fun refresh() {
+        if(VERSION.SDK_INT >= 24) {
+            try {
+                suspend = dpm.isPackageSuspended(receiver, pkgName)
+            } catch(_: Exception) {}
         }
-        when(appControlAction) {
-            1 -> {
-                suspend = try{ if(VERSION.SDK_INT >= 24) dpm.isPackageSuspended(receiver, pkgName) else false }
-                catch(_: NameNotFoundException) { false }
-                catch(_: IllegalArgumentException) { false }
-            }
-            2 -> hide = dpm.isApplicationHidden(receiver,pkgName)
-            3 -> blockUninstall = dpm.isUninstallBlocked(receiver,pkgName)
-        }
-    }
-    LaunchedEffect(pkgName) {
-        suspend = try{ if(VERSION.SDK_INT >= 24) dpm.isPackageSuspended(receiver, pkgName) else false }
-            catch(_: NameNotFoundException) { false }
-            catch(_: IllegalArgumentException) { false }
         hide = dpm.isApplicationHidden(receiver, pkgName)
-        blockUninstall = dpm.isUninstallBlocked(receiver,pkgName)
+        blockUninstall = dpm.isUninstallBlocked(receiver, pkgName)
     }
+    fun appControl(status: Boolean) {
+        when(appControlAction) {
+            1 -> if(VERSION.SDK_INT >= 24) dpm.setPackagesSuspended(receiver, arrayOf(pkgName), status)
+            2 -> dpm.setApplicationHidden(receiver, pkgName, status)
+            3 -> dpm.setUninstallBlocked(receiver, pkgName, status)
+        }
+        refresh()
+    }
+    LaunchedEffect(pkgName) { refresh() }
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
     ) {
@@ -222,7 +216,7 @@ private fun HomeScreen(pkgName: String, onNavigate: (Any) -> Unit) {
             )
         }
         SwitchItem(
-            title = R.string.hide, desc = stringResource(R.string.isapphidden_desc), icon = R.drawable.visibility_off_fill0,
+            title = R.string.hide, icon = R.drawable.visibility_off_fill0,
             state = hide,
             onCheckedChange = { appControlAction = 2; appControl(it) },
             onClickBlank = { appControlAction = 2; dialogStatus = 4 }
@@ -270,8 +264,10 @@ private fun HomeScreen(pkgName: String, onNavigate: (Any) -> Unit) {
             startActivity(context, intent, null)
         }
         FunctionItem(title = R.string.install_app, icon = R.drawable.install_mobile_fill0) {
+            Toast.makeText(context, R.string.choose_apk_file, Toast.LENGTH_SHORT).show()
             chooseApks.launch(APK_MIME)
         }
+        if(VERSION.SDK_INT >= 28) FunctionItem(R.string.install_existing_app, icon = R.drawable.install_mobile_fill0) { dialogStatus = 5 }
         FunctionItem(title = R.string.uninstall_app, icon = R.drawable.delete_fill0) { onNavigate(UninstallPackage) }
         if(VERSION.SDK_INT >= 34 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             FunctionItem(title = R.string.set_default_dialer, icon = R.drawable.call_fill0) {
@@ -287,22 +283,20 @@ private fun HomeScreen(pkgName: String, onNavigate: (Any) -> Unit) {
         },
         onDismissRequest = { dialogStatus = 0 },
         dismissButton = {
-            TextButton(onClick = { dialogStatus = 0 }) {
+            TextButton({ dialogStatus = 0 }) {
                 Text(stringResource(R.string.cancel))
             }
         },
         confirmButton = {
-            TextButton(
-                onClick = {
-                    try {
-                        dpm.enableSystemApp(receiver, pkgName)
-                        context.showOperationResultToast(true)
-                    } catch(_: IllegalArgumentException) {
-                        Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
-                    }
-                    dialogStatus = 0
+            TextButton({
+                try {
+                    dpm.enableSystemApp(receiver, pkgName)
+                    context.showOperationResultToast(true)
+                } catch(_: IllegalArgumentException) {
+                    Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
                 }
-            ) {
+                dialogStatus = 0
+            }) {
                 Text(stringResource(R.string.confirm))
             }
         },
@@ -317,16 +311,15 @@ private fun HomeScreen(pkgName: String, onNavigate: (Any) -> Unit) {
             TextButton(
                 onClick = {
                     val executor = Executors.newCachedThreadPool()
-                    val onClear = DevicePolicyManager.OnClearApplicationUserDataListener { pkg: String, succeed: Boolean ->
+                    dpm.clearApplicationUserData(receiver, pkgName, executor) { pkg: String, succeed: Boolean ->
                         Looper.prepare()
                         val toastText =
-                            if(pkg!="") { "$pkg\n" }else{ "" } +
+                            if(pkg != "") { "$pkg\n" } else { "" } +
                                     context.getString(R.string.clear_data) +
                                     context.getString(if(succeed) R.string.success else R.string.failed )
                         Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
                         Looper.loop()
                     }
-                    dpm.clearApplicationUserData(receiver, pkgName, executor, onClear)
                     dialogStatus = 0
                 },
                 colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
@@ -335,9 +328,7 @@ private fun HomeScreen(pkgName: String, onNavigate: (Any) -> Unit) {
             }
         },
         dismissButton = {
-            TextButton(
-                onClick = { dialogStatus = 0 }
-            ) {
+            TextButton({ dialogStatus = 0 }) {
                 Text(text = stringResource(R.string.cancel))
             }
         },
@@ -351,22 +342,20 @@ private fun HomeScreen(pkgName: String, onNavigate: (Any) -> Unit) {
         },
         onDismissRequest = { dialogStatus = 0 },
         dismissButton = {
-            TextButton(onClick = { dialogStatus = 0 }) {
+            TextButton({ dialogStatus = 0 }) {
                 Text(stringResource(R.string.cancel))
             }
         },
         confirmButton = {
-            TextButton(
-                onClick = {
-                    try{
-                        dpm.setDefaultDialerApplication(pkgName)
-                        context.showOperationResultToast(true)
-                    } catch(_: IllegalArgumentException) {
-                        Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
-                    }
-                    dialogStatus = 0
+            TextButton({
+                try {
+                    dpm.setDefaultDialerApplication(pkgName)
+                    context.showOperationResultToast(true)
+                } catch(_: IllegalArgumentException) {
+                    context.showOperationResultToast(false)
                 }
-            ) {
+                dialogStatus = 0
+            }) {
                 Text(stringResource(R.string.confirm))
             }
         },
@@ -379,18 +368,15 @@ private fun HomeScreen(pkgName: String, onNavigate: (Any) -> Unit) {
         AlertDialog(
             onDismissRequest = { dialogStatus = 0 },
             title = {
-                Text(
-                    text = stringResource(
-                        when(appControlAction) {
-                            1 -> R.string.suspend
-                            2 -> R.string.hide
-                            3 -> R.string.block_uninstall
-                            4 -> R.string.always_on_vpn
-                            else -> R.string.unknown
-                        }
-                    ),
-                    style = typography.headlineMedium
-                )
+                Text(stringResource(
+                    when(appControlAction) {
+                        1 -> R.string.suspend
+                        2 -> R.string.hide
+                        3 -> R.string.block_uninstall
+                        4 -> R.string.always_on_vpn
+                        else -> R.string.unknown
+                    }
+                ))
             },
             text = {
                 val enabled = when(appControlAction){
@@ -406,27 +392,38 @@ private fun HomeScreen(pkgName: String, onNavigate: (Any) -> Unit) {
                 }
             },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        appControl(true)
-                        dialogStatus = 0
-                    }
-                ) {
+                TextButton({
+                    appControl(true)
+                    dialogStatus = 0
+                }) {
                     Text(text = stringResource(R.string.enable))
                 }
             },
             dismissButton = {
-                TextButton(
-                    onClick = {
-                        appControl(false)
-                        dialogStatus = 0
-                    }
-                ) {
+                TextButton({
+                    appControl(false)
+                    dialogStatus = 0
+                }) {
                     Text(text = stringResource(R.string.disable))
                 }
             }
         )
     }
+    if(dialogStatus == 5 && VERSION.SDK_INT >= 28) AlertDialog(
+        text = { Text(stringResource(R.string.info_install_existing_app)) },
+        confirmButton = {
+            TextButton({
+                context.showOperationResultToast(dpm.installExistingPackage(receiver, pkgName))
+                dialogStatus = 0
+            }) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        dismissButton = {
+            TextButton({ dialogStatus = 0 }) { Text(stringResource(R.string.cancel)) }
+        },
+        onDismissRequest = { dialogStatus = 0 }
+    )
     LaunchedEffect(dialogStatus) { focusMgr.clearFocus() }
 }
 

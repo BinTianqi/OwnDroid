@@ -98,6 +98,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -129,6 +130,7 @@ import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.humanReadableDate
+import com.bintianqi.owndroid.humanReadableDateTime
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.ExpandExposedTextFieldIcon
@@ -136,6 +138,7 @@ import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.InfoCard
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.MyScaffold
+import com.bintianqi.owndroid.ui.MySmallTitleScaffold
 import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SwitchItem
@@ -231,7 +234,8 @@ fun WifiScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit, onNavigateTo
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.wifi)) },
-                navigationIcon = { NavIcon(onNavigateUp) }
+                navigationIcon = { NavIcon(onNavigateUp) },
+                colors = TopAppBarDefaults.topAppBarColors(MaterialTheme.colorScheme.surfaceContainer)
             )
         }
     ) { paddingValues ->
@@ -466,7 +470,7 @@ object AddNetwork
 
 @Composable
 fun AddNetworkScreen(data: Bundle, onNavigateUp: () -> Unit) {
-    MyScaffold(R.string.update_network, 0.dp, onNavigateUp, false) {
+    MySmallTitleScaffold(R.string.update_network, 0.dp, onNavigateUp) {
         AddNetworkScreen(data.getParcelable("wifi_configuration"), onNavigateUp)
     }
 }
@@ -1213,8 +1217,6 @@ fun NetworkStatsScreen(onNavigateUp: () -> Unit, onNavigateToViewer: (NetworkSta
                             context.showOperationResultToast(false)
                         }
                     } else {
-                        val bundle = Bundle()
-                        bundle.putInt("size", buckets.size)
                         val stats = buckets.map {
                             NetworkStatsViewer.Data(
                                 it.rxBytes, it.rxPackets, it.txBytes, it.txPackets,
@@ -1289,7 +1291,7 @@ data class NetworkStatsViewer(
 fun NetworkStatsViewerScreen(nsv: NetworkStatsViewer, onNavigateUp: () -> Unit) {
     var index by remember { mutableIntStateOf(0) }
     val size = nsv.stats.size
-    MyScaffold(R.string.place_holder, 8.dp, onNavigateUp, false) {
+    MySmallTitleScaffold(R.string.place_holder, 8.dp, onNavigateUp) {
         if(size > 1) Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 8.dp)
@@ -1310,7 +1312,7 @@ fun NetworkStatsViewerScreen(nsv: NetworkStatsViewer, onNavigateUp: () -> Unit) 
         }
         val data = nsv.stats[index]
         Text(
-            data.startTime.humanReadableDate + "  ~  " + data.endTime.humanReadableDate,
+            data.startTime.humanReadableDateTime + "  ~  " + data.endTime.humanReadableDateTime,
             modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 8.dp)
         )
         val txBytes = data.txBytes
@@ -1556,10 +1558,11 @@ fun RecommendedGlobalProxyScreen(onNavigateUp: () -> Unit) {
                 label = { Text(stringResource(R.string.excluded_hosts)) },
                 maxLines = 5,
                 minLines = 2,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions { focusMgr.clearFocus() },
                 modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
             )
         }
-        Spacer(Modifier.padding(vertical = 4.dp))
         Button(
             onClick = {
                 if(proxyType == 0) {
@@ -1597,7 +1600,7 @@ fun RecommendedGlobalProxyScreen(onNavigateUp: () -> Unit) {
                 dpm.setRecommendedGlobalProxy(receiver, proxyInfo)
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
         ) {
             Text(stringResource(R.string.apply))
         }
@@ -1716,7 +1719,7 @@ fun PreferentialNetworkServiceScreen(onNavigateUp: () -> Unit, onNavigate: (AddP
         configs.addAll(dpm.preferentialNetworkServiceConfigs)
     }
     LaunchedEffect(Unit) { refresh() }
-    MyScaffold(R.string.preferential_network_service, 0.dp, onNavigateUp, false) {
+    MySmallTitleScaffold(R.string.preferential_network_service, 0.dp, onNavigateUp) {
         SwitchItem(R.string.enabled, state = masterEnabled, onCheckedChange = {
             dpm.isPreferentialNetworkServiceEnabled = it
             refresh()
@@ -1780,7 +1783,7 @@ fun AddPreferentialNetworkServiceConfigScreen(route: AddPreferentialNetworkServi
     var blockNonMatching by remember { mutableStateOf(route.blockNonMatching) }
     var excludedUids by remember { mutableStateOf(route.excludedUids.joinToString("\n")) }
     var includedUids by remember { mutableStateOf(route.includedUids.joinToString("\n")) }
-    MyScaffold(R.string.preferential_network_service, 8.dp, onNavigateUp, false) {
+    MySmallTitleScaffold(R.string.preferential_network_service, 8.dp, onNavigateUp) {
         SwitchItem(title = R.string.enabled, state = enabled, onCheckedChange = { enabled = it }, padding = false)
         AnimatedVisibility(enabled) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1882,7 +1885,7 @@ fun OverrideApnScreen(onNavigateUp: () -> Unit, onNavigateToAddSetting: (Bundle)
         settings.addAll(dpm.getOverrideApns(receiver))
     }
     LaunchedEffect(Unit) { refresh() }
-    MyScaffold(R.string.override_apn, 0.dp, onNavigateUp, false) {
+    MyScaffold(R.string.override_apn, 0.dp, onNavigateUp) {
         SwitchItem(
             R.string.enable, state = enabled,
             onCheckedChange = {
@@ -1966,7 +1969,7 @@ fun AddApnSettingScreen(origin: ApnSetting?, onNavigateUp: () -> Unit) {
     var persistent by remember { mutableStateOf(if(VERSION.SDK_INT >= 33) origin?.isPersistent == true else false) }
     var alwaysOn by remember { mutableStateOf(VERSION.SDK_INT >= 35 && origin?.isAlwaysOn == true) }
     var errorMessage: String? by remember { mutableStateOf(null) }
-    MyScaffold(R.string.apn_setting, 8.dp, onNavigateUp, false) {
+    MySmallTitleScaffold(R.string.apn_setting, 8.dp, onNavigateUp) {
         val protocolMap = mapOf(
             ApnSetting.PROTOCOL_IP to "IPv4", ApnSetting.PROTOCOL_IPV6 to "IPv6",
             ApnSetting.PROTOCOL_IPV4V6 to "IPv4/v6", ApnSetting.PROTOCOL_PPP to "PPP"

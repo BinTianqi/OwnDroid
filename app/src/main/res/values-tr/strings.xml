@@ -416,7 +416,10 @@
     <string name="silent_uninstall">Sessiz kaldırma</string>
     <string name="request_uninstall">Kaldırma isteği</string>
     <string name="install_app">Uygulamayı yükle</string>
-    <string name="search">Search</string> <!--TODO-->
+    <!--TODO: 3 strings-->
+    <string name="choose_apk_file">Choose an APK file</string>
+    <string name="install_existing_app">Install existing app</string>
+    <string name="search">Search</string>
 
     <!--UserRestriction-->
     <string name="user_restriction">Kullanıcı kısıtlaması</string>

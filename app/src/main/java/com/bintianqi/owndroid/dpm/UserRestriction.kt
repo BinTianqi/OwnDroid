@@ -75,7 +75,7 @@ fun UserRestrictionOptionsScreen(
     data: UserRestrictionOptions, restrictions: Bundle,
     onNavigateUp: () -> Unit, onRestrictionChange: (String, Boolean) -> Unit
 ) {
-    MyScaffold(data.title, 0.dp, onNavigateUp, false) {
+    MyScaffold(data.title, 0.dp, onNavigateUp) {
         data.items.filter { Build.VERSION.SDK_INT >= it.requiresApi }.forEach { restriction ->
             SwitchItem(
                 restriction.name, restriction.id, restriction.icon,

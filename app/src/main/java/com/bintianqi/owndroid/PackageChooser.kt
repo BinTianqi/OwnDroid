@@ -1,6 +1,5 @@
 package com.bintianqi.owndroid
 
-import android.app.Application
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
@@ -32,7 +31,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -56,9 +55,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.lifecycleScope
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.coroutines.Dispatchers
@@ -70,45 +68,40 @@ import kotlinx.coroutines.withContext
 class PackageChooserActivity: ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val myVm by viewModels<MyViewModel>()
-        val vm by viewModels<PackageChooserViewModel>()
-        vm.initialize()
+        val vm by viewModels<MyViewModel>()
+        if(getPackagesProgress.value < 1F) getPackages()
         setContent {
-            val theme by myVm.theme.collectAsStateWithLifecycle()
+            val theme by vm.theme.collectAsStateWithLifecycle()
             OwnDroidTheme(theme) {
-                val packages by vm.packages.collectAsStateWithLifecycle()
-                val progress by vm.progress.collectAsStateWithLifecycle()
-                PackageChooserScreen(packages, progress, vm::getPackages) {
+                val packages by installedPackages.collectAsStateWithLifecycle()
+                val progress by getPackagesProgress.collectAsStateWithLifecycle()
+                PackageChooserScreen(packages, progress, ::getPackages) {
                     setResult(0, Intent().putExtra("package", it))
                     finish()
                 }
             }
         }
     }
-}
-
-class PackageChooserViewModel(application: Application): AndroidViewModel(application) {
-    val packages = MutableStateFlow(emptyList<PackageInfo>())
-    val progress = MutableStateFlow(0F)
     val flags = if(Build.VERSION.SDK_INT >= 24) PackageManager.MATCH_DISABLED_COMPONENTS or PackageManager.MATCH_UNINSTALLED_PACKAGES else 0
-    fun initialize() {
-        if(progress.value < 1F) getPackages()
-    }
     fun getPackages() {
-        packages.value = emptyList()
-        viewModelScope.launch(Dispatchers.IO) {
-            val pm = getApplication<Application>().packageManager
+        installedPackages.value = emptyList()
+        lifecycleScope.launch(Dispatchers.IO) {
+            val pm = packageManager
             val apps = pm.getInstalledApplications(flags)
             for(pkg in apps) {
-                packages.update {
+                installedPackages.update {
                     it + PackageInfo(
                         pkg.packageName, pkg.loadLabel(pm).toString(), pkg.loadIcon(pm),
                         (pkg.flags and ApplicationInfo.FLAG_SYSTEM) != 0
                     )
                 }
-                withContext(Dispatchers.Main) { progress.value = packages.value.size.toFloat() / apps.size }
+                withContext(Dispatchers.Main) { getPackagesProgress.value = installedPackages.value.size.toFloat() / apps.size }
             }
         }
+    }
+    companion object {
+        val installedPackages = MutableStateFlow(emptyList<PackageInfo>())
+        val getPackagesProgress = MutableStateFlow(0F)
     }
 }
 
@@ -186,7 +179,7 @@ private fun PackageChooserScreen(
                         Icon(Icons.AutoMirrored.Default.ArrowBack, null)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.background)
+                colors = TopAppBarDefaults.topAppBarColors(MaterialTheme.colorScheme.surfaceContainer)
             )
         }
     ) { paddingValues->

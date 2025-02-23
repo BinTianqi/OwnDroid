@@ -6,19 +6,11 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
 import androidx.compose.ui.graphics.Color
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.ThemeSettings
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -111,8 +103,6 @@ fun OwnDroidTheme(
         else -> lightScheme
     }.let {
         if(darkTheme && theme.blackTheme) it.copy(background = Color.Black) else it
-    }.let {
-        if(!darkTheme) it.copy(background = it.primary.copy(alpha = 0.05f)) else it
     }
     val view = LocalView.current
     SideEffect {

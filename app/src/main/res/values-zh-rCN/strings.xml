@@ -372,7 +372,7 @@
     <string name="scope_is_work_profile">作用域: 工作资料</string>
     <string name="app_info">应用详情</string>
     <string name="not_installed">未安装</string>
-    <string name="block_uninstall">阻止</string>
+    <string name="block_uninstall">阻止卸载</string>
     <string name="ucd">禁止用户控制</string>
     <string name="ucd_desc">用户将无法清除这些应用的存储空间或强制停止这些应用</string>
     <string name="app_list_is">应用列表：</string>
@@ -398,6 +398,8 @@
     <string name="silent_uninstall">静默卸载</string>
     <string name="request_uninstall">请求卸载</string>
     <string name="install_app">安装应用</string>
+    <string name="choose_apk_file">选择一个APK文件</string>
+    <string name="install_existing_app">安装已存在的应用</string>
     <string name="enable_system_app">启用系统应用</string>
     <string name="enable_system_app_desc">重新启用一个默认被禁用的系统应用</string>
     <string name="search">搜索</string>
@@ -684,6 +686,7 @@
     <string name="info_suspend_app">挂起的应用无法被打开，通知会被隐藏，不会在最近任务中显示，不能弹窗，不能发送Toast。\n有些应用无法被挂起，比如Device admin、启动器和默认拨号应用。</string>
     <string name="info_disable_user_control">用户无法清除这些应用的存储空间，也无法强制停止应用</string>
     <string name="info_keep_uninstalled_apps">这个列表中的应用的APK将会一直保留，即使没有任何用户安装这个应用</string>
+    <string name="info_install_existing_app">安装一个已经在其他用户中安装或在卸载后保留的app。</string>
     <string name="info_headless_system_user_mode">无头系统用户模式意味着系统用户运行系统服务和一些系统UI，但它不与任何真实的人相关联，必须创建额外的用户才能与真实的人相关联。</string>
     <string name="info_logout">如果当前用户不是由OwnDroid切换的，无法使用此功能。</string>
     <string name="info_affiliation_id">当Device owner创建并管理用户时，新的用户不是附属用户。Device owner设置和受管理用户完全相同的附属用户ID后，受管理用户成为附属于Device owner的用户</string>

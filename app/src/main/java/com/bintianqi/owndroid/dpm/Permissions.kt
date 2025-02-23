@@ -15,6 +15,7 @@ import android.os.RemoteException
 import android.os.UserManager
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
@@ -495,6 +496,7 @@ fun DeviceOwnerScreen(onNavigateUp: () -> Unit) {
     }
 }
 
+@Keep
 @Suppress("InlinedApi")
 enum class DelegatedScope(val id: String, @StringRes val string: Int, val requiresApi: Int = 0) {
     AppRestrictions(DevicePolicyManager.DELEGATION_APP_RESTRICTIONS, R.string.manage_application_restrictions),
@@ -585,7 +587,7 @@ fun AddDelegatedAdminScreen(data: AddDelegatedAdmin, onNavigateUp: () -> Unit) {
     val choosePackage = rememberLauncherForActivityResult(ChoosePackageContract()) { result ->
         result?.let { input = it }
     }
-    MyScaffold(if(updateMode) R.string.place_holder else R.string.add_delegated_admin, 0.dp, onNavigateUp, !updateMode) {
+    MySmallTitleScaffold(if(updateMode) R.string.place_holder else R.string.add_delegated_admin, 0.dp, onNavigateUp,) {
         OutlinedTextField(
             value = input, onValueChange = { input = it },
             label = { Text(stringResource(R.string.package_name)) },

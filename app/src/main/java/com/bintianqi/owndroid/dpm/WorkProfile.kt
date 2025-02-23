@@ -171,7 +171,7 @@ fun CreateWorkProfileScreen(onNavigateUp: () -> Unit) {
 fun OrganizationOwnedProfileScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
-    MyScaffold(R.string.org_owned_work_profile, 8.dp, onNavigateUp, false) {
+    MyScaffold(R.string.org_owned_work_profile, 8.dp, onNavigateUp) {
         CardItem(R.string.org_owned_work_profile, dpm.isOrganizationOwnedDeviceWithManagedProfile.yesOrNo)
         Spacer(Modifier.padding(vertical = 5.dp))
         if(!dpm.isOrganizationOwnedDeviceWithManagedProfile) {

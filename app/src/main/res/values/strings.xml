@@ -437,6 +437,8 @@
     <string name="silent_uninstall">Silent uninstall</string>
     <string name="request_uninstall">Request uninstall</string>
     <string name="install_app">Install app</string>
+    <string name="choose_apk_file">Choose an APK file</string>
+    <string name="install_existing_app">Install existing app</string>
     <string name="search">Search</string>
 
     <!--UserRestriction-->
@@ -724,6 +726,7 @@
     <string name="info_suspend_app">A suspended package will not be able to start activities. Its notifications will be hidden, it will not show up in recent activities, will not be able to show toasts or dialogs or ring the device.\nSome apps cannot be suspended, such as device admins, the active launcher and the default dialer.</string>
     <string name="info_disable_user_control">User will not be able to clear app data or force-stop packages.</string>
     <string name="info_keep_uninstalled_apps">Set a list of apps to keep around as APKs even if no user has currently installed it. </string>
+    <string name="info_install_existing_app">Install an existing package that has been installed in another user, or has been kept after uninstall.</string>
     <string name="info_headless_system_user_mode">Headless system user mode means the system user runs system services and some system UI, but it is not associated with any real person and additional users must be created to be associated with real persons.</string>
     <string name="info_logout">If the current user is not switched by OwnDroid, this function cannot be used.</string>
     <string name="info_affiliation_id">When Device owner create a managed user, the managed user isn\'t affiliated. In order to make the managed user affiliated with the Device owner, you should set same affiliated IDs in main user and managed user</string>

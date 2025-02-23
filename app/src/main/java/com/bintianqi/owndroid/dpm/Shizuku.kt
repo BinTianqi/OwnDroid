@@ -38,7 +38,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.bintianqi.owndroid.IUserService
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.ui.MyScaffold
+import com.bintianqi.owndroid.ui.MySmallTitleScaffold
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -66,7 +66,7 @@ fun ShizukuScreen(navArgs: Bundle, onNavigateUp: () -> Unit, onNavigateToAccount
             null
         }
     }
-    MyScaffold(R.string.shizuku, 0.dp, onNavigateUp, false) {
+    MySmallTitleScaffold(R.string.shizuku, 0.dp, onNavigateUp) {
         
         Button(
             onClick = {
@@ -185,7 +185,7 @@ data class Accounts(
 
 @Composable
 fun AccountsScreen(accounts: Accounts, onNavigateUp: () -> Unit) {
-    MyScaffold(R.string.accounts, 8.dp, onNavigateUp, false) {
+    MySmallTitleScaffold(R.string.accounts, 8.dp, onNavigateUp) {
         accounts.list.forEach {
             Column(
                 modifier = Modifier

@@ -99,6 +99,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -138,6 +139,7 @@ import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.InfoCard
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.MyScaffold
+import com.bintianqi.owndroid.ui.MySmallTitleScaffold
 import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SwitchItem
@@ -431,7 +433,7 @@ fun HardwareMonitorScreen(onNavigateUp: () -> Unit) {
             delay(refreshIntervalMs)
         }
     }
-    MyScaffold(R.string.hardware_monitor, 8.dp, onNavigateUp, false) {
+    MySmallTitleScaffold(R.string.hardware_monitor, 8.dp, onNavigateUp) {
         Text(stringResource(R.string.refresh_interval), style = typography.titleLarge, modifier = Modifier.padding(vertical = 4.dp))
         Slider(refreshInterval, { refreshInterval = it }, valueRange = 0.5F..2F, steps = 14)
         Text("${refreshIntervalMs}ms")
@@ -943,7 +945,7 @@ fun NearbyStreamingPolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     var appPolicy by remember { mutableIntStateOf(dpm.nearbyAppStreamingPolicy) }
-    MyScaffold(R.string.nearby_streaming_policy, 0.dp, onNavigateUp, false) {
+    MyScaffold(R.string.nearby_streaming_policy, 0.dp, onNavigateUp) {
         Text(
             stringResource(R.string.nearby_app_streaming),
             Modifier.padding(start = 8.dp, top = 10.dp, bottom = 4.dp), style = typography.titleLarge
@@ -1018,7 +1020,8 @@ fun LockTaskModeScreen(onNavigateUp: () -> Unit) {
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.lock_task_mode)) },
-                navigationIcon = { NavIcon(onNavigateUp) }
+                navigationIcon = { NavIcon(onNavigateUp) },
+                colors = TopAppBarDefaults.topAppBarColors(colorScheme.surfaceContainer)
             )
         }
     ) { paddingValues ->
@@ -1108,7 +1111,8 @@ private fun ColumnScope.StartLockTaskMode() {
             } else {
                 Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
             }
-        }
+        },
+        enabled = startLockTaskApp.isNotBlank() && (!specifyActivity || startLockTaskActivity.isNotBlank())
     ) {
         Text(stringResource(R.string.start))
     }

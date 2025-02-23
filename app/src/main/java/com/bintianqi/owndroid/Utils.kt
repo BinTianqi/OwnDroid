@@ -10,7 +10,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Process
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContract
@@ -96,6 +95,9 @@ fun parseDate(date: Date)
 
 val Long.humanReadableDate: String
     get() = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault()).format(Date(this))
+
+val Long.humanReadableDateTime: String
+    get() = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(Date(this))
 
 fun Context.showOperationResultToast(success: Boolean) {
     Toast.makeText(this, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()

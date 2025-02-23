@@ -410,6 +410,9 @@
     <string name="silent_uninstall">Тихое удаление</string>
     <string name="request_uninstall">Запросить удаление</string>
     <string name="install_app">Установить приложение</string>
+    <!--TODO: 2 strings-->
+    <string name="choose_apk_file">Choose an APK file</string>
+    <string name="install_existing_app">Install existing app</string>
     <string name="search">Поиск</string>
 
     <!--Ограничения пользователя-->
@@ -701,6 +704,7 @@
     <string name="info_suspend_app">Приостановленный пакет не сможет запускать активности. Его уведомления будут скрыты, он не будет отображаться в списке последних запущенных приложений, не сможет показывать всплывающие уведомления или диалоговые окна и звонить на устройство.\nНекоторые приложения не могут быть приостановлены, такие как администраторы устройства, активный лаунчер и приложение для набора номера по умолчанию.</string>
     <string name="info_disable_user_control">Пользователь не сможет очищать данные приложений или принудительно останавливать пакеты.</string>
     <string name="info_keep_uninstalled_apps">Установить список приложений, которые нужно сохранить в виде APK-файлов, даже если ни у одного пользователя в данный момент они не установлены.</string>
+    <!--TODO--><string name="info_install_existing_app">Install an existing package that has been installed in another user, or has been kept after uninstall.</string>
     <string name="info_headless_system_user_mode">Режим "безголового" системного пользователя означает, что системный пользователь запускает системные службы и некоторый системный интерфейс, но он не связан с каким-либо реальным человеком, и для связи с реальными людьми должны быть созданы дополнительные пользователи.</string>
     <string name="info_logout">If the current user is not switched by OwnDroid, this function cannot be used.</string> <!--TODO-->
     <string name="info_affiliation_id">Когда владелец устройства создает управляемого пользователя, управляемый пользователь не является аффилированным. Чтобы сделать управляемого пользователя аффилированным с владельцем устройства, вам следует установить одинаковые аффилированные идентификаторы в основном и управляемом пользователях.</string>

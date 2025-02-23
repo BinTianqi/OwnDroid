@@ -23,9 +23,9 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -292,20 +292,16 @@ fun MyScaffold(
     @StringRes title: Int,
     horizonPadding: Dp,
     onNavIconClicked: () -> Unit,
-    displayTitle: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val scrollState = rememberScrollState()
+    val sb = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
+        Modifier.nestedScroll(sb.nestedScrollConnection),
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(title),
-                        modifier = if(displayTitle) Modifier.alpha((maxOf(scrollState.value-90,0)).toFloat()/50) else Modifier
-                    )
-                },
-                navigationIcon = { NavIcon (onNavIconClicked) }
+            LargeTopAppBar(
+                { Text(stringResource(title)) },
+                navigationIcon = { NavIcon(onNavIconClicked) },
+                scrollBehavior = sb
             )
         }
     ) { paddingValues ->
@@ -314,14 +310,39 @@ fun MyScaffold(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = horizonPadding)
-                .verticalScroll(scrollState)
+                .verticalScroll(rememberScrollState())
                 .padding(bottom = 80.dp)
         ) {
-            if(displayTitle) Text(
-                text = stringResource(title),
-                style = typography.headlineLarge,
-                modifier = Modifier.padding(start = if(horizonPadding == 0.dp) 16.dp else 0.dp,top = 10.dp, bottom = 5.dp)
+            content()
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MySmallTitleScaffold(
+    @StringRes title: Int,
+    horizonPadding: Dp,
+    onNavIconClicked: () -> Unit,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                { Text(stringResource(title)) },
+                navigationIcon = { NavIcon(onNavIconClicked) },
+                colors = TopAppBarDefaults.topAppBarColors(colorScheme.surfaceContainer)
             )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = horizonPadding)
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 80.dp)
+        ) {
             content()
         }
     }
