@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import com.bintianqi.owndroid.ui.FunctionItem
-import com.bintianqi.owndroid.ui.InfoCard
+import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.SwitchItem
 import kotlinx.serialization.Serializable
@@ -214,7 +214,7 @@ fun ApiSettings(onNavigateUp: () -> Unit) {
             ) {
                 Text(stringResource(R.string.apply))
             }
-            if(sp.apiKey != null) InfoCard(R.string.api_key_exist)
+            if(sp.apiKey != null) Notes(R.string.api_key_exist)
         }
     }
 }

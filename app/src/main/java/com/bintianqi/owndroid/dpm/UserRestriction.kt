@@ -37,6 +37,7 @@ fun UserRestrictionScreen(onNavigateUp: () -> Unit, onNavigate: (Int, List<Restr
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     MyScaffold(R.string.user_restriction, 0.dp, onNavigateUp) {
+        Spacer(Modifier.padding(vertical = 2.dp))
         Text(text = stringResource(R.string.switch_to_disable_feature), modifier = Modifier.padding(start = 16.dp))
         if(context.isProfileOwner) { Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.padding(start = 16.dp)) }
         if(context.isProfileOwner && dpm.isManagedProfile(receiver)) {

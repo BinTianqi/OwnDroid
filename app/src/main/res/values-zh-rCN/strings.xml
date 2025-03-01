@@ -208,7 +208,7 @@
     <string name="wipe_work_profile_warning">你的工作资料将会被删除</string>
     <string name="encryption_status">加密状态</string>
     <string name="frp_policy">FRP策略</string>
-    <string name="frp_policy_not_supported">这个设备不支持恢复出厂设置保护策略</string>
+    <string name="frp_not_supported">你的设备不支持FRP策略</string>
     <string name="enable_frp">启用FRP</string>
     <string name="account_list_is">账户列表：</string>
 
@@ -661,7 +661,6 @@
     <string name="info_disable_keyguard">禁用锁屏相当于把锁屏方式设置为“无”。在已设置密码或图案时使用这个功能无效。如果在锁屏禁用时设置密码或图案，锁屏将启用</string>
     <string name="info_evict_credential_encryption_key">从密钥环中移除用户的凭证加密密钥。用户需要再次输入凭证才能将密钥存储回密钥环中。为了保护用户数据，用户将重新启动</string>
     <string name="info_reboot">打电话时不能使用此功能</string>
-    <string name="info_change_time">输入以毫秒为单位的UNIX时间</string>
     <string name="info_content_protection_policy">内容保护策略控制对欺骗性应用程序的扫描。</string>
     <string name="info_permission_policy">设置应用申请运行时权限时的默认选择</string>
     <string name="info_mte_policy">设置内存标记扩展(Memory Tagging Extension)策略。重启设备以应用更改。</string>

@@ -91,7 +91,7 @@ import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.FunctionItem
-import com.bintianqi.owndroid.ui.InfoCard
+import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.RadioButtonItem
@@ -467,7 +467,7 @@ private fun UserControlDisabledPackagesScreen(pkgName:String) {
         ) {
             Text(stringResource(R.string.apply))
         }
-        InfoCard(R.string.info_disable_user_control)
+        Notes(R.string.info_disable_user_control)
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
@@ -787,7 +787,7 @@ private fun PermittedAccessibilityServicesScreen(pkgName: String) {
                 }
             }
         }
-        InfoCard(R.string.system_accessibility_always_allowed)
+        Notes(R.string.system_accessibility_always_allowed)
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
@@ -845,7 +845,7 @@ private fun PermittedInputMethodsScreen(pkgName: String) {
                 }
             }
         }
-        InfoCard(R.string.system_ime_always_allowed)
+        Notes(R.string.system_ime_always_allowed)
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }
@@ -891,7 +891,7 @@ private fun KeepUninstalledPackagesScreen(pkgName: String) {
         ) {
             Text(stringResource(R.string.apply))
         }
-        InfoCard(R.string.info_keep_uninstalled_apps)
+        Notes(R.string.info_keep_uninstalled_apps)
         Spacer(Modifier.padding(vertical = 30.dp))
     }
 }

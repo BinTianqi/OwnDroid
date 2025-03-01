@@ -306,7 +306,7 @@ fun LockScreenInfoScreen(onNavigateUp: () -> Unit) {
             Text(text = stringResource(R.string.reset))
         }
         Spacer(Modifier.padding(vertical = 10.dp))
-        InfoCard(R.string.info_lock_screen_info)
+        Notes(R.string.info_lock_screen_info)
     }
 }
 
@@ -716,7 +716,7 @@ fun SupportMessageScreen(onNavigateUp: () -> Unit) {
                 Text(text = stringResource(R.string.reset))
             }
         }
-        InfoCard(R.string.info_short_support_message)
+        Notes(R.string.info_short_support_message)
         Spacer(Modifier.padding(vertical = 8.dp))
         OutlinedTextField(
             value = longMsg,
@@ -747,7 +747,7 @@ fun SupportMessageScreen(onNavigateUp: () -> Unit) {
                 Text(text = stringResource(R.string.reset))
             }
         }
-        InfoCard(R.string.info_long_support_message)
+        Notes(R.string.info_long_support_message)
     }
 }
 
@@ -778,7 +778,7 @@ fun TransferOwnershipScreen(onNavigateUp: () -> Unit) {
             Text(stringResource(R.string.transfer))
         }
         Spacer(Modifier.padding(vertical = 10.dp))
-        InfoCard(R.string.info_transfer_ownership)
+        Notes(R.string.info_transfer_ownership)
     }
     if(dialog) AlertDialog(
         text = {

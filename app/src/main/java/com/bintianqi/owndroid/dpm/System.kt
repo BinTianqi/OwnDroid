@@ -6,13 +6,6 @@ import android.app.AlertDialog
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY
 import android.app.admin.DevicePolicyManager.InstallSystemUpdateCallback
-import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK
-import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_GLOBAL_ACTIONS
-import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_HOME
-import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_KEYGUARD
-import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_NOTIFICATIONS
-import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_OVERVIEW
-import android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_SYSTEM_INFO
 import android.app.admin.DevicePolicyManager.MTE_DISABLED
 import android.app.admin.DevicePolicyManager.MTE_ENABLED
 import android.app.admin.DevicePolicyManager.MTE_NOT_CONTROLLED_BY_POLICY
@@ -46,6 +39,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -56,9 +50,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -134,14 +126,14 @@ import com.bintianqi.owndroid.humanReadableDate
 import com.bintianqi.owndroid.parseDate
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
 import com.bintianqi.owndroid.ui.FunctionItem
-import com.bintianqi.owndroid.ui.InfoCard
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.MySmallTitleScaffold
 import com.bintianqi.owndroid.ui.NavIcon
-import com.bintianqi.owndroid.ui.RadioButtonItem
+import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.uriToStream
 import kotlinx.coroutines.Dispatchers
@@ -370,7 +362,7 @@ fun KeyguardScreen(onNavigateUp: () -> Unit) {
                     Text(stringResource(R.string.enable))
                 }
             }
-            InfoCard(R.string.info_disable_keyguard)
+            Notes(R.string.info_disable_keyguard)
             Spacer(Modifier.padding(vertical = 12.dp))
         }
         if(VERSION.SDK_INT >= 23) Text(text = stringResource(R.string.lock_now), style = typography.headlineLarge)
@@ -393,7 +385,7 @@ fun KeyguardScreen(onNavigateUp: () -> Unit) {
             Text(stringResource(R.string.lock_now))
         }
         if(VERSION.SDK_INT >= 26 && profileOwner && dpm.isManagedProfile(receiver)) {
-            InfoCard(R.string.info_evict_credential_encryption_key)
+            Notes(R.string.info_evict_credential_encryption_key)
         }
     }
 }
@@ -491,10 +483,7 @@ fun ChangeTimeScreen(onNavigateUp: () -> Unit) {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    val coroutine = rememberCoroutineScope()
     val pagerState = rememberPagerState { 2 }
-    var manualInput by remember { mutableStateOf(false) }
-    var inputTime by remember { mutableStateOf("")}
     var picker by remember { mutableIntStateOf(0) } //0:None, 1:DatePicker, 2:TimePicker
     val datePickerState = rememberDatePickerState()
     val timePickerState = rememberTimePickerState()
@@ -502,16 +491,14 @@ fun ChangeTimeScreen(onNavigateUp: () -> Unit) {
     val timeInteractionSource = remember { MutableInteractionSource() }
     if(dateInteractionSource.collectIsPressedAsState().value) picker = 1
     if(timeInteractionSource.collectIsPressedAsState().value) picker = 2
-    val isInputLegal = (manualInput && (try { inputTime.toLong() } catch(_: Exception) { -1 }) >= 0) ||
-            (!manualInput && datePickerState.selectedDateMillis != null)
     MyScaffold(R.string.change_time, 8.dp, onNavigateUp) {
         SingleChoiceSegmentedButtonRow(
             modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
         ) {
+            val coroutine = rememberCoroutineScope()
             SegmentedButton(
-                selected = !manualInput, shape = SegmentedButtonDefaults.itemShape(0, 2),
+                selected = pagerState.targetPage == 0, shape = SegmentedButtonDefaults.itemShape(0, 2),
                 onClick = {
-                    manualInput = false
                     coroutine.launch {
                         pagerState.animateScrollToPage(0)
                     }
@@ -520,9 +507,8 @@ fun ChangeTimeScreen(onNavigateUp: () -> Unit) {
                 Text(stringResource(R.string.selector))
             }
             SegmentedButton(
-                selected = manualInput, shape = SegmentedButtonDefaults.itemShape(1, 2),
+                selected = pagerState.targetPage == 1, shape = SegmentedButtonDefaults.itemShape(1, 2),
                 onClick = {
-                    manualInput = true
                     coroutine.launch {
                         pagerState.animateScrollToPage(1)
                     }
@@ -532,45 +518,57 @@ fun ChangeTimeScreen(onNavigateUp: () -> Unit) {
             }
         }
         HorizontalPager(
-            state = pagerState, modifier = Modifier.height(140.dp).padding(top = 4.dp),
+            state = pagerState, modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.Top
         ) { page ->
-            if(page == 0) Column {
-                OutlinedTextField(
-                    value = datePickerState.selectedDateMillis?.humanReadableDate ?: "",
-                    onValueChange = {}, readOnly = true,
-                    label = { Text(stringResource(R.string.date)) },
-                    interactionSource = dateInteractionSource,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                OutlinedTextField(
-                    value = timePickerState.hour.toString() + ":" + timePickerState.minute.toString(),
-                    onValueChange = {}, readOnly = true,
-                    label = { Text(stringResource(R.string.time)) },
-                    interactionSource = timeInteractionSource,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            Column(Modifier.padding(top = 4.dp)) {
+                if(page == 0) {
+                    OutlinedTextField(
+                        value = datePickerState.selectedDateMillis?.humanReadableDate ?: "",
+                        onValueChange = {}, readOnly = true,
+                        label = { Text(stringResource(R.string.date)) },
+                        interactionSource = dateInteractionSource,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = timePickerState.hour.toString() + ":" + timePickerState.minute.toString(),
+                        onValueChange = {}, readOnly = true,
+                        label = { Text(stringResource(R.string.time)) },
+                        interactionSource = timeInteractionSource,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                    )
+                    Button(
+                        onClick = {
+                            val timeMillis = datePickerState.selectedDateMillis!! + timePickerState.hour * 3600000 + timePickerState.minute * 60000
+                            context.showOperationResultToast(dpm.setTime(receiver, timeMillis))
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = datePickerState.selectedDateMillis != null
+                    ) {
+                        Text(stringResource(R.string.apply))
+                    }
+                } else {
+                    var inputTime by remember { mutableStateOf("") }
+                    OutlinedTextField(
+                        value = inputTime,
+                        label = { Text(stringResource(R.string.time_unit_ms)) },
+                        onValueChange = { inputTime = it },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Button(
+                        onClick = {
+                            val timeMillis = inputTime.toLong()
+                            context.showOperationResultToast(dpm.setTime(receiver, timeMillis))
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        enabled = inputTime.toLongOrNull() != null
+                    ) {
+                        Text(stringResource(R.string.apply))
+                    }
+                }
             }
-            if(page == 1) OutlinedTextField(
-                value = inputTime,
-                label = { Text(stringResource(R.string.time_unit_ms)) },
-                onValueChange = { inputTime = it },
-                supportingText = { Text(stringResource(R.string.info_change_time)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-        Button(
-            onClick = {
-                val timeMillis = if(manualInput) inputTime.toLong()
-                    else datePickerState.selectedDateMillis!! + timePickerState.hour * 3600000 + timePickerState.minute * 60000
-                context.showOperationResultToast(dpm.setTime(receiver, timeMillis))
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = isInputLegal
-        ) {
-            Text(stringResource(R.string.apply))
         }
     }
     if(picker == 1) DatePickerDialog(
@@ -629,7 +627,7 @@ fun ChangeTimeZoneScreen(onNavigateUp: () -> Unit) {
             Text(stringResource(R.string.apply))
         }
         Spacer(Modifier.padding(vertical = 10.dp))
-        InfoCard(R.string.disable_auto_time_zone_before_set)
+        Notes(R.string.disable_auto_time_zone_before_set)
     }
     if(dialog) AlertDialog(
         text = {
@@ -868,7 +866,7 @@ fun ContentProtectionPolicyScreen(onNavigateUp: () -> Unit) {
         ) {
             Text(stringResource(R.string.apply))
         }
-        InfoCard(R.string.info_content_protection_policy, 8.dp)
+        Notes(R.string.info_content_protection_policy, 8.dp)
     }
 }
 
@@ -901,7 +899,7 @@ fun PermissionPolicyScreen(onNavigateUp: () -> Unit) {
         ) {
             Text(stringResource(R.string.apply))
         }
-        InfoCard(R.string.info_permission_policy, 8.dp)
+        Notes(R.string.info_permission_policy, 8.dp)
     }
 }
 
@@ -933,7 +931,7 @@ fun MtePolicyScreen(onNavigateUp: () -> Unit) {
         ) {
             Text(stringResource(R.string.apply))
         }
-        InfoCard(R.string.info_mte_policy, 8.dp)
+        Notes(R.string.info_mte_policy, 8.dp)
     }
 }
 
@@ -945,7 +943,7 @@ fun NearbyStreamingPolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     var appPolicy by remember { mutableIntStateOf(dpm.nearbyAppStreamingPolicy) }
-    MyScaffold(R.string.nearby_streaming_policy, 0.dp, onNavigateUp) {
+    MySmallTitleScaffold(R.string.nearby_streaming_policy, 0.dp, onNavigateUp) {
         Text(
             stringResource(R.string.nearby_app_streaming),
             Modifier.padding(start = 8.dp, top = 10.dp, bottom = 4.dp), style = typography.titleLarge
@@ -970,7 +968,7 @@ fun NearbyStreamingPolicyScreen(onNavigateUp: () -> Unit) {
         ) {
             Text(stringResource(R.string.apply))
         }
-        InfoCard(R.string.info_nearby_app_streaming_policy, 8.dp)
+        Notes(R.string.info_nearby_app_streaming_policy, 8.dp)
         var notificationPolicy by remember { mutableIntStateOf(dpm.nearbyNotificationStreamingPolicy) }
         Text(
             stringResource(R.string.nearby_notification_streaming),
@@ -1002,7 +1000,7 @@ fun NearbyStreamingPolicyScreen(onNavigateUp: () -> Unit) {
         ) {
             Text(stringResource(R.string.apply))
         }
-        InfoCard(R.string.info_nearby_notification_streaming_policy, 8.dp)
+        Notes(R.string.info_nearby_notification_streaming_policy, 8.dp)
     }
 }
 
@@ -1043,12 +1041,19 @@ fun LockTaskModeScreen(onNavigateUp: () -> Unit) {
                 )
             }
             HorizontalPager(pagerState, verticalAlignment = Alignment.Top) { page ->
-                Column(
-                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 8.dp, end = 8.dp, bottom = 80.dp)
-                ) {
-                    if(page == 0) StartLockTaskMode()
-                    else if(page == 1) LockTaskPackages()
-                    else LockTaskFeatures()
+                if(page == 0 || page == 1) {
+                    Column(
+                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 8.dp, end = 8.dp, bottom = 80.dp)
+                    ) {
+                        if(page == 0) StartLockTaskMode()
+                        else LockTaskPackages()
+                    }
+                } else {
+                    Column(
+                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 80.dp)
+                    ) {
+                        LockTaskFeatures()
+                    }
                 }
             }
         }
@@ -1116,7 +1121,7 @@ private fun ColumnScope.StartLockTaskMode() {
     ) {
         Text(stringResource(R.string.start))
     }
-    InfoCard(R.string.info_start_lock_task_mode)
+    Notes(R.string.info_start_lock_task_mode)
 }
 
 @RequiresApi(26)
@@ -1181,7 +1186,7 @@ private fun ColumnScope.LockTaskPackages() {
     ) {
         Text(stringResource(R.string.apply))
     }
-    InfoCard(R.string.info_lock_task_packages)
+    Notes(R.string.info_lock_task_packages)
 }
 
 @RequiresApi(28)
@@ -1198,44 +1203,28 @@ private fun ColumnScope.LockTaskFeatures() {
     }
     LaunchedEffect(Unit) { refresh() }
     Spacer(Modifier.padding(vertical = 5.dp))
-    RadioButtonItem(R.string.disable_all, !custom) { custom = false }
-    RadioButtonItem(R.string.custom, custom) { custom = true }
-    AnimatedVisibility(custom) {
+    FullWidthRadioButtonItem(R.string.disable_all, !custom) { custom = false }
+    FullWidthRadioButtonItem(R.string.custom, custom) { custom = true }
+    AnimatedVisibility(custom, Modifier.padding(top = 4.dp)) {
         Column {
-            CheckBoxItem(
-                R.string.ltf_sys_info,
-                flags and LOCK_TASK_FEATURE_SYSTEM_INFO != 0
-            ) { flags = flags xor LOCK_TASK_FEATURE_SYSTEM_INFO }
-            CheckBoxItem(
-                R.string.ltf_notifications,
-                flags and LOCK_TASK_FEATURE_NOTIFICATIONS != 0
-            ) { flags = flags xor LOCK_TASK_FEATURE_NOTIFICATIONS }
-            CheckBoxItem(
-                R.string.ltf_home,
-                flags and LOCK_TASK_FEATURE_HOME != 0
-            ) { flags = flags xor LOCK_TASK_FEATURE_HOME }
-            CheckBoxItem(
-                R.string.ltf_overview,
-                flags and LOCK_TASK_FEATURE_OVERVIEW != 0
-            ) { flags = flags xor LOCK_TASK_FEATURE_OVERVIEW }
-            CheckBoxItem(
-                R.string.ltf_global_actions,
-                flags and LOCK_TASK_FEATURE_GLOBAL_ACTIONS != 0
-            ) { flags = flags xor LOCK_TASK_FEATURE_GLOBAL_ACTIONS }
-            CheckBoxItem(
-                R.string.ltf_keyguard,
-                flags and LOCK_TASK_FEATURE_KEYGUARD != 0
-            ) { flags = flags xor LOCK_TASK_FEATURE_KEYGUARD }
-            if(VERSION.SDK_INT >= 30) {
-                CheckBoxItem(
-                    R.string.ltf_block_activity_start_in_task,
-                    flags and LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK != 0
-                ) { flags = flags xor LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK }
+            listOf(
+                DevicePolicyManager.LOCK_TASK_FEATURE_SYSTEM_INFO to R.string.ltf_sys_info,
+                DevicePolicyManager.LOCK_TASK_FEATURE_NOTIFICATIONS to R.string.ltf_notifications,
+                DevicePolicyManager.LOCK_TASK_FEATURE_HOME to R.string.ltf_home,
+                DevicePolicyManager.LOCK_TASK_FEATURE_OVERVIEW to R.string.ltf_overview,
+                DevicePolicyManager.LOCK_TASK_FEATURE_GLOBAL_ACTIONS to R.string.ltf_global_actions,
+                DevicePolicyManager.LOCK_TASK_FEATURE_KEYGUARD to R.string.ltf_keyguard
+            ).let {
+                if(VERSION.SDK_INT >= 30)
+                    it.plus(DevicePolicyManager.LOCK_TASK_FEATURE_BLOCK_ACTIVITY_START_IN_TASK to R.string.ltf_block_activity_start_in_task)
+                else it
+            }.forEach { (id, title) ->
+                FullWidthCheckBoxItem(title, flags and id != 0) { flags = flags xor id }
             }
         }
     }
     Button(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 8.dp),
         onClick = {
             try {
                 dpm.setLockTaskFeatures(receiver, flags)
@@ -1469,7 +1458,7 @@ fun SecurityLoggingScreen(onNavigateUp: () -> Unit) {
                 Text(stringResource(R.string.delete_logs))
             }
         }
-        InfoCard(R.string.info_security_log)
+        Notes(R.string.info_security_log)
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
@@ -1490,7 +1479,7 @@ fun SecurityLoggingScreen(onNavigateUp: () -> Unit) {
         ) {
             Text(stringResource(R.string.pre_reboot_security_logs))
         }
-        InfoCard(R.string.info_pre_reboot_security_log)
+        Notes(R.string.info_pre_reboot_security_log)
     }
 }
 
@@ -1540,7 +1529,7 @@ fun DisableAccountManagementScreen(onNavigateUp: () -> Unit) {
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() })
         )
         Spacer(Modifier.padding(vertical = 10.dp))
-        InfoCard(R.string.info_disable_account_management)
+        Notes(R.string.info_disable_account_management)
     }
 }
 
@@ -1559,7 +1548,7 @@ fun FrpPolicyScreen(onNavigateUp: () -> Unit) {
     val accountList = remember { mutableStateListOf<String>() }
     var inputAccount by remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
-        var policy: FactoryResetProtectionPolicy? = FactoryResetProtectionPolicy.Builder().build()
+        var policy: FactoryResetProtectionPolicy? = null
         try {
             policy = dpm.getFactoryResetProtectionPolicy(receiver)
         } catch(_: UnsupportedOperationException) {
@@ -1575,12 +1564,21 @@ fun FrpPolicyScreen(onNavigateUp: () -> Unit) {
         }
     }
     MyScaffold(R.string.frp_policy, 8.dp, onNavigateUp) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 8.dp)
-        ) {
-            Text(stringResource(R.string.use_policy), style = typography.titleLarge)
-            Switch(checked = usePolicy, onCheckedChange = { usePolicy = it })
+        if(unsupported) {
+            Column(
+                Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                    .clip(RoundedCornerShape(8.dp)).background(colorScheme.primaryContainer)
+            ) {
+                Text(stringResource(R.string.frp_not_supported), Modifier.padding(8.dp), color = colorScheme.onPrimaryContainer)
+            }
+        } else {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 8.dp)
+            ) {
+                Text(stringResource(R.string.use_policy), style = typography.titleLarge)
+                Switch(checked = usePolicy, onCheckedChange = { usePolicy = it })
+            }
         }
         AnimatedVisibility(usePolicy) {
             Column {
@@ -1611,31 +1609,22 @@ fun FrpPolicyScreen(onNavigateUp: () -> Unit) {
                     keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(Modifier.padding(vertical = 2.dp))
             }
         }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
+        if(!unsupported) Button(
             onClick = {
                 focusMgr.clearFocus()
-                if(unsupported) {
-                    Toast.makeText(context, R.string.unsupported, Toast.LENGTH_SHORT).show()
-                } else {
-                    val policy = FactoryResetProtectionPolicy.Builder()
-                        .setFactoryResetProtectionEnabled(enabled)
-                        .setFactoryResetProtectionAccounts(accountList)
-                        .build()
-                    dpm.setFactoryResetProtectionPolicy(receiver, policy)
-                }
+                val policy = FactoryResetProtectionPolicy.Builder()
+                    .setFactoryResetProtectionEnabled(enabled)
+                    .setFactoryResetProtectionAccounts(accountList)
+                    .build()
+                dpm.setFactoryResetProtectionPolicy(receiver, policy)
             },
-            modifier = Modifier.width(100.dp).align(Alignment.CenterHorizontally)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
         ) {
             Text(stringResource(R.string.apply))
         }
-        Spacer(Modifier.padding(vertical = 10.dp))
-        if(unsupported) Text(stringResource(R.string.frp_policy_not_supported))
-        Spacer(Modifier.padding(vertical = 6.dp))
-        InfoCard(R.string.info_frp_policy)
+        Notes(R.string.info_frp_policy)
     }
 }
 
@@ -1885,6 +1874,6 @@ fun InstallSystemUpdateScreen(onNavigateUp: () -> Unit) {
             }
         }
         Spacer(Modifier.padding(vertical = 10.dp))
-        InfoCard(R.string.auto_reboot_after_install_succeed)
+        Notes(R.string.auto_reboot_after_install_succeed)
     }
 }

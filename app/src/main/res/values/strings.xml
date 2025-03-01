@@ -237,7 +237,7 @@
     <string name="wipe_work_profile_warning">Your work profile will be DELETED</string>
     <string name="encryption_status">Encryption status</string>
     <string name="frp_policy">FRP policy</string>
-    <string name="frp_policy_not_supported">FRP policy is not supported on this device</string>
+    <string name="frp_not_supported">Your device does not support FRP</string>
     <string name="enable_frp">Enable FRP</string>
     <string name="account_list_is">"Account list: "</string>
 
@@ -701,7 +701,6 @@
     <string name="info_disable_keyguard">Setting the keyguard to disabled has the same effect as choosing "None" as the screen lock type. However, this call has no effect if a password, pin or pattern is currently set.\nIf a password, pin or pattern is set after the keyguard was disabled, the keyguard stops being disabled.</string>
     <string name="info_evict_credential_encryption_key">Evict the user\'s credential encryption key from the keyring. The user\'s credential will need to be entered again in order to derive the credential encryption key that will be stored back in the keyring for future use. In order to secure user data, the user will be stopped and restarted.</string>
     <string name="info_reboot">You can\'t use this function if there is an ongoing call on the device.</string>
-    <string name="info_change_time">Input UNIX time in milliseconds</string>
     <string name="info_content_protection_policy">Content protection policy controls scanning for deceptive apps.</string>
     <string name="info_permission_policy">Set the default response for future runtime permission requests by applications.</string>
     <string name="info_mte_policy">Set the Memory Tagging Extension policy. Reboot the device to apply changes.</string>
@@ -712,7 +711,7 @@
     <string name="info_security_log">If a Device owner use this function, all users should be affiliated.</string>
     <string name="info_pre_reboot_security_log">Not all devices support pre-reboot security logs.</string>
     <string name="info_disable_account_management">When account management is disabled for an account type, adding or removing an account of that type will not be possible.</string>
-    <string name="info_frp_policy">The factory reset protection policy determines which accounts can unlock a device that has gone through untrusted factory reset(fastboot or recovery).\nTo enable this feature, the device must support persistent data block service.\nFactory reset protection is disabled if OEM unlocking is enabled in Developer Options.</string>
+    <string name="info_frp_policy">The factory reset protection policy determines which accounts can unlock a device that has gone through untrusted factory reset (fastboot or recovery).\nTo enable this feature, the device must support persistent data block service.\nFactory reset protection is disabled if OEM unlocking is enabled in Developer Options.</string>
     <string name="info_wipe_data_in_managed_user">All data of this user will be wiped, but that user won\'t be removed.</string>
     <string name="info_lockdown_admin_configured_network">Control whether the user can change networks configured by the admin.\nWhen this lockdown is enabled, the user can still configure and connect to other Wi-Fi networks, or use other Wi-Fi capabilities such as tethering.</string>
     <string name="info_minimum_wifi_security_level">Specify the minimum security level required for Wi-Fi networks. The device may not connect to networks that do not meet the minimum security level. If the current network does not meet the minimum security level set, it will be disconnected.</string>

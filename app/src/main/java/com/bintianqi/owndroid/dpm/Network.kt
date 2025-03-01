@@ -134,8 +134,9 @@ import com.bintianqi.owndroid.humanReadableDateTime
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.ExpandExposedTextFieldIcon
+import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
 import com.bintianqi.owndroid.ui.FunctionItem
-import com.bintianqi.owndroid.ui.InfoCard
+import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.MySmallTitleScaffold
@@ -168,7 +169,7 @@ fun NetworkScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
         if(VERSION.SDK_INT >= 30) {
             FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { onNavigate(NetworkOptions) }
         }
-        if(VERSION.SDK_INT >= 23 && (deviceOwner || profileOwner))
+        if(VERSION.SDK_INT >= 23 && !dhizuku && (deviceOwner || profileOwner))
             FunctionItem(R.string.network_stats, icon = R.drawable.query_stats_fill0) { onNavigate(QueryNetworkStats) }
         if(VERSION.SDK_INT >= 29 && deviceOwner) {
             FunctionItem(R.string.private_dns, icon = R.drawable.dns_fill0) { onNavigate(PrivateDns) }
@@ -765,22 +766,21 @@ fun WifiSecurityLevelScreen(onNavigateUp: () -> Unit) {
     val dpm = context.getDPM()
     var selectedWifiSecLevel by remember { mutableIntStateOf(0) }
     LaunchedEffect(Unit) { selectedWifiSecLevel = dpm.minimumRequiredWifiSecurityLevel }
-    MyScaffold(R.string.min_wifi_security_level, 8.dp, onNavigateUp) {
-        RadioButtonItem(R.string.wifi_security_open, selectedWifiSecLevel == WIFI_SECURITY_OPEN) { selectedWifiSecLevel = WIFI_SECURITY_OPEN }
-        RadioButtonItem("WEP, WPA(2)-PSK", selectedWifiSecLevel == WIFI_SECURITY_PERSONAL) { selectedWifiSecLevel = WIFI_SECURITY_PERSONAL }
-        RadioButtonItem("WPA-EAP", selectedWifiSecLevel == WIFI_SECURITY_ENTERPRISE_EAP) { selectedWifiSecLevel = WIFI_SECURITY_ENTERPRISE_EAP }
-        RadioButtonItem("WPA3-192bit", selectedWifiSecLevel == WIFI_SECURITY_ENTERPRISE_192) { selectedWifiSecLevel = WIFI_SECURITY_ENTERPRISE_192 }
-        Spacer(Modifier.padding(vertical = 5.dp))
+    MySmallTitleScaffold(R.string.min_wifi_security_level, 0.dp, onNavigateUp) {
+        FullWidthRadioButtonItem(R.string.wifi_security_open, selectedWifiSecLevel == WIFI_SECURITY_OPEN) { selectedWifiSecLevel = WIFI_SECURITY_OPEN }
+        FullWidthRadioButtonItem("WEP, WPA(2)-PSK", selectedWifiSecLevel == WIFI_SECURITY_PERSONAL) { selectedWifiSecLevel = WIFI_SECURITY_PERSONAL }
+        FullWidthRadioButtonItem("WPA-EAP", selectedWifiSecLevel == WIFI_SECURITY_ENTERPRISE_EAP) { selectedWifiSecLevel = WIFI_SECURITY_ENTERPRISE_EAP }
+        FullWidthRadioButtonItem("WPA3-192bit", selectedWifiSecLevel == WIFI_SECURITY_ENTERPRISE_192) { selectedWifiSecLevel = WIFI_SECURITY_ENTERPRISE_192 }
         Button(
             onClick = {
                 dpm.minimumRequiredWifiSecurityLevel = selectedWifiSecLevel
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 8.dp)
         ) {
             Text(stringResource(R.string.apply))
         }
-        InfoCard(R.string.info_minimum_wifi_security_level)
+        Notes(R.string.info_minimum_wifi_security_level, 8.dp)
     }
 }
 
@@ -792,26 +792,26 @@ fun WifiSsidPolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
-    MyScaffold(R.string.wifi_ssid_policy, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.wifi_ssid_policy, 0.dp, onNavigateUp) {
         var selectedPolicyType by remember { mutableIntStateOf(-1) }
         val ssidList = remember { mutableStateListOf<WifiSsid>() }
-        val refreshPolicy = {
+        fun refreshPolicy() {
             val policy = dpm.wifiSsidPolicy
             ssidList.clear()
             selectedPolicyType = policy?.policyType ?: -1
             ssidList.addAll(policy?.ssids ?: mutableSetOf())
         }
         LaunchedEffect(Unit) { refreshPolicy() }
-        RadioButtonItem(R.string.none, selectedPolicyType == -1) { selectedPolicyType = -1 }
-        RadioButtonItem(R.string.whitelist, selectedPolicyType == WIFI_SSID_POLICY_TYPE_ALLOWLIST) {
+        FullWidthRadioButtonItem(R.string.none, selectedPolicyType == -1) { selectedPolicyType = -1 }
+        FullWidthRadioButtonItem(R.string.whitelist, selectedPolicyType == WIFI_SSID_POLICY_TYPE_ALLOWLIST) {
             selectedPolicyType = WIFI_SSID_POLICY_TYPE_ALLOWLIST
         }
-        RadioButtonItem(R.string.blacklist, selectedPolicyType == WIFI_SSID_POLICY_TYPE_DENYLIST) {
+        FullWidthRadioButtonItem(R.string.blacklist, selectedPolicyType == WIFI_SSID_POLICY_TYPE_DENYLIST) {
             selectedPolicyType = WIFI_SSID_POLICY_TYPE_DENYLIST
         }
         AnimatedVisibility(selectedPolicyType != -1) {
             var inputSsid by remember { mutableStateOf("") }
-            Column {
+            Column(Modifier.padding(horizontal = 8.dp)) {
                 Text(stringResource(R.string.ssid_list_is))
                 if(ssidList.isEmpty()) Text(stringResource(R.string.none))
                 Column(modifier = Modifier.animateContentSize()) {
@@ -839,7 +839,6 @@ fun WifiSsidPolicyScreen(onNavigateUp: () -> Unit) {
                     keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(Modifier.padding(vertical = 10.dp))
             }
         }
         Button(
@@ -853,7 +852,7 @@ fun WifiSsidPolicyScreen(onNavigateUp: () -> Unit) {
                 refreshPolicy()
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(8.dp)
         ) {
             Text(stringResource(R.string.apply))
         }
@@ -1291,7 +1290,7 @@ data class NetworkStatsViewer(
 fun NetworkStatsViewerScreen(nsv: NetworkStatsViewer, onNavigateUp: () -> Unit) {
     var index by remember { mutableIntStateOf(0) }
     val size = nsv.stats.size
-    MySmallTitleScaffold(R.string.place_holder, 8.dp, onNavigateUp) {
+    MySmallTitleScaffold(R.string.network_stats, 8.dp, onNavigateUp) {
         if(size > 1) Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 8.dp)
@@ -1318,15 +1317,13 @@ fun NetworkStatsViewerScreen(nsv: NetworkStatsViewer, onNavigateUp: () -> Unit) 
         val txBytes = data.txBytes
         Text(stringResource(R.string.transmitted), style = typography.titleLarge)
         Column(modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)) {
-            Text("$txBytes bytes")
-            Text(formatFileSize(txBytes))
+            Text("$txBytes bytes (${formatFileSize(txBytes)})")
             Text(data.txPackets.toString() + " packets")
         }
         val rxBytes = data.rxBytes
         Text(stringResource(R.string.received), style = typography.titleLarge)
         Column(modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)) {
-            Text("$rxBytes bytes")
-            Text(formatFileSize(rxBytes))
+            Text("$rxBytes bytes (${formatFileSize(rxBytes)})")
             Text(data.rxPackets.toString() + " packets")
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1406,7 +1403,7 @@ fun PrivateDnsScreen(onNavigateUp: () -> Unit) {
                 Text(stringResource(R.string.set_to_opportunistic))
             }
         }
-        InfoCard(R.string.info_private_dns_mode_oppertunistic)
+        Notes(R.string.info_private_dns_mode_oppertunistic)
         Spacer(Modifier.padding(vertical = 10.dp))
         var inputHost by remember { mutableStateOf(dpm.getGlobalPrivateDnsHost(receiver) ?: "") }
         OutlinedTextField(
@@ -1439,7 +1436,7 @@ fun PrivateDnsScreen(onNavigateUp: () -> Unit) {
         ) {
             Text(stringResource(R.string.set_dns_host))
         }
-        InfoCard(R.string.info_set_private_dns_host)
+        Notes(R.string.info_set_private_dns_host)
     }
 }
 
@@ -1505,7 +1502,7 @@ fun AlwaysOnVpnPackageScreen(onNavigateUp: () -> Unit) {
         ) {
             Text(stringResource(R.string.clear_current_config))
         }
-        InfoCard(R.string.info_always_on_vpn)
+        Notes(R.string.info_always_on_vpn)
     }
 }
 
@@ -1604,7 +1601,7 @@ fun RecommendedGlobalProxyScreen(onNavigateUp: () -> Unit) {
         ) {
             Text(stringResource(R.string.apply))
         }
-        InfoCard(R.string.info_recommended_global_proxy)
+        Notes(R.string.info_recommended_global_proxy)
     }
 }
 
@@ -1656,7 +1653,7 @@ fun NetworkLoggingScreen(onNavigateUp: () -> Unit) {
                 Text(stringResource(R.string.delete_logs))
             }
         }
-        InfoCard(R.string.info_network_log)
+        Notes(R.string.info_network_log)
     }
 }
 

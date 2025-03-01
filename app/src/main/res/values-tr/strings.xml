@@ -218,7 +218,7 @@
     <string name="wipe_work_profile_warning">Your work profile will be DELETED</string> <!--TODO-->
     <string name="encryption_status">Encryption status</string> <!--TODO-->
     <string name="frp_policy">FRP politikası</string>
-    <string name="frp_policy_not_supported">FRP politikası bu cihazda desteklenmiyor</string>
+    <string name="frp_not_supported">Your device does not support FRP</string> <!--TODO-->
     <string name="enable_frp">FRP\'yi etkinleştir</string>
     <string name="account_list_is">"Hesap listesi: "</string>
 

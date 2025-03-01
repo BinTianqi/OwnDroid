@@ -211,7 +211,7 @@
     <string name="wipe_work_profile_warning">Ваш рабочий профиль будет УДАЛЕН</string>
     <string name="encryption_status">Статус шифрования</string>
     <string name="frp_policy">Политика FRP</string>
-    <string name="frp_policy_not_supported">Политика FRP не поддерживается на этом устройстве</string>
+    <string name="frp_not_supported">Your device does not support FRP</string> <!--TODO-->
     <string name="enable_frp">Включить FRP</string>
     <string name="account_list_is">Список аккаунтов: </string>
 
@@ -679,7 +679,6 @@
     <string name="info_disable_keyguard">Отключение Keyguard имеет такой же эффект как и выбор \"Нет\" в качестве способа блокировки экрана. Однако этот вызов не имеет эффекта, если в данный момент установлен пароль, PIN-код или графический ключ.\nЕсли пароль, PIN-код или графический ключ были установлены после того как Keyguard был выключен, то Keyguard перестаёт быть выключенным.</string>
     <string name="info_evict_credential_encryption_key">Удаляет ключ шифрования учетных данных пользователя из связки ключей. Потребуется повторно ввести учетные данные пользователя, чтобы получить ключ шифрования учетных данных, который будет сохранен в связке ключей для дальнейшего использования. В целях защиты пользовательских данных пользователь будет остановлен и перезапущен.</string>
     <string name="info_reboot">Вы не можете использовать данную функцию, если на устройстве есть активный вызов (звонок).</string>
-    <string name="info_change_time">Введите время UNIX в миллисекундах</string>
     <string name="info_content_protection_policy">Политика защиты контента управляет сканированием на наличие мошеннических приложений.</string>
     <string name="info_permission_policy">Выбрать действие по умолчанию для запросов разрешений от приложений.</string>
     <string name="info_mte_policy">Установить политику Memory Tagging Extension.  Перезагрузите устройство, чтобы применить изменения.</string>

@@ -70,7 +70,7 @@ import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.FunctionItem
-import com.bintianqi.owndroid.ui.InfoCard
+import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.SwitchItem
@@ -457,7 +457,7 @@ fun AffiliationIdScreen(onNavigateUp: () -> Unit) {
         ) {
             Text(stringResource(R.string.apply))
         }
-        InfoCard(R.string.info_affiliation_id)
+        Notes(R.string.info_affiliation_id)
     }
 }
 

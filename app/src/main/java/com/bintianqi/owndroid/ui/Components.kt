@@ -104,13 +104,20 @@ fun FullWidthRadioButtonItem(
     text: Int,
     selected: Boolean,
     operation: () -> Unit
+) = FullWidthRadioButtonItem(stringResource(text), selected, operation)
+
+@Composable
+fun FullWidthRadioButtonItem(
+    text: String,
+    selected: Boolean,
+    operation: () -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth().clickable(onClick = operation)
     ) {
         RadioButton(selected = selected, onClick = operation, modifier = Modifier.padding(horizontal = 4.dp))
-        Text(text = stringResource(text), modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
+        Text(text = text, modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
     }
 }
 
@@ -272,18 +279,12 @@ fun ListItem(text: String, onDelete: () -> Unit) {
 }
 
 @Composable
-fun InfoCard(@StringRes strID: Int, horizonPadding: Dp = 0.dp) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = horizonPadding)
-            .clip(RoundedCornerShape(12.dp))
-            .background(color = colorScheme.tertiaryContainer)
-            .padding(8.dp)
-    ) {
-        Icon(imageVector = Icons.Outlined.Info, contentDescription = null, modifier = Modifier.padding(vertical = 4.dp))
-        Text(stringResource(strID))
-    }
+fun Notes(@StringRes strID: Int, horizonPadding: Dp = 0.dp) {
+    Icon(Icons.Outlined.Info, null, Modifier.padding(horizontal = horizonPadding).padding(top = 4.dp, bottom = 8.dp))
+    Text(
+        stringResource(strID), Modifier.padding(horizontal = horizonPadding),
+        color = colorScheme.onSurfaceVariant, style = typography.bodyMedium
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

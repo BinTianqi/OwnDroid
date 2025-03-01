@@ -73,7 +73,7 @@ import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
 import com.bintianqi.owndroid.ui.FunctionItem
-import com.bintianqi.owndroid.ui.InfoCard
+import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.yesOrNo
@@ -308,7 +308,7 @@ fun ResetPasswordTokenScreen(onNavigateUp: () -> Unit) {
             }
         }
         Spacer(Modifier.padding(vertical = 5.dp))
-        InfoCard(R.string.activate_token_not_required_when_no_password)
+        Notes(R.string.activate_token_not_required_when_no_password)
     }
 }
 
@@ -386,7 +386,7 @@ fun ResetPasswordScreen(onNavigateUp: () -> Unit) {
                 Text(stringResource(R.string.reset_password))
             }
         }
-        InfoCard(R.string.info_reset_password)
+        Notes(R.string.info_reset_password)
     }
     if(confirmDialog) {
         var confirmPassword by remember { mutableStateOf("") }
@@ -462,7 +462,7 @@ fun RequiredPasswordComplexityScreen(onNavigateUp: () -> Unit) {
         ) {
             Text(text = stringResource(R.string.apply))
         }
-        InfoCard(R.string.info_password_complexity, 8.dp)
+        Notes(R.string.info_password_complexity, 8.dp)
     }
 }
 
@@ -519,7 +519,7 @@ fun KeyguardDisabledFeaturesScreen(onNavigateUp: () -> Unit) {
                 refresh()
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 8.dp)
         ) {
             Text(text = stringResource(R.string.apply))
         }

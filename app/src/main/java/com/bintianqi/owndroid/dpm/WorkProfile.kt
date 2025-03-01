@@ -59,7 +59,7 @@ import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.CopyTextButton
 import com.bintianqi.owndroid.ui.FunctionItem
-import com.bintianqi.owndroid.ui.InfoCard
+import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.yesOrNo
@@ -230,7 +230,7 @@ fun SuspendPersonalAppScreen(onNavigateUp: () -> Unit) {
         ) {
             Text(stringResource(R.string.apply))
         }
-        InfoCard(R.string.info_profile_maximum_time_off)
+        Notes(R.string.info_profile_maximum_time_off)
     }
 }
 
@@ -280,7 +280,7 @@ fun CrossProfileIntentFilterScreen(onNavigateUp: () -> Unit) {
         ) {
             Text(stringResource(R.string.clear_cross_profile_filters))
         }
-        InfoCard(R.string.info_cross_profile_intent_filter)
+        Notes(R.string.info_cross_profile_intent_filter)
     }
 }
 
