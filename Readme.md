@@ -9,6 +9,9 @@
 [IzzyOnDroid F-Droid Repository](https://apt.izzysoft.de/fdroid/index/apk/com.bintianqi.owndroid)
 [Releases on GitHub](https://github.com/BinTianqi/OwnDroid/releases)
 
+> [!NOTE]
+> ColorOS用户应在GitHub上的releases下载testkey版本
+
 ## 功能
 
 - 系统
@@ -104,21 +107,31 @@ java.lang.IllegalStateException: Unexpected @ProvisioningPreCondition
 
 ## API
 
-|    ID     | 描述       | Extras             | 最小安卓版本 |
-|:---------:|----------|--------------------|:------:|
-|   HIDE    | 隐藏一个应用   | `package`: 目标应用的包名 |        |
-|  UNHIDE   | 取消隐藏一个应用 | `package`: 目标应用的包名 |        |
-|  SUSPEND  | 挂起一个应用   | `package`: 目标应用的包名 |   7    |
-| UNSUSPEND | 取消挂起一个应用 | `package`: 目标应用的包名 |   7    |
-|   LOCK    | 锁屏       |                    |        |
+| ID                     | Extra         | 最小安卓版本 |
+|------------------------|---------------|:------:|
+| HIDE                   | `package`     |        |
+| UNHIDE                 | `package`     |        |
+| SUSPEND                | `package`     |   7    |
+| UNSUSPEND              | `package`     |   7    |
+| ADD_USER_RESTRICTION   | `restriction` |        |
+| CLEAR_USER_RESTRICTION | `restriction` |        |
+| LOCK                   |               |        |
 
-在adb shell中使用API
+[可用的用户限制](https://developer.android.google.cn/reference/android/os/UserManager#constants_1)
+
 ```shell
-am broadcast -a com.bintianqi.owndroid.action.<ID> -n com.bintianqi.owndroid/.ApiReceiver --es key <API_KEY>
-# 示例
+# 一个在ADB shell中隐藏app的示例
 am broadcast -a com.bintianqi.owndroid.action.HIDE -n com.bintianqi.owndroid/.ApiReceiver --es key abcdefg --es package com.example.app
 ```
-如果返回值为0，操作成功
+
+```kotlin
+// 一个在Kotlin中隐藏app的示例
+val intent = Intent("com.bintianqi.owndroid.action.HIDE")
+    .setComponent(ComponentName("com.bintianqi.owndroid", "com.bintianqi.owndroid.ApiReceiver"))
+    .putExtra("key", "abcdefg")
+    .putExtra("package", "com.example.app")
+context.sendBroadcast(intent)
+```
 
 ## 构建
 

@@ -9,6 +9,9 @@ Use Android Device owner privilege to manage your device.
 [IzzyOnDroid F-Droid Repository](https://apt.izzysoft.de/fdroid/index/apk/com.bintianqi.owndroid)
 [Releases on GitHub](https://github.com/BinTianqi/OwnDroid/releases)
 
+> [!NOTE]
+> ColorOS users should download testkey version from releases on GitHub
+
 ## Features
 
 - System
@@ -104,21 +107,31 @@ Solution: Use OwnDroid testkey version
 
 ## API
 
-|    ID     | Description      | Extras                                | Minimum Android version |
-|:---------:|------------------|---------------------------------------|:-----------------------:|
-|   HIDE    | Hide an app      | `package`: package name of target app |                         |
-|  UNHIDE   | Unhide an app    | `package`: package name of target app |                         |
-|  SUSPEND  | Suspend an app   | `package`: package name of target app |            7            |
-| UNSUSPEND | Unsuspend an app | `package`: package name of target app |            7            |
-|   LOCK    | Lock screen      |                                       |                         |
+| ID                     | Extras        | Minimum Android version |
+|------------------------|---------------|:-----------------------:|
+| HIDE                   | `package`     |                         |
+| UNHIDE                 | `package`     |                         |
+| SUSPEND                | `package`     |            7            |
+| UNSUSPEND              | `package`     |            7            |
+| ADD_USER_RESTRICTION   | `restriction` |                         |
+| CLEAR_USER_RESTRICTION | `restriction` |                         |
+| LOCK                   |               |                         |
 
-Use this API in adb shell
+[Available user restrictions](https://developer.android.com/reference/android/os/UserManager#constants_1)
+
 ```shell
-am broadcast -a com.bintianqi.owndroid.action.<ID> -n com.bintianqi.owndroid/.ApiReceiver --es key <API_KEY>
-# Example
+# An example of hiding app in ADB shell
 am broadcast -a com.bintianqi.owndroid.action.HIDE -n com.bintianqi.owndroid/.ApiReceiver --es key abcdefg --es package com.example.app
 ```
-If the return value is 0, the operation is successful.
+
+```kotlin
+// An example of hiding app in Kotlin
+val intent = Intent("com.bintianqi.owndroid.action.HIDE")
+    .setComponent(ComponentName("com.bintianqi.owndroid", "com.bintianqi.owndroid.ApiReceiver"))
+    .putExtra("key", "abcdefg")
+    .putExtra("package", "com.example.app")
+context.sendBroadcast(intent)
+```
 
 ## Build
 
