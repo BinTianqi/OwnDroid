@@ -4,15 +4,25 @@
 
 使用安卓Device owner特权管理你的设备。
 
+## 下载
+
+[IzzyOnDroid F-Droid Repository](https://apt.izzysoft.de/fdroid/index/apk/com.bintianqi.owndroid)
+[Releases on GitHub](https://github.com/BinTianqi/OwnDroid/releases)
+
+> [!NOTE]
+> ColorOS用户应在GitHub上的releases下载testkey版本
+
 ## 功能
 
 - 系统
   - 选项：禁用摄像头、禁止截屏、全局静音、禁用USB信号...
   - 权限策略
-  - 清除数据
+  - 管理CA证书
+  - _清除数据_
   - ...
 - 网络
   - 添加/修改/删除 Wi-Fi
+  - 网络统计
   - 最小Wi-Fi安全等级
   - VPN保持打开
   - 网络日志
@@ -39,7 +49,7 @@
   - 创建用户
   - ...
 - 密码与锁屏
-  - 重置密码
+  - _重置密码_
   - 要求密码复杂度
   - 设置屏幕超时
   - ...
@@ -84,7 +94,7 @@ java.lang.SecurityException: Neither user 2000 nor current process has android.p
 ```
 
 解决办法：
-- 在开发者设置中打开`USB debugging (Security setting)`。
+- 在开发者设置中打开`USB调试（安全设置）`。
 - 在root命令行中执行激活命令
 
 #### ColorOS
@@ -97,21 +107,45 @@ java.lang.IllegalStateException: Unexpected @ProvisioningPreCondition
 
 ## API
 
-|    ID     | 描述       | Extras             | 最小安卓版本 |
-|:---------:|----------|--------------------|:------:|
-|   HIDE    | 隐藏一个应用   | `package`: 目标应用的包名 |        |
-|  UNHIDE   | 取消隐藏一个应用 | `package`: 目标应用的包名 |        |
-|  SUSPEND  | 挂起一个应用   | `package`: 目标应用的包名 |   7    |
-| UNSUSPEND | 取消挂起一个应用 | `package`: 目标应用的包名 |   7    |
-|   LOCK    | 锁屏       |                    |        |
+| ID                     | Extra         | 最小安卓版本 |
+|------------------------|---------------|:------:|
+| HIDE                   | `package`     |        |
+| UNHIDE                 | `package`     |        |
+| SUSPEND                | `package`     |   7    |
+| UNSUSPEND              | `package`     |   7    |
+| ADD_USER_RESTRICTION   | `restriction` |        |
+| CLEAR_USER_RESTRICTION | `restriction` |        |
+| LOCK                   |               |        |
 
-在adb shell中使用API
+[可用的用户限制](https://developer.android.google.cn/reference/android/os/UserManager#constants_1)
+
 ```shell
-am broadcast -a com.bintianqi.owndroid.action.<ID> -n com.bintianqi.owndroid/.ApiReceiver --es key <API_KEY>
-# 示例
+# 一个在ADB shell中隐藏app的示例
 am broadcast -a com.bintianqi.owndroid.action.HIDE -n com.bintianqi.owndroid/.ApiReceiver --es key abcdefg --es package com.example.app
 ```
-如果返回值为0，操作成功
+
+```kotlin
+// 一个在Kotlin中隐藏app的示例
+val intent = Intent("com.bintianqi.owndroid.action.HIDE")
+    .setComponent(ComponentName("com.bintianqi.owndroid", "com.bintianqi.owndroid.ApiReceiver"))
+    .putExtra("key", "abcdefg")
+    .putExtra("package", "com.example.app")
+context.sendBroadcast(intent)
+```
+
+## 构建
+
+你可以在命令行中使用Gradle以构建OwnDroid
+```shell
+# 使用testkey签名（默认）
+./gradlew build
+# 使用你的jks密钥签名
+./gradlew build -PStoreFile="/path/to/your/jks/file" -PStorePassword="YOUR_KEYSTORE_PASSWORD" -PKeyPassword="YOUR_KEY_PASSWORD" -PKeyAlias="YOUR_KEY_ALIAS"
+```
+（在Windows系统中应使用`./gradlew.bat`)
+
+> [!TIP]
+> 在中国大陆下载Gradle速度慢？打开`gradle/wrapper/gradle-wrapper.properties`文件，注释官方下载地址，取消注释一个镜像地址。
 
 ## 许可证
 

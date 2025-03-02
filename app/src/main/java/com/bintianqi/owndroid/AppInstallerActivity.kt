@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageInfo
 import android.content.pm.PackageInstaller
 import android.net.Uri
 import android.os.Build
@@ -17,14 +18,21 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.biometric.BiometricPrompt
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
@@ -38,11 +46,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -55,7 +69,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.bintianqi.owndroid.dpm.parsePackageInstallerMessage
-import com.bintianqi.owndroid.ui.RadioButtonItem
+import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
+import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -73,15 +88,16 @@ class AppInstallerActivity:FragmentActivity() {
         val vm by viewModels<AppInstallerViewModel>()
         vm.initialize(intent)
         setContent {
-            OwnDroidTheme(myVm) {
+            val theme by myVm.theme.collectAsStateWithLifecycle()
+            OwnDroidTheme(theme) {
                 val installing by vm.installing.collectAsStateWithLifecycle()
-                val sessionMode by vm.sessionMode.collectAsStateWithLifecycle()
+                val options by vm.options.collectAsStateWithLifecycle()
                 val packages by vm.packages.collectAsStateWithLifecycle()
                 val writtenPackages by vm.writtenPackages.collectAsStateWithLifecycle()
                 val writingPackage by vm.writingPackage.collectAsStateWithLifecycle()
                 val result by vm.result.collectAsStateWithLifecycle()
                 AppInstaller(
-                    installing, sessionMode, { vm.sessionMode.value = it },
+                    installing, options, { if(!installing) vm.options.value = it },
                     packages, { uri -> vm.packages.update { it.minus(uri) } },
                     { uris -> vm.packages.update { it.plus(uris) } },
                     { vm.startInstallationProcess(this) }, writtenPackages, writingPackage,
@@ -97,8 +113,8 @@ class AppInstallerActivity:FragmentActivity() {
 @Composable
 private fun AppInstaller(
     installing: Boolean = false,
-    sessionMode: Int = PackageInstaller.SessionParams.MODE_INHERIT_EXISTING,
-    onSessionModeChoose: (Int) -> Unit = {},
+    options: SessionParamsOptions = SessionParamsOptions(),
+    onOptionsChange: (SessionParamsOptions) -> Unit = {},
     packages: Set<Uri> = setOf(Uri.parse("https://example.com")),
     onPackageRemove: (Uri) -> Unit = {},
     onPackageChoose: (List<Uri>) -> Unit = {},
@@ -108,6 +124,7 @@ private fun AppInstaller(
     result: Intent? = null,
     onResultDialogClose: () -> Unit = {}
 ) {
+    val coroutine = rememberCoroutineScope()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -126,53 +143,64 @@ private fun AppInstaller(
             )
         }
     ) { paddingValues ->
+        var tab by remember { mutableIntStateOf(0) }
+        val pagerState = rememberPagerState { 2 }
+        val scrollState = rememberScrollState()
+        tab = pagerState.targetPage
         Column(modifier = Modifier.padding(paddingValues)) {
-            SessionMode(sessionMode, onSessionModeChoose)
-            Packages(installing, packages, onPackageRemove, onPackageChoose, writtenPackages, writingPackage)
+            TabRow(tab) {
+                Tab(
+                    tab == 0,
+                    onClick = {
+                        coroutine.launch { scrollState.animateScrollTo(0) }
+                        coroutine.launch { pagerState.animateScrollToPage(0) }
+                    },
+                    text = { Text(stringResource(R.string.packages)) }
+                )
+                Tab(
+                    tab == 1,
+                    onClick = {
+                        coroutine.launch { scrollState.animateScrollTo(0) }
+                        coroutine.launch { pagerState.animateScrollToPage(1) }
+                    },
+                    text = { Text(stringResource(R.string.options)) }
+                )
+            }
+            HorizontalPager(pagerState) { page ->
+                Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState).padding(top = 8.dp)) {
+                    if(page == 0) Packages(installing, packages, onPackageRemove, onPackageChoose, writtenPackages, writingPackage)
+                    else Options(options, onOptionsChange)
+                }
+            }
             ResultDialog(result, onResultDialogClose)
         }
     }
 }
 
-@Composable
-private fun SessionMode(mode: Int, onChoose: (Int) -> Unit) {
-    Text(
-        stringResource(R.string.mode), modifier = Modifier.padding(top = 10.dp, start = 8.dp),
-        style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary
-    )
-    RadioButtonItem(R.string.full_install, mode == PackageInstaller.SessionParams.MODE_FULL_INSTALL) {
-        onChoose(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
-    }
-    RadioButtonItem(R.string.inherit_existing, mode == PackageInstaller.SessionParams.MODE_INHERIT_EXISTING) {
-        onChoose(PackageInstaller.SessionParams.MODE_INHERIT_EXISTING)
-    }
-}
 
 @Composable
-private fun Packages(
+private fun ColumnScope.Packages(
     installing: Boolean,
     packages: Set<Uri>, onRemove: (Uri) -> Unit, onChoose: (List<Uri>) -> Unit,
     writtenPackages: Set<Uri>, writingPackage: Uri?
 ) {
     val chooseSplitPackage = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents(), onChoose)
-    Text(
-        stringResource(R.string.packages), modifier = Modifier.padding(start = 8.dp, top = 10.dp, bottom = 4.dp),
-        style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary
-    )
     packages.forEach {
         PackageItem(
             it, installing,
             { onRemove(it) }, it in writtenPackages, it == writingPackage
         )
     }
-    if(!installing) Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable {
-            chooseSplitPackage.launch(APK_MIME)
-        }.padding(vertical = 12.dp)
-    ) {
-        Icon(Icons.Default.Add, null, modifier = Modifier.padding(horizontal = 10.dp))
-        Text(stringResource(R.string.add_packages), style = MaterialTheme.typography.titleMedium)
+    AnimatedVisibility(!installing) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable {
+                chooseSplitPackage.launch(APK_MIME)
+            }.padding(vertical = 12.dp)
+        ) {
+            Icon(Icons.Default.Add, null, modifier = Modifier.padding(horizontal = 10.dp))
+            Text(stringResource(R.string.add_packages), style = MaterialTheme.typography.titleMedium)
+        }
     }
 }
 
@@ -194,6 +222,50 @@ private fun PackageItem(uri: Uri, installing: Boolean, onRemove: () -> Unit, isW
         }
         if(isWritten) Icon(Icons.Default.Check, null, Modifier.padding(end = 8.dp), MaterialTheme.colorScheme.secondary)
         if(isWriting) CircularProgressIndicator(Modifier.padding(end = 8.dp).size(24.dp))
+    }
+}
+
+data class SessionParamsOptions(
+    val mode: Int = PackageInstaller.SessionParams.MODE_FULL_INSTALL,
+    val keepOriginalEnabledSetting: Boolean = false,
+    val noKill: Boolean = false,
+    val location: Int = PackageInfo.INSTALL_LOCATION_INTERNAL_ONLY,
+)
+
+@Composable
+private fun ColumnScope.Options(options: SessionParamsOptions, onChange: (SessionParamsOptions) -> Unit) {
+    Text(
+        stringResource(R.string.mode), modifier = Modifier.padding(top = 10.dp, start = 8.dp, bottom = 4.dp),
+        style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary
+    )
+    FullWidthRadioButtonItem(R.string.full_install, options.mode == PackageInstaller.SessionParams.MODE_FULL_INSTALL) {
+        onChange(options.copy(mode = PackageInstaller.SessionParams.MODE_FULL_INSTALL, noKill = false))
+    }
+    FullWidthRadioButtonItem(R.string.inherit_existing, options.mode == PackageInstaller.SessionParams.MODE_INHERIT_EXISTING) {
+        onChange(options.copy(mode = PackageInstaller.SessionParams.MODE_INHERIT_EXISTING))
+    }
+    if(Build.VERSION.SDK_INT >= 34) {
+        AnimatedVisibility(options.mode == PackageInstaller.SessionParams.MODE_INHERIT_EXISTING) {
+            FullWidthCheckBoxItem(R.string.dont_kill_app, options.noKill) {
+                onChange(options.copy(noKill = it))
+            }
+        }
+        FullWidthCheckBoxItem(R.string.keep_original_enabled_setting, options.keepOriginalEnabledSetting) {
+            onChange(options.copy(keepOriginalEnabledSetting = it))
+        }
+    }
+    Text(
+        stringResource(R.string.install_location), modifier = Modifier.padding(top = 10.dp, start = 8.dp, bottom = 4.dp),
+        style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary
+    )
+    FullWidthRadioButtonItem(R.string.auto, options.location == PackageInfo.INSTALL_LOCATION_AUTO) {
+        onChange(options.copy(location = PackageInfo.INSTALL_LOCATION_AUTO))
+    }
+    FullWidthRadioButtonItem(R.string.internal_only, options.location == PackageInfo.INSTALL_LOCATION_INTERNAL_ONLY) {
+        onChange(options.copy(location = PackageInfo.INSTALL_LOCATION_INTERNAL_ONLY))
+    }
+    FullWidthRadioButtonItem(R.string.prefer_external, options.location == PackageInfo.INSTALL_LOCATION_PREFER_EXTERNAL) {
+        onChange(options.copy(location = PackageInfo.INSTALL_LOCATION_PREFER_EXTERNAL))
     }
 }
 
@@ -235,12 +307,13 @@ class AppInstallerViewModel(application: Application): AndroidViewModel(applicat
     val result = MutableStateFlow<Intent?>(null)
     val packages = MutableStateFlow(setOf<Uri>())
 
-    val sessionMode = MutableStateFlow(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
+    val options = MutableStateFlow(SessionParamsOptions())
 
     val writtenPackages = MutableStateFlow(setOf<Uri>())
     val writingPackage = MutableStateFlow<Uri?>(null)
     fun startInstallationProcess(activity: FragmentActivity) {
-        startAuth(activity, object : BiometricPrompt.AuthenticationCallback() {
+        val sp = SharedPrefs(getApplication<Application>())
+        if(sp.auth) startAuth(activity, object : BiometricPrompt.AuthenticationCallback() {
             override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                 super.onAuthenticationSucceeded(result)
                 startInstall()
@@ -250,6 +323,16 @@ class AppInstallerViewModel(application: Application): AndroidViewModel(applicat
                 Toast.makeText(activity, R.string.failed_to_authenticate, Toast.LENGTH_SHORT).show()
             }
         })
+        else startInstall()
+    }
+    private fun getSessionParams(): PackageInstaller.SessionParams {
+        return PackageInstaller.SessionParams(options.value.mode).apply {
+            if(Build.VERSION.SDK_INT >= 34) {
+                if(options.value.keepOriginalEnabledSetting) setApplicationEnabledSettingPersistent()
+                setDontKillApp(options.value.noKill)
+            }
+            setInstallLocation(options.value.location)
+        }
     }
     private fun startInstall() {
         if(installing.value) return
@@ -257,7 +340,7 @@ class AppInstallerViewModel(application: Application): AndroidViewModel(applicat
         viewModelScope.launch(Dispatchers.IO) {
             val context = getApplication<Application>()
             val packageInstaller = context.packageManager.packageInstaller
-            val sessionId = packageInstaller.createSession(PackageInstaller.SessionParams(sessionMode.value))
+            val sessionId = packageInstaller.createSession(getSessionParams())
             val session = packageInstaller.openSession(sessionId)
             try {
                 packages.value.forEach { splitPackageUri ->

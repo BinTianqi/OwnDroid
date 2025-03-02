@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
@@ -22,15 +23,14 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.writeClipBoard
 import com.bintianqi.owndroid.zhCN
@@ -68,16 +68,10 @@ fun FunctionItem(
 }
 
 @Composable
-fun NavIcon(operation: () -> Unit) {
-    Icon(
-        painter = painterResource(R.drawable.arrow_back_fill0),
-        contentDescription = "Back arrow",
-        modifier = Modifier
-            .padding(horizontal = 6.dp)
-            .clip(RoundedCornerShape(50))
-            .clickable(onClick = operation)
-            .padding(5.dp)
-    )
+fun NavIcon(onClick: () -> Unit) {
+    IconButton(onClick) {
+        Icon(Icons.AutoMirrored.Default.ArrowBack, null)
+    }
 }
 
 @Composable
@@ -106,6 +100,28 @@ fun RadioButtonItem(
 }
 
 @Composable
+fun FullWidthRadioButtonItem(
+    text: Int,
+    selected: Boolean,
+    operation: () -> Unit
+) = FullWidthRadioButtonItem(stringResource(text), selected, operation)
+
+@Composable
+fun FullWidthRadioButtonItem(
+    text: String,
+    selected: Boolean,
+    operation: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().clickable(onClick = operation)
+    ) {
+        RadioButton(selected = selected, onClick = operation, modifier = Modifier.padding(horizontal = 4.dp))
+        Text(text = text, modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
+    }
+}
+
+@Composable
 fun CheckBoxItem(
     @StringRes text: Int,
     checked: Boolean,
@@ -124,6 +140,20 @@ fun CheckBoxItem(
     }
 }
 
+@Composable
+fun FullWidthCheckBoxItem(
+    @StringRes text: Int,
+    checked: Boolean,
+    operation: (Boolean) -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().clickable { operation(!checked) }
+    ) {
+        Checkbox(checked = checked, onCheckedChange = operation, modifier = Modifier.padding(horizontal = 4.dp))
+        Text(text = stringResource(text), modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
+    }
+}
 
 @Composable
 fun SwitchItem(
@@ -249,28 +279,13 @@ fun ListItem(text: String, onDelete: () -> Unit) {
 }
 
 @Composable
-fun InfoCard(@StringRes strID: Int) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .clip(RoundedCornerShape(10))
-            .background(color = colorScheme.tertiaryContainer)
-            .padding(8.dp)
-    ) {
-        Icon(imageVector = Icons.Outlined.Info, contentDescription = null, modifier = Modifier.padding(vertical = 4.dp))
-        Text(stringResource(strID))
-    }
+fun Notes(@StringRes strID: Int, horizonPadding: Dp = 0.dp) {
+    Icon(Icons.Outlined.Info, null, Modifier.padding(horizontal = horizonPadding).padding(top = 4.dp, bottom = 8.dp))
+    Text(
+        stringResource(strID), Modifier.padding(horizontal = horizonPadding),
+        color = colorScheme.onSurfaceVariant, style = typography.bodyMedium
+    )
 }
-
-@Composable
-fun MyScaffold(
-    @StringRes title: Int,
-    horizonPadding: Dp,
-    navCtrl: NavHostController,
-    displayTitle: Boolean = true,
-    content: @Composable ColumnScope.() -> Unit
-) = MyScaffold(title, horizonPadding, { navCtrl.navigateUp() }, displayTitle, content)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -278,20 +293,16 @@ fun MyScaffold(
     @StringRes title: Int,
     horizonPadding: Dp,
     onNavIconClicked: () -> Unit,
-    displayTitle: Boolean,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val scrollState = rememberScrollState()
+    val sb = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
+        Modifier.nestedScroll(sb.nestedScrollConnection),
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(title),
-                        modifier = if(displayTitle) Modifier.alpha((maxOf(scrollState.value-90,0)).toFloat()/50) else Modifier
-                    )
-                },
-                navigationIcon = { NavIcon (onNavIconClicked) }
+            LargeTopAppBar(
+                { Text(stringResource(title)) },
+                navigationIcon = { NavIcon(onNavIconClicked) },
+                scrollBehavior = sb
             )
         }
     ) { paddingValues ->
@@ -300,14 +311,39 @@ fun MyScaffold(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = horizonPadding)
-                .verticalScroll(scrollState)
+                .verticalScroll(rememberScrollState())
                 .padding(bottom = 80.dp)
         ) {
-            if(displayTitle) Text(
-                text = stringResource(title),
-                style = typography.headlineLarge,
-                modifier = Modifier.padding(start = if(horizonPadding == 0.dp) 16.dp else 0.dp,top = 10.dp, bottom = 5.dp)
+            content()
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MySmallTitleScaffold(
+    @StringRes title: Int,
+    horizonPadding: Dp,
+    onNavIconClicked: () -> Unit,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                { Text(stringResource(title)) },
+                navigationIcon = { NavIcon(onNavIconClicked) },
+                colors = TopAppBarDefaults.topAppBarColors(colorScheme.surfaceContainer)
             )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = horizonPadding)
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 80.dp)
+        ) {
             content()
         }
     }

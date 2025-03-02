@@ -6,14 +6,11 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bintianqi.owndroid.MyViewModel
+import com.bintianqi.owndroid.ThemeSettings
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -93,34 +90,27 @@ private val darkScheme = darkColorScheme(
 
 @Composable
 fun OwnDroidTheme(
-    vm: MyViewModel,
+    theme: ThemeSettings,
     content: @Composable () -> Unit
 ) {
-    val theme by vm.theme.collectAsStateWithLifecycle()
     val darkTheme = theme.darkTheme == 1 || (theme.darkTheme == -1 && isSystemInDarkTheme())
     val context = LocalContext.current
-    var colorScheme = when {
+    val colorScheme = when {
         theme.materialYou && VERSION.SDK_INT >= 31 -> {
             if(darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
         darkTheme -> darkScheme
         else -> lightScheme
-    }
-    if(darkTheme && theme.blackTheme) {
-        colorScheme = colorScheme.copy(background = Color.Black)
-    }
-    if(!darkTheme) {
-        colorScheme = colorScheme.copy(background = colorScheme.primary.copy(alpha = 0.05f))
+    }.let {
+        if(darkTheme && theme.blackTheme) it.copy(background = Color.Black) else it
     }
     val view = LocalView.current
     SideEffect {
         val window = (view.context as Activity).window
-        window.statusBarColor = Color.Transparent.toArgb()
         WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
     }
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
         content = content
     )
 }

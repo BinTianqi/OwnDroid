@@ -11,7 +11,6 @@ import android.os.PersistableBundle
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.bintianqi.owndroid.dpm.handleNetworkLogs
-import com.bintianqi.owndroid.dpm.isDeviceAdmin
 import com.bintianqi.owndroid.dpm.isDeviceOwner
 import com.bintianqi.owndroid.dpm.isProfileOwner
 import com.bintianqi.owndroid.dpm.processSecurityLogs
@@ -29,11 +28,12 @@ class Receiver : DeviceAdminReceiver() {
             dpm.setLockTaskPackages(receiver, arrayOf())
             dpm.setLockTaskPackages(receiver, packages)
         }
+        if(!context.isDeviceOwner && !context.isProfileOwner) SharedPrefs(context).isApiEnabled = false
     }
 
     override fun onEnabled(context: Context, intent: Intent) {
         super.onEnabled(context, intent)
-        if(context.isDeviceAdmin || context.isProfileOwner || context.isDeviceOwner){
+        if(context.isProfileOwner || context.isDeviceOwner){
             Toast.makeText(context, context.getString(R.string.onEnabled), Toast.LENGTH_SHORT).show()
         }
     }

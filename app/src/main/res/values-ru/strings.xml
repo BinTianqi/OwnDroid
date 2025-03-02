@@ -5,7 +5,7 @@
     <string name="disable">Отключить</string>
     <string name="enable">Включить</string>
     <string name="success">Успешно</string>
-    <string name="failure">Failure</string> <!--TODO-->
+    <string name="failure">Ошибка</string>
     <string name="failed">Ошибка</string>
     <string name="add">Добавить</string>
     <string name="remove">Удалить</string>
@@ -39,7 +39,6 @@
     <string name="apply">Применить</string>
     <string name="decide_by_user">Определять пользователем</string>
     <string name="unsupported">Не поддерживается</string>
-    <string name="developing">Разрабатываемая функция</string>
     <string name="options">Опции</string>
     <string name="copy_command">Копировать команду</string>
     <string name="package_name">Имя пакета</string>
@@ -70,7 +69,7 @@
     <string name="overview">Обзор</string>
     <string name="features">Особенности</string>
     <string name="default_str">По умолчанию</string>
-    <string name="timeout">Timeout</string> <!--TODO-->
+    <string name="timeout">Таймаут</string>
 
     <!--Разрешения-->
     <string name="click_to_activate">Нажмите для активации</string>
@@ -195,7 +194,11 @@
     <string name="ltf_keyguard">Разрешить блокировку экрана</string>
     <string name="ltf_block_activity_start_in_task">Блокировать запуск активности в задаче</string>
     <string name="ca_cert">CA-сертификат</string>
-    <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Выберите сертификат...</string>
+    <!--TODO: 4 strings-->
+    <string name="no_ca_cert">No user CA certificate installed</string>
+    <string name="parse_cert_failed">Failed to parse certificate</string>
+    <string name="export">Export</string>
+    <string name="select_ca_cert">Select a CA certificate</string>
     <string name="uninstall_all_user_ca_cert">Удалить все пользовательские CA-сертификаты</string>
     <string name="security_logging">Журнал безопасности</string> 
     <string name="pre_reboot_security_logs">Журналы безопасности перед перезагрузкой</string>
@@ -208,7 +211,7 @@
     <string name="wipe_work_profile_warning">Ваш рабочий профиль будет УДАЛЕН</string>
     <string name="encryption_status">Статус шифрования</string>
     <string name="frp_policy">Политика FRP</string>
-    <string name="frp_policy_not_supported">Политика FRP не поддерживается на этом устройстве</string>
+    <string name="frp_not_supported">Your device does not support FRP</string> <!--TODO-->
     <string name="enable_frp">Включить FRP</string>
     <string name="account_list_is">Список аккаунтов: </string>
 
@@ -307,38 +310,35 @@
     <string name="export_logs">Экспортировать журналы</string>
     <string name="wifi_auth_keypair">Пара ключей Wi-Fi</string>
     <string name="preferential_network_service">Предпочтительная сетевая служба</string>
+    <string name="add_config">Add config</string> <!--TODO-->
     <string name="network_id">Идентификатор сети</string>
     <string name="allow_fallback_to_default_connection">Разрешить переход на соединение по умолчанию</string>
     <string name="block_non_matching_networks">Блокировать несоответствующие сети</string>
     <string name="included_uids">Включенные UID</string>
     <string name="excluded_uids">Исключенные UID</string>
     <string name="one_uid_per_line">Один UID на строку</string>
-    <string name="failed_to_save_current_config">Не удалось сохранить текущую конфигурацию</string>
-    <string name="save_current_config">Сохранить текущую конфигурацию</string>
-    <string name="delete_current_config">Удалить текущую конфигурацию</string>
-    <string name="override_apn_settings">Настройки APN</string>
-    <string name="total_apn_amount">Количество настроек APN: %1$s</string>
-    <string name="select_a_apn_or_create">Выберите настройку APN для редактирования (1~%1$s) или введите 0, чтобы создать новую настройку APN.</string>
-    <string name="no_apn_you_should_create_one">Нет настроек APN. Будет создана новая.</string>
-    <string name="previous_step">Предыдущий шаг</string>
-    <string name="next_step">Следующий шаг</string>
+    <!--TODO: following 4 strings-->
+    <string name="override_apn">Override APN</string>
+    <string name="apn_setting">APN setting</string>
+    <string name="apn_name">APN name</string>
+    <string name="entry_name">Entry name</string>
     <string name="name">Имя</string>
-    <string name="user_name">Имя пользователя</string>
     <string name="profile_id">Идентификатор профиля</string>
     <string name="auth_type">Тип аутентификации</string>
-    <string name="apn_type">Тип APN</string>
-    <string name="bitmask">Битовая маска</string>
     <string name="description">Описание</string>
     <string name="mms_proxy">MMS-прокси</string>
     <string name="address">Адрес</string>
     <string name="port">Порт</string>
     <string name="proxy">Прокси</string>
-    <string name="apn_network_type">Тип сети</string>
     <string name="persistent">Постоянный</string>
     <string name="protocol">Протокол</string>
     <string name="roaming_protocol">Протокол роуминга</string>
+    <!--TODO: following 4 strings-->
+    <string name="carrier_id">Carrier ID</string>
+    <string name="mvno_type">MVNO type</string>
+    <string name="network_type_bitmask">Network type bitmask</string>
+    <string name="always_on">Always on</string>
     <string name="update">Обновить</string>
-
 
 
     <!--Рабочий профиль-->
@@ -369,8 +369,6 @@
 
     <!--Управление приложениями-->
     <string name="applications">Приложения</string>
-    <string name="pkg_selector">Выбор пакета</string>
-    <string name="loading">Загрузка</string>
     <string name="show_user_app">Показывать пользовательские приложения</string>
     <string name="show_system_app">Показывать системные приложения</string>
     <string name="suspend">Приостановить</string>
@@ -412,14 +410,16 @@
     <string name="silent_uninstall">Тихое удаление</string>
     <string name="request_uninstall">Запросить удаление</string>
     <string name="install_app">Установить приложение</string>
-    <string name="search">Search</string> <!--TODO-->
+    <!--TODO: 2 strings-->
+    <string name="choose_apk_file">Choose an APK file</string>
+    <string name="install_existing_app">Install existing app</string>
+    <string name="search">Поиск</string>
 
     <!--Ограничения пользователя-->
     <string name="user_restriction">Ограничения пользователя</string>
     <string name="profile_owner_is_restricted">Владелец профиля может использовать ограниченные функции</string>
     <string name="switch_to_disable_feature">Включите переключатель, чтобы отключить эту функцию.</string>
     <string name="some_features_invalid_in_work_profile">Функции в рабочем профиле ограничены.</string>
-    <string name="network_and_internet">Сеть</string>
     <string name="connectivity">Другие подключения</string>
     <string name="media">Медиа</string>
     <string name="other">Другое</string>
@@ -514,7 +514,7 @@
     <string name="serial_number">Серийный номер</string>
     <string name="secondary_users">Вторичные пользователи</string> 
     <string name="no_secondary_users">Нет вторичных пользователей</string>
-    <string name="logout_current_user">Выйти из текущего пользователя</string>
+    <string name="logout">Logout</string> <!--TODO-->
     <string name="start_in_background">Запустить в фоновом режиме</string>
     <string name="user_operation_switch">Переключиться</string>
     <string name="create_user">Создать пользователя</string>
@@ -525,8 +525,7 @@
     <string name="serial_number_of_new_user_is">Серийный номер этого пользователя: %1$d</string>
     <string name="affiliation_id">Аффилированный идентификатор</string>
     <string name="change_user_icon">Изменить значок пользователя</string>
-    <string name="file_picker_instead_gallery">Использовать выборщик файлов вместо галереи</string>
-    <string name="select_picture" tools:ignore="TypographyEllipsis">Выберите изображение...</string>
+    <string name="select_an_image">Select an image</string> <!--TODO-->
     <string name="fail_managed_profile">Ошибка: управляемый профиль</string>
     <string name="fail_current_user">Ошибка: текущий пользователь</string>
     <string name="user_session_msg">Сообщение о сеансе пользователя</string>
@@ -543,10 +542,10 @@
     <string name="max_time_to_lock">Время ожидания экрана</string>
     <string name="required_strong_auth_timeout">Время ожидания строгой аутентификации</string>
     <string name="pwd_history">Длина истории паролей</string>
-    <string name="password_complexity_none">Нет (разрешено отсутствие пароля)</string>
-    <string name="password_complexity_low">Низкая (графический ключ и повторение символов разрешены)</string>
-    <string name="password_complexity_medium">Средняя (повторение запрещено, минимум 4 символа)</string>
-    <string name="password_complexity_high">Высокая (повторение запрещено, минимум 6 символов)</string>
+    <!--TODO: 3 strings-->
+    <string name="low">Low</string>
+    <string name="medium">Medium</string>
+    <string name="high">High</string>
     <string name="current_password_complexity">Текущая сложность пароля</string>
     <string name="password_sufficient">Сложность пароля достаточна</string>
     <string name="unified_password">Единый пароль</string>
@@ -564,7 +563,6 @@
     <string name="reset_password_require_entry">Требовать ввод</string>
     <string name="reset_password_with_token">Сбросить пароль с помощью токена</string>
     <string name="required_password_complexity">Требуемая сложность пароля</string>
-    <string name="require_set_new_password">Запрос на установку нового пароля</string>
     <string name="disable_keyguard_features">Функции блокировки экрана (Keyguard)</string>
     <string name="enable_all">Включить все</string>
     <string name="disable_keyguard_features_widgets">Отключить виджеты</string>
@@ -605,8 +603,8 @@
     <string name="authenticate">Аутентифицировать</string>
     <string name="lock_in_background">Блокировать при переключении в фоновый режим</string>
     <string name="clear_storage">Очистить хранилище</string>
-    <string name="skipped_authentication">Авторизация пропущена, поскольку она недоступна.</string>
-    <string name="failed_to_authenticate">Failed to authenticate</string> <!--TODO-->
+    <string name="skipped_authentication">Аутентификация пропущена, поскольку она недоступна.</string>
+    <string name="failed_to_authenticate">Ошибка аутентификации</string>
     
     <string name="api_key">API ключ</string>
     <string name="api_key_exist">API ключ уже сущетвует, установка нового перезапишет текущий</string>
@@ -646,19 +644,26 @@
     <string name="permission_BODY_SENSORS_BACKGROUND">Доступ к датчикам тела в фоновом режиме</string>
     <string name="permission_ACTIVITY_RECOGNITION">Распознавание активности</string>
 
-    <!--TODO-->
-    <string name="app_installer">App installer</string>
-    <string name="mode">Mode</string>
-    <string name="full_install">Full install</string>
-    <string name="inherit_existing">Inherit existing</string>
-    <string name="packages">Packages</string>
-    <string name="add_packages">Add package(s)</string>
-    <string name="status_failure_blocked">The operation was blocked by: %1$s</string>
-    <string name="status_failure_aborted">The operation was aborted.</string>
-    <string name="status_failure_invalid">The operation failed because one or more of the APKs was invalid. For example, they might be malformed, corrupt, incorrectly signed, mismatched, etc.</string>
-    <string name="status_failure_conflict">The operation failed because it conflicts with %1$s. For example, an existing permission, incompatible certificates, etc. You can uninstall %1$s to fix the issue.</string>
-    <string name="status_failure_storage">The operation failed because of storage issues. For example, the device may be running low on space, or external media may be unavailable. You may try to help free space or insert different external media.</string>
-    <string name="status_failure_incompatible">The operation failed because it is fundamentally incompatible with this device. For example, the app may require a hardware feature that doesn\'t exist, it may be missing native code for the ABIs supported by the device, or it requires a newer SDK version, etc.</string>
+    <string name="package_chooser">Package chooser</string> <!--TODO-->
+
+    <string name="app_installer">Установщик приложений</string>
+    <string name="mode">Режим</string>
+    <string name="full_install">Полная установка</string>
+    <string name="inherit_existing">Наследовать существующие</string>
+    <!--TODO： 5 new strings-->
+    <string name="keep_original_enabled_setting">Keep original enabled setting</string>
+    <string name="dont_kill_app">Don\'t kill app</string>
+    <string name="install_location">Install location</string>
+    <string name="internal_only">Internal only</string>
+    <string name="prefer_external">Prefer external</string>
+    <string name="packages">Пакеты</string>
+    <string name="add_packages">Добавить пакет(ы)</string>
+    <string name="status_failure_blocked">Операция была заблокирована: %1$s</string>
+    <string name="status_failure_aborted">Операция была прервана.</string>
+    <string name="status_failure_invalid">Операция не удалась, так как один или несколько APK-файлов были недействительны. Например, они могут быть повреждены, содержать ошибки, неправильно подписаны, не соответствовать и т.д.</string>
+    <string name="status_failure_conflict">Операция не удалась из-за конфликта с %1$s. Например, существующее разрешение, несовместимые сертификаты и т.д. Вы можете удалить %1$s, чтобы исправить проблему.</string>
+    <string name="status_failure_storage">Операция не удалась из-за проблем с хранилищем. Например, на устройстве может быть недостаточно места или внешние носители могут быть недоступны. Вы можете попытаться освободить место или вставить другой внешний носитель.</string>
+    <string name="status_failure_incompatible">Операция не удалась, так как она принципиально несовместима с этим устройством. Например, приложению может потребоваться аппаратная функция, которой нет, в нем может отсутствовать собственный код для ABI, поддерживаемых устройством, или ему требуется более новая версия SDK и т.д.</string>
 
     <string name="info_dhizuku">Dhizuku это инструмент позволяющий делиться правами Владельца устройства с другими приложениями.</string>
     <string name="info_device_id_attestation">Указывает, поддерживает ли устройство проверку идентификаторов устройств в дополнение к проверке ключей.</string>
@@ -674,7 +679,6 @@
     <string name="info_disable_keyguard">Отключение Keyguard имеет такой же эффект как и выбор \"Нет\" в качестве способа блокировки экрана. Однако этот вызов не имеет эффекта, если в данный момент установлен пароль, PIN-код или графический ключ.\nЕсли пароль, PIN-код или графический ключ были установлены после того как Keyguard был выключен, то Keyguard перестаёт быть выключенным.</string>
     <string name="info_evict_credential_encryption_key">Удаляет ключ шифрования учетных данных пользователя из связки ключей. Потребуется повторно ввести учетные данные пользователя, чтобы получить ключ шифрования учетных данных, который будет сохранен в связке ключей для дальнейшего использования. В целях защиты пользовательских данных пользователь будет остановлен и перезапущен.</string>
     <string name="info_reboot">Вы не можете использовать данную функцию, если на устройстве есть активный вызов (звонок).</string>
-    <string name="info_change_time">Введите время UNIX в миллисекундах</string>
     <string name="info_content_protection_policy">Политика защиты контента управляет сканированием на наличие мошеннических приложений.</string>
     <string name="info_permission_policy">Выбрать действие по умолчанию для запросов разрешений от приложений.</string>
     <string name="info_mte_policy">Установить политику Memory Tagging Extension.  Перезагрузите устройство, чтобы применить изменения.</string>
@@ -699,8 +703,11 @@
     <string name="info_suspend_app">Приостановленный пакет не сможет запускать активности. Его уведомления будут скрыты, он не будет отображаться в списке последних запущенных приложений, не сможет показывать всплывающие уведомления или диалоговые окна и звонить на устройство.\nНекоторые приложения не могут быть приостановлены, такие как администраторы устройства, активный лаунчер и приложение для набора номера по умолчанию.</string>
     <string name="info_disable_user_control">Пользователь не сможет очищать данные приложений или принудительно останавливать пакеты.</string>
     <string name="info_keep_uninstalled_apps">Установить список приложений, которые нужно сохранить в виде APK-файлов, даже если ни у одного пользователя в данный момент они не установлены.</string>
+    <!--TODO--><string name="info_install_existing_app">Install an existing package that has been installed in another user, or has been kept after uninstall.</string>
     <string name="info_headless_system_user_mode">Режим "безголового" системного пользователя означает, что системный пользователь запускает системные службы и некоторый системный интерфейс, но он не связан с каким-либо реальным человеком, и для связи с реальными людьми должны быть созданы дополнительные пользователи.</string>
-    <string name="info_affiliated_id">Когда владелец устройства создает управляемого пользователя, управляемый пользователь не является аффилированным. Чтобы сделать управляемого пользователя аффилированным с владельцем устройства, вам следует установить одинаковые аффилированные идентификаторы в основном и управляемом пользователях.</string>
+    <string name="info_logout">If the current user is not switched by OwnDroid, this function cannot be used.</string> <!--TODO-->
+    <string name="info_affiliation_id">Когда владелец устройства создает управляемого пользователя, управляемый пользователь не является аффилированным. Чтобы сделать управляемого пользователя аффилированным с владельцем устройства, вам следует установить одинаковые аффилированные идентификаторы в основном и управляемом пользователях.</string>
+    <!--TODO--><string name="info_password_complexity">None: no password\nLow: pattern, PIN (with repeating or ordered sequences)\nMedium: PIN (with no repeating or ordered sequences, length at least 4), alphabetic (length at least 4), alphanumeric (length at least 4)\nHigh: PIN (with no repeating or ordered sequences, length at least 8), alphabetic (length at least 6), alphanumeric (length at least 6)</string>
     <string name="info_reset_password">Установить новый пароль блокировки экрана. Длина этого пароля должна быть не менее 4 цифр. Оставьте поле пустым, чтобы удалить пароль.\nЕсли вы установите цифровой пароль длиной 6 символов или меньше, он будет установлен как PIN-код.</string>
     <string name="info_screen_timeout">Установить максимальное время бездействия пользователя, по истечении которого устройство будет заблокировано. Это ограничивает время, которое может установить пользователь.\nЗначение 0 означает отсутствие ограничений.</string>
     <string name="info_password_expiration_timeout">Перезапустить отсчет времени истечения срока действия пароля.\nЗначение 0 означает отсутствие ограничений.</string>

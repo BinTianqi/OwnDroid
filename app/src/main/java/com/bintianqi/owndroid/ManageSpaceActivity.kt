@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import kotlin.system.exitProcess
 
@@ -55,7 +56,8 @@ class ManageSpaceActivity: FragmentActivity() {
                     }
                 }
             }
-            OwnDroidTheme(vm) {
+            val theme by vm.theme.collectAsStateWithLifecycle()
+            OwnDroidTheme(theme) {
                 AlertDialog(
                     text = {
                         Text(stringResource(R.string.clear_storage))

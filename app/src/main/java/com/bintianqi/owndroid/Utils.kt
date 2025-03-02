@@ -6,13 +6,21 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
+import android.os.Build
+import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import com.bintianqi.owndroid.dpm.addDeviceAdmin
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
@@ -22,6 +30,8 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
+import kotlin.reflect.typeOf
 
 var zhCN = true
 
@@ -80,8 +90,14 @@ fun parseTimestamp(timestamp: Long): String {
     return formatter.format(instant)
 }
 
+fun parseDate(date: Date)
+    = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(date)
+
 val Long.humanReadableDate: String
     get() = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault()).format(Date(this))
+
+val Long.humanReadableDateTime: String
+    get() = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(Date(this))
 
 fun Context.showOperationResultToast(success: Boolean) {
     Toast.makeText(this, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
@@ -93,3 +109,36 @@ fun getContext(): Context {
 }
 
 const val APK_MIME = "application/vnd.android.package-archive"
+
+inline fun <reified T> serializableNavTypePair() =
+    typeOf<T>() to object : NavType<T>(false) {
+    override fun get(bundle: Bundle, key: String): T? =
+        bundle.getString(key)?.let { parseValue(it) }
+    override fun put(bundle: Bundle, key: String, value: T) =
+        bundle.putString(key, serializeAsValue(value))
+    override fun parseValue(value: String): T =
+        Json.decodeFromString(value)
+    override fun serializeAsValue(value: T): String =
+        Json.encodeToString(value)
+}
+
+class ChoosePackageContract: ActivityResultContract<Nothing?, String?>() {
+    override fun createIntent(context: Context, input: Nothing?): Intent =
+        Intent(context, PackageChooserActivity::class.java)
+    override fun parseResult(resultCode: Int, intent: Intent?): String? =
+        intent?.getStringExtra("package")
+}
+
+fun exportLogs(context: Context, uri: Uri) {
+    context.contentResolver.openOutputStream(uri)?.use { output ->
+        val proc = Runtime.getRuntime().exec("logcat -d")
+        proc.inputStream.copyTo(output)
+        if(Build.VERSION.SDK_INT >= 26) proc.waitFor(2L, TimeUnit.SECONDS)
+        else proc.waitFor()
+        context.showOperationResultToast(proc.exitValue() == 0)
+    }
+}
+
+fun <T> NavHostController.navigate(route: T, args: Bundle) {
+    navigate(graph.findNode(route)!!.id, args)
+}

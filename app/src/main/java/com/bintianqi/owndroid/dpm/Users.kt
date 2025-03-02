@@ -2,7 +2,6 @@ package com.bintianqi.owndroid.dpm
 
 import android.app.admin.DevicePolicyManager
 import android.content.Context
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Binder
@@ -10,13 +9,11 @@ import android.os.Build.VERSION
 import android.os.Process
 import android.os.UserHandle
 import android.os.UserManager
-import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -36,7 +33,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,7 +52,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
@@ -69,14 +64,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.parseTimestamp
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.FunctionItem
-import com.bintianqi.owndroid.ui.InfoCard
+import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.SwitchItem
@@ -85,59 +79,71 @@ import com.bintianqi.owndroid.yesOrNo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
+
+@Serializable object Users
 
 @Composable
-fun Users(navCtrl: NavHostController) {
+fun UsersScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
     var dialog by remember { mutableIntStateOf(0) }
-    MyScaffold(R.string.users, 0.dp, navCtrl) {
-        FunctionItem(R.string.user_info, icon = R.drawable.person_fill0) { navCtrl.navigate("UserInfo") }
+    MyScaffold(R.string.users, 0.dp, onNavigateUp) {
+        if(VERSION.SDK_INT >= 28 && profileOwner && dpm.isAffiliatedUser) {
+            FunctionItem(R.string.logout, icon = R.drawable.logout_fill0) { dialog = 2 }
+        }
+        FunctionItem(R.string.user_info, icon = R.drawable.person_fill0) { onNavigate(UserInfo) }
         if(deviceOwner && VERSION.SDK_INT >= 28) {
             FunctionItem(R.string.secondary_users, icon = R.drawable.list_fill0) { dialog = 1 }
-            FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { navCtrl.navigate("UserOptions") }
+            FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { onNavigate(UsersOptions) }
         }
         if(deviceOwner) {
-            FunctionItem(R.string.user_operation, icon = R.drawable.sync_alt_fill0) { navCtrl.navigate("UserOperation") }
+            FunctionItem(R.string.user_operation, icon = R.drawable.sync_alt_fill0) { onNavigate(UserOperation) }
         }
         if(VERSION.SDK_INT >= 24 && deviceOwner) {
-            FunctionItem(R.string.create_user, icon = R.drawable.person_add_fill0) { navCtrl.navigate("CreateUser") }
-        }
-        if(VERSION.SDK_INT >= 28 && profileOwner && dpm.isAffiliatedUser) {
-            FunctionItem(R.string.logout_current_user, icon = R.drawable.logout_fill0) { dialog = 2 }
+            FunctionItem(R.string.create_user, icon = R.drawable.person_add_fill0) { onNavigate(CreateUser) }
         }
         if(deviceOwner || profileOwner) {
-            FunctionItem(R.string.change_username, icon = R.drawable.edit_fill0) { navCtrl.navigate("ChangeUsername") }
+            FunctionItem(R.string.change_username, icon = R.drawable.edit_fill0) { onNavigate(ChangeUsername) }
         }
         if(VERSION.SDK_INT >= 23 && (deviceOwner || profileOwner)) {
-            FunctionItem(R.string.change_user_icon, icon = R.drawable.account_circle_fill0) { navCtrl.navigate("ChangeUserIcon") }
+            var changeUserIconDialog by remember { mutableStateOf(false) }
+            var bitmap: Bitmap? by remember { mutableStateOf(null) }
+            val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
+                if(it != null) uriToStream(context, it) { stream ->
+                    bitmap = BitmapFactory.decodeStream(stream)
+                    if(bitmap != null) changeUserIconDialog = true
+                }
+            }
+            FunctionItem(R.string.change_user_icon, icon = R.drawable.account_circle_fill0) {
+                Toast.makeText(context, R.string.select_an_image, Toast.LENGTH_SHORT).show()
+                launcher.launch("image/*")
+            }
+            if(changeUserIconDialog == true) ChangeUserIconDialog(bitmap!!) { changeUserIconDialog = false }
         }
         if(VERSION.SDK_INT >= 28 && deviceOwner) {
-            FunctionItem(R.string.user_session_msg, icon = R.drawable.notifications_fill0) { navCtrl.navigate("UserSessionMessage") }
+            FunctionItem(R.string.user_session_msg, icon = R.drawable.notifications_fill0) { onNavigate(UserSessionMessage) }
         }
         if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
-            FunctionItem(R.string.affiliation_id, icon = R.drawable.id_card_fill0) { navCtrl.navigate("AffiliationID") }
+            FunctionItem(R.string.affiliation_id, icon = R.drawable.id_card_fill0) { onNavigate(AffiliationId) }
         }
     }
     if(dialog != 0 && VERSION.SDK_INT >= 28) AlertDialog(
-        title = { Text(stringResource(if(dialog == 1) R.string.secondary_users else R.string.logout_current_user)) },
+        title = { Text(stringResource(if(dialog == 1) R.string.secondary_users else R.string.logout)) },
         text = {
             if(dialog == 1) {
                 val um = context.getSystemService(Context.USER_SERVICE) as UserManager
                 val list = dpm.getSecondaryUsers(receiver)
-                Column {
-                    if(list.isEmpty()) {
-                        Text(stringResource(R.string.no_secondary_users))
-                    } else {
-                        Text("(" + stringResource(R.string.serial_number) + ")")
-                        list.forEach {
-                            Text(um.getSerialNumberForUser(it).toString())
-                        }
-                    }
+                if(list.isEmpty()) {
+                    Text(stringResource(R.string.no_secondary_users))
+                } else {
+                    Text("(" + stringResource(R.string.serial_number) + ")\n" + list.joinToString("\n") { um.getSerialNumberForUser(it).toString() })
                 }
+            } else {
+                Text(stringResource(R.string.info_logout))
             }
         },
         confirmButton = {
@@ -162,34 +168,40 @@ fun Users(navCtrl: NavHostController) {
     )
 }
 
+@Serializable object UsersOptions
+
 @Composable
-fun UserOptions(navCtrl: NavHostController) {
+fun UsersOptionsScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    MyScaffold(R.string.options, 0.dp, navCtrl) {
+    MyScaffold(R.string.options, 0.dp, onNavigateUp) {
         if(VERSION.SDK_INT >= 28) {
             SwitchItem(R.string.enable_logout, getState = { dpm.isLogoutEnabled }, onCheckedChange = { dpm.setLogoutEnabled(receiver, it) })
         }
     }
 }
 
+@Serializable object UserInfo
+
 @Composable
-fun CurrentUserInfo(navCtrl: NavHostController) {
+fun UserInfoScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     val user = Process.myUserHandle()
     var infoDialog by remember { mutableIntStateOf(0) }
-    MyScaffold(R.string.user_info, 8.dp, navCtrl) {
+    MyScaffold(R.string.user_info, 8.dp, onNavigateUp) {
         if(VERSION.SDK_INT >= 24) CardItem(R.string.support_multiuser, UserManager.supportsMultipleUsers().yesOrNo)
         if(VERSION.SDK_INT >= 31) CardItem(R.string.headless_system_user_mode, UserManager.isHeadlessSystemUserMode().yesOrNo) { infoDialog = 1 }
         Spacer(Modifier.padding(vertical = 8.dp))
         if(VERSION.SDK_INT >= 23) CardItem(R.string.system_user, userManager.isSystemUser.yesOrNo)
         if(VERSION.SDK_INT >= 34) CardItem(R.string.admin_user, userManager.isAdminUser.yesOrNo)
         if(VERSION.SDK_INT >= 25) CardItem(R.string.demo_user, userManager.isDemoUser.yesOrNo)
-        if(VERSION.SDK_INT >= 26) CardItem(R.string.creation_time, parseTimestamp(userManager.getUserCreationTime(user)))
+        if(VERSION.SDK_INT >= 26) userManager.getUserCreationTime(user).let {
+            if(it != 0L) CardItem(R.string.creation_time, parseTimestamp(it))
+        }
         if (VERSION.SDK_INT >= 28) {
             CardItem(R.string.logout_enabled, dpm.isLogoutEnabled.yesOrNo)
             if(context.isDeviceOwner || context.isProfileOwner) {
@@ -211,8 +223,10 @@ fun CurrentUserInfo(navCtrl: NavHostController) {
     )
 }
 
+@Serializable object UserOperation
+
 @Composable
-fun UserOperation(navCtrl: NavHostController) {
+fun UserOperationScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     val dpm = context.getDPM()
@@ -233,7 +247,7 @@ fun UserOperation(navCtrl: NavHostController) {
         }
     }
     val legalInput = input.toIntOrNull() != null
-    MyScaffold(R.string.user_operation, 8.dp, navCtrl) {
+    MyScaffold(R.string.user_operation, 8.dp, onNavigateUp) {
         if(VERSION.SDK_INT >= 24) SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
             SegmentedButton(!useUserId, { useUserId = false }, SegmentedButtonDefaults.itemShape(0, 2)) {
                 Text(stringResource(R.string.serial_number))
@@ -314,9 +328,11 @@ fun UserOperation(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object CreateUser
+
 @RequiresApi(24)
 @Composable
-fun CreateUser(navCtrl: NavHostController) {
+fun CreateUserScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     val dpm = context.getDPM()
@@ -327,7 +343,7 @@ fun CreateUser(navCtrl: NavHostController) {
     var createdUserSerialNumber by remember { mutableLongStateOf(-1) }
     var flag by remember { mutableIntStateOf(0) }
     val coroutine = rememberCoroutineScope()
-    MyScaffold(R.string.create_user, 8.dp, navCtrl) {
+    MyScaffold(R.string.create_user, 8.dp, onNavigateUp) {
         OutlinedTextField(
             value = userName,
             onValueChange = { userName= it },
@@ -357,7 +373,6 @@ fun CreateUser(navCtrl: NavHostController) {
                 focusMgr.clearFocus()
                 creating = true
                 coroutine.launch(Dispatchers.IO) {
-                    println(Thread.currentThread().name)
                     try {
                         val uh = dpm.createAndManageUser(receiver, userName, receiver, null, flag)
                         withContext(Dispatchers.Main) {
@@ -387,9 +402,11 @@ fun CreateUser(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object AffiliationId
+
 @RequiresApi(26)
 @Composable
-fun AffiliationID(navCtrl: NavHostController) {
+fun AffiliationIdScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -401,7 +418,7 @@ fun AffiliationID(navCtrl: NavHostController) {
         list.addAll(dpm.getAffiliationIds(receiver))
     }
     LaunchedEffect(Unit) { refreshIds() }
-    MyScaffold(R.string.affiliation_id, 8.dp, navCtrl) {
+    MyScaffold(R.string.affiliation_id, 8.dp, onNavigateUp) {
         Column(modifier = Modifier.animateContentSize()) {
             if(list.isEmpty()) Text(stringResource(R.string.none))
             for(i in list) {
@@ -418,7 +435,8 @@ fun AffiliationID(navCtrl: NavHostController) {
                     onClick = {
                         list += input
                         input = ""
-                    }
+                    },
+                    enabled = input.isNotEmpty()
                 ) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(R.string.add))
                 }
@@ -439,18 +457,20 @@ fun AffiliationID(navCtrl: NavHostController) {
         ) {
             Text(stringResource(R.string.apply))
         }
-        InfoCard(R.string.info_affiliated_id)
+        Notes(R.string.info_affiliation_id)
     }
 }
 
+@Serializable object ChangeUsername
+
 @Composable
-fun ChangeUsername(navCtrl: NavHostController) {
+fun ChangeUsernameScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var inputUsername by remember { mutableStateOf("") }
-    MyScaffold(R.string.change_username, 8.dp, navCtrl) {
+    MyScaffold(R.string.change_username, 8.dp, onNavigateUp) {
         OutlinedTextField(
             value = inputUsername,
             onValueChange = { inputUsername= it },
@@ -478,9 +498,11 @@ fun ChangeUsername(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object UserSessionMessage
+
 @RequiresApi(28)
 @Composable
-fun UserSessionMessage(navCtrl: NavHostController) {
+fun UserSessionMessageScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -492,7 +514,7 @@ fun UserSessionMessage(navCtrl: NavHostController) {
         end = dpm.getEndUserSessionMessage(receiver)?.toString() ?: ""
     }
     LaunchedEffect(Unit) { refreshMsg() }
-    MyScaffold(R.string.user_session_msg, 8.dp, navCtrl) {
+    MyScaffold(R.string.user_session_msg, 8.dp, onNavigateUp) {
         OutlinedTextField(
             value = start,
             onValueChange = { start= it },
@@ -558,52 +580,34 @@ fun UserSessionMessage(navCtrl: NavHostController) {
 
 @RequiresApi(23)
 @Composable
-fun ChangeUserIcon(navCtrl: NavHostController) {
+private fun ChangeUserIconDialog(bitmap: Bitmap, onClose: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    var getContent by remember { mutableStateOf(false) }
-    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
-    val getFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        it.data?.data?.let {
-            uriToStream(context, it) { stream ->
-                bitmap = BitmapFactory.decodeStream(stream)
+    AlertDialog(
+        title = { Text(stringResource(R.string.change_user_icon)) },
+        text = {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                Image(
+                    bitmap = bitmap.asImageBitmap(), contentDescription = null,
+                    modifier = Modifier.size(80.dp).clip(RoundedCornerShape(50))
+                )
             }
-        }
-    }
-    MyScaffold(R.string.change_user_icon, 8.dp, navCtrl) {
-        CheckBoxItem(R.string.file_picker_instead_gallery, getContent) { getContent = it }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = {
-                val intent = Intent(if(getContent) Intent.ACTION_GET_CONTENT else Intent.ACTION_PICK)
-                if(getContent) intent.addCategory(Intent.CATEGORY_OPENABLE)
-                intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*")
-                getFileLauncher.launch(intent)
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.select_picture))
-        }
-        AnimatedVisibility(visible = bitmap != null, modifier = Modifier.align(Alignment.CenterHorizontally)) {
-            Card(modifier = Modifier.padding(top = 8.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(10.dp)) {
-                    Image(
-                        bitmap = bitmap!!.asImageBitmap(), contentDescription = "User icon",
-                        modifier = Modifier.padding(end = 12.dp).size(80.dp).clip(RoundedCornerShape(50))
-                    )
-                    Button(
-                        onClick = {
-                            dpm.setUserIcon(receiver, bitmap)
-                            context.showOperationResultToast(true)
-                        }
-                    ) {
-                        Text(stringResource(R.string.apply))
-                    }
-                }
+        },
+        confirmButton = {
+            TextButton({
+                context.getDPM().setUserIcon(context.getReceiver(), bitmap)
+                context.showOperationResultToast(true)
+                onClose()
+            }) {
+                Text(stringResource(R.string.confirm))
             }
-        }
-    }
+        },
+        dismissButton = {
+            TextButton(onClose) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+        onDismissRequest = onClose
+    )
 }
 
 @StringRes

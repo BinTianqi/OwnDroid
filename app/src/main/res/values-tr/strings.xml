@@ -40,7 +40,6 @@
     <string name="apply">Uygula</string>
     <string name="decide_by_user">Kullanıcı Tarafından Karar Ver</string>
     <string name="unsupported">Desteklenmiyor</string>
-    <string name="developing">Geliştirilen İşlev</string>
     <string name="options">Seçenekler</string>
     <string name="copy_command">Komutu Kopyala</string>
     <string name="package_name">Paket Adı</string>
@@ -201,8 +200,12 @@
     <string name="ltf_global_actions">Küresel eylemlere izin ver</string>
     <string name="ltf_keyguard">Ekran kilidine izin ver</string>
     <string name="ltf_block_activity_start_in_task">Görevde etkinlik başlatmayı engelle</string>
-    <string name="ca_cert">CA sertifikası</string> <!--TODO-->
-    <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Sertifika seç...</string> <!--TODO-->
+    <string name="ca_cert">CA sertifikası</string>
+    <!--TODO: 4 strings-->
+    <string name="no_ca_cert">No user CA certificate installed</string>
+    <string name="parse_cert_failed">Failed to parse certificate</string>
+    <string name="export">Export</string>
+    <string name="select_ca_cert">Select a CA certificate</string>
     <string name="uninstall_all_user_ca_cert">Tüm kullanıcı sertifikalarını kaldır</string> <!--TODO-->
     <string name="security_logging">Security logging</string> <!--TODO-->
     <string name="pre_reboot_security_logs">Yeniden başlatmadan önce güvenlik kayıtları</string>
@@ -215,7 +218,7 @@
     <string name="wipe_work_profile_warning">Your work profile will be DELETED</string> <!--TODO-->
     <string name="encryption_status">Encryption status</string> <!--TODO-->
     <string name="frp_policy">FRP politikası</string>
-    <string name="frp_policy_not_supported">FRP politikası bu cihazda desteklenmiyor</string>
+    <string name="frp_not_supported">Your device does not support FRP</string> <!--TODO-->
     <string name="enable_frp">FRP\'yi etkinleştir</string>
     <string name="account_list_is">"Hesap listesi: "</string>
 
@@ -314,36 +317,34 @@
     <string name="export_logs">Export logs</string> <!--TODO-->
     <string name="wifi_auth_keypair">Wi-Fi anahtar çifti</string>
     <string name="preferential_network_service">Tercihli ağ hizmeti</string>
-    <string name="network_id">Network ID</string> <!--TODO-->
-    <string name="allow_fallback_to_default_connection">Allow fallback to default connection</string> <!--TODO-->
-    <string name="block_non_matching_networks">Block non matching networks</string> <!--TODO-->
-    <string name="included_uids">Included UIDs</string> <!--TODO-->
-    <string name="excluded_uids">Excluded UIDs</string> <!--TODO-->
-    <string name="one_uid_per_line">One UID per line</string> <!--TODO-->
-    <string name="failed_to_save_current_config">Failed to save current config</string> <!--TODO-->
-    <string name="save_current_config">Save current config</string> <!--TODO-->
-    <string name="delete_current_config">Delete current config</string> <!--TODO-->
-    <string name="override_apn_settings">APN ayarlarını geçersiz kıl</string>
-    <string name="total_apn_amount">APN ayarlarının toplamı: %1$s</string>
-    <string name="select_a_apn_or_create">Düzenlemek istediğiniz APN ayarını seçin (1~%1$s) veya yeni bir APN ayarı oluşturmak için 0 girin.</string>
-    <string name="no_apn_you_should_create_one">APN ayarı yok. Yeni bir tane oluşturulacak.</string>
-    <string name="previous_step">Önceki adım</string>
-    <string name="next_step">Sonraki adım</string>
+    <!--TODO: following 11 strings-->
+    <string name="add_config">Add config</string>
+    <string name="network_id">Network ID</string>
+    <string name="allow_fallback_to_default_connection">Allow fallback to default connection</string>
+    <string name="block_non_matching_networks">Block non matching networks</string>
+    <string name="included_uids">Included UIDs</string>
+    <string name="excluded_uids">Excluded UIDs</string>
+    <string name="one_uid_per_line">One UID per line</string>
+    <string name="override_apn">Override APN</string>
+    <string name="apn_setting">APN setting</string>
+    <string name="apn_name">APN name</string>
+    <string name="entry_name">Entry name</string>
     <string name="name">İsim</string>
-    <string name="user_name">Kullanıcı adı</string>
     <string name="profile_id">Profil Kimliği</string>
     <string name="auth_type">Kimlik doğrulama türü</string>
-    <string name="apn_type">APN türü</string>
-    <string name="bitmask">Bitmask</string>
     <string name="description">Açıklama</string>
     <string name="mms_proxy">MMS proxy</string>
     <string name="address">Adres</string>
     <string name="port">Port</string>
     <string name="proxy">Proxy</string>
-    <string name="apn_network_type">Ağ türü</string>
     <string name="persistent">Kalıcı</string>
     <string name="protocol">Protokol</string>
     <string name="roaming_protocol">Dolaşım protokolü</string>
+    <!--TODO: following 4 strings-->
+    <string name="carrier_id">Carrier ID</string>
+    <string name="mvno_type">MVNO type</string>
+    <string name="network_type_bitmask">Network type bitmask</string>
+    <string name="always_on">Always on</string>
     <string name="update">Güncelle</string>
 
     <!--WorkProfile-->
@@ -373,8 +374,6 @@
 
     <!--Applications-->
     <string name="applications">Uygulamalar</string>
-    <string name="pkg_selector">Paket seçici</string>
-    <string name="loading">Yükleniyor</string>
     <string name="show_user_app">Kullanıcı uygulamalarını göster</string>
     <string name="show_system_app">Sistem uygulamalarını göster</string>
     <string name="suspend">Askıya al</string>
@@ -417,14 +416,16 @@
     <string name="silent_uninstall">Sessiz kaldırma</string>
     <string name="request_uninstall">Kaldırma isteği</string>
     <string name="install_app">Uygulamayı yükle</string>
-    <string name="search">Search</string> <!--TODO-->
+    <!--TODO: 3 strings-->
+    <string name="choose_apk_file">Choose an APK file</string>
+    <string name="install_existing_app">Install existing app</string>
+    <string name="search">Search</string>
 
     <!--UserRestriction-->
     <string name="user_restriction">Kullanıcı kısıtlaması</string>
     <string name="profile_owner_is_restricted">Profil sahibi sınırlı işlev kullanabilir</string>
     <string name="switch_to_disable_feature">Bu işlevi devre dışı bırakmak için bir anahtar açın. </string>
     <string name="some_features_invalid_in_work_profile">İş profilindeki işlevler sınırlıdır. </string>
-    <string name="network_and_internet">Ağ</string>
     <string name="connectivity">Diğer bağlantı</string>
     <string name="media">Medya</string>
     <string name="other">Diğer</string>
@@ -518,7 +519,7 @@
     <string name="user_operation">Kullanıcı işlemi</string>
     <string name="user_not_exist">User does not exist</string> <!--TODO-->
     <string name="serial_number">Seri numarası</string>
-    <string name="logout_current_user">Mevcut kullanıcıyı çıkış yap</string>
+    <string name="logout">Logout</string> <!--TODO-->
     <string name="start_in_background">Arka planda başlat</string>
     <string name="user_operation_switch">Değiştir</string>
     <string name="create_user">Kullanıcı oluştur</string>
@@ -529,8 +530,7 @@
     <string name="serial_number_of_new_user_is">Bu kullanıcının seri numarası: %1$d</string>
     <string name="affiliation_id">Bağlılık ID</string>
     <string name="change_user_icon">Kullanıcı simgesini değiştir</string>
-    <string name="file_picker_instead_gallery">Galeri yerine dosya seçici kullan</string>
-    <string name="select_picture" tools:ignore="TypographyEllipsis">Resim seç...</string>
+    <string name="select_an_image">Select an image</string> <!--TODO-->
     <string name="fail_managed_profile">Başarısız: yönetilen profil</string>
     <string name="fail_current_user">Başarısız: mevcut kullanıcı</string>
     <string name="user_session_msg">Kullanıcı oturum mesajı</string>
@@ -545,10 +545,10 @@
     <string name="max_time_to_lock">Ekran zaman aşımı</string>
     <string name="required_strong_auth_timeout">Gereken güçlü doğrulama zaman aşımı</string>
     <string name="pwd_history">Şifre geçmişi uzunluğu</string>
-    <string name="password_complexity_none">Yok (Şifreye izin verilmez)</string>
-    <string name="password_complexity_low">Düşük (Hareket şifresi ve karakter tekrarı izinli)</string>
-    <string name="password_complexity_medium">Orta (Tekrar yasak, en az 4 karakter)</string>
-    <string name="password_complexity_high">Yüksek (Tekrar yasak, en az 6 karakter)</string>
+    <!--TODO: 3 strings-->
+    <string name="low">Low</string>
+    <string name="medium">Medium</string>
+    <string name="high">High</string>
     <string name="current_password_complexity">Mevcut şifre karmaşıklığı</string>
     <string name="password_sufficient">Şifre karmaşıklığı yeterli mi</string>
     <string name="unified_password">Birleşik şifre</string>
@@ -566,7 +566,6 @@
     <string name="reset_password_require_entry">Giriş gerektir</string>
     <string name="reset_password_with_token">Jeton ile şifreyi sıfırla</string>
     <string name="required_password_complexity">Gereken şifre karmaşıklığı</string>
-    <string name="require_set_new_password">Yeni şifre ayarlanmasını iste</string>
     <string name="disable_keyguard_features">Kilit ekranı özellikleri</string>
     <string name="enable_all">Tümünü etkinleştir</string>
     <string name="disable_keyguard_features_widgets">Widget\'ı devre dışı bırak</string>
@@ -648,11 +647,18 @@
     <string name="permission_BODY_SENSORS_BACKGROUND">Arka planda vücut sensörlerine eriş</string>
     <string name="permission_ACTIVITY_RECOGNITION">Aktivite tanıma</string>
 
+    <string name="package_chooser">Package chooser</string> <!--TODO-->
+
     <!--TODO-->
     <string name="app_installer">App installer</string>
     <string name="mode">Mode</string>
     <string name="full_install">Full install</string>
     <string name="inherit_existing">Inherit existing</string>
+    <string name="keep_original_enabled_setting">Keep original enabled setting</string>
+    <string name="dont_kill_app">Don\'t kill app</string>
+    <string name="install_location">Install location</string>
+    <string name="internal_only">Internal only</string>
+    <string name="prefer_external">Prefer external</string>
     <string name="packages">Packages</string>
     <string name="add_packages">Add package(s)</string>
     <string name="status_failure_blocked">The operation was blocked by: %1$s</string>

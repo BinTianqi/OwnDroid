@@ -22,15 +22,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
-import androidx.navigation.NavHostController
 import kotlinx.coroutines.delay
+import kotlinx.serialization.Serializable
+
+@Serializable object Authenticate
 
 @Composable
-fun Authenticate(activity: FragmentActivity, navCtrl: NavHostController) {
+fun AuthenticateScreen(activity: FragmentActivity, onAuthSucceed: () -> Unit) {
     val context = LocalContext.current
     BackHandler { activity.moveTaskToBack(true) }
     var status by rememberSaveable { mutableIntStateOf(0) } // 0:Prompt automatically, 1:Authenticating, 2:Prompt manually
-    val onAuthSucceed = { navCtrl.navigateUp() }
     val callback = object: AuthenticationCallback() {
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
             super.onAuthenticationSucceeded(result)

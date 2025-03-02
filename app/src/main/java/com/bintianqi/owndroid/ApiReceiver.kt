@@ -9,7 +9,7 @@ import com.bintianqi.owndroid.dpm.getReceiver
 
 class ApiReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        val requestKey = intent.getStringExtra("key") ?: ""
+        val requestKey = intent.getStringExtra("key")
         var log = "OwnDroid API request received. action: ${intent.action}\nkey: $requestKey"
         val sp = SharedPrefs(context)
         if(!sp.isApiEnabled) return
@@ -18,6 +18,7 @@ class ApiReceiver: BroadcastReceiver() {
             val dpm = context.getDPM()
             val receiver = context.getReceiver()
             val app = intent.getStringExtra("package")
+            val restriction = intent.getStringExtra("restriction")
             if(!app.isNullOrEmpty()) log += "\npackage: $app"
             try {
                 @SuppressWarnings("NewApi")
@@ -26,13 +27,15 @@ class ApiReceiver: BroadcastReceiver() {
                     "com.bintianqi.owndroid.action.UNHIDE" -> dpm.setApplicationHidden(receiver, app, false)
                     "com.bintianqi.owndroid.action.SUSPEND" -> dpm.setPackagesSuspended(receiver, arrayOf(app), true).isEmpty()
                     "com.bintianqi.owndroid.action.UNSUSPEND" -> dpm.setPackagesSuspended(receiver, arrayOf(app), false).isEmpty()
-                    "com.bintianqi.owndroid.action.LOCK" -> { dpm.lockNow(); null }
+                    "com.bintianqi.owndroid.action.ADD_USER_RESTRICTION" -> { dpm.addUserRestriction(receiver, restriction); true }
+                    "com.bintianqi.owndroid.action.CLEAR_USER_RESTRICTION" -> { dpm.clearUserRestriction(receiver, restriction); true }
+                    "com.bintianqi.owndroid.action.LOCK" -> { dpm.lockNow(); true }
                     else -> {
                         log += "\nInvalid action"
                         false
                     }
                 }
-                log += "success: $ok"
+                log += "\nsuccess: $ok"
             } catch(e: Exception) {
                 e.printStackTrace()
                 val message = (e::class.qualifiedName ?: "Exception") + ": " + (e.message ?: "")

@@ -41,7 +41,6 @@
     <string name="apply">Apply</string>
     <string name="decide_by_user">Decide by user</string>
     <string name="unsupported">Unsupported</string>
-    <string name="developing">Developing function</string>
     <string name="options">Options</string>
     <string name="copy_command">Copy Command</string>
     <string name="package_name">Package name</string>
@@ -222,7 +221,10 @@
     <string name="ltf_keyguard">Allow keyguard</string>
     <string name="ltf_block_activity_start_in_task">Block activity start in task</string>
     <string name="ca_cert">CA certificate</string>
-    <string name="select_ca_cert" tools:ignore="TypographyEllipsis">Select certificate...</string>
+    <string name="no_ca_cert">No user CA certificate installed</string>
+    <string name="parse_cert_failed">Failed to parse certificate</string>
+    <string name="export">Export</string>
+    <string name="select_ca_cert">Select a CA certificate</string>
     <string name="uninstall_all_user_ca_cert">Uninstall all user CA certificate</string>
     <string name="security_logging">Security logging</string>
     <string name="pre_reboot_security_logs">Pre-reboot security logs</string>
@@ -235,7 +237,7 @@
     <string name="wipe_work_profile_warning">Your work profile will be DELETED</string>
     <string name="encryption_status">Encryption status</string>
     <string name="frp_policy">FRP policy</string>
-    <string name="frp_policy_not_supported">FRP policy is not supported on this device</string>
+    <string name="frp_not_supported">Your device does not support FRP</string>
     <string name="enable_frp">Enable FRP</string>
     <string name="account_list_is">"Account list: "</string>
 
@@ -336,36 +338,32 @@
     <string name="export_logs">Export logs</string>
     <string name="wifi_auth_keypair">Wi-Fi keypair</string>
     <string name="preferential_network_service">Preferential network service</string>
+    <string name="add_config">Add config</string>
     <string name="network_id">Network ID</string>
     <string name="allow_fallback_to_default_connection">Allow fallback to default connection</string>
     <string name="block_non_matching_networks">Block non matching networks</string>
     <string name="included_uids">Included UIDs</string>
     <string name="excluded_uids">Excluded UIDs</string>
     <string name="one_uid_per_line">One UID per line</string>
-    <string name="failed_to_save_current_config">Failed to save current config</string>
-    <string name="save_current_config">Save current config</string>
-    <string name="delete_current_config">Delete current config</string>
-    <string name="override_apn_settings">APN settings</string>
-    <string name="total_apn_amount">APN settings amount: %1$s</string>
-    <string name="select_a_apn_or_create">Select an APN setting you want to edit (1~%1$s) or enter 0 to create a new APN setting. </string>
-    <string name="no_apn_you_should_create_one">No APN settings. Will create a new one. </string>
-    <string name="previous_step">Previous step</string>
-    <string name="next_step">Next step</string>
+    <string name="override_apn">Override APN</string>
+    <string name="apn_setting">APN setting</string>
+    <string name="apn_name">APN name</string>
+    <string name="entry_name">Entry name</string>
     <string name="name">Name</string>
-    <string name="user_name">User name</string>
     <string name="profile_id">Profile ID</string>
     <string name="auth_type">Auth type</string>
-    <string name="apn_type">APN type</string>
-    <string name="bitmask">Bitmask</string>
     <string name="description">Description</string>
     <string name="mms_proxy">MMS proxy</string>
     <string name="address">Address</string>
     <string name="port">Port</string>
     <string name="proxy">Proxy</string>
-    <string name="apn_network_type">Network type</string>
     <string name="persistent">Persistent</string>
     <string name="protocol">Protocol</string>
     <string name="roaming_protocol">Roaming protocol</string>
+    <string name="carrier_id">Carrier ID</string>
+    <string name="mvno_type">MVNO type</string>
+    <string name="network_type_bitmask">Network type bitmask</string>
+    <string name="always_on">Always on</string>
     <string name="update">Update</string>
 
     <!--WorkProfile-->
@@ -398,8 +396,6 @@
 
     <!--Applications-->
     <string name="applications">Applications</string>
-    <string name="pkg_selector">Package selector</string>
-    <string name="loading">Loading</string>
     <string name="show_user_app">Show user apps</string>
     <string name="show_system_app">Show system apps</string>
     <string name="suspend">Suspend</string>
@@ -441,6 +437,8 @@
     <string name="silent_uninstall">Silent uninstall</string>
     <string name="request_uninstall">Request uninstall</string>
     <string name="install_app">Install app</string>
+    <string name="choose_apk_file">Choose an APK file</string>
+    <string name="install_existing_app">Install existing app</string>
     <string name="search">Search</string>
 
     <!--UserRestriction-->
@@ -448,7 +446,6 @@
     <string name="profile_owner_is_restricted">Profile owner can use limited function</string>
     <string name="switch_to_disable_feature">Turn on a switch to disable that function. </string>
     <string name="some_features_invalid_in_work_profile">Functions in work profile is limited. </string>
-    <string name="network_and_internet">Network</string>
     <string name="connectivity">Other connection</string>
     <string name="media">Media</string>
     <string name="other">Other</string>
@@ -544,7 +541,7 @@
     <string name="user_operation">User operation</string>
     <string name="user_not_exist">User does not exist</string>
     <string name="serial_number">Serial number</string>
-    <string name="logout_current_user">Logout current user</string>
+    <string name="logout">Logout</string>
     <string name="start_in_background">Start in background</string>
     <string name="user_operation_switch">Switch</string>
     <string name="create_user">Create user</string>
@@ -555,8 +552,7 @@
     <string name="serial_number_of_new_user_is">Serial number of this user: %1$d</string>
     <string name="affiliation_id">Affiliation ID</string>
     <string name="change_user_icon">Change user icon</string>
-    <string name="file_picker_instead_gallery">Use file picker instead of gallery</string>
-    <string name="select_picture" tools:ignore="TypographyEllipsis">Select image...</string>
+    <string name="select_an_image">Select an image</string>
     <string name="fail_managed_profile">Failed: managed profile</string>
     <string name="fail_current_user">Failed: current user</string>
     <string name="user_session_msg">User session message</string>
@@ -571,10 +567,9 @@
     <string name="max_time_to_lock">Screen timeout</string>
     <string name="required_strong_auth_timeout">Required strong auth timeout</string>
     <string name="pwd_history">Password history length</string>
-    <string name="password_complexity_none">None (No password allowed)</string>
-    <string name="password_complexity_low">Low (Gesture password and characters repetition allowed)</string>
-    <string name="password_complexity_medium">Medium (Repetition disallowed, 4 characters at least)</string>
-    <string name="password_complexity_high">High (Repetition disallowed, 6 characters at least)</string>
+    <string name="low">Low</string>
+    <string name="medium">Medium</string>
+    <string name="high">High</string>
     <string name="current_password_complexity">Current password complexity</string>
     <string name="password_sufficient">Password complexity sufficient</string>
     <string name="unified_password">Unified password</string>
@@ -592,7 +587,6 @@
     <string name="reset_password_require_entry">Require entry</string>
     <string name="reset_password_with_token">Reset password with token</string>
     <string name="required_password_complexity">Required password complexity</string>
-    <string name="require_set_new_password">Request to set a new password</string>
     <string name="disable_keyguard_features">Keyguard features</string>
     <string name="enable_all">Enable all</string>
     <string name="disable_keyguard_features_widgets">Disable widget</string>
@@ -673,10 +667,17 @@
     <string name="permission_BODY_SENSORS_BACKGROUND">Access body sensors in background</string>
     <string name="permission_ACTIVITY_RECOGNITION">Activity recognition</string>
 
+    <string name="package_chooser">Package chooser</string>
+
     <string name="app_installer">App installer</string>
     <string name="mode">Mode</string>
     <string name="full_install">Full install</string>
     <string name="inherit_existing">Inherit existing</string>
+    <string name="keep_original_enabled_setting">Keep original enabled setting</string>
+    <string name="dont_kill_app">Don\'t kill app</string>
+    <string name="install_location">Install location</string>
+    <string name="internal_only">Internal only</string>
+    <string name="prefer_external">Prefer external</string>
     <string name="packages">Packages</string>
     <string name="add_packages">Add package(s)</string>
     <string name="status_failure_blocked">The operation was blocked by: %1$s</string>
@@ -700,7 +701,6 @@
     <string name="info_disable_keyguard">Setting the keyguard to disabled has the same effect as choosing "None" as the screen lock type. However, this call has no effect if a password, pin or pattern is currently set.\nIf a password, pin or pattern is set after the keyguard was disabled, the keyguard stops being disabled.</string>
     <string name="info_evict_credential_encryption_key">Evict the user\'s credential encryption key from the keyring. The user\'s credential will need to be entered again in order to derive the credential encryption key that will be stored back in the keyring for future use. In order to secure user data, the user will be stopped and restarted.</string>
     <string name="info_reboot">You can\'t use this function if there is an ongoing call on the device.</string>
-    <string name="info_change_time">Input UNIX time in milliseconds</string>
     <string name="info_content_protection_policy">Content protection policy controls scanning for deceptive apps.</string>
     <string name="info_permission_policy">Set the default response for future runtime permission requests by applications.</string>
     <string name="info_mte_policy">Set the Memory Tagging Extension policy. Reboot the device to apply changes.</string>
@@ -711,7 +711,7 @@
     <string name="info_security_log">If a Device owner use this function, all users should be affiliated.</string>
     <string name="info_pre_reboot_security_log">Not all devices support pre-reboot security logs.</string>
     <string name="info_disable_account_management">When account management is disabled for an account type, adding or removing an account of that type will not be possible.</string>
-    <string name="info_frp_policy">The factory reset protection policy determines which accounts can unlock a device that has gone through untrusted factory reset(fastboot or recovery).\nTo enable this feature, the device must support persistent data block service.\nFactory reset protection is disabled if OEM unlocking is enabled in Developer Options.</string>
+    <string name="info_frp_policy">The factory reset protection policy determines which accounts can unlock a device that has gone through untrusted factory reset (fastboot or recovery).\nTo enable this feature, the device must support persistent data block service.\nFactory reset protection is disabled if OEM unlocking is enabled in Developer Options.</string>
     <string name="info_wipe_data_in_managed_user">All data of this user will be wiped, but that user won\'t be removed.</string>
     <string name="info_lockdown_admin_configured_network">Control whether the user can change networks configured by the admin.\nWhen this lockdown is enabled, the user can still configure and connect to other Wi-Fi networks, or use other Wi-Fi capabilities such as tethering.</string>
     <string name="info_minimum_wifi_security_level">Specify the minimum security level required for Wi-Fi networks. The device may not connect to networks that do not meet the minimum security level. If the current network does not meet the minimum security level set, it will be disconnected.</string>
@@ -725,8 +725,11 @@
     <string name="info_suspend_app">A suspended package will not be able to start activities. Its notifications will be hidden, it will not show up in recent activities, will not be able to show toasts or dialogs or ring the device.\nSome apps cannot be suspended, such as device admins, the active launcher and the default dialer.</string>
     <string name="info_disable_user_control">User will not be able to clear app data or force-stop packages.</string>
     <string name="info_keep_uninstalled_apps">Set a list of apps to keep around as APKs even if no user has currently installed it. </string>
+    <string name="info_install_existing_app">Install an existing package that has been installed in another user, or has been kept after uninstall.</string>
     <string name="info_headless_system_user_mode">Headless system user mode means the system user runs system services and some system UI, but it is not associated with any real person and additional users must be created to be associated with real persons.</string>
-    <string name="info_affiliated_id">When Device owner create a managed user, the managed user isn\'t affiliated. In order to make the managed user affiliated with the Device owner, you should set same affiliated IDs in main user and managed user</string>
+    <string name="info_logout">If the current user is not switched by OwnDroid, this function cannot be used.</string>
+    <string name="info_affiliation_id">When Device owner create a managed user, the managed user isn\'t affiliated. In order to make the managed user affiliated with the Device owner, you should set same affiliated IDs in main user and managed user</string>
+    <string name="info_password_complexity">None: no password\nLow: pattern, PIN (with repeating or ordered sequences)\nMedium: PIN (with no repeating or ordered sequences, length at least 4), alphabetic (length at least 4), alphanumeric (length at least 4)\nHigh: PIN (with no repeating or ordered sequences, length at least 8), alphabetic (length at least 6), alphanumeric (length at least 6)</string>
     <string name="info_reset_password">Set a new lockscreen password. The length of this password must be at least 4 digits. Keep it empty to remove password.\nIf you set a numeric password that length is 6 or lower, it will set as PIN</string>
     <string name="info_screen_timeout">Set the maximum time for user activity until the device will lock. This limits the length that the user can set.\nA value of 0 means there is no restriction.</string>
     <string name="info_password_expiration_timeout">Restart the countdown for password expiration.\nA value of 0 means there is no restriction.</string>

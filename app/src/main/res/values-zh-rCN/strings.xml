@@ -39,7 +39,6 @@
     <string name="apply">应用</string>
     <string name="decide_by_user">由用户决定</string>
     <string name="unsupported">不支持</string>
-    <string name="developing">功能开发中</string>
     <string name="options">选项</string>
     <string name="copy_command">复制代码</string>
     <string name="copy">复制</string>
@@ -193,7 +192,10 @@
     <string name="package_name">包名</string>
     <string name="not_exist">不存在</string>
     <string name="ca_cert">CA证书</string>
-    <string name="select_ca_cert" tools:ignore="TypographyEllipsis">选择证书...</string>
+    <string name="no_ca_cert">没有已安装的CA证书</string>
+    <string name="parse_cert_failed">解析证书失败</string>
+    <string name="export">导出</string>
+    <string name="select_ca_cert">选择一个CA证书</string>
     <string name="uninstall_all_user_ca_cert">卸载所有用户证书</string>
     <string name="security_logging">安全日志</string>
     <string name="pre_reboot_security_logs">重启前安全日志</string>
@@ -206,7 +208,7 @@
     <string name="wipe_work_profile_warning">你的工作资料将会被删除</string>
     <string name="encryption_status">加密状态</string>
     <string name="frp_policy">FRP策略</string>
-    <string name="frp_policy_not_supported">这个设备不支持恢复出厂设置保护策略</string>
+    <string name="frp_not_supported">你的设备不支持FRP策略</string>
     <string name="enable_frp">启用FRP</string>
     <string name="account_list_is">账户列表：</string>
 
@@ -256,7 +258,7 @@
     <string name="wifi_ssid_policy">Wi-Fi SSID策略</string>
     <string name="ssid_list_is">SSID列表：</string>
     <string name="already_exist">已经存在</string>
-    <string name="network_stats">Network stats</string>
+    <string name="network_stats">网络统计</string>
     <string name="type">类型</string>
     <string name="summary">摘要</string>
     <string name="details">详情</string>
@@ -303,36 +305,32 @@
     <string name="export_logs">导出日志</string>
     <string name="wifi_auth_keypair">Wi-Fi密钥对</string>
     <string name="preferential_network_service">首选网络服务</string>
+    <string name="add_config">添加配置</string>
     <string name="network_id">网络ID</string>
     <string name="allow_fallback_to_default_connection">允许回落到默认连接</string>
     <string name="block_non_matching_networks">阻止不匹配的网络</string>
     <string name="included_uids">包含的UID</string>
     <string name="excluded_uids">排除的UIDs</string>
-    <string name="one_uid_per_line">一行一个UID</string>
-    <string name="failed_to_save_current_config">保存当前配置失败</string>
-    <string name="save_current_config">保存当前配置</string>
-    <string name="delete_current_config">删除当前配置</string>
-    <string name="override_apn_settings">APN设置</string>
-    <string name="total_apn_amount">一共有%1$s个APN设置</string>
-    <string name="select_a_apn_or_create">选择一个你要修改的APN设置(1~%1$s)或者输入0以新建APN设置</string>
-    <string name="no_apn_you_should_create_one">当前没有APN设置，你可以新建一个APN设置</string>
-    <string name="previous_step">上一步</string>
-    <string name="next_step">下一步</string>
+    <string name="one_uid_per_line">每行一个UID</string>
+    <string name="override_apn">覆盖APN</string>
+    <string name="apn_setting">APN设置</string>
+    <string name="apn_name">APN名称</string>
+    <string name="entry_name">条目名称</string>
     <string name="name">名称</string>
-    <string name="user_name">用户名</string>
     <string name="profile_id">资料ID</string>
-    <string name="auth_type">验证类型</string>
-    <string name="apn_type">APN类型</string>
-    <string name="bitmask">位掩码</string>
+    <string name="auth_type">认证类型</string>
     <string name="description">描述</string>
     <string name="mms_proxy">MMS代理</string>
     <string name="address">地址</string>
     <string name="port">端口</string>
     <string name="proxy">代理</string>
-    <string name="apn_network_type">网络类型</string>
-    <string name="persistent">持久的</string>
+    <string name="persistent">持久化</string>
     <string name="protocol">协议</string>
     <string name="roaming_protocol">漫游协议</string>
+    <string name="carrier_id">运营商ID</string>
+    <string name="mvno_type">MVNO类型</string>
+    <string name="network_type_bitmask">网络类型位掩码</string>
+    <string name="always_on">总是开启</string>
     <string name="update">更新</string>
 
     <!--WorkProfile-->
@@ -362,8 +360,6 @@
 
     <!--Applications-->
     <string name="applications">应用程序</string>
-    <string name="pkg_selector">应用选择器</string>
-    <string name="loading">加载中</string>
     <string name="show_user_app">显示用户应用</string>
     <string name="show_system_app">显示系统应用</string>
     <string name="suspend">挂起</string>
@@ -376,7 +372,7 @@
     <string name="scope_is_work_profile">作用域: 工作资料</string>
     <string name="app_info">应用详情</string>
     <string name="not_installed">未安装</string>
-    <string name="block_uninstall">阻止</string>
+    <string name="block_uninstall">阻止卸载</string>
     <string name="ucd">禁止用户控制</string>
     <string name="ucd_desc">用户将无法清除这些应用的存储空间或强制停止这些应用</string>
     <string name="app_list_is">应用列表：</string>
@@ -402,6 +398,8 @@
     <string name="silent_uninstall">静默卸载</string>
     <string name="request_uninstall">请求卸载</string>
     <string name="install_app">安装应用</string>
+    <string name="choose_apk_file">选择一个APK文件</string>
+    <string name="install_existing_app">安装已存在的应用</string>
     <string name="enable_system_app">启用系统应用</string>
     <string name="enable_system_app_desc">重新启用一个默认被禁用的系统应用</string>
     <string name="search">搜索</string>
@@ -411,7 +409,6 @@
     <string name="profile_owner_is_restricted">Profile owner无法使用部分功能</string>
     <string name="switch_to_disable_feature">打开开关后会禁用对应的功能</string>
     <string name="some_features_invalid_in_work_profile">工作资料中部分功能无效</string>
-    <string name="network_and_internet">网络和互联网</string>
     <string name="connectivity">更多连接</string>
     <string name="media">媒体</string>
     <string name="other">其他</string>
@@ -505,7 +502,7 @@
     <string name="user_operation">用户操作</string>
     <string name="user_not_exist">用户不存在</string>
     <string name="serial_number">序列号</string>
-    <string name="logout_current_user">登出当前用户</string>
+    <string name="logout">登出</string>
     <string name="start_in_background">在后台启动</string>
     <string name="user_operation_switch">切换</string>
     <string name="create_user">创建用户</string>
@@ -516,8 +513,7 @@
     <string name="serial_number_of_new_user_is">新用户的序列号：%1$d</string>
     <string name="affiliation_id">附属用户ID</string>
     <string name="change_user_icon">更换用户头像</string>
-    <string name="file_picker_instead_gallery">使用文件选择器而不是相册</string>
-    <string name="select_picture" tools:ignore="TypographyEllipsis">选择图片...</string>
+    <string name="select_an_image">选择一个图片</string>
     <string name="fail_managed_profile">失败：受管理的资料</string>
     <string name="fail_current_user">失败：当前用户</string>
     <string name="user_session_msg">用户会话消息</string>
@@ -532,10 +528,9 @@
     <string name="max_time_to_lock">屏幕超时</string>
     <string name="required_strong_auth_timeout">要求强验证超时</string>
     <string name="pwd_history">密码历史长度</string>
-    <string name="password_complexity_none">无（允许不设密码）</string>
-    <string name="password_complexity_low">低（允许图案和连续性）</string>
-    <string name="password_complexity_medium">中（无连续性，至少4位）</string>
-    <string name="password_complexity_high">高（无连续性，至少6位）</string>
+    <string name="low">低</string>
+    <string name="medium">中</string>
+    <string name="high">高</string>
     <string name="current_password_complexity">当前密码复杂度</string>
     <string name="password_sufficient">密码符合复杂度要求</string>
     <string name="unified_password">一致的密码</string>
@@ -553,7 +548,6 @@
     <string name="reset_password_require_entry">不允许其他设备管理员重置密码直至用户输入一次密码</string>
     <string name="reset_password_with_token">使用令牌重置密码</string>
     <string name="required_password_complexity">密码复杂度要求</string>
-    <string name="require_set_new_password">要求设置新密码</string>
     <string name="disable_keyguard_features">锁屏功能</string>
     <string name="enable_all">启用全部</string>
     <string name="disable_keyguard_features_widgets">禁用小工具(安卓5以下)</string>
@@ -634,10 +628,16 @@
     <string name="permission_BODY_SENSORS_BACKGROUND">后台使用身体传感器</string>
     <string name="permission_ACTIVITY_RECOGNITION">查看使用情况</string>
 
+    <string name="package_chooser">包选择器</string>
     <string name="app_installer">App安装器</string>
     <string name="mode">模式</string>
     <string name="full_install">完整安装</string>
     <string name="inherit_existing">继承已有</string>
+    <string name="keep_original_enabled_setting">保持原始启用设置</string>
+    <string name="dont_kill_app">不要杀死app</string>
+    <string name="install_location">安装位置</string>
+    <string name="internal_only">仅内部</string>
+    <string name="prefer_external">外部优先</string>
     <string name="packages">软件包</string>
     <string name="add_packages">添加包</string>
     <string name="status_failure_blocked">操作被 %1$s 阻止。</string>
@@ -661,7 +661,6 @@
     <string name="info_disable_keyguard">禁用锁屏相当于把锁屏方式设置为“无”。在已设置密码或图案时使用这个功能无效。如果在锁屏禁用时设置密码或图案，锁屏将启用</string>
     <string name="info_evict_credential_encryption_key">从密钥环中移除用户的凭证加密密钥。用户需要再次输入凭证才能将密钥存储回密钥环中。为了保护用户数据，用户将重新启动</string>
     <string name="info_reboot">打电话时不能使用此功能</string>
-    <string name="info_change_time">输入以毫秒为单位的UNIX时间</string>
     <string name="info_content_protection_policy">内容保护策略控制对欺骗性应用程序的扫描。</string>
     <string name="info_permission_policy">设置应用申请运行时权限时的默认选择</string>
     <string name="info_mte_policy">设置内存标记扩展(Memory Tagging Extension)策略。重启设备以应用更改。</string>
@@ -686,8 +685,11 @@
     <string name="info_suspend_app">挂起的应用无法被打开，通知会被隐藏，不会在最近任务中显示，不能弹窗，不能发送Toast。\n有些应用无法被挂起，比如Device admin、启动器和默认拨号应用。</string>
     <string name="info_disable_user_control">用户无法清除这些应用的存储空间，也无法强制停止应用</string>
     <string name="info_keep_uninstalled_apps">这个列表中的应用的APK将会一直保留，即使没有任何用户安装这个应用</string>
+    <string name="info_install_existing_app">安装一个已经在其他用户中安装或在卸载后保留的app。</string>
     <string name="info_headless_system_user_mode">无头系统用户模式意味着系统用户运行系统服务和一些系统UI，但它不与任何真实的人相关联，必须创建额外的用户才能与真实的人相关联。</string>
-    <string name="info_affiliated_id">当Device owner创建并管理用户时，新的用户不是附属用户。Device owner设置和受管理用户完全相同的附属用户ID后，受管理用户成为附属于Device owner的用户</string>
+    <string name="info_logout">如果当前用户不是由OwnDroid切换的，无法使用此功能。</string>
+    <string name="info_affiliation_id">当Device owner创建并管理用户时，新的用户不是附属用户。Device owner设置和受管理用户完全相同的附属用户ID后，受管理用户成为附属于Device owner的用户</string>
+    <string name="info_password_complexity">无：无密码\n低：图案，PIN（有重复或有序序列）\n中：PIN（没有重复或有序序列，最低长度4），字母（最低长度4），字母与数字（最低长度4）\n高：PIN（没有重复或有序序列，最低长度8），字母（最低长度6），字母与数字（最低长度6）</string>
     <string name="info_reset_password">设置一个新的密码，密码的长度需要4位或以上，不输入密码将会清除现有的密码。长度在6位或以下的纯数字密码将会设置为PIN码。</string>
     <string name="info_screen_timeout">设置设备锁定前用户活动的最大时间。这限制了用户可以设置的时间长度。\n值为0表示不做限制。</string>
     <string name="info_password_expiration_timeout">重新启动密码过期倒计时。值为0表示不做限制。</string>

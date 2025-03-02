@@ -2,7 +2,6 @@ package com.bintianqi.owndroid.dpm
 
 import android.annotation.SuppressLint
 import android.app.KeyguardManager
-import android.app.admin.DevicePolicyManager.ACTION_SET_NEW_PASSWORD
 import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_BIOMETRICS
 import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_FACE
 import android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_FEATURES_ALL
@@ -29,7 +28,6 @@ import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED
 import android.app.admin.DevicePolicyManager.RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT
 import android.app.admin.DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY
 import android.content.Context
-import android.content.Intent
 import android.os.Build.VERSION
 import android.os.UserManager
 import android.widget.Toast
@@ -67,41 +65,45 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
-import androidx.navigation.NavHostController
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
+import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
 import com.bintianqi.owndroid.ui.FunctionItem
-import com.bintianqi.owndroid.ui.InfoCard
+import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.yesOrNo
+import kotlinx.serialization.Serializable
+
+@Serializable object Password
 
 @SuppressLint("NewApi")
 @Composable
-fun Password(navCtrl: NavHostController) {
+fun PasswordScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val context = LocalContext.current
     val deviceAdmin = context.isDeviceAdmin
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
     var dialog by remember { mutableIntStateOf(0) }
-    MyScaffold(R.string.password_and_keyguard, 0.dp, navCtrl) {
-        FunctionItem(R.string.password_info, icon = R.drawable.info_fill0) { navCtrl.navigate("PasswordInfo") }
+    MyScaffold(R.string.password_and_keyguard, 0.dp, onNavigateUp) {
+        FunctionItem(R.string.password_info, icon = R.drawable.info_fill0) { onNavigate(PasswordInfo) }
         if(SharedPrefs(context).displayDangerousFeatures) {
             if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
-                FunctionItem(R.string.reset_password_token, icon = R.drawable.key_vertical_fill0) { navCtrl.navigate("ResetPasswordToken") }
+                FunctionItem(R.string.reset_password_token, icon = R.drawable.key_vertical_fill0) { onNavigate(ResetPasswordToken) }
             }
             if(deviceAdmin || deviceOwner || profileOwner) {
-                FunctionItem(R.string.reset_password, icon = R.drawable.lock_reset_fill0) { navCtrl.navigate("ResetPassword") }
+                FunctionItem(R.string.reset_password, icon = R.drawable.lock_reset_fill0) { onNavigate(ResetPassword) }
             }
         }
         if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) {
-            FunctionItem(R.string.required_password_complexity, icon = R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordComplexity") }
+            FunctionItem(R.string.required_password_complexity, icon = R.drawable.password_fill0) { onNavigate(RequiredPasswordComplexity) }
         }
         if(deviceAdmin) {
-            FunctionItem(R.string.disable_keyguard_features, icon = R.drawable.screen_lock_portrait_fill0) { navCtrl.navigate("DisableKeyguardFeatures") }
+            FunctionItem(R.string.disable_keyguard_features, icon = R.drawable.screen_lock_portrait_fill0) { onNavigate(KeyguardDisabledFeatures) }
         }
         if(deviceOwner) {
             FunctionItem(R.string.max_time_to_lock, icon = R.drawable.schedule_fill0) { dialog = 1 }
@@ -115,7 +117,7 @@ fun Password(navCtrl: NavHostController) {
             FunctionItem(R.string.pwd_history, icon = R.drawable.history_fill0) { dialog = 5 }
         }
         if(VERSION.SDK_INT < 31 && (deviceOwner || profileOwner)) {
-            FunctionItem(R.string.required_password_quality, icon = R.drawable.password_fill0) { navCtrl.navigate("RequirePasswordQuality") }
+            FunctionItem(R.string.required_password_quality, icon = R.drawable.password_fill0) { onNavigate(RequiredPasswordQuality) }
         }
     }
     if(dialog != 0) {
@@ -207,22 +209,26 @@ fun Password(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object PasswordInfo
+
 @Composable
-fun PasswordInfo(navCtrl: NavHostController) {
+fun PasswordInfoScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
-    MyScaffold(R.string.password_info, 8.dp, navCtrl) {
+    var dialog by remember { mutableIntStateOf(0) } // 0:none, 1:password complexity
+    MyScaffold(R.string.password_info, 8.dp, onNavigateUp) {
         if(VERSION.SDK_INT >= 29) {
-            val passwordComplexity = mapOf(
-                PASSWORD_COMPLEXITY_NONE to R.string.password_complexity_none,
-                PASSWORD_COMPLEXITY_LOW to R.string.password_complexity_low,
-                PASSWORD_COMPLEXITY_MEDIUM to R.string.password_complexity_medium,
-                PASSWORD_COMPLEXITY_HIGH to R.string.password_complexity_high
-            )
-            CardItem(R.string.current_password_complexity, passwordComplexity[dpm.passwordComplexity] ?: R.string.unknown)
+            val text = when(dpm.passwordComplexity) {
+                PASSWORD_COMPLEXITY_NONE -> R.string.none
+                PASSWORD_COMPLEXITY_LOW -> R.string.low
+                PASSWORD_COMPLEXITY_MEDIUM -> R.string.medium
+                PASSWORD_COMPLEXITY_HIGH -> R.string.high
+                else -> R.string.unknown
+            }
+            CardItem(R.string.current_password_complexity, text) { dialog = 1 }
         }
         if(deviceOwner || profileOwner) {
             CardItem(R.string.password_sufficient, dpm.isActivePasswordSufficient.yesOrNo)
@@ -231,18 +237,29 @@ fun PasswordInfo(navCtrl: NavHostController) {
             CardItem(R.string.unified_password, dpm.isUsingUnifiedPassword(receiver).yesOrNo)
         }
     }
+    if(dialog != 0) AlertDialog(
+        text = { Text(stringResource(R.string.info_password_complexity)) },
+        confirmButton = {
+            TextButton({ dialog = 0 }) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        onDismissRequest = { dialog = 0 }
+    )
 }
+
+@Serializable object ResetPasswordToken
 
 @RequiresApi(26)
 @Composable
-fun ResetPasswordToken(navCtrl: NavHostController) {
+fun ResetPasswordTokenScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     var token by remember { mutableStateOf("") }
     val tokenByteArray = token.toByteArray()
     val focusMgr = LocalFocusManager.current
-    MyScaffold(R.string.reset_password_token, 8.dp, navCtrl) {
+    MyScaffold(R.string.reset_password_token, 8.dp, onNavigateUp) {
         OutlinedTextField(
             value = token, onValueChange = { token = it },
             label = { Text(stringResource(R.string.token)) },
@@ -291,12 +308,14 @@ fun ResetPasswordToken(navCtrl: NavHostController) {
             }
         }
         Spacer(Modifier.padding(vertical = 5.dp))
-        InfoCard(R.string.activate_token_not_required_when_no_password)
+        Notes(R.string.activate_token_not_required_when_no_password)
     }
 }
 
+@Serializable object ResetPassword
+
 @Composable
-fun ResetPassword(navCtrl: NavHostController) {
+fun ResetPasswordScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -307,7 +326,7 @@ fun ResetPassword(navCtrl: NavHostController) {
     val tokenByteArray = token.toByteArray()
     var flag by remember { mutableIntStateOf(0) }
     var confirmDialog by remember { mutableStateOf(false) }
-    MyScaffold(R.string.reset_password, 8.dp, navCtrl) {
+    MyScaffold(R.string.reset_password, 8.dp, onNavigateUp) {
         if(VERSION.SDK_INT >= 26) {
             OutlinedTextField(
                 value = token, onValueChange = { token = it },
@@ -367,7 +386,7 @@ fun ResetPassword(navCtrl: NavHostController) {
                 Text(stringResource(R.string.reset_password))
             }
         }
-        InfoCard(R.string.info_reset_password)
+        Notes(R.string.info_reset_password)
     }
     if(confirmDialog) {
         var confirmPassword by remember { mutableStateOf("") }
@@ -413,45 +432,44 @@ fun ResetPassword(navCtrl: NavHostController) {
     }
 }
 
+@Serializable object RequiredPasswordComplexity
+
 @RequiresApi(31)
 @Composable
-fun PasswordComplexity(navCtrl: NavHostController) {
+fun RequiredPasswordComplexityScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val passwordComplexity = mapOf(
-        PASSWORD_COMPLEXITY_NONE to R.string.password_complexity_none,
-        PASSWORD_COMPLEXITY_LOW to R.string.password_complexity_low,
-        PASSWORD_COMPLEXITY_MEDIUM to R.string.password_complexity_medium,
-        PASSWORD_COMPLEXITY_HIGH to R.string.password_complexity_high
+        PASSWORD_COMPLEXITY_NONE to R.string.none,
+        PASSWORD_COMPLEXITY_LOW to R.string.low,
+        PASSWORD_COMPLEXITY_MEDIUM to R.string.medium,
+        PASSWORD_COMPLEXITY_HIGH to R.string.high
     )
     var selectedItem by remember { mutableIntStateOf(PASSWORD_COMPLEXITY_NONE) }
     LaunchedEffect(Unit) { selectedItem = dpm.requiredPasswordComplexity }
-    MyScaffold(R.string.required_password_complexity, 8.dp, navCtrl) {
+    MyScaffold(R.string.required_password_complexity, 0.dp, onNavigateUp) {
         passwordComplexity.forEach {
-            RadioButtonItem(it.value, selectedItem == it.key) { selectedItem = it.key }
+            FullWidthRadioButtonItem(it.value, selectedItem == it.key) { selectedItem = it.key }
         }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 dpm.requiredPasswordComplexity = selectedItem
+                selectedItem = dpm.requiredPasswordComplexity
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 8.dp)
         ) {
             Text(text = stringResource(R.string.apply))
         }
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = { context.startActivity(Intent(ACTION_SET_NEW_PASSWORD)) },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.require_set_new_password))
-        }
+        Notes(R.string.info_password_complexity, 8.dp)
     }
 }
 
+@Serializable object KeyguardDisabledFeatures
+
 @Composable
-fun DisableKeyguardFeatures(navCtrl: NavHostController) {
+fun KeyguardDisabledFeaturesScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -481,20 +499,19 @@ fun DisableKeyguardFeatures(navCtrl: NavHostController) {
     }
     LaunchedEffect(mode) { if(mode != 2) flag = dpm.getKeyguardDisabledFeatures(receiver) }
     LaunchedEffect(Unit) { refresh() }
-    MyScaffold(R.string.disable_keyguard_features, 8.dp, navCtrl) {
-        RadioButtonItem(R.string.enable_all, mode == 0) { mode = 0 }
-        RadioButtonItem(R.string.disable_all, mode == 1) { mode = 1 }
-        RadioButtonItem(R.string.custom, mode == 2) { mode = 2 }
+    MyScaffold(R.string.disable_keyguard_features, 0.dp, onNavigateUp) {
+        FullWidthRadioButtonItem(R.string.enable_all, mode == 0) { mode = 0 }
+        FullWidthRadioButtonItem(R.string.disable_all, mode == 1) { mode = 1 }
+        FullWidthRadioButtonItem(R.string.custom, mode == 2) { mode = 2 }
         AnimatedVisibility(mode == 2) {
             Column {
                 flagsLiat.forEach {
-                    CheckBoxItem(it.first, flag and it.second == it.second) { checked ->
+                    FullWidthCheckBoxItem(it.first, flag and it.second == it.second) { checked ->
                         flag = if(checked) flag or it.second else flag and (flag xor it.second)
                     }
                 }
             }
         }
-        Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 val disabledFeatures = if(mode == 0) KEYGUARD_DISABLE_FEATURES_NONE else if(mode == 1) KEYGUARD_DISABLE_FEATURES_ALL else flag
@@ -502,15 +519,17 @@ fun DisableKeyguardFeatures(navCtrl: NavHostController) {
                 refresh()
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 8.dp)
         ) {
             Text(text = stringResource(R.string.apply))
         }
     }
 }
 
+@Serializable object RequiredPasswordQuality
+
 @Composable
-fun PasswordQuality(navCtrl: NavHostController) {
+fun RequiredPasswordQualityScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -525,7 +544,7 @@ fun PasswordQuality(navCtrl: NavHostController) {
     )
     var selectedItem by remember { mutableIntStateOf(PASSWORD_QUALITY_UNSPECIFIED) }
     LaunchedEffect(Unit) { selectedItem=dpm.getPasswordQuality(receiver) }
-    MyScaffold(R.string.required_password_quality, 8.dp, navCtrl) {
+    MyScaffold(R.string.required_password_quality, 8.dp, onNavigateUp) {
         passwordQuality.forEach {
             RadioButtonItem(it.value, selectedItem == it.key) { selectedItem = it.key }
         }
