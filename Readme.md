@@ -1,4 +1,4 @@
-[English](Readme-en.md)
+[English](Readme-en.md) | [日本語](Readme-ja.md)
 
 # OwnDroid
 
