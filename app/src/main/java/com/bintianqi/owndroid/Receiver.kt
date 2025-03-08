@@ -14,6 +14,7 @@ import com.bintianqi.owndroid.dpm.handleNetworkLogs
 import com.bintianqi.owndroid.dpm.isDeviceOwner
 import com.bintianqi.owndroid.dpm.isProfileOwner
 import com.bintianqi.owndroid.dpm.processSecurityLogs
+import com.bintianqi.owndroid.dpm.setDefaultAffiliationID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,6 +35,7 @@ class Receiver : DeviceAdminReceiver() {
     override fun onEnabled(context: Context, intent: Intent) {
         super.onEnabled(context, intent)
         if(context.isProfileOwner || context.isDeviceOwner){
+            setDefaultAffiliationID(context)
             Toast.makeText(context, context.getString(R.string.onEnabled), Toast.LENGTH_SHORT).show()
         }
     }
@@ -41,6 +43,7 @@ class Receiver : DeviceAdminReceiver() {
     override fun onDisabled(context: Context, intent: Intent) {
         super.onDisabled(context, intent)
         Toast.makeText(context, R.string.onDisabled, Toast.LENGTH_SHORT).show()
+        SharedPrefs(context).isDefaultAffiliationIdSet = false
     }
 
     override fun onProfileProvisioningComplete(context: Context, intent: Intent) {

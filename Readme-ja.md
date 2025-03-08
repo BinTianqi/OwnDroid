@@ -6,8 +6,8 @@ AndroidのDevice owner特権を使用してデバイスを管理します。
 
 ## ダウンロード
 
-[IzzyOnDroid F-Droid Repository](https://apt.izzysoft.de/fdroid/index/apk/com.bintianqi.owndroid)
-[Releases on GitHub](https://github.com/BinTianqi/OwnDroid/releases)
+- [IzzyOnDroid F-Droid Repository](https://apt.izzysoft.de/fdroid/index/apk/com.bintianqi.owndroid)
+- [Releases on GitHub](https://github.com/BinTianqi/OwnDroid/releases)
 
 > [!NOTE]
 > ColorOSユーザーはGitHubのリリースからtestkeyバージョンをダウンロードしてください

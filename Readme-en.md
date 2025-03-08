@@ -6,8 +6,8 @@ Use Android Device owner privilege to manage your device.
 
 ## Download
 
-[IzzyOnDroid F-Droid Repository](https://apt.izzysoft.de/fdroid/index/apk/com.bintianqi.owndroid)
-[Releases on GitHub](https://github.com/BinTianqi/OwnDroid/releases)
+- [IzzyOnDroid F-Droid Repository](https://apt.izzysoft.de/fdroid/index/apk/com.bintianqi.owndroid)
+- [Releases on GitHub](https://github.com/BinTianqi/OwnDroid/releases)
 
 > [!NOTE]
 > ColorOS users should download testkey version from releases on GitHub
@@ -16,7 +16,6 @@ Use Android Device owner privilege to manage your device.
 
 - System
   - Options: disable camera, disable screenshot, master volume mute, disable USB signal...
-  - Permission policy
   - Manage CA certificates
   - _Wipe data_
   - ...
@@ -35,6 +34,7 @@ Use Android Device owner privilege to manage your device.
   - Suspend/hide app
   - Block app uninstallation
   - Install/uninstall app
+  - Grant/revoke permissions
   - ...
 - User restriction
   - Network: disable configuring mobile network, disable configuring Wi-Fi, disable SMS, disable outgoing calls...

@@ -6,8 +6,8 @@
 
 ## 下载
 
-[IzzyOnDroid F-Droid Repository](https://apt.izzysoft.de/fdroid/index/apk/com.bintianqi.owndroid)
-[Releases on GitHub](https://github.com/BinTianqi/OwnDroid/releases)
+- [IzzyOnDroid F-Droid Repository](https://apt.izzysoft.de/fdroid/index/apk/com.bintianqi.owndroid)
+- [Releases on GitHub](https://github.com/BinTianqi/OwnDroid/releases)
 
 > [!NOTE]
 > ColorOS用户应在GitHub上的releases下载testkey版本
@@ -16,7 +16,6 @@
 
 - 系统
   - 选项：禁用摄像头、禁止截屏、全局静音、禁用USB信号...
-  - 权限策略
   - 管理CA证书
   - _清除数据_
   - ...
@@ -35,6 +34,7 @@
   - 挂起/隐藏应用
   - 阻止应用卸载
   - 安装/卸载应用
+  - 授予/撤销权限
   - ...
 - 用户限制
   - 网络：禁止配置移动网络、禁止配置Wi-Fi、禁用短信、禁止拨出电话...

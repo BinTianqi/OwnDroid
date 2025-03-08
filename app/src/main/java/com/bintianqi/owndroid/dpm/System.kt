@@ -2,7 +2,6 @@ package com.bintianqi.owndroid.dpm
 
 import android.annotation.SuppressLint
 import android.app.ActivityOptions
-import android.app.AlertDialog
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY
 import android.app.admin.DevicePolicyManager.InstallSystemUpdateCallback
@@ -126,6 +125,7 @@ import com.bintianqi.owndroid.humanReadableDate
 import com.bintianqi.owndroid.parseDate
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.ErrorDialog
 import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
 import com.bintianqi.owndroid.ui.FunctionItem
@@ -286,7 +286,7 @@ fun SystemOptionsScreen(onNavigateUp: () -> Unit) {
             }
         }
         if(deviceOwner || profileOwner) {
-            SwitchItem(R.string.master_mute, icon = R.drawable.volume_up_fill0,
+            SwitchItem(R.string.master_mute, icon = R.drawable.volume_off_fill0,
                 getState = { dpm.isMasterVolumeMuted(receiver) }, onCheckedChange = { dpm.setMasterVolumeMuted(receiver,it) }
             )
         }
@@ -1197,6 +1197,7 @@ private fun ColumnScope.LockTaskFeatures() {
     val receiver = context.getReceiver()
     var flags by remember { mutableIntStateOf(0) }
     var custom by rememberSaveable { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     fun refresh() {
         flags = dpm.getLockTaskFeatures(receiver)
         custom = flags != 0
@@ -1230,17 +1231,14 @@ private fun ColumnScope.LockTaskFeatures() {
                 dpm.setLockTaskFeatures(receiver, flags)
                 context.showOperationResultToast(true)
             } catch (e: IllegalArgumentException) {
-                AlertDialog.Builder(context)
-                    .setTitle(R.string.error)
-                    .setMessage(e.message)
-                    .setPositiveButton(R.string.confirm) { dialog, _ -> dialog.dismiss() }
-                    .show()
+                errorMessage = e.message
             }
             refresh()
         }
     ) {
         Text(stringResource(R.string.apply))
     }
+    ErrorDialog(errorMessage) { errorMessage = null }
 }
 
 data class CaCertInfo(

@@ -2,7 +2,6 @@ package com.bintianqi.owndroid.dpm
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.AlertDialog
 import android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_OFF
 import android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_OPPORTUNISTIC
 import android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_PROVIDER_HOSTNAME
@@ -133,14 +132,15 @@ import com.bintianqi.owndroid.humanReadableDate
 import com.bintianqi.owndroid.humanReadableDateTime
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.ErrorDialog
 import com.bintianqi.owndroid.ui.ExpandExposedTextFieldIcon
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
 import com.bintianqi.owndroid.ui.FunctionItem
-import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.MySmallTitleScaffold
 import com.bintianqi.owndroid.ui.NavIcon
+import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.writeClipBoard
@@ -507,6 +507,7 @@ private fun AddNetworkScreen(wifiConfig: WifiConfiguration? = null, onNavigateUp
             ssid = wifiConfig.SSID.removeSurrounding("\"")
         }
     }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     Column(
         modifier = (if(wifiConfig == null) Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 60.dp) else Modifier)
             .padding(start = 8.dp, end = 8.dp, top = 12.dp)
@@ -721,11 +722,7 @@ private fun AddNetworkScreen(wifiConfig: WifiConfiguration? = null, onNavigateUp
                     resultDialog = true
                 } catch(e: Exception) {
                     e.printStackTrace()
-                    AlertDialog.Builder(context)
-                        .setTitle(R.string.error)
-                        .setPositiveButton(R.string.confirm) { dialog, _ -> dialog.cancel() }
-                        .setMessage(e.message ?: "")
-                        .show()
+                    errorMessage = e.message
                 }
             },
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
@@ -755,6 +752,7 @@ private fun AddNetworkScreen(wifiConfig: WifiConfiguration? = null, onNavigateUp
             onDismissRequest = { resultDialog = false }
         )
     }
+    ErrorDialog(errorMessage) { errorMessage = null }
 }
 
 @Serializable object WifiSecurityLevel
@@ -914,6 +912,7 @@ fun NetworkStatsScreen(onNavigateUp: () -> Unit, onNavigateToViewer: (NetworkSta
     val endTimeTextFieldInteractionSource = remember { MutableInteractionSource() }
     if(startTimeTextFieldInteractionSource.collectIsPressedAsState().value) activeTextField = NetworkStatsActiveTextField.StartTime
     if(endTimeTextFieldInteractionSource.collectIsPressedAsState().value) activeTextField = NetworkStatsActiveTextField.EndTime
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     MyScaffold(R.string.network_stats, 8.dp, onNavigateUp) {
         ExposedDropdownMenuBox(
             activeTextField == NetworkStatsActiveTextField.Type,
@@ -1202,14 +1201,10 @@ fun NetworkStatsScreen(onNavigateUp: () -> Unit, onNavigateToViewer: (NetworkSta
                         e.printStackTrace()
                         withContext(Dispatchers.Main) {
                             querying = false
-                            AlertDialog.Builder(context)
-                                .setTitle(R.string.error)
-                                .setMessage(e.message ?: "")
-                                .setPositiveButton(R.string.confirm) { dialog, _ -> dialog.dismiss() }
-                                .show()
+                            errorMessage = e.message
                         }
                         return@launch
-                    }
+                    }.filterNot { it == null }
                     if(buckets.isEmpty()) {
                         withContext(Dispatchers.Main) {
                             querying = false
@@ -1263,6 +1258,7 @@ fun NetworkStatsScreen(onNavigateUp: () -> Unit, onNavigateToViewer: (NetworkSta
             }
         }
     }
+    ErrorDialog(errorMessage) { errorMessage = null }
 }
 
 @Serializable

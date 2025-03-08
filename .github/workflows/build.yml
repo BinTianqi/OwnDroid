@@ -3,7 +3,6 @@ name: Build APK
 on:
   workflow_dispatch:
   push:
-    branches: ["master", "dev"]
     paths-ignore:
       - '**.md'
     tags-ignore:
@@ -63,13 +62,11 @@ jobs:
           path: app/build/outputs/apk/release/app-release.apk
 
       - name: Generate and submit dependency graph
-        if: github.ref_name == 'master'
         uses: gradle/actions/dependency-submission@v4
 
   upload-telegram:
     name: Upload Builds
     runs-on: ubuntu-latest
-    if: github.ref_name == 'dev'
     needs: build
     steps:
       - name: Download Artifacts

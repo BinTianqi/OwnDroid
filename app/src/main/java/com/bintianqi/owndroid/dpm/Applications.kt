@@ -1,6 +1,5 @@
 package com.bintianqi.owndroid.dpm
 
-import android.app.AlertDialog
 import android.app.PendingIntent
 import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT
 import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED
@@ -91,9 +90,9 @@ import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.FunctionItem
-import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.NavIcon
+import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.ui.SwitchItem
 import kotlinx.serialization.Serializable
@@ -901,6 +900,7 @@ private fun KeepUninstalledPackagesScreen(pkgName: String) {
 @Composable
 private fun UninstallPackageScreen(pkgName: String) {
     val context = LocalContext.current
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.uninstall_app), style = typography.headlineLarge)
@@ -919,11 +919,7 @@ private fun UninstallPackageScreen(pkgName: String) {
                                 if(statusExtra == PackageInstaller.STATUS_SUCCESS) {
                                     context.showOperationResultToast(true)
                                 } else {
-                                    AlertDialog.Builder(context)
-                                        .setTitle(R.string.failure)
-                                        .setMessage(parsePackageInstallerMessage(context, intent))
-                                        .setPositiveButton(R.string.confirm) { dialog, _ -> dialog.dismiss() }
-                                        .show()
+                                    errorMessage = parsePackageInstallerMessage(context, intent)
                                 }
                             }
                         }
@@ -960,5 +956,13 @@ private fun UninstallPackageScreen(pkgName: String) {
             }
         }
     }
+    if(errorMessage != null) AlertDialog(
+        title = { Text(stringResource(R.string.failure)) },
+        text = { Text(errorMessage!!) },
+        confirmButton = {
+            TextButton({ errorMessage = null }) { Text(stringResource(R.string.confirm)) }
+        },
+        onDismissRequest = { errorMessage = null }
+    )
 }
 

@@ -357,3 +357,15 @@ fun ExpandExposedTextFieldIcon(active: Boolean) {
         modifier = Modifier.rotate(degrees)
     )
 }
+
+@Composable
+fun ErrorDialog(message: String?, onDismiss: () -> Unit) {
+    if(!message.isNullOrEmpty()) AlertDialog(
+        title = { Text(stringResource(R.string.error)) },
+        text = { Text(message) },
+        confirmButton = {
+            TextButton(onDismiss) { Text(stringResource(R.string.confirm)) }
+        },
+        onDismissRequest = onDismiss
+    )
+}
