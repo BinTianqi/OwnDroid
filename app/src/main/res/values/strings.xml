@@ -616,6 +616,7 @@
     <string name="dark_theme">Dark theme</string>
     <string name="follow_system">Follow system</string>
     <string name="black_theme">Black theme</string>
+    <string name="notifications">Notifications</string>
     <string name="about">About</string>
     <string name="project_homepage">Project homepage</string>
     <string name="appearance">Appearance</string>
@@ -687,6 +688,21 @@
     <string name="status_failure_storage">The operation failed because of storage issues. For example, the device may be running low on space, or external media may be unavailable. You may try to help free space or insert different external media.</string>
     <string name="status_failure_incompatible">The operation failed because it is fundamentally incompatible with this device. For example, the app may require a hardware feature that doesn\'t exist, it may be missing native code for the ABIs supported by the device, or it requires a newer SDK version, etc.</string>
 
+    <string name="events">Events</string>
+    <string name="password_changed">Password changed</string>
+    <string name="user_added">User added</string>
+    <string name="user_started">User started</string>
+    <string name="user_switched">User switched</string>
+    <string name="user_stopped">User stopped</string>
+    <string name="user_removed">User removed</string>
+    <string name="bug_report_shared">Bug report shared</string>
+    <string name="bug_report_sharing_declined">Bug report sharing declined</string>
+    <string name="bug_report_failed">Bug report failed</string>
+    <string name="bug_report_failure_failed_completing">Bug report completion process failed</string>
+    <string name="bug_report_failure_no_longer_available">Bug report is no longer available for collection</string>
+    <string name="system_update_pending">System update pending</string>
+    <string name="received_time">Received time</string>
+    
     <string name="info_dhizuku">Dhizuku is a tool that can share Device owner permissions to other application.</string>
     <string name="info_device_id_attestation">Indicates if the device supports attestation of device identifiers in addition to key attestation.</string>
     <string name="info_unique_device_attestation">Yes if the StrongBox Keymaster implementation on the device was provisioned with an individual attestation certificate and can sign attestation records using it (only Keymaster with StrongBox security level can use an individual attestation certificate).</string>

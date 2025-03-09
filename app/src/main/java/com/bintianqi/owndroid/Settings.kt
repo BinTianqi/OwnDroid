@@ -57,6 +57,7 @@ fun SettingsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
         FunctionItem(title = R.string.appearance, icon = R.drawable.format_paint_fill0) { onNavigate(Appearance) }
         FunctionItem(title = R.string.security, icon = R.drawable.lock_fill0) { onNavigate(AuthSettings) }
         FunctionItem(title = R.string.api, icon = R.drawable.apps_fill0) { onNavigate(ApiSettings) }
+        FunctionItem(R.string.notifications, icon = R.drawable.notifications_fill0) { onNavigate(Notifications) }
         FunctionItem(title = R.string.export_logs, icon = R.drawable.description_fill0) {
             val time = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault()).format(Date(System.currentTimeMillis()))
             exportLogsLauncher.launch("owndroid_log_$time")
@@ -216,6 +217,25 @@ fun ApiSettings(onNavigateUp: () -> Unit) {
             }
             if(sp.apiKey != null) Notes(R.string.api_key_exist)
         }
+    }
+}
+
+@Serializable object Notifications
+
+@Composable
+fun NotificationsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.notifications, 0.dp, onNavigateUp) {
+    val sp = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val map = mapOf(
+        NotificationUtils.ID.PASSWORD_CHANGED to R.string.password_changed, NotificationUtils.ID.USER_ADDED to R.string.user_added,
+        NotificationUtils.ID.USER_STARTED to R.string.user_started, NotificationUtils.ID.USER_SWITCHED to R.string.user_switched,
+        NotificationUtils.ID.USER_STOPPED to R.string.user_stopped, NotificationUtils.ID.USER_REMOVED to R.string.user_removed,
+        NotificationUtils.ID.BUG_REPORT_SHARED to R.string.bug_report_shared,
+        NotificationUtils.ID.BUG_REPORT_SHARING_DECLINED to R.string.bug_report_sharing_declined,
+        NotificationUtils.ID.BUG_REPORT_FAILED to R.string.bug_report_failed,
+        NotificationUtils.ID.SYSTEM_UPDATE_PENDING to R.string.system_update_pending
+    )
+    map.forEach { (k, v) ->
+        SwitchItem(v, getState = { sp.getBoolean("n_$k", true) }, onCheckedChange = { sp.edit { putBoolean("n_$k", it) } })
     }
 }
 

@@ -577,6 +577,7 @@
     <string name="dark_theme">深色主题</string>
     <string name="follow_system">跟随系统</string>
     <string name="black_theme">黑色主题</string>
+    <string name="notifications">通知</string>
     <string name="about">关于</string>
     <string name="project_homepage">项目主页</string>
     <string name="appearance">外观</string>
@@ -646,6 +647,21 @@
     <string name="status_failure_conflict">操作失败，因为它与 %1$s 冲突。例如，存在的权限，不完整的证书等。你可以卸载 %1$s 以解决这个问题。</string>
     <string name="status_failure_storage">由于存储问题，操作失败。例如，设备空间不足，或外部媒体不可用。你可以尝试清理空间或插入不同的外部媒体。</string>
     <string name="status_failure_incompatible">操作失败，因为它与设备不兼容。例如，这个app可能需要不存在的硬件功能，它有可能缺少受此设备支持的ABI的本地代码，或它需要高于此设备的SDK版本。</string>
+
+    <string name="events">事件</string>
+    <string name="password_changed">密码已更改</string>
+    <string name="user_added">用户已添加</string>
+    <string name="user_started">用户已启动</string>
+    <string name="user_switched">用户已切换</string>
+    <string name="user_stopped">用户已停止</string>
+    <string name="user_removed">用户已移除</string>
+    <string name="bug_report_shared">错误报告已分享</string>
+    <string name="bug_report_sharing_declined">错误报告已取消分享</string>
+    <string name="bug_report_failed">错误报告失败</string>
+    <string name="bug_report_failure_failed_completing">错误报告完成失败</string>
+    <string name="bug_report_failure_no_longer_available">错误报告不再可收集</string>
+    <string name="system_update_pending">系统更新等待中</string>
+    <string name="received_time">接收时间</string>
 
     <string name="info_dhizuku">Dhizuku可以分享Device owner权限给其余应用</string>
     <string name="info_device_id_attestation">指示设备是否除了密钥证明之外还支持设备标识符证明</string>

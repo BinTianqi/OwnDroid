@@ -1841,6 +1841,7 @@ fun InstallSystemUpdateScreen(onNavigateUp: () -> Unit) {
         }
     }
     var uri by remember { mutableStateOf<Uri?>(null) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     val getFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri = it }
     MyScaffold(R.string.install_system_update, 8.dp, onNavigateUp) {
         Button(
@@ -1859,11 +1860,7 @@ fun InstallSystemUpdateScreen(onNavigateUp: () -> Unit) {
                         dpm.installSystemUpdate(receiver, uri!!, executor, callback)
                         Toast.makeText(context, R.string.start_install_system_update, Toast.LENGTH_SHORT).show()
                     } catch(e: Exception) {
-                        Toast.makeText(
-                            context,
-                            context.getString(R.string.install_system_update_failed) + e.cause.toString(),
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        errorMessage = e.message
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -1874,4 +1871,5 @@ fun InstallSystemUpdateScreen(onNavigateUp: () -> Unit) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Notes(R.string.auto_reboot_after_install_succeed)
     }
+    ErrorDialog(errorMessage) { errorMessage = null }
 }

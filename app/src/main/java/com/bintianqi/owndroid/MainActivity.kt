@@ -397,6 +397,7 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
         }
         composable<AuthSettings> { AuthSettingsScreen(::navigateUp) }
         composable<ApiSettings> { ApiSettings(::navigateUp) }
+        composable<Notifications> { NotificationsScreen(::navigateUp) }
         composable<About> { AboutScreen(::navigateUp) }
 
         composable<Authenticate>(

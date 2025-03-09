@@ -592,7 +592,8 @@
     <string name="material_you_color">Цвет Material You</string>
     <string name="dark_theme">Тёмная тема</string> 
     <string name="follow_system">Следовать за системой</string> 
-    <string name="black_theme">Чёрная тема</string> 
+    <string name="black_theme">Чёрная тема</string>
+    <string name="notifications">Notifications</string> <!--TODO-->
     <string name="about">О приложении</string>
     <string name="project_homepage">Домашняя страница проекта</string> 
     <string name="appearance">Оформление</string> 
@@ -664,6 +665,8 @@
     <string name="status_failure_conflict">Операция не удалась из-за конфликта с %1$s. Например, существующее разрешение, несовместимые сертификаты и т.д. Вы можете удалить %1$s, чтобы исправить проблему.</string>
     <string name="status_failure_storage">Операция не удалась из-за проблем с хранилищем. Например, на устройстве может быть недостаточно места или внешние носители могут быть недоступны. Вы можете попытаться освободить место или вставить другой внешний носитель.</string>
     <string name="status_failure_incompatible">Операция не удалась, так как она принципиально несовместима с этим устройством. Например, приложению может потребоваться аппаратная функция, которой нет, в нем может отсутствовать собственный код для ABI, поддерживаемых устройством, или ему требуется более новая версия SDK и т.д.</string>
+
+    <!--TODO: events notification-->
 
     <string name="info_dhizuku">Dhizuku это инструмент позволяющий делиться правами Владельца устройства с другими приложениями.</string>
     <string name="info_device_id_attestation">Указывает, поддерживает ли устройство проверку идентификаторов устройств в дополнение к проверке ключей.</string>

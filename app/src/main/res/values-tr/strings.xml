@@ -597,6 +597,7 @@
     <string name="dark_theme">Koyu Tema</string>
     <string name="follow_system">Sistemi Takip Et</string>
     <string name="black_theme">Siyah Tema</string>
+    <string name="notifications">Notifications</string> <!--TODO-->
     <string name="about">Hakkında</string>
     <string name="project_homepage">Proje Ana Sayfası</string>
     <string name="appearance">Görünüm</string>
@@ -667,6 +668,8 @@
     <string name="status_failure_conflict">%1$s ile çakıştığı için işlem başarısız oldu. Örneğin, mevcut bir izin, uyumsuz sertifikalar vb. Sorunu düzeltmek için %1$s\'i kaldırabilirsiniz.</string>
     <string name="status_failure_storage">Depolama sorunları nedeniyle işlem başarısız oldu. Örneğin, cihazda yer azalmış olabilir veya harici medya kullanılamıyor olabilir. Yer açmayı veya farklı bir harici medya takmayı deneyebilirsiniz.</string>
     <string name="status_failure_incompatible">Bu cihazla temel olarak uyumsuz olduğu için işlem başarısız oldu. Örneğin, uygulama mevcut olmayan bir donanım özelliği gerektirebilir, cihazın desteklediği ABI\'lar için yerel kod eksik olabilir veya daha yeni bir SDK sürümü gerektirebilir vb.</string>
+
+    <!--TODO: events notification-->
 
     <string name="info_dhizuku">Dhizuku, Cihaz Sahibi izinlerini diğer uygulamalarla paylaşabilen bir araçtır.</string>
     <string name="info_device_id_attestation">Cihazın, anahtar doğrulamanın yanı sıra cihaz tanımlayıcılarının doğrulamasını destekleyip desteklemediğini belirtir.</string>
