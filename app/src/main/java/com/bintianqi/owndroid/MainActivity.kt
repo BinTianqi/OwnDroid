@@ -1,6 +1,7 @@
 package com.bintianqi.owndroid
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.admin.DevicePolicyManager
 import android.os.Build.VERSION
 import android.os.Bundle
@@ -8,9 +9,6 @@ import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -49,6 +47,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
@@ -58,6 +57,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.bintianqi.owndroid.dpm.Accounts
@@ -236,7 +236,7 @@ class MainActivity : FragmentActivity() {
         setContent {
             val theme by vm.theme.collectAsStateWithLifecycle()
             OwnDroidTheme(theme) {
-                Home(this, vm)
+                Home(vm)
             }
         }
     }
@@ -258,7 +258,7 @@ class MainActivity : FragmentActivity() {
 
 @ExperimentalMaterial3Api
 @Composable
-fun Home(activity: FragmentActivity, vm: MyViewModel) {
+fun Home(vm: MyViewModel) {
     val navController = rememberNavController()
     val context = LocalContext.current
     val receiver = context.getReceiver()
@@ -395,24 +395,19 @@ fun Home(activity: FragmentActivity, vm: MyViewModel) {
             val theme by vm.theme.collectAsStateWithLifecycle()
             AppearanceScreen(::navigateUp, theme) { vm.theme.value = it }
         }
-        composable<AuthSettings> { AuthSettingsScreen(::navigateUp) }
+        composable<AppLockSettings> { AppLockSettingsScreen(::navigateUp) }
         composable<ApiSettings> { ApiSettings(::navigateUp) }
         composable<Notifications> { NotificationsScreen(::navigateUp) }
         composable<About> { AboutScreen(::navigateUp) }
 
-        composable<Authenticate>(
-            enterTransition = { fadeIn(animationSpec = tween(200)) },
-            popExitTransition = { fadeOut(animationSpec = tween(400)) }
-        ) { AuthenticateScreen(activity, ::navigateUp) }
+        dialog<AppLock>(dialogProperties = DialogProperties(false, false)) {
+            AppLockDialog(::navigateUp) { (context as? Activity)?.moveTaskToBack(true) }
+        }
     }
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            val sp = SharedPrefs(context)
-            if(
-                (event == Lifecycle.Event.ON_RESUME && sp.auth && sp.lockInBackground) ||
-                (event == Lifecycle.Event.ON_CREATE && sp.auth)
-            ) {
-                navController.navigate(Authenticate) { launchSingleTop = true }
+            if(event == Lifecycle.Event.ON_CREATE && !SharedPrefs(context).lockPassword.isNullOrEmpty()) {
+                navController.navigate(AppLock)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)

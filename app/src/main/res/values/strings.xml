@@ -400,7 +400,6 @@
     <string name="show_system_app">Show system apps</string>
     <string name="suspend">Suspend</string>
     <string name="hide">Hide</string>
-    <string name="isapphidden_desc">Non-existent apps is hidden</string>
     <string name="always_on_vpn">Always-on VPN</string>
     <string name="enable_lockdown">Enable lockdown</string>
     <string name="clear_current_config">Clear current config</string>
@@ -621,14 +620,13 @@
     <string name="project_homepage">Project homepage</string>
     <string name="appearance">Appearance</string>
 
+    <string name="app_lock">App lock</string>
+    <string name="minimum_length_4">The length must not be less than 4</string>
+    <string name="leave_empty_to_remain_unchanged">Leave empty to remain unchanged</string>
+    <string name="allow_biometrics">Allow biometrics</string>
+    <string name="unlock">Unlock</string>
     <string name="security">Security</string>
-    <string name="lock_owndroid">Lock OwnDroid</string>
-    <string name="enable_bio_auth">Auth with biometrics</string>
-    <string name="authenticate">Authenticate</string>
-    <string name="lock_in_background">Lock when switch to background</string>
     <string name="clear_storage">Clear storage</string>
-    <string name="skipped_authentication">Skipped authentication because it is unavailable.</string>
-    <string name="failed_to_authenticate">Failed to authenticate</string>
     
     <string name="api_key">API key</string>
     <string name="api_key_exist">The API key already exists, setting a new key will overwrite the current key.</string>

@@ -364,7 +364,6 @@
     <string name="show_system_app">显示系统应用</string>
     <string name="suspend">挂起</string>
     <string name="hide">隐藏</string>
-    <string name="isapphidden_desc">如果隐藏，有可能是没安装</string>
     <string name="always_on_vpn">VPN保持打开</string>
     <string name="enable_lockdown">启用锁定</string>
     <string name="clear_current_config">清除当前配置</string>
@@ -582,14 +581,13 @@
     <string name="project_homepage">项目主页</string>
     <string name="appearance">外观</string>
 
+    <string name="app_lock">应用锁</string>
+    <string name="minimum_length_4">长度不得小于4</string>
+    <string name="leave_empty_to_remain_unchanged">留空以保持未更改</string>
+    <string name="allow_biometrics">允许生物识别</string>
+    <string name="unlock">解锁</string>
     <string name="security">安全性</string>
-    <string name="lock_owndroid">锁定OwnDroid</string>
-    <string name="enable_bio_auth">使用生物识别</string>
-    <string name="authenticate">验证</string>
-    <string name="lock_in_background">处于后台时锁定</string>
     <string name="clear_storage">清除存储空间</string>
-    <string name="skipped_authentication">验证已跳过，因为不可用</string>
-    <string name="failed_to_authenticate">验证失败</string>
 
     <string name="api_key">API密钥</string>
     <string name="api_key_exist">API密钥已存在，设置新的密钥将会覆盖当前密钥</string>

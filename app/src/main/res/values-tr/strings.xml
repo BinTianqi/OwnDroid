@@ -381,7 +381,6 @@
     <string name="show_system_app">Sistem Uygulamalarını Göster</string>
     <string name="suspend">Askıya Al</string>
     <string name="hide">Gizle</string>
-    <string name="isapphidden_desc">Mevcut olmayan uygulamalar gizlidir</string>
     <string name="always_on_vpn">Her Zaman Açık VPN</string>
     <string name="enable_lockdown">Kilitlemeyi Etkinleştir</string>
     <string name="clear_current_config">Mevcut Yapılandırmayı Temizle</string>
@@ -602,14 +601,9 @@
     <string name="project_homepage">Proje Ana Sayfası</string>
     <string name="appearance">Görünüm</string>
 
+    <!--TODO: App lock-->
     <string name="security">Güvenlik</string>
-    <string name="lock_owndroid">OwnDroid\'i Kilitle</string>
-    <string name="enable_bio_auth">Biyometrik ile Kimlik Doğrulama</string>
-    <string name="authenticate">Kimlik Doğrula</string>
-    <string name="lock_in_background">Arka Plana Geçtiğinde Kilitle</string>
     <string name="clear_storage">Depolamayı Temizle</string>
-    <string name="skipped_authentication">Kimlik doğrulama kullanılamadığı için atlandı.</string>
-    <string name="failed_to_authenticate">Kimlik doğrulama başarısız oldu</string>
     
     <string name="api_key">API Anahtarı</string>
     <string name="api_key_exist">API anahtarı zaten mevcut, yeni bir anahtar ayarlamak mevcut anahtarı geçersiz kılacaktır.</string>

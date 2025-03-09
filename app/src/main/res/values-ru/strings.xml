@@ -373,7 +373,6 @@
     <string name="show_system_app">Показывать системные приложения</string>
     <string name="suspend">Приостановить</string>
     <string name="hide">Скрыть</string>
-    <string name="isapphidden_desc">Несуществующие приложения скрыты</string>
     <string name="always_on_vpn">Постоянный VPN</string>
     <string name="enable_lockdown">Включить блокировку</string>
     <string name="clear_current_config">Очистить текущую конфигурацию</string>
@@ -598,14 +597,9 @@
     <string name="project_homepage">Домашняя страница проекта</string> 
     <string name="appearance">Оформление</string> 
 
+    <!--TODO: app lock-->
     <string name="security">Безопасность</string>
-    <string name="lock_owndroid">Заблокировать OwnDroid</string>
-    <string name="enable_bio_auth">Аутентификация по биометрии</string>
-    <string name="authenticate">Аутентифицировать</string>
-    <string name="lock_in_background">Блокировать при переключении в фоновый режим</string>
     <string name="clear_storage">Очистить хранилище</string>
-    <string name="skipped_authentication">Аутентификация пропущена, поскольку она недоступна.</string>
-    <string name="failed_to_authenticate">Ошибка аутентификации</string>
     
     <string name="api_key">API ключ</string>
     <string name="api_key_exist">API ключ уже сущетвует, установка нового перезапишет текущий</string>

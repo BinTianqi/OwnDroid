@@ -92,7 +92,6 @@ dependencies {
     implementation(libs.shizuku.provider)
     implementation(libs.shizuku.api)
     implementation(libs.dhizuku.api)
-    implementation(libs.androidx.biometric)
     implementation(libs.androidx.fragment)
     implementation(libs.hiddenApiBypass)
     implementation(libs.serialization)

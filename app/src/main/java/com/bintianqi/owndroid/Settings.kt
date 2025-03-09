@@ -6,37 +6,48 @@ import android.net.Uri
 import android.os.Build.VERSION
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.biometric.BiometricManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import com.bintianqi.owndroid.ui.FunctionItem
-import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.MyScaffold
+import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.SwitchItem
 import kotlinx.serialization.Serializable
 import java.security.SecureRandom
@@ -55,7 +66,7 @@ fun SettingsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     MyScaffold(R.string.settings, 0.dp, onNavigateUp) {
         FunctionItem(title = R.string.options, icon = R.drawable.tune_fill0) { onNavigate(SettingsOptions) }
         FunctionItem(title = R.string.appearance, icon = R.drawable.format_paint_fill0) { onNavigate(Appearance) }
-        FunctionItem(title = R.string.security, icon = R.drawable.lock_fill0) { onNavigate(AuthSettings) }
+        FunctionItem(R.string.app_lock, icon = R.drawable.lock_fill0) { onNavigate(AppLockSettings) }
         FunctionItem(title = R.string.api, icon = R.drawable.apps_fill0) { onNavigate(ApiSettings) }
         FunctionItem(R.string.notifications, icon = R.drawable.notifications_fill0) { onNavigate(Notifications) }
         FunctionItem(title = R.string.export_logs, icon = R.drawable.description_fill0) {
@@ -139,39 +150,58 @@ fun AppearanceScreen(onNavigateUp: () -> Unit, currentTheme: ThemeSettings, onTh
     }
 }
 
-@Serializable object AuthSettings
+@Serializable object AppLockSettings
 
 @Composable
-fun AuthSettingsScreen(onNavigateUp: () -> Unit) {
-    val context = LocalContext.current
-    val sp = SharedPrefs(context)
-    var auth by remember{ mutableStateOf(sp.auth) }
-    MyScaffold(R.string.security, 0.dp, onNavigateUp) {
-        SwitchItem(
-            R.string.lock_owndroid, state = auth,
-            onCheckedChange = {
-                sp.auth = it
-                auth = it
-            }
+fun AppLockSettingsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.app_lock, 0.dp, onNavigateUp) {
+    val fm = LocalFocusManager.current
+    val sp = SharedPrefs(LocalContext.current)
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var allowBiometrics by remember { mutableStateOf(sp.biometricsUnlock) }
+    val fr = FocusRequester()
+    val alreadySet = !sp.lockPassword.isNullOrEmpty()
+    val isInputLegal = password.length !in 1..3 && (alreadySet || (password.isNotEmpty() && password.isNotBlank()))
+    Column(Modifier.widthIn(max = 300.dp).align(Alignment.CenterHorizontally)) {
+        OutlinedTextField(
+            password, { password = it }, Modifier.fillMaxWidth().padding(vertical = 4.dp),
+            label = { Text(stringResource(R.string.password)) },
+            supportingText = { Text(stringResource(if(alreadySet) R.string.leave_empty_to_remain_unchanged else R.string.minimum_length_4)) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions { fr.requestFocus() }
         )
-        if(auth) {
-            var bioAuth by remember { mutableIntStateOf(sp.biometricsAuth) } // 0:Disabled, 1:Enabled 2:Force enabled
-            LaunchedEffect(Unit) {
-                val bioManager = BiometricManager.from(context)
-                if(bioManager.canAuthenticate(BiometricManager.Authenticators.DEVICE_CREDENTIAL) != BiometricManager.BIOMETRIC_SUCCESS) {
-                    sp.biometricsAuth = 2
-                    bioAuth = 2
-                }
-            }
-            SwitchItem(
-                R.string.enable_bio_auth, state = bioAuth != 0,
-                onCheckedChange = { bioAuth = if(it) 1 else 0; sp.biometricsAuth = bioAuth }, enabled = bioAuth != 2
-            )
-            SwitchItem(
-                R.string.lock_in_background,
-                getState = { sp.lockInBackground },
-                onCheckedChange = { sp.lockInBackground = it }
-            )
+        OutlinedTextField(
+            confirmPassword, { confirmPassword = it }, Modifier.fillMaxWidth().focusRequester(fr),
+            label = { Text(stringResource(R.string.confirm_password)) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions { fm.clearFocus() }
+        )
+        if(VERSION.SDK_INT >= 28) Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), Arrangement.SpaceBetween, Alignment.CenterVertically) {
+            Text(stringResource(R.string.allow_biometrics))
+            Switch(allowBiometrics, { allowBiometrics = it })
+        }
+        Button(
+            onClick = {
+                fm.clearFocus()
+                if(password.isNotEmpty()) sp.lockPassword = password
+                sp.biometricsUnlock = allowBiometrics
+                onNavigateUp()
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = isInputLegal && confirmPassword == password
+        ) {
+            Text(stringResource(if(alreadySet) R.string.update else R.string.set))
+        }
+        if(alreadySet) FilledTonalButton(
+            onClick = {
+                fm.clearFocus()
+                sp.lockPassword = ""
+                sp.biometricsUnlock = false
+                onNavigateUp()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.disable))
         }
     }
 }

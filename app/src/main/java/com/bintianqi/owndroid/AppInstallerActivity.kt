@@ -11,13 +11,11 @@ import android.content.pm.PackageInstaller
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.biometric.BiometricPrompt
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -54,8 +52,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,6 +63,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.AndroidViewModel
@@ -100,7 +101,7 @@ class AppInstallerActivity:FragmentActivity() {
                     installing, options, { if(!installing) vm.options.value = it },
                     packages, { uri -> vm.packages.update { it.minus(uri) } },
                     { uris -> vm.packages.update { it.plus(uris) } },
-                    { vm.startInstallationProcess(this) }, writtenPackages, writingPackage,
+                    vm::startInstall, writtenPackages, writingPackage,
                     result, { vm.result.value = null }
                 )
             }
@@ -118,12 +119,14 @@ private fun AppInstaller(
     packages: Set<Uri> = setOf(Uri.parse("https://example.com")),
     onPackageRemove: (Uri) -> Unit = {},
     onPackageChoose: (List<Uri>) -> Unit = {},
-    onFabPressed: () -> Unit = {},
+    onStartInstall: () -> Unit = {},
     writtenPackages: Set<Uri> = setOf(Uri.parse("https://example.com")),
     writingPackage: Uri? = null,
     result: Intent? = null,
     onResultDialogClose: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+    var appLockDialog by rememberSaveable { mutableStateOf(false) }
     val coroutine = rememberCoroutineScope()
     Scaffold(
         topBar = {
@@ -138,7 +141,9 @@ private fun AppInstaller(
                     if(installing) CircularProgressIndicator(modifier = Modifier.size(24.dp))
                     else Icon(Icons.Default.PlayArrow, null)
                 },
-                onClick = onFabPressed,
+                onClick = {
+                    if(SharedPrefs(context).lockPassword.isNullOrEmpty()) onStartInstall() else appLockDialog = true
+                },
                 expanded = !installing
             )
         }
@@ -174,6 +179,12 @@ private fun AppInstaller(
             }
             ResultDialog(result, onResultDialogClose)
         }
+    }
+    if(appLockDialog) Dialog({ appLockDialog = false }) {
+        AppLockDialog({
+            appLockDialog = false
+            onStartInstall()
+        }) { appLockDialog = false }
     }
 }
 
@@ -311,20 +322,6 @@ class AppInstallerViewModel(application: Application): AndroidViewModel(applicat
 
     val writtenPackages = MutableStateFlow(setOf<Uri>())
     val writingPackage = MutableStateFlow<Uri?>(null)
-    fun startInstallationProcess(activity: FragmentActivity) {
-        val sp = SharedPrefs(getApplication<Application>())
-        if(sp.auth) startAuth(activity, object : BiometricPrompt.AuthenticationCallback() {
-            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                super.onAuthenticationSucceeded(result)
-                startInstall()
-            }
-            override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                super.onAuthenticationError(errorCode, errString)
-                Toast.makeText(activity, R.string.failed_to_authenticate, Toast.LENGTH_SHORT).show()
-            }
-        })
-        else startInstall()
-    }
     private fun getSessionParams(): PackageInstaller.SessionParams {
         return PackageInstaller.SessionParams(options.value.mode).apply {
             if(Build.VERSION.SDK_INT >= 34) {
@@ -334,7 +331,7 @@ class AppInstallerViewModel(application: Application): AndroidViewModel(applicat
             setInstallLocation(options.value.location)
         }
     }
-    private fun startInstall() {
+    fun startInstall() {
         if(installing.value) return
         installing.value = true
         viewModelScope.launch(Dispatchers.IO) {

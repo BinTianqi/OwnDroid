@@ -14,13 +14,12 @@ class SharedPrefs(context: Context) {
     var displayDangerousFeatures by BooleanSharedPref("display_dangerous_features")
     var isApiEnabled by BooleanSharedPref("api.enabled")
     var apiKey by StringSharedPref("api.key")
-    var auth by BooleanSharedPref("auth")
-    var biometricsAuth by IntSharedPref("auth.biometrics")
-    var lockInBackground by BooleanSharedPref("auth.lock_in_background")
     var materialYou by BooleanSharedPref("theme.material_you", Build.VERSION.SDK_INT >= 31)
     /** -1: follow system, 0: off, 1: on */
     var darkTheme by IntSharedPref("theme.dark", -1)
     var blackTheme by BooleanSharedPref("theme.black")
+    var lockPassword by StringSharedPref("lock.password")
+    var biometricsUnlock by BooleanSharedPref("lock.biometrics")
 }
 
 private class BooleanSharedPref(val key: String, val defValue: Boolean = false): ReadWriteProperty<SharedPrefs, Boolean> {
