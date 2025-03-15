@@ -414,8 +414,6 @@
     <string name="set_default_dialer">Varsayılan Arama Uygulamasını Ayarla</string>
     <string name="app_will_be_default_dialer">Bu uygulama varsayılan arama uygulaması olarak ayarlanacak.</string>
     <string name="uninstall_app">Uygulamayı Kaldır</string>
-    <string name="silent_uninstall">Sessiz Kaldırma</string>
-    <string name="request_uninstall">Kaldırma İsteği</string>
     <string name="install_app">Uygulama Yükle</string>
     <string name="choose_apk_file">Bir APK Dosyası Seç</string>
     <string name="install_existing_app">Mevcut Uygulamayı Yükle</string>

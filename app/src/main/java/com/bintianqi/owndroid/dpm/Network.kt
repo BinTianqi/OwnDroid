@@ -88,6 +88,7 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -122,12 +123,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.os.bundleOf
 import com.bintianqi.owndroid.ChoosePackageContract
 import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SharedPrefs
+import com.bintianqi.owndroid.formatDate
 import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.humanReadableDate
 import com.bintianqi.owndroid.humanReadableDateTime
@@ -153,6 +156,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import java.net.InetAddress
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.reflect.jvm.jvmErasure
 
 @Serializable object Network
@@ -917,7 +923,8 @@ fun NetworkStatsScreen(onNavigateUp: () -> Unit, onNavigateToViewer: (NetworkSta
     MyScaffold(R.string.network_stats, onNavigateUp) {
         ExposedDropdownMenuBox(
             activeTextField == NetworkStatsActiveTextField.Type,
-            { activeTextField = if(it) NetworkStatsActiveTextField.Type else NetworkStatsActiveTextField.Type }
+            { activeTextField = if(it) NetworkStatsActiveTextField.Type else NetworkStatsActiveTextField.Type },
+            Modifier.padding(top = 8.dp, bottom = 4.dp)
         ) {
             val typeTextMap = mapOf(
                 1 to R.string.summary,
@@ -927,7 +934,7 @@ fun NetworkStatsScreen(onNavigateUp: () -> Unit, onNavigateToViewer: (NetworkSta
                 value = stringResource(typeTextMap[queryType]!!), onValueChange = {}, readOnly = true,
                 label = { Text(stringResource(R.string.type)) },
                 trailingIcon = { ExpandExposedTextFieldIcon(activeTextField == NetworkStatsActiveTextField.Type) },
-                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth().padding(bottom = 4.dp)
+                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth()
             )
             ExposedDropdownMenu(
                 activeTextField == NetworkStatsActiveTextField.Type, { activeTextField = NetworkStatsActiveTextField.None }
@@ -1185,7 +1192,7 @@ fun NetworkStatsScreen(onNavigateUp: () -> Unit, onNavigateToViewer: (NetworkSta
         Button(
             onClick = {
                 querying = true
-                coroutine.launch {
+                coroutine.launch(Dispatchers.IO) {
                     val buckets = try {
                         @Suppress("NewApi") if(queryType == 1) {
                             if(target == NetworkStatsTarget.Device)
@@ -1287,78 +1294,101 @@ data class NetworkStatsViewer(
 fun NetworkStatsViewerScreen(nsv: NetworkStatsViewer, onNavigateUp: () -> Unit) {
     var index by remember { mutableIntStateOf(0) }
     val size = nsv.stats.size
-    MySmallTitleScaffold(R.string.network_stats, onNavigateUp) {
+    val ps = rememberPagerState { size }
+    index = ps.currentPage
+    val coroutine = rememberCoroutineScope()
+    MySmallTitleScaffold(R.string.network_stats, onNavigateUp, 0.dp) {
         if(size > 1) Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 8.dp)
+            modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 8.dp)
         ) {
             IconButton(
-                onClick = { index -= 1 },
+                onClick = {
+                    coroutine.launch {
+                        ps.animateScrollToPage(index - 1)
+                    }
+                },
                 enabled = index > 0
             ) {
                 Icon(imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft, contentDescription = null)
             }
             Text("${index + 1} / $size", modifier = Modifier.padding(horizontal = 8.dp))
             IconButton(
-                onClick = { index += 1 },
+                onClick = {
+                    coroutine.launch {
+                        ps.animateScrollToPage(index + 1)
+                    }
+                },
                 enabled = index < size - 1
             ) {
                 Icon(imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight, contentDescription = null)
             }
         }
-        val data = nsv.stats[index]
-        Text(
-            data.startTime.humanReadableDateTime + "  ~  " + data.endTime.humanReadableDateTime,
-            modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 8.dp)
-        )
-        val txBytes = data.txBytes
-        Text(stringResource(R.string.transmitted), style = typography.titleLarge)
-        Column(modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)) {
-            Text("$txBytes bytes (${formatFileSize(txBytes)})")
-            Text(data.txPackets.toString() + " packets")
-        }
-        val rxBytes = data.rxBytes
-        Text(stringResource(R.string.received), style = typography.titleLarge)
-        Column(modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)) {
-            Text("$rxBytes bytes (${formatFileSize(rxBytes)})")
-            Text(data.rxPackets.toString() + " packets")
-        }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            val text = when(data.state) {
-                NetworkStats.Bucket.STATE_ALL -> R.string.all
-                NetworkStats.Bucket.STATE_DEFAULT -> R.string.default_str
-                NetworkStats.Bucket.STATE_FOREGROUND -> R.string.foreground
-                else -> R.string.unknown
-            }
-            Text(stringResource(R.string.state), style = typography.titleMedium, modifier = Modifier.padding(end = 8.dp))
-            Text(stringResource(text))
-        }
-        if(VERSION.SDK_INT >= 24) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                val tag = data.tag
-                Text(stringResource(R.string.tag), style = typography.titleMedium, modifier = Modifier.padding(end = 8.dp))
-                Text(if(tag == NetworkStats.Bucket.TAG_NONE) stringResource(R.string.all) else tag.toString())
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                val text = when(data.roaming) {
-                    NetworkStats.Bucket.ROAMING_ALL -> R.string.all
-                    NetworkStats.Bucket.ROAMING_YES -> R.string.yes
-                    NetworkStats.Bucket.ROAMING_NO -> R.string.no
-                    else -> R.string.unknown
+        HorizontalPager(ps, Modifier.padding(top = 8.dp)) { page ->
+            val data = nsv.stats[page]
+            Column(Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding)) {
+                Row(Modifier.align(Alignment.CenterHorizontally).padding(bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    SimpleDateFormat("", Locale.getDefault()).format(Date(data.startTime))
+                    Text(
+                        formatDate("yyyy/MM/dd", data.startTime) + "\n" + formatDate("HH:mm:ss", data.startTime),
+                        textAlign = TextAlign.Center
+                    )
+                    Text("~", Modifier.padding(horizontal = 8.dp))
+                    Text(
+                        formatDate("yyyy/MM/dd", data.endTime) + "\n" + formatDate("HH:mm:ss", data.endTime),
+                        textAlign = TextAlign.Center
+                    )
                 }
-                Text(stringResource(R.string.roaming), style = typography.titleMedium, modifier = Modifier.padding(end = 8.dp))
-                Text(stringResource(text))
+                val txBytes = data.txBytes
+                Text(stringResource(R.string.transmitted), style = typography.titleLarge)
+                Column(modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)) {
+                    Text("$txBytes bytes (${formatFileSize(txBytes)})")
+                    Text(data.txPackets.toString() + " packets")
+                }
+                val rxBytes = data.rxBytes
+                Text(stringResource(R.string.received), style = typography.titleLarge)
+                Column(modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)) {
+                    Text("$rxBytes bytes (${formatFileSize(rxBytes)})")
+                    Text(data.rxPackets.toString() + " packets")
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val text = when(data.state) {
+                        NetworkStats.Bucket.STATE_ALL -> R.string.all
+                        NetworkStats.Bucket.STATE_DEFAULT -> R.string.default_str
+                        NetworkStats.Bucket.STATE_FOREGROUND -> R.string.foreground
+                        else -> R.string.unknown
+                    }
+                    Text(stringResource(R.string.state), style = typography.titleMedium, modifier = Modifier.padding(end = 8.dp))
+                    Text(stringResource(text))
+                }
+                if(VERSION.SDK_INT >= 24) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        val tag = data.tag
+                        Text(stringResource(R.string.tag), style = typography.titleMedium, modifier = Modifier.padding(end = 8.dp))
+                        Text(if(tag == NetworkStats.Bucket.TAG_NONE) stringResource(R.string.all) else tag.toString())
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        val text = when(data.roaming) {
+                            NetworkStats.Bucket.ROAMING_ALL -> R.string.all
+                            NetworkStats.Bucket.ROAMING_YES -> R.string.yes
+                            NetworkStats.Bucket.ROAMING_NO -> R.string.no
+                            else -> R.string.unknown
+                        }
+                        Text(stringResource(R.string.roaming), style = typography.titleMedium, modifier = Modifier.padding(end = 8.dp))
+                        Text(stringResource(text))
+                    }
+                }
+                if(VERSION.SDK_INT >= 26) Row(verticalAlignment = Alignment.CenterVertically) {
+                    val text = when(data.metered) {
+                        NetworkStats.Bucket.METERED_ALL -> R.string.all
+                        NetworkStats.Bucket.METERED_YES -> R.string.yes
+                        NetworkStats.Bucket.METERED_NO -> R.string.no
+                        else -> R.string.unknown
+                    }
+                    Text(stringResource(R.string.metered), style = typography.titleMedium, modifier = Modifier.padding(end = 8.dp))
+                    Text(stringResource(text))
+                }
             }
-        }
-        if(VERSION.SDK_INT >= 26) Row(verticalAlignment = Alignment.CenterVertically) {
-            val text = when(data.metered) {
-                NetworkStats.Bucket.METERED_ALL -> R.string.all
-                NetworkStats.Bucket.METERED_YES -> R.string.yes
-                NetworkStats.Bucket.METERED_NO -> R.string.no
-                else -> R.string.unknown
-            }
-            Text(stringResource(R.string.metered), style = typography.titleMedium, modifier = Modifier.padding(end = 8.dp))
-            Text(stringResource(text))
         }
     }
 }

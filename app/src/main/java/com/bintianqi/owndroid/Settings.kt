@@ -67,7 +67,7 @@ fun SettingsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
         FunctionItem(title = R.string.options, icon = R.drawable.tune_fill0) { onNavigate(SettingsOptions) }
         FunctionItem(title = R.string.appearance, icon = R.drawable.format_paint_fill0) { onNavigate(Appearance) }
         FunctionItem(R.string.app_lock, icon = R.drawable.lock_fill0) { onNavigate(AppLockSettings) }
-        FunctionItem(title = R.string.api, icon = R.drawable.apps_fill0) { onNavigate(ApiSettings) }
+        FunctionItem(title = R.string.api, icon = R.drawable.code_fill0) { onNavigate(ApiSettings) }
         FunctionItem(R.string.notifications, icon = R.drawable.notifications_fill0) { onNavigate(Notifications) }
         FunctionItem(title = R.string.export_logs, icon = R.drawable.description_fill0) {
             val time = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault()).format(Date(System.currentTimeMillis()))

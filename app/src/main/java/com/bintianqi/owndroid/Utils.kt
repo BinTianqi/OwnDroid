@@ -100,6 +100,9 @@ val Long.humanReadableDate: String
 val Long.humanReadableDateTime: String
     get() = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(Date(this))
 
+fun formatDate(pattern: String, value: Long): String
+    = SimpleDateFormat(pattern, Locale.getDefault()).format(Date(value))
+
 fun Context.showOperationResultToast(success: Boolean) {
     Toast.makeText(this, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
 }

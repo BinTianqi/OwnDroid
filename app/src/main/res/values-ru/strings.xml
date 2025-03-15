@@ -406,8 +406,6 @@
     <string name="set_default_dialer">Установить приложение для звонков по умолчанию</string>
     <string name="app_will_be_default_dialer">Это приложение будет установлено в качестве приложения для звонков по умолчанию.</string>
     <string name="uninstall_app">Удалить приложение</string>
-    <string name="silent_uninstall">Тихое удаление</string>
-    <string name="request_uninstall">Запросить удаление</string>
     <string name="install_app">Установить приложение</string>
     <!--TODO: 2 strings-->
     <string name="choose_apk_file">Choose an APK file</string>

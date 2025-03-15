@@ -90,6 +90,7 @@ import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.Animations
+import com.bintianqi.owndroid.ui.ErrorDialog
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.NavIcon
@@ -157,7 +158,6 @@ fun ApplicationsScreen(onNavigateUp: () -> Unit) {
             composable<PermittedAccessibilityServices> { PermittedAccessibilityServicesScreen(pkgName) }
             composable<PermittedInputMethods> { PermittedInputMethodsScreen(pkgName) }
             composable<KeepUninstalledPackages> { KeepUninstalledPackagesScreen(pkgName) }
-            composable<UninstallPackage> { UninstallPackageScreen(pkgName) }
         }
     }
 }
@@ -166,8 +166,9 @@ fun ApplicationsScreen(onNavigateUp: () -> Unit) {
 
 @Composable
 private fun HomeScreen(pkgName: String, onNavigate: (Any) -> Unit) {
-    /** 1:Enable system app, 2:Clear app storage, 3:Set default dialer, 4:App control, 5:Install existing app */
+    /** 1:Enable system app, 2:Clear app storage, 3:Set default dialer, 4:App control, 5:Install existing app, 6:Uninstall confirmation */
     var dialogStatus by remember { mutableIntStateOf(0) }
+    var errorMessage by remember { mutableStateOf("") }
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -271,8 +272,12 @@ private fun HomeScreen(pkgName: String, onNavigate: (Any) -> Unit) {
             Toast.makeText(context, R.string.choose_apk_file, Toast.LENGTH_SHORT).show()
             chooseApks.launch(APK_MIME)
         }
-        if(VERSION.SDK_INT >= 28) FunctionItem(R.string.install_existing_app, icon = R.drawable.install_mobile_fill0) { dialogStatus = 5 }
-        FunctionItem(title = R.string.uninstall_app, icon = R.drawable.delete_fill0) { onNavigate(UninstallPackage) }
+        if(VERSION.SDK_INT >= 28) FunctionItem(R.string.install_existing_app, icon = R.drawable.install_mobile_fill0) {
+            if(pkgName.isNotBlank()) dialogStatus = 5
+        }
+        FunctionItem(title = R.string.uninstall_app, icon = R.drawable.delete_fill0) {
+            if(pkgName.isNotBlank()) dialogStatus = 6
+        }
         if(VERSION.SDK_INT >= 34 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             FunctionItem(title = R.string.set_default_dialer, icon = R.drawable.call_fill0) {
                 if(pkgName != "") dialogStatus = 3
@@ -428,6 +433,27 @@ private fun HomeScreen(pkgName: String, onNavigate: (Any) -> Unit) {
         },
         onDismissRequest = { dialogStatus = 0 }
     )
+    if(dialogStatus == 6) AlertDialog(
+        title = { Text(stringResource(R.string.uninstall)) },
+        text = { Text(pkgName) },
+        onDismissRequest = { dialogStatus = 0 },
+        confirmButton = {
+            TextButton(
+                onClick = { uninstallPackage(context, pkgName) { errorMessage = it } },
+                colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
+            ) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        dismissButton = {
+            TextButton({
+                dialogStatus = 0
+            }) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
+    ErrorDialog(errorMessage) { errorMessage = "" }
     LaunchedEffect(dialogStatus) { focusMgr.clearFocus() }
 }
 
@@ -706,7 +732,7 @@ private fun CrossProfileWidgetProvidersScreen(pkgName: String) {
 
 @RequiresApi(34)
 @Composable
-private fun CredentialManagerPolicyScreen(pkgName: String) { // TODO: rename "manage" to "manager"
+private fun CredentialManagerPolicyScreen(pkgName: String) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     var policy: PackagePolicy?
@@ -940,74 +966,34 @@ private fun KeepUninstalledPackagesScreen(pkgName: String) {
     }
 }
 
-@Serializable private object UninstallPackage
-
-@Composable
-private fun UninstallPackageScreen(pkgName: String) {
-    val context = LocalContext.current
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = HorizontalPadding).verticalScroll(rememberScrollState())) {
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.uninstall_app), style = typography.headlineLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Column(modifier = Modifier.fillMaxWidth()) { 
-            Button(
-                onClick = {
-                    val receiver = object : BroadcastReceiver() {
-                        override fun onReceive(context: Context, intent: Intent) {
-                            val statusExtra = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, 999)
-                            if(statusExtra == PackageInstaller.STATUS_PENDING_USER_ACTION) {
-                                @SuppressWarnings("UnsafeIntentLaunch")
-                                context.startActivity(intent.getParcelableExtra(Intent.EXTRA_INTENT) as Intent?)
-                            } else {
-                                context.unregisterReceiver(this)
-                                if(statusExtra == PackageInstaller.STATUS_SUCCESS) {
-                                    context.showOperationResultToast(true)
-                                } else {
-                                    errorMessage = parsePackageInstallerMessage(context, intent)
-                                }
-                            }
-                        }
-                    }
-                    ContextCompat.registerReceiver(
-                        context, receiver, IntentFilter(AppInstallerViewModel.ACTION), null,
-                        null, ContextCompat.RECEIVER_EXPORTED
-                    )
-                    val pi = if(VERSION.SDK_INT >= 34) {
-                        PendingIntent.getBroadcast(
-                            context, 0, Intent(AppInstallerViewModel.ACTION),
-                            PendingIntent.FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT or PendingIntent.FLAG_MUTABLE
-                        ).intentSender
-                    } else {
-                        PendingIntent.getBroadcast(context, 0, Intent(AppInstallerViewModel.ACTION), PendingIntent.FLAG_MUTABLE).intentSender
-                    }
-                    context.getPackageInstaller().uninstall(pkgName, pi)
-                },
-                enabled = pkgName != "",
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.silent_uninstall))
-            }
-            Button(
-                onClick = {
-                    val intent = Intent(Intent.ACTION_UNINSTALL_PACKAGE)
-                    intent.setData(Uri.parse("package:$pkgName"))
-                    context.startActivity(intent)
-                },
-                enabled = pkgName != "",
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.request_uninstall))
+private fun uninstallPackage(context: Context, packageName: String, onError: (String) -> Unit) {
+    val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val statusExtra = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, 999)
+            if(statusExtra == PackageInstaller.STATUS_PENDING_USER_ACTION) {
+                @SuppressWarnings("UnsafeIntentLaunch")
+                context.startActivity(intent.getParcelableExtra(Intent.EXTRA_INTENT) as Intent?)
+            } else {
+                context.unregisterReceiver(this)
+                if(statusExtra == PackageInstaller.STATUS_SUCCESS) {
+                    context.showOperationResultToast(true)
+                } else {
+                    onError(parsePackageInstallerMessage(context, intent))
+                }
             }
         }
     }
-    if(errorMessage != null) AlertDialog(
-        title = { Text(stringResource(R.string.failure)) },
-        text = { Text(errorMessage!!) },
-        confirmButton = {
-            TextButton({ errorMessage = null }) { Text(stringResource(R.string.confirm)) }
-        },
-        onDismissRequest = { errorMessage = null }
+    ContextCompat.registerReceiver(
+        context, receiver, IntentFilter(AppInstallerViewModel.ACTION), null,
+        null, ContextCompat.RECEIVER_EXPORTED
     )
+    val pi = if(VERSION.SDK_INT >= 34) {
+        PendingIntent.getBroadcast(
+            context, 0, Intent(AppInstallerViewModel.ACTION),
+            PendingIntent.FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT or PendingIntent.FLAG_MUTABLE
+        ).intentSender
+    } else {
+        PendingIntent.getBroadcast(context, 0, Intent(AppInstallerViewModel.ACTION), PendingIntent.FLAG_MUTABLE).intentSender
+    }
+    context.getPackageInstaller().uninstall(packageName, pi)
 }
-

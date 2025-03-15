@@ -433,8 +433,6 @@
     <string name="set_default_dialer">Set default dialer</string>
     <string name="app_will_be_default_dialer">This app will be set as the default dialer application.</string>
     <string name="uninstall_app">Uninstall app</string>
-    <string name="silent_uninstall">Silent uninstall</string>
-    <string name="request_uninstall">Request uninstall</string>
     <string name="install_app">Install app</string>
     <string name="choose_apk_file">Choose an APK file</string>
     <string name="install_existing_app">Install existing app</string>

@@ -394,8 +394,6 @@
     <string name="set_default_dialer">设为默认拨号应用</string>
     <string name="app_will_be_default_dialer">这个应用将被设为默认拨号应用</string>
     <string name="uninstall_app">卸载应用</string>
-    <string name="silent_uninstall">静默卸载</string>
-    <string name="request_uninstall">请求卸载</string>
     <string name="install_app">安装应用</string>
     <string name="choose_apk_file">选择一个APK文件</string>
     <string name="install_existing_app">安装已存在的应用</string>
