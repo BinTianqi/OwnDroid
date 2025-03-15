@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.os.bundleOf
 import com.bintianqi.owndroid.ChoosePackageContract
+import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.backToHomeStateFlow
@@ -73,7 +74,7 @@ fun PermissionsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit, onNav
     var dialog by remember { mutableIntStateOf(0) }
     var bindingShizuku by remember { mutableStateOf(false) }
     val enrollmentSpecificId = if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) dpm.enrollmentSpecificId else ""
-    MyScaffold(R.string.permissions, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.permissions, onNavigateUp, 0.dp) {
         if(!dpm.isDeviceOwnerApp(context.packageName)) {
             SwitchItem(
                 R.string.dhizuku,
@@ -276,7 +277,7 @@ fun LockScreenInfoScreen(onNavigateUp: () -> Unit) {
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var infoText by remember { mutableStateOf(dpm.deviceOwnerLockScreenInfo?.toString() ?: "") }
-    MyScaffold(R.string.lock_screen_info, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.lock_screen_info, onNavigateUp) {
         OutlinedTextField(
             value = infoText,
             label = { Text(stringResource(R.string.lock_screen_info)) },
@@ -319,7 +320,7 @@ fun DeviceAdminScreen(onNavigateUp: () -> Unit) {
     val receiver = context.getReceiver()
     var deactivateDialog by remember { mutableStateOf(false) }
     val deviceAdmin = context.isDeviceAdmin
-    MyScaffold(R.string.device_admin, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.device_admin, onNavigateUp) {
         Text(text = stringResource(if(context.isDeviceAdmin) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         AnimatedVisibility(deviceAdmin) {
@@ -378,7 +379,7 @@ fun ProfileOwnerScreen(onNavigateUp: () -> Unit) {
     val receiver = context.getReceiver()
     var deactivateDialog by remember { mutableStateOf(false) }
     val profileOwner = context.isProfileOwner
-    MyScaffold(R.string.profile_owner, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.profile_owner, onNavigateUp) {
         Text(stringResource(if(profileOwner) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         if(VERSION.SDK_INT >= 24 && profileOwner) {
@@ -432,7 +433,7 @@ fun DeviceOwnerScreen(onNavigateUp: () -> Unit) {
     val dpm = context.getDPM()
     var deactivateDialog by remember { mutableStateOf(false) }
     val deviceOwner = context.isDeviceOwner
-    MyScaffold(R.string.device_owner, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.device_owner, onNavigateUp) {
         Text(text = stringResource(if(deviceOwner) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         AnimatedVisibility(deviceOwner) {
@@ -538,7 +539,7 @@ fun DelegatedAdminsScreen(onNavigateUp: () -> Unit, onNavigate: (AddDelegatedAdm
         packages.putAll(list)
     }
     LaunchedEffect(Unit) { refresh() }
-    MyScaffold(R.string.delegated_admins, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.delegated_admins, onNavigateUp, 0.dp) {
         packages.forEach { (pkg, scopes) ->
             Row(
                 Modifier.fillMaxWidth().padding(vertical = 8.dp).padding(start = 14.dp, end = 8.dp),
@@ -587,7 +588,7 @@ fun AddDelegatedAdminScreen(data: AddDelegatedAdmin, onNavigateUp: () -> Unit) {
     val choosePackage = rememberLauncherForActivityResult(ChoosePackageContract()) { result ->
         result?.let { input = it }
     }
-    MySmallTitleScaffold(if(updateMode) R.string.place_holder else R.string.add_delegated_admin, 0.dp, onNavigateUp) {
+    MySmallTitleScaffold(if(updateMode) R.string.place_holder else R.string.add_delegated_admin, onNavigateUp, 0.dp) {
         OutlinedTextField(
             value = input, onValueChange = { input = it },
             label = { Text(stringResource(R.string.package_name)) },
@@ -599,7 +600,7 @@ fun AddDelegatedAdminScreen(data: AddDelegatedAdmin, onNavigateUp: () -> Unit) {
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions { fm.clearFocus() },
             readOnly = updateMode,
-            modifier = Modifier.fillMaxWidth().padding(8.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = HorizontalPadding)
         )
         DelegatedScope.entries.filter { VERSION.SDK_INT >= it.requiresApi }.forEach {scope ->
             FullWidthCheckBoxItem(scope.string, scope in scopes) {
@@ -611,7 +612,7 @@ fun AddDelegatedAdminScreen(data: AddDelegatedAdmin, onNavigateUp: () -> Unit) {
                 context.getDPM().setDelegatedScopes(context.getReceiver(), input, scopes.map { it.id })
                 onNavigateUp()
             },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+            modifier = Modifier.fillMaxWidth().padding(HorizontalPadding, vertical = 4.dp),
             enabled = input.isNotBlank() && (!updateMode || scopes.toList() != data.scopes)
         ) {
             Text(stringResource(if(updateMode) R.string.update else R.string.add))
@@ -621,7 +622,7 @@ fun AddDelegatedAdminScreen(data: AddDelegatedAdmin, onNavigateUp: () -> Unit) {
                 context.getDPM().setDelegatedScopes(context.getReceiver(), input, emptyList())
                 onNavigateUp()
             },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+            modifier = Modifier.fillMaxWidth().padding(HorizontalPadding),
             colors = ButtonDefaults.buttonColors(colorScheme.error, colorScheme.onError)
         ) {
             Text(stringResource(R.string.delete))
@@ -637,7 +638,7 @@ fun DeviceInfoScreen(onNavigateUp: () -> Unit) {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     var dialog by remember { mutableIntStateOf(0) }
-    MyScaffold(R.string.device_info, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.device_info, onNavigateUp) {
         if(VERSION.SDK_INT>=34 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
             CardItem(R.string.financed_device, dpm.isDeviceFinanced.yesOrNo)
         }
@@ -686,7 +687,7 @@ fun SupportMessageScreen(onNavigateUp: () -> Unit) {
         longMsg = dpm.getLongSupportMessage(receiver)?.toString() ?: ""
     }
     LaunchedEffect(Unit) { refreshMsg() }
-    MyScaffold(R.string.support_messages, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.support_messages, onNavigateUp) {
         OutlinedTextField(
             value = shortMsg,
             label = { Text(stringResource(R.string.short_support_msg)) },
@@ -761,7 +762,7 @@ fun TransferOwnershipScreen(onNavigateUp: () -> Unit) {
     var input by remember { mutableStateOf("") }
     val componentName = ComponentName.unflattenFromString(input)
     var dialog by remember { mutableStateOf(false) }
-    MyScaffold(R.string.transfer_ownership, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.transfer_ownership, onNavigateUp) {
         OutlinedTextField(
             value = input, onValueChange = { input = it }, label = { Text(stringResource(R.string.target_component_name)) },
             modifier = Modifier.fillMaxWidth(),

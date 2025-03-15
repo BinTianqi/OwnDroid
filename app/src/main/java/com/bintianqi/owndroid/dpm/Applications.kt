@@ -86,6 +86,7 @@ import com.bintianqi.owndroid.APK_MIME
 import com.bintianqi.owndroid.AppInstallerActivity
 import com.bintianqi.owndroid.AppInstallerViewModel
 import com.bintianqi.owndroid.ChoosePackageContract
+import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.Animations
@@ -439,7 +440,7 @@ private fun UserControlDisabledPackagesScreen(pkgName:String) {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val pkgList = remember { mutableStateListOf<String>() }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = HorizontalPadding).verticalScroll(rememberScrollState())) {
         val refresh = {
             pkgList.clear()
             pkgList.addAll(dpm.getUserControlDisabledPackages(receiver))
@@ -591,7 +592,7 @@ private fun DisableMeteredDataScreen(pkgName: String) {
         packages.addAll(dpm.getMeteredDataDisabledPackages(receiver))
     }
     LaunchedEffect(Unit) { refresh() }
-    Column(Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
+    Column(Modifier.fillMaxSize().padding(horizontal = HorizontalPadding).verticalScroll(rememberScrollState())) {
         Text(stringResource(R.string.disable_metered_data), Modifier.padding(vertical = 8.dp), style = typography.headlineLarge)
         Column(Modifier.animateContentSize()) {
             packages.forEach { pkg ->
@@ -631,7 +632,7 @@ private fun CrossProfilePackagesScreen(pkgName: String) {
         crossProfilePkg.addAll(dpm.getCrossProfilePackages(receiver))
     }
     LaunchedEffect(Unit) { refresh() }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = HorizontalPadding).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.cross_profile_package), style = typography.headlineLarge)
         Text(text = stringResource(R.string.app_list_is))
@@ -673,7 +674,7 @@ private fun CrossProfileWidgetProvidersScreen(pkgName: String) {
         pkgList.addAll(dpm.getCrossProfileWidgetProviders(receiver))
     }
     LaunchedEffect(Unit) { refresh() }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = HorizontalPadding).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.cross_profile_widget), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -718,7 +719,7 @@ private fun CredentialManagerPolicyScreen(pkgName: String) { // TODO: rename "ma
         pkgList.addAll(policy?.packageNames ?: setOf())
     }
     LaunchedEffect(Unit) { refreshPolicy() }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = HorizontalPadding).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.credential_manager_policy), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -786,7 +787,7 @@ private fun PermittedAccessibilityServicesScreen(pkgName: String) {
         pkgList.addAll(getList ?: listOf())
     }
     LaunchedEffect(Unit) { refresh() }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = HorizontalPadding).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.permitted_accessibility_services), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -851,7 +852,7 @@ private fun PermittedInputMethodsScreen(pkgName: String) {
         pkgList.addAll(getList ?: listOf())
     }
     LaunchedEffect(Unit) { refresh() }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = HorizontalPadding).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.permitted_ime), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -907,7 +908,7 @@ private fun KeepUninstalledPackagesScreen(pkgName: String) {
         dpm.getKeepUninstalledPackages(receiver)?.forEach { pkgList += it }
     }
     LaunchedEffect(Unit) { refresh() }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = HorizontalPadding).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.keep_uninstalled_packages), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -945,7 +946,7 @@ private fun KeepUninstalledPackagesScreen(pkgName: String) {
 private fun UninstallPackageScreen(pkgName: String) {
     val context = LocalContext.current
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = HorizontalPadding).verticalScroll(rememberScrollState())) {
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.uninstall_app), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))

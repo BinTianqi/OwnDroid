@@ -117,6 +117,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.bintianqi.owndroid.ChoosePackageContract
+import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.NotificationUtils
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SharedPrefs
@@ -163,7 +164,7 @@ fun SystemManagerScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
     var dialog by remember { mutableIntStateOf(0) }
-    MyScaffold(R.string.system, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.system, onNavigateUp, 0.dp) {
         if(deviceOwner || profileOwner) {
             FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { onNavigate(SystemOptions) }
         }
@@ -256,7 +257,7 @@ fun SystemOptionsScreen(onNavigateUp: () -> Unit) {
     val profileOwner = context.isProfileOwner
     val um = context.getSystemService(Context.USER_SERVICE) as UserManager
     var dialog by remember { mutableIntStateOf(0) }
-    MyScaffold(R.string.options, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.options, onNavigateUp, 0.dp) {
         if(deviceOwner || profileOwner) {
             SwitchItem(R.string.disable_cam, icon = R.drawable.photo_camera_fill0,
                 getState = { dpm.getCameraDisabled(null) }, onCheckedChange = { dpm.setCameraDisabled(receiver,it) }
@@ -341,7 +342,7 @@ fun KeyguardScreen(onNavigateUp: () -> Unit) {
     val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
-    MyScaffold(R.string.keyguard, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.keyguard, onNavigateUp) {
         if(VERSION.SDK_INT >= 23) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -425,8 +426,8 @@ fun HardwareMonitorScreen(onNavigateUp: () -> Unit) {
             delay(refreshIntervalMs)
         }
     }
-    MySmallTitleScaffold(R.string.hardware_monitor, 8.dp, onNavigateUp) {
-        Text(stringResource(R.string.refresh_interval), style = typography.titleLarge, modifier = Modifier.padding(vertical = 4.dp))
+    MyScaffold(R.string.hardware_monitor, onNavigateUp) {
+        Text(stringResource(R.string.refresh_interval), style = typography.titleLarge, modifier = Modifier.padding(top = 8.dp, bottom = 4.dp))
         Slider(refreshInterval, { refreshInterval = it }, valueRange = 0.5F..2F, steps = 14)
         Text("${refreshIntervalMs}ms")
         Spacer(Modifier.padding(vertical = 10.dp))
@@ -491,7 +492,7 @@ fun ChangeTimeScreen(onNavigateUp: () -> Unit) {
     val timeInteractionSource = remember { MutableInteractionSource() }
     if(dateInteractionSource.collectIsPressedAsState().value) picker = 1
     if(timeInteractionSource.collectIsPressedAsState().value) picker = 2
-    MyScaffold(R.string.change_time, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.change_time, onNavigateUp) {
         SingleChoiceSegmentedButtonRow(
             modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
         ) {
@@ -603,7 +604,7 @@ fun ChangeTimeZoneScreen(onNavigateUp: () -> Unit) {
     val receiver = context.getReceiver()
     var inputTimezone by remember { mutableStateOf("") }
     var dialog by remember { mutableStateOf(false) }
-    MyScaffold(R.string.change_timezone, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.change_timezone, onNavigateUp) {
         OutlinedTextField(
             value = inputTimezone,
             label = { Text(stringResource(R.string.timezone_id)) },
@@ -848,7 +849,7 @@ fun ContentProtectionPolicyScreen(onNavigateUp: () -> Unit) {
     var policy by remember { mutableIntStateOf(DevicePolicyManager.CONTENT_PROTECTION_NOT_CONTROLLED_BY_POLICY) }
     fun refresh() { policy = dpm.getContentProtectionPolicy(receiver) }
     LaunchedEffect(Unit) { refresh() }
-    MyScaffold(R.string.content_protection_policy, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.content_protection_policy, onNavigateUp, 0.dp) {
         mapOf(
             DevicePolicyManager.CONTENT_PROTECTION_NOT_CONTROLLED_BY_POLICY to R.string.not_controlled_by_policy,
             DevicePolicyManager.CONTENT_PROTECTION_ENABLED to R.string.enabled,
@@ -862,11 +863,11 @@ fun ContentProtectionPolicyScreen(onNavigateUp: () -> Unit) {
                 refresh()
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 8.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = HorizontalPadding)
         ) {
             Text(stringResource(R.string.apply))
         }
-        Notes(R.string.info_content_protection_policy, 8.dp)
+        Notes(R.string.info_content_protection_policy, HorizontalPadding)
     }
 }
 
@@ -879,7 +880,7 @@ fun PermissionPolicyScreen(onNavigateUp: () -> Unit) {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     var selectedPolicy by remember { mutableIntStateOf(dpm.getPermissionPolicy(receiver)) }
-    MyScaffold(R.string.permission_policy, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.permission_policy, onNavigateUp, 0.dp) {
         FullWidthRadioButtonItem(R.string.default_stringres, selectedPolicy == PERMISSION_POLICY_PROMPT) {
             selectedPolicy = PERMISSION_POLICY_PROMPT
         }
@@ -895,11 +896,11 @@ fun PermissionPolicyScreen(onNavigateUp: () -> Unit) {
                 dpm.setPermissionPolicy(receiver,selectedPolicy)
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+            modifier = Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding)
         ) {
             Text(stringResource(R.string.apply))
         }
-        Notes(R.string.info_permission_policy, 8.dp)
+        Notes(R.string.info_permission_policy, HorizontalPadding)
     }
 }
 
@@ -911,7 +912,7 @@ fun MtePolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     var selectedMtePolicy by remember { mutableIntStateOf(dpm.mtePolicy) }
-    MyScaffold(R.string.mte_policy, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.mte_policy, onNavigateUp, 0.dp) {
         FullWidthRadioButtonItem(R.string.decide_by_user, selectedMtePolicy == MTE_NOT_CONTROLLED_BY_POLICY) {
             selectedMtePolicy = MTE_NOT_CONTROLLED_BY_POLICY
         }
@@ -927,11 +928,11 @@ fun MtePolicyScreen(onNavigateUp: () -> Unit) {
                 }
                 selectedMtePolicy = dpm.mtePolicy
             },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 8.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = HorizontalPadding)
         ) {
             Text(stringResource(R.string.apply))
         }
-        Notes(R.string.info_mte_policy, 8.dp)
+        Notes(R.string.info_mte_policy, HorizontalPadding)
     }
 }
 
@@ -943,7 +944,7 @@ fun NearbyStreamingPolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     var appPolicy by remember { mutableIntStateOf(dpm.nearbyAppStreamingPolicy) }
-    MySmallTitleScaffold(R.string.nearby_streaming_policy, 0.dp, onNavigateUp) {
+    MySmallTitleScaffold(R.string.nearby_streaming_policy, onNavigateUp, 0.dp) {
         Text(
             stringResource(R.string.nearby_app_streaming),
             Modifier.padding(start = 8.dp, top = 10.dp, bottom = 4.dp), style = typography.titleLarge
@@ -964,11 +965,11 @@ fun NearbyStreamingPolicyScreen(onNavigateUp: () -> Unit) {
                 appPolicy = dpm.nearbyAppStreamingPolicy
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 8.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = HorizontalPadding)
         ) {
             Text(stringResource(R.string.apply))
         }
-        Notes(R.string.info_nearby_app_streaming_policy, 8.dp)
+        Notes(R.string.info_nearby_app_streaming_policy, HorizontalPadding)
         var notificationPolicy by remember { mutableIntStateOf(dpm.nearbyNotificationStreamingPolicy) }
         Text(
             stringResource(R.string.nearby_notification_streaming),
@@ -996,11 +997,11 @@ fun NearbyStreamingPolicyScreen(onNavigateUp: () -> Unit) {
                 notificationPolicy = dpm.nearbyNotificationStreamingPolicy
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 8.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = HorizontalPadding)
         ) {
             Text(stringResource(R.string.apply))
         }
-        Notes(R.string.info_nearby_notification_streaming_policy, 8.dp)
+        Notes(R.string.info_nearby_notification_streaming_policy, HorizontalPadding)
     }
 }
 
@@ -1043,7 +1044,7 @@ fun LockTaskModeScreen(onNavigateUp: () -> Unit) {
             HorizontalPager(pagerState, verticalAlignment = Alignment.Top) { page ->
                 if(page == 0 || page == 1) {
                     Column(
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 8.dp, end = 8.dp, bottom = 80.dp)
+                        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = HorizontalPadding).padding(bottom = 80.dp)
                     ) {
                         if(page == 0) StartLockTaskMode()
                         else LockTaskPackages()
@@ -1225,7 +1226,7 @@ private fun ColumnScope.LockTaskFeatures() {
         }
     }
     Button(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 8.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = HorizontalPadding),
         onClick = {
             try {
                 dpm.setLockTaskFeatures(receiver, flags)
@@ -1428,7 +1429,7 @@ fun SecurityLoggingScreen(onNavigateUp: () -> Unit) {
             context.showOperationResultToast(true)
         }
     }
-    MyScaffold(R.string.security_logging, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.security_logging, onNavigateUp) {
         SwitchItem(
             R.string.enable,
             getState = { dpm.isSecurityLoggingEnabled(receiver) }, onCheckedChange = { dpm.setSecurityLoggingEnabled(receiver, it) },
@@ -1489,7 +1490,7 @@ fun DisableAccountManagementScreen(onNavigateUp: () -> Unit) {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    MyScaffold(R.string.disable_account_management, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.disable_account_management, onNavigateUp) {
         val list = remember { mutableStateListOf<String>() }
         fun refreshList() {
             list.clear()
@@ -1561,7 +1562,7 @@ fun FrpPolicyScreen(onNavigateUp: () -> Unit) {
             }
         }
     }
-    MyScaffold(R.string.frp_policy, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.frp_policy, onNavigateUp) {
         if(unsupported) {
             Column(
                 Modifier.fillMaxWidth().padding(vertical = 8.dp)
@@ -1639,7 +1640,7 @@ fun WipeDataScreen(onNavigateUp: () -> Unit) {
     var wipeDevice by remember { mutableStateOf(false) }
     var silent by remember { mutableStateOf(false) }
     var reason by remember { mutableStateOf("") }
-    MyScaffold(R.string.wipe_data, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.wipe_data, onNavigateUp) {
         CheckBoxItem(R.string.wipe_external_storage, flag and WIPE_EXTERNAL_STORAGE != 0) { flag = flag xor WIPE_EXTERNAL_STORAGE }
         if(VERSION.SDK_INT >= 22 && context.isDeviceOwner) CheckBoxItem(
             R.string.wipe_reset_protection_data, flag and WIPE_RESET_PROTECTION_DATA != 0) { flag = flag xor WIPE_RESET_PROTECTION_DATA }
@@ -1743,7 +1744,7 @@ fun SystemUpdatePolicyScreen(onNavigateUp: () -> Unit) {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    MyScaffold(R.string.system_update_policy, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.system_update_policy, onNavigateUp, 0.dp) {
         var selectedPolicy by remember { mutableStateOf(dpm.systemUpdatePolicy?.policyType) }
         FullWidthRadioButtonItem(
             R.string.system_update_policy_automatic,
@@ -1761,7 +1762,7 @@ fun SystemUpdatePolicyScreen(onNavigateUp: () -> Unit) {
         var windowedPolicyStart by remember { mutableStateOf("") }
         var windowedPolicyEnd by remember { mutableStateOf("") }
         AnimatedVisibility(selectedPolicy == 2) {
-            Column(Modifier.padding(horizontal = 8.dp)) {
+            Column(Modifier.padding(horizontal = HorizontalPadding)) {
                 Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), Arrangement.SpaceBetween) {
                     OutlinedTextField(
                         value = windowedPolicyStart,
@@ -1795,13 +1796,13 @@ fun SystemUpdatePolicyScreen(onNavigateUp: () -> Unit) {
                 dpm.setSystemUpdatePolicy(receiver,policy)
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 8.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = HorizontalPadding)
         ) {
             Text(stringResource(R.string.apply))
         }
         if(VERSION.SDK_INT >= 26) {
             val sysUpdateInfo = dpm.getPendingSystemUpdate(receiver)
-            Column(Modifier.padding(8.dp)) {
+            Column(Modifier.padding(HorizontalPadding)) {
                 if(sysUpdateInfo != null) {
                     Text(text = stringResource(R.string.update_received_time, Date(sysUpdateInfo.receivedTime)))
                     val securityPatchStateText = when(sysUpdateInfo.securityPatchState) {
@@ -1843,12 +1844,12 @@ fun InstallSystemUpdateScreen(onNavigateUp: () -> Unit) {
     var uri by remember { mutableStateOf<Uri?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val getFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri = it }
-    MyScaffold(R.string.install_system_update, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.install_system_update, onNavigateUp) {
         Button(
             onClick = {
                 getFileLauncher.launch("application/zip")
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
         ) {
             Text(stringResource(R.string.select_ota_package))
         }

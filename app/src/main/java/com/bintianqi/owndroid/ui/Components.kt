@@ -280,7 +280,7 @@ fun ListItem(text: String, onDelete: () -> Unit) {
 
 @Composable
 fun Notes(@StringRes strID: Int, horizonPadding: Dp = 0.dp) {
-    Icon(Icons.Outlined.Info, null, Modifier.padding(horizontal = horizonPadding).padding(top = 4.dp, bottom = 8.dp))
+    Icon(Icons.Outlined.Info, null, Modifier.padding(horizontal = horizonPadding).padding(top = 4.dp, bottom = 8.dp), colorScheme.onSurfaceVariant)
     Text(
         stringResource(strID), Modifier.padding(horizontal = horizonPadding),
         color = colorScheme.onSurfaceVariant, style = typography.bodyMedium
@@ -291,8 +291,8 @@ fun Notes(@StringRes strID: Int, horizonPadding: Dp = 0.dp) {
 @Composable
 fun MyScaffold(
     @StringRes title: Int,
-    horizonPadding: Dp,
     onNavIconClicked: () -> Unit,
+    horizonPadding: Dp = 16.dp,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val sb = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -323,8 +323,8 @@ fun MyScaffold(
 @Composable
 fun MySmallTitleScaffold(
     @StringRes title: Int,
-    horizonPadding: Dp,
     onNavIconClicked: () -> Unit,
+    horizonPadding: Dp = 16.dp,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Scaffold(

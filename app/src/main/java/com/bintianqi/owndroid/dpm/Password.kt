@@ -65,6 +65,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
+import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.showOperationResultToast
@@ -89,7 +90,7 @@ fun PasswordScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
     var dialog by remember { mutableIntStateOf(0) }
-    MyScaffold(R.string.password_and_keyguard, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.password_and_keyguard, onNavigateUp, 0.dp) {
         FunctionItem(R.string.password_info, icon = R.drawable.info_fill0) { onNavigate(PasswordInfo) }
         if(SharedPrefs(context).displayDangerousFeatures) {
             if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
@@ -219,7 +220,7 @@ fun PasswordInfoScreen(onNavigateUp: () -> Unit) {
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
     var dialog by remember { mutableIntStateOf(0) } // 0:none, 1:password complexity
-    MyScaffold(R.string.password_info, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.password_info, onNavigateUp) {
         if(VERSION.SDK_INT >= 29) {
             val text = when(dpm.passwordComplexity) {
                 PASSWORD_COMPLEXITY_NONE -> R.string.none
@@ -259,7 +260,7 @@ fun ResetPasswordTokenScreen(onNavigateUp: () -> Unit) {
     var token by remember { mutableStateOf("") }
     val tokenByteArray = token.toByteArray()
     val focusMgr = LocalFocusManager.current
-    MyScaffold(R.string.reset_password_token, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.reset_password_token, onNavigateUp) {
         OutlinedTextField(
             value = token, onValueChange = { token = it },
             label = { Text(stringResource(R.string.token)) },
@@ -326,7 +327,7 @@ fun ResetPasswordScreen(onNavigateUp: () -> Unit) {
     val tokenByteArray = token.toByteArray()
     var flag by remember { mutableIntStateOf(0) }
     var confirmDialog by remember { mutableStateOf(false) }
-    MyScaffold(R.string.reset_password, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.reset_password, onNavigateUp) {
         if(VERSION.SDK_INT >= 26) {
             OutlinedTextField(
                 value = token, onValueChange = { token = it },
@@ -447,7 +448,7 @@ fun RequiredPasswordComplexityScreen(onNavigateUp: () -> Unit) {
     )
     var selectedItem by remember { mutableIntStateOf(PASSWORD_COMPLEXITY_NONE) }
     LaunchedEffect(Unit) { selectedItem = dpm.requiredPasswordComplexity }
-    MyScaffold(R.string.required_password_complexity, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.required_password_complexity, onNavigateUp, 0.dp) {
         passwordComplexity.forEach {
             FullWidthRadioButtonItem(it.value, selectedItem == it.key) { selectedItem = it.key }
         }
@@ -458,11 +459,11 @@ fun RequiredPasswordComplexityScreen(onNavigateUp: () -> Unit) {
                 selectedItem = dpm.requiredPasswordComplexity
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 8.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = HorizontalPadding)
         ) {
             Text(text = stringResource(R.string.apply))
         }
-        Notes(R.string.info_password_complexity, 8.dp)
+        Notes(R.string.info_password_complexity, HorizontalPadding)
     }
 }
 
@@ -499,7 +500,7 @@ fun KeyguardDisabledFeaturesScreen(onNavigateUp: () -> Unit) {
     }
     LaunchedEffect(mode) { if(mode != 2) flag = dpm.getKeyguardDisabledFeatures(receiver) }
     LaunchedEffect(Unit) { refresh() }
-    MyScaffold(R.string.disable_keyguard_features, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.disable_keyguard_features, onNavigateUp) {
         FullWidthRadioButtonItem(R.string.enable_all, mode == 0) { mode = 0 }
         FullWidthRadioButtonItem(R.string.disable_all, mode == 1) { mode = 1 }
         FullWidthRadioButtonItem(R.string.custom, mode == 2) { mode = 2 }
@@ -519,7 +520,7 @@ fun KeyguardDisabledFeaturesScreen(onNavigateUp: () -> Unit) {
                 refresh()
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 8.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = HorizontalPadding)
         ) {
             Text(text = stringResource(R.string.apply))
         }
@@ -544,7 +545,7 @@ fun RequiredPasswordQualityScreen(onNavigateUp: () -> Unit) {
     )
     var selectedItem by remember { mutableIntStateOf(PASSWORD_QUALITY_UNSPECIFIED) }
     LaunchedEffect(Unit) { selectedItem=dpm.getPasswordQuality(receiver) }
-    MyScaffold(R.string.required_password_quality, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.required_password_quality, onNavigateUp) {
         passwordQuality.forEach {
             RadioButtonItem(it.value, selectedItem == it.key) { selectedItem = it.key }
         }

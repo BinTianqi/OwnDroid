@@ -457,27 +457,24 @@ private fun HomeScreen(onNavigate: (Any) -> Unit) {
             Spacer(Modifier.padding(vertical = 25.dp))
             Text(
                 text = stringResource(R.string.app_name), style = typography.headlineLarge,
-                modifier = Modifier.padding(start = 10.dp)
+                modifier = Modifier.padding(start = HorizontalPadding)
             )
             Spacer(Modifier.padding(vertical = 8.dp))
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp, horizontal = 8.dp)
+                    .padding(vertical = 8.dp, horizontal = HorizontalPadding)
                     .clip(RoundedCornerShape(15))
                     .background(color = colorScheme.primary)
                     .clickable(onClick = { onNavigate(Permissions) })
                     .padding(vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Spacer(modifier = Modifier.padding(start = 22.dp))
                 Icon(
-                    painter = painterResource(if(activated) R.drawable.check_circle_fill1 else R.drawable.block_fill0),
-                    contentDescription = null,
-                    tint = colorScheme.onPrimary
+                    painterResource(if(activated) R.drawable.check_circle_fill1 else R.drawable.block_fill0), null,
+                    Modifier.padding(start = 14.dp), colorScheme.onPrimary
                 )
-                Spacer(modifier = Modifier.padding(start = 10.dp))
-                Column {
+                Column(Modifier.padding(start = 12.dp)) {
                     Text(
                         text = stringResource(if(activated) R.string.activated else R.string.deactivated),
                         style = typography.headlineSmall,

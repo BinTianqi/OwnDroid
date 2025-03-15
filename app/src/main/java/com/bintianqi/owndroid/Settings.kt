@@ -63,7 +63,7 @@ fun SettingsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val exportLogsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) {
         if(it != null) exportLogs(context, it)
     }
-    MyScaffold(R.string.settings, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.settings, onNavigateUp, 0.dp) {
         FunctionItem(title = R.string.options, icon = R.drawable.tune_fill0) { onNavigate(SettingsOptions) }
         FunctionItem(title = R.string.appearance, icon = R.drawable.format_paint_fill0) { onNavigate(Appearance) }
         FunctionItem(R.string.app_lock, icon = R.drawable.lock_fill0) { onNavigate(AppLockSettings) }
@@ -82,7 +82,7 @@ fun SettingsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
 @Composable
 fun SettingsOptionsScreen(onNavigateUp: () -> Unit) {
     val sp = SharedPrefs(LocalContext.current)
-    MyScaffold(R.string.options, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.options, onNavigateUp, 0.dp) {
         SwitchItem(
             R.string.show_dangerous_features, icon = R.drawable.warning_fill0,
             getState = { sp.displayDangerousFeatures },
@@ -102,7 +102,7 @@ fun AppearanceScreen(onNavigateUp: () -> Unit, currentTheme: ThemeSettings, onTh
         0 -> R.string.off
         else -> R.string.follow_system
     }
-    MyScaffold(R.string.appearance, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.appearance, onNavigateUp, 0.dp) {
         if(VERSION.SDK_INT >= 31) {
             SwitchItem(
                 R.string.material_you_color,
@@ -153,7 +153,7 @@ fun AppearanceScreen(onNavigateUp: () -> Unit, currentTheme: ThemeSettings, onTh
 @Serializable object AppLockSettings
 
 @Composable
-fun AppLockSettingsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.app_lock, 0.dp, onNavigateUp) {
+fun AppLockSettingsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.app_lock, onNavigateUp, 0.dp) {
     val fm = LocalFocusManager.current
     val sp = SharedPrefs(LocalContext.current)
     var password by remember { mutableStateOf("") }
@@ -212,7 +212,7 @@ fun AppLockSettingsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.app_lo
 fun ApiSettings(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val sp = SharedPrefs(context)
-    MyScaffold(R.string.api, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.api, onNavigateUp) {
         var enabled by remember { mutableStateOf(sp.isApiEnabled) }
         SwitchItem(R.string.enable, state = enabled, onCheckedChange = {
             enabled = it
@@ -253,7 +253,7 @@ fun ApiSettings(onNavigateUp: () -> Unit) {
 @Serializable object Notifications
 
 @Composable
-fun NotificationsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.notifications, 0.dp, onNavigateUp) {
+fun NotificationsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.notifications, onNavigateUp, 0.dp) {
     val sp = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
     val map = mapOf(
         NotificationUtils.ID.PASSWORD_CHANGED to R.string.password_changed, NotificationUtils.ID.USER_ADDED to R.string.user_added,
@@ -277,7 +277,7 @@ fun AboutScreen(onNavigateUp: () -> Unit) {
     val pkgInfo = context.packageManager.getPackageInfo(context.packageName,0)
     val verCode = pkgInfo.versionCode
     val verName = pkgInfo.versionName
-    MyScaffold(R.string.about, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.about, onNavigateUp, 0.dp) {
         Text(text = stringResource(R.string.app_name)+" v$verName ($verCode)", modifier = Modifier.padding(start = 16.dp))
         Spacer(Modifier.padding(vertical = 5.dp))
         FunctionItem(R.string.project_homepage, "GitHub", R.drawable.open_in_new) { shareLink(context, "https://github.com/BinTianqi/OwnDroid") }

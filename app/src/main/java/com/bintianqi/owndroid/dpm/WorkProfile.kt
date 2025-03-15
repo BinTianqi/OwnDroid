@@ -73,7 +73,7 @@ fun WorkProfileScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val profileOwner = context.isProfileOwner
-    MyScaffold(R.string.work_profile, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.work_profile, onNavigateUp, 0.dp) {
         if(VERSION.SDK_INT >= 30 && profileOwner && dpm.isManagedProfile(receiver)) {
             FunctionItem(R.string.org_owned_work_profile, icon = R.drawable.corporate_fare_fill0) { onNavigate(OrganizationOwnedProfile) }
         }
@@ -100,7 +100,7 @@ fun CreateWorkProfileScreen(onNavigateUp: () -> Unit) {
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
-    MyScaffold(R.string.create_work_profile, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.create_work_profile, onNavigateUp) {
         var skipEncrypt by remember { mutableStateOf(false) }
         var offlineProvisioning by remember { mutableStateOf(true) }
         var migrateAccount by remember { mutableStateOf(false) }
@@ -171,7 +171,7 @@ fun CreateWorkProfileScreen(onNavigateUp: () -> Unit) {
 fun OrganizationOwnedProfileScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
-    MyScaffold(R.string.org_owned_work_profile, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.org_owned_work_profile, onNavigateUp) {
         CardItem(R.string.org_owned_work_profile, dpm.isOrganizationOwnedDeviceWithManagedProfile.yesOrNo)
         Spacer(Modifier.padding(vertical = 5.dp))
         if(!dpm.isOrganizationOwnedDeviceWithManagedProfile) {
@@ -196,7 +196,7 @@ fun SuspendPersonalAppScreen(onNavigateUp: () -> Unit) {
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var suspend by remember { mutableStateOf(dpm.getPersonalAppsSuspendedReasons(receiver) != PERSONAL_APPS_NOT_SUSPENDED) }
-    MyScaffold(R.string.suspend_personal_app, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.suspend_personal_app, onNavigateUp) {
         SwitchItem(R.string.suspend_personal_app, state = suspend,
             onCheckedChange = {
                 dpm.setPersonalAppsSuspended(receiver,it)
@@ -242,7 +242,7 @@ fun CrossProfileIntentFilterScreen(onNavigateUp: () -> Unit) {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    MyScaffold(R.string.intent_filter, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.intent_filter, onNavigateUp) {
         var action by remember { mutableStateOf("") }
         OutlinedTextField(
             value = action, onValueChange = { action = it },
@@ -295,7 +295,7 @@ fun DeleteWorkProfileScreen(onNavigateUp: () -> Unit) {
     var warning by remember { mutableStateOf(false) }
     var silent by remember { mutableStateOf(false) }
     var reason by remember { mutableStateOf("") }
-    MyScaffold(R.string.delete_work_profile, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.delete_work_profile, onNavigateUp) {
         CheckBoxItem(R.string.wipe_external_storage, flag and WIPE_EXTERNAL_STORAGE != 0) { flag = flag xor WIPE_EXTERNAL_STORAGE }
         if(VERSION.SDK_INT >= 28) CheckBoxItem(R.string.wipe_euicc, flag and WIPE_EUICC != 0) { flag = flag xor WIPE_EUICC }
         CheckBoxItem(R.string.wipe_silently, silent) { silent = it }

@@ -66,7 +66,7 @@ fun ShizukuScreen(navArgs: Bundle, onNavigateUp: () -> Unit, onNavigateToAccount
             null
         }
     }
-    MySmallTitleScaffold(R.string.shizuku, 0.dp, onNavigateUp) {
+    MySmallTitleScaffold(R.string.shizuku, onNavigateUp, 0.dp) {
         
         Button(
             onClick = {
@@ -185,7 +185,7 @@ data class Accounts(
 
 @Composable
 fun AccountsScreen(accounts: Accounts, onNavigateUp: () -> Unit) {
-    MySmallTitleScaffold(R.string.accounts, 8.dp, onNavigateUp) {
+    MySmallTitleScaffold(R.string.accounts, onNavigateUp) {
         accounts.list.forEach {
             Column(
                 modifier = Modifier

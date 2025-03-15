@@ -125,6 +125,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.os.bundleOf
 import com.bintianqi.owndroid.ChoosePackageContract
+import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.formatFileSize
@@ -164,7 +165,7 @@ fun NetworkScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
     val dhizuku = SharedPrefs(context).dhizuku
-    MyScaffold(R.string.network, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.network, onNavigateUp, 0.dp) {
         if(!dhizuku) FunctionItem(R.string.wifi, icon = R.drawable.wifi_fill0) { onNavigate(WiFi) }
         if(VERSION.SDK_INT >= 30) {
             FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { onNavigate(NetworkOptions) }
@@ -204,7 +205,7 @@ fun NetworkOptionsScreen(onNavigateUp: () -> Unit) {
     val receiver = context.getReceiver()
     val deviceOwner = context.isDeviceOwner
     var dialog by remember { mutableIntStateOf(0) }
-    MyScaffold(R.string.options, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.options, onNavigateUp, 0.dp) {
         if(VERSION.SDK_INT>=30 && (deviceOwner || dpm.isOrgProfile(receiver))) {
             SwitchItem(R.string.lockdown_admin_configured_network, icon = R.drawable.wifi_password_fill0,
                 getState = { dpm.hasLockdownAdminConfiguredNetworks(receiver) }, onCheckedChange = { dpm.setConfiguredNetworksLockdownState(receiver,it) },
@@ -471,7 +472,7 @@ object AddNetwork
 
 @Composable
 fun AddNetworkScreen(data: Bundle, onNavigateUp: () -> Unit) {
-    MySmallTitleScaffold(R.string.update_network, 0.dp, onNavigateUp) {
+    MySmallTitleScaffold(R.string.update_network, onNavigateUp, 0.dp) {
         AddNetworkScreen(data.getParcelable("wifi_configuration"), onNavigateUp)
     }
 }
@@ -764,7 +765,7 @@ fun WifiSecurityLevelScreen(onNavigateUp: () -> Unit) {
     val dpm = context.getDPM()
     var selectedWifiSecLevel by remember { mutableIntStateOf(0) }
     LaunchedEffect(Unit) { selectedWifiSecLevel = dpm.minimumRequiredWifiSecurityLevel }
-    MySmallTitleScaffold(R.string.min_wifi_security_level, 0.dp, onNavigateUp) {
+    MySmallTitleScaffold(R.string.min_wifi_security_level, onNavigateUp, 0.dp) {
         FullWidthRadioButtonItem(R.string.wifi_security_open, selectedWifiSecLevel == WIFI_SECURITY_OPEN) { selectedWifiSecLevel = WIFI_SECURITY_OPEN }
         FullWidthRadioButtonItem("WEP, WPA(2)-PSK", selectedWifiSecLevel == WIFI_SECURITY_PERSONAL) { selectedWifiSecLevel = WIFI_SECURITY_PERSONAL }
         FullWidthRadioButtonItem("WPA-EAP", selectedWifiSecLevel == WIFI_SECURITY_ENTERPRISE_EAP) { selectedWifiSecLevel = WIFI_SECURITY_ENTERPRISE_EAP }
@@ -774,11 +775,11 @@ fun WifiSecurityLevelScreen(onNavigateUp: () -> Unit) {
                 dpm.minimumRequiredWifiSecurityLevel = selectedWifiSecLevel
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 8.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = HorizontalPadding)
         ) {
             Text(stringResource(R.string.apply))
         }
-        Notes(R.string.info_minimum_wifi_security_level, 8.dp)
+        Notes(R.string.info_minimum_wifi_security_level, HorizontalPadding)
     }
 }
 
@@ -790,7 +791,7 @@ fun WifiSsidPolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
-    MyScaffold(R.string.wifi_ssid_policy, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.wifi_ssid_policy, onNavigateUp, 0.dp) {
         var selectedPolicyType by remember { mutableIntStateOf(-1) }
         val ssidList = remember { mutableStateListOf<WifiSsid>() }
         fun refreshPolicy() {
@@ -809,7 +810,7 @@ fun WifiSsidPolicyScreen(onNavigateUp: () -> Unit) {
         }
         AnimatedVisibility(selectedPolicyType != -1) {
             var inputSsid by remember { mutableStateOf("") }
-            Column(Modifier.padding(horizontal = 8.dp)) {
+            Column(Modifier.padding(horizontal = HorizontalPadding)) {
                 Text(stringResource(R.string.ssid_list_is))
                 if(ssidList.isEmpty()) Text(stringResource(R.string.none))
                 Column(modifier = Modifier.animateContentSize()) {
@@ -850,7 +851,7 @@ fun WifiSsidPolicyScreen(onNavigateUp: () -> Unit) {
                 refreshPolicy()
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth().padding(8.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = HorizontalPadding)
         ) {
             Text(stringResource(R.string.apply))
         }
@@ -913,7 +914,7 @@ fun NetworkStatsScreen(onNavigateUp: () -> Unit, onNavigateToViewer: (NetworkSta
     if(startTimeTextFieldInteractionSource.collectIsPressedAsState().value) activeTextField = NetworkStatsActiveTextField.StartTime
     if(endTimeTextFieldInteractionSource.collectIsPressedAsState().value) activeTextField = NetworkStatsActiveTextField.EndTime
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    MyScaffold(R.string.network_stats, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.network_stats, onNavigateUp) {
         ExposedDropdownMenuBox(
             activeTextField == NetworkStatsActiveTextField.Type,
             { activeTextField = if(it) NetworkStatsActiveTextField.Type else NetworkStatsActiveTextField.Type }
@@ -1286,7 +1287,7 @@ data class NetworkStatsViewer(
 fun NetworkStatsViewerScreen(nsv: NetworkStatsViewer, onNavigateUp: () -> Unit) {
     var index by remember { mutableIntStateOf(0) }
     val size = nsv.stats.size
-    MySmallTitleScaffold(R.string.network_stats, 8.dp, onNavigateUp) {
+    MySmallTitleScaffold(R.string.network_stats, onNavigateUp) {
         if(size > 1) Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 8.dp)
@@ -1371,7 +1372,7 @@ fun PrivateDnsScreen(onNavigateUp: () -> Unit) {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    MyScaffold(R.string.private_dns, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.private_dns, onNavigateUp) {
         val dnsStatus = mapOf(
             PRIVATE_DNS_MODE_UNKNOWN to stringResource(R.string.unknown),
             PRIVATE_DNS_MODE_OFF to stringResource(R.string.disabled),
@@ -1467,7 +1468,7 @@ fun AlwaysOnVpnPackageScreen(onNavigateUp: () -> Unit) {
             false
         }
     }
-    MyScaffold(R.string.always_on_vpn, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.always_on_vpn, onNavigateUp) {
         OutlinedTextField(
             value = pkgName,
             onValueChange = { pkgName = it },
@@ -1515,7 +1516,7 @@ fun RecommendedGlobalProxyScreen(onNavigateUp: () -> Unit) {
     var specifyPort by remember { mutableStateOf(false) }
     var proxyPort by remember { mutableStateOf("") }
     var exclList by remember { mutableStateOf("") }
-    MyScaffold(R.string.recommended_global_proxy, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.recommended_global_proxy, onNavigateUp) {
         RadioButtonItem(R.string.proxy_type_off, proxyType == 0) { proxyType = 0 }
         RadioButtonItem(R.string.proxy_type_pac, proxyType == 1) { proxyType = 1 }
         RadioButtonItem(R.string.proxy_type_direct, proxyType == 2) { proxyType = 2 }
@@ -1620,7 +1621,7 @@ fun NetworkLoggingScreen(onNavigateUp: () -> Unit) {
             context.showOperationResultToast(true)
         }
     }
-    MyScaffold(R.string.network_logging, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.network_logging, onNavigateUp) {
         SwitchItem(
             R.string.enable,
             getState = { dpm.isNetworkLoggingEnabled(receiver) },
@@ -1662,7 +1663,7 @@ fun WifiAuthKeypairScreen(onNavigateUp: () -> Unit) {
     val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
     var keyPair by remember { mutableStateOf("") }
-    MyScaffold(R.string.wifi_auth_keypair, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.wifi_auth_keypair, onNavigateUp) {
         OutlinedTextField(
             value = keyPair,
             label = { Text(stringResource(R.string.alias)) },
@@ -1712,7 +1713,7 @@ fun PreferentialNetworkServiceScreen(onNavigateUp: () -> Unit, onNavigate: (AddP
         configs.addAll(dpm.preferentialNetworkServiceConfigs)
     }
     LaunchedEffect(Unit) { refresh() }
-    MySmallTitleScaffold(R.string.preferential_network_service, 0.dp, onNavigateUp) {
+    MySmallTitleScaffold(R.string.preferential_network_service, onNavigateUp, 0.dp) {
         SwitchItem(R.string.enabled, state = masterEnabled, onCheckedChange = {
             dpm.isPreferentialNetworkServiceEnabled = it
             refresh()
@@ -1776,7 +1777,7 @@ fun AddPreferentialNetworkServiceConfigScreen(route: AddPreferentialNetworkServi
     var blockNonMatching by remember { mutableStateOf(route.blockNonMatching) }
     var excludedUids by remember { mutableStateOf(route.excludedUids.joinToString("\n")) }
     var includedUids by remember { mutableStateOf(route.includedUids.joinToString("\n")) }
-    MySmallTitleScaffold(R.string.preferential_network_service, 8.dp, onNavigateUp) {
+    MySmallTitleScaffold(R.string.preferential_network_service, onNavigateUp) {
         SwitchItem(title = R.string.enabled, state = enabled, onCheckedChange = { enabled = it }, padding = false)
         AnimatedVisibility(enabled) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1878,7 +1879,7 @@ fun OverrideApnScreen(onNavigateUp: () -> Unit, onNavigateToAddSetting: (Bundle)
         settings.addAll(dpm.getOverrideApns(receiver))
     }
     LaunchedEffect(Unit) { refresh() }
-    MyScaffold(R.string.override_apn, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.override_apn, onNavigateUp, 0.dp) {
         SwitchItem(
             R.string.enable, state = enabled,
             onCheckedChange = {
@@ -1962,7 +1963,7 @@ fun AddApnSettingScreen(origin: ApnSetting?, onNavigateUp: () -> Unit) {
     var persistent by remember { mutableStateOf(if(VERSION.SDK_INT >= 33) origin?.isPersistent == true else false) }
     var alwaysOn by remember { mutableStateOf(VERSION.SDK_INT >= 35 && origin?.isAlwaysOn == true) }
     var errorMessage: String? by remember { mutableStateOf(null) }
-    MySmallTitleScaffold(R.string.apn_setting, 8.dp, onNavigateUp) {
+    MySmallTitleScaffold(R.string.apn_setting, onNavigateUp) {
         val protocolMap = mapOf(
             ApnSetting.PROTOCOL_IP to "IPv4", ApnSetting.PROTOCOL_IPV6 to "IPv6",
             ApnSetting.PROTOCOL_IPV4V6 to "IPv4/v6", ApnSetting.PROTOCOL_PPP to "PPP"

@@ -91,7 +91,7 @@ fun UsersScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
     var dialog by remember { mutableIntStateOf(0) }
-    MyScaffold(R.string.users, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.users, onNavigateUp, 0.dp) {
         if(VERSION.SDK_INT >= 28 && profileOwner && dpm.isAffiliatedUser) {
             FunctionItem(R.string.logout, icon = R.drawable.logout_fill0) { dialog = 2 }
         }
@@ -175,7 +175,7 @@ fun UsersOptionsScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    MyScaffold(R.string.options, 0.dp, onNavigateUp) {
+    MyScaffold(R.string.options, onNavigateUp, 0.dp) {
         if(VERSION.SDK_INT >= 28) {
             SwitchItem(R.string.enable_logout, getState = { dpm.isLogoutEnabled }, onCheckedChange = { dpm.setLogoutEnabled(receiver, it) })
         }
@@ -192,7 +192,7 @@ fun UserInfoScreen(onNavigateUp: () -> Unit) {
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     val user = Process.myUserHandle()
     var infoDialog by remember { mutableIntStateOf(0) }
-    MyScaffold(R.string.user_info, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.user_info, onNavigateUp) {
         if(VERSION.SDK_INT >= 24) CardItem(R.string.support_multiuser, UserManager.supportsMultipleUsers().yesOrNo)
         if(VERSION.SDK_INT >= 31) CardItem(R.string.headless_system_user_mode, UserManager.isHeadlessSystemUserMode().yesOrNo) { infoDialog = 1 }
         Spacer(Modifier.padding(vertical = 8.dp))
@@ -247,7 +247,7 @@ fun UserOperationScreen(onNavigateUp: () -> Unit) {
         }
     }
     val legalInput = input.toIntOrNull() != null
-    MyScaffold(R.string.user_operation, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.user_operation, onNavigateUp) {
         if(VERSION.SDK_INT >= 24) SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
             SegmentedButton(!useUserId, { useUserId = false }, SegmentedButtonDefaults.itemShape(0, 2)) {
                 Text(stringResource(R.string.serial_number))
@@ -343,7 +343,7 @@ fun CreateUserScreen(onNavigateUp: () -> Unit) {
     var createdUserSerialNumber by remember { mutableLongStateOf(-1) }
     var flag by remember { mutableIntStateOf(0) }
     val coroutine = rememberCoroutineScope()
-    MyScaffold(R.string.create_user, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.create_user, onNavigateUp) {
         OutlinedTextField(
             value = userName,
             onValueChange = { userName= it },
@@ -418,7 +418,7 @@ fun AffiliationIdScreen(onNavigateUp: () -> Unit) {
         list.addAll(dpm.getAffiliationIds(receiver))
     }
     LaunchedEffect(Unit) { refreshIds() }
-    MyScaffold(R.string.affiliation_id, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.affiliation_id, onNavigateUp) {
         Column(modifier = Modifier.animateContentSize()) {
             if(list.isEmpty()) Text(stringResource(R.string.none))
             for(i in list) {
@@ -470,7 +470,7 @@ fun ChangeUsernameScreen(onNavigateUp: () -> Unit) {
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var inputUsername by remember { mutableStateOf("") }
-    MyScaffold(R.string.change_username, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.change_username, onNavigateUp) {
         OutlinedTextField(
             value = inputUsername,
             onValueChange = { inputUsername= it },
@@ -514,7 +514,7 @@ fun UserSessionMessageScreen(onNavigateUp: () -> Unit) {
         end = dpm.getEndUserSessionMessage(receiver)?.toString() ?: ""
     }
     LaunchedEffect(Unit) { refreshMsg() }
-    MyScaffold(R.string.user_session_msg, 8.dp, onNavigateUp) {
+    MyScaffold(R.string.user_session_msg, onNavigateUp) {
         OutlinedTextField(
             value = start,
             onValueChange = { start= it },

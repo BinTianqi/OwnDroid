@@ -16,6 +16,7 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import com.bintianqi.owndroid.dpm.addDeviceAdmin
@@ -142,3 +143,5 @@ fun exportLogs(context: Context, uri: Uri) {
 fun <T> NavHostController.navigate(route: T, args: Bundle) {
     navigate(graph.findNode(route)!!.id, args)
 }
+
+val HorizontalPadding = 16.dp
