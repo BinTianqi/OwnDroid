@@ -375,10 +375,10 @@
     <string name="ucd">禁止用户控制</string>
     <string name="ucd_desc">用户将无法清除这些应用的存储空间或强制停止这些应用</string>
     <string name="app_list_is">应用列表：</string>
-    <string name="permission_manage">权限管理</string>
+    <string name="disable_metered_data">禁用计量数据</string>
     <string name="cross_profile_package">跨资料应用</string>
     <string name="cross_profile_widget">跨资料微件</string>
-    <string name="credential_manage_policy">凭据管理策略</string>
+    <string name="credential_manager_policy">凭据管理器策略</string>
     <string name="whitelist_and_system_app">白名单和系统应用</string>
     <string name="permitted_packages_is">许可的应用：\n</string>
     <string name="permitted_accessibility_services">许可的无障碍服务</string>

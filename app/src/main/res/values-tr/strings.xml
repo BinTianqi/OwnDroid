@@ -395,10 +395,10 @@
     <string name="ucd">Kullanıcı Kontrolünü Devre Dışı Bırak</string>
     <string name="ucd_desc">Bunu ayarlarsanız, bu uygulamaların depolamasını temizleyemez veya zorla durduramazsınız.</string>
     <string name="app_list_is">Uygulama listesi:</string>
-    <string name="permission_manage">İzin Yönetimi</string>
+    <string name="disable_metered_data">Disable metered data</string> <!--TODO-->
     <string name="cross_profile_package">Çapraz Profil Paketi</string>
     <string name="cross_profile_widget">Çapraz Profil Widget\'ı</string>
-    <string name="credential_manage_policy">Kimlik Yönetimi Politikası</string>
+    <string name="credential_manager_policy">Credential manager policy</string> <!--TODO-->
     <string name="whitelist_and_system_app">Beyaz Liste ve Sistem Uygulaması</string>
     <string name="permitted_packages_is">İzin Verilen Paketler: \n</string>
     <string name="permitted_accessibility_services">İzin Verilen Erişilebilirlik Servisleri</string>

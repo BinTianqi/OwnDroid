@@ -587,7 +587,7 @@ fun AddDelegatedAdminScreen(data: AddDelegatedAdmin, onNavigateUp: () -> Unit) {
     val choosePackage = rememberLauncherForActivityResult(ChoosePackageContract()) { result ->
         result?.let { input = it }
     }
-    MySmallTitleScaffold(if(updateMode) R.string.place_holder else R.string.add_delegated_admin, 0.dp, onNavigateUp,) {
+    MySmallTitleScaffold(if(updateMode) R.string.place_holder else R.string.add_delegated_admin, 0.dp, onNavigateUp) {
         OutlinedTextField(
             value = input, onValueChange = { input = it },
             label = { Text(stringResource(R.string.package_name)) },

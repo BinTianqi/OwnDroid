@@ -148,7 +148,8 @@ fun ApplicationsScreen(onNavigateUp: () -> Unit) {
         ) {
             composable<Home> { HomeScreen(pkgName) { navController.navigate(it) } }
             composable<UserControlDisabledPackages> { UserControlDisabledPackagesScreen(pkgName) }
-            composable<PermissionManager> { PermissionManagerScreen(pkgName) }
+            composable<PermissionsManager> { PermissionsScreen(pkgName) }
+            composable<DisableMeteredData> { DisableMeteredDataScreen(pkgName) }
             composable<CrossProfilePackages> { CrossProfilePackagesScreen(pkgName) }
             composable<CrossProfileWidgetProviders> { CrossProfileWidgetProvidersScreen(pkgName) }
             composable<CredentialManagerPolicy> { CredentialManagerPolicyScreen(pkgName) }
@@ -229,8 +230,11 @@ private fun HomeScreen(pkgName: String, onNavigate: (Any) -> Unit) {
         if(VERSION.SDK_INT >= 30 && (deviceOwner || (VERSION.SDK_INT >= 33 && profileOwner))) {
             FunctionItem(title = R.string.ucd, icon = R.drawable.do_not_touch_fill0) { onNavigate(UserControlDisabledPackages) }
         }
-        if(VERSION.SDK_INT>=23) {
-            FunctionItem(title = R.string.permission_manage, icon = R.drawable.key_fill0) { onNavigate(PermissionManager) }
+        if(VERSION.SDK_INT >= 23) {
+            FunctionItem(title = R.string.permissions, icon = R.drawable.key_fill0) { onNavigate(PermissionsManager) }
+        }
+        if(VERSION.SDK_INT >= 28) {
+            FunctionItem(R.string.disable_metered_data, icon = R.drawable.money_off_fill0) { onNavigate(DisableMeteredData) }
         }
         if(VERSION.SDK_INT >= 30 && profileOwner && dpm.isManagedProfile(receiver)) {
             FunctionItem(title = R.string.cross_profile_package, icon = R.drawable.work_fill0) { onNavigate(CrossProfilePackages) }
@@ -239,7 +243,7 @@ private fun HomeScreen(pkgName: String, onNavigate: (Any) -> Unit) {
             FunctionItem(title = R.string.cross_profile_widget, icon = R.drawable.widgets_fill0) { onNavigate(CrossProfileWidgetProviders) }
         }
         if(VERSION.SDK_INT >= 34 && deviceOwner) {
-            FunctionItem(title = R.string.credential_manage_policy, icon = R.drawable.license_fill0) { onNavigate(CredentialManagerPolicy) }
+            FunctionItem(title = R.string.credential_manager_policy, icon = R.drawable.license_fill0) { onNavigate(CredentialManagerPolicy) }
         }
         FunctionItem(title = R.string.permitted_accessibility_services, icon = R.drawable.settings_accessibility_fill0) {
             onNavigate(PermittedAccessibilityServices)
@@ -471,11 +475,11 @@ private fun UserControlDisabledPackagesScreen(pkgName:String) {
     }
 }
 
-@Serializable private object PermissionManager
+@Serializable private object PermissionsManager
 
 @RequiresApi(23)
 @Composable
-private fun PermissionManagerScreen(pkgName: String) {
+private fun PermissionsScreen(pkgName: String) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -570,6 +574,46 @@ private fun PermissionManagerScreen(pkgName: String) {
                 }
             }
         )
+    }
+}
+
+@Serializable private object DisableMeteredData
+
+@RequiresApi(28)
+@Composable
+private fun DisableMeteredDataScreen(pkgName: String) {
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
+    val packages = remember { mutableStateListOf<String>() }
+    fun refresh() {
+        packages.clear()
+        packages.addAll(dpm.getMeteredDataDisabledPackages(receiver))
+    }
+    LaunchedEffect(Unit) { refresh() }
+    Column(Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
+        Text(stringResource(R.string.disable_metered_data), Modifier.padding(vertical = 8.dp), style = typography.headlineLarge)
+        Column(Modifier.animateContentSize()) {
+            packages.forEach { pkg ->
+                ListItem(pkg) { packages -= pkg }
+            }
+        }
+        Button(
+            onClick = { packages += pkgName },
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+            enabled = pkgName.isNotBlank()
+        ) {
+            Text(stringResource(R.string.add))
+        }
+        Button(
+            onClick = {
+                context.showOperationResultToast(dpm.setMeteredDataDisabledPackages(receiver, packages).isEmpty())
+                refresh()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.apply))
+        }
     }
 }
 
@@ -676,7 +720,7 @@ private fun CredentialManagerPolicyScreen(pkgName: String) { // TODO: rename "ma
     LaunchedEffect(Unit) { refreshPolicy() }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) { 
         Spacer(Modifier.padding(vertical = 10.dp))
-        Text(text = stringResource(R.string.credential_manage_policy), style = typography.headlineLarge)
+        Text(text = stringResource(R.string.credential_manager_policy), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
         RadioButtonItem(R.string.none, policyType == -1) { policyType = -1 }
         RadioButtonItem(R.string.blacklist, policyType == PACKAGE_POLICY_BLOCKLIST) { policyType = PACKAGE_POLICY_BLOCKLIST }

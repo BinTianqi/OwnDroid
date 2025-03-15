@@ -387,10 +387,10 @@
     <string name="ucd">Отключить управление пользователем</string>
     <string name="ucd_desc">Если вы установите этот флажок, вы не сможете очистить хранилище этих приложений или принудительно остановить их.</string>
     <string name="app_list_is">Список приложений:</string>
-    <string name="permission_manage">Управление разрешениями</string>
+    <string name="disable_metered_data">Disable metered data</string> <!--TODO-->
     <string name="cross_profile_package">Кросс-профильный пакет</string>
     <string name="cross_profile_widget">Кросс-профильный виджет</string>
-    <string name="credential_manage_policy">Политика управления учетными данными</string>
+    <string name="credential_manager_policy">Credential manager policy</string> <!--TODO-->
     <string name="whitelist_and_system_app">Белый список и системные приложения</string>
     <string name="permitted_packages_is">Разрешенные пакеты: \n</string>
     <string name="permitted_accessibility_services">Разрешенные службы доступности</string>

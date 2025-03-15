@@ -414,10 +414,10 @@
     <string name="ucd">Disable user control</string>
     <string name="ucd_desc">If you set this, you cannot clear these apps\' storage or force stop them. </string>
     <string name="app_list_is">App list:</string>
-    <string name="permission_manage">Permission manage</string>
+    <string name="disable_metered_data">Disable metered data</string>
     <string name="cross_profile_package">Cross profile package</string>
     <string name="cross_profile_widget">Cross profile widget</string>
-    <string name="credential_manage_policy">Credential manage policy</string>
+    <string name="credential_manager_policy">Credential manager policy</string>
     <string name="whitelist_and_system_app">Whitelist and system app</string>
     <string name="permitted_packages_is">Permitted packages: \n</string>
     <string name="permitted_accessibility_services">Permitted accessibility services</string>
