@@ -9,6 +9,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -316,6 +318,28 @@ fun MyScaffold(
         ) {
             content()
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MyLazyScaffold(
+    @StringRes title: Int,
+    onNavIconClicked: () -> Unit,
+    content: LazyListScope.() -> Unit
+) {
+    val sb = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    Scaffold(
+        Modifier.nestedScroll(sb.nestedScrollConnection),
+        topBar = {
+            LargeTopAppBar(
+                { Text(stringResource(title)) },
+                navigationIcon = { NavIcon(onNavIconClicked) },
+                scrollBehavior = sb
+            )
+        }
+    ) { paddingValues ->
+        LazyColumn(Modifier.fillMaxSize().padding(paddingValues), content = content)
     }
 }
 

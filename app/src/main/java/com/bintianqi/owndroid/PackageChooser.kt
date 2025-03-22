@@ -1,5 +1,6 @@
 package com.bintianqi.owndroid
 
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
@@ -27,6 +28,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,8 +43,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,77 +60,64 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 
 class PackageChooserActivity: ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val vm by viewModels<MyViewModel>()
-        if(getPackagesProgress.value < 1F) getPackages()
         setContent {
             val theme by vm.theme.collectAsStateWithLifecycle()
             OwnDroidTheme(theme) {
-                val packages by installedPackages.collectAsStateWithLifecycle()
-                val progress by getPackagesProgress.collectAsStateWithLifecycle()
-                PackageChooserScreen(packages, progress, ::getPackages) {
+                AppChooserScreen(ApplicationsList(false), {
                     setResult(0, Intent().putExtra("package", it))
                     finish()
-                }
+                }, {})
             }
         }
-    }
-    val flags = if(Build.VERSION.SDK_INT >= 24) PackageManager.MATCH_DISABLED_COMPONENTS or PackageManager.MATCH_UNINSTALLED_PACKAGES else 0
-    fun getPackages() {
-        installedPackages.value = emptyList()
-        lifecycleScope.launch(Dispatchers.IO) {
-            val pm = packageManager
-            val apps = pm.getInstalledApplications(flags)
-            for(pkg in apps) {
-                installedPackages.update {
-                    it + PackageInfo(
-                        pkg.packageName, pkg.loadLabel(pm).toString(), pkg.loadIcon(pm),
-                        (pkg.flags and ApplicationInfo.FLAG_SYSTEM) != 0
-                    )
-                }
-                withContext(Dispatchers.Main) { getPackagesProgress.value = installedPackages.value.size.toFloat() / apps.size }
-            }
-        }
-    }
-    companion object {
-        val installedPackages = MutableStateFlow(emptyList<PackageInfo>())
-        val getPackagesProgress = MutableStateFlow(0F)
     }
 }
 
-data class PackageInfo(
+val installedApps = MutableStateFlow(emptyList<AppInfo>())
+
+data class AppInfo(
     val name: String,
     val label: String,
     val icon: Drawable,
-    val system: Boolean
+    val flags: Int
 )
+
+private fun searchInString(query: String, content: String)
+    = query.split(' ').all { content.contains(it, true) }
+
+@Serializable data class ApplicationsList(val canSwitchView: Boolean)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-private fun PackageChooserScreen(
-    packages: List<PackageInfo>, progress: Float, onRefresh: () -> Unit, onChoosePackage: (String?) -> Unit
-) {
+fun AppChooserScreen(params: ApplicationsList, onChoosePackage: (String?) -> Unit, onSwitchView: () -> Unit) {
+    val packages by installedApps.collectAsStateWithLifecycle()
+    val coroutine = rememberCoroutineScope()
     val context = LocalContext.current
+    var progress by remember { mutableFloatStateOf(1F) }
     var system by remember { mutableStateOf(false) }
-    var search by remember { mutableStateOf("") }
+    var query by remember { mutableStateOf("") }
     var searchMode by remember { mutableStateOf(false) }
     val filteredPackages = packages.filter {
-        system == it.system &&
-        (if(search.isEmpty()) true
-        else it.name.contains(search, ignoreCase = true) || it.label.contains(search, ignoreCase = true))
+        system == (it.flags and ApplicationInfo.FLAG_SYSTEM != 0) &&
+                (query.isEmpty() || (searchInString(query, it.label) || searchInString(query, it.name)))
     }
     val focusMgr = LocalFocusManager.current
+    LaunchedEffect(Unit) {
+        if(packages.size <= 1) getInstalledApps(coroutine, context) { progress = it }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -141,8 +132,14 @@ private fun PackageChooserScreen(
                         }) {
                             Icon(painter = painterResource(R.drawable.filter_alt_fill0), contentDescription = null)
                         }
-                        IconButton(onRefresh) {
+                        IconButton(
+                            { getInstalledApps(coroutine, context) { progress = it } },
+                            enabled = progress == 1F
+                        ) {
                             Icon(painter = painterResource(R.drawable.refresh_fill0), contentDescription = null)
+                        }
+                        if(params.canSwitchView) IconButton(onSwitchView) {
+                            Icon(Icons.AutoMirrored.Default.List, null)
                         }
                     }
                 },
@@ -151,8 +148,8 @@ private fun PackageChooserScreen(
                         val fr = FocusRequester()
                         LaunchedEffect(Unit) { fr.requestFocus() }
                         OutlinedTextField(
-                            value = search,
-                            onValueChange = { search = it },
+                            value = query,
+                            onValueChange = { query = it },
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                             keyboardActions = KeyboardActions { focusMgr.clearFocus() },
                             placeholder = { Text(stringResource(R.string.search)) },
@@ -162,7 +159,7 @@ private fun PackageChooserScreen(
                                     contentDescription = null,
                                     modifier = Modifier.clickable {
                                         focusMgr.clearFocus()
-                                        search = ""
+                                        query = ""
                                         searchMode = false
                                     }
                                 )
@@ -170,8 +167,6 @@ private fun PackageChooserScreen(
                             textStyle = typography.bodyLarge,
                             modifier = Modifier.fillMaxWidth().focusRequester(fr)
                         )
-                    } else {
-                        Text(stringResource(R.string.package_chooser))
                     }
                 },
                 navigationIcon = {
@@ -182,11 +177,8 @@ private fun PackageChooserScreen(
                 colors = TopAppBarDefaults.topAppBarColors(MaterialTheme.colorScheme.surfaceContainer)
             )
         }
-    ) { paddingValues->
-        LazyColumn(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize().padding(top = paddingValues.calculateTopPadding())
-        ) {
+    ) { paddingValues ->
+        LazyColumn(Modifier.fillMaxSize().padding(paddingValues)) {
             stickyHeader {
                 AnimatedVisibility(progress < 1F) {
                     LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
@@ -215,3 +207,24 @@ private fun PackageChooserScreen(
         }
     }
 }
+
+fun getInstalledApps(scope: CoroutineScope, context: Context, onProgressUpdated: (Float) -> Unit) {
+    installedApps.value = emptyList()
+    scope.launch(Dispatchers.IO) {
+        val pm = context.packageManager
+        val apps = pm.getInstalledApplications(getInstalledAppsFlags)
+        for(pkg in apps) {
+            val label = pkg.loadLabel(pm).toString()
+            val icon = pkg.loadIcon(pm)
+            withContext(Dispatchers.Main) {
+                installedApps.update {
+                    it + AppInfo(pkg.packageName, label, icon, pkg.flags)
+                }
+                onProgressUpdated(installedApps.value.size.toFloat() / apps.size)
+            }
+        }
+    }
+}
+
+val getInstalledAppsFlags =
+    if(Build.VERSION.SDK_INT >= 24) PackageManager.MATCH_DISABLED_COMPONENTS or PackageManager.MATCH_UNINSTALLED_PACKAGES else 0

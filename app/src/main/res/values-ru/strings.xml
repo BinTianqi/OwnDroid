@@ -377,39 +377,27 @@
     <string name="enable_lockdown">Включить блокировку</string>
     <string name="clear_current_config">Очистить текущую конфигурацию</string>
     <string name="permissions">Разрешение</string>
-    <string name="scope_is_work_profile">Область действия: рабочий профиль</string>
-    <string name="app_info">Информация о приложении</string>
     <string name="not_installed">Не установлено</string>
     <string name="block_uninstall">Блокировать удаление</string>
     <string name="enable_system_app">Включить системное приложение</string>
-    <string name="enable_system_app_desc">Повторно включить системное приложение, отключенное по умолчанию</string>
     <!--ucd: управление пользователем отключено-->
-    <string name="ucd">Отключить управление пользователем</string>
-    <string name="ucd_desc">Если вы установите этот флажок, вы не сможете очистить хранилище этих приложений или принудительно остановить их.</string>
-    <string name="app_list_is">Список приложений:</string>
+    <string name="disable_user_control">Отключить управление пользователем</string>
     <string name="disable_metered_data">Disable metered data</string> <!--TODO-->
-    <string name="cross_profile_package">Кросс-профильный пакет</string>
+    <string name="cross_profile_apps">Cross profile apps</string> <!--TODO-->
     <string name="cross_profile_widget">Кросс-профильный виджет</string>
     <string name="credential_manager_policy">Credential manager policy</string> <!--TODO-->
     <string name="whitelist_and_system_app">Белый список и системные приложения</string>
-    <string name="permitted_packages_is">Разрешенные пакеты: \n</string>
     <string name="permitted_accessibility_services">Разрешенные службы доступности</string>
-    <string name="only_system_accessibility_allowed">Разрешены только системные службы доступности</string>
     <string name="system_accessibility_always_allowed">Системные службы доступности всегда разрешены.</string>
-    <string name="only_system_ime_allowed">Разрешены только системные методы ввода</string>
     <string name="system_ime_always_allowed">Системные методы ввода всегда разрешены.</string>
     <string name="permitted_ime">Разрешенный метод ввода</string>
     <string name="keep_uninstalled_packages">Сохранять удаленные пакеты</string>
-    <string name="clear_data">Очистить данные</string>
     <string name="clear_app_storage">Очистить хранилище приложения</string>
-    <string name="app_storage_will_be_cleared">Хранилище этого приложения будет очищено</string>
     <string name="set_default_dialer">Установить приложение для звонков по умолчанию</string>
-    <string name="app_will_be_default_dialer">Это приложение будет установлено в качестве приложения для звонков по умолчанию.</string>
     <string name="uninstall_app">Удалить приложение</string>
     <string name="install_app">Установить приложение</string>
-    <!--TODO: 2 strings-->
-    <string name="choose_apk_file">Choose an APK file</string>
-    <string name="install_existing_app">Install existing app</string>
+    <string name="install_existing_app">Install existing app</string> <!--TODO-->
+    <string name="keep_after_uninstall">Keep after uninstall</string> <!--TODO-->
     <string name="search">Поиск</string>
 
     <!--Ограничения пользователя-->
@@ -699,6 +687,7 @@
     <string name="info_disable_user_control">Пользователь не сможет очищать данные приложений или принудительно останавливать пакеты.</string>
     <string name="info_keep_uninstalled_apps">Установить список приложений, которые нужно сохранить в виде APK-файлов, даже если ни у одного пользователя в данный момент они не установлены.</string>
     <!--TODO--><string name="info_install_existing_app">Install an existing package that has been installed in another user, or has been kept after uninstall.</string>
+    <!--TODO--><string name="info_enable_system_app">Re-enable a system app that was disabled by default when the user was initialized.</string>
     <string name="info_headless_system_user_mode">Режим "безголового" системного пользователя означает, что системный пользователь запускает системные службы и некоторый системный интерфейс, но он не связан с каким-либо реальным человеком, и для связи с реальными людьми должны быть созданы дополнительные пользователи.</string>
     <string name="info_logout">If the current user is not switched by OwnDroid, this function cannot be used.</string> <!--TODO-->
     <string name="info_affiliation_id">Когда владелец устройства создает управляемого пользователя, управляемый пользователь не является аффилированным. Чтобы сделать управляемого пользователя аффилированным с владельцем устройства, вам следует установить одинаковые аффилированные идентификаторы в основном и управляемом пользователях.</string>

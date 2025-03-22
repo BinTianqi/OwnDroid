@@ -74,8 +74,12 @@ import com.bintianqi.owndroid.dpm.AffiliationId
 import com.bintianqi.owndroid.dpm.AffiliationIdScreen
 import com.bintianqi.owndroid.dpm.AlwaysOnVpnPackage
 import com.bintianqi.owndroid.dpm.AlwaysOnVpnPackageScreen
-import com.bintianqi.owndroid.dpm.Applications
-import com.bintianqi.owndroid.dpm.ApplicationsScreen
+import com.bintianqi.owndroid.dpm.ApplicationDetails
+import com.bintianqi.owndroid.dpm.ApplicationDetailsScreen
+import com.bintianqi.owndroid.dpm.ApplicationsFeatures
+import com.bintianqi.owndroid.dpm.ApplicationsFeaturesScreen
+import com.bintianqi.owndroid.dpm.BlockUninstall
+import com.bintianqi.owndroid.dpm.BlockUninstallScreen
 import com.bintianqi.owndroid.dpm.CaCert
 import com.bintianqi.owndroid.dpm.CaCertScreen
 import com.bintianqi.owndroid.dpm.ChangeTime
@@ -84,14 +88,22 @@ import com.bintianqi.owndroid.dpm.ChangeTimeZone
 import com.bintianqi.owndroid.dpm.ChangeTimeZoneScreen
 import com.bintianqi.owndroid.dpm.ChangeUsername
 import com.bintianqi.owndroid.dpm.ChangeUsernameScreen
+import com.bintianqi.owndroid.dpm.ClearAppStorage
+import com.bintianqi.owndroid.dpm.ClearAppStorageScreen
 import com.bintianqi.owndroid.dpm.ContentProtectionPolicy
 import com.bintianqi.owndroid.dpm.ContentProtectionPolicyScreen
 import com.bintianqi.owndroid.dpm.CreateUser
 import com.bintianqi.owndroid.dpm.CreateUserScreen
 import com.bintianqi.owndroid.dpm.CreateWorkProfile
 import com.bintianqi.owndroid.dpm.CreateWorkProfileScreen
+import com.bintianqi.owndroid.dpm.CredentialManagerPolicy
+import com.bintianqi.owndroid.dpm.CredentialManagerPolicyScreen
 import com.bintianqi.owndroid.dpm.CrossProfileIntentFilter
 import com.bintianqi.owndroid.dpm.CrossProfileIntentFilterScreen
+import com.bintianqi.owndroid.dpm.CrossProfilePackages
+import com.bintianqi.owndroid.dpm.CrossProfilePackagesScreen
+import com.bintianqi.owndroid.dpm.CrossProfileWidgetProviders
+import com.bintianqi.owndroid.dpm.CrossProfileWidgetProvidersScreen
 import com.bintianqi.owndroid.dpm.DelegatedAdmins
 import com.bintianqi.owndroid.dpm.DelegatedAdminsScreen
 import com.bintianqi.owndroid.dpm.DeleteWorkProfile
@@ -104,12 +116,24 @@ import com.bintianqi.owndroid.dpm.DeviceOwner
 import com.bintianqi.owndroid.dpm.DeviceOwnerScreen
 import com.bintianqi.owndroid.dpm.DisableAccountManagement
 import com.bintianqi.owndroid.dpm.DisableAccountManagementScreen
+import com.bintianqi.owndroid.dpm.DisableMeteredData
+import com.bintianqi.owndroid.dpm.DisableMeteredDataScreen
+import com.bintianqi.owndroid.dpm.DisableUserControl
+import com.bintianqi.owndroid.dpm.DisableUserControlScreen
+import com.bintianqi.owndroid.dpm.EnableSystemApp
+import com.bintianqi.owndroid.dpm.EnableSystemAppScreen
 import com.bintianqi.owndroid.dpm.FrpPolicy
 import com.bintianqi.owndroid.dpm.FrpPolicyScreen
 import com.bintianqi.owndroid.dpm.HardwareMonitor
 import com.bintianqi.owndroid.dpm.HardwareMonitorScreen
+import com.bintianqi.owndroid.dpm.Hide
+import com.bintianqi.owndroid.dpm.HideScreen
+import com.bintianqi.owndroid.dpm.InstallExistingApp
+import com.bintianqi.owndroid.dpm.InstallExistingAppScreen
 import com.bintianqi.owndroid.dpm.InstallSystemUpdate
 import com.bintianqi.owndroid.dpm.InstallSystemUpdateScreen
+import com.bintianqi.owndroid.dpm.KeepUninstalledPackages
+import com.bintianqi.owndroid.dpm.KeepUninstalledPackagesScreen
 import com.bintianqi.owndroid.dpm.Keyguard
 import com.bintianqi.owndroid.dpm.KeyguardDisabledFeatures
 import com.bintianqi.owndroid.dpm.KeyguardDisabledFeaturesScreen
@@ -142,7 +166,13 @@ import com.bintianqi.owndroid.dpm.PasswordScreen
 import com.bintianqi.owndroid.dpm.PermissionPolicy
 import com.bintianqi.owndroid.dpm.PermissionPolicyScreen
 import com.bintianqi.owndroid.dpm.Permissions
+import com.bintianqi.owndroid.dpm.PermissionsManager
+import com.bintianqi.owndroid.dpm.PermissionsManagerScreen
 import com.bintianqi.owndroid.dpm.PermissionsScreen
+import com.bintianqi.owndroid.dpm.PermittedAccessibilityServices
+import com.bintianqi.owndroid.dpm.PermittedAccessibilityServicesScreen
+import com.bintianqi.owndroid.dpm.PermittedInputMethods
+import com.bintianqi.owndroid.dpm.PermittedInputMethodsScreen
 import com.bintianqi.owndroid.dpm.PreferentialNetworkService
 import com.bintianqi.owndroid.dpm.PreferentialNetworkServiceScreen
 import com.bintianqi.owndroid.dpm.PrivateDns
@@ -163,12 +193,16 @@ import com.bintianqi.owndroid.dpm.ResetPasswordTokenScreen
 import com.bintianqi.owndroid.dpm.Restriction
 import com.bintianqi.owndroid.dpm.SecurityLogging
 import com.bintianqi.owndroid.dpm.SecurityLoggingScreen
+import com.bintianqi.owndroid.dpm.SetDefaultDialer
+import com.bintianqi.owndroid.dpm.SetDefaultDialerScreen
 import com.bintianqi.owndroid.dpm.SetSystemUpdatePolicy
 import com.bintianqi.owndroid.dpm.ShizukuScreen
 import com.bintianqi.owndroid.dpm.SupportMessage
 import com.bintianqi.owndroid.dpm.SupportMessageScreen
+import com.bintianqi.owndroid.dpm.Suspend
 import com.bintianqi.owndroid.dpm.SuspendPersonalApp
 import com.bintianqi.owndroid.dpm.SuspendPersonalAppScreen
+import com.bintianqi.owndroid.dpm.SuspendScreen
 import com.bintianqi.owndroid.dpm.SystemManager
 import com.bintianqi.owndroid.dpm.SystemManagerScreen
 import com.bintianqi.owndroid.dpm.SystemOptions
@@ -176,6 +210,8 @@ import com.bintianqi.owndroid.dpm.SystemOptionsScreen
 import com.bintianqi.owndroid.dpm.SystemUpdatePolicyScreen
 import com.bintianqi.owndroid.dpm.TransferOwnership
 import com.bintianqi.owndroid.dpm.TransferOwnershipScreen
+import com.bintianqi.owndroid.dpm.UninstallApp
+import com.bintianqi.owndroid.dpm.UninstallAppScreen
 import com.bintianqi.owndroid.dpm.UserInfo
 import com.bintianqi.owndroid.dpm.UserInfoScreen
 import com.bintianqi.owndroid.dpm.UserOperation
@@ -348,7 +384,42 @@ fun Home(vm: MyViewModel) {
         composable<CrossProfileIntentFilter> { CrossProfileIntentFilterScreen(::navigateUp) }
         composable<DeleteWorkProfile> { DeleteWorkProfileScreen(::navigateUp) }
 
-        composable<Applications> { ApplicationsScreen(::navigateUp) }
+        composable<ApplicationsList> {
+            AppChooserScreen(it.toRoute(), {
+                if(it == null) navigateUp() else navigate(ApplicationDetails(it))
+            }, {
+                SharedPrefs(context).applicationsListView = false
+                navController.navigate(ApplicationsFeatures) {
+                    popUpTo(Home)
+                }
+            })
+        }
+        composable<ApplicationsFeatures> {
+            ApplicationsFeaturesScreen(::navigateUp, ::navigate) {
+                SharedPrefs(context).applicationsListView = true
+                navController.navigate(ApplicationsList(true)) {
+                    popUpTo(Home)
+                }
+            }
+        }
+        composable<ApplicationDetails> { ApplicationDetailsScreen(it.toRoute(), ::navigateUp, ::navigate) }
+        composable<Suspend> { SuspendScreen(::navigateUp) }
+        composable<Hide> { HideScreen(::navigateUp) }
+        composable<BlockUninstall> { BlockUninstallScreen(::navigateUp) }
+        composable<DisableUserControl> { DisableUserControlScreen(::navigateUp) }
+        composable<PermissionsManager> { PermissionsManagerScreen(::navigateUp, it.toRoute()) }
+        composable<DisableMeteredData> { DisableMeteredDataScreen(::navigateUp) }
+        composable<ClearAppStorage> { ClearAppStorageScreen(::navigateUp) }
+        composable<UninstallApp> { UninstallAppScreen(::navigateUp) }
+        composable<KeepUninstalledPackages> { KeepUninstalledPackagesScreen(::navigateUp) }
+        composable<InstallExistingApp> { InstallExistingAppScreen(::navigateUp) }
+        composable<CrossProfilePackages> { CrossProfilePackagesScreen(::navigateUp) }
+        composable<CrossProfileWidgetProviders> { CrossProfileWidgetProvidersScreen(::navigateUp) }
+        composable<CredentialManagerPolicy> { CredentialManagerPolicyScreen(::navigateUp) }
+        composable<PermittedAccessibilityServices> { PermittedAccessibilityServicesScreen(::navigateUp) }
+        composable<PermittedInputMethods> { PermittedInputMethodsScreen(::navigateUp) }
+        composable<EnableSystemApp> { EnableSystemAppScreen(::navigateUp) }
+        composable<SetDefaultDialer> { SetDefaultDialerScreen(::navigateUp) }
 
         composable<UserRestriction> {
             LaunchedEffect(Unit) {
@@ -493,7 +564,9 @@ private fun HomeScreen(onNavigate: (Any) -> Unit) {
             ) {
                 HomePageItem(R.string.work_profile, R.drawable.work_fill0) { onNavigate(WorkProfile) }
             }
-            if(deviceOwner || profileOwner) HomePageItem(R.string.applications, R.drawable.apps_fill0) { onNavigate(Applications) }
+            if(deviceOwner || profileOwner) HomePageItem(R.string.applications, R.drawable.apps_fill0) {
+                onNavigate(if(SharedPrefs(context).applicationsListView) ApplicationsList(true) else ApplicationsFeatures)
+            }
             if(VERSION.SDK_INT >= 24 && (profileOwner || deviceOwner)) {
                 HomePageItem(R.string.user_restriction, R.drawable.person_off) { onNavigate(UserRestriction) }
             }

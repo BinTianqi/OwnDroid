@@ -404,38 +404,26 @@
     <string name="enable_lockdown">Enable lockdown</string>
     <string name="clear_current_config">Clear current config</string>
     <string name="permissions">Permissions</string>
-    <string name="scope_is_work_profile">Scope: work profile</string>
-    <string name="app_info">App info</string>
     <string name="not_installed">Not installed</string>
     <string name="block_uninstall">Block uninstall</string>
     <string name="enable_system_app">Enable system app</string>
-    <string name="enable_system_app_desc">Re-enable a system app that was disabled by default</string>
-    <!--ucd: user control disabled-->
-    <string name="ucd">Disable user control</string>
-    <string name="ucd_desc">If you set this, you cannot clear these apps\' storage or force stop them. </string>
-    <string name="app_list_is">App list:</string>
+    <string name="disable_user_control">Disable user control</string>
     <string name="disable_metered_data">Disable metered data</string>
-    <string name="cross_profile_package">Cross profile package</string>
+    <string name="cross_profile_apps">Cross profile apps</string>
     <string name="cross_profile_widget">Cross profile widget</string>
     <string name="credential_manager_policy">Credential manager policy</string>
     <string name="whitelist_and_system_app">Whitelist and system app</string>
-    <string name="permitted_packages_is">Permitted packages: \n</string>
     <string name="permitted_accessibility_services">Permitted accessibility services</string>
-    <string name="only_system_accessibility_allowed">Only system accessibility services are allowed</string>
     <string name="system_accessibility_always_allowed">System accessibility services are always allowed.</string>
-    <string name="only_system_ime_allowed">Only system input methods are allowed</string>
     <string name="system_ime_always_allowed">System input methods are always allowed.</string>
     <string name="permitted_ime">Permitted IME</string>
     <string name="keep_uninstalled_packages">Keep uninstalled packages</string>
-    <string name="clear_data">Clear data</string>
     <string name="clear_app_storage">Clear app storage</string>
-    <string name="app_storage_will_be_cleared">This app\'s storage will be cleared</string>
     <string name="set_default_dialer">Set default dialer</string>
-    <string name="app_will_be_default_dialer">This app will be set as the default dialer application.</string>
     <string name="uninstall_app">Uninstall app</string>
     <string name="install_app">Install app</string>
-    <string name="choose_apk_file">Choose an APK file</string>
     <string name="install_existing_app">Install existing app</string>
+    <string name="keep_after_uninstall">Keep after uninstall</string>
     <string name="search">Search</string>
 
     <!--UserRestriction-->
@@ -738,6 +726,7 @@
     <string name="info_disable_user_control">User will not be able to clear app data or force-stop packages.</string>
     <string name="info_keep_uninstalled_apps">Set a list of apps to keep around as APKs even if no user has currently installed it. </string>
     <string name="info_install_existing_app">Install an existing package that has been installed in another user, or has been kept after uninstall.</string>
+    <string name="info_enable_system_app">Re-enable a system app that was disabled by default when the user was initialized.</string>
     <string name="info_headless_system_user_mode">Headless system user mode means the system user runs system services and some system UI, but it is not associated with any real person and additional users must be created to be associated with real persons.</string>
     <string name="info_logout">If the current user is not switched by OwnDroid, this function cannot be used.</string>
     <string name="info_affiliation_id">When Device owner create a managed user, the managed user isn\'t affiliated. In order to make the managed user affiliated with the Device owner, you should set same affiliated IDs in main user and managed user</string>

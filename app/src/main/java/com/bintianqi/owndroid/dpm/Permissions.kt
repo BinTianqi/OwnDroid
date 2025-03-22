@@ -602,9 +602,17 @@ fun AddDelegatedAdminScreen(data: AddDelegatedAdmin, onNavigateUp: () -> Unit) {
             readOnly = updateMode,
             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = HorizontalPadding)
         )
-        DelegatedScope.entries.filter { VERSION.SDK_INT >= it.requiresApi }.forEach {scope ->
-            FullWidthCheckBoxItem(scope.string, scope in scopes) {
-                if(it) scopes += scope else scopes -= scope
+        DelegatedScope.entries.filter { VERSION.SDK_INT >= it.requiresApi }.forEach { scope ->
+            val checked = scope in scopes
+            Row(
+                Modifier.fillMaxWidth().clickable { if(!checked) scopes += scope else scopes -= scope }.padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(checked, { if(it) scopes += scope else scopes -= scope }, modifier = Modifier.padding(horizontal = 4.dp))
+                Column {
+                    Text(stringResource(scope.string))
+                    Text(scope.id, style = typography.bodyMedium, color = colorScheme.onSurfaceVariant)
+                }
             }
         }
         Button(

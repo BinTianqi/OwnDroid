@@ -385,38 +385,27 @@
     <string name="enable_lockdown">Kilitlemeyi Etkinleştir</string>
     <string name="clear_current_config">Mevcut Yapılandırmayı Temizle</string>
     <string name="permissions">İzinler</string>
-    <string name="scope_is_work_profile">Kapsam: İş Profili</string>
-    <string name="app_info">Uygulama Bilgisi</string>
     <string name="not_installed">Yüklenmedi</string>
     <string name="block_uninstall">Kaldırmayı Engelle</string>
     <string name="enable_system_app">Sistem Uygulamasını Etkinleştir</string>
-    <string name="enable_system_app_desc">Varsayılan olarak devre dışı bırakılmış bir sistem uygulamasını yeniden etkinleştir</string>
     <!--ucd: user control disabled-->
-    <string name="ucd">Kullanıcı Kontrolünü Devre Dışı Bırak</string>
-    <string name="ucd_desc">Bunu ayarlarsanız, bu uygulamaların depolamasını temizleyemez veya zorla durduramazsınız.</string>
-    <string name="app_list_is">Uygulama listesi:</string>
+    <string name="disable_user_control">Kullanıcı Kontrolünü Devre Dışı Bırak</string>
     <string name="disable_metered_data">Disable metered data</string> <!--TODO-->
-    <string name="cross_profile_package">Çapraz Profil Paketi</string>
+    <string name="cross_profile_apps">Cross profile apps</string> <!--TODO-->
     <string name="cross_profile_widget">Çapraz Profil Widget\'ı</string>
     <string name="credential_manager_policy">Credential manager policy</string> <!--TODO-->
     <string name="whitelist_and_system_app">Beyaz Liste ve Sistem Uygulaması</string>
-    <string name="permitted_packages_is">İzin Verilen Paketler: \n</string>
     <string name="permitted_accessibility_services">İzin Verilen Erişilebilirlik Servisleri</string>
-    <string name="only_system_accessibility_allowed">Yalnızca sistem erişilebilirlik servislerine izin verilir</string>
     <string name="system_accessibility_always_allowed">Sistem erişilebilirlik servisleri her zaman izinlidir.</string>
-    <string name="only_system_ime_allowed">Yalnızca sistem giriş yöntemlerine izin verilir</string>
     <string name="system_ime_always_allowed">Sistem giriş yöntemleri her zaman izinlidir.</string>
     <string name="permitted_ime">İzin Verilen IME</string>
     <string name="keep_uninstalled_packages">Kaldırılmış Paketleri Koru</string>
-    <string name="clear_data">Verileri Temizle</string>
     <string name="clear_app_storage">Uygulama Depolamasını Temizle</string>
-    <string name="app_storage_will_be_cleared">Bu uygulamanın depolaması temizlenecek</string>
     <string name="set_default_dialer">Varsayılan Arama Uygulamasını Ayarla</string>
-    <string name="app_will_be_default_dialer">Bu uygulama varsayılan arama uygulaması olarak ayarlanacak.</string>
     <string name="uninstall_app">Uygulamayı Kaldır</string>
     <string name="install_app">Uygulama Yükle</string>
-    <string name="choose_apk_file">Bir APK Dosyası Seç</string>
     <string name="install_existing_app">Mevcut Uygulamayı Yükle</string>
+    <string name="keep_after_uninstall">Keep after uninstall</string> <!--TODO-->
     <string name="search">Ara</string>
 
     <!--UserRestriction-->
@@ -702,6 +691,7 @@
     <string name="info_disable_user_control">Kullanıcı uygulama verilerini temizleyemez veya paketleri zorla durduramaz.</string>
     <string name="info_keep_uninstalled_apps">Hiçbir kullanıcının şu anda yüklemediği uygulamaları APK olarak saklanacak bir liste ayarlar.</string>
     <string name="info_install_existing_app">Başka bir kullanıcıda yüklenmiş veya kaldırıldıktan sonra saklanmış mevcut bir paketi yükler.</string>
+    <!--TODO--><string name="info_enable_system_app">Re-enable a system app that was disabled by default when the user was initialized.</string>
     <string name="info_headless_system_user_mode">Başıboş sistem kullanıcı modu, sistem kullanıcısının sistem servislerini ve bazı sistem kullanıcı arayüzlerini çalıştırdığı, ancak herhangi bir gerçek kişiyle ilişkilendirilmediği ve gerçek kişilerle ilişkilendirilecek ek kullanıcıların oluşturulması gerektiği anlamına gelir.</string>
     <string name="info_logout">Mevcut kullanıcı OwnDroid tarafından değiştirilmediyse bu işlev kullanılamaz.</string>
     <string name="info_affiliation_id">Cihaz Sahibi bir yönetilen kullanıcı oluşturduğunda, yönetilen kullanıcı bağlı değildir. Yönetilen kullanıcının Cihaz Sahibi ile bağlı hale getirilmesi için ana kullanıcı ve yönetilen kullanıcıda aynı bağlılık kimlikleri ayarlanmalıdır.</string>
