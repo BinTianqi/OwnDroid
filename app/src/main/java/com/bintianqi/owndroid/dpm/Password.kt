@@ -69,13 +69,13 @@ import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.showOperationResultToast
-import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
 import com.bintianqi.owndroid.ui.FunctionItem
-import com.bintianqi.owndroid.ui.Notes
+import com.bintianqi.owndroid.ui.InfoItem
 import com.bintianqi.owndroid.ui.MyScaffold
+import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.RadioButtonItem
 import com.bintianqi.owndroid.yesOrNo
 import kotlinx.serialization.Serializable
@@ -220,7 +220,7 @@ fun PasswordInfoScreen(onNavigateUp: () -> Unit) {
     val deviceOwner = context.isDeviceOwner
     val profileOwner = context.isProfileOwner
     var dialog by remember { mutableIntStateOf(0) } // 0:none, 1:password complexity
-    MyScaffold(R.string.password_info, onNavigateUp) {
+    MyScaffold(R.string.password_info, onNavigateUp, 0.dp) {
         if(VERSION.SDK_INT >= 29) {
             val text = when(dpm.passwordComplexity) {
                 PASSWORD_COMPLEXITY_NONE -> R.string.none
@@ -229,13 +229,13 @@ fun PasswordInfoScreen(onNavigateUp: () -> Unit) {
                 PASSWORD_COMPLEXITY_HIGH -> R.string.high
                 else -> R.string.unknown
             }
-            CardItem(R.string.current_password_complexity, text) { dialog = 1 }
+            InfoItem(R.string.current_password_complexity, text, true) { dialog = 1 }
         }
         if(deviceOwner || profileOwner) {
-            CardItem(R.string.password_sufficient, dpm.isActivePasswordSufficient.yesOrNo)
+            InfoItem(R.string.password_sufficient, dpm.isActivePasswordSufficient.yesOrNo)
         }
         if(VERSION.SDK_INT >= 28 && profileOwner && dpm.isManagedProfile(receiver)) {
-            CardItem(R.string.unified_password, dpm.isUsingUnifiedPassword(receiver).yesOrNo)
+            InfoItem(R.string.unified_password, dpm.isUsingUnifiedPassword(receiver).yesOrNo)
         }
     }
     if(dialog != 0) AlertDialog(

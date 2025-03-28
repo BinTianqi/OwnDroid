@@ -646,13 +646,13 @@ fun DeviceInfoScreen(onNavigateUp: () -> Unit) {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     var dialog by remember { mutableIntStateOf(0) }
-    MyScaffold(R.string.device_info, onNavigateUp) {
+    MyScaffold(R.string.device_info, onNavigateUp, 0.dp) {
         if(VERSION.SDK_INT>=34 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
-            CardItem(R.string.financed_device, dpm.isDeviceFinanced.yesOrNo)
+            InfoItem(R.string.financed_device, dpm.isDeviceFinanced.yesOrNo)
         }
         if(VERSION.SDK_INT >= 33) {
             val dpmRole = dpm.devicePolicyManagementRoleHolderPackage
-            CardItem(R.string.dpmrh, if(dpmRole == null) stringResource(R.string.none) else dpmRole)
+            InfoItem(R.string.dpmrh, if(dpmRole == null) stringResource(R.string.none) else dpmRole)
         }
         val encryptionStatus = mutableMapOf(
             DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE to R.string.es_inactive,
@@ -661,16 +661,16 @@ fun DeviceInfoScreen(onNavigateUp: () -> Unit) {
         )
         if(VERSION.SDK_INT >= 23) { encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY] = R.string.es_active_default_key }
         if(VERSION.SDK_INT >= 24) { encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER] = R.string.es_active_per_user }
-        CardItem(R.string.encryption_status, encryptionStatus[dpm.storageEncryptionStatus] ?: R.string.unknown)
+        InfoItem(R.string.encryption_status, encryptionStatus[dpm.storageEncryptionStatus] ?: R.string.unknown)
         if(VERSION.SDK_INT >= 28) {
-            CardItem(R.string.support_device_id_attestation, dpm.isDeviceIdAttestationSupported.yesOrNo) { dialog = 1 }
+            InfoItem(R.string.support_device_id_attestation, dpm.isDeviceIdAttestationSupported.yesOrNo, true) { dialog = 1 }
         }
         if (VERSION.SDK_INT >= 30) {
-            CardItem(R.string.support_unique_device_attestation, dpm.isUniqueDeviceAttestationSupported.yesOrNo) { dialog = 2 }
+            InfoItem(R.string.support_unique_device_attestation, dpm.isUniqueDeviceAttestationSupported.yesOrNo, true) { dialog = 2 }
         }
         val adminList = dpm.activeAdmins
         if(adminList != null) {
-            CardItem(R.string.activated_device_admin, adminList.map { it.flattenToShortString() }.joinToString("\n"))
+            InfoItem(R.string.activated_device_admin, adminList.map { it.flattenToShortString() }.joinToString("\n"))
         }
     }
     if(dialog != 0) AlertDialog(

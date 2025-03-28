@@ -55,12 +55,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.showOperationResultToast
-import com.bintianqi.owndroid.ui.CardItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.CopyTextButton
 import com.bintianqi.owndroid.ui.FunctionItem
-import com.bintianqi.owndroid.ui.Notes
+import com.bintianqi.owndroid.ui.InfoItem
 import com.bintianqi.owndroid.ui.MyScaffold
+import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.yesOrNo
 import kotlinx.serialization.Serializable
@@ -172,7 +172,7 @@ fun OrganizationOwnedProfileScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     MyScaffold(R.string.org_owned_work_profile, onNavigateUp) {
-        CardItem(R.string.org_owned_work_profile, dpm.isOrganizationOwnedDeviceWithManagedProfile.yesOrNo)
+        InfoItem(R.string.org_owned_work_profile, dpm.isOrganizationOwnedDeviceWithManagedProfile.yesOrNo)
         Spacer(Modifier.padding(vertical = 5.dp))
         if(!dpm.isOrganizationOwnedDeviceWithManagedProfile) {
             SelectionContainer {

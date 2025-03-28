@@ -20,7 +20,7 @@ class SharedPrefs(context: Context) {
     var blackTheme by BooleanSharedPref("theme.black")
     var lockPassword by StringSharedPref("lock.password")
     var biometricsUnlock by BooleanSharedPref("lock.biometrics")
-    var applicationsListView by BooleanSharedPref("applications.list_view")
+    var applicationsListView by BooleanSharedPref("applications.list_view", true)
 }
 
 private class BooleanSharedPref(val key: String, val defValue: Boolean = false): ReadWriteProperty<SharedPrefs, Boolean> {

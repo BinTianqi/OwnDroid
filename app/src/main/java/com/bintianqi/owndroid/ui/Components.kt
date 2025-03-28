@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -25,6 +24,7 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -33,6 +33,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.writeClipBoard
 import com.bintianqi.owndroid.zhCN
@@ -236,28 +237,20 @@ fun CopyTextButton(@StringRes label: Int, content: String) {
 }
 
 @Composable
-fun CardItem(@StringRes title: Int, @StringRes text: Int, onClickInfo: (() -> Unit)? = null) {
-    CardItem(title, stringResource(text), onClickInfo)
-}
+fun InfoItem(title: Int, text: Int, withInfo: Boolean = false, onClick: () -> Unit = {}) =
+    InfoItem(title, stringResource(text), withInfo, onClick)
 
 @Composable
-fun CardItem(@StringRes title: Int, text: String, onClickInfo: (() -> Unit)? = null) {
-    Card(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(modifier = Modifier.fillMaxWidth(0.85F)) {
-                Text(text = stringResource(title), style = typography.titleLarge, modifier = Modifier.padding(start = 8.dp, top = 6.dp))
-                SelectionContainer {
-                    Text(text = text, modifier = Modifier.padding(start = 8.dp, bottom = 6.dp))
-                }
-            }
-            if(onClickInfo != null) IconButton(onClick = onClickInfo) {
-                Icon(imageVector = Icons.Outlined.Info, contentDescription = null)
-            }
+fun InfoItem(title: Int, text: String, withInfo: Boolean = false, onClick: () -> Unit = {}) {
+    Row(
+        Modifier.fillMaxWidth().padding(vertical = 6.dp).padding(start = HorizontalPadding, end = 8.dp),
+        Arrangement.SpaceBetween, Alignment.CenterVertically
+    ) {
+        Column {
+            Text(stringResource(title), style = typography.titleLarge)
+            Text(text, Modifier.alpha(0.8F))
         }
+        if(withInfo) IconButton(onClick) { Icon(Icons.Outlined.Info, null) }
     }
 }
 

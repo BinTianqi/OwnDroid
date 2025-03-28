@@ -67,7 +67,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.parseTimestamp
 import com.bintianqi.owndroid.showOperationResultToast
-import com.bintianqi.owndroid.ui.CardItem
+import com.bintianqi.owndroid.ui.InfoItem
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.Notes
@@ -192,25 +192,25 @@ fun UserInfoScreen(onNavigateUp: () -> Unit) {
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     val user = Process.myUserHandle()
     var infoDialog by remember { mutableIntStateOf(0) }
-    MyScaffold(R.string.user_info, onNavigateUp) {
-        if(VERSION.SDK_INT >= 24) CardItem(R.string.support_multiuser, UserManager.supportsMultipleUsers().yesOrNo)
-        if(VERSION.SDK_INT >= 31) CardItem(R.string.headless_system_user_mode, UserManager.isHeadlessSystemUserMode().yesOrNo) { infoDialog = 1 }
+    MyScaffold(R.string.user_info, onNavigateUp, 0.dp) {
+        if(VERSION.SDK_INT >= 24) InfoItem(R.string.support_multiuser, UserManager.supportsMultipleUsers().yesOrNo)
+        if(VERSION.SDK_INT >= 31) InfoItem(R.string.headless_system_user_mode, UserManager.isHeadlessSystemUserMode().yesOrNo, true) { infoDialog = 1 }
         Spacer(Modifier.padding(vertical = 8.dp))
-        if(VERSION.SDK_INT >= 23) CardItem(R.string.system_user, userManager.isSystemUser.yesOrNo)
-        if(VERSION.SDK_INT >= 34) CardItem(R.string.admin_user, userManager.isAdminUser.yesOrNo)
-        if(VERSION.SDK_INT >= 25) CardItem(R.string.demo_user, userManager.isDemoUser.yesOrNo)
+        if(VERSION.SDK_INT >= 23) InfoItem(R.string.system_user, userManager.isSystemUser.yesOrNo)
+        if(VERSION.SDK_INT >= 34) InfoItem(R.string.admin_user, userManager.isAdminUser.yesOrNo)
+        if(VERSION.SDK_INT >= 25) InfoItem(R.string.demo_user, userManager.isDemoUser.yesOrNo)
         if(VERSION.SDK_INT >= 26) userManager.getUserCreationTime(user).let {
-            if(it != 0L) CardItem(R.string.creation_time, parseTimestamp(it))
+            if(it != 0L) InfoItem(R.string.creation_time, parseTimestamp(it))
         }
         if (VERSION.SDK_INT >= 28) {
-            CardItem(R.string.logout_enabled, dpm.isLogoutEnabled.yesOrNo)
+            InfoItem(R.string.logout_enabled, dpm.isLogoutEnabled.yesOrNo)
             if(context.isDeviceOwner || context.isProfileOwner) {
-                CardItem(R.string.ephemeral_user, dpm.isEphemeralUser(receiver).yesOrNo)
+                InfoItem(R.string.ephemeral_user, dpm.isEphemeralUser(receiver).yesOrNo)
             }
-            CardItem(R.string.affiliated_user, dpm.isAffiliatedUser.yesOrNo)
+            InfoItem(R.string.affiliated_user, dpm.isAffiliatedUser.yesOrNo)
         }
-        CardItem(R.string.user_id, (Binder.getCallingUid() / 100000).toString())
-        CardItem(R.string.user_serial_number, userManager.getSerialNumberForUser(Process.myUserHandle()).toString())
+        InfoItem(R.string.user_id, (Binder.getCallingUid() / 100000).toString())
+        InfoItem(R.string.user_serial_number, userManager.getSerialNumberForUser(Process.myUserHandle()).toString())
     }
     if(infoDialog != 0) AlertDialog(
         text = { Text(stringResource(R.string.info_headless_system_user_mode)) },

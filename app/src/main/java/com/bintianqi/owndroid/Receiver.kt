@@ -6,12 +6,16 @@ import android.app.admin.DeviceAdminReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ShortcutInfo
+import android.content.pm.ShortcutManager
+import android.graphics.drawable.Icon
 import android.os.Build.VERSION
 import android.os.PersistableBundle
 import android.os.UserHandle
 import android.os.UserManager
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
+import androidx.core.graphics.drawable.toBitmap
 import com.bintianqi.owndroid.dpm.handleNetworkLogs
 import com.bintianqi.owndroid.dpm.isDeviceOwner
 import com.bintianqi.owndroid.dpm.isProfileOwner
@@ -42,6 +46,16 @@ class Receiver : DeviceAdminReceiver() {
         if(context.isProfileOwner || context.isDeviceOwner){
             setDefaultAffiliationID(context)
             Toast.makeText(context, context.getString(R.string.onEnabled), Toast.LENGTH_SHORT).show()
+            if(VERSION.SDK_INT >= 25) {
+                val sm = context.getSystemService(ShortcutManager::class.java)
+                val lockIntent = Intent("com.bintianqi.owndroid.action.LOCK")
+                    .setComponent(ComponentName(context, ShortcutsReceiverActivity::class.java))
+                val shortcut = ShortcutInfo.Builder(context, "LockScreen")
+                    .setShortLabel(context.getString(R.string.lock_now))
+                    .setIcon(Icon.createWithBitmap(context.getDrawable(R.drawable.screen_lock_portrait_fill0)?.toBitmap()))
+                    .setIntent(lockIntent)
+                sm.addDynamicShortcuts(listOf(shortcut.build()))
+            }
         }
     }
 
@@ -49,6 +63,10 @@ class Receiver : DeviceAdminReceiver() {
         super.onDisabled(context, intent)
         Toast.makeText(context, R.string.onDisabled, Toast.LENGTH_SHORT).show()
         SharedPrefs(context).isDefaultAffiliationIdSet = false
+        if(VERSION.SDK_INT >= 25) {
+            val sm = context.getSystemService(ShortcutManager::class.java)
+            sm.removeDynamicShortcuts(listOf("LockScreen"))
+        }
     }
 
     override fun onProfileProvisioningComplete(context: Context, intent: Intent) {
