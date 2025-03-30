@@ -64,15 +64,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.parseTimestamp
 import com.bintianqi.owndroid.showOperationResultToast
-import com.bintianqi.owndroid.ui.InfoItem
-import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
 import com.bintianqi.owndroid.ui.FunctionItem
-import com.bintianqi.owndroid.ui.Notes
+import com.bintianqi.owndroid.ui.InfoItem
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.MyScaffold
+import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.uriToStream
 import com.bintianqi.owndroid.yesOrNo
@@ -343,26 +344,24 @@ fun CreateUserScreen(onNavigateUp: () -> Unit) {
     var createdUserSerialNumber by remember { mutableLongStateOf(-1) }
     var flag by remember { mutableIntStateOf(0) }
     val coroutine = rememberCoroutineScope()
-    MyScaffold(R.string.create_user, onNavigateUp) {
+    MyScaffold(R.string.create_user, onNavigateUp, 0.dp) {
         OutlinedTextField(
-            value = userName,
-            onValueChange = { userName= it },
+            userName, { userName= it }, Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding),
             label = { Text(stringResource(R.string.username)) },
-            modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() })
         )
         Spacer(Modifier.padding(vertical = 5.dp))
-        CheckBoxItem(
+        FullWidthCheckBoxItem(
             R.string.create_user_skip_wizard,
             flag and DevicePolicyManager.SKIP_SETUP_WIZARD != 0
         ) { flag = flag xor DevicePolicyManager.SKIP_SETUP_WIZARD }
         if(VERSION.SDK_INT >= 28) {
-            CheckBoxItem(
+            FullWidthCheckBoxItem(
                 R.string.create_user_ephemeral_user,
                 flag and DevicePolicyManager.MAKE_USER_EPHEMERAL != 0
             ) { flag = flag xor DevicePolicyManager.MAKE_USER_EPHEMERAL }
-            CheckBoxItem(
+            FullWidthCheckBoxItem(
                 R.string.create_user_enable_all_system_app,
                 flag and DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED != 0
             ) { flag = flag xor DevicePolicyManager.LEAVE_ALL_SYSTEM_APPS_ENABLED }
@@ -384,7 +383,7 @@ fun CreateUserScreen(onNavigateUp: () -> Unit) {
                     withContext(Dispatchers.Main) { creating = false }
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding)
         ) {
             Text(stringResource(R.string.create))
         }

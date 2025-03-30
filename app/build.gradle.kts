@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose)
-    kotlin("plugin.serialization") version "2.0.21"
+    kotlin("plugin.serialization") version "2.1.20"
 }
 
 android {
@@ -24,8 +24,8 @@ android {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 21
         targetSdk = 35
-        versionCode = 37
-        versionName = "6.5"
+        versionCode = 38
+        versionName = "6.6"
         multiDexEnabled = false
     }
 
