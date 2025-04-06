@@ -73,8 +73,6 @@
 
     <!--Разрешения-->
     <string name="click_to_activate">Нажмите для активации</string>
-    <string name="device_admin">Администратор устройства</string>
-    <string name="activate_jump" tools:ignore="TypographyEllipsis">Активировать...</string>
     <string name="profile_owner">Владелец профиля</string>
     <string name="device_owner">Владелец устройства</string>
     <string name="delegated_admins">Делегированные администраторы</string>
@@ -116,9 +114,7 @@
     <string name="activate_device_admin_here">Активируйте администратора устройства здесь.</string>
 
     <!--Приемник-->
-    <string name="onEnabled">OwnDroid: Включено</string>
-    <string name="onDisabled">OwnDroid: Отключено</string>
-    <string name="create_work_profile_success">OwnDroid: Рабочий профиль успешно создан</string>
+    <string name="create_work_profile_success">Рабочий профиль успешно создан</string>
 
     <!--Dhizuku-->
     <string name="failed_to_init_dhizuku">Не удалось инициализировать Dhizuku</string>

@@ -1,25 +1,20 @@
 package com.bintianqi.owndroid
 
 import android.annotation.SuppressLint
-import android.app.admin.DevicePolicyManager
 import android.content.ClipData
 import android.content.ClipboardManager
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContract
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import com.bintianqi.owndroid.dpm.addDeviceAdmin
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.FileNotFoundException
@@ -60,15 +55,6 @@ fun writeClipBoard(context: Context, string: String):Boolean{
     return true
 }
 
-fun registerActivityResult(context: ComponentActivity) {
-    addDeviceAdmin = context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        val dpm = context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        if(dpm.isAdminActive(ComponentName(context.applicationContext, Receiver::class.java))) {
-            backToHomeStateFlow.value = true
-        }
-    }
-}
-
 fun formatFileSize(bytes: Long): String {
     val kb = 1024
     val mb = kb * 1024
@@ -91,14 +77,10 @@ fun parseTimestamp(timestamp: Long): String {
     return formatter.format(instant)
 }
 
-fun parseDate(date: Date)
-    = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(date)
+fun parseDate(date: Date): String = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(date)
 
 val Long.humanReadableDate: String
     get() = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault()).format(Date(this))
-
-val Long.humanReadableDateTime: String
-    get() = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(Date(this))
 
 fun formatDate(pattern: String, value: Long): String
     = SimpleDateFormat(pattern, Locale.getDefault()).format(Date(value))

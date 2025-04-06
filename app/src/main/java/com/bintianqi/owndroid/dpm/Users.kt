@@ -64,8 +64,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.parseTimestamp
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
@@ -89,28 +91,25 @@ fun UsersScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val deviceOwner = context.isDeviceOwner
-    val profileOwner = context.isProfileOwner
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
     var dialog by remember { mutableIntStateOf(0) }
     MyScaffold(R.string.users, onNavigateUp, 0.dp) {
-        if(VERSION.SDK_INT >= 28 && profileOwner && dpm.isAffiliatedUser) {
+        if(VERSION.SDK_INT >= 28 && privilege.profile && privilege.affiliated) {
             FunctionItem(R.string.logout, icon = R.drawable.logout_fill0) { dialog = 2 }
         }
         FunctionItem(R.string.user_info, icon = R.drawable.person_fill0) { onNavigate(UserInfo) }
-        if(deviceOwner && VERSION.SDK_INT >= 28) {
+        if(VERSION.SDK_INT >= 28 && privilege.device) {
             FunctionItem(R.string.secondary_users, icon = R.drawable.list_fill0) { dialog = 1 }
             FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { onNavigate(UsersOptions) }
         }
-        if(deviceOwner) {
+        if(privilege.device) {
             FunctionItem(R.string.user_operation, icon = R.drawable.sync_alt_fill0) { onNavigate(UserOperation) }
         }
-        if(VERSION.SDK_INT >= 24 && deviceOwner) {
+        if(VERSION.SDK_INT >= 24 && privilege.device) {
             FunctionItem(R.string.create_user, icon = R.drawable.person_add_fill0) { onNavigate(CreateUser) }
         }
-        if(deviceOwner || profileOwner) {
-            FunctionItem(R.string.change_username, icon = R.drawable.edit_fill0) { onNavigate(ChangeUsername) }
-        }
-        if(VERSION.SDK_INT >= 23 && (deviceOwner || profileOwner)) {
+        FunctionItem(R.string.change_username, icon = R.drawable.edit_fill0) { onNavigate(ChangeUsername) }
+        if(VERSION.SDK_INT >= 23) {
             var changeUserIconDialog by remember { mutableStateOf(false) }
             var bitmap: Bitmap? by remember { mutableStateOf(null) }
             val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
@@ -123,12 +122,12 @@ fun UsersScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
                 Toast.makeText(context, R.string.select_an_image, Toast.LENGTH_SHORT).show()
                 launcher.launch("image/*")
             }
-            if(changeUserIconDialog == true) ChangeUserIconDialog(bitmap!!) { changeUserIconDialog = false }
+            if(changeUserIconDialog) ChangeUserIconDialog(bitmap!!) { changeUserIconDialog = false }
         }
-        if(VERSION.SDK_INT >= 28 && deviceOwner) {
+        if(VERSION.SDK_INT >= 28 && privilege.device) {
             FunctionItem(R.string.user_session_msg, icon = R.drawable.notifications_fill0) { onNavigate(UserSessionMessage) }
         }
-        if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
+        if(VERSION.SDK_INT >= 26) {
             FunctionItem(R.string.affiliation_id, icon = R.drawable.id_card_fill0) { onNavigate(AffiliationId) }
         }
     }
@@ -190,6 +189,7 @@ fun UserInfoScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     val user = Process.myUserHandle()
     var infoDialog by remember { mutableIntStateOf(0) }
@@ -205,10 +205,8 @@ fun UserInfoScreen(onNavigateUp: () -> Unit) {
         }
         if (VERSION.SDK_INT >= 28) {
             InfoItem(R.string.logout_enabled, dpm.isLogoutEnabled.yesOrNo)
-            if(context.isDeviceOwner || context.isProfileOwner) {
-                InfoItem(R.string.ephemeral_user, dpm.isEphemeralUser(receiver).yesOrNo)
-            }
-            InfoItem(R.string.affiliated_user, dpm.isAffiliatedUser.yesOrNo)
+            InfoItem(R.string.ephemeral_user, dpm.isEphemeralUser(receiver).yesOrNo)
+            InfoItem(R.string.affiliated_user, privilege.affiliated.yesOrNo)
         }
         InfoItem(R.string.user_id, (Binder.getCallingUid() / 100000).toString())
         InfoItem(R.string.user_serial_number, userManager.getSerialNumberForUser(Process.myUserHandle()).toString())
@@ -447,7 +445,7 @@ fun AffiliationIdScreen(onNavigateUp: () -> Unit) {
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                list.removeAll(listOf(""))
+                list.removeAll(setOf(""))
                 dpm.setAffiliationIds(receiver, list.toSet())
                 context.showOperationResultToast(true)
                 refreshIds()

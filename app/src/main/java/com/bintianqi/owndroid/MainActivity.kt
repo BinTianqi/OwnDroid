@@ -35,9 +35,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -108,8 +105,6 @@ import com.bintianqi.owndroid.dpm.DelegatedAdmins
 import com.bintianqi.owndroid.dpm.DelegatedAdminsScreen
 import com.bintianqi.owndroid.dpm.DeleteWorkProfile
 import com.bintianqi.owndroid.dpm.DeleteWorkProfileScreen
-import com.bintianqi.owndroid.dpm.DeviceAdmin
-import com.bintianqi.owndroid.dpm.DeviceAdminScreen
 import com.bintianqi.owndroid.dpm.DeviceInfo
 import com.bintianqi.owndroid.dpm.DeviceInfoScreen
 import com.bintianqi.owndroid.dpm.DeviceOwner
@@ -241,9 +236,6 @@ import com.bintianqi.owndroid.dpm.dhizukuErrorStatus
 import com.bintianqi.owndroid.dpm.dhizukuPermissionGranted
 import com.bintianqi.owndroid.dpm.getDPM
 import com.bintianqi.owndroid.dpm.getReceiver
-import com.bintianqi.owndroid.dpm.isDeviceAdmin
-import com.bintianqi.owndroid.dpm.isDeviceOwner
-import com.bintianqi.owndroid.dpm.isProfileOwner
 import com.bintianqi.owndroid.dpm.setDefaultAffiliationID
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
@@ -259,7 +251,6 @@ val backToHomeStateFlow = MutableStateFlow(false)
 @ExperimentalMaterial3Api
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        registerActivityResult(this)
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
@@ -288,6 +279,7 @@ class MainActivity : FragmentActivity() {
                 dhizukuErrorStatus.value = 1
             }
         }
+        updatePrivilege(this)
     }
 
 }
@@ -325,9 +317,8 @@ fun Home(vm: MyViewModel) {
         composable<Permissions> {
             PermissionsScreen(::navigateUp, { navController.navigate(it) }) { navController.navigate(ShizukuScreen, it) }
         }
-        composable<ShizukuScreen> { ShizukuScreen(it.arguments!!, ::navigateUp) { navController.navigate(it) } }
+        composable<ShizukuScreen> { ShizukuScreen(it.arguments!!, ::navigateUp) { dest -> navController.navigate(dest) } }
         composable<Accounts>(mapOf(serializableNavTypePair<List<Accounts.Account>>())) { AccountsScreen(it.toRoute(), ::navigateUp) }
-        composable<DeviceAdmin> { DeviceAdminScreen(::navigateUp) }
         composable<ProfileOwner> { ProfileOwnerScreen(::navigateUp) }
         composable<DeviceOwner> { DeviceOwnerScreen(::navigateUp) }
         composable<DelegatedAdmins> { DelegatedAdminsScreen(::navigateUp, ::navigate) }
@@ -385,8 +376,8 @@ fun Home(vm: MyViewModel) {
         composable<DeleteWorkProfile> { DeleteWorkProfileScreen(::navigateUp) }
 
         composable<ApplicationsList> {
-            AppChooserScreen(it.toRoute(), {
-                if(it == null) navigateUp() else navigate(ApplicationDetails(it))
+            AppChooserScreen(it.toRoute(), { dest ->
+                if(dest == null) navigateUp() else navigate(ApplicationDetails(dest))
             }, {
                 SharedPrefs(context).applicationsListView = false
                 navController.navigate(ApplicationsFeatures) {
@@ -489,7 +480,7 @@ fun Home(vm: MyViewModel) {
     LaunchedEffect(Unit) {
         val dpm = context.getDPM()
         val sp = SharedPrefs(context)
-        val profileNotActivated = !sp.managedProfileActivated && context.isProfileOwner && (VERSION.SDK_INT < 24 || dpm.isManagedProfile(receiver))
+        val profileNotActivated = !sp.managedProfileActivated && myPrivilege.value.work
         if(profileNotActivated) {
             dpm.setProfileEnabled(receiver)
             sp.managedProfileActivated = true
@@ -505,24 +496,14 @@ fun Home(vm: MyViewModel) {
 private fun HomeScreen(onNavigate: (Any) -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    var activated by remember { mutableStateOf(false) }
-    var activateType by remember { mutableStateOf("") }
-    val deviceAdmin = context.isDeviceAdmin
-    val deviceOwner = context.isDeviceOwner
-    val profileOwner = context.isProfileOwner
-    val refreshStatus by dhizukuErrorStatus.collectAsState()
-    LaunchedEffect(refreshStatus) {
-        activated = context.isProfileOwner || context.isDeviceOwner
-        activateType = if(SharedPrefs(context).dhizuku) context.getString(R.string.dhizuku) + " - " else ""
-        activateType += context.getString(
-            if(deviceOwner) { R.string.device_owner }
-            else if(profileOwner) {
-                if(VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)) R.string.work_profile_owner else R.string.profile_owner
-            }
-            else if(deviceAdmin) R.string.device_admin else R.string.click_to_activate
-        )
-    }
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val activateType = (if(privilege.dhizuku) context.getString(R.string.dhizuku) + " - " else "") +
+            context.getString(
+                if(privilege.device) R.string.device_owner
+                else if(privilege.work) R.string.work_profile_owner
+                else if(privilege.profile) R.string.profile_owner
+                else R.string.click_to_activate
+            )
     Scaffold {
         Column(modifier = Modifier.padding(it).verticalScroll(rememberScrollState())) {
             Spacer(Modifier.padding(vertical = 25.dp))
@@ -541,6 +522,7 @@ private fun HomeScreen(onNavigate: (Any) -> Unit) {
                     .padding(vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val activated = privilege.device || privilege.profile
                 Icon(
                     painterResource(if(activated) R.drawable.check_circle_fill1 else R.drawable.block_fill0), null,
                     Modifier.padding(start = 14.dp), colorScheme.onPrimary
@@ -555,23 +537,32 @@ private fun HomeScreen(onNavigate: (Any) -> Unit) {
                     if(activateType != "") { Text(text = activateType, color = colorScheme.onPrimary) }
                 }
             }
-            HomePageItem(R.string.system, R.drawable.android_fill0) { onNavigate(SystemManager) }
-            if(deviceOwner || profileOwner) { HomePageItem(R.string.network, R.drawable.wifi_fill0) { onNavigate(Network) } }
+            if(privilege.device || privilege.profile) {
+                HomePageItem(R.string.system, R.drawable.android_fill0) { onNavigate(SystemManager) }
+                HomePageItem(R.string.network, R.drawable.wifi_fill0) { onNavigate(Network) }
+            }
             if(
-                (VERSION.SDK_INT < 24 && !deviceOwner) || (dpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE) ||
-                                (profileOwner && dpm.isManagedProfile(receiver))
-                        )
+                privilege.work || (VERSION.SDK_INT < 24 && !privilege.device) ||
+                dpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)
             ) {
-                HomePageItem(R.string.work_profile, R.drawable.work_fill0) { onNavigate(WorkProfile) }
+                HomePageItem(R.string.work_profile, R.drawable.work_fill0) {
+                    onNavigate(
+                        if(VERSION.SDK_INT < 24 ||
+                            dpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)
+                            ) WorkProfile else CreateWorkProfile
+                    )
+                }
             }
-            if(deviceOwner || profileOwner) HomePageItem(R.string.applications, R.drawable.apps_fill0) {
-                onNavigate(if(SharedPrefs(context).applicationsListView) ApplicationsList(true) else ApplicationsFeatures)
+            if(privilege.device || privilege.profile) {
+                HomePageItem(R.string.applications, R.drawable.apps_fill0) {
+                    onNavigate(if(SharedPrefs(context).applicationsListView) ApplicationsList(true) else ApplicationsFeatures)
+                }
+                if(VERSION.SDK_INT >= 24) {
+                    HomePageItem(R.string.user_restriction, R.drawable.person_off) { onNavigate(UserRestriction) }
+                }
+                HomePageItem(R.string.users,R.drawable.manage_accounts_fill0) { onNavigate(Users) }
+                HomePageItem(R.string.password_and_keyguard, R.drawable.password_fill0) { onNavigate(Password) }
             }
-            if(VERSION.SDK_INT >= 24 && (profileOwner || deviceOwner)) {
-                HomePageItem(R.string.user_restriction, R.drawable.person_off) { onNavigate(UserRestriction) }
-            }
-            HomePageItem(R.string.users,R.drawable.manage_accounts_fill0) { onNavigate(Users) }
-            if(deviceOwner || profileOwner) HomePageItem(R.string.password_and_keyguard, R.drawable.password_fill0) { onNavigate(Password) }
             HomePageItem(R.string.settings, R.drawable.settings_fill0) { onNavigate(Settings) }
             Spacer(Modifier.padding(vertical = 20.dp))
         }

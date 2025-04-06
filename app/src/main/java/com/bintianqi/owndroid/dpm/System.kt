@@ -116,6 +116,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.ChoosePackageContract
 import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.NotificationUtils
@@ -123,6 +124,7 @@ import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.humanReadableDate
+import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.parseDate
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
@@ -160,62 +162,54 @@ fun SystemManagerScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val sp = SharedPrefs(context)
-    val dhizuku = sp.dhizuku
-    val deviceOwner = context.isDeviceOwner
-    val profileOwner = context.isProfileOwner
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
     var dialog by remember { mutableIntStateOf(0) }
     MyScaffold(R.string.system, onNavigateUp, 0.dp) {
-        if(deviceOwner || profileOwner) {
-            FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { onNavigate(SystemOptions) }
-        }
+        FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { onNavigate(SystemOptions) }
         FunctionItem(R.string.keyguard, icon = R.drawable.screen_lock_portrait_fill0) { onNavigate(Keyguard) }
-        if(VERSION.SDK_INT >= 24 && deviceOwner && !dhizuku)
+        if(VERSION.SDK_INT >= 24 && privilege.device && !privilege.dhizuku)
             FunctionItem(R.string.hardware_monitor, icon = R.drawable.memory_fill0) { onNavigate(HardwareMonitor) }
-        if(VERSION.SDK_INT >= 24 && deviceOwner) {
+        if(VERSION.SDK_INT >= 24 && privilege.device) {
             FunctionItem(R.string.reboot, icon = R.drawable.restart_alt_fill0) { dialog = 1 }
         }
-        if(deviceOwner && VERSION.SDK_INT >= 24 && (VERSION.SDK_INT < 28 || dpm.isAffiliatedUser)) {
+        if(VERSION.SDK_INT >= 24 && privilege.device && (VERSION.SDK_INT < 28 || dpm.isAffiliatedUser)) {
             FunctionItem(R.string.bug_report, icon = R.drawable.bug_report_fill0) { dialog = 2 }
         }
-        if(VERSION.SDK_INT >= 28 && (deviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 28 && (privilege.device || privilege.org)) {
             FunctionItem(R.string.change_time, icon = R.drawable.schedule_fill0) { onNavigate(ChangeTime) }
             FunctionItem(R.string.change_timezone, icon = R.drawable.schedule_fill0) { onNavigate(ChangeTimeZone) }
         }
         /*if(VERSION.SDK_INT >= 28 && (deviceOwner || profileOwner))
             FunctionItem(R.string.key_pairs, icon = R.drawable.key_vertical_fill0) { navCtrl.navigate("KeyPairs") }*/
-        if(VERSION.SDK_INT >= 35 && (deviceOwner || (profileOwner && dpm.isAffiliatedUser)))
+        if(VERSION.SDK_INT >= 35 && (privilege.device || (privilege.profile && privilege.affiliated)))
             FunctionItem(R.string.content_protection_policy, icon = R.drawable.search_fill0) { onNavigate(ContentProtectionPolicy) }
-        if(VERSION.SDK_INT >= 23 && (deviceOwner || profileOwner)) {
+        if(VERSION.SDK_INT >= 23) {
             FunctionItem(R.string.permission_policy, icon = R.drawable.key_fill0) { onNavigate(PermissionPolicy) }
         }
-        if(VERSION.SDK_INT >= 34 && deviceOwner) {
+        if(VERSION.SDK_INT >= 34 && privilege.device) {
             FunctionItem(R.string.mte_policy, icon = R.drawable.memory_fill0) { onNavigate(MtePolicy) }
         }
-        if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) {
+        if(VERSION.SDK_INT >= 31) {
             FunctionItem(R.string.nearby_streaming_policy, icon = R.drawable.share_fill0) { onNavigate(NearbyStreamingPolicy) }
         }
-        if(VERSION.SDK_INT >= 28 && deviceOwner) {
+        if(VERSION.SDK_INT >= 28 && privilege.device) {
             FunctionItem(R.string.lock_task_mode, icon = R.drawable.lock_fill0) { onNavigate(LockTaskMode) }
         }
-        if(deviceOwner || profileOwner) {
-            FunctionItem(R.string.ca_cert, icon = R.drawable.license_fill0) { onNavigate(CaCert) }
-        }
-        if(VERSION.SDK_INT >= 26 && !dhizuku && (deviceOwner || dpm.isOrgProfile(receiver))) {
+        FunctionItem(R.string.ca_cert, icon = R.drawable.license_fill0) { onNavigate(CaCert) }
+        if(VERSION.SDK_INT >= 26 && !privilege.dhizuku && (privilege.device || privilege.org)) {
             FunctionItem(R.string.security_logging, icon = R.drawable.description_fill0) { onNavigate(SecurityLogging) }
         }
-        if(deviceOwner || profileOwner) {
-            FunctionItem(R.string.disable_account_management, icon = R.drawable.account_circle_fill0) { onNavigate(DisableAccountManagement) }
-        }
-        if(VERSION.SDK_INT >= 23 && (deviceOwner || dpm.isOrgProfile(receiver))) {
+        FunctionItem(R.string.disable_account_management, icon = R.drawable.account_circle_fill0) { onNavigate(DisableAccountManagement) }
+        if(VERSION.SDK_INT >= 23 && (privilege.device || privilege.org)) {
             FunctionItem(R.string.system_update_policy, icon = R.drawable.system_update_fill0) { onNavigate(SetSystemUpdatePolicy) }
         }
-        if(VERSION.SDK_INT >= 29 && (deviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 29 && (privilege.device || privilege.org)) {
             FunctionItem(R.string.install_system_update, icon = R.drawable.system_update_fill0) { onNavigate(InstallSystemUpdate) }
         }
-        if(VERSION.SDK_INT >= 30 && (deviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 30 && (privilege.device || privilege.org)) {
             FunctionItem(R.string.frp_policy, icon = R.drawable.device_reset_fill0) { onNavigate(FrpPolicy) }
         }
-        if(sp.displayDangerousFeatures && context.isDeviceAdmin && !(VERSION.SDK_INT >= 24 && profileOwner && dpm.isManagedProfile(receiver))) {
+        if(sp.displayDangerousFeatures && !privilege.work) {
             FunctionItem(R.string.wipe_data, icon = R.drawable.device_reset_fill0) { onNavigate(WipeData) }
         }
     }
@@ -253,27 +247,21 @@ fun SystemOptionsScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val deviceOwner = context.isDeviceOwner
-    val profileOwner = context.isProfileOwner
-    val um = context.getSystemService(Context.USER_SERVICE) as UserManager
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
     var dialog by remember { mutableIntStateOf(0) }
     MyScaffold(R.string.options, onNavigateUp, 0.dp) {
-        if(deviceOwner || profileOwner) {
-            SwitchItem(R.string.disable_cam, icon = R.drawable.photo_camera_fill0,
-                getState = { dpm.getCameraDisabled(null) }, onCheckedChange = { dpm.setCameraDisabled(receiver,it) }
-            )
-        }
-        if(deviceOwner || profileOwner) {
-            SwitchItem(R.string.disable_screen_capture, icon = R.drawable.screenshot_fill0,
-                getState = { dpm.getScreenCaptureDisabled(null) }, onCheckedChange = { dpm.setScreenCaptureDisabled(receiver,it) }
-            )
-        }
-        if(VERSION.SDK_INT >= 34 && (deviceOwner || (profileOwner && dpm.isAffiliatedUser))) {
+        SwitchItem(R.string.disable_cam, icon = R.drawable.photo_camera_fill0,
+            getState = { dpm.getCameraDisabled(null) }, onCheckedChange = { dpm.setCameraDisabled(receiver,it) }
+        )
+        SwitchItem(R.string.disable_screen_capture, icon = R.drawable.screenshot_fill0,
+            getState = { dpm.getScreenCaptureDisabled(null) }, onCheckedChange = { dpm.setScreenCaptureDisabled(receiver,it) }
+        )
+        if(VERSION.SDK_INT >= 34 && (privilege.device || (privilege.profile && privilege.affiliated))) {
             SwitchItem(R.string.disable_status_bar, icon = R.drawable.notifications_fill0,
                 getState = { dpm.isStatusBarDisabled}, onCheckedChange = { dpm.setStatusBarDisabled(receiver,it) }
             )
         }
-        if(deviceOwner || (VERSION.SDK_INT >= 23 && profileOwner && um.isSystemUser) || dpm.isOrgProfile(receiver)) {
+        if(privilege.device || privilege.org) {
             if(VERSION.SDK_INT >= 30) {
                 SwitchItem(R.string.auto_time, icon = R.drawable.schedule_fill0,
                     getState = { dpm.getAutoTimeEnabled(receiver) }, onCheckedChange = { dpm.setAutoTimeEnabled(receiver,it) }
@@ -286,30 +274,28 @@ fun SystemOptionsScreen(onNavigateUp: () -> Unit) {
                     getState = { dpm.autoTimeRequired }, onCheckedChange = { dpm.setAutoTimeRequired(receiver,it) }, padding = false)
             }
         }
-        if(deviceOwner || profileOwner) {
-            SwitchItem(R.string.master_mute, icon = R.drawable.volume_off_fill0,
-                getState = { dpm.isMasterVolumeMuted(receiver) }, onCheckedChange = { dpm.setMasterVolumeMuted(receiver,it) }
-            )
-        }
-        if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
+        SwitchItem(R.string.master_mute, icon = R.drawable.volume_off_fill0,
+            getState = { dpm.isMasterVolumeMuted(receiver) }, onCheckedChange = { dpm.setMasterVolumeMuted(receiver,it) }
+        )
+        if(VERSION.SDK_INT >= 26) {
             SwitchItem(R.string.backup_service, icon = R.drawable.backup_fill0,
                 getState = { dpm.isBackupServiceEnabled(receiver) }, onCheckedChange = { dpm.setBackupServiceEnabled(receiver,it) },
                 onClickBlank = { dialog = 1 }
             )
         }
-        if(VERSION.SDK_INT >= 24 && profileOwner && dpm.isManagedProfile(receiver)) {
+        if(VERSION.SDK_INT >= 24 && privilege.work) {
             SwitchItem(R.string.disable_bt_contact_share, icon = R.drawable.account_circle_fill0,
                 getState = { dpm.getBluetoothContactSharingDisabled(receiver) },
                 onCheckedChange = { dpm.setBluetoothContactSharingDisabled(receiver,it) }
             )
         }
-        if(VERSION.SDK_INT >= 30 && deviceOwner) {
+        if(VERSION.SDK_INT >= 30 && privilege.device) {
             SwitchItem(R.string.common_criteria_mode , icon =R.drawable.security_fill0,
                 getState = { dpm.isCommonCriteriaModeEnabled(receiver) }, onCheckedChange = { dpm.setCommonCriteriaModeEnabled(receiver,it) },
                 onClickBlank = { dialog = 2 }
             )
         }
-        if(VERSION.SDK_INT >= 31 && (deviceOwner || dpm.isOrgProfile(receiver)) && dpm.canUsbDataSignalingBeDisabled()) {
+        if(VERSION.SDK_INT >= 31 && (privilege.device || privilege.org) && dpm.canUsbDataSignalingBeDisabled()) {
             SwitchItem(
                 R.string.disable_usb_signal, icon = R.drawable.usb_fill0, getState = { !dpm.isUsbDataSignalingEnabled },
                 onCheckedChange = { dpm.isUsbDataSignalingEnabled = !it },
@@ -340,24 +326,21 @@ fun KeyguardScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val deviceOwner = context.isDeviceOwner
-    val profileOwner = context.isProfileOwner
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
     MyScaffold(R.string.keyguard, onNavigateUp) {
-        if(VERSION.SDK_INT >= 23) {
+        if(VERSION.SDK_INT >= 23 && (privilege.device || (VERSION.SDK_INT >= 28 && privilege.profile && privilege.affiliated))) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Button(
                     onClick = { context.showOperationResultToast(dpm.setKeyguardDisabled(receiver, true)) },
-                    enabled = deviceOwner || (VERSION.SDK_INT >= 28 && profileOwner && dpm.isAffiliatedUser),
                     modifier = Modifier.fillMaxWidth(0.49F)
                 ) {
                     Text(stringResource(R.string.disable))
                 }
                 Button(
                     onClick = { context.showOperationResultToast(dpm.setKeyguardDisabled(receiver, false)) },
-                    enabled = deviceOwner || (VERSION.SDK_INT >= 28 && profileOwner && dpm.isAffiliatedUser),
                     modifier = Modifier.fillMaxWidth(0.96F)
                 ) {
                     Text(stringResource(R.string.enable))
@@ -369,7 +352,7 @@ fun KeyguardScreen(onNavigateUp: () -> Unit) {
         if(VERSION.SDK_INT >= 23) Text(text = stringResource(R.string.lock_now), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 2.dp))
         var flag by remember { mutableIntStateOf(0) }
-        if(VERSION.SDK_INT >= 26 && profileOwner && dpm.isManagedProfile(receiver)) {
+        if(VERSION.SDK_INT >= 26 && privilege.work) {
             CheckBoxItem(
                 R.string.evict_credential_encryption_key,
                 flag and FLAG_EVICT_CREDENTIAL_ENCRYPTION_KEY != 0
@@ -380,12 +363,11 @@ fun KeyguardScreen(onNavigateUp: () -> Unit) {
             onClick = {
                 if(VERSION.SDK_INT >= 26) dpm.lockNow(flag) else dpm.lockNow()
             },
-            enabled = context.isDeviceAdmin,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.lock_now))
         }
-        if(VERSION.SDK_INT >= 26 && profileOwner && dpm.isManagedProfile(receiver)) {
+        if(VERSION.SDK_INT >= 26 && privilege.work) {
             Notes(R.string.info_evict_credential_encryption_key)
         }
     }
@@ -393,7 +375,6 @@ fun KeyguardScreen(onNavigateUp: () -> Unit) {
 
 @Serializable object HardwareMonitor
 
-@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(24)
 @Composable
 fun HardwareMonitorScreen(onNavigateUp: () -> Unit) {
@@ -1332,7 +1313,7 @@ fun CaCertScreen(onNavigateUp: () -> Unit) {
             text = {
                 if(dialog == 3) Text(stringResource(R.string.uninstall_all_user_ca_cert))
                 else {
-                    var text = ""
+                    var text: String
                     val sha256 = MessageDigest.getInstance("SHA-256").digest(caCertByteArray).toHexString()
                     try {
                         val cf = CertificateFactory.getInstance("X.509")
@@ -1634,6 +1615,7 @@ fun WipeDataScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     val dpm = context.getDPM()
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
     val focusMgr = LocalFocusManager.current
     var flag by remember { mutableIntStateOf(0) }
     var warning by remember { mutableStateOf(false) }
@@ -1642,7 +1624,7 @@ fun WipeDataScreen(onNavigateUp: () -> Unit) {
     var reason by remember { mutableStateOf("") }
     MyScaffold(R.string.wipe_data, onNavigateUp) {
         CheckBoxItem(R.string.wipe_external_storage, flag and WIPE_EXTERNAL_STORAGE != 0) { flag = flag xor WIPE_EXTERNAL_STORAGE }
-        if(VERSION.SDK_INT >= 22 && context.isDeviceOwner) CheckBoxItem(
+        if(VERSION.SDK_INT >= 22 && privilege.device) CheckBoxItem(
             R.string.wipe_reset_protection_data, flag and WIPE_RESET_PROTECTION_DATA != 0) { flag = flag xor WIPE_RESET_PROTECTION_DATA }
         if(VERSION.SDK_INT >= 28) CheckBoxItem(R.string.wipe_euicc, flag and WIPE_EUICC != 0) { flag = flag xor WIPE_EUICC }
         if(VERSION.SDK_INT >= 29) CheckBoxItem(R.string.wipe_silently, silent) { silent = it }
@@ -1667,7 +1649,7 @@ fun WipeDataScreen(onNavigateUp: () -> Unit) {
                 Text("WipeData")
             }
         }
-        if (VERSION.SDK_INT >= 34 && context.isDeviceOwner) {
+        if (VERSION.SDK_INT >= 34 && privilege.device) {
             Button(
                 onClick = {
                     focusMgr.clearFocus()

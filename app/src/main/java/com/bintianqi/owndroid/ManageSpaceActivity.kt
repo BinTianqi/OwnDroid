@@ -18,6 +18,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import kotlin.system.exitProcess
+import androidx.core.content.edit
 
 class ManageSpaceActivity: FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,7 +63,7 @@ class ManageSpaceActivity: FragmentActivity() {
             dataDir.resolve("shared_prefs").deleteRecursively()
         } else {
             val sharedPref = applicationContext.getSharedPreferences("data", MODE_PRIVATE)
-            sharedPref.edit().clear().apply()
+            sharedPref.edit { clear() }
         }
         this.showOperationResultToast(true)
         finish()

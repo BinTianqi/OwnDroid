@@ -14,17 +14,21 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.IPackageInstaller
 import android.content.pm.PackageInstaller
+import android.content.pm.ShortcutInfo
+import android.content.pm.ShortcutManager
+import android.graphics.drawable.Icon
 import android.os.Build.VERSION
-import android.os.UserManager
 import android.util.Log
-import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
+import androidx.core.graphics.drawable.toBitmap
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.SharedPrefs
+import com.bintianqi.owndroid.ShortcutsReceiverActivity
 import com.bintianqi.owndroid.backToHomeStateFlow
+import com.bintianqi.owndroid.myPrivilege
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.Dhizuku.binderWrapper
 import com.rosan.dhizuku.api.DhizukuBinderWrapper
@@ -38,8 +42,6 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import java.io.OutputStream
-
-lateinit var addDeviceAdmin: ActivityResultLauncher<Intent>
 
 val Context.isDeviceOwner: Boolean
     get() {
@@ -59,11 +61,6 @@ val Context.isProfileOwner: Boolean
         return dpm.isProfileOwnerApp("com.bintianqi.owndroid")
     }
 
-val Context.isDeviceAdmin: Boolean
-    get() {
-        return getDPM().isAdminActive(getReceiver())
-    }
-
 val Context.dpcPackageName: String
     get() {
         return if(SharedPrefs(this).dhizuku) {
@@ -72,10 +69,6 @@ val Context.dpcPackageName: String
             "com.bintianqi.owndroid"
         }
     }
-
-fun DevicePolicyManager.isOrgProfile(receiver: ComponentName): Boolean {
-    return VERSION.SDK_INT >= 30 && this.isProfileOwnerApp("com.bintianqi.owndroid") && isManagedProfile(receiver) && isOrganizationOwnedDeviceWithManagedProfile
-}
 
 @SuppressLint("PrivateApi")
 private fun binderWrapperDevicePolicyManager(appContext: Context): DevicePolicyManager? {
@@ -544,10 +537,10 @@ fun parseSecurityEventData(event: SecurityLog.SecurityEvent): JsonElement? {
 fun setDefaultAffiliationID(context: Context) {
     if(VERSION.SDK_INT < 26) return
     val sp = SharedPrefs(context)
+    val privilege = myPrivilege.value
     if(!sp.isDefaultAffiliationIdSet) {
         try {
-            val um = context.getSystemService(Context.USER_SERVICE) as UserManager
-            if(context.isDeviceOwner || (!um.isSystemUser && context.isProfileOwner)) {
+            if(privilege.device || (!privilege.primary && privilege.profile)) {
                 val dpm = context.getDPM()
                 val receiver = context.getReceiver()
                 val affiliationIDs = dpm.getAffiliationIds(receiver)
@@ -595,4 +588,32 @@ fun parsePackageInstallerMessage(context: Context, result: Intent): String {
             context.getString(R.string.timeout)
         else -> ""
     } + statusMessage.let { if(it == null) "" else "\n$it" }
+}
+
+
+fun handlePrivilegeChange(context: Context) {
+    val privilege = myPrivilege.value
+    val activated = privilege.device || privilege.profile
+    if(activated) {
+        if(!privilege.dhizuku) {
+            setDefaultAffiliationID(context)
+            if(VERSION.SDK_INT >= 25) {
+                val sm = context.getSystemService(ShortcutManager::class.java)
+                val lockIntent = Intent("com.bintianqi.owndroid.action.LOCK")
+                    .setComponent(ComponentName(context, ShortcutsReceiverActivity::class.java))
+                val shortcut = ShortcutInfo.Builder(context, "LockScreen")
+                    .setShortLabel(context.getString(R.string.lock_now))
+                    .setIcon(Icon.createWithBitmap(context.getDrawable(R.drawable.screen_lock_portrait_fill0)?.toBitmap()))
+                    .setIntent(lockIntent)
+                sm.addDynamicShortcuts(listOf(shortcut.build()))
+            }
+        }
+    } else {
+        SharedPrefs(context).isDefaultAffiliationIdSet = false
+        if(VERSION.SDK_INT >= 25) {
+            val sm = context.getSystemService(ShortcutManager::class.java)
+            sm.removeDynamicShortcuts(listOf("LockScreen"))
+        }
+        SharedPrefs(context).isApiEnabled = false
+    }
 }

@@ -76,6 +76,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.AppInfo
 import com.bintianqi.owndroid.AppInstallerActivity
 import com.bintianqi.owndroid.AppInstallerViewModel
@@ -84,6 +85,7 @@ import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.getInstalledAppsFlags
 import com.bintianqi.owndroid.installedApps
+import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.ErrorDialog
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
@@ -179,14 +181,11 @@ fun ApplicationsFeaturesScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Un
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 80.dp)
         ) {
-            val dpm = context.getDPM()
-            val receiver = context.getReceiver()
-            val deviceOwner = context.isDeviceOwner
-            val profileOwner = context.isProfileOwner
+            val privilege by myPrivilege.collectAsStateWithLifecycle()
             if(VERSION.SDK_INT >= 24) FunctionItem(R.string.suspend, icon = R.drawable.block_fill0) { onNavigate(Suspend) }
             FunctionItem(R.string.hide, icon = R.drawable.visibility_off_fill0) { onNavigate(Hide) }
             FunctionItem(R.string.block_uninstall, icon = R.drawable.delete_forever_fill0) { onNavigate(BlockUninstall) }
-            if(VERSION.SDK_INT >= 30 && (deviceOwner || (VERSION.SDK_INT >= 33 && profileOwner))) {
+            if(VERSION.SDK_INT >= 30 && (privilege.device || (VERSION.SDK_INT >= 33 && privilege.profile))) {
                 FunctionItem(R.string.disable_user_control, icon = R.drawable.do_not_touch_fill0) { onNavigate(DisableUserControl) }
             }
             if(VERSION.SDK_INT >= 23) {
@@ -202,19 +201,19 @@ fun ApplicationsFeaturesScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Un
                 context.startActivity(Intent(context, AppInstallerActivity::class.java))
             }
             FunctionItem(R.string.uninstall_app, icon = R.drawable.delete_fill0) { onNavigate(UninstallApp) }
-            if(VERSION.SDK_INT >= 28 && deviceOwner) {
+            if(VERSION.SDK_INT >= 28 && privilege.device) {
                 FunctionItem(R.string.keep_uninstalled_packages, icon = R.drawable.delete_fill0) { onNavigate(KeepUninstalledPackages) }
             }
             if(VERSION.SDK_INT >= 28) FunctionItem(R.string.install_existing_app, icon = R.drawable.install_mobile_fill0) {
                 onNavigate(InstallExistingApp)
             }
-            if(VERSION.SDK_INT >= 30 && profileOwner && dpm.isManagedProfile(receiver)) {
+            if(VERSION.SDK_INT >= 30 && privilege.work) {
                 FunctionItem(R.string.cross_profile_apps, icon = R.drawable.work_fill0) { onNavigate(CrossProfilePackages) }
             }
-            if(profileOwner) {
+            if(privilege.work) {
                 FunctionItem(R.string.cross_profile_widget, icon = R.drawable.widgets_fill0) { onNavigate(CrossProfileWidgetProviders) }
             }
-            if(VERSION.SDK_INT >= 34 && deviceOwner) {
+            if(VERSION.SDK_INT >= 34 && privilege.device) {
                 FunctionItem(R.string.credential_manager_policy, icon = R.drawable.license_fill0) { onNavigate(CredentialManagerPolicy) }
             }
             FunctionItem(R.string.permitted_accessibility_services, icon = R.drawable.settings_accessibility_fill0) {
@@ -222,7 +221,7 @@ fun ApplicationsFeaturesScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Un
             }
             FunctionItem(R.string.permitted_ime, icon = R.drawable.keyboard_fill0) { onNavigate(PermittedInputMethods) }
             FunctionItem(R.string.enable_system_app, icon = R.drawable.enable_fill0) { onNavigate(EnableSystemApp) }
-            if(VERSION.SDK_INT >= 34 && (deviceOwner || dpm.isOrgProfile(receiver))) {
+            if(VERSION.SDK_INT >= 34 && (privilege.device || privilege.work)) {
                 FunctionItem(R.string.set_default_dialer, icon = R.drawable.call_fill0) { onNavigate(SetDefaultDialer) }
             }
         }
@@ -445,9 +444,9 @@ fun DisableUserControlScreen(onNavigateUp: () -> Unit) {
     }
     LaunchedEffect(Unit) { refresh() }
     MyLazyScaffold(R.string.disable_user_control, onNavigateUp) {
-        items(packages, { it.name }) {
-            ApplicationItem(it) {
-                dpm.setUserControlDisabledPackages(receiver, packages.minus(it).map { it.name })
+        items(packages, { it.name }) { info ->
+            ApplicationItem(info) {
+                dpm.setUserControlDisabledPackages(receiver, packages.minus(info).map { it.name })
                 refresh()
             }
         }
@@ -477,6 +476,7 @@ fun PermissionsManagerScreen(onNavigateUp: () -> Unit, param: PermissionsManager
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
     var packageName by remember { mutableStateOf(packageNameParam ?: "") }
     var selectedPermission by remember { mutableStateOf<PermissionItem?>(null) }
     val statusMap = remember { mutableStateMapOf<String, Int>() }
@@ -551,7 +551,7 @@ fun PermissionsManagerScreen(onNavigateUp: () -> Unit, param: PermissionsManager
                 Column {
                     Text(selectedPermission!!.permission)
                     Spacer(Modifier.padding(vertical = 4.dp))
-                    if(!(VERSION.SDK_INT >= 31 && selectedPermission!!.profileOwnerRestricted && context.isProfileOwner)) {
+                    if(!(VERSION.SDK_INT >= 31 && selectedPermission!!.profileOwnerRestricted && privilege.profile)) {
                         GrantPermissionItem(R.string.granted, PERMISSION_GRANT_STATE_GRANTED)
                     }
                     GrantPermissionItem(R.string.denied, PERMISSION_GRANT_STATE_DENIED)
@@ -581,9 +581,9 @@ fun DisableMeteredDataScreen(onNavigateUp: () -> Unit) {
     }
     LaunchedEffect(Unit) { refresh() }
     MyLazyScaffold(R.string.disable_metered_data, onNavigateUp) {
-        items(packages, { it.name }) {
-            ApplicationItem(it) {
-                dpm.setMeteredDataDisabledPackages(receiver, packages.minus(it).map { it.name })
+        items(packages, { it.name }) { info ->
+            ApplicationItem(info) {
+                dpm.setMeteredDataDisabledPackages(receiver, packages.minus(info).map { it.name })
                 refresh()
             }
         }
@@ -732,9 +732,9 @@ fun KeepUninstalledPackagesScreen(onNavigateUp: () -> Unit) {
     }
     LaunchedEffect(Unit) { refresh() }
     MyLazyScaffold(R.string.keep_uninstalled_packages, onNavigateUp) {
-        items(packages, { it.name }) {
-            ApplicationItem(it) {
-                dpm.setKeepUninstalledPackages(receiver, packages.minus(it).map { it.name })
+        items(packages, { it.name }) { info ->
+            ApplicationItem(info) {
+                dpm.setKeepUninstalledPackages(receiver, packages.minus(info).map { it.name })
                 refresh()
             }
         }
@@ -798,9 +798,9 @@ fun CrossProfilePackagesScreen(onNavigateUp: () -> Unit) {
     }
     LaunchedEffect(Unit) { refresh() }
     MyLazyScaffold(R.string.cross_profile_apps, onNavigateUp) {
-        items(packages, { it.name }) {
-            ApplicationItem(it) {
-                dpm.setCrossProfilePackages(receiver, packages.minus(it).map { it.name }.toSet())
+        items(packages, { it.name }) { info ->
+            ApplicationItem(info) {
+                dpm.setCrossProfilePackages(receiver, packages.minus(info).map { it.name }.toSet())
                 refresh()
             }
         }
@@ -1062,6 +1062,7 @@ fun EnableSystemAppScreen(onNavigateUp: () -> Unit) {
         ) {
             Text(stringResource(R.string.enable))
         }
+        Notes(R.string.enable_system_app)
     }
 }
 

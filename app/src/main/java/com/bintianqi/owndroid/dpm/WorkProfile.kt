@@ -53,7 +53,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.CopyTextButton
@@ -69,26 +71,16 @@ import kotlinx.serialization.Serializable
 
 @Composable
 fun WorkProfileScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val profileOwner = context.isProfileOwner
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
     MyScaffold(R.string.work_profile, onNavigateUp, 0.dp) {
-        if(VERSION.SDK_INT >= 30 && profileOwner && dpm.isManagedProfile(receiver)) {
+        if(VERSION.SDK_INT >= 30) {
             FunctionItem(R.string.org_owned_work_profile, icon = R.drawable.corporate_fare_fill0) { onNavigate(OrganizationOwnedProfile) }
         }
-        if(VERSION.SDK_INT < 24 || dpm.isProvisioningAllowed(ACTION_PROVISION_MANAGED_PROFILE)) {
-            FunctionItem(R.string.create_work_profile, icon = R.drawable.work_fill0) { onNavigate(CreateWorkProfile) }
-        }
-        if(dpm.isOrgProfile(receiver)) {
+        if(privilege.org) {
             FunctionItem(R.string.suspend_personal_app, icon = R.drawable.block_fill0) { onNavigate(SuspendPersonalApp) }
         }
-        if(profileOwner && (VERSION.SDK_INT < 24 || dpm.isManagedProfile(receiver))) {
-            FunctionItem(R.string.intent_filter, icon = R.drawable.filter_alt_fill0) { onNavigate(CrossProfileIntentFilter) }
-        }
-        if(profileOwner && (VERSION.SDK_INT < 24 || dpm.isManagedProfile(receiver))) {
-            FunctionItem(R.string.delete_work_profile, icon = R.drawable.delete_forever_fill0) { onNavigate(DeleteWorkProfile) }
-        }
+        FunctionItem(R.string.intent_filter, icon = R.drawable.filter_alt_fill0) { onNavigate(CrossProfileIntentFilter) }
+        FunctionItem(R.string.delete_work_profile, icon = R.drawable.delete_forever_fill0) { onNavigate(DeleteWorkProfile) }
     }
 }
 

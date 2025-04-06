@@ -1,13 +1,14 @@
 package com.bintianqi.owndroid
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Build
 import androidx.core.content.edit
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 class SharedPrefs(context: Context) {
-    val sharedPrefs = context.getSharedPreferences("data", Context.MODE_PRIVATE)
+    val sharedPrefs: SharedPreferences = context.getSharedPreferences("data", Context.MODE_PRIVATE)
     var managedProfileActivated by BooleanSharedPref("managed_profile_activated")
     var dhizuku by BooleanSharedPref("dhizuku_mode")
     var isDefaultAffiliationIdSet by BooleanSharedPref("default_affiliation_id_set")

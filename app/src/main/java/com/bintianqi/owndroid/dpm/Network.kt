@@ -26,7 +26,6 @@ import android.net.IpConfiguration
 import android.net.LinkAddress
 import android.net.ProxyInfo
 import android.net.StaticIpConfiguration
-import android.net.Uri
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
 import android.net.wifi.WifiSsid
@@ -124,14 +123,16 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.core.os.bundleOf
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.ChoosePackageContract
 import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.formatDate
 import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.humanReadableDate
+import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.ErrorDialog
@@ -163,29 +164,24 @@ import kotlin.reflect.jvm.jvmErasure
 
 @Composable
 fun NetworkScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val deviceOwner = context.isDeviceOwner
-    val profileOwner = context.isProfileOwner
-    val dhizuku = SharedPrefs(context).dhizuku
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
     MyScaffold(R.string.network, onNavigateUp, 0.dp) {
-        if(!dhizuku) FunctionItem(R.string.wifi, icon = R.drawable.wifi_fill0) { onNavigate(WiFi) }
+        if(!privilege.dhizuku) FunctionItem(R.string.wifi, icon = R.drawable.wifi_fill0) { onNavigate(WiFi) }
         if(VERSION.SDK_INT >= 30) {
             FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { onNavigate(NetworkOptions) }
         }
-        if(VERSION.SDK_INT >= 23 && !dhizuku && (deviceOwner || profileOwner))
+        if(VERSION.SDK_INT >= 23 && !privilege.dhizuku && (privilege.device || privilege.profile))
             FunctionItem(R.string.network_stats, icon = R.drawable.query_stats_fill0) { onNavigate(QueryNetworkStats) }
-        if(VERSION.SDK_INT >= 29 && deviceOwner) {
+        if(VERSION.SDK_INT >= 29 && privilege.device) {
             FunctionItem(R.string.private_dns, icon = R.drawable.dns_fill0) { onNavigate(PrivateDns) }
         }
         if(VERSION.SDK_INT >= 24) {
             FunctionItem(R.string.always_on_vpn, icon = R.drawable.vpn_key_fill0) { onNavigate(AlwaysOnVpnPackage) }
         }
-        if(deviceOwner) {
+        if(privilege.device) {
             FunctionItem(R.string.recommended_global_proxy, icon = R.drawable.vpn_key_fill0) { onNavigate(RecommendedGlobalProxy) }
         }
-        if(VERSION.SDK_INT >= 26 && !dhizuku && (deviceOwner || (profileOwner && dpm.isManagedProfile(receiver)))) {
+        if(VERSION.SDK_INT >= 26 && !privilege.dhizuku && (privilege.device || privilege.work)) {
             FunctionItem(R.string.network_logging, icon = R.drawable.description_fill0) { onNavigate(NetworkLogging) }
         }
         if(VERSION.SDK_INT >= 31) {
@@ -194,7 +190,7 @@ fun NetworkScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
         if(VERSION.SDK_INT >= 33) {
             FunctionItem(R.string.preferential_network_service, icon = R.drawable.globe_fill0) { onNavigate(PreferentialNetworkService) }
         }
-        if(VERSION.SDK_INT >= 28 && deviceOwner) {
+        if(VERSION.SDK_INT >= 28 && privilege.device) {
             FunctionItem(R.string.override_apn, icon = R.drawable.cell_tower_fill0) { onNavigate(OverrideApn) }
         }
     }
@@ -207,10 +203,10 @@ fun NetworkOptionsScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val deviceOwner = context.isDeviceOwner
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
     var dialog by remember { mutableIntStateOf(0) }
     MyScaffold(R.string.options, onNavigateUp, 0.dp) {
-        if(VERSION.SDK_INT>=30 && (deviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 30 && (privilege.device || privilege.org)) {
             SwitchItem(R.string.lockdown_admin_configured_network, icon = R.drawable.wifi_password_fill0,
                 getState = { dpm.hasLockdownAdminConfiguredNetworks(receiver) }, onCheckedChange = { dpm.setConfiguredNetworksLockdownState(receiver,it) },
                 onClickBlank = { dialog = 1 }
@@ -265,9 +261,8 @@ fun WifiScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit, onNavigateTo
             }
             HorizontalPager(state = pagerState, verticalAlignment = Alignment.Top) { page ->
                 if(page == 0) {
-                    val wm = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
-                    val deviceOwner = context.isDeviceOwner
-                    val orgProfileOwner = context.getDPM().isOrgProfile(context.getReceiver())
+                    val wm = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+                    val privilege by myPrivilege.collectAsStateWithLifecycle()
                     @Suppress("DEPRECATION") Column(
                         modifier = Modifier.fillMaxSize().padding(top = 12.dp)
                     ) {
@@ -299,10 +294,10 @@ fun WifiScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit, onNavigateTo
                                 Text(stringResource(R.string.reconnect))
                             }
                         }
-                        if(VERSION.SDK_INT >= 24 && (deviceOwner || orgProfileOwner)) {
+                        if(VERSION.SDK_INT >= 24 && (privilege.device || privilege.org)) {
                             FunctionItem(R.string.wifi_mac_address) { wifiMacDialog = true }
                         }
-                        if(VERSION.SDK_INT >= 33 && (deviceOwner || orgProfileOwner)) {
+                        if(VERSION.SDK_INT >= 33 && (privilege.device || privilege.org)) {
                             FunctionItem(R.string.min_wifi_security_level) { onNavigate(WifiSecurityLevel) }
                             FunctionItem(R.string.wifi_ssid_policy) { onNavigate(WifiSsidPolicyScreen) }
                         }
@@ -315,7 +310,6 @@ fun WifiScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit, onNavigateTo
             }
         }
         if(wifiMacDialog && VERSION.SDK_INT >= 24) {
-            val context = LocalContext.current
             val dpm = context.getDPM()
             val receiver = context.getReceiver()
             AlertDialog(
@@ -344,7 +338,7 @@ fun WifiScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit, onNavigateTo
 @Composable
 private fun SavedNetworks(onNavigateToUpdateNetwork: (Bundle) -> Unit) {
     val context = LocalContext.current
-    val wm = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+    val wm = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
     val configuredNetworks = remember { mutableStateListOf<WifiConfiguration>() }
     var networkDetailsDialog by remember { mutableIntStateOf(-1) } // -1:Hidden, 0+:Index of configuredNetworks
     val coroutine = rememberCoroutineScope()
@@ -688,7 +682,7 @@ private fun AddNetworkScreen(wifiConfig: WifiConfiguration? = null, onNavigateUp
         }
         Button(
             onClick = {
-                val wm = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+                val wm = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
                 try {
                     val config = WifiConfiguration()
                     config.status = status
@@ -899,7 +893,7 @@ fun NetworkStats.toBucketList(): List<NetworkStats.Bucket> {
 @Composable
 fun NetworkStatsScreen(onNavigateUp: () -> Unit, onNavigateToViewer: (NetworkStatsViewer) -> Unit) {
     val context = LocalContext.current
-    val deviceOwner = context.isDeviceOwner
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
     val fm = LocalFocusManager.current
     val nsm = context.getSystemService(NetworkStatsManager::class.java)
     val coroutine = rememberCoroutineScope()
@@ -971,7 +965,7 @@ fun NetworkStatsScreen(onNavigateUp: () -> Unit, onNavigateToViewer: (NetworkSta
                 NetworkStatsTarget.entries.forEach {
                     if(
                         VERSION.SDK_INT >= it.minApi &&
-                        (deviceOwner || it != NetworkStatsTarget.Device) &&
+                        (privilege.device || it != NetworkStatsTarget.Device) &&
                         ((queryType == 1 && (it == NetworkStatsTarget.Device || it == NetworkStatsTarget.User)) ||
                         (queryType == 2 && (it == NetworkStatsTarget.Uid || it == NetworkStatsTarget.UidTag || it == NetworkStatsTarget.UidTagState)))
                     ) DropdownMenuItem(
@@ -1120,7 +1114,7 @@ fun NetworkStatsScreen(onNavigateUp: () -> Unit, onNavigateToViewer: (NetworkSta
         if(VERSION.SDK_INT >= 24 && (target == NetworkStatsTarget.UidTag || target == NetworkStatsTarget.UidTagState))
             ExposedDropdownMenuBox(
             activeTextField == NetworkStatsActiveTextField.Tag,
-            { activeTextField == if(it) NetworkStatsActiveTextField.Tag else NetworkStatsActiveTextField.None }
+            { activeTextField = if(it) NetworkStatsActiveTextField.Tag else NetworkStatsActiveTextField.None }
         ) {
             var tagText by rememberSaveable { mutableStateOf(context.getString(R.string.all)) }
             var readOnly by rememberSaveable { mutableStateOf(true) }
@@ -1596,7 +1590,7 @@ fun RecommendedGlobalProxyScreen(onNavigateUp: () -> Unit) {
                     Toast.makeText(context, R.string.invalid_config, Toast.LENGTH_SHORT).show()
                     return@Button
                 }
-                val uri = Uri.parse(proxyUri)
+                val uri = proxyUri.toUri()
                 val port: Int
                 try {
                     port = proxyPort.toInt()
@@ -1827,8 +1821,8 @@ fun AddPreferentialNetworkServiceConfigScreen(route: AddPreferentialNetworkServi
             title = R.string.block_non_matching_networks,
             state = blockNonMatching, onCheckedChange = { blockNonMatching = it }, padding = false
         )
-        val includedUidsLegal = includedUids.lines().filter { it.isNotBlank() }.let {
-            it.isEmpty() || (it.all { it.toIntOrNull() != null } && excludedUids.isBlank())
+        val includedUidsLegal = includedUids.lines().filter { it.isNotBlank() }.let { uid ->
+            uid.isEmpty() || (uid.all { it.toIntOrNull() != null } && excludedUids.isBlank())
         }
         OutlinedTextField(
             value = includedUids, onValueChange = { includedUids = it }, minLines = 2,
@@ -1837,8 +1831,8 @@ fun AddPreferentialNetworkServiceConfigScreen(route: AddPreferentialNetworkServi
             isError = !includedUidsLegal,
             modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
         )
-        val excludedUidsLegal = excludedUids.lines().filter { it.isNotBlank() }.let {
-            it.isEmpty() || (it.all { it.toIntOrNull() != null } && includedUids.isBlank())
+        val excludedUidsLegal = excludedUids.lines().filter { it.isNotBlank() }.let { uid ->
+            uid.isEmpty() || (uid.all { it.toIntOrNull() != null } && includedUids.isBlank())
         }
         OutlinedTextField(
             value = excludedUids, onValueChange = { excludedUids = it }, minLines = 2,
@@ -1852,7 +1846,7 @@ fun AddPreferentialNetworkServiceConfigScreen(route: AddPreferentialNetworkServi
                 try {
                     val config = PreferentialNetworkServiceConfig.Builder().apply {
                         setEnabled(enabled)
-                        if(enabled) setNetworkId(id.toInt())
+                        if(enabled) setNetworkId(id)
                         setFallbackToDefaultConnectionAllowed(allowFallback)
                         setExcludedUids(excludedUids.lines().filter { it.isNotBlank() }.map { it.toInt() }.toIntArray())
                         setIncludedUids(includedUids.lines().filter { it.isNotBlank() }.map { it.toInt() }.toIntArray())
@@ -1957,7 +1951,7 @@ private val apnTypes = listOf(
 
 @Serializable object AddApnSetting
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalLayoutApi::class)
 @RequiresApi(28)
 @Composable
 fun AddApnSettingScreen(origin: ApnSetting?, onNavigateUp: () -> Unit) {
@@ -2099,14 +2093,14 @@ fun AddApnSettingScreen(origin: ApnSetting?, onNavigateUp: () -> Unit) {
             OutlinedTextField(
                 mtuV4, { mtuV4 = it }, Modifier.fillMaxWidth(0.49F),
                 label = { Text("MTU (IPv4)") },
-                isError = !mtuV4.isEmpty() && mtuV4.toIntOrNull() == null,
+                isError = mtuV4.isNotEmpty() && mtuV4.toIntOrNull() == null,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions { fr.requestFocus() }
             )
             OutlinedTextField(
                 mtuV6, { mtuV6 = it }, Modifier.focusRequester(fr).fillMaxWidth(0.96F),
                 label = { Text("MTU (IPv6)") },
-                isError = !mtuV6.isEmpty() && mtuV6.toIntOrNull() == null,
+                isError = mtuV6.isNotEmpty() && mtuV6.toIntOrNull() == null,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions { fm.clearFocus() }
             )
@@ -2194,7 +2188,7 @@ fun AddApnSettingScreen(origin: ApnSetting?, onNavigateUp: () -> Unit) {
                             setMmsProxyAddress(mmsProxyAddress)
                             mmsProxyPort.toIntOrNull()?.let { setMmsProxyPort(it) }
                         }
-                        setMmsc(Uri.parse(mmsc))
+                        setMmsc(mmsc.toUri())
                         if(VERSION.SDK_INT >= 33) {
                             mtuV4.toIntOrNull()?.let { setMtuV4(it) }
                             mtuV6.toIntOrNull()?.let { setMtuV6(it) }
@@ -2238,7 +2232,7 @@ fun AddApnSettingScreen(origin: ApnSetting?, onNavigateUp: () -> Unit) {
             AlertDialog(
                 title = { Text(if(dialog == 1) "Proxy" else "MMS proxy") },
                 text = {
-                    val fm = LocalFocusManager.current
+                    val focusManager = LocalFocusManager.current
                     Column {
                         OutlinedTextField(
                             address, { address = it }, Modifier.fillMaxWidth().padding(bottom = 4.dp),
@@ -2253,7 +2247,7 @@ fun AddApnSettingScreen(origin: ApnSetting?, onNavigateUp: () -> Unit) {
                             isError = port.isNotEmpty() && port.toIntOrNull() == null,
                             label = { Text(stringResource(R.string.port)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                            keyboardActions = KeyboardActions { fm.clearFocus() }
+                            keyboardActions = KeyboardActions { focusManager.clearFocus() }
                         )
                     }
                 },

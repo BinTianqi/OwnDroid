@@ -1,18 +1,14 @@
 package com.bintianqi.owndroid.dpm
 
-import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
-import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Binder
 import android.os.Build.VERSION
 import android.os.Bundle
 import android.os.IBinder
 import android.os.RemoteException
-import android.os.UserManager
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.annotation.Keep
@@ -21,7 +17,6 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -43,13 +38,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.os.bundleOf
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.ChoosePackageContract
 import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.backToHomeStateFlow
+import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.*
+import com.bintianqi.owndroid.updatePrivilege
 import com.bintianqi.owndroid.writeClipBoard
 import com.bintianqi.owndroid.yesOrNo
 import com.rosan.dhizuku.api.Dhizuku
@@ -61,19 +59,15 @@ import rikka.sui.Sui
 
 @Serializable object Permissions
 
-@SuppressLint("NewApi")
 @Composable
 fun PermissionsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit, onNavigateToShizuku: (Bundle) -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val deviceAdmin = context.isDeviceAdmin
-    val deviceOwner = context.isDeviceOwner
-    val profileOwner = context.isProfileOwner
-    val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
     var dialog by remember { mutableIntStateOf(0) }
     var bindingShizuku by remember { mutableStateOf(false) }
-    val enrollmentSpecificId = if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) dpm.enrollmentSpecificId else ""
+    val enrollmentSpecificId = if(VERSION.SDK_INT >= 31 && (privilege.device || privilege.profile)) dpm.enrollmentSpecificId else ""
     MyScaffold(R.string.permissions, onNavigateUp, 0.dp) {
         if(!dpm.isDeviceOwnerApp(context.packageName)) {
             SwitchItem(
@@ -83,19 +77,15 @@ fun PermissionsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit, onNav
                 onClickBlank = { dialog = 4 }
             )
         }
-        FunctionItem(
-            R.string.device_admin, stringResource(if(deviceAdmin) R.string.activated else R.string.deactivated),
-            operation = { onNavigate(DeviceAdmin) }
-        )
-        if(profileOwner || !userManager.isSystemUser) {
+        if(privilege.profile || !privilege.primary) {
             FunctionItem(
-                R.string.profile_owner, stringResource(if(profileOwner) R.string.activated else R.string.deactivated),
+                R.string.profile_owner, stringResource(if(privilege.profile) R.string.activated else R.string.deactivated),
                 operation = { onNavigate(ProfileOwner) }
             )
         }
-        if(!profileOwner && userManager.isSystemUser) {
+        if(!privilege.profile && privilege.primary) {
             FunctionItem(
-                R.string.device_owner, stringResource(if(deviceOwner) R.string.activated else R.string.deactivated),
+                R.string.device_owner, stringResource(if(privilege.device) R.string.activated else R.string.deactivated),
                 operation = { onNavigate(DeviceOwner) }
             )
         }
@@ -130,25 +120,24 @@ fun PermissionsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit, onNav
                 Toast.makeText(context, R.string.shizuku_not_started, Toast.LENGTH_SHORT).show()
             }
         }
-        if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner))
-            FunctionItem(R.string.delegated_admins) { onNavigate(DelegatedAdmins) }
+        if(VERSION.SDK_INT >= 26) FunctionItem(R.string.delegated_admins) { onNavigate(DelegatedAdmins) }
         FunctionItem(R.string.device_info, icon = R.drawable.perm_device_information_fill0) { onNavigate(DeviceInfo) }
-        if(VERSION.SDK_INT >= 24 && (profileOwner || (VERSION.SDK_INT >= 26 && deviceOwner))) {
+        if(VERSION.SDK_INT >= 24 && (privilege.profile || (VERSION.SDK_INT >= 26 && privilege.device))) {
             FunctionItem(R.string.org_name, icon = R.drawable.corporate_fare_fill0) { dialog = 2 }
         }
-        if(VERSION.SDK_INT >= 31 && (profileOwner || deviceOwner)) {
+        if(VERSION.SDK_INT >= 31) {
             FunctionItem(R.string.org_id, icon = R.drawable.corporate_fare_fill0) { dialog = 3 }
         }
         if(enrollmentSpecificId != "") {
             FunctionItem(R.string.enrollment_specific_id, icon = R.drawable.id_card_fill0) { dialog = 1 }
         }
-        if(VERSION.SDK_INT >= 24 && (deviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT >= 24 && (privilege.device || privilege.org)) {
             FunctionItem(R.string.lock_screen_info, icon = R.drawable.screen_lock_portrait_fill0) { onNavigate(LockScreenInfo) }
         }
-        if(VERSION.SDK_INT >= 24 && deviceAdmin) {
+        if(VERSION.SDK_INT >= 24) {
             FunctionItem(R.string.support_messages, icon = R.drawable.chat_fill0) { onNavigate(SupportMessage) }
         }
-        if(VERSION.SDK_INT >= 28 && (deviceOwner || profileOwner)) {
+        if(VERSION.SDK_INT >= 28) {
             FunctionItem(R.string.transfer_ownership, icon = R.drawable.admin_panel_settings_fill0) { onNavigate(TransferOwnership) }
         }
     }
@@ -174,7 +163,7 @@ fun PermissionsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit, onNav
             text = {
                 val focusMgr = LocalFocusManager.current
                 LaunchedEffect(Unit) {
-                    if(dialog == 1) input = dpm.enrollmentSpecificId
+                    if(dialog == 1 && VERSION.SDK_INT >= 31) input = dpm.enrollmentSpecificId
                 }
                 Column {
                     if(dialog != 4) OutlinedTextField(
@@ -220,8 +209,8 @@ fun PermissionsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit, onNav
                 TextButton(
                     onClick = {
                         try {
-                            if(dialog == 2) dpm.setOrganizationName(receiver, input)
-                            if(dialog == 3) dpm.setOrganizationId(input)
+                            if(dialog == 2 && VERSION.SDK_INT >= 24) dpm.setOrganizationName(receiver, input)
+                            if(dialog == 3 && VERSION.SDK_INT >= 31) dpm.setOrganizationId(input)
                             dialog = 0
                         } catch(_: IllegalStateException) {
                             Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
@@ -250,6 +239,7 @@ private fun toggleDhizukuMode(status: Boolean, context: Context) {
     if(dhizukuPermissionGranted()) {
         sp.dhizuku = true
         Dhizuku.init(context)
+        updatePrivilege(context)
         backToHomeStateFlow.value = true
     } else {
         Dhizuku.requestPermission(object: DhizukuRequestPermissionListener() {
@@ -258,6 +248,7 @@ private fun toggleDhizukuMode(status: Boolean, context: Context) {
                 if(grantResult == PackageManager.PERMISSION_GRANTED) {
                     sp.dhizuku = true
                     Dhizuku.init(context)
+                    updatePrivilege(context)
                     backToHomeStateFlow.value = true
                 } else {
                     dhizukuErrorStatus.value = 2
@@ -311,65 +302,6 @@ fun LockScreenInfoScreen(onNavigateUp: () -> Unit) {
     }
 }
 
-@Serializable object DeviceAdmin
-
-@Composable
-fun DeviceAdminScreen(onNavigateUp: () -> Unit) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    var deactivateDialog by remember { mutableStateOf(false) }
-    val deviceAdmin = context.isDeviceAdmin
-    MyScaffold(R.string.device_admin, onNavigateUp) {
-        Text(text = stringResource(if(context.isDeviceAdmin) R.string.activated else R.string.deactivated), style = typography.titleLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        AnimatedVisibility(deviceAdmin) {
-            Button(
-                onClick = { deactivateDialog = true },
-                enabled = !context.isProfileOwner && !context.isDeviceOwner,
-                colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
-            ) {
-                Text(stringResource(R.string.deactivate))
-            }
-        }
-        AnimatedVisibility(!deviceAdmin) {
-            Column {
-                Button(onClick = { activateDeviceAdmin(context, receiver) }, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.activate_jump))
-                }
-                Spacer(Modifier.padding(vertical = 5.dp))
-                SelectionContainer {
-                    Text(text = stringResource(R.string.activate_device_admin_command))
-                }
-                CopyTextButton(R.string.copy_command, stringResource(R.string.activate_device_admin_command))
-            }
-        }
-    }
-    if(deactivateDialog) {
-        AlertDialog(
-            title = { Text(stringResource(R.string.deactivate)) },
-            onDismissRequest = { deactivateDialog = false },
-            dismissButton = {
-                TextButton(
-                    onClick = { deactivateDialog = false }
-                ) {
-                    Text(stringResource(R.string.cancel))
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        dpm.removeActiveAdmin(receiver)
-                        deactivateDialog = false
-                    }
-                ) {
-                    Text(stringResource(R.string.confirm))
-                }
-            }
-        )
-    }
-}
-
 @Serializable object ProfileOwner
 
 @Composable
@@ -378,7 +310,8 @@ fun ProfileOwnerScreen(onNavigateUp: () -> Unit) {
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     var deactivateDialog by remember { mutableStateOf(false) }
-    val profileOwner = context.isProfileOwner
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val profileOwner = privilege.profile
     MyScaffold(R.string.profile_owner, onNavigateUp) {
         Text(stringResource(if(profileOwner) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -432,7 +365,8 @@ fun DeviceOwnerScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     var deactivateDialog by remember { mutableStateOf(false) }
-    val deviceOwner = context.isDeviceOwner
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val deviceOwner = privilege.device
     MyScaffold(R.string.device_owner, onNavigateUp) {
         Text(text = stringResource(if(deviceOwner) R.string.activated else R.string.deactivated), style = typography.titleLarge)
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -644,15 +578,15 @@ fun AddDelegatedAdminScreen(data: AddDelegatedAdmin, onNavigateUp: () -> Unit) {
 fun DeviceInfoScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
-    val receiver = context.getReceiver()
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
     var dialog by remember { mutableIntStateOf(0) }
     MyScaffold(R.string.device_info, onNavigateUp, 0.dp) {
-        if(VERSION.SDK_INT>=34 && (context.isDeviceOwner || dpm.isOrgProfile(receiver))) {
+        if(VERSION.SDK_INT>=34 && (privilege.device || privilege.org)) {
             InfoItem(R.string.financed_device, dpm.isDeviceFinanced.yesOrNo)
         }
         if(VERSION.SDK_INT >= 33) {
             val dpmRole = dpm.devicePolicyManagementRoleHolderPackage
-            InfoItem(R.string.dpmrh, if(dpmRole == null) stringResource(R.string.none) else dpmRole)
+            InfoItem(R.string.dpmrh, dpmRole ?: stringResource(R.string.none))
         }
         val encryptionStatus = mutableMapOf(
             DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE to R.string.es_inactive,
@@ -670,7 +604,7 @@ fun DeviceInfoScreen(onNavigateUp: () -> Unit) {
         }
         val adminList = dpm.activeAdmins
         if(adminList != null) {
-            InfoItem(R.string.activated_device_admin, adminList.map { it.flattenToShortString() }.joinToString("\n"))
+            InfoItem(R.string.activated_device_admin, adminList.joinToString("\n") { it.flattenToShortString() })
         }
     }
     if(dialog != 0) AlertDialog(
@@ -766,6 +700,7 @@ fun SupportMessageScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun TransferOwnershipScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
     val focusMgr = LocalFocusManager.current
     var input by remember { mutableStateOf("") }
     val componentName = ComponentName.unflattenFromString(input)
@@ -793,7 +728,7 @@ fun TransferOwnershipScreen(onNavigateUp: () -> Unit) {
         text = {
             Text(stringResource(
                 R.string.transfer_ownership_warning,
-                stringResource(if(context.isDeviceOwner) R.string.device_owner else R.string.profile_owner),
+                stringResource(if(privilege.device) R.string.device_owner else R.string.profile_owner),
                 ComponentName.unflattenFromString(input)!!.packageName
             ))
         },
@@ -805,11 +740,12 @@ fun TransferOwnershipScreen(onNavigateUp: () -> Unit) {
                     try {
                         dpm.transferOwnership(receiver, componentName!!, null)
                         context.showOperationResultToast(true)
+                        updatePrivilege(context)
                         dialog = false
-                        backToHomeStateFlow.value = true
+                        onNavigateUp()
                     } catch(e: Exception) {
                         e.printStackTrace()
-                        Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
+                        context.showOperationResultToast(false)
                     }
                 },
                 colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
@@ -824,15 +760,4 @@ fun TransferOwnershipScreen(onNavigateUp: () -> Unit) {
         },
         onDismissRequest = { dialog = false }
     )
-}
-
-private fun activateDeviceAdmin(inputContext:Context,inputComponent:ComponentName) {
-    try {
-        val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
-        intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, inputComponent)
-        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, inputContext.getString(R.string.activate_device_admin_here))
-        addDeviceAdmin.launch(intent)
-    } catch(_:ActivityNotFoundException) {
-        Toast.makeText(inputContext, R.string.unsupported, Toast.LENGTH_SHORT).show()
-    }
 }

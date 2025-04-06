@@ -75,8 +75,6 @@
 
     <!--Permissions-->
     <string name="click_to_activate">Click to activate</string>
-    <string name="device_admin">Device admin</string>
-    <string name="activate_jump" tools:ignore="TypographyEllipsis">Activate...</string>
     <string name="profile_owner">Profile owner</string>
     <string name="device_owner">Device owner</string>
     <string name="delegated_admins">Delegated admins</string>
@@ -91,7 +89,6 @@
     <string name="add_delegated_admin">Add delegated admin</string>
     <string name="dhizuku_will_be_deactivated">Dhizuku will be deactivated</string>
     <string name="reset_device_policy">Reset device policy</string>
-    <string name="activate_device_admin_command" translatable="false">dpm set-active-admin com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="activate_profile_owner_command" translatable="false">dpm set-profile-owner --user %1$s com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="activate_device_owner_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="device_info">Device info</string>
@@ -121,9 +118,7 @@
     <string name="activate_device_admin_here">Activate Device admin here.</string>
 
     <!--Receiver-->
-    <string name="onEnabled">OwnDroid: Enabled</string>
-    <string name="onDisabled">OwnDroid: Disabled</string>
-    <string name="create_work_profile_success">OwnDroid: Create work profile success</string>
+    <string name="create_work_profile_success">Create work profile success</string>
 
     <!--Dhizuku-->
     <string name="dhizuku" translatable="false">Dhizuku</string>

@@ -19,7 +19,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,9 +35,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.IUserService
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.ui.MySmallTitleScaffold
+import com.bintianqi.owndroid.updatePrivilege
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -46,17 +48,13 @@ import rikka.shizuku.Shizuku
 
 @Serializable object ShizukuScreen
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShizukuScreen(navArgs: Bundle, onNavigateUp: () -> Unit, onNavigateToAccountsViewer: (Accounts) -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val coScope = rememberCoroutineScope()
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val coroutine = rememberCoroutineScope()
     val outputTextScrollState = rememberScrollState()
     var outputText by rememberSaveable { mutableStateOf("") }
-    var showDeviceOwnerButton by remember { mutableStateOf(!context.isDeviceOwner) }
-    var showOrgProfileOwnerButton by remember { mutableStateOf(true) }
     val binder = navArgs.getBinder("binder")!!
     var service by remember { mutableStateOf<IUserService?>(null) }
     LaunchedEffect(Unit) {
@@ -70,7 +68,7 @@ fun ShizukuScreen(navArgs: Bundle, onNavigateUp: () -> Unit, onNavigateToAccount
         
         Button(
             onClick = {
-                coScope.launch{
+                coroutine.launch{
                     outputText = service!!.execute("dpm list-owners")
                     outputTextScrollState.animateScrollTo(0)
                 }
@@ -81,7 +79,7 @@ fun ShizukuScreen(navArgs: Bundle, onNavigateUp: () -> Unit, onNavigateToAccount
         }
         Button(
             onClick = {
-                coScope.launch{
+                coroutine.launch{
                     outputText = service!!.execute("pm list users")
                     outputTextScrollState.animateScrollTo(0)
                 }
@@ -100,7 +98,7 @@ fun ShizukuScreen(navArgs: Bundle, onNavigateUp: () -> Unit, onNavigateToAccount
                     onNavigateToAccountsViewer(Accounts(accounts))
                 } catch(_: Exception) {
                     outputText = service!!.execute("dumpsys account")
-                    coScope.launch{
+                    coroutine.launch{
                         outputTextScrollState.animateScrollTo(0)
                     }
                 }
@@ -111,39 +109,37 @@ fun ShizukuScreen(navArgs: Bundle, onNavigateUp: () -> Unit, onNavigateToAccount
         }
         Spacer(Modifier.padding(vertical = 5.dp))
 
-        AnimatedVisibility(showDeviceOwnerButton, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+        AnimatedVisibility(!privilege.device, modifier = Modifier.align(Alignment.CenterHorizontally)) {
             Button(
                 onClick = {
-                    coScope.launch{
+                    coroutine.launch{
                         outputText = service!!.execute(context.getString(R.string.dpm_activate_do_command))
                         outputTextScrollState.animateScrollTo(0)
                         delay(500)
-                        showDeviceOwnerButton = !context.isDeviceOwner
+                        updatePrivilege(context)
                     }
                 }
             ) {
                 Text(text = stringResource(R.string.activate_device_owner))
             }
         }
-        
-        if(VERSION.SDK_INT >= 30 && context.isProfileOwner && dpm.isManagedProfile(receiver) && !dpm.isOrganizationOwnedDeviceWithManagedProfile) {
-            AnimatedVisibility(showOrgProfileOwnerButton) {
-                Button(
-                    onClick = {
-                        coScope.launch{
-                            val userID = Binder.getCallingUid() / 100000
-                            outputText = service!!.execute(
-                                "dpm mark-profile-owner-on-organization-owned-device --user $userID com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver"
-                            )
-                            outputTextScrollState.animateScrollTo(0)
-                            delay(500)
-                            showOrgProfileOwnerButton = !dpm.isOrganizationOwnedDeviceWithManagedProfile
-                        }
-                    },
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                ) {
-                    Text(text = stringResource(R.string.activate_org_profile))
-                }
+
+        AnimatedVisibility(VERSION.SDK_INT >= 30 && privilege.work && !privilege.org) {
+            Button(
+                onClick = {
+                    coroutine.launch{
+                        val userID = Binder.getCallingUid() / 100000
+                        outputText = service!!.execute(
+                            "dpm mark-profile-owner-on-organization-owned-device --user $userID com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver"
+                        )
+                        outputTextScrollState.animateScrollTo(0)
+                        delay(500)
+                        updatePrivilege(context)
+                    }
+                },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text(text = stringResource(R.string.activate_org_profile))
             }
         }
         

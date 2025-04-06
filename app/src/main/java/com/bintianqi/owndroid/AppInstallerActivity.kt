@@ -80,6 +80,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.URLDecoder
+import androidx.core.net.toUri
 
 class AppInstallerActivity:FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -116,11 +117,11 @@ private fun AppInstaller(
     installing: Boolean = false,
     options: SessionParamsOptions = SessionParamsOptions(),
     onOptionsChange: (SessionParamsOptions) -> Unit = {},
-    packages: Set<Uri> = setOf(Uri.parse("https://example.com")),
+    packages: Set<Uri> = setOf("https://example.com".toUri()),
     onPackageRemove: (Uri) -> Unit = {},
     onPackageChoose: (List<Uri>) -> Unit = {},
     onStartInstall: () -> Unit = {},
-    writtenPackages: Set<Uri> = setOf(Uri.parse("https://example.com")),
+    writtenPackages: Set<Uri> = setOf("https://example.com".toUri()),
     writingPackage: Uri? = null,
     result: Intent? = null,
     onResultDialogClose: () -> Unit = {}
@@ -309,7 +310,7 @@ class AppInstallerViewModel(application: Application): AndroidViewModel(applicat
         intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)?.let { uri -> packages.update { it + uri } }
         intent.getParcelableArrayExtra(Intent.EXTRA_STREAM)?.forEach { uri -> packages.update { it + (uri as Uri) } }
         intent.clipData?.let { clipData ->
-            for(i in 0..(clipData.itemCount - 1)) {
+            for(i in 0..clipData.itemCount) {
                 packages.update { it + clipData.getItemAt(i).uri }
             }
         }

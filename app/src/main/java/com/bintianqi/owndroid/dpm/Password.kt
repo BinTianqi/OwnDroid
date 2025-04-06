@@ -65,9 +65,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SharedPrefs
+import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
@@ -86,38 +88,30 @@ import kotlinx.serialization.Serializable
 @Composable
 fun PasswordScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val context = LocalContext.current
-    val deviceAdmin = context.isDeviceAdmin
-    val deviceOwner = context.isDeviceOwner
-    val profileOwner = context.isProfileOwner
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
     var dialog by remember { mutableIntStateOf(0) }
     MyScaffold(R.string.password_and_keyguard, onNavigateUp, 0.dp) {
         FunctionItem(R.string.password_info, icon = R.drawable.info_fill0) { onNavigate(PasswordInfo) }
         if(SharedPrefs(context).displayDangerousFeatures) {
-            if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
+            if(VERSION.SDK_INT >= 26) {
                 FunctionItem(R.string.reset_password_token, icon = R.drawable.key_vertical_fill0) { onNavigate(ResetPasswordToken) }
             }
-            if(deviceAdmin || deviceOwner || profileOwner) {
-                FunctionItem(R.string.reset_password, icon = R.drawable.lock_reset_fill0) { onNavigate(ResetPassword) }
-            }
+            FunctionItem(R.string.reset_password, icon = R.drawable.lock_reset_fill0) { onNavigate(ResetPassword) }
         }
-        if(VERSION.SDK_INT >= 31 && (deviceOwner || profileOwner)) {
+        if(VERSION.SDK_INT >= 31) {
             FunctionItem(R.string.required_password_complexity, icon = R.drawable.password_fill0) { onNavigate(RequiredPasswordComplexity) }
         }
-        if(deviceAdmin) {
-            FunctionItem(R.string.disable_keyguard_features, icon = R.drawable.screen_lock_portrait_fill0) { onNavigate(KeyguardDisabledFeatures) }
-        }
-        if(deviceOwner) {
+        FunctionItem(R.string.disable_keyguard_features, icon = R.drawable.screen_lock_portrait_fill0) { onNavigate(KeyguardDisabledFeatures) }
+        if(privilege.device) {
             FunctionItem(R.string.max_time_to_lock, icon = R.drawable.schedule_fill0) { dialog = 1 }
             FunctionItem(R.string.pwd_expiration_timeout, icon = R.drawable.lock_clock_fill0) { dialog = 3 }
             FunctionItem(R.string.max_pwd_fail, icon = R.drawable.no_encryption_fill0) { dialog = 4 }
         }
-        if(VERSION.SDK_INT >= 26 && (deviceOwner || profileOwner)) {
+        if(VERSION.SDK_INT >= 26) {
             FunctionItem(R.string.required_strong_auth_timeout, icon = R.drawable.fingerprint_off_fill0) { dialog = 2 }
         }
-        if(deviceAdmin){
-            FunctionItem(R.string.pwd_history, icon = R.drawable.history_fill0) { dialog = 5 }
-        }
-        if(VERSION.SDK_INT < 31 && (deviceOwner || profileOwner)) {
+        FunctionItem(R.string.pwd_history, icon = R.drawable.history_fill0) { dialog = 5 }
+        if(VERSION.SDK_INT < 31) {
             FunctionItem(R.string.required_password_quality, icon = R.drawable.password_fill0) { onNavigate(RequiredPasswordQuality) }
         }
     }
@@ -217,8 +211,7 @@ fun PasswordInfoScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
-    val deviceOwner = context.isDeviceOwner
-    val profileOwner = context.isProfileOwner
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
     var dialog by remember { mutableIntStateOf(0) } // 0:none, 1:password complexity
     MyScaffold(R.string.password_info, onNavigateUp, 0.dp) {
         if(VERSION.SDK_INT >= 29) {
@@ -231,10 +224,8 @@ fun PasswordInfoScreen(onNavigateUp: () -> Unit) {
             }
             InfoItem(R.string.current_password_complexity, text, true) { dialog = 1 }
         }
-        if(deviceOwner || profileOwner) {
-            InfoItem(R.string.password_sufficient, dpm.isActivePasswordSufficient.yesOrNo)
-        }
-        if(VERSION.SDK_INT >= 28 && profileOwner && dpm.isManagedProfile(receiver)) {
+        InfoItem(R.string.password_sufficient, dpm.isActivePasswordSufficient.yesOrNo)
+        if(VERSION.SDK_INT >= 28 && privilege.work) {
             InfoItem(R.string.unified_password, dpm.isUsingUnifiedPassword(receiver).yesOrNo)
         }
     }
@@ -367,7 +358,7 @@ fun ResetPasswordScreen(onNavigateUp: () -> Unit) {
                     focusMgr.clearFocus()
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
-                enabled = tokenByteArray.size >=32 && password.length !in 1..3 && (context.isDeviceOwner || context.isProfileOwner),
+                enabled = tokenByteArray.size >=32 && password.length !in 1..3,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.reset_password_with_token))

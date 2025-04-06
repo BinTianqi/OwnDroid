@@ -2,7 +2,6 @@ package com.bintianqi.owndroid
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build.VERSION
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -45,6 +44,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
+import androidx.core.net.toUri
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.Notes
@@ -285,7 +285,7 @@ fun AboutScreen(onNavigateUp: () -> Unit) {
 }
 
 fun shareLink(inputContext: Context, link: String) {
-    val uri = Uri.parse(link)
+    val uri = link.toUri()
     val intent = Intent(Intent.ACTION_VIEW, uri)
     inputContext.startActivity(Intent.createChooser(intent, "Open in browser"), null)
 }
