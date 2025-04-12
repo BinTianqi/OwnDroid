@@ -8,6 +8,7 @@
     <string name="enable">Enable</string>
     <string name="success">Success</string>
     <string name="failure">Failure</string>
+    <string name="succeeded">Succeeded</string>
     <string name="failed">Failed</string>
     <string name="add">Add</string>
     <string name="remove">Remove</string>
@@ -42,7 +43,6 @@
     <string name="decide_by_user">Decide by user</string>
     <string name="unsupported">Unsupported</string>
     <string name="options">Options</string>
-    <string name="copy_command">Copy Command</string>
     <string name="package_name">Package name</string>
     <string name="not_exist">Not exist</string>
     <string name="copy">Copy</string>
@@ -87,10 +87,7 @@
     <string name="change_package_state">Change package state</string>
     <string name="grant_permissions">Grant permissions</string>
     <string name="add_delegated_admin">Add delegated admin</string>
-    <string name="dhizuku_will_be_deactivated">Dhizuku will be deactivated</string>
     <string name="reset_device_policy">Reset device policy</string>
-    <string name="activate_profile_owner_command" translatable="false">dpm set-profile-owner --user %1$s com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
-    <string name="activate_device_owner_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
     <string name="device_info">Device info</string>
     <string name="support_device_id_attestation">Support Device ID attestation</string>
     <string name="support_unique_device_attestation">Support unique device attestation</string>
@@ -115,7 +112,6 @@
     <string name="long_support_msg">Long message</string>
     <string name="transfer">Transfer</string>
     <string name="transfer_ownership_warning">%1$s privilege will be transferred to %2$s</string>
-    <string name="activate_device_admin_here">Activate Device admin here.</string>
 
     <!--Receiver-->
     <string name="create_work_profile_success">Create work profile success</string>
@@ -125,16 +121,8 @@
     <string name="failed_to_init_dhizuku">Failed to initialize Dhizuku</string>
     <string name="dhizuku_permission_not_granted">Dhizuku permission not granted</string>
     <string name="dhizuku_mode_disabled">Dhizuku mode disabled</string>
-    <!--Shizuku-->
+
     <string name="shizuku" translatable="false">Shizuku</string>
-    <string name="list_owners">List owners</string>
-    <string name="list_users">List users</string>
-    <string name="list_accounts">List accounts</string>
-    <string name="shizuku_not_started">Shizuku not started. </string>
-    <string name="dpm_activate_do_command" translatable="false">dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver</string>
-    <string name="activate_device_owner">Activate Device owner</string>
-    <string name="activate_org_profile">Activate organization-owned work profile</string>
-    <string name="accounts">Accounts</string>
 
     <!--System-->
     <string name="system">System</string>
@@ -371,9 +359,6 @@
     <string name="account_name">Account name</string>
     <string name="keep_account">Keep account</string>
     <string name="org_owned_work_profile">Organization work profile</string>
-    <string name="activate_org_profile_command" tools:ignore="TypographyDashes" translatable="false">
-        dpm mark-profile-owner-on-organization-owned-device --user %1$s com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver
-    </string>
     <string name="skip_encryption">Skip encryption</string>
     <string name="create">Create</string>
     <string name="suspend_personal_app">Suspend personal app</string>
@@ -592,7 +577,7 @@
     <!--Settings&About-->
     <string name="settings">Settings</string>
     <string name="show_dangerous_features">Show dangerous features</string>
-    <string name="material_you_color">Material you color</string>
+    <string name="material_you_color">Material You color</string>
     <string name="dark_theme">Dark theme</string>
     <string name="follow_system">Follow system</string>
     <string name="black_theme">Black theme</string>
@@ -733,4 +718,11 @@
     <string name="info_max_failed_password_other_user">Setting this to a value greater than zero enables a policy that will wipe this user after too many incorrect unlock password have been entered.</string>
     <string name="info_password_history_length">After setting this, the user will not be able to enter a new password that is the same as any password in the history. Note that the current password will remain until the user has set a new one, so the change does not take place immediately.\nA value of 0 means there is no restriction.</string>
     <string name="info_required_strong_auth_timeout">Determine for how long the user will be able to use secondary, non strong auth for authentication, since last strong method authentication (password, pin or pattern) was used. After the returned timeout the user is required to use strong authentication method.\nA value of 0 means the admin is not participating in controlling the timeout. The minimum and maximum timeouts are platform-defined and are typically 1 hour and 72 hours, respectively.</string>
+    <string name="info_deactivate">OwnDroid will lost its privilege</string>
+
+    <string name="choose_work_mode">Choose a work mode</string>
+    <string name="recommended">Recommended</string>
+    <string name="activate_method">Activate method</string>
+    <string name="adb_command">ADB command</string>
+    <string name="owndroid_warning">This app uses Device owner and Profile owner privileges. These privileges are extremely dangerous, please use them with caution. If used improperly, they may result in severe losses. The developers will not be responsible for this.</string>
 </resources>

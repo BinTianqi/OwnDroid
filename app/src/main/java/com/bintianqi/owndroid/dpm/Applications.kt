@@ -1062,7 +1062,7 @@ fun EnableSystemAppScreen(onNavigateUp: () -> Unit) {
         ) {
             Text(stringResource(R.string.enable))
         }
-        Notes(R.string.enable_system_app)
+        Notes(R.string.info_enable_system_app)
     }
 }
 

@@ -7,6 +7,7 @@
     <string name="success">Başarılı</string>
     <string name="failure">Başarısız</string>
     <string name="failed">Başarısız Oldu</string>
+    <string name="succeeded">Succeeded</string> <!--TODO-->
     <string name="add">Ekle</string>
     <string name="remove">Kaldır</string>
     <string name="install">Yükle</string>
@@ -40,7 +41,6 @@
     <string name="decide_by_user">Kullanıcı Tarafından Karar Ver</string>
     <string name="unsupported">Desteklenmiyor</string>
     <string name="options">Seçenekler</string>
-    <string name="copy_command">Komutu Kopyala</string>
     <string name="package_name">Paket Adı</string>
     <string name="not_exist">Mevcut Değil</string>
     <string name="copy">Kopyala</string>
@@ -84,7 +84,6 @@
     <string name="change_package_state">Paket Durumunu Değiştir</string>
     <string name="grant_permissions">İzinleri Ver</string>
     <string name="add_delegated_admin">Yetkilendirilmiş Yönetici Ekle</string>
-    <string name="dhizuku_will_be_deactivated">Dhizuku Devre Dışı Bırakılacak</string>
     <string name="reset_device_policy">Cihaz Politikasını Sıfırla</string>
     <string name="device_info">Cihaz Bilgisi</string>
     <string name="support_device_id_attestation">Cihaz Kimliği Doğrulamasını Destekler</string>
@@ -110,7 +109,6 @@
     <string name="long_support_msg">Uzun Mesaj</string>
     <string name="transfer">Aktar</string>
     <string name="transfer_ownership_warning">%1$s yetkisi %2$s\'e aktarılacak</string>
-    <string name="activate_device_admin_here">Cihaz Yöneticisini Burada Etkinleştir.</string>
 
     <!--Receiver-->
     <string name="create_work_profile_success">İş Profili Başarıyla Oluşturuldu</string>
@@ -119,14 +117,6 @@
     <string name="failed_to_init_dhizuku">Dhizuku Başlatılamadı</string>
     <string name="dhizuku_permission_not_granted">Dhizuku İzni Verilmedi</string>
     <string name="dhizuku_mode_disabled">Dhizuku Modu Devre Dışı</string>
-    <!--Shizuku-->
-    <string name="list_owners">Sahip Listesi</string>
-    <string name="list_users">Kullanıcı Listesi</string>
-    <string name="list_accounts">Hesap Listesi</string>
-    <string name="shizuku_not_started">Shizuku Başlatılmadı.</string>
-    <string name="activate_device_owner">Cihaz Sahibini Etkinleştir</string>
-    <string name="activate_org_profile">Kuruluşa Ait İş Profilini Etkinleştir</string>
-    <string name="accounts">Hesaplar</string>
 
     <!--System-->
     <string name="system">Sistem</string>

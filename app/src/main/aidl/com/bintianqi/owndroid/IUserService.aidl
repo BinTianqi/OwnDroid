@@ -1,10 +1,9 @@
 package com.bintianqi.owndroid;
 
 import android.accounts.Account;
+import android.os.Bundle;
 
 interface IUserService {
-    String execute(String command) = 1;
-    int getUid() = 2;
-    Account[] listAccounts() = 3;
+    Bundle execute(String command) = 1;
     void destroy() = 16777114;
 }

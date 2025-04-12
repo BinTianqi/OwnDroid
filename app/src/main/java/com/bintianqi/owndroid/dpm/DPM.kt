@@ -61,17 +61,8 @@ val Context.isProfileOwner: Boolean
         return dpm.isProfileOwnerApp("com.bintianqi.owndroid")
     }
 
-val Context.dpcPackageName: String
-    get() {
-        return if(SharedPrefs(this).dhizuku) {
-            Dhizuku.getOwnerPackageName()
-        } else {
-            "com.bintianqi.owndroid"
-        }
-    }
-
 @SuppressLint("PrivateApi")
-private fun binderWrapperDevicePolicyManager(appContext: Context): DevicePolicyManager? {
+fun binderWrapperDevicePolicyManager(appContext: Context): DevicePolicyManager? {
     try {
         val context = appContext.createPackageContext(Dhizuku.getOwnerComponent().packageName, Context.CONTEXT_IGNORE_SECURITY)
         val manager = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager

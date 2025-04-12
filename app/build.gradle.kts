@@ -94,6 +94,7 @@ dependencies {
     implementation(libs.dhizuku.api)
     implementation(libs.androidx.fragment)
     implementation(libs.hiddenApiBypass)
+    implementation(libs.libsu)
     implementation(libs.serialization)
     implementation(kotlin("reflect"))
 }

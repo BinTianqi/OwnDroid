@@ -4,31 +4,67 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Binder
 import android.os.Build.VERSION
-import android.os.Bundle
-import android.os.IBinder
-import android.os.RemoteException
+import android.os.PersistableBundle
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material3.*
+import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.runtime.*
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -37,30 +73,36 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.core.os.bundleOf
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.ChoosePackageContract
 import com.bintianqi.owndroid.HorizontalPadding
+import com.bintianqi.owndroid.IUserService
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.Receiver
+import com.bintianqi.owndroid.Settings
 import com.bintianqi.owndroid.SharedPrefs
-import com.bintianqi.owndroid.backToHomeStateFlow
 import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.showOperationResultToast
-import com.bintianqi.owndroid.ui.*
+import com.bintianqi.owndroid.ui.FunctionItem
+import com.bintianqi.owndroid.ui.InfoItem
+import com.bintianqi.owndroid.ui.MyScaffold
+import com.bintianqi.owndroid.ui.MySmallTitleScaffold
+import com.bintianqi.owndroid.ui.NavIcon
+import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.updatePrivilege
+import com.bintianqi.owndroid.useShizuku
 import com.bintianqi.owndroid.writeClipBoard
 import com.bintianqi.owndroid.yesOrNo
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
+import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import rikka.shizuku.Shizuku
-import rikka.sui.Sui
 
 @Serializable object Permissions
 
 @Composable
-fun PermissionsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit, onNavigateToShizuku: (Bundle) -> Unit) {
+fun PermissionsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val context = LocalContext.current
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -69,57 +111,6 @@ fun PermissionsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit, onNav
     var bindingShizuku by remember { mutableStateOf(false) }
     val enrollmentSpecificId = if(VERSION.SDK_INT >= 31 && (privilege.device || privilege.profile)) dpm.enrollmentSpecificId else ""
     MyScaffold(R.string.permissions, onNavigateUp, 0.dp) {
-        if(!dpm.isDeviceOwnerApp(context.packageName)) {
-            SwitchItem(
-                R.string.dhizuku,
-                getState = { SharedPrefs(context).dhizuku },
-                onCheckedChange = { toggleDhizukuMode(it, context) },
-                onClickBlank = { dialog = 4 }
-            )
-        }
-        if(privilege.profile || !privilege.primary) {
-            FunctionItem(
-                R.string.profile_owner, stringResource(if(privilege.profile) R.string.activated else R.string.deactivated),
-                operation = { onNavigate(ProfileOwner) }
-            )
-        }
-        if(!privilege.profile && privilege.primary) {
-            FunctionItem(
-                R.string.device_owner, stringResource(if(privilege.device) R.string.activated else R.string.deactivated),
-                operation = { onNavigate(DeviceOwner) }
-            )
-        }
-        FunctionItem(R.string.shizuku) {
-            try {
-                if(Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
-                    bindingShizuku = true
-                    fun onBind(binder: IBinder) {
-                        bindingShizuku = false
-                        onNavigateToShizuku(bundleOf("binder" to binder))
-                    }
-                    try {
-                        controlShizukuService(context, ::onBind, { bindingShizuku = false }, true)
-                    } catch(e: Exception) {
-                        e.printStackTrace()
-                        bindingShizuku = false
-                    }
-                } else if(Shizuku.shouldShowRequestPermissionRationale()) {
-                    Toast.makeText(context, R.string.permission_denied, Toast.LENGTH_SHORT).show()
-                } else {
-                    Sui.init(context.packageName)
-                    fun requestPermissionResultListener(requestCode: Int, grantResult: Int) {
-                        if(grantResult != PackageManager.PERMISSION_GRANTED) {
-                            Toast.makeText(context, R.string.permission_denied, Toast.LENGTH_SHORT).show()
-                        }
-                        Shizuku.removeRequestPermissionResultListener(::requestPermissionResultListener)
-                    }
-                    Shizuku.addRequestPermissionResultListener(::requestPermissionResultListener)
-                    Shizuku.requestPermission(0)
-                }
-            } catch(_: IllegalStateException) {
-                Toast.makeText(context, R.string.shizuku_not_started, Toast.LENGTH_SHORT).show()
-            }
-        }
         if(VERSION.SDK_INT >= 26) FunctionItem(R.string.delegated_admins) { onNavigate(DelegatedAdmins) }
         FunctionItem(R.string.device_info, icon = R.drawable.perm_device_information_fill0) { onNavigate(DeviceInfo) }
         if(VERSION.SDK_INT >= 24 && (privilege.profile || (VERSION.SDK_INT >= 26 && privilege.device))) {
@@ -136,9 +127,6 @@ fun PermissionsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit, onNav
         }
         if(VERSION.SDK_INT >= 24) {
             FunctionItem(R.string.support_messages, icon = R.drawable.chat_fill0) { onNavigate(SupportMessage) }
-        }
-        if(VERSION.SDK_INT >= 28) {
-            FunctionItem(R.string.transfer_ownership, icon = R.drawable.admin_panel_settings_fill0) { onNavigate(TransferOwnership) }
         }
     }
     if(bindingShizuku) {
@@ -225,38 +213,328 @@ fun PermissionsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit, onNav
     }
 }
 
-private fun toggleDhizukuMode(status: Boolean, context: Context) {
-    val sp = SharedPrefs(context)
-    if(!status) {
-        sp.dhizuku = false
-        backToHomeStateFlow.value = true
-        return
-    }
-    if(!Dhizuku.init(context)) {
-        dhizukuErrorStatus.value = 1
-        return
-    }
-    if(dhizukuPermissionGranted()) {
-        sp.dhizuku = true
-        Dhizuku.init(context)
-        updatePrivilege(context)
-        backToHomeStateFlow.value = true
-    } else {
-        Dhizuku.requestPermission(object: DhizukuRequestPermissionListener() {
-            @Throws(RemoteException::class)
-            override fun onRequestPermission(grantResult: Int) {
-                if(grantResult == PackageManager.PERMISSION_GRANTED) {
-                    sp.dhizuku = true
-                    Dhizuku.init(context)
-                    updatePrivilege(context)
-                    backToHomeStateFlow.value = true
-                } else {
-                    dhizukuErrorStatus.value = 2
+@Serializable data class WorkModes(val canNavigateUp: Boolean)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WorkModesScreen(
+    params: WorkModes, onNavigateUp: () -> Unit, onActivate: () -> Unit, onDeactivate: () -> Unit,
+    onNavigate: (Any) -> Unit
+) {
+    val context = LocalContext.current
+    val coroutine = rememberCoroutineScope()
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    /** 0: none, 1: device owner, 2: circular progress indicator, 3: result, 4: deactivate, 5: command */
+    var dialog by remember { mutableIntStateOf(0) }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                {
+                    if(!params.canNavigateUp) {
+                        Column {
+                            Text(stringResource(R.string.app_name))
+                            Text(stringResource(R.string.choose_work_mode), Modifier.alpha(0.8F), style = typography.bodyLarge)
+                        }
+                    }
+                },
+                navigationIcon = {
+                    if(params.canNavigateUp) NavIcon(onNavigateUp)
+                },
+                actions = {
+                    var expanded by remember { mutableStateOf(false) }
+                    if(privilege.device || privilege.profile) Box {
+                        IconButton({ expanded = true }) {
+                            Icon(Icons.Default.MoreVert, null)
+                        }
+                        DropdownMenu(expanded, { expanded = false }) {
+                            DropdownMenuItem({ Text(stringResource(R.string.deactivate)) }, { dialog = 4 })
+                            if(!privilege.dhizuku && VERSION.SDK_INT >= 28) DropdownMenuItem(
+                                { Text(stringResource(R.string.transfer_ownership)) },
+                                {
+                                    expanded = false
+                                    onNavigate(TransferOwnership)
+                                }
+                            )
+                        }
+                    }
+                    if(!params.canNavigateUp) IconButton({ onNavigate(Settings) }) {
+                        Icon(Icons.Default.Settings, null)
+                    }
                 }
+            )
+        }
+    ) { paddingValues ->
+        var operationSucceed by remember { mutableStateOf(false) }
+        var resultText by remember { mutableStateOf("") }
+        fun handleResult(succeeded: Boolean, activateSucceeded: Boolean, output: String?) {
+            if(succeeded) {
+                operationSucceed = activateSucceeded
+                resultText = output ?: ""
+                dialog = 3
+                updatePrivilege(context)
+                handlePrivilegeChange(context)
+            } else {
+                context.showOperationResultToast(false)
             }
-        })
+        }
+        Column(Modifier.fillMaxSize().padding(paddingValues)) {
+            if(!privilege.profile && (VERSION.SDK_INT >= 28 || !privilege.dhizuku)) Row(
+                Modifier
+                    .fillMaxWidth().clickable(!privilege.device || privilege.dhizuku) { dialog = 1 }
+                    .background(if(privilege.device) colorScheme.primaryContainer else Color.Transparent)
+                    .padding(HorizontalPadding, 10.dp),
+                Arrangement.SpaceBetween, Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(stringResource(R.string.device_owner), style = typography.titleLarge)
+                    if(!privilege.device || privilege.dhizuku) Text(
+                        stringResource(R.string.recommended), color = colorScheme.primary, style = typography.labelLarge
+                    )
+                }
+                Icon(
+                    if(privilege.device) Icons.Default.Check else Icons.AutoMirrored.Default.KeyboardArrowRight, null,
+                    tint = if(privilege.device) colorScheme.primary else colorScheme.onBackground
+                )
+            }
+            if(privilege.profile) Row(
+                Modifier
+                    .fillMaxWidth()
+                    .background(if(privilege.device) colorScheme.primaryContainer else Color.Transparent)
+                    .padding(HorizontalPadding, 10.dp),
+                Arrangement.SpaceBetween, Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(stringResource(R.string.profile_owner), style = typography.titleLarge)
+                }
+                Icon(
+                    if(privilege.device) Icons.Default.Check else Icons.AutoMirrored.Default.KeyboardArrowRight, null,
+                    tint = if(privilege.device) colorScheme.primary else colorScheme.onBackground
+                )
+            }
+            if(privilege.dhizuku || !(privilege.device || privilege.profile)) Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clickable(!privilege.dhizuku) {
+                        dialog = 2
+                        activateDhizukuMode(context, ::handleResult)
+                    }
+                    .background(if(privilege.dhizuku) colorScheme.primaryContainer else Color.Transparent)
+                    .padding(HorizontalPadding, 10.dp),
+                Arrangement.SpaceBetween, Alignment.CenterVertically
+            ) {
+                Text(stringResource(R.string.dhizuku), style = typography.titleLarge)
+                Icon(
+                    if(privilege.dhizuku) Icons.Default.Check else Icons.AutoMirrored.Default.KeyboardArrowRight, null,
+                    tint = if(privilege.dhizuku) colorScheme.primary else colorScheme.onBackground
+                )
+            }
+            if(
+                privilege.work || (VERSION.SDK_INT < 24 ||
+                        context.getDPM().isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE))
+            ) Row(
+                Modifier
+                    .fillMaxWidth().clickable(!privilege.work) { onNavigate(CreateWorkProfile) }
+                    .background(if(privilege.device) colorScheme.primaryContainer else Color.Transparent)
+                    .padding(HorizontalPadding, 10.dp),
+                Arrangement.SpaceBetween, Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(stringResource(R.string.work_profile), style = typography.titleLarge)
+                }
+                Icon(
+                    if(privilege.work) Icons.Default.Check else Icons.AutoMirrored.Default.KeyboardArrowRight, null,
+                    tint = if(privilege.device) colorScheme.primary else colorScheme.onBackground
+                )
+            }
+            Column(Modifier.padding(HorizontalPadding, 20.dp)) {
+                Row(Modifier.padding(bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Outlined.Warning, null, Modifier.padding(end = 4.dp), colorScheme.error)
+                    Text(stringResource(R.string.warning), color = colorScheme.error, style = typography.labelLarge)
+                }
+                Text(stringResource(R.string.owndroid_warning))
+            }
+        }
+        if(dialog == 1) AlertDialog(
+            title = { Text(stringResource(R.string.activate_method)) },
+            text = {
+                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    if(!privilege.dhizuku) Button({
+                        dialog = 2
+                        coroutine.launch {
+                            activateUsingShizuku(context, ::handleResult)
+                        }
+                    }) {
+                        Text(stringResource(R.string.shizuku))
+                    }
+                    if(!privilege.dhizuku) Button({
+                        dialog = 2
+                        activateUsingRoot(context, ::handleResult)
+                    }) {
+                        Text("Root")
+                    }
+                    if(VERSION.SDK_INT >= 28) Button({
+                        dialog = 2
+                        activateUsingDhizuku(context, ::handleResult)
+                    }) {
+                        Text(stringResource(R.string.dhizuku))
+                    }
+                    Button({ dialog = 5 }) { Text(stringResource(R.string.adb_command)) }
+                }
+            },
+            confirmButton = {
+                TextButton({ dialog = 0 }) { Text(stringResource(R.string.cancel)) }
+            },
+            onDismissRequest = { dialog = 0 }
+        )
+        if(dialog == 2) Dialog({}) {
+            CircularProgressIndicator()
+        }
+        if(dialog == 3) AlertDialog(
+            title = { Text(stringResource(if(operationSucceed) R.string.succeeded else R.string.failed)) },
+            text = {
+                Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
+                    Text(resultText)
+                }
+            },
+            confirmButton = {
+                TextButton({
+                    dialog = 0
+                    if(operationSucceed && !params.canNavigateUp) onActivate()
+                }) {
+                    Text(stringResource(R.string.confirm))
+                }
+            },
+            onDismissRequest = {}
+        )
+        if(dialog == 4) AlertDialog(
+            title = { Text(stringResource(R.string.deactivate)) },
+            text = { Text(stringResource(R.string.info_deactivate)) },
+            confirmButton = {
+                TextButton(
+                    {
+                        if(privilege.dhizuku) {
+                            SharedPrefs(context).dhizuku = false
+                        } else {
+                            val dpm = context.getDPM()
+                            if(privilege.device) {
+                                dpm.clearDeviceOwnerApp(context.packageName)
+                            } else if(VERSION.SDK_INT >= 24) {
+                                dpm.clearProfileOwner(ComponentName(context, Receiver::class.java))
+                            }
+                        }
+                        updatePrivilege(context)
+                        handlePrivilegeChange(context)
+                        onDeactivate()
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
+                ) { Text(stringResource(R.string.confirm)) }
+            },
+            dismissButton = {
+                TextButton({ dialog = 0 }) { Text(stringResource(R.string.cancel)) }
+            },
+            onDismissRequest = { dialog = 0 }
+        )
+        if(dialog == 5) AlertDialog(
+            text = {
+                SelectionContainer {
+                    Text(ACTIVATE_DEVICE_OWNER_COMMAND)
+                }
+            },
+            confirmButton = {
+                TextButton({ dialog = 0 }) { Text(stringResource(R.string.confirm)) }
+            },
+            onDismissRequest = { dialog = 0 }
+        )
     }
 }
+
+fun activateUsingShizuku(context: Context, callback: (Boolean, Boolean, String?) -> Unit) {
+    useShizuku(context) { service ->
+        try {
+            val result = IUserService.Stub.asInterface(service).execute(ACTIVATE_DEVICE_OWNER_COMMAND)
+            if (result == null) {
+                callback(false, false, null)
+            } else {
+                callback(
+                    true, result.getInt("code", -1) == 0,
+                    result.getString("output") + "\n" + result.getString("error")
+                )
+            }
+        } catch (e: Exception) {
+            callback(false, false, null)
+            e.printStackTrace()
+        }
+    }
+}
+
+fun activateUsingRoot(context: Context, callback: (Boolean, Boolean, String?) -> Unit) {
+    Shell.getShell { shell ->
+        if(shell.isRoot) {
+            val result = Shell.cmd(ACTIVATE_DEVICE_OWNER_COMMAND).exec()
+            val output = result.out.joinToString("\n") + "\n" + result.err.joinToString("\n")
+            callback(true, result.isSuccess, output)
+        } else {
+            callback(true, false, context.getString(R.string.permission_denied))
+        }
+    }
+}
+
+@RequiresApi(28)
+fun activateUsingDhizuku(context: Context, callback: (Boolean, Boolean, String?) -> Unit) {
+    fun doTransfer() {
+        try {
+            val dpm = binderWrapperDevicePolicyManager(context)
+            if(dpm == null) {
+                context.showOperationResultToast(false)
+            } else {
+                dpm.transferOwnership(
+                    Dhizuku.getOwnerComponent(),
+                    ComponentName(context, Receiver::class.java), PersistableBundle()
+                )
+                callback(true, true, null)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            callback(true, false, null)
+        }
+    }
+    if(Dhizuku.init()) {
+        if(Dhizuku.isPermissionGranted()) {
+            doTransfer()
+        } else {
+            Dhizuku.requestPermission(object : DhizukuRequestPermissionListener() {
+                override fun onRequestPermission(grantResult: Int) {
+                    if(grantResult == PackageManager.PERMISSION_GRANTED) doTransfer()
+                    else callback(false, false, null)
+                }
+            })
+        }
+    } else {
+        callback(true, false, context.getString(R.string.failed_to_init_dhizuku))
+    }
+}
+
+fun activateDhizukuMode(context: Context, callback: (Boolean, Boolean, String?) -> Unit) {
+    fun onSucceed() {
+        SharedPrefs(context).dhizuku = true
+        callback(true, true, null)
+    }
+    if(Dhizuku.init()) {
+        if(Dhizuku.isPermissionGranted()) {
+            onSucceed()
+        } else {
+            Dhizuku.requestPermission(object : DhizukuRequestPermissionListener() {
+                override fun onRequestPermission(grantResult: Int) {
+                    if(grantResult == PackageManager.PERMISSION_GRANTED) onSucceed()
+                }
+            })
+        }
+    } else {
+        callback(true, false, context.getString(R.string.failed_to_init_dhizuku))
+    }
+}
+
+const val ACTIVATE_DEVICE_OWNER_COMMAND = "dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver"
 
 @Serializable object LockScreenInfo
 
@@ -299,135 +577,6 @@ fun LockScreenInfoScreen(onNavigateUp: () -> Unit) {
         }
         Spacer(Modifier.padding(vertical = 10.dp))
         Notes(R.string.info_lock_screen_info)
-    }
-}
-
-@Serializable object ProfileOwner
-
-@Composable
-fun ProfileOwnerScreen(onNavigateUp: () -> Unit) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    var deactivateDialog by remember { mutableStateOf(false) }
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
-    val profileOwner = privilege.profile
-    MyScaffold(R.string.profile_owner, onNavigateUp) {
-        Text(stringResource(if(profileOwner) R.string.activated else R.string.deactivated), style = typography.titleLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT >= 24 && profileOwner) {
-            Button(
-                onClick = { deactivateDialog = true },
-                enabled = !dpm.isManagedProfile(receiver),
-                colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
-            ) {
-                Text(stringResource(R.string.deactivate))
-            }
-        }
-        if(!profileOwner) {
-            val command = context.getString(R.string.activate_profile_owner_command, (Binder.getCallingUid() / 100000).toString())
-            SelectionContainer {
-                Text(command)
-            }
-            CopyTextButton(R.string.copy_command, command)
-        }
-    }
-    if(deactivateDialog && VERSION.SDK_INT >= 24) {
-        AlertDialog(
-            title = { Text(stringResource(R.string.deactivate)) },
-            onDismissRequest = { deactivateDialog = false },
-            dismissButton = {
-                TextButton(
-                    onClick = { deactivateDialog = false }
-                ) {
-                    Text(stringResource(R.string.cancel))
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        dpm.clearProfileOwner(receiver)
-                        deactivateDialog = false
-                    },
-                    colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
-                ) {
-                    Text(stringResource(R.string.confirm))
-                }
-            }
-        )
-    }
-}
-
-@Serializable object DeviceOwner
-
-@Composable
-fun DeviceOwnerScreen(onNavigateUp: () -> Unit) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    var deactivateDialog by remember { mutableStateOf(false) }
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
-    val deviceOwner = privilege.device
-    MyScaffold(R.string.device_owner, onNavigateUp) {
-        Text(text = stringResource(if(deviceOwner) R.string.activated else R.string.deactivated), style = typography.titleLarge)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        AnimatedVisibility(deviceOwner) {
-            Button(
-                onClick = { deactivateDialog = true },
-                colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError)
-            ) {
-                Text(text = stringResource(R.string.deactivate))
-            }
-        }
-        AnimatedVisibility(!deviceOwner) {
-            Column {
-                SelectionContainer{
-                    Text(text = stringResource(R.string.activate_device_owner_command))
-                }
-                CopyTextButton(R.string.copy_command, stringResource(R.string.activate_device_owner_command))
-            }
-        }
-    }
-    if(deactivateDialog) {
-        val sp = SharedPrefs(context)
-        var resetPolicy by remember { mutableStateOf(false) }
-        val coroutine = rememberCoroutineScope()
-        AlertDialog(
-            title = { Text(stringResource(R.string.deactivate)) },
-            text = {
-                Column {
-                    if(sp.dhizuku) Text(stringResource(R.string.dhizuku_will_be_deactivated))
-                    Spacer(Modifier.padding(vertical = 4.dp))
-                    CheckBoxItem(text = R.string.reset_device_policy, checked = resetPolicy, operation = { resetPolicy = it })
-                }
-            },
-            onDismissRequest = { deactivateDialog = false },
-            dismissButton = {
-                TextButton(
-                    onClick = { deactivateDialog = false }
-                ) {
-                    Text(stringResource(R.string.cancel))
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        coroutine.launch {
-                            if(resetPolicy) context.resetDevicePolicy()
-                            dpm.clearDeviceOwnerApp(context.dpcPackageName)
-                            if(sp.dhizuku) {
-                                if (!Dhizuku.init(context)) {
-                                    sp.dhizuku = false
-                                    backToHomeStateFlow.value = true
-                                }
-                            }
-                            deactivateDialog = false
-                        }
-                    }
-                ) {
-                    Text(stringResource(R.string.confirm))
-                }
-            }
-        )
     }
 }
 
@@ -698,7 +847,7 @@ fun SupportMessageScreen(onNavigateUp: () -> Unit) {
 
 @RequiresApi(28)
 @Composable
-fun TransferOwnershipScreen(onNavigateUp: () -> Unit) {
+fun TransferOwnershipScreen(onNavigateUp: () -> Unit, onTransferred: () -> Unit) {
     val context = LocalContext.current
     val privilege by myPrivilege.collectAsStateWithLifecycle()
     val focusMgr = LocalFocusManager.current
@@ -742,7 +891,7 @@ fun TransferOwnershipScreen(onNavigateUp: () -> Unit) {
                         context.showOperationResultToast(true)
                         updatePrivilege(context)
                         dialog = false
-                        onNavigateUp()
+                        onTransferred()
                     } catch(e: Exception) {
                         e.printStackTrace()
                         context.showOperationResultToast(false)

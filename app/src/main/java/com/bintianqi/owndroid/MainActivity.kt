@@ -2,7 +2,6 @@ package com.bintianqi.owndroid
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.admin.DevicePolicyManager
 import android.os.Build.VERSION
 import android.os.Bundle
 import android.widget.Toast
@@ -22,14 +21,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -57,8 +60,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.bintianqi.owndroid.dpm.Accounts
-import com.bintianqi.owndroid.dpm.AccountsScreen
 import com.bintianqi.owndroid.dpm.AddApnSetting
 import com.bintianqi.owndroid.dpm.AddApnSettingScreen
 import com.bintianqi.owndroid.dpm.AddDelegatedAdmin
@@ -107,8 +108,6 @@ import com.bintianqi.owndroid.dpm.DeleteWorkProfile
 import com.bintianqi.owndroid.dpm.DeleteWorkProfileScreen
 import com.bintianqi.owndroid.dpm.DeviceInfo
 import com.bintianqi.owndroid.dpm.DeviceInfoScreen
-import com.bintianqi.owndroid.dpm.DeviceOwner
-import com.bintianqi.owndroid.dpm.DeviceOwnerScreen
 import com.bintianqi.owndroid.dpm.DisableAccountManagement
 import com.bintianqi.owndroid.dpm.DisableAccountManagementScreen
 import com.bintianqi.owndroid.dpm.DisableMeteredData
@@ -172,8 +171,6 @@ import com.bintianqi.owndroid.dpm.PreferentialNetworkService
 import com.bintianqi.owndroid.dpm.PreferentialNetworkServiceScreen
 import com.bintianqi.owndroid.dpm.PrivateDns
 import com.bintianqi.owndroid.dpm.PrivateDnsScreen
-import com.bintianqi.owndroid.dpm.ProfileOwner
-import com.bintianqi.owndroid.dpm.ProfileOwnerScreen
 import com.bintianqi.owndroid.dpm.QueryNetworkStats
 import com.bintianqi.owndroid.dpm.RecommendedGlobalProxy
 import com.bintianqi.owndroid.dpm.RecommendedGlobalProxyScreen
@@ -191,7 +188,6 @@ import com.bintianqi.owndroid.dpm.SecurityLoggingScreen
 import com.bintianqi.owndroid.dpm.SetDefaultDialer
 import com.bintianqi.owndroid.dpm.SetDefaultDialerScreen
 import com.bintianqi.owndroid.dpm.SetSystemUpdatePolicy
-import com.bintianqi.owndroid.dpm.ShizukuScreen
 import com.bintianqi.owndroid.dpm.SupportMessage
 import com.bintianqi.owndroid.dpm.SupportMessageScreen
 import com.bintianqi.owndroid.dpm.Suspend
@@ -230,6 +226,8 @@ import com.bintianqi.owndroid.dpm.WifiSecurityLevelScreen
 import com.bintianqi.owndroid.dpm.WifiSsidPolicyScreen
 import com.bintianqi.owndroid.dpm.WipeData
 import com.bintianqi.owndroid.dpm.WipeDataScreen
+import com.bintianqi.owndroid.dpm.WorkModes
+import com.bintianqi.owndroid.dpm.WorkModesScreen
 import com.bintianqi.owndroid.dpm.WorkProfile
 import com.bintianqi.owndroid.dpm.WorkProfileScreen
 import com.bintianqi.owndroid.dpm.dhizukuErrorStatus
@@ -299,6 +297,14 @@ fun Home(vm: MyViewModel) {
     val userRestrictions by vm.userRestrictions.collectAsStateWithLifecycle()
     fun navigateUp() { navController.navigateUp() }
     fun navigate(destination: Any) { navController.navigate(destination) }
+    LaunchedEffect(Unit) {
+        val privilege = myPrivilege.value
+        if(!privilege.device && !privilege.profile) {
+            navController.navigate(WorkModes(false)) {
+                popUpTo<Home> { inclusive = true }
+            }
+        }
+    }
     @Suppress("NewApi") NavHost(
         navController = navController,
         startDestination = Home,
@@ -313,20 +319,35 @@ fun Home(vm: MyViewModel) {
         popExitTransition = Animations.navHostPopExitTransition
     ) {
         composable<Home> { HomeScreen { navController.navigate(it) } }
+        composable<WorkModes> {
+            WorkModesScreen(it.toRoute(), ::navigateUp, {
+                navController.navigate(Home) {
+                    popUpTo<WorkModes> { inclusive = true }
+                }
+            }, {
+                navController.navigate(WorkModes(false)) {
+                    popUpTo<Home> { inclusive = true }
+                }
+            }, {
+                navController.navigate(it)
+            })
+        }
 
         composable<Permissions> {
-            PermissionsScreen(::navigateUp, { navController.navigate(it) }) { navController.navigate(ShizukuScreen, it) }
+            PermissionsScreen(::navigateUp) { navController.navigate(it) }
         }
-        composable<ShizukuScreen> { ShizukuScreen(it.arguments!!, ::navigateUp) { dest -> navController.navigate(dest) } }
-        composable<Accounts>(mapOf(serializableNavTypePair<List<Accounts.Account>>())) { AccountsScreen(it.toRoute(), ::navigateUp) }
-        composable<ProfileOwner> { ProfileOwnerScreen(::navigateUp) }
-        composable<DeviceOwner> { DeviceOwnerScreen(::navigateUp) }
         composable<DelegatedAdmins> { DelegatedAdminsScreen(::navigateUp, ::navigate) }
         composable<AddDelegatedAdmin>{ AddDelegatedAdminScreen(it.toRoute(), ::navigateUp) }
         composable<DeviceInfo> { DeviceInfoScreen(::navigateUp) }
         composable<LockScreenInfo> { LockScreenInfoScreen(::navigateUp) }
         composable<SupportMessage> { SupportMessageScreen(::navigateUp) }
-        composable<TransferOwnership> { TransferOwnershipScreen(::navigateUp) }
+        composable<TransferOwnership> {
+            TransferOwnershipScreen(::navigateUp) {
+                navController.navigate(WorkModes(false)) {
+                    popUpTo(Home) { inclusive = true }
+                }
+            }
+        }
 
         composable<SystemManager> { SystemManagerScreen(::navigateUp, ::navigate) }
         composable<SystemOptions> { SystemOptionsScreen(::navigateUp) }
@@ -492,10 +513,10 @@ fun Home(vm: MyViewModel) {
 
 @Serializable private object Home
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeScreen(onNavigate: (Any) -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
     val privilege by myPrivilege.collectAsStateWithLifecycle()
     val activateType = (if(privilege.dhizuku) context.getString(R.string.dhizuku) + " - " else "") +
             context.getString(
@@ -504,9 +525,18 @@ private fun HomeScreen(onNavigate: (Any) -> Unit) {
                 else if(privilege.profile) R.string.profile_owner
                 else R.string.click_to_activate
             )
-    Scaffold {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                {}, actions = {
+                    IconButton({ onNavigate(WorkModes(true)) }) { Icon(painterResource(R.drawable.security_fill0), null) }
+                    IconButton({ onNavigate(Settings) }) { Icon(Icons.Default.Settings, null) }
+                }
+            )
+        }
+    ) {
         Column(modifier = Modifier.padding(it).verticalScroll(rememberScrollState())) {
-            Spacer(Modifier.padding(vertical = 25.dp))
+            Spacer(Modifier.padding(vertical = 8.dp))
             Text(
                 text = stringResource(R.string.app_name), style = typography.headlineLarge,
                 modifier = Modifier.padding(start = HorizontalPadding)
@@ -541,16 +571,9 @@ private fun HomeScreen(onNavigate: (Any) -> Unit) {
                 HomePageItem(R.string.system, R.drawable.android_fill0) { onNavigate(SystemManager) }
                 HomePageItem(R.string.network, R.drawable.wifi_fill0) { onNavigate(Network) }
             }
-            if(
-                privilege.work || (VERSION.SDK_INT < 24 && !privilege.device) ||
-                dpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)
-            ) {
+            if(privilege.work) {
                 HomePageItem(R.string.work_profile, R.drawable.work_fill0) {
-                    onNavigate(
-                        if(VERSION.SDK_INT < 24 ||
-                            dpm.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)
-                            ) WorkProfile else CreateWorkProfile
-                    )
+                    onNavigate(WorkProfile)
                 }
             }
             if(privilege.device || privilege.profile) {
@@ -563,7 +586,6 @@ private fun HomeScreen(onNavigate: (Any) -> Unit) {
                 HomePageItem(R.string.users,R.drawable.manage_accounts_fill0) { onNavigate(Users) }
                 HomePageItem(R.string.password_and_keyguard, R.drawable.password_fill0) { onNavigate(Password) }
             }
-            HomePageItem(R.string.settings, R.drawable.settings_fill0) { onNavigate(Settings) }
             Spacer(Modifier.padding(vertical = 20.dp))
         }
     }

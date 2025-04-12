@@ -212,31 +212,6 @@ fun SwitchItem(
 }
 
 @Composable
-fun CopyTextButton(@StringRes label: Int, content: String) {
-    val context = LocalContext.current
-    var ok by remember{ mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-    Button(
-        onClick = {
-            if(!ok) {
-                scope.launch {
-                    if(writeClipBoard(context,content)) { ok = true; delay(2000); ok = false }
-                    else{ Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show() }
-                }
-            }
-        }
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically, modifier = Modifier.animateContentSize()
-        ) {
-            Icon(painter = painterResource(if(ok) R.drawable.check_fill0 else R.drawable.content_copy_fill0), contentDescription = null)
-            Spacer(modifier = Modifier.padding(horizontal = 2.dp))
-            Text(text = stringResource(if(ok) R.string.success else label))
-        }
-    }
-}
-
-@Composable
 fun InfoItem(title: Int, text: Int, withInfo: Boolean = false, onClick: () -> Unit = {}) =
     InfoItem(title, stringResource(text), withInfo, onClick)
 

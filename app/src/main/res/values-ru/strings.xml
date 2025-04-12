@@ -7,6 +7,7 @@
     <string name="success">Успешно</string>
     <string name="failure">Ошибка</string>
     <string name="failed">Ошибка</string>
+    <string name="succeeded">Succeeded</string> <!--TODO-->
     <string name="add">Добавить</string>
     <string name="remove">Удалить</string>
     <string name="install">Установить</string>
@@ -40,7 +41,6 @@
     <string name="decide_by_user">Определять пользователем</string>
     <string name="unsupported">Не поддерживается</string>
     <string name="options">Опции</string>
-    <string name="copy_command">Копировать команду</string>
     <string name="package_name">Имя пакета</string>
     <string name="not_exist">Не существует</string>
     <string name="copy">Копировать</string>
@@ -85,7 +85,6 @@
     <string name="change_package_state">Изменить состояние пакета</string>
     <string name="grant_permissions">Предоставить разрешения</string>
     <string name="add_delegated_admin">Добавить делегированного админа</string>
-    <string name="dhizuku_will_be_deactivated">Dhizuku будет деактивирован</string>
     <string name="reset_device_policy">Сбросить политику устройства</string>
     <string name="device_info">Информация об устройстве</string>
     <string name="support_device_id_attestation">Поддержка аттестации идентификатора устройства</string>
@@ -110,8 +109,7 @@
     <string name="short_support_msg">Краткое сообщение</string>
     <string name="long_support_msg">Подробное сообщение</string>
     <string name="transfer">Передать</string>
-    <string name="transfer_ownership_warning">%1$s привилегия будет передана %2$s</string> 
-    <string name="activate_device_admin_here">Активируйте администратора устройства здесь.</string>
+    <string name="transfer_ownership_warning">%1$s привилегия будет передана %2$s</string>
 
     <!--Приемник-->
     <string name="create_work_profile_success">Рабочий профиль успешно создан</string>
@@ -120,14 +118,6 @@
     <string name="failed_to_init_dhizuku">Не удалось инициализировать Dhizuku</string>
     <string name="dhizuku_permission_not_granted">Разрешение Dhizuku не предоставлено</string>
     <string name="dhizuku_mode_disabled">Режим Dhizuku отключен</string>
-    <!--Shizuku-->
-    <string name="list_owners">Список владельцев</string>
-    <string name="list_users">Список пользователей</string>
-    <string name="list_accounts">Список аккаунтов</string>
-    <string name="shizuku_not_started">Shizuku не запущен. </string>
-    <string name="activate_device_owner">Активировать владельца устройства</string>
-    <string name="activate_org_profile">Активировать рабочий профиль, принадлежащий организации</string>
-    <string name="accounts">Аккаунты</string> 
 
     <!--Системные-->
     <string name="system">Система</string> 

@@ -14,7 +14,9 @@ import android.app.admin.DevicePolicyManager.PERSONAL_APPS_NOT_SUSPENDED
 import android.app.admin.DevicePolicyManager.PERSONAL_APPS_SUSPENDED_PROFILE_TIMEOUT
 import android.app.admin.DevicePolicyManager.WIPE_EUICC
 import android.app.admin.DevicePolicyManager.WIPE_EXTERNAL_STORAGE
-import android.content.*
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Binder
 import android.os.Build.VERSION
 import android.widget.Toast
@@ -54,17 +56,16 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.bintianqi.owndroid.IUserService
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
-import com.bintianqi.owndroid.ui.CopyTextButton
 import com.bintianqi.owndroid.ui.FunctionItem
-import com.bintianqi.owndroid.ui.InfoItem
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.SwitchItem
-import com.bintianqi.owndroid.yesOrNo
+import com.bintianqi.owndroid.useShizuku
 import kotlinx.serialization.Serializable
 
 @Serializable object WorkProfile
@@ -73,7 +74,7 @@ import kotlinx.serialization.Serializable
 fun WorkProfileScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val privilege by myPrivilege.collectAsStateWithLifecycle()
     MyScaffold(R.string.work_profile, onNavigateUp, 0.dp) {
-        if(VERSION.SDK_INT >= 30) {
+        if(VERSION.SDK_INT >= 30 && !privilege.org) {
             FunctionItem(R.string.org_owned_work_profile, icon = R.drawable.corporate_fare_fill0) { onNavigate(OrganizationOwnedProfile) }
         }
         if(privilege.org) {
@@ -162,21 +163,37 @@ fun CreateWorkProfileScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun OrganizationOwnedProfileScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
+    var dialog by remember { mutableStateOf(false) }
     MyScaffold(R.string.org_owned_work_profile, onNavigateUp) {
-        InfoItem(R.string.org_owned_work_profile, dpm.isOrganizationOwnedDeviceWithManagedProfile.yesOrNo)
-        Spacer(Modifier.padding(vertical = 5.dp))
-        if(!dpm.isOrganizationOwnedDeviceWithManagedProfile) {
-            SelectionContainer {
-                Text(
-                    text = stringResource(R.string.activate_org_profile_command, Binder.getCallingUid()/100000),
-                    color = colorScheme.onTertiaryContainer
-                )
+        Button({
+            useShizuku(context) { service ->
+                val result = IUserService.Stub.asInterface(service).execute(activateOrgProfileCommand)
+                if (result?.getInt("code", -1) == 0) {
+                    context.showOperationResultToast(true)
+                } else {
+                    context.showOperationResultToast(false)
+                }
             }
-            CopyTextButton(R.string.copy_command, stringResource(R.string.activate_org_profile_command, Binder.getCallingUid()/100000))
+        }) {
+            Text(stringResource(R.string.shizuku))
         }
+        Button({ dialog = true }) { Text(stringResource(R.string.adb_command)) }
+        if(dialog) AlertDialog(
+            text = {
+                SelectionContainer {
+                    Text(activateOrgProfileCommand)
+                }
+            },
+            confirmButton = {
+                TextButton({ dialog = false }) { Text(stringResource(R.string.confirm)) }
+            },
+            onDismissRequest = { dialog = false }
+        )
     }
 }
+
+val activateOrgProfileCommand = "dpm mark-profile-owner-on-organization-owned-device --user " +
+        "${Binder.getCallingUid()/100000} com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver"
 
 @Serializable object SuspendPersonalApp
 
