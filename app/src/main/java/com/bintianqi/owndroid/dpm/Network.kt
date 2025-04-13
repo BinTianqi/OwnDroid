@@ -763,7 +763,7 @@ fun WifiSecurityLevelScreen(onNavigateUp: () -> Unit) {
     val dpm = context.getDPM()
     var selectedWifiSecLevel by remember { mutableIntStateOf(0) }
     LaunchedEffect(Unit) { selectedWifiSecLevel = dpm.minimumRequiredWifiSecurityLevel }
-    MySmallTitleScaffold(R.string.min_wifi_security_level, onNavigateUp, 0.dp) {
+    MyScaffold(R.string.min_wifi_security_level, onNavigateUp, 0.dp) {
         FullWidthRadioButtonItem(R.string.wifi_security_open, selectedWifiSecLevel == WIFI_SECURITY_OPEN) { selectedWifiSecLevel = WIFI_SECURITY_OPEN }
         FullWidthRadioButtonItem("WEP, WPA(2)-PSK", selectedWifiSecLevel == WIFI_SECURITY_PERSONAL) { selectedWifiSecLevel = WIFI_SECURITY_PERSONAL }
         FullWidthRadioButtonItem("WPA-EAP", selectedWifiSecLevel == WIFI_SECURITY_ENTERPRISE_EAP) { selectedWifiSecLevel = WIFI_SECURITY_ENTERPRISE_EAP }
@@ -809,8 +809,6 @@ fun WifiSsidPolicyScreen(onNavigateUp: () -> Unit) {
         AnimatedVisibility(selectedPolicyType != -1) {
             var inputSsid by remember { mutableStateOf("") }
             Column(Modifier.padding(horizontal = HorizontalPadding)) {
-                Text(stringResource(R.string.ssid_list_is))
-                if(ssidList.isEmpty()) Text(stringResource(R.string.none))
                 Column(modifier = Modifier.animateContentSize()) {
                     for(i in ssidList) {
                         ListItem(i.bytes.decodeToString()) { ssidList -= i }

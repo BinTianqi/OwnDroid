@@ -87,7 +87,6 @@
     <string name="change_package_state">Change package state</string>
     <string name="grant_permissions">Grant permissions</string>
     <string name="add_delegated_admin">Add delegated admin</string>
-    <string name="reset_device_policy">Reset device policy</string>
     <string name="device_info">Device info</string>
     <string name="support_device_id_attestation">Support Device ID attestation</string>
     <string name="support_unique_device_attestation">Support unique device attestation</string>
@@ -270,7 +269,6 @@
     <string name="wifi_security_open">Open</string>
     <string name="lockdown_admin_configured_network">Lockdown admin configured network</string>
     <string name="wifi_ssid_policy">Wi-Fi SSID policy</string>
-    <string name="ssid_list_is">SSID list:</string>
     <string name="already_exist">Already exist</string>
     <string name="network_stats">Network stats</string>
     <string name="type">Type</string>

@@ -20,6 +20,7 @@ import kotlinx.serialization.json.Json
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
+import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
@@ -89,11 +90,6 @@ fun Context.showOperationResultToast(success: Boolean) {
     Toast.makeText(this, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
 }
 
-@SuppressLint("PrivateApi")
-fun getContext(): Context {
-    return Class.forName("android.app.ActivityThread").getMethod("currentApplication").invoke(null) as Context
-}
-
 const val APK_MIME = "application/vnd.android.package-archive"
 
 inline fun <reified T> serializableNavTypePair() =
@@ -130,3 +126,9 @@ fun <T> NavHostController.navigate(route: T, args: Bundle) {
 }
 
 val HorizontalPadding = 16.dp
+
+@OptIn(ExperimentalStdlibApi::class)
+fun String.hash(): String {
+    val md = MessageDigest.getInstance("SHA-256")
+    return md.digest(this.encodeToByteArray()).toHexString()
+}

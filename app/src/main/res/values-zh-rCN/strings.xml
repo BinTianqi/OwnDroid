@@ -82,7 +82,6 @@
     <string name="change_package_state">修改软件包状态</string>
     <string name="grant_permissions">授予权限</string>
     <string name="add_delegated_admin">添加委托管理员</string>
-    <string name="reset_device_policy">重置设备策略</string>
     <string name="device_info">设备信息</string>
     <string name="support_device_id_attestation">支持设备ID认证</string>
     <string name="support_unique_device_attestation">支持唯一设备认证</string>
@@ -241,7 +240,6 @@
     <string name="wifi_security_open">开放</string>
     <string name="lockdown_admin_configured_network">锁定由管理员配置的网络</string>
     <string name="wifi_ssid_policy">Wi-Fi SSID策略</string>
-    <string name="ssid_list_is">SSID列表：</string>
     <string name="already_exist">已经存在</string>
     <string name="network_stats">网络统计</string>
     <string name="type">类型</string>

@@ -85,7 +85,6 @@
     <string name="change_package_state">Изменить состояние пакета</string>
     <string name="grant_permissions">Предоставить разрешения</string>
     <string name="add_delegated_admin">Добавить делегированного админа</string>
-    <string name="reset_device_policy">Сбросить политику устройства</string>
     <string name="device_info">Информация об устройстве</string>
     <string name="support_device_id_attestation">Поддержка аттестации идентификатора устройства</string>
     <string name="support_unique_device_attestation">Поддержка аттестации уникального устройства</string>
@@ -247,7 +246,6 @@
     <string name="wifi_security_open">Открытая</string>
     <string name="lockdown_admin_configured_network">Блокировка сети, настроенной администратором</string>
     <string name="wifi_ssid_policy">Политика SSID Wi-Fi</string>
-    <string name="ssid_list_is">Список SSID:</string>
     <string name="already_exist">Уже существует</string>
     <string name="network_stats">Сетевая статистика</string>
     <string name="type">Тип</string>

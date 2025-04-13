@@ -28,7 +28,7 @@ class ManageSpaceActivity: FragmentActivity() {
         setContent {
             val theme by vm.theme.collectAsStateWithLifecycle()
             OwnDroidTheme(theme) {
-                var appLockDialog by remember { mutableStateOf(!SharedPrefs(this).lockPassword.isNullOrEmpty()) }
+                var appLockDialog by remember { mutableStateOf(!SharedPrefs(this).lockPasswordHash.isNullOrEmpty()) }
                 if(appLockDialog) {
                     Dialog(::finish) {
                         AppLockDialog({ appLockDialog = false }, ::finish)

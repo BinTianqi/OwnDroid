@@ -164,7 +164,7 @@ fun AppLockSettingsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.app_lo
     var confirmPassword by remember { mutableStateOf("") }
     var allowBiometrics by remember { mutableStateOf(sp.biometricsUnlock) }
     val fr = FocusRequester()
-    val alreadySet = !sp.lockPassword.isNullOrEmpty()
+    val alreadySet = !sp.lockPasswordHash.isNullOrEmpty()
     val isInputLegal = password.length !in 1..3 && (alreadySet || (password.isNotEmpty() && password.isNotBlank()))
     Column(Modifier.widthIn(max = 300.dp).align(Alignment.CenterHorizontally)) {
         OutlinedTextField(
@@ -187,7 +187,7 @@ fun AppLockSettingsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.app_lo
         Button(
             onClick = {
                 fm.clearFocus()
-                if(password.isNotEmpty()) sp.lockPassword = password
+                if(password.isNotEmpty()) sp.lockPasswordHash = password.hash()
                 sp.biometricsUnlock = allowBiometrics
                 onNavigateUp()
             },
@@ -199,7 +199,7 @@ fun AppLockSettingsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.app_lo
         if(alreadySet) FilledTonalButton(
             onClick = {
                 fm.clearFocus()
-                sp.lockPassword = ""
+                sp.lockPasswordHash = ""
                 sp.biometricsUnlock = false
                 onNavigateUp()
             },

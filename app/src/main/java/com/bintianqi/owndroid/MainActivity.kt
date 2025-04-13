@@ -489,7 +489,7 @@ fun Home(vm: MyViewModel) {
     }
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if(event == Lifecycle.Event.ON_CREATE && !SharedPrefs(context).lockPassword.isNullOrEmpty()) {
+            if(event == Lifecycle.Event.ON_CREATE && !SharedPrefs(context).lockPasswordHash.isNullOrEmpty()) {
                 navController.navigate(AppLock)
             }
         }

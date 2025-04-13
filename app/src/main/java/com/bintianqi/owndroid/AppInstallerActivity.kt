@@ -143,7 +143,7 @@ private fun AppInstaller(
                     else Icon(Icons.Default.PlayArrow, null)
                 },
                 onClick = {
-                    if(SharedPrefs(context).lockPassword.isNullOrEmpty()) onStartInstall() else appLockDialog = true
+                    if(SharedPrefs(context).lockPasswordHash.isNullOrEmpty()) onStartInstall() else appLockDialog = true
                 },
                 expanded = !installing
             )

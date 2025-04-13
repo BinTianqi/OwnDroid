@@ -84,7 +84,6 @@
     <string name="change_package_state">Paket Durumunu Değiştir</string>
     <string name="grant_permissions">İzinleri Ver</string>
     <string name="add_delegated_admin">Yetkilendirilmiş Yönetici Ekle</string>
-    <string name="reset_device_policy">Cihaz Politikasını Sıfırla</string>
     <string name="device_info">Cihaz Bilgisi</string>
     <string name="support_device_id_attestation">Cihaz Kimliği Doğrulamasını Destekler</string>
     <string name="support_unique_device_attestation">Benzersiz Cihaz Doğrulamasını Destekler</string>
@@ -244,7 +243,6 @@
     <string name="wifi_security_open">Açık</string>
     <string name="lockdown_admin_configured_network">Yönetici Tarafından Yapılandırılan Ağı Kilitle</string>
     <string name="wifi_ssid_policy">Wi-Fi SSID Politikası</string>
-    <string name="ssid_list_is">SSID Listesi:</string>
     <string name="already_exist">Zaten Mevcut</string>
     <string name="network_stats">Ağ İstatistikleri</string>
     <string name="type">Tür</string>

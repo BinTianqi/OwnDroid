@@ -44,7 +44,7 @@ fun AppLockDialog(onSucceed: () -> Unit, onDismiss: () -> Unit) {
     var input by remember { mutableStateOf("") }
     var isError by remember { mutableStateOf(false) }
     fun unlock() {
-        if(input == sp.lockPassword) {
+        if(input.hash() == sp.lockPasswordHash) {
             fm.clearFocus()
             onSucceed()
         } else {

@@ -247,7 +247,13 @@ fun WorkModesScreen(
                             Icon(Icons.Default.MoreVert, null)
                         }
                         DropdownMenu(expanded, { expanded = false }) {
-                            DropdownMenuItem({ Text(stringResource(R.string.deactivate)) }, { dialog = 4 })
+                            DropdownMenuItem(
+                                { Text(stringResource(R.string.deactivate)) },
+                                {
+                                    expanded = false
+                                    dialog = 4
+                                }
+                            )
                             if(!privilege.dhizuku && VERSION.SDK_INT >= 28) DropdownMenuItem(
                                 { Text(stringResource(R.string.transfer_ownership)) },
                                 {
@@ -404,7 +410,10 @@ fun WorkModesScreen(
                     Text(stringResource(R.string.confirm))
                 }
             },
-            onDismissRequest = {}
+            onDismissRequest = {
+                dialog = 0
+                if(operationSucceed && !params.canNavigateUp) onActivate()
+            }
         )
         if(dialog == 4) AlertDialog(
             title = { Text(stringResource(R.string.deactivate)) },
@@ -422,6 +431,7 @@ fun WorkModesScreen(
                                 dpm.clearProfileOwner(ComponentName(context, Receiver::class.java))
                             }
                         }
+                        dialog = 0
                         updatePrivilege(context)
                         handlePrivilegeChange(context)
                         onDeactivate()
@@ -498,7 +508,7 @@ fun activateUsingDhizuku(context: Context, callback: (Boolean, Boolean, String?)
             callback(true, false, null)
         }
     }
-    if(Dhizuku.init()) {
+    if(Dhizuku.init(context)) {
         if(Dhizuku.isPermissionGranted()) {
             doTransfer()
         } else {
@@ -519,7 +529,7 @@ fun activateDhizukuMode(context: Context, callback: (Boolean, Boolean, String?) 
         SharedPrefs(context).dhizuku = true
         callback(true, true, null)
     }
-    if(Dhizuku.init()) {
+    if(Dhizuku.init(context)) {
         if(Dhizuku.isPermissionGranted()) {
             onSucceed()
         } else {

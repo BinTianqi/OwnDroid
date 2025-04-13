@@ -19,7 +19,7 @@ class SharedPrefs(context: Context) {
     /** -1: follow system, 0: off, 1: on */
     var darkTheme by IntSharedPref("theme.dark", -1)
     var blackTheme by BooleanSharedPref("theme.black")
-    var lockPassword by StringSharedPref("lock.password")
+    var lockPasswordHash by StringSharedPref("lock.password.sha256")
     var biometricsUnlock by BooleanSharedPref("lock.biometrics")
     var applicationsListView by BooleanSharedPref("applications.list_view", true)
 }
