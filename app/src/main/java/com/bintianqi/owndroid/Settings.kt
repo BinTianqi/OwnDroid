@@ -44,6 +44,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
+import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.ui.FunctionItem
@@ -85,12 +86,21 @@ fun SettingsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
 
 @Composable
 fun SettingsOptionsScreen(onNavigateUp: () -> Unit) {
-    val sp = SharedPrefs(LocalContext.current)
+    val context = LocalContext.current
+    val sp = SharedPrefs(context)
     MyScaffold(R.string.options, onNavigateUp, 0.dp) {
         SwitchItem(
             R.string.show_dangerous_features, icon = R.drawable.warning_fill0,
             getState = { sp.displayDangerousFeatures },
             onCheckedChange = { sp.displayDangerousFeatures = it }
+        )
+        SwitchItem(
+            R.string.shortcuts, icon = R.drawable.open_in_new,
+            getState = { sp.shortcuts }, onCheckedChange = {
+                sp.shortcuts = it
+                ShortcutManagerCompat.removeAllDynamicShortcuts(context)
+                createShortcuts(context)
+            }
         )
     }
 }

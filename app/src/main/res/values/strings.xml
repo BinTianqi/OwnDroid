@@ -126,18 +126,22 @@
     <!--System-->
     <string name="system">System</string>
     <string name="disable_cam">Disable camera</string>
+    <string name="enable_camera">Enable camera</string>
     <string name="disable_screen_capture">Disable screen capture</string>
     <string name="disable_status_bar">Disable status bar</string>
     <string name="auto_time">Auto time</string>
     <string name="require_auto_time">Require auto time</string>
     <string name="auto_timezone">Auto timezone</string>
     <string name="master_mute">Master volume mute</string>
+    <string name="mute">Mute</string>
+    <string name="unmute">Unmute</string>
     <string name="backup_service">Backup service</string>
     <string name="disable_bt_contact_share">Disable bluetooth contact sharing</string>
     <string name="common_criteria_mode">Common criteria mode</string>
     <string name="disable_usb_signal">Disable USB signal</string>
     <string name="keyguard">Keyguard</string>
     <string name="lock_now">Lock screen now</string>
+    <string name="lock_screen">Lock screen</string>
     <string name="evict_credential_encryption_key">Evict credential encryption key</string>
     <string name="hardware_monitor">Hardware monitor</string>
     <string name="refresh_interval">Refresh interval</string>
@@ -584,6 +588,7 @@
     <string name="project_homepage">Project homepage</string>
     <string name="appearance">Appearance</string>
 
+    <string name="shortcuts">Shortcuts</string>
     <string name="app_lock">App lock</string>
     <string name="minimum_length_4">The length must not be less than 4</string>
     <string name="leave_empty_to_remain_unchanged">Leave empty to remain unchanged</string>

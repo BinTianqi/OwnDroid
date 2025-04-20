@@ -22,12 +22,14 @@ import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
+import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.ShortcutsReceiverActivity
 import com.bintianqi.owndroid.backToHomeStateFlow
+import com.bintianqi.owndroid.createShortcuts
 import com.bintianqi.owndroid.myPrivilege
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.Dhizuku.binderWrapper
@@ -520,26 +522,17 @@ fun parsePackageInstallerMessage(context: Context, result: Intent): String {
 fun handlePrivilegeChange(context: Context) {
     val privilege = myPrivilege.value
     val activated = privilege.device || privilege.profile
+    val sp = SharedPrefs(context)
     if(activated) {
+        createShortcuts(context)
         if(!privilege.dhizuku) {
             setDefaultAffiliationID(context)
-            if(VERSION.SDK_INT >= 25) {
-                val sm = context.getSystemService(ShortcutManager::class.java)
-                val lockIntent = Intent("com.bintianqi.owndroid.action.LOCK")
-                    .setComponent(ComponentName(context, ShortcutsReceiverActivity::class.java))
-                val shortcut = ShortcutInfo.Builder(context, "LockScreen")
-                    .setShortLabel(context.getString(R.string.lock_now))
-                    .setIcon(Icon.createWithBitmap(context.getDrawable(R.drawable.screen_lock_portrait_fill0)?.toBitmap()))
-                    .setIntent(lockIntent)
-                sm.addDynamicShortcuts(listOf(shortcut.build()))
-            }
         }
     } else {
-        SharedPrefs(context).isDefaultAffiliationIdSet = false
+        sp.isDefaultAffiliationIdSet = false
         if(VERSION.SDK_INT >= 25) {
-            val sm = context.getSystemService(ShortcutManager::class.java)
-            sm.removeDynamicShortcuts(listOf("LockScreen"))
+            ShortcutManagerCompat.removeAllDynamicShortcuts(context)
         }
-        SharedPrefs(context).isApiEnabled = false
+        sp.isApiEnabled = false
     }
 }

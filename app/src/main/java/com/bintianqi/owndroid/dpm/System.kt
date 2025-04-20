@@ -122,6 +122,7 @@ import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.NotificationUtils
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SharedPrefs
+import com.bintianqi.owndroid.createShortcuts
 import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.humanReadableDate
 import com.bintianqi.owndroid.myPrivilege
@@ -250,8 +251,11 @@ fun SystemOptionsScreen(onNavigateUp: () -> Unit) {
     val privilege by myPrivilege.collectAsStateWithLifecycle()
     var dialog by remember { mutableIntStateOf(0) }
     MyScaffold(R.string.options, onNavigateUp, 0.dp) {
-        SwitchItem(R.string.disable_cam, icon = R.drawable.photo_camera_fill0,
-            getState = { dpm.getCameraDisabled(null) }, onCheckedChange = { dpm.setCameraDisabled(receiver,it) }
+        SwitchItem(R.string.disable_cam, icon = R.drawable.no_photography_fill0,
+            getState = { dpm.getCameraDisabled(null) }, onCheckedChange = {
+                dpm.setCameraDisabled(receiver, it)
+                createShortcuts(context)
+            }
         )
         SwitchItem(R.string.disable_screen_capture, icon = R.drawable.screenshot_fill0,
             getState = { dpm.getScreenCaptureDisabled(null) }, onCheckedChange = { dpm.setScreenCaptureDisabled(receiver,it) }
@@ -275,7 +279,10 @@ fun SystemOptionsScreen(onNavigateUp: () -> Unit) {
             }
         }
         SwitchItem(R.string.master_mute, icon = R.drawable.volume_off_fill0,
-            getState = { dpm.isMasterVolumeMuted(receiver) }, onCheckedChange = { dpm.setMasterVolumeMuted(receiver,it) }
+            getState = { dpm.isMasterVolumeMuted(receiver) }, onCheckedChange = {
+                dpm.setMasterVolumeMuted(receiver,it)
+                createShortcuts(context)
+            }
         )
         if(VERSION.SDK_INT >= 26) {
             SwitchItem(R.string.backup_service, icon = R.drawable.backup_fill0,
