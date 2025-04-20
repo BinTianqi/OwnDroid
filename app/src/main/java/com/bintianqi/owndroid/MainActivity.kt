@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
@@ -27,12 +26,13 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -40,7 +40,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -159,10 +159,8 @@ import com.bintianqi.owndroid.dpm.PasswordInfoScreen
 import com.bintianqi.owndroid.dpm.PasswordScreen
 import com.bintianqi.owndroid.dpm.PermissionPolicy
 import com.bintianqi.owndroid.dpm.PermissionPolicyScreen
-import com.bintianqi.owndroid.dpm.Permissions
 import com.bintianqi.owndroid.dpm.PermissionsManager
 import com.bintianqi.owndroid.dpm.PermissionsManagerScreen
-import com.bintianqi.owndroid.dpm.PermissionsScreen
 import com.bintianqi.owndroid.dpm.PermittedAccessibilityServices
 import com.bintianqi.owndroid.dpm.PermittedAccessibilityServicesScreen
 import com.bintianqi.owndroid.dpm.PermittedInputMethods
@@ -333,9 +331,6 @@ fun Home(vm: MyViewModel) {
             })
         }
 
-        composable<Permissions> {
-            PermissionsScreen(::navigateUp) { navController.navigate(it) }
-        }
         composable<DelegatedAdmins> { DelegatedAdminsScreen(::navigateUp, ::navigate) }
         composable<AddDelegatedAdmin>{ AddDelegatedAdminScreen(it.toRoute(), ::navigateUp) }
         composable<DeviceInfo> { DeviceInfoScreen(::navigateUp) }
@@ -488,9 +483,15 @@ fun Home(vm: MyViewModel) {
         }
     }
     DisposableEffect(lifecycleOwner) {
+        val sp = SharedPrefs(context)
         val observer = LifecycleEventObserver { _, event ->
-            if(event == Lifecycle.Event.ON_CREATE && !SharedPrefs(context).lockPasswordHash.isNullOrEmpty()) {
-                navController.navigate(AppLock)
+            if (
+                (event == Lifecycle.Event.ON_CREATE && !sp.lockPasswordHash.isNullOrEmpty()) ||
+                (event == Lifecycle.Event.ON_RESUME && sp.lockWhenLeaving)
+            ) {
+                navController.navigate(AppLock) {
+                    launchSingleTop = true
+                }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -518,55 +519,22 @@ fun Home(vm: MyViewModel) {
 private fun HomeScreen(onNavigate: (Any) -> Unit) {
     val context = LocalContext.current
     val privilege by myPrivilege.collectAsStateWithLifecycle()
-    val activateType = (if(privilege.dhizuku) context.getString(R.string.dhizuku) + " - " else "") +
-            context.getString(
-                if(privilege.device) R.string.device_owner
-                else if(privilege.work) R.string.work_profile_owner
-                else if(privilege.profile) R.string.profile_owner
-                else R.string.click_to_activate
-            )
+    val sb = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
+        Modifier.nestedScroll(sb.nestedScrollConnection),
         topBar = {
-            TopAppBar(
-                {}, actions = {
+            LargeTopAppBar(
+                { Text(stringResource(R.string.app_name)) },
+                actions = {
                     IconButton({ onNavigate(WorkModes(true)) }) { Icon(painterResource(R.drawable.security_fill0), null) }
                     IconButton({ onNavigate(Settings) }) { Icon(Icons.Default.Settings, null) }
-                }
+                },
+                scrollBehavior = sb
             )
         }
     ) {
-        Column(modifier = Modifier.padding(it).verticalScroll(rememberScrollState())) {
-            Spacer(Modifier.padding(vertical = 8.dp))
-            Text(
-                text = stringResource(R.string.app_name), style = typography.headlineLarge,
-                modifier = Modifier.padding(start = HorizontalPadding)
-            )
-            Spacer(Modifier.padding(vertical = 8.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp, horizontal = HorizontalPadding)
-                    .clip(RoundedCornerShape(15))
-                    .background(color = colorScheme.primary)
-                    .clickable(onClick = { onNavigate(Permissions) })
-                    .padding(vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                val activated = privilege.device || privilege.profile
-                Icon(
-                    painterResource(if(activated) R.drawable.check_circle_fill1 else R.drawable.block_fill0), null,
-                    Modifier.padding(start = 14.dp), colorScheme.onPrimary
-                )
-                Column(Modifier.padding(start = 12.dp)) {
-                    Text(
-                        text = stringResource(if(activated) R.string.activated else R.string.deactivated),
-                        style = typography.headlineSmall,
-                        color = colorScheme.onPrimary,
-                        modifier = Modifier.padding(bottom = 2.dp)
-                    )
-                    if(activateType != "") { Text(text = activateType, color = colorScheme.onPrimary) }
-                }
-            }
+        Column(Modifier.fillMaxSize().padding(it).verticalScroll(rememberScrollState())) {
+            Spacer(Modifier.padding(vertical = 6.dp))
             if(privilege.device || privilege.profile) {
                 HomePageItem(R.string.system, R.drawable.android_fill0) { onNavigate(SystemManager) }
                 HomePageItem(R.string.network, R.drawable.wifi_fill0) { onNavigate(Network) }

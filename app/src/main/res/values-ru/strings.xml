@@ -72,7 +72,6 @@
     <string name="timeout">Таймаут</string>
 
     <!--Разрешения-->
-    <string name="click_to_activate">Нажмите для активации</string>
     <string name="profile_owner">Владелец профиля</string>
     <string name="device_owner">Владелец устройства</string>
     <string name="delegated_admins">Делегированные администраторы</string>
@@ -327,7 +326,6 @@
 
     <!--Рабочий профиль-->
     <string name="work_profile">Рабочий профиль</string>
-    <string name="work_profile_owner">Владелец профиля (рабочий профиль)</string>
     <string name="work_profile_activated">Рабочий профиль активирован</string>
     <string name="create_work_profile">Создать рабочий профиль</string>
     <string name="offline_provisioning">Автономный режим</string>
@@ -632,7 +630,6 @@
 
     <!--TODO: events notification-->
 
-    <string name="info_dhizuku">Dhizuku это инструмент позволяющий делиться правами Владельца устройства с другими приложениями.</string>
     <string name="info_device_id_attestation">Указывает, поддерживает ли устройство проверку идентификаторов устройств в дополнение к проверке ключей.</string>
     <string name="info_unique_device_attestation">Да, если реализация StrongBox Keymaster на устройстве была обеспечена индивидуальным сертификатом аттестации и может использовать его для подписи записей аттестации (индивидуальный сертификат аттестации могут использовать только Keymaster с уровнем безопасности StrongBox).</string>
     <string name="info_org_id">Устанавливает идентификатор предприятия (Enterprise ID). Это необходимо для создания идентификатора устройства, специфичного для регистрации.</string>

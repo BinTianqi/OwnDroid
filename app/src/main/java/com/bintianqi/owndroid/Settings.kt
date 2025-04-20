@@ -173,6 +173,7 @@ fun AppLockSettingsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.app_lo
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var allowBiometrics by remember { mutableStateOf(sp.biometricsUnlock) }
+    var lockWhenLeaving by remember { mutableStateOf(sp.lockWhenLeaving) }
     val fr = FocusRequester()
     val alreadySet = !sp.lockPasswordHash.isNullOrEmpty()
     val isInputLegal = password.length !in 1..3 && (alreadySet || (password.isNotEmpty() && password.isNotBlank()))
@@ -194,11 +195,16 @@ fun AppLockSettingsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.app_lo
             Text(stringResource(R.string.allow_biometrics))
             Switch(allowBiometrics, { allowBiometrics = it })
         }
+        Row(Modifier.fillMaxWidth().padding(bottom = 6.dp), Arrangement.SpaceBetween, Alignment.CenterVertically) {
+            Text(stringResource(R.string.lock_when_leaving))
+            Switch(lockWhenLeaving, { lockWhenLeaving = it })
+        }
         Button(
             onClick = {
                 fm.clearFocus()
                 if(password.isNotEmpty()) sp.lockPasswordHash = password.hash()
                 sp.biometricsUnlock = allowBiometrics
+                sp.lockWhenLeaving = lockWhenLeaving
                 onNavigateUp()
             },
             modifier = Modifier.fillMaxWidth(),
@@ -211,6 +217,7 @@ fun AppLockSettingsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.app_lo
                 fm.clearFocus()
                 sp.lockPasswordHash = ""
                 sp.biometricsUnlock = false
+                sp.lockWhenLeaving = false
                 onNavigateUp()
             },
             modifier = Modifier.fillMaxWidth()

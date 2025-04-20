@@ -69,7 +69,6 @@
     <string name="timeout">超时</string>
 
     <!--Permissions-->
-    <string name="click_to_activate">点击以激活</string>
     <string name="profile_owner">Profile owner</string>
     <string name="device_owner">Device owner</string>
     <string name="delegated_admins">委托管理员</string>
@@ -322,7 +321,6 @@
 
     <!--WorkProfile-->
     <string name="work_profile">工作资料</string>
-    <string name="work_profile_owner">Profile owner（工作资料）</string>
     <string name="work_profile_activated">工作资料已激活</string>
     <string name="create_work_profile">创建工作资料</string>
     <string name="offline_provisioning">离线模式</string>
@@ -560,6 +558,7 @@
     <string name="minimum_length_4">长度不得小于4</string>
     <string name="leave_empty_to_remain_unchanged">留空以保持未更改</string>
     <string name="allow_biometrics">允许生物识别</string>
+    <string name="lock_when_leaving">离开时锁定</string>
     <string name="unlock">解锁</string>
     <string name="security">安全性</string>
     <string name="clear_storage">清除存储空间</string>
@@ -636,7 +635,6 @@
     <string name="system_update_pending">系统更新等待中</string>
     <string name="received_time">接收时间</string>
 
-    <string name="info_dhizuku">Dhizuku可以分享Device owner权限给其余应用</string>
     <string name="info_device_id_attestation">指示设备是否除了密钥证明之外还支持设备标识符证明</string>
     <string name="info_unique_device_attestation">如果设备上的StrongBox Keymaster可以配置单独的证明证书并且可以使用该证书签署证明记录，则返回true（只有StrongBox安全级别的Keymaster才能使用单独的证明证书进行证明）</string>
     <string name="info_org_id">设置组织ID后才能获取设备注册专用ID</string>

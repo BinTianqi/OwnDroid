@@ -71,7 +71,6 @@
     <string name="timeout">Zaman Aşımı</string>
 
     <!--Permissions-->
-    <string name="click_to_activate">Etkinleştirmek için Tıklayın</string>
     <string name="profile_owner">Profil Sahibi</string>
     <string name="device_owner">Cihaz Sahibi</string>
     <string name="delegated_admins">Yetkilendirilmiş Yöneticiler</string>
@@ -321,7 +320,6 @@
 
     <!--WorkProfile-->
     <string name="work_profile">İş Profili</string>
-    <string name="work_profile_owner">Profil Sahibi (İş Profili)</string>
     <string name="work_profile_activated">İş Profili Etkinleştirildi</string>
     <string name="create_work_profile">İş Profili Oluştur</string>
     <string name="offline_provisioning">Çevrimdışı Sağlama</string>
@@ -619,7 +617,6 @@
 
     <!--TODO: events notification-->
 
-    <string name="info_dhizuku">Dhizuku, Cihaz Sahibi izinlerini diğer uygulamalarla paylaşabilen bir araçtır.</string>
     <string name="info_device_id_attestation">Cihazın, anahtar doğrulamanın yanı sıra cihaz tanımlayıcılarının doğrulamasını destekleyip desteklemediğini belirtir.</string>
     <string name="info_unique_device_attestation">Evet, eğer cihaz üzerindeki StrongBox Keymaster uygulaması bireysel bir doğrulama sertifikası ile sağlanmışsa ve bunu kullanarak doğrulama kayıtlarını imzalayabiliyorsa (yalnızca StrongBox güvenlik seviyesine sahip Keymaster bireysel doğrulama sertifikası kullanabilir).</string>
     <string name="info_org_id">Kurumsal Kimliği ayarlar. Bu, cihaz için kayıt özel bir kimlik oluşturmak için bir gerekliliktir.</string>

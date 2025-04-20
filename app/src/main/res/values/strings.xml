@@ -74,7 +74,6 @@
     <string name="timeout">Timeout</string>
 
     <!--Permissions-->
-    <string name="click_to_activate">Click to activate</string>
     <string name="profile_owner">Profile owner</string>
     <string name="device_owner">Device owner</string>
     <string name="delegated_admins">Delegated admins</string>
@@ -353,7 +352,6 @@
 
     <!--WorkProfile-->
     <string name="work_profile">Work Profile</string>
-    <string name="work_profile_owner">Profile owner (Work profile)</string>
     <string name="work_profile_activated">Work profile activated</string>
     <string name="create_work_profile">Create work profile</string>
     <string name="offline_provisioning">Offline mode</string>
@@ -593,6 +591,7 @@
     <string name="minimum_length_4">The length must not be less than 4</string>
     <string name="leave_empty_to_remain_unchanged">Leave empty to remain unchanged</string>
     <string name="allow_biometrics">Allow biometrics</string>
+    <string name="lock_when_leaving">Lock when leaving</string>
     <string name="unlock">Unlock</string>
     <string name="security">Security</string>
     <string name="clear_storage">Clear storage</string>
@@ -669,8 +668,7 @@
     <string name="bug_report_failure_no_longer_available">Bug report is no longer available for collection</string>
     <string name="system_update_pending">System update pending</string>
     <string name="received_time">Received time</string>
-    
-    <string name="info_dhizuku">Dhizuku is a tool that can share Device owner permissions to other application.</string>
+
     <string name="info_device_id_attestation">Indicates if the device supports attestation of device identifiers in addition to key attestation.</string>
     <string name="info_unique_device_attestation">Yes if the StrongBox Keymaster implementation on the device was provisioned with an individual attestation certificate and can sign attestation records using it (only Keymaster with StrongBox security level can use an individual attestation certificate).</string>
     <string name="info_org_id">Sets the Enterprise ID. This is a requirement for generating an enrollment-specific ID for the device.</string>

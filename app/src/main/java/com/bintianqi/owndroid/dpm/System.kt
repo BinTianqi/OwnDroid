@@ -152,7 +152,6 @@ import java.security.cert.X509Certificate
 import java.util.Date
 import java.util.TimeZone
 import java.util.concurrent.Executors
-import kotlin.collections.addAll
 import kotlin.math.roundToLong
 
 @Serializable object SystemManager
@@ -164,7 +163,11 @@ fun SystemManagerScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val receiver = context.getReceiver()
     val sp = SharedPrefs(context)
     val privilege by myPrivilege.collectAsStateWithLifecycle()
+    /** 1: reboot, 2: bug report, 3: org name, 4: org id, 5: enrollment specific id*/
     var dialog by remember { mutableIntStateOf(0) }
+    var enrollmentSpecificId by remember {
+        mutableStateOf(if (VERSION.SDK_INT >= 31 && (privilege.device || privilege.profile)) dpm.enrollmentSpecificId else "")
+    }
     MyScaffold(R.string.system, onNavigateUp, 0.dp) {
         FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { onNavigate(SystemOptions) }
         FunctionItem(R.string.keyguard, icon = R.drawable.screen_lock_portrait_fill0) { onNavigate(Keyguard) }
@@ -200,6 +203,22 @@ fun SystemManagerScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
         if(VERSION.SDK_INT >= 26 && !privilege.dhizuku && (privilege.device || privilege.org)) {
             FunctionItem(R.string.security_logging, icon = R.drawable.description_fill0) { onNavigate(SecurityLogging) }
         }
+        FunctionItem(R.string.device_info, icon = R.drawable.perm_device_information_fill0) { onNavigate(DeviceInfo) }
+        if(VERSION.SDK_INT >= 24 && (privilege.profile || (VERSION.SDK_INT >= 26 && privilege.device))) {
+            FunctionItem(R.string.org_name, icon = R.drawable.corporate_fare_fill0) { dialog = 3 }
+        }
+        if(VERSION.SDK_INT >= 31) {
+            FunctionItem(R.string.org_id, icon = R.drawable.corporate_fare_fill0) { dialog = 4 }
+        }
+        if(enrollmentSpecificId != "") {
+            FunctionItem(R.string.enrollment_specific_id, icon = R.drawable.id_card_fill0) { dialog = 5 }
+        }
+        if(VERSION.SDK_INT >= 24 && (privilege.device || privilege.org)) {
+            FunctionItem(R.string.lock_screen_info, icon = R.drawable.screen_lock_portrait_fill0) { onNavigate(LockScreenInfo) }
+        }
+        if(VERSION.SDK_INT >= 24) {
+            FunctionItem(R.string.support_messages, icon = R.drawable.chat_fill0) { onNavigate(SupportMessage) }
+        }
         FunctionItem(R.string.disable_account_management, icon = R.drawable.account_circle_fill0) { onNavigate(DisableAccountManagement) }
         if(VERSION.SDK_INT >= 23 && (privilege.device || privilege.org)) {
             FunctionItem(R.string.system_update_policy, icon = R.drawable.system_update_fill0) { onNavigate(SetSystemUpdatePolicy) }
@@ -214,7 +233,7 @@ fun SystemManagerScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
             FunctionItem(R.string.wipe_data, icon = R.drawable.device_reset_fill0) { onNavigate(WipeData) }
         }
     }
-    if(dialog != 0 &&VERSION.SDK_INT >= 24) AlertDialog(
+    if((dialog == 1 || dialog == 2) && VERSION.SDK_INT >= 24) AlertDialog(
         onDismissRequest = { dialog = 0 },
         title = { Text(stringResource(if(dialog == 1) R.string.reboot else R.string.bug_report)) },
         text = { Text(stringResource(if(dialog == 1) R.string.info_reboot else R.string.confirm_bug_report)) },
@@ -239,6 +258,65 @@ fun SystemManagerScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
         },
         modifier = Modifier.fillMaxWidth()
     )
+    if(dialog in 3..5) {
+        var input by remember { mutableStateOf("") }
+        AlertDialog(
+            text = {
+                val focusMgr = LocalFocusManager.current
+                LaunchedEffect(Unit) {
+                    if(dialog == 5 && VERSION.SDK_INT >= 31) input = dpm.enrollmentSpecificId
+                }
+                Column {
+                    OutlinedTextField(
+                        input, { input = it },
+                        Modifier.fillMaxWidth().padding(bottom = if (dialog != 3) 8.dp else 0.dp),
+                        readOnly = dialog == 5,
+                        label = {
+                            Text(stringResource(
+                                when(dialog){
+                                    3 -> R.string.org_name
+                                    4 -> R.string.org_id
+                                    5 -> R.string.enrollment_specific_id
+                                    else -> R.string.place_holder
+                                }
+                            ))
+                        },
+                        supportingText = {
+                            if(dialog == 4) Text(stringResource(R.string.length_6_to_64))
+                        },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions { focusMgr.clearFocus() },
+                        textStyle = typography.bodyLarge
+                    )
+                    if(dialog == 5) Text(stringResource(R.string.info_enrollment_specific_id))
+                    if(dialog == 4) Text(stringResource(R.string.info_org_id))
+                }
+            },
+            onDismissRequest = { dialog = 0 },
+            dismissButton = {
+                if (dialog != 5) TextButton({ dialog = 0 }) { Text(stringResource(R.string.cancel)) }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        try {
+                            if (dialog == 3 && VERSION.SDK_INT >= 24) dpm.setOrganizationName(receiver, input)
+                            if (dialog == 4 && VERSION.SDK_INT >= 31) {
+                                dpm.setOrganizationId(input)
+                                enrollmentSpecificId = dpm.enrollmentSpecificId
+                            }
+                            dialog = 0
+                        } catch(_: IllegalStateException) {
+                            Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    enabled = dialog != 4 || input.length in 6..64
+                ) {
+                    Text(stringResource(R.string.confirm))
+                }
+            }
+        )
+    }
 }
 
 @Serializable object SystemOptions
@@ -482,7 +560,9 @@ fun ChangeTimeScreen(onNavigateUp: () -> Unit) {
     if(timeInteractionSource.collectIsPressedAsState().value) picker = 2
     MyScaffold(R.string.change_time, onNavigateUp) {
         SingleChoiceSegmentedButtonRow(
-            modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp)
         ) {
             val coroutine = rememberCoroutineScope()
             SegmentedButton(
@@ -524,7 +604,9 @@ fun ChangeTimeScreen(onNavigateUp: () -> Unit) {
                         onValueChange = {}, readOnly = true,
                         label = { Text(stringResource(R.string.time)) },
                         interactionSource = timeInteractionSource,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
                     )
                     Button(
                         onClick = {
@@ -551,7 +633,9 @@ fun ChangeTimeScreen(onNavigateUp: () -> Unit) {
                             val timeMillis = inputTime.toLong()
                             context.showOperationResultToast(dpm.setTime(receiver, timeMillis))
                         },
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
                         enabled = inputTime.toLongOrNull() != null
                     ) {
                         Text(stringResource(R.string.apply))
@@ -851,7 +935,9 @@ fun ContentProtectionPolicyScreen(onNavigateUp: () -> Unit) {
                 refresh()
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = HorizontalPadding)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp, horizontal = HorizontalPadding)
         ) {
             Text(stringResource(R.string.apply))
         }
@@ -884,7 +970,9 @@ fun PermissionPolicyScreen(onNavigateUp: () -> Unit) {
                 dpm.setPermissionPolicy(receiver,selectedPolicy)
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = HorizontalPadding)
         ) {
             Text(stringResource(R.string.apply))
         }
@@ -916,7 +1004,9 @@ fun MtePolicyScreen(onNavigateUp: () -> Unit) {
                 }
                 selectedMtePolicy = dpm.mtePolicy
             },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = HorizontalPadding)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp, horizontal = HorizontalPadding)
         ) {
             Text(stringResource(R.string.apply))
         }
@@ -953,7 +1043,9 @@ fun NearbyStreamingPolicyScreen(onNavigateUp: () -> Unit) {
                 appPolicy = dpm.nearbyAppStreamingPolicy
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = HorizontalPadding)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp, horizontal = HorizontalPadding)
         ) {
             Text(stringResource(R.string.apply))
         }
@@ -985,7 +1077,9 @@ fun NearbyStreamingPolicyScreen(onNavigateUp: () -> Unit) {
                 notificationPolicy = dpm.nearbyNotificationStreamingPolicy
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = HorizontalPadding)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp, horizontal = HorizontalPadding)
         ) {
             Text(stringResource(R.string.apply))
         }
@@ -1013,7 +1107,9 @@ fun LockTaskModeScreen(onNavigateUp: () -> Unit) {
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(paddingValues)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
             TabRow(tabIndex) {
                 Tab(
@@ -1032,14 +1128,21 @@ fun LockTaskModeScreen(onNavigateUp: () -> Unit) {
             HorizontalPager(pagerState, verticalAlignment = Alignment.Top) { page ->
                 if(page == 0 || page == 1) {
                     Column(
-                        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = HorizontalPadding).padding(bottom = 80.dp)
+                        Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = HorizontalPadding)
+                            .padding(bottom = 80.dp)
                     ) {
                         if(page == 0) StartLockTaskMode()
                         else LockTaskPackages()
                     }
                 } else {
                     Column(
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 80.dp)
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(bottom = 80.dp)
                     ) {
                         LockTaskFeatures()
                     }
@@ -1075,7 +1178,9 @@ private fun ColumnScope.StartLockTaskMode() {
                     .clickable { choosePackage.launch(null) }
                     .padding(3.dp))
         },
-        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 3.dp)
     )
     CheckBoxItem(R.string.specify_activity, specifyActivity) { specifyActivity = it }
     AnimatedVisibility(specifyActivity) {
@@ -1085,7 +1190,9 @@ private fun ColumnScope.StartLockTaskMode() {
             label = { Text("Activity") },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 5.dp)
         )
     }
     Button(
@@ -1144,7 +1251,9 @@ private fun ColumnScope.LockTaskPackages() {
                     .clickable { choosePackage.launch(null) }
                     .padding(3.dp))
         },
-        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 3.dp)
     )
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Button(
@@ -1214,7 +1323,9 @@ private fun ColumnScope.LockTaskFeatures() {
         }
     }
     Button(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = HorizontalPadding),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp, horizontal = HorizontalPadding),
         onClick = {
             try {
                 dpm.setLockTaskFeatures(receiver, flags)
@@ -1297,15 +1408,21 @@ fun CaCertScreen(onNavigateUp: () -> Unit) {
         }
     ) { paddingValues ->
         LazyColumn(
-            Modifier.fillMaxSize().padding(paddingValues),
+            Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             items(caCerts, { it.hash }) { cert ->
                 Column(
-                    Modifier.fillMaxWidth().clickable{
-                        caCertByteArray = cert.data
-                        dialog = 2
-                    }.animateItem().padding(vertical = 10.dp, horizontal = 8.dp)
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            caCertByteArray = cert.data
+                            dialog = 2
+                        }
+                        .animateItem()
+                        .padding(vertical = 10.dp, horizontal = 8.dp)
                 ) {
                     Text(cert.hash.substring(0..7))
                 }
@@ -1339,7 +1456,9 @@ fun CaCertScreen(onNavigateUp: () -> Unit) {
                         SelectionContainer {
                             Text(text)
                         }
-                        if(dialog == 2) Row(Modifier.fillMaxWidth().padding(top = 4.dp), Arrangement.SpaceBetween) {
+                        if(dialog == 2) Row(Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp), Arrangement.SpaceBetween) {
                             TextButton(
                                 onClick = {
                                     dpm.uninstallCaCert(receiver, caCertByteArray)
@@ -1511,7 +1630,9 @@ fun DisableAccountManagementScreen(onNavigateUp: () -> Unit) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(R.string.add))
                 }
             },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() })
         )
@@ -1553,15 +1674,20 @@ fun FrpPolicyScreen(onNavigateUp: () -> Unit) {
     MyScaffold(R.string.frp_policy, onNavigateUp) {
         if(unsupported) {
             Column(
-                Modifier.fillMaxWidth().padding(vertical = 8.dp)
-                    .clip(RoundedCornerShape(8.dp)).background(colorScheme.primaryContainer)
+                Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(colorScheme.primaryContainer)
             ) {
                 Text(stringResource(R.string.frp_not_supported), Modifier.padding(8.dp), color = colorScheme.onPrimaryContainer)
             }
         } else {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 6.dp, vertical = 8.dp)
             ) {
                 Text(stringResource(R.string.use_policy), style = typography.titleLarge)
                 Switch(checked = usePolicy, onCheckedChange = { usePolicy = it })
@@ -1607,7 +1733,9 @@ fun FrpPolicyScreen(onNavigateUp: () -> Unit) {
                     .build()
                 dpm.setFactoryResetProtectionPolicy(receiver, policy)
             },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
         ) {
             Text(stringResource(R.string.apply))
         }
@@ -1639,7 +1767,9 @@ fun WipeDataScreen(onNavigateUp: () -> Unit) {
             OutlinedTextField(
                 value = reason, onValueChange = { reason = it },
                 label = { Text(stringResource(R.string.reason)) },
-                modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 3.dp)
             )
         }
         Spacer(Modifier.padding(vertical = 5.dp))
@@ -1752,7 +1882,9 @@ fun SystemUpdatePolicyScreen(onNavigateUp: () -> Unit) {
         var windowedPolicyEnd by remember { mutableStateOf("") }
         AnimatedVisibility(selectedPolicy == 2) {
             Column(Modifier.padding(horizontal = HorizontalPadding)) {
-                Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), Arrangement.SpaceBetween) {
+                Row(Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp), Arrangement.SpaceBetween) {
                     OutlinedTextField(
                         value = windowedPolicyStart,
                         label = { Text(stringResource(R.string.start_time)) },
@@ -1767,7 +1899,9 @@ fun SystemUpdatePolicyScreen(onNavigateUp: () -> Unit) {
                         label = { Text(stringResource(R.string.end_time)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-                        modifier = Modifier.fillMaxWidth(0.96F).padding(bottom = 2.dp)
+                        modifier = Modifier
+                            .fillMaxWidth(0.96F)
+                            .padding(bottom = 2.dp)
                     )
                 }
                 Text(stringResource(R.string.minutes_in_one_day), color = colorScheme.onSurfaceVariant, style = typography.bodyMedium)
@@ -1785,7 +1919,9 @@ fun SystemUpdatePolicyScreen(onNavigateUp: () -> Unit) {
                 dpm.setSystemUpdatePolicy(receiver,policy)
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = HorizontalPadding)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp, horizontal = HorizontalPadding)
         ) {
             Text(stringResource(R.string.apply))
         }
@@ -1838,7 +1974,9 @@ fun InstallSystemUpdateScreen(onNavigateUp: () -> Unit) {
             onClick = {
                 getFileLauncher.launch("application/zip")
             },
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
         ) {
             Text(stringResource(R.string.select_ota_package))
         }

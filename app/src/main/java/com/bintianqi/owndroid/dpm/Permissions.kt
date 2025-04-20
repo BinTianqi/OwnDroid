@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build.VERSION
 import android.os.PersistableBundle
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
@@ -83,7 +82,6 @@ import com.bintianqi.owndroid.Settings
 import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.showOperationResultToast
-import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.InfoItem
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.MySmallTitleScaffold
@@ -91,127 +89,12 @@ import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.updatePrivilege
 import com.bintianqi.owndroid.useShizuku
-import com.bintianqi.owndroid.writeClipBoard
 import com.bintianqi.owndroid.yesOrNo
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-
-@Serializable object Permissions
-
-@Composable
-fun PermissionsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
-    var dialog by remember { mutableIntStateOf(0) }
-    var bindingShizuku by remember { mutableStateOf(false) }
-    val enrollmentSpecificId = if(VERSION.SDK_INT >= 31 && (privilege.device || privilege.profile)) dpm.enrollmentSpecificId else ""
-    MyScaffold(R.string.permissions, onNavigateUp, 0.dp) {
-        if(VERSION.SDK_INT >= 26) FunctionItem(R.string.delegated_admins) { onNavigate(DelegatedAdmins) }
-        FunctionItem(R.string.device_info, icon = R.drawable.perm_device_information_fill0) { onNavigate(DeviceInfo) }
-        if(VERSION.SDK_INT >= 24 && (privilege.profile || (VERSION.SDK_INT >= 26 && privilege.device))) {
-            FunctionItem(R.string.org_name, icon = R.drawable.corporate_fare_fill0) { dialog = 2 }
-        }
-        if(VERSION.SDK_INT >= 31) {
-            FunctionItem(R.string.org_id, icon = R.drawable.corporate_fare_fill0) { dialog = 3 }
-        }
-        if(enrollmentSpecificId != "") {
-            FunctionItem(R.string.enrollment_specific_id, icon = R.drawable.id_card_fill0) { dialog = 1 }
-        }
-        if(VERSION.SDK_INT >= 24 && (privilege.device || privilege.org)) {
-            FunctionItem(R.string.lock_screen_info, icon = R.drawable.screen_lock_portrait_fill0) { onNavigate(LockScreenInfo) }
-        }
-        if(VERSION.SDK_INT >= 24) {
-            FunctionItem(R.string.support_messages, icon = R.drawable.chat_fill0) { onNavigate(SupportMessage) }
-        }
-    }
-    if(bindingShizuku) {
-        Dialog(onDismissRequest = { bindingShizuku = false }) {
-            CircularProgressIndicator()
-        }
-    }
-    if(dialog != 0) {
-        var input by remember { mutableStateOf("") }
-        AlertDialog(
-            title = {
-                Text(stringResource(
-                    when(dialog){
-                        1 -> R.string.enrollment_specific_id
-                        2 -> R.string.org_name
-                        3 -> R.string.org_id
-                        4 -> R.string.dhizuku
-                        else -> R.string.permissions
-                    }
-                ))
-            },
-            text = {
-                val focusMgr = LocalFocusManager.current
-                LaunchedEffect(Unit) {
-                    if(dialog == 1 && VERSION.SDK_INT >= 31) input = dpm.enrollmentSpecificId
-                }
-                Column {
-                    if(dialog != 4) OutlinedTextField(
-                        value = input,
-                        onValueChange = { input = it }, readOnly = dialog == 1,
-                        label = {
-                            Text(stringResource(
-                                when(dialog){
-                                    1 -> R.string.enrollment_specific_id
-                                    2 -> R.string.org_name
-                                    3 -> R.string.org_id
-                                    else -> R.string.permissions
-                                }
-                            ))
-                        },
-                        trailingIcon = {
-                            if(dialog == 1) IconButton(onClick = { writeClipBoard(context, input) }) {
-                                Icon(painter = painterResource(R.drawable.content_copy_fill0), contentDescription = stringResource(R.string.copy))
-                            }
-                        },
-                        supportingText = {
-                            if(dialog == 3) Text(stringResource(R.string.length_6_to_64))
-                        },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions { focusMgr.clearFocus() },
-                        textStyle = typography.bodyLarge,
-                        modifier = Modifier.fillMaxWidth().padding(bottom = if(dialog == 2) 0.dp else 10.dp)
-                    )
-                    if(dialog == 1) Text(stringResource(R.string.info_enrollment_specific_id))
-                    if(dialog == 3) Text(stringResource(R.string.info_org_id))
-                    if(dialog == 4) Text(stringResource(R.string.info_dhizuku))
-                }
-            },
-            onDismissRequest = { dialog = 0 },
-            dismissButton = {
-                if(dialog != 4) TextButton(
-                    onClick = { dialog = 0 }
-                ) {
-                    Text(stringResource(R.string.cancel))
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        try {
-                            if(dialog == 2 && VERSION.SDK_INT >= 24) dpm.setOrganizationName(receiver, input)
-                            if(dialog == 3 && VERSION.SDK_INT >= 31) dpm.setOrganizationId(input)
-                            dialog = 0
-                        } catch(_: IllegalStateException) {
-                            Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    enabled = (dialog == 3 && input.length in 6..64) || dialog != 3
-                ) {
-                    Text(stringResource(R.string.confirm))
-                }
-            }
-        )
-    }
-}
 
 @Serializable data class WorkModes(val canNavigateUp: Boolean)
 
@@ -254,7 +137,14 @@ fun WorkModesScreen(
                                     dialog = 4
                                 }
                             )
-                            if(!privilege.dhizuku && VERSION.SDK_INT >= 28) DropdownMenuItem(
+                            if (VERSION.SDK_INT >= 26) DropdownMenuItem(
+                                { Text(stringResource(R.string.delegated_admins)) },
+                                {
+                                    expanded = false
+                                    onNavigate(DelegatedAdmins)
+                                }
+                            )
+                            if (!privilege.dhizuku && VERSION.SDK_INT >= 28) DropdownMenuItem(
                                 { Text(stringResource(R.string.transfer_ownership)) },
                                 {
                                     expanded = false

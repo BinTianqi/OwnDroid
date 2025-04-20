@@ -21,6 +21,7 @@ class SharedPrefs(context: Context) {
     var blackTheme by BooleanSharedPref("theme.black")
     var lockPasswordHash by StringSharedPref("lock.password.sha256")
     var biometricsUnlock by BooleanSharedPref("lock.biometrics")
+    var lockWhenLeaving by BooleanSharedPref("lock.onleave")
     var applicationsListView by BooleanSharedPref("applications.list_view", true)
     var shortcuts by BooleanSharedPref("shortcuts", true)
 }
