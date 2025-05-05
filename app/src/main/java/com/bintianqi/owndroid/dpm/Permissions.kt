@@ -1,10 +1,19 @@
 package com.bintianqi.owndroid.dpm
 
+import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Build.VERSION
+import android.os.Bundle
+import android.os.Handler
+import android.os.IBinder
+import android.os.Looper
+import android.os.Message
+import android.os.Messenger
 import android.os.PersistableBundle
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.annotation.Keep
@@ -15,6 +24,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,7 +48,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -71,7 +81,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
+import androidx.core.os.bundleOf
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.ChoosePackageContract
 import com.bintianqi.owndroid.HorizontalPadding
@@ -82,6 +92,7 @@ import com.bintianqi.owndroid.Settings
 import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.showOperationResultToast
+import com.bintianqi.owndroid.ui.CircularProgressDialog
 import com.bintianqi.owndroid.ui.InfoItem
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.MySmallTitleScaffold
@@ -93,12 +104,16 @@ import com.bintianqi.owndroid.yesOrNo
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
 import com.topjohnwu.superuser.Shell
+import com.topjohnwu.superuser.ipc.RootService
+import dalvik.system.DexClassLoader
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import java.lang.invoke.MethodHandles
+import java.lang.reflect.Proxy
 
 @Serializable data class WorkModes(val canNavigateUp: Boolean)
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun WorkModesScreen(
     params: WorkModes, onNavigateUp: () -> Unit, onActivate: () -> Unit, onDeactivate: () -> Unit,
@@ -107,7 +122,7 @@ fun WorkModesScreen(
     val context = LocalContext.current
     val coroutine = rememberCoroutineScope()
     val privilege by myPrivilege.collectAsStateWithLifecycle()
-    /** 0: none, 1: device owner, 2: circular progress indicator, 3: result, 4: deactivate, 5: command */
+    /** 0: none, 1: device owner, 2: circular progress indicator, 3: result, 4: deactivate, 5: command, 6: force activating warning */
     var dialog by remember { mutableIntStateOf(0) }
     Scaffold(
         topBar = {
@@ -160,6 +175,7 @@ fun WorkModesScreen(
             )
         }
     ) { paddingValues ->
+        var navigateUpOnSucceed by remember { mutableStateOf(true) }
         var operationSucceed by remember { mutableStateOf(false) }
         var resultText by remember { mutableStateOf("") }
         fun handleResult(succeeded: Boolean, activateSucceeded: Boolean, output: String?) {
@@ -253,7 +269,7 @@ fun WorkModesScreen(
         if(dialog == 1) AlertDialog(
             title = { Text(stringResource(R.string.activate_method)) },
             text = {
-                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                FlowRow(Modifier.fillMaxWidth()) {
                     if(!privilege.dhizuku) Button({
                         dialog = 2
                         coroutine.launch {
@@ -262,19 +278,28 @@ fun WorkModesScreen(
                     }) {
                         Text(stringResource(R.string.shizuku))
                     }
+                    Spacer(Modifier.padding(horizontal = 2.dp))
                     if(!privilege.dhizuku) Button({
                         dialog = 2
                         activateUsingRoot(context, ::handleResult)
                     }) {
                         Text("Root")
                     }
+                    Spacer(Modifier.padding(horizontal = 2.dp))
                     if(VERSION.SDK_INT >= 28) Button({
                         dialog = 2
                         activateUsingDhizuku(context, ::handleResult)
                     }) {
                         Text(stringResource(R.string.dhizuku))
                     }
+                    Spacer(Modifier.padding(horizontal = 2.dp))
                     Button({ dialog = 5 }) { Text(stringResource(R.string.adb_command)) }
+                    Spacer(Modifier.padding(horizontal = 2.dp))
+                    if (VERSION.SDK_INT == 35) Button({
+                        dialog = 6
+                    }) {
+                        Text(stringResource(R.string.root_force_activate))
+                    }
                 }
             },
             confirmButton = {
@@ -282,9 +307,7 @@ fun WorkModesScreen(
             },
             onDismissRequest = { dialog = 0 }
         )
-        if(dialog == 2) Dialog({}) {
-            CircularProgressIndicator()
-        }
+        if(dialog == 2) CircularProgressDialog {  }
         if(dialog == 3) AlertDialog(
             title = { Text(stringResource(if(operationSucceed) R.string.succeeded else R.string.failed)) },
             text = {
@@ -295,15 +318,12 @@ fun WorkModesScreen(
             confirmButton = {
                 TextButton({
                     dialog = 0
-                    if(operationSucceed && !params.canNavigateUp) onActivate()
+                    if(navigateUpOnSucceed && operationSucceed && !params.canNavigateUp) onActivate()
                 }) {
                     Text(stringResource(R.string.confirm))
                 }
             },
-            onDismissRequest = {
-                dialog = 0
-                if(operationSucceed && !params.canNavigateUp) onActivate()
-            }
+            onDismissRequest = {}
         )
         if(dialog == 4) AlertDialog(
             title = { Text(stringResource(R.string.deactivate)) },
@@ -342,6 +362,23 @@ fun WorkModesScreen(
             },
             confirmButton = {
                 TextButton({ dialog = 0 }) { Text(stringResource(R.string.confirm)) }
+            },
+            onDismissRequest = { dialog = 0 }
+        )
+        if (dialog == 6) AlertDialog(
+            title = { Text(stringResource(R.string.warning)) },
+            text = { Text(stringResource(R.string.info_force_activate)) },
+            confirmButton = {
+                TextButton({
+                    dialog = 2
+                    navigateUpOnSucceed = false
+                    forceActivateUsingRoot(context, ::handleResult)
+                }) {
+                    Text(stringResource(R.string.continue_str))
+                }
+            },
+            dismissButton = {
+                TextButton({ dialog = 0 }) { Text(stringResource(R.string.cancel)) }
             },
             onDismissRequest = { dialog = 0 }
         )
@@ -411,6 +448,75 @@ fun activateUsingDhizuku(context: Context, callback: (Boolean, Boolean, String?)
         }
     } else {
         callback(true, false, context.getString(R.string.failed_to_init_dhizuku))
+    }
+}
+
+fun forceActivateUsingRoot(context: Context, callback: (Boolean, Boolean, String?) -> Unit) {
+    val connection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val handler = Handler(Looper.getMainLooper()) { msg ->
+                RootService.unbind(this)
+                val data = msg.data
+                val output = if (data.getBoolean("succeed")) context.getString(R.string.please_reboot) else null
+                callback(!data.getBoolean("error"), data.getBoolean("succeed"), output)
+                return@Handler true
+            }
+            val msg = Message()
+            msg.replyTo = Messenger(handler)
+            Messenger(service).send(msg)
+        }
+        override fun onServiceDisconnected(name: ComponentName?) {}
+    }
+    val intent = Intent(context, ForceActivateService::class.java)
+    RootService.bind(intent, connection)
+}
+
+@RequiresApi(26)
+class ForceActivateService(): RootService() {
+    override fun onBind(intent: Intent): IBinder = messenger.binder
+    val handler = Handler(Looper.getMainLooper()) { msg ->
+        val replyMessage = Message()
+        try {
+            replyMessage.data = activateDeviceOwnerAsRoot(getReceiver()).apply { putBoolean("error", false) }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            replyMessage.data = bundleOf("error" to true, "succeed" to false)
+        }
+        msg.replyTo.send(replyMessage)
+        return@Handler false
+    }
+    val messenger = Messenger(handler)
+}
+
+@SuppressLint("PrivateApi")
+@RequiresApi(26)
+fun activateDeviceOwnerAsRoot(cn: ComponentName): Bundle {
+    val dcl = DexClassLoader(
+        "/system/framework/services.jar", "/data/local/tmp", null, ClassLoader.getSystemClassLoader()
+    )
+    val ppp = dcl.loadClass("com.android.server.devicepolicy.PolicyPathProvider")
+    val pppProxy = Proxy.newProxyInstance(ppp.classLoader, arrayOf(ppp)) { obj, method, args ->
+        method.isAccessible = true
+        val mh = MethodHandles.lookup().`in`(ppp).unreflectSpecial(method, ppp).bindTo(obj)
+        return@newProxyInstance if (args == null) {
+            mh.invokeWithArguments()
+        } else {
+            mh.invokeWithArguments(*args)
+        }
+    }
+    val od = dcl.loadClass("com.android.server.devicepolicy.OwnersData")
+    val odIns = od.getConstructor(ppp).apply { isAccessible = true }.newInstance(pppProxy)
+    val oi = dcl.loadClass("com.android.server.devicepolicy.OwnersData\$OwnerInfo")
+    val oiIns = oi.constructors[0].apply { isAccessible = true }.newInstance(cn, null, null, true)
+    od.getField("mDeviceOwner").apply { isAccessible = true }.set(odIns, oiIns)
+    od.getField("mDeviceOwnerUserId").apply { isAccessible = true }.set(odIns, 0)
+    val setDoResult = od.getMethod("writeDeviceOwner").apply { isAccessible = true }.invoke(odIns) as Boolean
+    return if (setDoResult) {
+        val proc = Runtime.getRuntime().exec("dpm set-active-admin ${cn.flattenToShortString()}")
+        proc.waitFor()
+        bundleOf("succeed" to true)
+    } else {
+        bundleOf("succeed" to false)
     }
 }
 

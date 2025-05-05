@@ -67,6 +67,7 @@
     <string name="features">功能</string>
     <string name="default_str">默认</string>
     <string name="timeout">超时</string>
+    <string name="continue_str">继续</string>
 
     <!--Permissions-->
     <string name="profile_owner">Profile owner</string>
@@ -685,11 +686,14 @@
     <string name="info_max_failed_password_other_user">如果设置为大于零的值，将会在输入一定次数的错误的锁屏密码后清除当前用户的所有数据</string>
     <string name="info_password_history_length">设置后，用户将无法输入与历史记录中任何密码相同的新密码。当前密码将保留，直到用户设置新密码为止，因此更改不会立即生效。值为0表示不做限制。</string>
     <string name="info_required_strong_auth_timeout">如果用户在这段时间内没有使用强认证（密码、PIN或图案）解锁设备，则要求使用强认证解锁设备。值为0表示OwnDroid不参与控制超时。一般来说，最少1小时，最多72小时。</string>
-    <string name="info_deactivate">OwnDroid will lost its privilege</string>
+    <string name="info_deactivate">OwnDroid将会丢失特权</string>
+    <string name="info_force_activate">强行激活可能无法在你的设备上使用，它甚至有可能会损坏你的设备，你应该仅在其他方法无法使用时尝试此方法。</string>
 
     <string name="choose_work_mode">选择一个工作模式</string>
     <string name="recommended">推荐</string>
     <string name="activate_method">激活方法</string>
     <string name="adb_command">ADB命令</string>
-    <string name="owndroid_warning">此应用使用Device owner和Profile owner特权。这些特权十分危险，请谨慎使用。如果操作不当，可能会造成严重损失。开发者将不会对此负责。</string>
+    <string name="root_force_activate">Root (强行激活)</string>
+    <string name="owndroid_warning">此应用使用Device owner或Profile owner特权。这些特权十分危险，请谨慎使用。如果操作不当，可能会造成严重损失。开发者将不会对此负责。</string>
+    <string name="please_reboot">请重启你的设备</string>
 </resources>

@@ -72,6 +72,7 @@
     <string name="features">Features</string>
     <string name="default_str">Default</string>
     <string name="timeout">Timeout</string>
+    <string name="continue_str">Continue</string>
 
     <!--Permissions-->
     <string name="profile_owner">Profile owner</string>
@@ -720,10 +721,13 @@
     <string name="info_password_history_length">After setting this, the user will not be able to enter a new password that is the same as any password in the history. Note that the current password will remain until the user has set a new one, so the change does not take place immediately.\nA value of 0 means there is no restriction.</string>
     <string name="info_required_strong_auth_timeout">Determine for how long the user will be able to use secondary, non strong auth for authentication, since last strong method authentication (password, pin or pattern) was used. After the returned timeout the user is required to use strong authentication method.\nA value of 0 means the admin is not participating in controlling the timeout. The minimum and maximum timeouts are platform-defined and are typically 1 hour and 72 hours, respectively.</string>
     <string name="info_deactivate">OwnDroid will lost its privilege</string>
+    <string name="info_force_activate">Force activation may not work and it may damage your device. This method should only be used when you can\'t use other methods.</string>
 
     <string name="choose_work_mode">Choose a work mode</string>
     <string name="recommended">Recommended</string>
     <string name="activate_method">Activate method</string>
     <string name="adb_command">ADB command</string>
-    <string name="owndroid_warning">This app uses Device owner and Profile owner privileges. These privileges are extremely dangerous, please use them with caution. If used improperly, they may result in severe losses. The developers will not be responsible for this.</string>
+    <string name="root_force_activate">Root (force activate)</string>
+    <string name="owndroid_warning">This app uses Device owner or Profile owner privileges. These privileges are extremely dangerous, please use them with caution. If used improperly, they may result in severe losses. The developers will not be responsible for this.</string>
+    <string name="please_reboot">Please reboot your device</string>
 </resources>

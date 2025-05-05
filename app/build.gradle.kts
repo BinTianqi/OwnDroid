@@ -95,6 +95,7 @@ dependencies {
     implementation(libs.androidx.fragment)
     implementation(libs.hiddenApiBypass)
     implementation(libs.libsu)
+    implementation(libs.libsu.service)
     implementation(libs.serialization)
     implementation(kotlin("reflect"))
 }

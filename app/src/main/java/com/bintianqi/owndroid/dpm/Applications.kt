@@ -115,7 +115,7 @@ fun LazyItemScope.ApplicationItem(info: AppInfo, onClear: () -> Unit) {
         Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp).animateItem(),
         Arrangement.SpaceBetween, Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth(0.87F), verticalAlignment = Alignment.CenterVertically) {
             Image(
                 painter = rememberDrawablePainter(info.icon), contentDescription = null,
                 modifier = Modifier.padding(start = 12.dp, end = 18.dp).size(30.dp)

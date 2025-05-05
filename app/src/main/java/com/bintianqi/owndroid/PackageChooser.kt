@@ -47,6 +47,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -107,9 +108,9 @@ fun AppChooserScreen(params: ApplicationsList, onChoosePackage: (String?) -> Uni
     val coroutine = rememberCoroutineScope()
     val context = LocalContext.current
     var progress by remember { mutableFloatStateOf(1F) }
-    var system by remember { mutableStateOf(false) }
-    var query by remember { mutableStateOf("") }
-    var searchMode by remember { mutableStateOf(false) }
+    var system by rememberSaveable { mutableStateOf(false) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var searchMode by rememberSaveable { mutableStateOf(false) }
     val filteredPackages = packages.filter {
         system == (it.flags and ApplicationInfo.FLAG_SYSTEM != 0) &&
                 (query.isEmpty() || (searchInString(query, it.label) || searchInString(query, it.name)))
@@ -189,7 +190,10 @@ fun AppChooserScreen(params: ApplicationsList, onChoosePackage: (String?) -> Uni
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onChoosePackage(it.name) }
+                        .clickable {
+                            focusMgr.clearFocus()
+                            onChoosePackage(it.name)
+                        }
                         .padding(horizontal = 8.dp, vertical = 10.dp)
                         .animateItem()
                 ) {

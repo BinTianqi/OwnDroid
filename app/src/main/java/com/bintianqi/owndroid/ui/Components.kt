@@ -24,7 +24,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,6 +55,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.zhCN
@@ -377,4 +380,13 @@ fun ErrorDialog(message: String?, onDismiss: () -> Unit) {
         },
         onDismissRequest = onDismiss
     )
+}
+
+@Composable
+fun CircularProgressDialog(onDismiss: () -> Unit) {
+    Dialog(onDismiss) {
+        Card {
+            CircularProgressIndicator(Modifier.padding(16.dp))
+        }
+    }
 }

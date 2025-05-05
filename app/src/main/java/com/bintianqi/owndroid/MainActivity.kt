@@ -534,7 +534,6 @@ private fun HomeScreen(onNavigate: (Any) -> Unit) {
         }
     ) {
         Column(Modifier.fillMaxSize().padding(it).verticalScroll(rememberScrollState())) {
-            Spacer(Modifier.padding(vertical = 6.dp))
             if(privilege.device || privilege.profile) {
                 HomePageItem(R.string.system, R.drawable.android_fill0) { onNavigate(SystemManager) }
                 HomePageItem(R.string.network, R.drawable.wifi_fill0) { onNavigate(Network) }

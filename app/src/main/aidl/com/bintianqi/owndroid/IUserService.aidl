@@ -1,6 +1,5 @@
 package com.bintianqi.owndroid;
 
-import android.accounts.Account;
 import android.os.Bundle;
 
 interface IUserService {
