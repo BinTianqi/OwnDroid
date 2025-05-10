@@ -57,6 +57,8 @@ AndroidのDevice owner特権を使用してデバイスを管理します。
 ## アクティベート
 
 - Shizuku (推奨)
+- Dhizuku
+- Root
 - adbシェルでコマンドを実行: `dpm set-device-owner com.bintianqi.owndroid/.Receiver`
 
 ## FAQ
@@ -72,7 +74,6 @@ java.lang.IllegalStateException: Not allowed to set the device owner because the
 解決策：
 - これらのアカウントを保持しているアプリを凍結します。
 - これらのアカウントを削除します。
-- LSPosedモジュール [HookDPM](https://github.com/BinTianqi/HookDPM) を使用します。
 
 #### デバイスに既に複数のユーザーが存在する場合
 
@@ -82,7 +83,6 @@ java.lang.IllegalStateException: Not allowed to set the device owner because the
 
 解決策：
 - セカンダリユーザーを削除します。
-- LSPosedモジュール [HookDPM](https://github.com/BinTianqi/HookDPM) を使用します。
 
 > [!NOTE]
 > 一部のシステムにはアプリのクローンや子供用スペースなどの機能があり、通常はユーザーとして扱われます。
@@ -108,14 +108,15 @@ java.lang.IllegalStateException: Unexpected @ProvisioningPreCondition
 ## API
 
 | ID                     | Extras        | 最小Androidバージョン |
-|------------------------|---------------|:---------------------:|
-| HIDE                   | `package`     |                       |
-| UNHIDE                 | `package`     |                       |
-| SUSPEND                | `package`     |           7           |
-| UNSUSPEND              | `package`     |           7           |
-| ADD_USER_RESTRICTION   | `restriction` |                       |
-| CLEAR_USER_RESTRICTION | `restriction` |                       |
-| LOCK                   |               |                       |
+|------------------------|---------------|:--------------:|
+| HIDE                   | `package`     |                |
+| UNHIDE                 | `package`     |                |
+| SUSPEND                | `package`     |       7        |
+| UNSUSPEND              | `package`     |       7        |
+| ADD_USER_RESTRICTION   | `restriction` |                |
+| CLEAR_USER_RESTRICTION | `restriction` |                |
+| LOCK                   |               |                |
+| REBOOT                 |               |       7        |
 
 [利用可能なユーザー制限](https://developer.android.com/reference/android/os/UserManager#constants_1)
 

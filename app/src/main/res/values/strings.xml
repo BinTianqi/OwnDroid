@@ -105,7 +105,7 @@
     <string name="account_type">Account type</string>
     <string name="transfer_ownership">Transfer Ownership</string>
     <string name="target_component_name">Target component name</string>
-    <string name="lock_screen_info">Lockscreen info</string>
+    <string name="lock_screen_info">Lock screen info</string>
     <string name="support_messages">Support Messages</string>
     <string name="short_support_msg">Short message</string>
     <string name="long_support_msg">Long message</string>

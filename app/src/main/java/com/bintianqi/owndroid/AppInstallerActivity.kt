@@ -63,8 +63,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -80,7 +80,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.URLDecoder
-import androidx.core.net.toUri
 
 class AppInstallerActivity:FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -181,7 +180,7 @@ private fun AppInstaller(
             ResultDialog(result, onResultDialogClose)
         }
     }
-    if(appLockDialog) Dialog({ appLockDialog = false }) {
+    if(appLockDialog) {
         AppLockDialog({
             appLockDialog = false
             onStartInstall()

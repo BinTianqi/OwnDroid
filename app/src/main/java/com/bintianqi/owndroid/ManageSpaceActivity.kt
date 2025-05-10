@@ -13,12 +13,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.window.Dialog
+import androidx.core.content.edit
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import kotlin.system.exitProcess
-import androidx.core.content.edit
 
 class ManageSpaceActivity: FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,9 +29,7 @@ class ManageSpaceActivity: FragmentActivity() {
             OwnDroidTheme(theme) {
                 var appLockDialog by remember { mutableStateOf(!SharedPrefs(this).lockPasswordHash.isNullOrEmpty()) }
                 if(appLockDialog) {
-                    Dialog(::finish) {
-                        AppLockDialog({ appLockDialog = false }, ::finish)
-                    }
+                    AppLockDialog({ appLockDialog = false }, ::finish)
                 } else {
                     AlertDialog(
                         text = {

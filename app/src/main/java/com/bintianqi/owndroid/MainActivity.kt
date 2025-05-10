@@ -1,7 +1,6 @@
 package com.bintianqi.owndroid
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.os.Build.VERSION
 import android.os.Bundle
 import android.widget.Toast
@@ -38,6 +37,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -47,7 +49,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
@@ -57,7 +58,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.bintianqi.owndroid.dpm.AddApnSetting
@@ -257,9 +257,13 @@ class MainActivity : FragmentActivity() {
         val vm by viewModels<MyViewModel>()
         lifecycleScope.launch { delay(5000); setDefaultAffiliationID(context) }
         setContent {
+            var appLockDialog by rememberSaveable { mutableStateOf(false) }
             val theme by vm.theme.collectAsStateWithLifecycle()
             OwnDroidTheme(theme) {
-                Home(vm)
+                Home(vm) { appLockDialog = true }
+                if (appLockDialog) {
+                    AppLockDialog({ appLockDialog = false }) { moveTaskToBack(true) }
+                }
             }
         }
     }
@@ -282,7 +286,7 @@ class MainActivity : FragmentActivity() {
 
 @ExperimentalMaterial3Api
 @Composable
-fun Home(vm: MyViewModel) {
+fun Home(vm: MyViewModel, onLock: () -> Unit) {
     val navController = rememberNavController()
     val context = LocalContext.current
     val receiver = context.getReceiver()
@@ -477,10 +481,6 @@ fun Home(vm: MyViewModel) {
         composable<ApiSettings> { ApiSettings(::navigateUp) }
         composable<Notifications> { NotificationsScreen(::navigateUp) }
         composable<About> { AboutScreen(::navigateUp) }
-
-        dialog<AppLock>(dialogProperties = DialogProperties(false, false)) {
-            AppLockDialog(::navigateUp) { (context as? Activity)?.moveTaskToBack(true) }
-        }
     }
     DisposableEffect(lifecycleOwner) {
         val sp = SharedPrefs(context)
@@ -489,9 +489,7 @@ fun Home(vm: MyViewModel) {
                 (event == Lifecycle.Event.ON_CREATE && !sp.lockPasswordHash.isNullOrEmpty()) ||
                 (event == Lifecycle.Event.ON_RESUME && sp.lockWhenLeaving)
             ) {
-                navController.navigate(AppLock) {
-                    launchSingleTop = true
-                }
+                onLock()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)

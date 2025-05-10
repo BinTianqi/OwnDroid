@@ -1,9 +1,9 @@
 [versions]
-agp = "8.9.1"
+agp = "8.9.2"
 kotlin = "2.1.20"
 
-navigation-compose = "2.8.9"
-composeBom = "2025.04.00"
+navigation-compose = "2.9.0"
+composeBom = "2025.05.00"
 accompanist-drawablepainter = "0.35.0-alpha"
 accompanist-permissions = "0.37.0"
 shizuku = "13.1.5"

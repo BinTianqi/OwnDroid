@@ -22,14 +22,15 @@ class ApiReceiver: BroadcastReceiver() {
             if(!app.isNullOrEmpty()) log += "\npackage: $app"
             try {
                 @SuppressWarnings("NewApi")
-                val ok = when(intent.action) {
-                    "com.bintianqi.owndroid.action.HIDE" -> dpm.setApplicationHidden(receiver, app, true)
-                    "com.bintianqi.owndroid.action.UNHIDE" -> dpm.setApplicationHidden(receiver, app, false)
-                    "com.bintianqi.owndroid.action.SUSPEND" -> dpm.setPackagesSuspended(receiver, arrayOf(app), true).isEmpty()
-                    "com.bintianqi.owndroid.action.UNSUSPEND" -> dpm.setPackagesSuspended(receiver, arrayOf(app), false).isEmpty()
-                    "com.bintianqi.owndroid.action.ADD_USER_RESTRICTION" -> { dpm.addUserRestriction(receiver, restriction); true }
-                    "com.bintianqi.owndroid.action.CLEAR_USER_RESTRICTION" -> { dpm.clearUserRestriction(receiver, restriction); true }
-                    "com.bintianqi.owndroid.action.LOCK" -> { dpm.lockNow(); true }
+                val ok = when(intent.action?.removePrefix("com.bintianqi.owndroid.action.")) {
+                    "HIDE" -> dpm.setApplicationHidden(receiver, app, true)
+                    "UNHIDE" -> dpm.setApplicationHidden(receiver, app, false)
+                    "SUSPEND" -> dpm.setPackagesSuspended(receiver, arrayOf(app), true).isEmpty()
+                    "UNSUSPEND" -> dpm.setPackagesSuspended(receiver, arrayOf(app), false).isEmpty()
+                    "ADD_USER_RESTRICTION" -> { dpm.addUserRestriction(receiver, restriction); true }
+                    "CLEAR_USER_RESTRICTION" -> { dpm.clearUserRestriction(receiver, restriction); true }
+                    "LOCK" -> { dpm.lockNow(); true }
+                    "REBOOT" -> { dpm.reboot(receiver); true }
                     else -> {
                         log += "\nInvalid action"
                         false

@@ -16,6 +16,7 @@ Use Android Device owner privilege to manage your device.
 
 - System
   - Options: disable camera, disable screenshot, master volume mute, disable USB signal...
+  - Lock task mode
   - Manage CA certificates
   - _Wipe data_
   - ...
@@ -33,8 +34,9 @@ Use Android Device owner privilege to manage your device.
 - Applications
   - Suspend/hide app
   - Block app uninstallation
-  - Install/uninstall app
   - Grant/revoke permissions
+  - Clear app storage
+  - Install/uninstall app
   - ...
 - User restriction
   - Network: disable configuring mobile network, disable configuring Wi-Fi, disable SMS, disable outgoing calls...
@@ -57,6 +59,8 @@ Use Android Device owner privilege to manage your device.
 ## Activate
 
 - Shizuku (recommended)
+- Dhizuku
+- Root
 - Execute command in adb shell: `dpm set-device-owner com.bintianqi.owndroid/.Receiver`
 
 ## FAQ
@@ -72,7 +76,6 @@ java.lang.IllegalStateException: Not allowed to set the device owner because the
 Solutions:
 - Freeze apps who hold those accounts.
 - Delete these accounts.
-- Use LSPosed module [HookDPM](https://github.com/BinTianqi/HookDPM).
 
 #### Already several users on the device
 
@@ -82,7 +85,6 @@ java.lang.IllegalStateException: Not allowed to set the device owner because the
 
 Solutions:
 - Delete secondary users.
-- Use LSPosed module [HookDPM](https://github.com/BinTianqi/HookDPM).
 
 > [!NOTE]
 > Some systems have features such as app cloning and children space, which are usually users.
@@ -116,6 +118,7 @@ Solution: Use OwnDroid testkey version
 | ADD_USER_RESTRICTION   | `restriction` |                         |
 | CLEAR_USER_RESTRICTION | `restriction` |                         |
 | LOCK                   |               |                         |
+| REBOOT                 |               |            7            |
 
 [Available user restrictions](https://developer.android.com/reference/android/os/UserManager#constants_1)
 

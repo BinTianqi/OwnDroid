@@ -16,6 +16,7 @@
 
 - 系统
   - 选项：禁用摄像头、禁止截屏、全局静音、禁用USB信号...
+  - 锁定任务模式
   - 管理CA证书
   - _清除数据_
   - ...
@@ -33,8 +34,9 @@
 - 应用管理
   - 挂起/隐藏应用
   - 阻止应用卸载
-  - 安装/卸载应用
   - 授予/撤销权限
+  - 清除应用存储
+  - 安装/卸载应用
   - ...
 - 用户限制
   - 网络：禁止配置移动网络、禁止配置Wi-Fi、禁用短信、禁止拨出电话...
@@ -57,6 +59,8 @@
 ## 激活
 
 - Shizuku (推荐)
+- Dhizuku
+- Root
 - 在ADB命令行中执行命令: `dpm set-device-owner com.bintianqi.owndroid/.Receiver`
 
 ## FAQ
@@ -72,7 +76,6 @@ java.lang.IllegalStateException: Not allowed to set the device owner because the
 解决办法：
 - 冻结持有这些账号的app。
 - 删除这些账号。
-- 使用LSPosed模块 [HookDPM](https://github.com/BinTianqi/HookDPM)。
 
 #### 设备上有多个用户
 
@@ -82,7 +85,6 @@ java.lang.IllegalStateException: Not allowed to set the device owner because the
 
 解决办法：
 - 删除次级用户。
-- 使用LSPosed模块[HookDPM](https://github.com/BinTianqi/HookDPM)。
 
 > [!NOTE]
 > 一些系统有应用克隆、儿童空间等功能，它们通常是用户。
@@ -116,6 +118,7 @@ java.lang.IllegalStateException: Unexpected @ProvisioningPreCondition
 | ADD_USER_RESTRICTION   | `restriction` |        |
 | CLEAR_USER_RESTRICTION | `restriction` |        |
 | LOCK                   |               |        |
+| REBOOT                 |               |   7    |
 
 [可用的用户限制](https://developer.android.google.cn/reference/android/os/UserManager#constants_1)
 
