@@ -32,7 +32,6 @@ import com.bintianqi.owndroid.backToHomeStateFlow
 import com.bintianqi.owndroid.createShortcuts
 import com.bintianqi.owndroid.myPrivilege
 import com.rosan.dhizuku.api.Dhizuku
-import com.rosan.dhizuku.api.Dhizuku.binderWrapper
 import com.rosan.dhizuku.api.DhizukuBinderWrapper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.encodeToString
@@ -73,7 +72,7 @@ fun binderWrapperDevicePolicyManager(appContext: Context): DevicePolicyManager? 
         val oldInterface = field[manager] as IDevicePolicyManager
         if (oldInterface is DhizukuBinderWrapper) return manager
         val oldBinder = oldInterface.asBinder()
-        val newBinder = binderWrapper(oldBinder)
+        val newBinder = Dhizuku.binderWrapper(oldBinder)
         val newInterface = IDevicePolicyManager.Stub.asInterface(newBinder)
         field[manager] = newInterface
         return manager
@@ -93,7 +92,7 @@ private fun binderWrapperPackageInstaller(appContext: Context): PackageInstaller
         val oldInterface = field[installer] as IPackageInstaller
         if (oldInterface is DhizukuBinderWrapper) return installer
         val oldBinder = oldInterface.asBinder()
-        val newBinder = binderWrapper(oldBinder)
+        val newBinder = Dhizuku.binderWrapper(oldBinder)
         val newInterface = IPackageInstaller.Stub.asInterface(newBinder)
         field[installer] = newInterface
         return installer
@@ -107,7 +106,6 @@ fun Context.getPackageInstaller(): PackageInstaller {
     if(SharedPrefs(this).dhizuku) {
         if (!dhizukuPermissionGranted()) {
             dhizukuErrorStatus.value = 2
-            backToHomeStateFlow.value = true
             return this.packageManager.packageInstaller
         }
         return binderWrapperPackageInstaller(this) ?: this.packageManager.packageInstaller
@@ -120,7 +118,6 @@ fun Context.getDPM(): DevicePolicyManager {
     if(SharedPrefs(this).dhizuku) {
         if (!dhizukuPermissionGranted()) {
             dhizukuErrorStatus.value = 2
-            backToHomeStateFlow.value = true
             return this.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         }
         return binderWrapperDevicePolicyManager(this) ?: this.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager

@@ -295,7 +295,7 @@ fun WorkModesScreen(
                     Spacer(Modifier.padding(horizontal = 2.dp))
                     Button({ dialog = 5 }) { Text(stringResource(R.string.adb_command)) }
                     Spacer(Modifier.padding(horizontal = 2.dp))
-                    if (VERSION.SDK_INT == 35) Button({
+                    if (VERSION.SDK_INT >= 33) Button({
                         dialog = 6
                     }) {
                         Text(stringResource(R.string.root_force_activate))
@@ -575,6 +575,7 @@ fun LockScreenInfoScreen(onNavigateUp: () -> Unit) {
             onClick = {
                 focusMgr.clearFocus()
                 dpm.setDeviceOwnerLockScreenInfo(receiver, null)
+                infoText = ""
                 context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()

@@ -1,7 +1,6 @@
 package com.bintianqi.owndroid
 
 import android.app.Application
-import android.os.Bundle
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -9,7 +8,6 @@ import kotlinx.coroutines.launch
 
 class MyViewModel(application: Application): AndroidViewModel(application) {
     val theme = MutableStateFlow(ThemeSettings())
-    val userRestrictions = MutableStateFlow(Bundle())
 
     init {
         val sp = SharedPrefs(application)

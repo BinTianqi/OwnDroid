@@ -10,8 +10,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -73,14 +77,30 @@ data class UserRestrictionOptions(
 @RequiresApi(24)
 @Composable
 fun UserRestrictionOptionsScreen(
-    data: UserRestrictionOptions, restrictions: Bundle,
-    onNavigateUp: () -> Unit, onRestrictionChange: (String, Boolean) -> Unit
+    data: UserRestrictionOptions, onNavigateUp: () -> Unit
 ) {
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
+    val status = remember { mutableStateMapOf<String, Boolean>() }
+    LaunchedEffect(Unit) {
+        val restrictions = dpm.getUserRestrictions(receiver)
+        data.items.forEach {
+            status.put(it.id, restrictions.getBoolean(it.id))
+        }
+    }
     MyScaffold(data.title, onNavigateUp, 0.dp) {
         data.items.filter { Build.VERSION.SDK_INT >= it.requiresApi }.forEach { restriction ->
             SwitchItem(
-                restriction.name, restriction.id, restriction.icon,
-                restrictions.getBoolean(restriction.id), { onRestrictionChange(restriction.id, it) }, padding = true
+                restriction.name, restriction.id, restriction.icon, status[restriction.id] == true,
+                {
+                    if (it) {
+                        dpm.addUserRestriction(receiver, restriction.id)
+                    } else {
+                        dpm.clearUserRestriction(receiver, restriction.id)
+                    }
+                    status[restriction.id] = dpm.getUserRestrictions(receiver).getBoolean(restriction.id)
+                }, padding = true
             )
         }
     }

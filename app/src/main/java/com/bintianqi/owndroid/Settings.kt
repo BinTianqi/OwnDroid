@@ -12,20 +12,29 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -49,6 +59,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.MyScaffold
+import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.SwitchItem
 import kotlinx.serialization.Serializable
@@ -59,6 +70,7 @@ import java.util.Locale
 
 @Serializable object Settings
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val context = LocalContext.current
@@ -66,19 +78,55 @@ fun SettingsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val exportLogsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) {
         if(it != null) exportLogs(context, it)
     }
-    MyScaffold(R.string.settings, onNavigateUp, 0.dp) {
-        FunctionItem(title = R.string.options, icon = R.drawable.tune_fill0) { onNavigate(SettingsOptions) }
-        FunctionItem(title = R.string.appearance, icon = R.drawable.format_paint_fill0) { onNavigate(Appearance) }
-        FunctionItem(R.string.app_lock, icon = R.drawable.lock_fill0) { onNavigate(AppLockSettings) }
-        if (privilege.device || privilege.profile)
-            FunctionItem(title = R.string.api, icon = R.drawable.code_fill0) { onNavigate(ApiSettings) }
-        if (privilege.device && !privilege.dhizuku)
-            FunctionItem(R.string.notifications, icon = R.drawable.notifications_fill0) { onNavigate(Notifications) }
-        FunctionItem(title = R.string.export_logs, icon = R.drawable.description_fill0) {
-            val time = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault()).format(Date(System.currentTimeMillis()))
-            exportLogsLauncher.launch("owndroid_log_$time")
+    val sb = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    var dropdown by remember { mutableStateOf(false) }
+    Scaffold(
+        Modifier.nestedScroll(sb.nestedScrollConnection),
+        topBar = {
+            LargeTopAppBar(
+                { Text(stringResource(R.string.settings)) },
+                navigationIcon = { NavIcon(onNavigateUp) },
+                scrollBehavior = sb,
+                actions = {
+                    Box {
+                        IconButton({ dropdown = true }) {
+                            Icon(Icons.Default.MoreVert, null)
+                        }
+                        DropdownMenu(dropdown, { dropdown = false }) {
+                            DropdownMenuItem(
+                                { Text(stringResource(R.string.export_logs)) },
+                                {
+                                    dropdown = false
+                                    val time = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault())
+                                        .format(Date(System.currentTimeMillis()))
+                                    exportLogsLauncher.launch("owndroid_log_$time")
+                                },
+                                leadingIcon = {
+                                    Icon(painterResource(R.drawable.description_fill0), null)
+                                }
+                            )
+                        }
+                    }
+                }
+            )
         }
-        FunctionItem(title = R.string.about, icon = R.drawable.info_fill0) { onNavigate(About) }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 80.dp)
+        ) {
+            FunctionItem(title = R.string.options, icon = R.drawable.tune_fill0) { onNavigate(SettingsOptions) }
+            FunctionItem(title = R.string.appearance, icon = R.drawable.format_paint_fill0) { onNavigate(Appearance) }
+            FunctionItem(R.string.app_lock, icon = R.drawable.lock_fill0) { onNavigate(AppLockSettings) }
+            if (privilege.device || privilege.profile)
+                FunctionItem(title = R.string.api, icon = R.drawable.code_fill0) { onNavigate(ApiSettings) }
+            if (privilege.device && !privilege.dhizuku)
+                FunctionItem(R.string.notifications, icon = R.drawable.notifications_fill0) { onNavigate(Notifications) }
+            FunctionItem(title = R.string.about, icon = R.drawable.info_fill0) { onNavigate(About) }
+        }
     }
 }
 
@@ -111,6 +159,10 @@ fun SettingsOptionsScreen(onNavigateUp: () -> Unit) {
 fun AppearanceScreen(onNavigateUp: () -> Unit, currentTheme: ThemeSettings, onThemeChange: (ThemeSettings) -> Unit) {
     var darkThemeMenu by remember { mutableStateOf(false) }
     var theme by remember { mutableStateOf(currentTheme) }
+    fun update(it: ThemeSettings) {
+        theme = it
+        onThemeChange(it)
+    }
     val darkThemeTextID = when(theme.darkTheme) {
         1 -> R.string.on
         0 -> R.string.off
@@ -121,7 +173,7 @@ fun AppearanceScreen(onNavigateUp: () -> Unit, currentTheme: ThemeSettings, onTh
             SwitchItem(
                 R.string.material_you_color,
                 state = theme.materialYou,
-                onCheckedChange = { theme = theme.copy(materialYou = it) }
+                onCheckedChange = { update(theme.copy(materialYou = it)) }
             )
         }
         Box {
@@ -133,13 +185,14 @@ fun AppearanceScreen(onNavigateUp: () -> Unit, currentTheme: ThemeSettings, onTh
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.follow_system)) },
                     onClick = {
-                        theme = theme.copy(darkTheme = -1)
+                        update(theme.copy(darkTheme = -1))
                         darkThemeMenu = false
                     }
                 )
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.on)) },
                     onClick = {
+                        update(theme.copy(darkTheme = 1))
                         theme = theme.copy(darkTheme = 1)
                         darkThemeMenu = false
                     }
@@ -147,19 +200,17 @@ fun AppearanceScreen(onNavigateUp: () -> Unit, currentTheme: ThemeSettings, onTh
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.off)) },
                     onClick = {
-                        theme = theme.copy(darkTheme = 0)
+                        update(theme.copy(darkTheme = 0))
                         darkThemeMenu = false
                     }
                 )
             }
         }
         AnimatedVisibility(theme.darkTheme == 1 || (theme.darkTheme == -1 && isSystemInDarkTheme())) {
-            SwitchItem(R.string.black_theme, state = theme.blackTheme, onCheckedChange = { theme = theme.copy(blackTheme = it) })
-        }
-        AnimatedVisibility(theme != currentTheme, Modifier.fillMaxWidth().padding(8.dp)) {
-            Button({onThemeChange(theme)}) {
-                Text(stringResource(R.string.apply))
-            }
+            SwitchItem(
+                R.string.black_theme, state = theme.blackTheme,
+                onCheckedChange = { update(theme.copy(blackTheme = it)) }
+            )
         }
     }
 }

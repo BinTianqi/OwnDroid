@@ -102,7 +102,7 @@ fun OwnDroidTheme(
         darkTheme -> darkScheme
         else -> lightScheme
     }.let {
-        if(darkTheme && theme.blackTheme) it.copy(background = Color.Black) else it
+        if(darkTheme && theme.blackTheme) it.copy(background = Color.Black, surface = Color.Black) else it
     }
     val view = LocalView.current
     SideEffect {

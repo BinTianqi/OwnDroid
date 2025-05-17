@@ -1,6 +1,5 @@
 package com.bintianqi.owndroid
 
-import android.annotation.SuppressLint
 import android.os.Build.VERSION
 import android.os.Bundle
 import android.widget.Toast
@@ -237,13 +236,11 @@ import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import com.rosan.dhizuku.api.Dhizuku
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 import java.util.Locale
 
-val backToHomeStateFlow = MutableStateFlow(false)
 @ExperimentalMaterial3Api
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -291,12 +288,7 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
     val context = LocalContext.current
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    val backToHome by backToHomeStateFlow.collectAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
-    LaunchedEffect(backToHome) {
-        if(backToHome) { navController.navigateUp(); backToHomeStateFlow.value = false }
-    }
-    val userRestrictions by vm.userRestrictions.collectAsStateWithLifecycle()
     fun navigateUp() { navController.navigateUp() }
     fun navigate(destination: Any) { navController.navigate(destination) }
     LaunchedEffect(Unit) {
@@ -320,7 +312,7 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
         popEnterTransition = Animations.navHostPopEnterTransition,
         popExitTransition = Animations.navHostPopExitTransition
     ) {
-        composable<Home> { HomeScreen { navController.navigate(it) } }
+        composable<Home> { HomeScreen(::navigate) }
         composable<WorkModes> {
             WorkModesScreen(it.toRoute(), ::navigateUp, {
                 navController.navigate(Home) {
@@ -330,9 +322,7 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
                 navController.navigate(WorkModes(false)) {
                     popUpTo<Home> { inclusive = true }
                 }
-            }, {
-                navController.navigate(it)
-            })
+            }, ::navigate)
         }
 
         composable<DelegatedAdmins> { DelegatedAdminsScreen(::navigateUp, ::navigate) }
@@ -369,14 +359,14 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
         composable<WipeData> { WipeDataScreen(::navigateUp) }
 
         composable<Network> { NetworkScreen(::navigateUp, ::navigate) }
-        composable<WiFi> { WifiScreen(::navigateUp, { navController.navigate(it) }) { navController.navigate(AddNetwork, it)} }
+        composable<WiFi> { WifiScreen(::navigateUp, ::navigate) { navController.navigate(AddNetwork, it)} }
         composable<NetworkOptions> { NetworkOptionsScreen(::navigateUp) }
         composable<AddNetwork> { AddNetworkScreen(it.arguments!!, ::navigateUp) }
         composable<WifiSecurityLevel> { WifiSecurityLevelScreen(::navigateUp) }
         composable<WifiSsidPolicyScreen> { WifiSsidPolicyScreen(::navigateUp) }
         composable<QueryNetworkStats> { NetworkStatsScreen(::navigateUp, ::navigate) }
         composable<NetworkStatsViewer>(mapOf(serializableNavTypePair<List<NetworkStatsViewer.Data>>())) {
-            NetworkStatsViewerScreen(it.toRoute()) { navController.navigateUp() }
+            NetworkStatsViewerScreen(it.toRoute(), ::navigateUp)
         }
         composable<PrivateDns> { PrivateDnsScreen(::navigateUp) }
         composable<AlwaysOnVpnPackage> { AlwaysOnVpnPackageScreen(::navigateUp) }
@@ -433,25 +423,12 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
         composable<SetDefaultDialer> { SetDefaultDialerScreen(::navigateUp) }
 
         composable<UserRestriction> {
-            LaunchedEffect(Unit) {
-                vm.userRestrictions.value = context.getDPM().getUserRestrictions(receiver)
-            }
             UserRestrictionScreen(::navigateUp) { title, items ->
-                navController.navigate(UserRestrictionOptions(title, items))
+                navigate(UserRestrictionOptions(title, items))
             }
         }
         composable<UserRestrictionOptions>(mapOf(serializableNavTypePair<List<Restriction>>())) {
-            UserRestrictionOptionsScreen(it.toRoute(), userRestrictions, ::navigateUp) { id, status ->
-                try {
-                    val dpm = context.getDPM()
-                    if(status) dpm.addUserRestriction(receiver, id)
-                    else dpm.clearUserRestriction(receiver, id)
-                    @SuppressLint("NewApi")
-                    vm.userRestrictions.value = dpm.getUserRestrictions(receiver)
-                } catch(_: Exception) {
-                    context.showOperationResultToast(false)
-                }
-            }
+            UserRestrictionOptionsScreen(it.toRoute(), ::navigateUp)
         }
 
         composable<Users> { UsersScreen(::navigateUp, ::navigate) }
