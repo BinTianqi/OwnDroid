@@ -24,11 +24,11 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.toBitmap
+import com.bintianqi.owndroid.MyAdminComponent
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.ShortcutsReceiverActivity
-import com.bintianqi.owndroid.backToHomeStateFlow
 import com.bintianqi.owndroid.createShortcuts
 import com.bintianqi.owndroid.myPrivilege
 import com.rosan.dhizuku.api.Dhizuku
@@ -130,7 +130,7 @@ fun Context.getReceiver(): ComponentName {
     return if(SharedPrefs(this).dhizuku) {
         Dhizuku.getOwnerComponent()
     } else {
-        ComponentName(this, Receiver::class.java)
+        MyAdminComponent
     }
 }
 

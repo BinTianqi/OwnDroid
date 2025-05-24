@@ -68,6 +68,17 @@
             android:permission="com.bintianqi.owndroid.MyPermission"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay" />
+        <activity
+            android:name=".DhizukuActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.Transparent">
+            <intent-filter>
+                <action android:name="com.bintianqi.owndroid.action.REQUEST_DHIZUKU_PERMISSION" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <receiver
             android:name=".Receiver"
             android:description="@string/app_name"
@@ -97,5 +108,12 @@
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
+        <provider
+            android:name=".MyDhizukuProvider"
+            android:authorities="com.bintianqi.owndroid.dhizuku_server.provider"
+            android:directBootAware="true"
+            android:enabled="true"
+            android:exported="true">
+        </provider>
     </application>
 </manifest>

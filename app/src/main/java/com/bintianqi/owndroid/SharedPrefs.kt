@@ -23,7 +23,8 @@ class SharedPrefs(context: Context) {
     var biometricsUnlock by BooleanSharedPref("lock.biometrics")
     var lockWhenLeaving by BooleanSharedPref("lock.onleave")
     var applicationsListView by BooleanSharedPref("applications.list_view", true)
-    var shortcuts by BooleanSharedPref("shortcuts", false)
+    var shortcuts by BooleanSharedPref("shortcuts")
+    var dhizukuServer by BooleanSharedPref("dhizuku_server")
 }
 
 private class BooleanSharedPref(val key: String, val defValue: Boolean = false): ReadWriteProperty<SharedPrefs, Boolean> {

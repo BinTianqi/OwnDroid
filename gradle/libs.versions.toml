@@ -3,12 +3,13 @@ agp = "8.10.0"
 kotlin = "2.1.20"
 
 navigation-compose = "2.9.0"
-composeBom = "2025.05.00"
+composeBom = "2025.05.01"
 accompanist-drawablepainter = "0.35.0-alpha"
 accompanist-permissions = "0.37.0"
 shizuku = "13.1.5"
-fragment = "1.8.6"
+fragment = "1.8.7"
 dhizuku = "2.5.3"
+dhizuku-server = "0.0.5"
 hiddenApiBypass = "4.3"
 libsu = "6.0.0"
 serialization = "1.7.3"
@@ -28,6 +29,7 @@ accompanist-permissions = { group = "com.google.accompanist", name = "accompanis
 shizuku-provider = { module = "dev.rikka.shizuku:provider", version.ref = "shizuku" }
 shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
 dhizuku-api = { module = "io.github.iamr0s:Dhizuku-API", version.ref = "dhizuku" }
+dhizuku-server-api = { group = "io.github.iamr0s", name = "Dhizuku-SERVER_API", version.ref = "dhizuku-server" }
 hiddenApiBypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version.ref = "hiddenApiBypass" }
 libsu = { module = "com.github.topjohnwu.libsu:core", version.ref = "libsu" }
 libsu-service = { module = "com.github.topjohnwu.libsu:service", version.ref = "libsu" }

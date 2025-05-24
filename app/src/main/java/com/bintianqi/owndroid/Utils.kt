@@ -2,8 +2,10 @@ package com.bintianqi.owndroid
 
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageInfo
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -130,4 +132,14 @@ val HorizontalPadding = 16.dp
 fun String.hash(): String {
     val md = MessageDigest.getInstance("SHA-256")
     return md.digest(this.encodeToByteArray()).toHexString()
+}
+
+val MyAdminComponent = ComponentName.unflattenFromString("com.bintianqi.owndroid/.Receiver")!!
+
+
+@OptIn(ExperimentalStdlibApi::class)
+fun getPackageSignature(info: PackageInfo): String? {
+    val signatures = if (Build.VERSION.SDK_INT >= 28) info.signingInfo?.apkContentsSigners else info.signatures
+    return signatures?.firstOrNull()?.toByteArray()
+        ?.let { MessageDigest.getInstance("SHA-256").digest(it) }?.toHexString()
 }

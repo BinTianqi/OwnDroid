@@ -64,7 +64,7 @@ class Receiver : DeviceAdminReceiver() {
         super.onSecurityLogsAvailable(context, intent)
         if(VERSION.SDK_INT >= 24) {
             CoroutineScope(Dispatchers.IO).launch {
-                val events = getManager(context).retrieveSecurityLogs(ComponentName(context, this@Receiver::class.java)) ?: return@launch
+                val events = getManager(context).retrieveSecurityLogs(MyAdminComponent) ?: return@launch
                 val file = context.filesDir.resolve("SecurityLogs.json")
                 val fileExists = file.exists()
                 file.outputStream().use {

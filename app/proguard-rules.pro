@@ -20,3 +20,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 # -renamesourcefileattribute SourceFile
+
+-dontwarn android.app.ActivityThread
+-dontwarn android.app.ContextImpl
+-dontwarn android.app.LoadedApk

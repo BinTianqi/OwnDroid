@@ -107,6 +107,8 @@ import com.bintianqi.owndroid.dpm.DeleteWorkProfile
 import com.bintianqi.owndroid.dpm.DeleteWorkProfileScreen
 import com.bintianqi.owndroid.dpm.DeviceInfo
 import com.bintianqi.owndroid.dpm.DeviceInfoScreen
+import com.bintianqi.owndroid.dpm.DhizukuServerSettings
+import com.bintianqi.owndroid.dpm.DhizukuServerSettingsScreen
 import com.bintianqi.owndroid.dpm.DisableAccountManagement
 import com.bintianqi.owndroid.dpm.DisableAccountManagementScreen
 import com.bintianqi.owndroid.dpm.DisableMeteredData
@@ -324,6 +326,7 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
                 }
             }, ::navigate)
         }
+        composable<DhizukuServerSettings> { DhizukuServerSettingsScreen(::navigateUp) }
 
         composable<DelegatedAdmins> { DelegatedAdminsScreen(::navigateUp, ::navigate) }
         composable<AddDelegatedAdmin>{ AddDelegatedAdminScreen(it.toRoute(), ::navigateUp) }

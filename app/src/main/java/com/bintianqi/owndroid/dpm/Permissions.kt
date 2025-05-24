@@ -19,6 +19,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,7 +32,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -57,6 +61,7 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -84,23 +89,28 @@ import androidx.compose.ui.unit.dp
 import androidx.core.os.bundleOf
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.ChoosePackageContract
+import com.bintianqi.owndroid.DHIZUKU_CLIENTS_FILE
+import com.bintianqi.owndroid.DhizukuClientInfo
 import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.IUserService
+import com.bintianqi.owndroid.MyAdminComponent
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.Receiver
 import com.bintianqi.owndroid.Settings
 import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CircularProgressDialog
 import com.bintianqi.owndroid.ui.InfoItem
+import com.bintianqi.owndroid.ui.MyLazyScaffold
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.MySmallTitleScaffold
 import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.Notes
+import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.updatePrivilege
 import com.bintianqi.owndroid.useShizuku
 import com.bintianqi.owndroid.yesOrNo
+import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
 import com.topjohnwu.superuser.Shell
@@ -108,6 +118,8 @@ import com.topjohnwu.superuser.ipc.RootService
 import dalvik.system.DexClassLoader
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.lang.invoke.MethodHandles
 import java.lang.reflect.Proxy
 
@@ -258,6 +270,14 @@ fun WorkModesScreen(
                     tint = if(privilege.device) colorScheme.primary else colorScheme.onBackground
                 )
             }
+            if ((privilege.device || privilege.profile) && !privilege.dhizuku) Row(
+                Modifier.padding(top = 20.dp).fillMaxWidth().clickable { onNavigate(DhizukuServerSettings) },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(painterResource(R.drawable.dhizuku_icon), null, Modifier.padding(8.dp).size(28.dp))
+                Text(stringResource(R.string.dhizuku_server), style = typography.titleLarge)
+            }
+
             Column(Modifier.padding(HorizontalPadding, 20.dp)) {
                 Row(Modifier.padding(bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Outlined.Warning, null, Modifier.padding(end = 4.dp), colorScheme.error)
@@ -338,7 +358,7 @@ fun WorkModesScreen(
                             if(privilege.device) {
                                 dpm.clearDeviceOwnerApp(context.packageName)
                             } else if(VERSION.SDK_INT >= 24) {
-                                dpm.clearProfileOwner(ComponentName(context, Receiver::class.java))
+                                dpm.clearProfileOwner(MyAdminComponent)
                             }
                         }
                         dialog = 0
@@ -424,10 +444,7 @@ fun activateUsingDhizuku(context: Context, callback: (Boolean, Boolean, String?)
             if(dpm == null) {
                 context.showOperationResultToast(false)
             } else {
-                dpm.transferOwnership(
-                    Dhizuku.getOwnerComponent(),
-                    ComponentName(context, Receiver::class.java), PersistableBundle()
-                )
+                dpm.transferOwnership(Dhizuku.getOwnerComponent(), MyAdminComponent, PersistableBundle())
                 callback(true, true, null)
             }
         } catch (e: Exception) {
@@ -541,6 +558,65 @@ fun activateDhizukuMode(context: Context, callback: (Boolean, Boolean, String?) 
 }
 
 const val ACTIVATE_DEVICE_OWNER_COMMAND = "dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver"
+
+@Serializable object DhizukuServerSettings
+
+@Composable
+fun DhizukuServerSettingsScreen(onNavigateUp: () -> Unit) {
+    val context = LocalContext.current
+    val pm = context.packageManager
+    val sp = SharedPrefs(context)
+    val file = context.filesDir.resolve(DHIZUKU_CLIENTS_FILE)
+    var enabled by remember { mutableStateOf(sp.dhizukuServer) }
+    val clients = remember { mutableStateListOf<DhizukuClientInfo>() }
+    fun changeEnableState(status: Boolean) {
+        enabled = status
+        sp.dhizukuServer = status
+    }
+    fun writeList() {
+        file.writeText(Json.encodeToString(clients))
+    }
+    LaunchedEffect(Unit) {
+        if (!file.exists()) file.writeText("[]")
+    }
+    LaunchedEffect(enabled) {
+        if (enabled) {
+            clients.clear()
+            clients.addAll(Json.decodeFromString<List<DhizukuClientInfo>>(file.readText()))
+        }
+    }
+    MyLazyScaffold(R.string.dhizuku_server, onNavigateUp) {
+        item {
+            SwitchItem(R.string.enable, getState = { sp.dhizukuServer }, onCheckedChange = ::changeEnableState)
+            Spacer(Modifier.padding(vertical = 8.dp))
+        }
+        if (enabled) itemsIndexed(clients) { index, client ->
+            val name = pm.getNameForUid(client.uid)
+            if (name == null) {
+                clients.dropWhile { it.uid == client.uid }
+                writeList()
+            } else {
+                val info = pm.getApplicationInfo(name, 0)
+                Row(
+                    Modifier
+                        .fillMaxWidth().padding(8.dp)
+                        .background(colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
+                        .padding(8.dp),
+                    Arrangement.SpaceBetween, Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Image(
+                            rememberDrawablePainter(info.loadIcon(pm)), null,
+                            Modifier.padding(end = 12.dp).size(50.dp)
+                        )
+                        Text(info.loadLabel(pm).toString(), style = typography.titleLarge)
+                    }
+                    Switch(client.allow, { clients[index] = client.copy(allow = it) })
+                }
+            }
+        }
+    }
+}
 
 @Serializable object LockScreenInfo
 
