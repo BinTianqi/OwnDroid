@@ -207,6 +207,8 @@ import com.bintianqi.owndroid.dpm.UserInfoScreen
 import com.bintianqi.owndroid.dpm.UserOperation
 import com.bintianqi.owndroid.dpm.UserOperationScreen
 import com.bintianqi.owndroid.dpm.UserRestriction
+import com.bintianqi.owndroid.dpm.UserRestrictionEditor
+import com.bintianqi.owndroid.dpm.UserRestrictionEditorScreen
 import com.bintianqi.owndroid.dpm.UserRestrictionOptions
 import com.bintianqi.owndroid.dpm.UserRestrictionOptionsScreen
 import com.bintianqi.owndroid.dpm.UserRestrictionScreen
@@ -426,9 +428,12 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
         composable<SetDefaultDialer> { SetDefaultDialerScreen(::navigateUp) }
 
         composable<UserRestriction> {
-            UserRestrictionScreen(::navigateUp) { title, items ->
-                navigate(UserRestrictionOptions(title, items))
+            UserRestrictionScreen(::navigateUp) {
+                navigate(it)
             }
+        }
+        composable<UserRestrictionEditor> {
+            UserRestrictionEditorScreen(::navigateUp)
         }
         composable<UserRestrictionOptions>(mapOf(serializableNavTypePair<List<Restriction>>())) {
             UserRestrictionOptionsScreen(it.toRoute(), ::navigateUp)

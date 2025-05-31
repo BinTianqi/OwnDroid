@@ -73,6 +73,7 @@
     <string name="default_str">Default</string>
     <string name="timeout">Timeout</string>
     <string name="continue_str">Continue</string>
+    <string name="exit">Exit</string>
 
     <!--Permissions-->
     <string name="profile_owner">Profile owner</string>

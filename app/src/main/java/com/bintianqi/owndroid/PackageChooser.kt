@@ -180,10 +180,8 @@ fun AppChooserScreen(params: ApplicationsList, onChoosePackage: (String?) -> Uni
         }
     ) { paddingValues ->
         LazyColumn(Modifier.fillMaxSize().padding(paddingValues)) {
-            stickyHeader {
-                AnimatedVisibility(progress < 1F) {
-                    LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
-                }
+            if (progress < 1F) stickyHeader {
+                LinearProgressIndicator({ progress }, Modifier.fillMaxWidth())
             }
             items(filteredPackages, { it.name }) {
                 Row(

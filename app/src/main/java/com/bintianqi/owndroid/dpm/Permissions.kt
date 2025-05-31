@@ -271,7 +271,8 @@ fun WorkModesScreen(
                 )
             }
             if ((privilege.device || privilege.profile) && !privilege.dhizuku) Row(
-                Modifier.padding(top = 20.dp).fillMaxWidth().clickable { onNavigate(DhizukuServerSettings) },
+                Modifier.padding(top = 20.dp).fillMaxWidth()
+                    .clickable { onNavigate(DhizukuServerSettings) }.padding(vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(painterResource(R.drawable.dhizuku_icon), null, Modifier.padding(8.dp).size(28.dp))

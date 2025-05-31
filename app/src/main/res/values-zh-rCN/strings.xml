@@ -68,6 +68,7 @@
     <string name="default_str">默认</string>
     <string name="timeout">超时</string>
     <string name="continue_str">继续</string>
+    <string name="exit">退出</string>
 
     <!--Permissions-->
     <string name="profile_owner">Profile owner</string>

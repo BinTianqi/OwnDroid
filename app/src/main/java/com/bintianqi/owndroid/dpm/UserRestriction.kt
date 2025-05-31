@@ -6,24 +6,67 @@ import android.os.UserManager
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.ui.FunctionItem
+import com.bintianqi.owndroid.ui.MyLazyScaffold
 import com.bintianqi.owndroid.ui.MyScaffold
+import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.SwitchItem
+import com.bintianqi.owndroid.zhCN
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -36,35 +79,62 @@ data class Restriction(
 
 @Serializable object UserRestriction
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(24)
 @Composable
-fun UserRestrictionScreen(onNavigateUp: () -> Unit, onNavigate: (Int, List<Restriction>) -> Unit) {
+fun UserRestrictionScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val privilege by myPrivilege.collectAsStateWithLifecycle()
-    MyScaffold(R.string.user_restriction, onNavigateUp, 0.dp) {
-        Spacer(Modifier.padding(vertical = 2.dp))
-        Text(text = stringResource(R.string.switch_to_disable_feature), modifier = Modifier.padding(start = 16.dp))
-        if(privilege.profile) { Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.padding(start = 16.dp)) }
-        if(privilege.work) {
-            Text(text = stringResource(R.string.some_features_invalid_in_work_profile), modifier = Modifier.padding(start = 16.dp))
+    val sb = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    fun navigateToOptions(title: Int, items: List<Restriction>) {
+        onNavigate(UserRestrictionOptions(title, items))
+    }
+    Scaffold(
+        Modifier.nestedScroll(sb.nestedScrollConnection),
+        topBar = {
+            LargeTopAppBar(
+                { Text(stringResource(R.string.user_restriction)) },
+                navigationIcon = { NavIcon(onNavigateUp) },
+                actions = {
+                    IconButton({ onNavigate(UserRestrictionEditor) }) {
+                        Icon(Icons.Default.Edit, null)
+                    }
+                },
+                scrollBehavior = sb
+            )
         }
-        Spacer(Modifier.padding(vertical = 2.dp))
-        FunctionItem(R.string.network, icon = R.drawable.language_fill0) {
-            onNavigate(R.string.network, RestrictionData.internet)
-        }
-        FunctionItem(R.string.connectivity, icon = R.drawable.devices_other_fill0) {
-            onNavigate(R.string.connectivity, RestrictionData.connectivity)
-        }
-        FunctionItem(R.string.applications, icon = R.drawable.apps_fill0) {
-            onNavigate(R.string.applications, RestrictionData.applications)
-        }
-        FunctionItem(R.string.users, icon = R.drawable.account_circle_fill0) {
-            onNavigate(R.string.users, RestrictionData.users)
-        }
-        FunctionItem(R.string.media, icon = R.drawable.volume_up_fill0) {
-            onNavigate(R.string.media, RestrictionData.media)
-        }
-        FunctionItem(R.string.other, icon = R.drawable.more_horiz_fill0) {
-            onNavigate(R.string.other, RestrictionData.other)
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 80.dp)
+        ) {
+            Spacer(Modifier.padding(vertical = 2.dp))
+            Text(text = stringResource(R.string.switch_to_disable_feature), modifier = Modifier.padding(start = 16.dp))
+            if(privilege.profile) { Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.padding(start = 16.dp)) }
+            if(privilege.work) {
+                Text(text = stringResource(R.string.some_features_invalid_in_work_profile), modifier = Modifier.padding(start = 16.dp))
+            }
+            Spacer(Modifier.padding(vertical = 2.dp))
+            FunctionItem(R.string.network, icon = R.drawable.language_fill0) {
+                navigateToOptions(R.string.network, RestrictionData.internet)
+            }
+            FunctionItem(R.string.connectivity, icon = R.drawable.devices_other_fill0) {
+                navigateToOptions(R.string.connectivity, RestrictionData.connectivity)
+            }
+            FunctionItem(R.string.applications, icon = R.drawable.apps_fill0) {
+                navigateToOptions(R.string.applications, RestrictionData.applications)
+            }
+            FunctionItem(R.string.users, icon = R.drawable.account_circle_fill0) {
+                navigateToOptions(R.string.users, RestrictionData.users)
+            }
+            FunctionItem(R.string.media, icon = R.drawable.volume_up_fill0) {
+                navigateToOptions(R.string.media, RestrictionData.media)
+            }
+            FunctionItem(R.string.other, icon = R.drawable.more_horiz_fill0) {
+                navigateToOptions(R.string.other, RestrictionData.other)
+            }
         }
     }
 }
@@ -89,19 +159,37 @@ fun UserRestrictionOptionsScreen(
             status.put(it.id, restrictions.getBoolean(it.id))
         }
     }
-    MyScaffold(data.title, onNavigateUp, 0.dp) {
-        data.items.filter { Build.VERSION.SDK_INT >= it.requiresApi }.forEach { restriction ->
-            SwitchItem(
-                restriction.name, restriction.id, restriction.icon, status[restriction.id] == true,
-                {
-                    if (it) {
-                        dpm.addUserRestriction(receiver, restriction.id)
-                    } else {
-                        dpm.clearUserRestriction(receiver, restriction.id)
+    MyLazyScaffold(data.title, onNavigateUp) {
+        items(data.items.filter { Build.VERSION.SDK_INT >= it.requiresApi }) { restriction ->
+            Row(
+                Modifier.fillMaxWidth().padding(15.dp, 6.dp),
+                Arrangement.SpaceBetween, Alignment.CenterVertically
+            ) {
+                Row(Modifier.fillMaxWidth(0.8F), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(painterResource(restriction.icon), null, Modifier.padding(start = 6.dp, end = 16.dp))
+                    Column {
+                        Text(stringResource(restriction.name), style = typography.titleMedium)
+                        Text(
+                            restriction.id, style = typography.bodyMedium,
+                            color = colorScheme.onBackground.copy(alpha = 0.8F)
+                        )
                     }
-                    status[restriction.id] = dpm.getUserRestrictions(receiver).getBoolean(restriction.id)
-                }, padding = true
-            )
+                }
+                Switch(
+                    status[restriction.id] == true,
+                    {
+                        if (it) {
+                            dpm.addUserRestriction(receiver, restriction.id)
+                        } else {
+                            dpm.clearUserRestriction(receiver, restriction.id)
+                        }
+                        status[restriction.id] = dpm.getUserRestrictions(receiver).getBoolean(restriction.id)
+                    }
+                )
+            }
+        }
+        item {
+            Spacer(Modifier.padding(vertical = 30.dp))
         }
     }
 }
@@ -161,6 +249,8 @@ object RestrictionData {
         Restriction(UserManager.DISALLOW_ADD_USER, R.string.add_user, R.drawable.account_circle_fill0),
         Restriction(UserManager.DISALLOW_REMOVE_USER, R.string.remove_user, R.drawable.account_circle_fill0),
         Restriction(UserManager.DISALLOW_USER_SWITCH, R.string.switch_user, R.drawable.account_circle_fill0, 28),
+        Restriction(UserManager.DISALLOW_ADD_MANAGED_PROFILE, R.string.create_work_profile, R.drawable.work_fill0, 26),
+        Restriction(UserManager.DISALLOW_REMOVE_MANAGED_PROFILE, R.string.delete_work_profile, R.drawable.delete_forever_fill0, 26),
         Restriction(UserManager.DISALLOW_ADD_PRIVATE_PROFILE, R.string.create_private_space, R.drawable.lock_fill0, 35),
         Restriction(UserManager.DISALLOW_SET_USER_ICON, R.string.set_user_icon, R.drawable.account_circle_fill0, 24),
         Restriction(UserManager.DISALLOW_CROSS_PROFILE_COPY_PASTE, R.string.cross_profile_copy, R.drawable.content_paste_fill0),
@@ -186,4 +276,65 @@ object RestrictionData {
         Restriction(UserManager.DISALLOW_DEBUGGING_FEATURES, R.string.debug_features, R.drawable.adb_fill0)
     )
     fun getAllRestrictions() = internet + connectivity + media + applications + users + other
+}
+
+@Serializable object UserRestrictionEditor
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UserRestrictionEditorScreen(onNavigateUp: () -> Unit) {
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    val receiver = context.getReceiver()
+    val list = remember { mutableStateListOf<String>() }
+    fun refresh() {
+        val restrictions = dpm.getUserRestrictions(receiver)
+        list.clear()
+        list.addAll(restrictions.keySet().filter { restrictions.getBoolean(it) })
+    }
+    LaunchedEffect(Unit) { refresh() }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.edit)) },
+                navigationIcon = { NavIcon(onNavigateUp) }
+            )
+        }
+    ) { paddingValues ->
+        LazyColumn(Modifier.fillMaxSize().padding(paddingValues)) {
+            items(list, { it }) {
+                Row(
+                    Modifier.fillMaxWidth().padding(HorizontalPadding, 2.dp).animateItem(),
+                    Arrangement.SpaceBetween, Alignment.CenterVertically
+                ) {
+                    Text(it)
+                    IconButton({
+                        dpm.clearUserRestriction(receiver, it)
+                        refresh()
+                    }) {
+                        Icon(Icons.Outlined.Delete, null)
+                    }
+                }
+            }
+            item {
+                var input by remember { mutableStateOf("") }
+                fun add() {
+                    dpm.addUserRestriction(receiver, input)
+                    refresh()
+                    input = ""
+                }
+                OutlinedTextField(
+                    input, { input = it }, Modifier.fillMaxWidth().padding(HorizontalPadding, 20.dp),
+                    label = { Text("id") },
+                    trailingIcon = {
+                        IconButton(::add, enabled = input.isNotBlank()) {
+                            Icon(Icons.Default.Add, null)
+                        }
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions { add() }
+                )
+            }
+        }
+    }
 }

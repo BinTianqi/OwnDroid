@@ -21,6 +21,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -67,6 +68,7 @@ import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.system.exitProcess
 
 @Serializable object Settings
 
@@ -104,6 +106,11 @@ fun SettingsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
                                 leadingIcon = {
                                     Icon(painterResource(R.drawable.description_fill0), null)
                                 }
+                            )
+                            DropdownMenuItem(
+                                { Text(stringResource(R.string.exit)) },
+                                { exitProcess(0) },
+                                leadingIcon = { Icon(Icons.Default.Close, null) }
                             )
                         }
                     }
