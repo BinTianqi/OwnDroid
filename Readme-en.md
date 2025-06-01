@@ -2,7 +2,7 @@
 
 # OwnDroid
 
-Use Android Device owner privilege to manage your device.
+Use Android's DevicePolicyManager API to manage your device.
 
 ## Download
 
@@ -14,60 +14,28 @@ Use Android Device owner privilege to manage your device.
 
 ## Features
 
-- System
-  - Options: disable camera, disable screenshot, master volume mute, disable USB signal...
-  - Lock task mode
-  - Manage CA certificates
-  - _Wipe data_
-  - ...
-- Network
-  - Add/modify/delete Wi-Fi
-  - Network stats
-  - Minimum Wi-Fi security level
-  - Always-on VPN
-  - Network logging
-  - ...
+- System: Disable camera, disable screenshot, master volume mute, disable USB signal, Lock task mode, Manage CA certificates, Wipe data...
+- Network: Add/modify/delete Wi-Fi, Network stats, Minimum Wi-Fi security level, Always-on VPN, Network logging...
+- Applications: Suspend/hide app, Block app uninstallation, Grant/revoke permissions, Clear app storage, Install/uninstall app...
+- User restriction: Disable SMS, disable outgoing call, disable bluetooth, disable NFC, disable USB file transfer, disable app installing, disable app uninstalling...
+- User manager: User information, Start/switch/stop/delete user, Create user...
+- Password and keyguard: Reset password, Require password complexity, Set screen timeout...
+
+## Working modes
+
+- Device owner (recommended)
+
+  Activating methods:
+  - Shizuku
+  - Dhizuku
+  - Root
+  - ADB shell command `dpm set-device-owner com.bintianqi.owndroid/.Receiver`
+- [Dhizuku](https://github.com/iamr0s/Dhizuku)
 - Work profile
-  - Create work profile
-  - Suspend personal apps
-  - ...
-- Applications
-  - Suspend/hide app
-  - Block app uninstallation
-  - Grant/revoke permissions
-  - Clear app storage
-  - Install/uninstall app
-  - ...
-- User restriction
-  - Network: disable configuring mobile network, disable configuring Wi-Fi, disable SMS, disable outgoing calls...
-  - Connection: disable bluetooth, disable configuring location, disable USB file transfer, disable printing...
-  - Applications: disable installing/uninstalling app...
-  - Users: disable adding/removing/switching user...
-  - Media: disable configuring brightness, disable adjusting volume...
-  - Other: disable modifying accounts, disable configuring locale, disable factory reset, disable debug features...
-- User manager
-  - User information
-  - Start/switch/stop/delete user
-  - Create user
-  - ...
-- Password and keyguard
-  - _Reset password_
-  - Require password complexity
-  - Set screen timeout
-  - ...
-
-## Activate
-
-- Shizuku (recommended)
-- Dhizuku
-- Root
-- Execute command in adb shell: `dpm set-device-owner com.bintianqi.owndroid/.Receiver`
 
 ## FAQ
 
-### Activating
-
-#### Already some accounts on the device
+### Already some accounts on the device
 
 ```text
 java.lang.IllegalStateException: Not allowed to set the device owner because there are already some accounts on the device
@@ -77,7 +45,7 @@ Solutions:
 - Freeze apps who hold those accounts.
 - Delete these accounts.
 
-#### Already several users on the device
+### Already several users on the device
 
 ```text
 java.lang.IllegalStateException: Not allowed to set the device owner because there are already several users on the device
@@ -89,7 +57,7 @@ Solutions:
 > [!NOTE]
 > Some systems have features such as app cloning and children space, which are usually users.
 
-#### MIUI
+### MIUI
 
 ```text
 java.lang.SecurityException: Neither user 2000 nor current process has android.permission.MANAGE_DEVICE_ADMINS.
@@ -99,7 +67,7 @@ Solutions:
 - Enable `USB debugging (Security setting)` in developer options.
 - Execute activating command in root shell.
 
-#### ColorOS
+### ColorOS
 
 ```text
 java.lang.IllegalStateException: Unexpected @ProvisioningPreCondition

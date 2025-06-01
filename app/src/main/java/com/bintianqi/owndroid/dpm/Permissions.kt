@@ -1,19 +1,10 @@
 package com.bintianqi.owndroid.dpm
 
-import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Build.VERSION
-import android.os.Bundle
-import android.os.Handler
-import android.os.IBinder
-import android.os.Looper
-import android.os.Message
-import android.os.Messenger
 import android.os.PersistableBundle
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.annotation.Keep
@@ -29,13 +20,14 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -44,6 +36,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Edit
@@ -55,6 +48,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -86,7 +80,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.core.os.bundleOf
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.ChoosePackageContract
 import com.bintianqi.owndroid.DHIZUKU_CLIENTS_FILE
@@ -114,14 +107,10 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
 import com.topjohnwu.superuser.Shell
-import com.topjohnwu.superuser.ipc.RootService
-import dalvik.system.DexClassLoader
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.lang.invoke.MethodHandles
-import java.lang.reflect.Proxy
 
 @Serializable data class WorkModes(val canNavigateUp: Boolean)
 
@@ -134,7 +123,7 @@ fun WorkModesScreen(
     val context = LocalContext.current
     val coroutine = rememberCoroutineScope()
     val privilege by myPrivilege.collectAsStateWithLifecycle()
-    /** 0: none, 1: device owner, 2: circular progress indicator, 3: result, 4: deactivate, 5: command, 6: force activating warning */
+    /** 0: none, 1: device owner, 2: circular progress indicator, 3: result, 4: deactivate, 5: command */
     var dialog by remember { mutableIntStateOf(0) }
     Scaffold(
         topBar = {
@@ -162,21 +151,24 @@ fun WorkModesScreen(
                                 {
                                     expanded = false
                                     dialog = 4
-                                }
+                                },
+                                leadingIcon = { Icon(Icons.Default.Close, null) }
                             )
                             if (VERSION.SDK_INT >= 26) DropdownMenuItem(
                                 { Text(stringResource(R.string.delegated_admins)) },
                                 {
                                     expanded = false
                                     onNavigate(DelegatedAdmins)
-                                }
+                                },
+                                leadingIcon = { Icon(painterResource(R.drawable.admin_panel_settings_fill0), null) }
                             )
                             if (!privilege.dhizuku && VERSION.SDK_INT >= 28) DropdownMenuItem(
                                 { Text(stringResource(R.string.transfer_ownership)) },
                                 {
                                     expanded = false
                                     onNavigate(TransferOwnership)
-                                }
+                                },
+                                leadingIcon = { Icon(painterResource(R.drawable.swap_horiz_fill0), null) }
                             )
                         }
                     }
@@ -185,7 +177,8 @@ fun WorkModesScreen(
                     }
                 }
             )
-        }
+        },
+        contentWindowInsets = WindowInsets.ime
     ) { paddingValues ->
         var navigateUpOnSucceed by remember { mutableStateOf(true) }
         var operationSucceed by remember { mutableStateOf(false) }
@@ -198,6 +191,7 @@ fun WorkModesScreen(
                 updatePrivilege(context)
                 handlePrivilegeChange(context)
             } else {
+                dialog = 0
                 context.showOperationResultToast(false)
             }
         }
@@ -315,12 +309,6 @@ fun WorkModesScreen(
                     }
                     Spacer(Modifier.padding(horizontal = 2.dp))
                     Button({ dialog = 5 }) { Text(stringResource(R.string.adb_command)) }
-                    Spacer(Modifier.padding(horizontal = 2.dp))
-                    if (VERSION.SDK_INT >= 33) Button({
-                        dialog = 6
-                    }) {
-                        Text(stringResource(R.string.root_force_activate))
-                    }
                 }
             },
             confirmButton = {
@@ -383,23 +371,6 @@ fun WorkModesScreen(
             },
             confirmButton = {
                 TextButton({ dialog = 0 }) { Text(stringResource(R.string.confirm)) }
-            },
-            onDismissRequest = { dialog = 0 }
-        )
-        if (dialog == 6) AlertDialog(
-            title = { Text(stringResource(R.string.warning)) },
-            text = { Text(stringResource(R.string.info_force_activate)) },
-            confirmButton = {
-                TextButton({
-                    dialog = 2
-                    navigateUpOnSucceed = false
-                    forceActivateUsingRoot(context, ::handleResult)
-                }) {
-                    Text(stringResource(R.string.continue_str))
-                }
-            },
-            dismissButton = {
-                TextButton({ dialog = 0 }) { Text(stringResource(R.string.cancel)) }
             },
             onDismissRequest = { dialog = 0 }
         )
@@ -469,75 +440,6 @@ fun activateUsingDhizuku(context: Context, callback: (Boolean, Boolean, String?)
     }
 }
 
-fun forceActivateUsingRoot(context: Context, callback: (Boolean, Boolean, String?) -> Unit) {
-    val connection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            val handler = Handler(Looper.getMainLooper()) { msg ->
-                RootService.unbind(this)
-                val data = msg.data
-                val output = if (data.getBoolean("succeed")) context.getString(R.string.please_reboot) else null
-                callback(!data.getBoolean("error"), data.getBoolean("succeed"), output)
-                return@Handler true
-            }
-            val msg = Message()
-            msg.replyTo = Messenger(handler)
-            Messenger(service).send(msg)
-        }
-        override fun onServiceDisconnected(name: ComponentName?) {}
-    }
-    val intent = Intent(context, ForceActivateService::class.java)
-    RootService.bind(intent, connection)
-}
-
-@RequiresApi(26)
-class ForceActivateService(): RootService() {
-    override fun onBind(intent: Intent): IBinder = messenger.binder
-    val handler = Handler(Looper.getMainLooper()) { msg ->
-        val replyMessage = Message()
-        try {
-            replyMessage.data = activateDeviceOwnerAsRoot(getReceiver()).apply { putBoolean("error", false) }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            replyMessage.data = bundleOf("error" to true, "succeed" to false)
-        }
-        msg.replyTo.send(replyMessage)
-        return@Handler false
-    }
-    val messenger = Messenger(handler)
-}
-
-@SuppressLint("PrivateApi")
-@RequiresApi(26)
-fun activateDeviceOwnerAsRoot(cn: ComponentName): Bundle {
-    val dcl = DexClassLoader(
-        "/system/framework/services.jar", "/data/local/tmp", null, ClassLoader.getSystemClassLoader()
-    )
-    val ppp = dcl.loadClass("com.android.server.devicepolicy.PolicyPathProvider")
-    val pppProxy = Proxy.newProxyInstance(ppp.classLoader, arrayOf(ppp)) { obj, method, args ->
-        method.isAccessible = true
-        val mh = MethodHandles.lookup().`in`(ppp).unreflectSpecial(method, ppp).bindTo(obj)
-        return@newProxyInstance if (args == null) {
-            mh.invokeWithArguments()
-        } else {
-            mh.invokeWithArguments(*args)
-        }
-    }
-    val od = dcl.loadClass("com.android.server.devicepolicy.OwnersData")
-    val odIns = od.getConstructor(ppp).apply { isAccessible = true }.newInstance(pppProxy)
-    val oi = dcl.loadClass("com.android.server.devicepolicy.OwnersData\$OwnerInfo")
-    val oiIns = oi.constructors[0].apply { isAccessible = true }.newInstance(cn, null, null, true)
-    od.getField("mDeviceOwner").apply { isAccessible = true }.set(odIns, oiIns)
-    od.getField("mDeviceOwnerUserId").apply { isAccessible = true }.set(odIns, 0)
-    val setDoResult = od.getMethod("writeDeviceOwner").apply { isAccessible = true }.invoke(odIns) as Boolean
-    return if (setDoResult) {
-        val proc = Runtime.getRuntime().exec("dpm set-active-admin ${cn.flattenToShortString()}")
-        proc.waitFor()
-        bundleOf("succeed" to true)
-    } else {
-        bundleOf("succeed" to false)
-    }
-}
-
 fun activateDhizukuMode(context: Context, callback: (Boolean, Boolean, String?) -> Unit) {
     fun onSucceed() {
         SharedPrefs(context).dhizuku = true
@@ -589,7 +491,7 @@ fun DhizukuServerSettingsScreen(onNavigateUp: () -> Unit) {
     MyLazyScaffold(R.string.dhizuku_server, onNavigateUp) {
         item {
             SwitchItem(R.string.enable, getState = { sp.dhizukuServer }, onCheckedChange = ::changeEnableState)
-            Spacer(Modifier.padding(vertical = 8.dp))
+            HorizontalDivider(Modifier.padding(vertical = 8.dp))
         }
         if (enabled) itemsIndexed(clients) { index, client ->
             val name = pm.getNameForUid(client.uid)
@@ -599,16 +501,13 @@ fun DhizukuServerSettingsScreen(onNavigateUp: () -> Unit) {
             } else {
                 val info = pm.getApplicationInfo(name, 0)
                 Row(
-                    Modifier
-                        .fillMaxWidth().padding(8.dp)
-                        .background(colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
-                        .padding(8.dp),
+                    Modifier.fillMaxWidth().padding(HorizontalPadding, 8.dp),
                     Arrangement.SpaceBetween, Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Image(
                             rememberDrawablePainter(info.loadIcon(pm)), null,
-                            Modifier.padding(end = 12.dp).size(50.dp)
+                            Modifier.padding(end = 16.dp).size(50.dp)
                         )
                         Text(info.loadLabel(pm).toString(), style = typography.titleLarge)
                     }

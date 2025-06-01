@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -294,7 +296,8 @@ fun MyScaffold(
                 navigationIcon = { NavIcon(onNavIconClicked) },
                 scrollBehavior = sb
             )
-        }
+        },
+        contentWindowInsets = WindowInsets.ime
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -325,7 +328,8 @@ fun MyLazyScaffold(
                 navigationIcon = { NavIcon(onNavIconClicked) },
                 scrollBehavior = sb
             )
-        }
+        },
+        contentWindowInsets = WindowInsets.ime
     ) { paddingValues ->
         LazyColumn(Modifier.fillMaxSize().padding(paddingValues), content = content)
     }
@@ -346,7 +350,8 @@ fun MySmallTitleScaffold(
                 navigationIcon = { NavIcon(onNavIconClicked) },
                 colors = TopAppBarDefaults.topAppBarColors(colorScheme.surfaceContainer)
             )
-        }
+        },
+        contentWindowInsets = WindowInsets.ime
     ) { paddingValues ->
         Column(
             modifier = Modifier

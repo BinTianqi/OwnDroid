@@ -520,6 +520,7 @@ fun handlePrivilegeChange(context: Context) {
     val privilege = myPrivilege.value
     val activated = privilege.device || privilege.profile
     val sp = SharedPrefs(context)
+    sp.dhizukuServer = false
     if(activated) {
         createShortcuts(context)
         if(!privilege.dhizuku) {

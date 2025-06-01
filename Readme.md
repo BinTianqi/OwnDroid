@@ -2,7 +2,7 @@
 
 # OwnDroid
 
-使用安卓Device owner特权管理你的设备。
+使用安卓的设备策略管理器API管理你的设备。
 
 ## 下载
 
@@ -14,60 +14,28 @@
 
 ## 功能
 
-- 系统
-  - 选项：禁用摄像头、禁止截屏、全局静音、禁用USB信号...
-  - 锁定任务模式
-  - 管理CA证书
-  - _清除数据_
-  - ...
-- 网络
-  - 添加/修改/删除 Wi-Fi
-  - 网络统计
-  - 最小Wi-Fi安全等级
-  - VPN保持打开
-  - 网络日志
-  - ...
+- 系统：禁用摄像头、禁止截屏、全局静音、禁用USB信号、锁定任务模式、管理CA证书、清除数据...
+- 网络：添加/修改/删除 Wi-Fi、网络统计、最小Wi-Fi安全等级、VPN保持打开、网络日志...
+- 应用：挂起/隐藏应用、阻止应用卸载、授予/撤销权限、清除应用存储、安装/卸载应用...
+- 用户限制：禁止发送短信、禁止拨出电话、禁用蓝牙、禁用NFC、禁用USB文件传输、禁止安装应用、禁止卸载应用...
+- 用户：用户信息、启动/切换/停止/删除用户、创建用户...
+- 密码与锁屏：重置密码、要求密码复杂度、设置屏幕超时...
+
+## 工作模式
+
+- Device owner（推荐）
+
+  激活方式：
+  - Shizuku
+  - Dhizuku
+  - Root
+  - ADB shell命令 `dpm set-device-owner com.bintianqi.owndroid/.Receiver`
+- [Dhizuku](https://github.com/iamr0s/Dhizuku)
 - 工作资料
-  - 创建工作资料
-  - 挂起个人应用
-  - ...
-- 应用管理
-  - 挂起/隐藏应用
-  - 阻止应用卸载
-  - 授予/撤销权限
-  - 清除应用存储
-  - 安装/卸载应用
-  - ...
-- 用户限制
-  - 网络：禁止配置移动网络、禁止配置Wi-Fi、禁用短信、禁止拨出电话...
-  - 连接：禁用蓝牙、禁止配置定位、禁用USB文件传输、禁用打印...
-  - 应用：禁止安装/卸载应用...
-  - 用户：禁止添加/删除/切换用户...
-  - 媒体：禁止调整亮度、禁止调整音量...
-  - 其他：禁止修改账号、禁止修改语言、禁止恢复出厂设置、禁用调试功能...
-- 用户管理
-  - 用户信息
-  - 启动/切换/停止/删除用户
-  - 创建用户
-  - ...
-- 密码与锁屏
-  - _重置密码_
-  - 要求密码复杂度
-  - 设置屏幕超时
-  - ...
-
-## 激活
-
-- Shizuku (推荐)
-- Dhizuku
-- Root
-- 在ADB命令行中执行命令: `dpm set-device-owner com.bintianqi.owndroid/.Receiver`
 
 ## FAQ
 
-### 激活
-
-#### 设备上有账号
+### 设备上有账号
 
 ```text
 java.lang.IllegalStateException: Not allowed to set the device owner because there are already some accounts on the device
@@ -77,7 +45,7 @@ java.lang.IllegalStateException: Not allowed to set the device owner because the
 - 冻结持有这些账号的app。
 - 删除这些账号。
 
-#### 设备上有多个用户
+### 设备上有多个用户
 
 ```text
 java.lang.IllegalStateException: Not allowed to set the device owner because there are already several users on the device
@@ -89,7 +57,7 @@ java.lang.IllegalStateException: Not allowed to set the device owner because the
 > [!NOTE]
 > 一些系统有应用克隆、儿童空间等功能，它们通常是用户。
 
-#### MIUI
+### MIUI
 
 ```text
 java.lang.SecurityException: Neither user 2000 nor current process has android.permission.MANAGE_DEVICE_ADMINS.
@@ -99,7 +67,7 @@ java.lang.SecurityException: Neither user 2000 nor current process has android.p
 - 在开发者设置中打开`USB调试（安全设置）`。
 - 在root命令行中执行激活命令
 
-#### ColorOS
+### ColorOS
 
 ```text
 java.lang.IllegalStateException: Unexpected @ProvisioningPreCondition
@@ -146,9 +114,6 @@ context.sendBroadcast(intent)
 ./gradlew build -PStoreFile="/path/to/your/jks/file" -PStorePassword="YOUR_KEYSTORE_PASSWORD" -PKeyPassword="YOUR_KEY_PASSWORD" -PKeyAlias="YOUR_KEY_ALIAS"
 ```
 （在Windows系统中应使用`./gradlew.bat`)
-
-> [!TIP]
-> 在中国大陆下载Gradle速度慢？打开`gradle/wrapper/gradle-wrapper.properties`文件，注释官方下载地址，取消注释一个镜像地址。
 
 ## 许可证
 

@@ -27,10 +27,6 @@ AndroidのDevice owner特権を使用してデバイスを管理します。
   - 常時オンVPN
   - ネットワークログ
   - ...
-- ワークプロファイル
-  - ワークプロファイルの作成
-  - 個人アプリの一時停止
-  - ...
 - アプリケーション
   - アプリの一時停止/非表示
   - アンインストールのブロック
@@ -63,9 +59,7 @@ AndroidのDevice owner特権を使用してデバイスを管理します。
 
 ## FAQ
 
-### アクティベート
-
-#### デバイスに既にアカウントが存在する場合
+### デバイスに既にアカウントが存在する場合
 
 ```text
 java.lang.IllegalStateException: Not allowed to set the device owner because there are already some accounts on the device
@@ -75,7 +69,7 @@ java.lang.IllegalStateException: Not allowed to set the device owner because the
 - これらのアカウントを保持しているアプリを凍結します。
 - これらのアカウントを削除します。
 
-#### デバイスに既に複数のユーザーが存在する場合
+### デバイスに既に複数のユーザーが存在する場合
 
 ```text
 java.lang.IllegalStateException: Not allowed to set the device owner because there are already several users on the device
@@ -87,7 +81,7 @@ java.lang.IllegalStateException: Not allowed to set the device owner because the
 > [!NOTE]
 > 一部のシステムにはアプリのクローンや子供用スペースなどの機能があり、通常はユーザーとして扱われます。
 
-#### MIUI
+### MIUI
 
 ```text
 java.lang.SecurityException: Neither user 2000 nor current process has android.permission.MANAGE_DEVICE_ADMINS.
@@ -97,7 +91,7 @@ java.lang.SecurityException: Neither user 2000 nor current process has android.p
 - 開発者オプションで `USBデバッグ（セキュリティ設定）` を有効にします。
 - ルートシェルでアクティベートコマンドを実行します。
 
-#### ColorOS
+### ColorOS
 
 ```text
 java.lang.IllegalStateException: Unexpected @ProvisioningPreCondition

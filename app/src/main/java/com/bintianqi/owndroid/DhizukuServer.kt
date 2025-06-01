@@ -8,6 +8,8 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
@@ -16,11 +18,14 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.rosan.dhizuku.aidl.IDhizukuClient
 import com.rosan.dhizuku.aidl.IDhizukuRequestPermissionListener
@@ -97,43 +102,52 @@ class DhizukuActivity : ComponentActivity() {
                 if (grantPermission) PackageManager.PERMISSION_GRANTED else PackageManager.PERMISSION_DENIED
             )
         }
+        val vm by viewModels<MyViewModel>()
+        enableEdgeToEdge()
         setContent {
-            AlertDialog(
-                icon = {
-                    Image(rememberDrawablePainter(icon), null, Modifier.size(35.dp))
-                },
-                title = {
-                    Text(stringResource(R.string.request_permission))
-                },
-                text = {
-                    Text("$label\n($packageName)")
-                },
-                confirmButton = {
-                    var time by remember { mutableIntStateOf(3) }
-                    LaunchedEffect(Unit) {
-                        (1..3).forEach {
-                            delay(1000)
-                            time -= 1
+            var appLockDialog by remember { mutableStateOf(false) }
+            val theme by vm.theme.collectAsStateWithLifecycle()
+            OwnDroidTheme(theme) {
+                if (!appLockDialog) AlertDialog(
+                    icon = {
+                        Image(rememberDrawablePainter(icon), null, Modifier.size(35.dp))
+                    },
+                    title = {
+                        Text(stringResource(R.string.request_permission))
+                    },
+                    text = {
+                        Text("$label\n($packageName)")
+                    },
+                    confirmButton = {
+                        var time by remember { mutableIntStateOf(3) }
+                        LaunchedEffect(Unit) {
+                            (1..3).forEach {
+                                delay(1000)
+                                time -= 1
+                            }
                         }
-                    }
-                    TextButton({
-                        close(true)
-                    }, enabled = time == 0) {
-                        val append = if (time > 0) " (${time}s)" else ""
-                        Text(stringResource(R.string.allow) + append)
-                    }
-                },
-                dismissButton = {
-                    TextButton({
-                        close(false)
-                    }) {
-                        Text(stringResource(R.string.reject))
-                    }
-                },
-                onDismissRequest = {
-                    finish()
-                }
-            )
+                        TextButton({
+                            if (SharedPrefs(this).lockPasswordHash.isNullOrEmpty()) {
+                                close(true)
+                            } else {
+                                appLockDialog = true
+                            }
+                        }, enabled = time == 0) {
+                            val append = if (time > 0) " (${time}s)" else ""
+                            Text(stringResource(R.string.allow) + append)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton({
+                            close(false)
+                        }) {
+                            Text(stringResource(R.string.reject))
+                        }
+                    },
+                    onDismissRequest = { close(false) }
+                )
+                else AppLockDialog({ close(true) }) { close(false) }
+            }
         }
     }
 }

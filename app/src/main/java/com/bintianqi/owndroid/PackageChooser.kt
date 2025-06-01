@@ -10,16 +10,18 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -75,6 +77,7 @@ class PackageChooserActivity: ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val vm by viewModels<MyViewModel>()
+        enableEdgeToEdge()
         setContent {
             val theme by vm.theme.collectAsStateWithLifecycle()
             OwnDroidTheme(theme) {
@@ -177,7 +180,8 @@ fun AppChooserScreen(params: ApplicationsList, onChoosePackage: (String?) -> Uni
                 },
                 colors = TopAppBarDefaults.topAppBarColors(MaterialTheme.colorScheme.surfaceContainer)
             )
-        }
+        },
+        contentWindowInsets = WindowInsets.ime
     ) { paddingValues ->
         LazyColumn(Modifier.fillMaxSize().padding(paddingValues)) {
             if (progress < 1F) stickyHeader {

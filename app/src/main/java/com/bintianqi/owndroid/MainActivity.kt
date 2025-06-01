@@ -12,9 +12,10 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -48,7 +49,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -249,7 +249,6 @@ import java.util.Locale
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
-        WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         val context = applicationContext
         if (VERSION.SDK_INT >= 28) HiddenApiBypass.setHiddenApiExemptions("")
@@ -309,7 +308,6 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .background(colorScheme.background)
-            .imePadding()
             .pointerInput(Unit) { detectTapGestures(onTap = { focusMgr.clearFocus() }) },
         enterTransition = Animations.navHostEnterTransition,
         exitTransition = Animations.navHostExitTransition,
@@ -514,7 +512,8 @@ private fun HomeScreen(onNavigate: (Any) -> Unit) {
                 },
                 scrollBehavior = sb
             )
-        }
+        },
+        contentWindowInsets = WindowInsets.ime
     ) {
         Column(Modifier.fillMaxSize().padding(it).verticalScroll(rememberScrollState())) {
             if(privilege.device || privilege.profile) {

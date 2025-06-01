@@ -47,8 +47,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -1104,7 +1106,8 @@ fun LockTaskModeScreen(onNavigateUp: () -> Unit) {
                 navigationIcon = { NavIcon(onNavigateUp) },
                 colors = TopAppBarDefaults.topAppBarColors(colorScheme.surfaceContainer)
             )
-        }
+        },
+        contentWindowInsets = WindowInsets.ime
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -1405,7 +1408,8 @@ fun CaCertScreen(onNavigateUp: () -> Unit) {
             }) {
                 Icon(Icons.Default.Add, stringResource(R.string.install))
             }
-        }
+        },
+        contentWindowInsets = WindowInsets.ime
     ) { paddingValues ->
         LazyColumn(
             Modifier
