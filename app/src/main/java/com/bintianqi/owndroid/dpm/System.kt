@@ -32,6 +32,7 @@ import android.net.Uri
 import android.os.Build.VERSION
 import android.os.HardwarePropertiesManager
 import android.os.UserManager
+import android.widget.Button
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -183,7 +184,11 @@ fun SystemManagerScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
         }
         if(VERSION.SDK_INT >= 28 && (privilege.device || privilege.org)) {
             FunctionItem(R.string.change_time, icon = R.drawable.schedule_fill0) { onNavigate(ChangeTime) }
-            FunctionItem(R.string.change_timezone, icon = R.drawable.schedule_fill0) { onNavigate(ChangeTimeZone) }
+            FunctionItem(R.string.change_timezone, icon = R.drawable.globe_fill0) { onNavigate(ChangeTimeZone) }
+        }
+        if (VERSION.SDK_INT >= 36 && (privilege.device || privilege.org)) {
+            FunctionItem(R.string.auto_time_policy, icon = R.drawable.schedule_fill0) { onNavigate(AutoTimePolicy) }
+            FunctionItem(R.string.auto_timezone_policy, icon = R.drawable.globe_fill0) { onNavigate(AutoTimeZonePolicy) }
         }
         /*if(VERSION.SDK_INT >= 28 && (deviceOwner || profileOwner))
             FunctionItem(R.string.key_pairs, icon = R.drawable.key_vertical_fill0) { navCtrl.navigate("KeyPairs") }*/
@@ -730,6 +735,56 @@ fun ChangeTimeZoneScreen(onNavigateUp: () -> Unit) {
         },
         onDismissRequest = { dialog = false }
     )
+}
+
+@Serializable object AutoTimePolicy
+
+@RequiresApi(36)
+@Composable
+fun AutoTimePolicyScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.auto_time_policy, onNavigateUp, 0.dp) {
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    var policy by remember { mutableIntStateOf(dpm.autoTimePolicy) }
+    listOf(
+        DevicePolicyManager.AUTO_TIME_ENABLED to R.string.enable,
+        DevicePolicyManager.AUTO_TIME_DISABLED to R.string.disabled,
+        DevicePolicyManager.AUTO_TIME_NOT_CONTROLLED_BY_POLICY to R.string.not_controlled_by_policy
+    ).forEach {
+        FullWidthRadioButtonItem(it.second, it.first == policy) {
+            policy = it.first
+        }
+    }
+    Button({
+        dpm.autoTimePolicy = policy
+        policy = dpm.autoTimePolicy
+    }, Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding)) {
+        Text(stringResource(R.string.apply))
+    }
+}
+
+@Serializable object AutoTimeZonePolicy
+
+@RequiresApi(36)
+@Composable
+fun AutoTimeZonePolicyScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.auto_timezone_policy, onNavigateUp, 0.dp) {
+    val context = LocalContext.current
+    val dpm = context.getDPM()
+    var policy by remember { mutableIntStateOf(dpm.autoTimeZonePolicy) }
+    listOf(
+        DevicePolicyManager.AUTO_TIME_ZONE_ENABLED to R.string.enable,
+        DevicePolicyManager.AUTO_TIME_ZONE_DISABLED to R.string.disabled,
+        DevicePolicyManager.AUTO_TIME_ZONE_NOT_CONTROLLED_BY_POLICY to R.string.not_controlled_by_policy
+    ).forEach {
+        FullWidthRadioButtonItem(it.second, it.first == policy) {
+            policy = it.first
+        }
+    }
+    Button({
+        dpm.autoTimeZonePolicy = policy
+        policy = dpm.autoTimeZonePolicy
+    }, Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding)) {
+        Text(stringResource(R.string.apply))
+    }
 }
 
 /*@RequiresApi(28)

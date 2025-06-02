@@ -162,6 +162,8 @@
     <string name="change_timezone">更改时区</string>
     <string name="timezone_id">时区ID</string>
     <string name="disable_auto_time_zone_before_set">在设置时区前需要关闭自动时区</string>
+    <string name="auto_time_policy">自动时间策略</string>
+    <string name="auto_timezone_policy">自动时区策略</string>
     <string name="content_protection_policy">内容保护策略</string>
     <string name="not_controlled_by_policy">不受策略控制</string>
     <string name="permission_policy">权限策略</string>

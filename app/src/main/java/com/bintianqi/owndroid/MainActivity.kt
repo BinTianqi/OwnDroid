@@ -75,6 +75,10 @@ import com.bintianqi.owndroid.dpm.ApplicationDetails
 import com.bintianqi.owndroid.dpm.ApplicationDetailsScreen
 import com.bintianqi.owndroid.dpm.ApplicationsFeatures
 import com.bintianqi.owndroid.dpm.ApplicationsFeaturesScreen
+import com.bintianqi.owndroid.dpm.AutoTimePolicy
+import com.bintianqi.owndroid.dpm.AutoTimePolicyScreen
+import com.bintianqi.owndroid.dpm.AutoTimeZonePolicy
+import com.bintianqi.owndroid.dpm.AutoTimeZonePolicyScreen
 import com.bintianqi.owndroid.dpm.BlockUninstall
 import com.bintianqi.owndroid.dpm.BlockUninstallScreen
 import com.bintianqi.owndroid.dpm.CaCert
@@ -347,6 +351,8 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
         composable<HardwareMonitor> { HardwareMonitorScreen(::navigateUp) }
         composable<ChangeTime> { ChangeTimeScreen(::navigateUp) }
         composable<ChangeTimeZone> { ChangeTimeZoneScreen(::navigateUp) }
+        composable<AutoTimePolicy> { AutoTimePolicyScreen(::navigateUp) }
+        composable<AutoTimeZonePolicy> { AutoTimeZonePolicyScreen(::navigateUp) }
         //composable<> { KeyPairs(::navigateUp) }
         composable<ContentProtectionPolicy> { ContentProtectionPolicyScreen(::navigateUp) }
         composable<PermissionPolicy> { PermissionPolicyScreen(::navigateUp) }

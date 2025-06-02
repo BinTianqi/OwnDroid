@@ -107,6 +107,7 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
 import com.topjohnwu.superuser.Shell
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -125,6 +126,15 @@ fun WorkModesScreen(
     val privilege by myPrivilege.collectAsStateWithLifecycle()
     /** 0: none, 1: device owner, 2: circular progress indicator, 3: result, 4: deactivate, 5: command */
     var dialog by remember { mutableIntStateOf(0) }
+    LaunchedEffect(privilege) {
+        if (!params.canNavigateUp && privilege.device) {
+            delay(1000)
+            if (dialog != 3) {
+                dialog = 0
+                onActivate() // Activated by ADB command, return to home screen
+            }
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -195,11 +205,14 @@ fun WorkModesScreen(
                 context.showOperationResultToast(false)
             }
         }
-        Column(Modifier.fillMaxSize().padding(paddingValues)) {
+        Column(Modifier
+            .fillMaxSize()
+            .padding(paddingValues)) {
             if(!privilege.profile && (VERSION.SDK_INT >= 28 || !privilege.dhizuku)) Row(
                 Modifier
-                    .fillMaxWidth().clickable(!privilege.device || privilege.dhizuku) { dialog = 1 }
-                    .background(if(privilege.device) colorScheme.primaryContainer else Color.Transparent)
+                    .fillMaxWidth()
+                    .clickable(!privilege.device || privilege.dhizuku) { dialog = 1 }
+                    .background(if (privilege.device) colorScheme.primaryContainer else Color.Transparent)
                     .padding(HorizontalPadding, 10.dp),
                 Arrangement.SpaceBetween, Alignment.CenterVertically
             ) {
@@ -217,7 +230,7 @@ fun WorkModesScreen(
             if(privilege.profile) Row(
                 Modifier
                     .fillMaxWidth()
-                    .background(if(privilege.device) colorScheme.primaryContainer else Color.Transparent)
+                    .background(if (privilege.device) colorScheme.primaryContainer else Color.Transparent)
                     .padding(HorizontalPadding, 10.dp),
                 Arrangement.SpaceBetween, Alignment.CenterVertically
             ) {
@@ -236,7 +249,7 @@ fun WorkModesScreen(
                         dialog = 2
                         activateDhizukuMode(context, ::handleResult)
                     }
-                    .background(if(privilege.dhizuku) colorScheme.primaryContainer else Color.Transparent)
+                    .background(if (privilege.dhizuku) colorScheme.primaryContainer else Color.Transparent)
                     .padding(HorizontalPadding, 10.dp),
                 Arrangement.SpaceBetween, Alignment.CenterVertically
             ) {
@@ -251,8 +264,9 @@ fun WorkModesScreen(
                         context.getDPM().isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE))
             ) Row(
                 Modifier
-                    .fillMaxWidth().clickable(!privilege.work) { onNavigate(CreateWorkProfile) }
-                    .background(if(privilege.device) colorScheme.primaryContainer else Color.Transparent)
+                    .fillMaxWidth()
+                    .clickable(!privilege.work) { onNavigate(CreateWorkProfile) }
+                    .background(if (privilege.device) colorScheme.primaryContainer else Color.Transparent)
                     .padding(HorizontalPadding, 10.dp),
                 Arrangement.SpaceBetween, Alignment.CenterVertically
             ) {
@@ -265,11 +279,16 @@ fun WorkModesScreen(
                 )
             }
             if ((privilege.device || privilege.profile) && !privilege.dhizuku) Row(
-                Modifier.padding(top = 20.dp).fillMaxWidth()
-                    .clickable { onNavigate(DhizukuServerSettings) }.padding(vertical = 4.dp),
+                Modifier
+                    .padding(top = 20.dp)
+                    .fillMaxWidth()
+                    .clickable { onNavigate(DhizukuServerSettings) }
+                    .padding(vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(painterResource(R.drawable.dhizuku_icon), null, Modifier.padding(8.dp).size(28.dp))
+                Icon(painterResource(R.drawable.dhizuku_icon), null, Modifier
+                    .padding(8.dp)
+                    .size(28.dp))
                 Text(stringResource(R.string.dhizuku_server), style = typography.titleLarge)
             }
 
@@ -290,25 +309,22 @@ fun WorkModesScreen(
                         coroutine.launch {
                             activateUsingShizuku(context, ::handleResult)
                         }
-                    }) {
+                    }, Modifier.padding(end = 8.dp)) {
                         Text(stringResource(R.string.shizuku))
                     }
-                    Spacer(Modifier.padding(horizontal = 2.dp))
                     if(!privilege.dhizuku) Button({
                         dialog = 2
                         activateUsingRoot(context, ::handleResult)
-                    }) {
+                    }, Modifier.padding(end = 8.dp)) {
                         Text("Root")
                     }
-                    Spacer(Modifier.padding(horizontal = 2.dp))
                     if(VERSION.SDK_INT >= 28) Button({
                         dialog = 2
                         activateUsingDhizuku(context, ::handleResult)
-                    }) {
+                    }, Modifier.padding(end = 8.dp)) {
                         Text(stringResource(R.string.dhizuku))
                     }
-                    Spacer(Modifier.padding(horizontal = 2.dp))
-                    Button({ dialog = 5 }) { Text(stringResource(R.string.adb_command)) }
+                    if (!privilege.dhizuku) Button({ dialog = 5 }) { Text(stringResource(R.string.adb_command)) }
                 }
             },
             confirmButton = {
@@ -320,7 +336,9 @@ fun WorkModesScreen(
         if(dialog == 3) AlertDialog(
             title = { Text(stringResource(if(operationSucceed) R.string.succeeded else R.string.failed)) },
             text = {
-                Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
+                Column(Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())) {
                     Text(resultText)
                 }
             },
@@ -338,6 +356,14 @@ fun WorkModesScreen(
             title = { Text(stringResource(R.string.deactivate)) },
             text = { Text(stringResource(R.string.info_deactivate)) },
             confirmButton = {
+                var time by remember { mutableIntStateOf(3) }
+                LaunchedEffect(Unit) {
+                    for (i in (0..2).reversed()) {
+                        delay(1000)
+                        time = i
+                    }
+                }
+                val timeText = if (time != 0) " (${time}s)" else ""
                 TextButton(
                     {
                         if(privilege.dhizuku) {
@@ -355,8 +381,11 @@ fun WorkModesScreen(
                         handlePrivilegeChange(context)
                         onDeactivate()
                     },
+                    enabled = time == 0,
                     colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
-                ) { Text(stringResource(R.string.confirm)) }
+                ) {
+                    Text(stringResource(R.string.confirm) + timeText)
+                }
             },
             dismissButton = {
                 TextButton({ dialog = 0 }) { Text(stringResource(R.string.cancel)) }
@@ -460,7 +489,7 @@ fun activateDhizukuMode(context: Context, callback: (Boolean, Boolean, String?) 
     }
 }
 
-const val ACTIVATE_DEVICE_OWNER_COMMAND = "dpm set-device-owner com.bintianqi.owndroid/com.bintianqi.owndroid.Receiver"
+const val ACTIVATE_DEVICE_OWNER_COMMAND = "dpm set-device-owner com.bintianqi.owndroid/.Receiver"
 
 @Serializable object DhizukuServerSettings
 
@@ -501,13 +530,17 @@ fun DhizukuServerSettingsScreen(onNavigateUp: () -> Unit) {
             } else {
                 val info = pm.getApplicationInfo(name, 0)
                 Row(
-                    Modifier.fillMaxWidth().padding(HorizontalPadding, 8.dp),
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(HorizontalPadding, 8.dp),
                     Arrangement.SpaceBetween, Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Image(
                             rememberDrawablePainter(info.loadIcon(pm)), null,
-                            Modifier.padding(end = 16.dp).size(50.dp)
+                            Modifier
+                                .padding(end = 16.dp)
+                                .size(50.dp)
                         )
                         Text(info.loadLabel(pm).toString(), style = typography.titleLarge)
                     }
@@ -535,7 +568,9 @@ fun LockScreenInfoScreen(onNavigateUp: () -> Unit) {
             onValueChange = { infoText = it },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions { focusMgr.clearFocus() },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
         )
         Button(
             onClick = {
@@ -608,7 +643,10 @@ fun DelegatedAdminsScreen(onNavigateUp: () -> Unit, onNavigate: (AddDelegatedAdm
     MyScaffold(R.string.delegated_admins, onNavigateUp, 0.dp) {
         packages.forEach { (pkg, scopes) ->
             Row(
-                Modifier.fillMaxWidth().padding(vertical = 8.dp).padding(start = 14.dp, end = 8.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .padding(start = 14.dp, end = 8.dp),
                 Arrangement.SpaceBetween
             ) {
                 Column {
@@ -626,7 +664,9 @@ fun DelegatedAdminsScreen(onNavigateUp: () -> Unit, onNavigate: (AddDelegatedAdm
         if(packages.isEmpty()) Text(
             stringResource(R.string.none),
             color = colorScheme.onSurfaceVariant,
-            modifier = Modifier.align(Alignment.CenterHorizontally).padding(vertical = 4.dp)
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(vertical = 4.dp)
         )
         Row(
             modifier = Modifier
@@ -666,12 +706,17 @@ fun AddDelegatedAdminScreen(data: AddDelegatedAdmin, onNavigateUp: () -> Unit) {
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions { fm.clearFocus() },
             readOnly = updateMode,
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = HorizontalPadding)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp, horizontal = HorizontalPadding)
         )
         DelegatedScope.entries.filter { VERSION.SDK_INT >= it.requiresApi }.forEach { scope ->
             val checked = scope in scopes
             Row(
-                Modifier.fillMaxWidth().clickable { if(!checked) scopes += scope else scopes -= scope }.padding(vertical = 4.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .clickable { if (!checked) scopes += scope else scopes -= scope }
+                    .padding(vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Checkbox(checked, { if(it) scopes += scope else scopes -= scope }, modifier = Modifier.padding(horizontal = 4.dp))
@@ -686,7 +731,9 @@ fun AddDelegatedAdminScreen(data: AddDelegatedAdmin, onNavigateUp: () -> Unit) {
                 context.getDPM().setDelegatedScopes(context.getReceiver(), input, scopes.map { it.id })
                 onNavigateUp()
             },
-            modifier = Modifier.fillMaxWidth().padding(HorizontalPadding, vertical = 4.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(HorizontalPadding, vertical = 4.dp),
             enabled = input.isNotBlank() && (!updateMode || scopes.toList() != data.scopes)
         ) {
             Text(stringResource(if(updateMode) R.string.update else R.string.add))
@@ -696,7 +743,9 @@ fun AddDelegatedAdminScreen(data: AddDelegatedAdmin, onNavigateUp: () -> Unit) {
                 context.getDPM().setDelegatedScopes(context.getReceiver(), input, emptyList())
                 onNavigateUp()
             },
-            modifier = Modifier.fillMaxWidth().padding(HorizontalPadding),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(HorizontalPadding),
             colors = ButtonDefaults.buttonColors(colorScheme.error, colorScheme.onError)
         ) {
             Text(stringResource(R.string.delete))
@@ -767,7 +816,9 @@ fun SupportMessageScreen(onNavigateUp: () -> Unit) {
             label = { Text(stringResource(R.string.short_support_msg)) },
             onValueChange = { shortMsg = it },
             minLines = 2,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 2.dp)
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Button(
@@ -798,7 +849,9 @@ fun SupportMessageScreen(onNavigateUp: () -> Unit) {
             label = { Text(stringResource(R.string.long_support_msg)) },
             onValueChange = { longMsg = it },
             minLines = 3,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 2.dp)
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Button(

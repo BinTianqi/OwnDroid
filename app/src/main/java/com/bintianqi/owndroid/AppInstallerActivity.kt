@@ -361,7 +361,10 @@ class AppInstallerViewModel(application: Application): AndroidViewModel(applicat
                     val statusExtra = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, 999)
                     if(statusExtra == PackageInstaller.STATUS_PENDING_USER_ACTION) {
                         @SuppressWarnings("UnsafeIntentLaunch")
-                        context.startActivity(intent.getParcelableExtra(Intent.EXTRA_INTENT) as Intent?)
+                        context.startActivity(
+                            (intent.getParcelableExtra(Intent.EXTRA_INTENT) as Intent?)
+                                ?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        )
                     } else {
                         result.value = intent
                         writtenPackages.value = setOf()
