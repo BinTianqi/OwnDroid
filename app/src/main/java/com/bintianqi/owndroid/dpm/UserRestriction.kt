@@ -219,7 +219,8 @@ object RestrictionData {
         Restriction(UserManager.DISALLOW_CONFIG_CELL_BROADCASTS, R.string.config_cell_broadcasts, R.drawable.cell_tower_fill0),
         Restriction(UserManager.DISALLOW_SMS, R.string.sms, R.drawable.sms_fill0),
         Restriction(UserManager.DISALLOW_OUTGOING_CALLS, R.string.outgoing_calls, R.drawable.phone_forwarded_fill0),
-        Restriction(UserManager.DISALLOW_SIM_GLOBALLY, R.string.download_esim, R.drawable.sim_card_download_fill0)
+        Restriction(UserManager.DISALLOW_SIM_GLOBALLY, R.string.download_esim, R.drawable.sim_card_download_fill0),
+        Restriction(UserManager.DISALLOW_THREAD_NETWORK, R.string.thread_network, R.drawable.router_fill0, 36)
     )
     val connectivity = listOf(
         Restriction(UserManager.DISALLOW_BLUETOOTH, R.string.bluetooth, R.drawable.bluetooth_fill0, 26),

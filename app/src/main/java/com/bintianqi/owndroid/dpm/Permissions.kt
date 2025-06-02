@@ -506,7 +506,7 @@ fun DhizukuServerSettingsScreen(onNavigateUp: () -> Unit) {
         sp.dhizukuServer = status
     }
     fun writeList() {
-        file.writeText(Json.encodeToString(clients))
+        file.writeText(Json.encodeToString(clients.toList()))
     }
     LaunchedEffect(Unit) {
         if (!file.exists()) file.writeText("[]")
@@ -544,7 +544,10 @@ fun DhizukuServerSettingsScreen(onNavigateUp: () -> Unit) {
                         )
                         Text(info.loadLabel(pm).toString(), style = typography.titleLarge)
                     }
-                    Switch(client.allow, { clients[index] = client.copy(allow = it) })
+                    Switch(client.allow, {
+                        clients[index] = client.copy(allow = it)
+                        writeList()
+                    })
                 }
             }
         }

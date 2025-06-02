@@ -442,6 +442,7 @@
     <string name="sms">SMS</string>
     <string name="outgoing_calls">Outgoing calls</string>
     <string name="download_esim">Download eSIM</string>
+    <string name="thread_network">Thread network</string>
 
     <string name="bluetooth">Bluetooth</string>
     <string name="bt_share">Bluetooth sharing</string>

@@ -411,6 +411,7 @@
     <string name="sms">短信</string>
     <string name="outgoing_calls">拨出电话</string>
     <string name="download_esim">下载eSIM</string>
+    <string name="thread_network">Thread网络</string>
 
     <string name="bluetooth">蓝牙</string>
     <string name="bt_share">蓝牙分享</string>
