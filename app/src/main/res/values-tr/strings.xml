@@ -1,7 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!--Global-->
-    <string name="app_name" translatable="false">OwnDroid</string>
-    <string name="place_holder" translatable="false"/>
     <string name="disabled">Devre Dışı</string>
     <string name="enabled">Etkin</string>
     <string name="disable">Devre Dışı Bırak</string>
@@ -64,7 +62,6 @@
     <string name="alias">Takma Ad</string>
     <string name="unknown_error">Bilinmeyen Hata</string>
     <string name="permission_denied">İzin Reddedildi</string>
-    <string name="api" translatable="false">API</string>
     <string name="error">Hata</string>
     <string name="status">Durum</string>
     <string name="edit">Düzenle</string>
@@ -122,12 +119,9 @@
     <string name="create_work_profile_success">İş Profili Başarıyla Oluşturuldu</string>
 
     <!--Dhizuku-->
-    <string name="dhizuku" translatable="false">Dhizuku</string>
     <string name="failed_to_init_dhizuku">Dhizuku Başlatılamadı</string>
     <string name="dhizuku_permission_not_granted">Dhizuku İzni Verilmedi</string>
     <string name="dhizuku_mode_disabled">Dhizuku Modu Devre Dışı</string>
-
-    <string name="shizuku" translatable="false">Shizuku</string>
 
     <!--System-->
     <string name="system">Sistem</string>
@@ -259,7 +253,6 @@
     <!--Network-->
     <string name="network">Ağ</string>
     <string name="wifi_mac_address">Wi-Fi MAC Adresi</string>
-    <string name="wifi" translatable="false">Wi-Fi</string>
     <string name="disconnect">Bağlantıyı Kes</string>
     <string name="reconnect">Yeniden Bağlan</string>
     <string name="saved_networks">Kayıtlı Ağlar</string>
@@ -289,13 +282,11 @@
     <string name="target">Hedef</string>
     <string name="device">Cihaz</string>
     <string name="user">Kullanıcı</string>
-    <string name="uid" translatable="false">UID</string>
     <string name="uid_tag">UID Etiketi</string>
     <string name="uid_tag_state">UID Etiket Durumu</string>
     <string name="network_type">Ağ Türü</string>
     <string name="mobile">Mobil</string>
     <string name="ethernet">Ethernet</string>
-    <string name="vpn" translatable="false">VPN</string>
     <string name="subscriber_id">Abone Kimliği</string>
     <string name="all">Tümü</string>
     <string name="uninstalled">Kaldırılmış</string>
@@ -448,7 +439,6 @@
     <string name="bt_share">Bluetooth Paylaşımı</string>
     <string name="share_location">Konumu Paylaş</string>
     <string name="config_location">Konumu Yapılandır</string>
-    <string name="nfc" translatable="false">NFC</string>
     <string name="outgoing_beam">Giden Işın</string>
     <string name="usb_file_transfer">USB Dosya Aktarımı</string>
     <string name="mount_physical_media">Fiziksel Medyayı Bağla</string>
