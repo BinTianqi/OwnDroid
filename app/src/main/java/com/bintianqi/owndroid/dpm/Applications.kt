@@ -69,6 +69,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -78,6 +79,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.AppInfo
 import com.bintianqi.owndroid.AppInstallerActivity
@@ -102,8 +104,13 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.serialization.Serializable
 import java.util.concurrent.Executors
 
-fun PackageManager.retrieveAppInfo(packageName: String) =
-    getApplicationInfo(packageName, getInstalledAppsFlags).retrieveAppInfo(this)
+fun PackageManager.retrieveAppInfo(packageName: String): AppInfo {
+    return try {
+        getApplicationInfo(packageName, getInstalledAppsFlags).retrieveAppInfo(this)
+    } catch (_: PackageManager.NameNotFoundException) {
+        AppInfo(packageName, "???", Color.Transparent.toArgb().toDrawable(), 0)
+    }
+}
 
 fun ApplicationInfo.retrieveAppInfo(pm: PackageManager) =
     installedApps.value.find { it.name == packageName } ?: AppInfo(packageName, loadLabel(pm).toString(), loadIcon(pm), flags)
