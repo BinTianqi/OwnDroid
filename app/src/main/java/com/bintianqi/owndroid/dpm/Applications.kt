@@ -244,6 +244,7 @@ fun ApplicationsFeaturesScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Un
 fun ApplicationDetailsScreen(param: ApplicationDetails, onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val packageName = param.packageName
     val context = LocalContext.current
+    val privilege by myPrivilege.collectAsStateWithLifecycle()
     val pm = context.packageManager
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
@@ -289,7 +290,7 @@ fun ApplicationDetailsScreen(param: ApplicationDetails, onNavigateUp: () -> Unit
                 )
             }
         )
-        if(VERSION.SDK_INT >= 28) SwitchItem(
+        if(privilege.device && VERSION.SDK_INT >= 28) SwitchItem(
             R.string.keep_after_uninstall, icon = R.drawable.delete_fill0,
             getState = { dpm.getKeepUninstalledPackages(receiver)?.contains(packageName) == true },
             onCheckedChange = { state ->
