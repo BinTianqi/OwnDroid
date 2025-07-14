@@ -189,7 +189,7 @@ fun NetworkScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
         if(VERSION.SDK_INT >= 31) {
             FunctionItem(R.string.wifi_auth_keypair, icon = R.drawable.key_fill0) { onNavigate(WifiAuthKeypair) }
         }
-        if(VERSION.SDK_INT >= 33) {
+        if (VERSION.SDK_INT >= 33 && (privilege.work || privilege.device)) {
             FunctionItem(R.string.preferential_network_service, icon = R.drawable.globe_fill0) { onNavigate(PreferentialNetworkService) }
         }
         if(VERSION.SDK_INT >= 28 && privilege.device) {
