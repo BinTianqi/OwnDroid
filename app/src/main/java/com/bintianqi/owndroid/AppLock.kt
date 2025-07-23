@@ -29,8 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -46,7 +44,6 @@ import androidx.compose.ui.window.DialogProperties
 fun AppLockDialog(onSucceed: () -> Unit, onDismiss: () -> Unit) = Dialog(onDismiss, DialogProperties(true, false)) {
     val context = LocalContext.current
     val fm = LocalFocusManager.current
-    val fr = FocusRequester()
     val sp = SharedPrefs(context)
     var input by remember { mutableStateOf("") }
     var isError by remember { mutableStateOf(false) }
@@ -59,14 +56,14 @@ fun AppLockDialog(onSucceed: () -> Unit, onDismiss: () -> Unit) = Dialog(onDismi
         }
     }
     LaunchedEffect(Unit) {
-        fr.requestFocus()
+        if (Build.VERSION.SDK_INT >= 28 && sp.biometricsUnlock) startBiometricsUnlock(context, onSucceed)
     }
     BackHandler(onBack = onDismiss)
     Card(Modifier.pointerInput(Unit) { detectTapGestures(onTap = { fm.clearFocus() }) }, shape = RoundedCornerShape(16.dp)) {
         Column(Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
-                    input, { input = it; isError = false }, Modifier.width(200.dp).focusRequester(fr),
+                    input, { input = it; isError = false }, Modifier.width(200.dp),
                     label = { Text(stringResource(R.string.password)) }, isError = isError,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password, imeAction = if(input.length >= 4) ImeAction.Go else ImeAction.Done
