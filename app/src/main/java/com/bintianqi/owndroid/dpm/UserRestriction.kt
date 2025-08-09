@@ -116,7 +116,9 @@ fun UserRestrictionScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
         ) {
             Spacer(Modifier.padding(vertical = 2.dp))
             Text(text = stringResource(R.string.switch_to_disable_feature), modifier = Modifier.padding(start = 16.dp))
-            if(privilege.profile) { Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.padding(start = 16.dp)) }
+            if (privilege.profile && !privilege.work) {
+                Text(text = stringResource(R.string.profile_owner_is_restricted), modifier = Modifier.padding(start = 16.dp))
+            }
             if(privilege.work) {
                 Text(text = stringResource(R.string.some_features_invalid_in_work_profile), modifier = Modifier.padding(start = 16.dp))
             }

@@ -214,8 +214,10 @@ fun ApplicationsFeaturesScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Un
             if(VERSION.SDK_INT >= 28 && privilege.device) {
                 FunctionItem(R.string.keep_uninstalled_packages, icon = R.drawable.delete_fill0) { onNavigate(KeepUninstalledPackages) }
             }
-            if(VERSION.SDK_INT >= 28) FunctionItem(R.string.install_existing_app, icon = R.drawable.install_mobile_fill0) {
-                onNavigate(InstallExistingApp)
+            if (VERSION.SDK_INT >= 28 && (privilege.device || (privilege.profile && privilege.affiliated))) {
+                FunctionItem(R.string.install_existing_app, icon = R.drawable.install_mobile_fill0) {
+                    onNavigate(InstallExistingApp)
+                }
             }
             if(VERSION.SDK_INT >= 30 && privilege.work) {
                 FunctionItem(R.string.cross_profile_apps, icon = R.drawable.work_fill0) { onNavigate(CrossProfilePackages) }
