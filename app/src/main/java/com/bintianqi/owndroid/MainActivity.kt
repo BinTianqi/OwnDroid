@@ -49,6 +49,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -235,14 +236,13 @@ import com.bintianqi.owndroid.dpm.WorkModes
 import com.bintianqi.owndroid.dpm.WorkModesScreen
 import com.bintianqi.owndroid.dpm.WorkProfile
 import com.bintianqi.owndroid.dpm.WorkProfileScreen
+import com.bintianqi.owndroid.dpm.checkPrivilege
 import com.bintianqi.owndroid.dpm.dhizukuErrorStatus
-import com.bintianqi.owndroid.dpm.dhizukuPermissionGranted
 import com.bintianqi.owndroid.dpm.getDPM
 import com.bintianqi.owndroid.dpm.getReceiver
 import com.bintianqi.owndroid.dpm.setDefaultAffiliationID
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
-import com.rosan.dhizuku.api.Dhizuku
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -259,6 +259,7 @@ class MainActivity : FragmentActivity() {
         val locale = context.resources?.configuration?.locale
         zhCN = locale == Locale.SIMPLIFIED_CHINESE || locale == Locale.CHINESE || locale == Locale.CHINA
         val vm by viewModels<MyViewModel>()
+        checkPrivilege(this)
         lifecycleScope.launch { delay(5000); setDefaultAffiliationID(context) }
         setContent {
             var appLockDialog by rememberSaveable { mutableStateOf(false) }
@@ -274,16 +275,7 @@ class MainActivity : FragmentActivity() {
 
     override fun onResume() {
         super.onResume()
-        val sp = SharedPrefs(applicationContext)
-        if (sp.dhizuku) {
-            if (Dhizuku.init(applicationContext)) {
-                if (!dhizukuPermissionGranted()) { dhizukuErrorStatus.value = 2 }
-            } else {
-                sp.dhizuku = false
-                dhizukuErrorStatus.value = 1
-            }
-        }
-        updatePrivilege(this)
+        checkPrivilege(this)
     }
 
 }
@@ -323,10 +315,6 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
             WorkModesScreen(it.toRoute(), ::navigateUp, {
                 navController.navigate(Home) {
                     popUpTo<WorkModes> { inclusive = true }
-                }
-            }, {
-                navController.navigate(WorkModes(false)) {
-                    popUpTo<Home> { inclusive = true }
                 }
             }, ::navigate)
         }
@@ -496,7 +484,14 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
             Toast.makeText(context, R.string.work_profile_activated, Toast.LENGTH_SHORT).show()
         }
     }
-    DhizukuErrorDialog()
+    DhizukuErrorDialog {
+        dhizukuErrorStatus.value = 0
+        updatePrivilege(context)
+        navController.navigate(WorkModes(false)) {
+            popUpTo<Home> { inclusive = true }
+            launchSingleTop = true
+        }
+    }
 }
 
 @Serializable private object Home
@@ -570,7 +565,7 @@ fun HomePageItem(name: Int, imgVector: Int, onClick: () -> Unit) {
 }
 
 @Composable
-private fun DhizukuErrorDialog() {
+private fun DhizukuErrorDialog(onClose: () -> Unit) {
     val status by dhizukuErrorStatus.collectAsState()
     if (status != 0) {
         val sp = SharedPrefs(LocalContext.current)
@@ -578,9 +573,9 @@ private fun DhizukuErrorDialog() {
             sp.dhizuku = false
         }
         AlertDialog(
-            onDismissRequest = { dhizukuErrorStatus.value = 0 },
+            onDismissRequest = {},
             confirmButton = {
-                TextButton(onClick = { dhizukuErrorStatus.value = 0 }) {
+                TextButton(onClose) {
                     Text(stringResource(R.string.confirm))
                 }
             },
@@ -595,7 +590,8 @@ private fun DhizukuErrorDialog() {
                 )
                 if(sp.dhizuku) text += "\n" + stringResource(R.string.dhizuku_mode_disabled)
                 Text(text)
-            }
+            },
+            properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
         )
     }
 }

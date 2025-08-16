@@ -118,8 +118,7 @@ import kotlinx.serialization.json.Json
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun WorkModesScreen(
-    params: WorkModes, onNavigateUp: () -> Unit, onActivate: () -> Unit, onDeactivate: () -> Unit,
-    onNavigate: (Any) -> Unit
+    params: WorkModes, onNavigateUp: () -> Unit, onActivate: () -> Unit, onNavigate: (Any) -> Unit
 ) {
     val context = LocalContext.current
     val coroutine = rememberCoroutineScope()
@@ -129,10 +128,7 @@ fun WorkModesScreen(
     LaunchedEffect(privilege) {
         if (!params.canNavigateUp && privilege.device) {
             delay(1000)
-            if (dialog != 3) {
-                dialog = 0
-                onActivate() // Activated by ADB command, return to home screen
-            }
+            if (dialog != 3) dialog = 3 // Activated by ADB command
         }
     }
     Scaffold(
@@ -379,7 +375,6 @@ fun WorkModesScreen(
                         dialog = 0
                         updatePrivilege(context)
                         handlePrivilegeChange(context)
-                        onDeactivate()
                     },
                     enabled = time == 0,
                     colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)

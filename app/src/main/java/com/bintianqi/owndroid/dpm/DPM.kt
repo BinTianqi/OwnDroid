@@ -23,6 +23,7 @@ import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.createShortcuts
 import com.bintianqi.owndroid.myPrivilege
+import com.bintianqi.owndroid.updatePrivilege
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuBinderWrapper
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -525,4 +526,17 @@ fun handlePrivilegeChange(context: Context) {
         }
         sp.isApiEnabled = false
     }
+}
+
+fun checkPrivilege(context: Context) {
+    val sp = SharedPrefs(context)
+    if (sp.dhizuku) {
+        if (Dhizuku.init(context)) {
+            if (!dhizukuPermissionGranted()) { dhizukuErrorStatus.value = 2 }
+        } else {
+            sp.dhizuku = false
+            dhizukuErrorStatus.value = 1
+        }
+    }
+    updatePrivilege(context)
 }
