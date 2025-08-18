@@ -31,19 +31,19 @@ private class BooleanSharedPref(val key: String, val defValue: Boolean = false):
     override fun getValue(thisRef: SharedPrefs, property: KProperty<*>): Boolean =
         thisRef.sharedPrefs.getBoolean(key, defValue)
     override fun setValue(thisRef: SharedPrefs, property: KProperty<*>, value: Boolean) =
-        thisRef.sharedPrefs.edit { putBoolean(key, value) }
+        thisRef.sharedPrefs.edit(true) { putBoolean(key, value) }
 }
 
 private class StringSharedPref(val key: String): ReadWriteProperty<SharedPrefs, String?> {
     override fun getValue(thisRef: SharedPrefs, property: KProperty<*>): String? =
         thisRef.sharedPrefs.getString(key, null)
     override fun setValue(thisRef: SharedPrefs, property: KProperty<*>, value: String?) =
-        thisRef.sharedPrefs.edit { putString(key, value) }
+        thisRef.sharedPrefs.edit(true) { putString(key, value) }
 }
 
 private class IntSharedPref(val key: String, val defValue: Int = 0): ReadWriteProperty<SharedPrefs, Int> {
     override fun getValue(thisRef: SharedPrefs, property: KProperty<*>): Int =
         thisRef.sharedPrefs.getInt(key, defValue)
     override fun setValue(thisRef: SharedPrefs, property: KProperty<*>, value: Int) =
-        thisRef.sharedPrefs.edit { putInt(key, value) }
+        thisRef.sharedPrefs.edit(true) { putInt(key, value) }
 }

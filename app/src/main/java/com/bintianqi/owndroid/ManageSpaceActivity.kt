@@ -60,7 +60,7 @@ class ManageSpaceActivity: FragmentActivity() {
             dataDir.resolve("shared_prefs").deleteRecursively()
         } else {
             val sharedPref = applicationContext.getSharedPreferences("data", MODE_PRIVATE)
-            sharedPref.edit { clear() }
+            sharedPref.edit(true) { clear() }
         }
         this.showOperationResultToast(true)
         finish()

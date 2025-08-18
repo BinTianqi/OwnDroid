@@ -347,7 +347,7 @@ fun NotificationsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.notifica
         NotificationUtils.ID.SYSTEM_UPDATE_PENDING to R.string.system_update_pending
     )
     map.forEach { (k, v) ->
-        SwitchItem(v, getState = { sp.getBoolean("n_$k", true) }, onCheckedChange = { sp.edit { putBoolean("n_$k", it) } })
+        SwitchItem(v, getState = { sp.getBoolean("n_$k", true) }, onCheckedChange = { sp.edit(true) { putBoolean("n_$k", it) } })
     }
 }
 
