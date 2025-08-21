@@ -32,7 +32,6 @@ import android.net.Uri
 import android.os.Build.VERSION
 import android.os.HardwarePropertiesManager
 import android.os.UserManager
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -129,6 +128,7 @@ import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.humanReadableDate
 import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.parseDate
+import com.bintianqi.owndroid.popToast
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.ErrorDialog
@@ -313,7 +313,7 @@ fun SystemManagerScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
                             }
                             dialog = 0
                         } catch(_: IllegalStateException) {
-                            Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
+                            context.showOperationResultToast(false)
                         }
                     },
                     enabled = dialog != 4 || input.length in 6..64
@@ -362,7 +362,7 @@ fun SystemOptionsScreen(onNavigateUp: () -> Unit) {
                     getState = { dpm.autoTimeRequired }, onCheckedChange = { dpm.setAutoTimeRequired(receiver,it) }, padding = false)
             }
         }
-        SwitchItem(R.string.master_mute, icon = R.drawable.volume_off_fill0,
+        if (!privilege.work) SwitchItem(R.string.master_mute, icon = R.drawable.volume_off_fill0,
             getState = { dpm.isMasterVolumeMuted(receiver) }, onCheckedChange = {
                 dpm.setMasterVolumeMuted(receiver,it)
                 createShortcuts(context)
@@ -1056,7 +1056,7 @@ fun MtePolicyScreen(onNavigateUp: () -> Unit) {
                     dpm.mtePolicy = selectedMtePolicy
                     context.showOperationResultToast(true)
                 } catch(_: java.lang.UnsupportedOperationException) {
-                    Toast.makeText(context, R.string.unsupported, Toast.LENGTH_SHORT).show()
+                    context.popToast(R.string.unsupported)
                 }
                 selectedMtePolicy = dpm.mtePolicy
             },
@@ -1257,7 +1257,7 @@ private fun ColumnScope.StartLockTaskMode() {
         onClick = {
             if(!NotificationUtils.checkPermission(context)) return@Button
             if(!dpm.isLockTaskPermitted(startLockTaskApp)) {
-                Toast.makeText(context, R.string.app_not_allowed, Toast.LENGTH_SHORT).show()
+                context.popToast(R.string.app_not_allowed)
                 return@Button
             }
             val options = ActivityOptions.makeBasic().setLockTaskEnabled(true)
@@ -1267,7 +1267,7 @@ private fun ColumnScope.StartLockTaskMode() {
             if (launchIntent != null) {
                 context.startActivity(launchIntent, options.toBundle())
             } else {
-                Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
+                context.showOperationResultToast(false)
             }
         },
         enabled = startLockTaskApp.isNotBlank() && (!specifyActivity || startLockTaskActivity.isNotBlank())
@@ -1457,7 +1457,7 @@ fun CaCertScreen(onNavigateUp: () -> Unit) {
         },
         floatingActionButton = {
             FloatingActionButton({
-                Toast.makeText(context, R.string.select_ca_cert, Toast.LENGTH_SHORT).show()
+                context.popToast(R.string.select_ca_cert)
                 getCertLauncher.launch(arrayOf("*/*"))
             }) {
                 Icon(Icons.Default.Add, stringResource(R.string.install))
@@ -1628,7 +1628,7 @@ fun SecurityLoggingScreen(onNavigateUp: () -> Unit) {
             onClick = {
                 val logs = dpm.retrievePreRebootSecurityLogs(receiver)
                 if(logs == null) {
-                    Toast.makeText(context, R.string.no_logs, Toast.LENGTH_SHORT).show()
+                    context.popToast(R.string.no_logs)
                     return@Button
                 } else {
                     val outputStream = ByteArrayOutputStream()
@@ -2021,7 +2021,7 @@ fun InstallSystemUpdateScreen(onNavigateUp: () -> Unit) {
                 else -> R.string.unknown
             }
             val errMsg = context.getString(R.string.install_system_update_failed) + context.getString(errDetail)
-            Toast.makeText(context, errMsg, Toast.LENGTH_SHORT).show()
+            context.popToast(errMsg)
         }
     }
     var uri by remember { mutableStateOf<Uri?>(null) }
@@ -2044,7 +2044,7 @@ fun InstallSystemUpdateScreen(onNavigateUp: () -> Unit) {
                     val executor = Executors.newCachedThreadPool()
                     try {
                         dpm.installSystemUpdate(receiver, uri!!, executor, callback)
-                        Toast.makeText(context, R.string.start_install_system_update, Toast.LENGTH_SHORT).show()
+                        context.popToast(R.string.start_install_system_update)
                     } catch(e: Exception) {
                         errorMessage = e.message
                     }

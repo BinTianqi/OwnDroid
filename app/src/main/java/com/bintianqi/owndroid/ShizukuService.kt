@@ -6,7 +6,6 @@ import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.IBinder
-import android.widget.Toast
 import androidx.annotation.Keep
 import rikka.shizuku.Shizuku
 import rikka.sui.Sui
@@ -54,12 +53,12 @@ fun useShizuku(context: Context, action: (IBinder?) -> Unit) {
         if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
             Shizuku.bindUserService(getShizukuArgs(context), connection)
         } else if(Shizuku.shouldShowRequestPermissionRationale()) {
-            Toast.makeText(context, R.string.permission_denied, Toast.LENGTH_SHORT).show()
+            context.popToast(R.string.permission_denied)
         } else {
             Sui.init(context.packageName)
             fun requestPermissionResultListener(requestCode: Int, grantResult: Int) {
                 if(grantResult != PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(context, R.string.permission_denied, Toast.LENGTH_SHORT).show()
+                    context.popToast(R.string.permission_denied)
                 }
                 Shizuku.removeRequestPermissionResultListener(::requestPermissionResultListener)
             }

@@ -9,7 +9,6 @@ import android.os.Build.VERSION
 import android.os.Process
 import android.os.UserHandle
 import android.os.UserManager
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -66,6 +65,7 @@ import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.parseTimestamp
+import com.bintianqi.owndroid.popToast
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CircularProgressDialog
 import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
@@ -117,7 +117,7 @@ fun UsersScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
                 }
             }
             FunctionItem(R.string.change_user_icon, icon = R.drawable.account_circle_fill0) {
-                Toast.makeText(context, R.string.select_an_image, Toast.LENGTH_SHORT).show()
+                context.popToast(R.string.select_an_image)
                 launcher.launch("image/*")
             }
             if(changeUserIconDialog) ChangeUserIconDialog(bitmap!!) { changeUserIconDialog = false }
@@ -149,7 +149,7 @@ fun UsersScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
                 onClick = {
                     if(dialog == 2) {
                         val result = dpm.logoutUser(receiver)
-                        Toast.makeText(context, userOperationResultCode(result), Toast.LENGTH_SHORT).show()
+                        context.popToast(userOperationResultCode(result))
                     }
                     dialog = 0
                 }
@@ -238,7 +238,7 @@ fun UserOperationScreen(onNavigateUp: () -> Unit) {
             userManager.getUserForSerialNumber(input.toLong())
         }
         if(userHandle == null) {
-            Toast.makeText(context, R.string.user_not_exist, Toast.LENGTH_SHORT).show()
+            context.popToast(R.string.user_not_exist)
         } else {
             operation(userHandle)
         }
@@ -267,7 +267,7 @@ fun UserOperationScreen(onNavigateUp: () -> Unit) {
                     focusMgr.clearFocus()
                     withUserHandle {
                         val result = dpm.startUserInBackground(receiver, it)
-                        Toast.makeText(context, userOperationResultCode(result), Toast.LENGTH_SHORT).show()
+                        context.popToast(userOperationResultCode(result))
                     }
                 },
                 enabled = legalInput,
@@ -294,7 +294,7 @@ fun UserOperationScreen(onNavigateUp: () -> Unit) {
                     focusMgr.clearFocus()
                     withUserHandle {
                         val result = dpm.stopUser(receiver, it)
-                        Toast.makeText(context, userOperationResultCode(result), Toast.LENGTH_SHORT).show()
+                        context.popToast(userOperationResultCode(result))
                     }
                 },
                 enabled = legalInput,
@@ -312,7 +312,7 @@ fun UserOperationScreen(onNavigateUp: () -> Unit) {
                         context.showOperationResultToast(true)
                         input = ""
                     } else {
-                        Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
+                        context.showOperationResultToast(false)
                     }
                 }
             },
@@ -373,8 +373,15 @@ fun CreateUserScreen(onNavigateUp: () -> Unit) {
                         withContext(Dispatchers.Main) {
                             createdUserSerialNumber = userManager.getSerialNumberForUser(uh)
                         }
-                    } catch(_: Exception) {
-                        context.showOperationResultToast(false)
+                    } catch(e: Exception) {
+                        e.printStackTrace()
+                        withContext(Dispatchers.Main) {
+                            if (VERSION.SDK_INT >= 28 && e is UserManager.UserOperationException) {
+                                context.popToast(e.message ?: context.getString(R.string.error))
+                            } else {
+                                context.showOperationResultToast(false)
+                            }
+                        }
                     }
                     withContext(Dispatchers.Main) { creating = false }
                 }

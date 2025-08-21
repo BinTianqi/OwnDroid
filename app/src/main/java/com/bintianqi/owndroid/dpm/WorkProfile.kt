@@ -19,7 +19,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Binder
 import android.os.Build.VERSION
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -59,6 +58,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.IUserService
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.myPrivilege
+import com.bintianqi.owndroid.popToast
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.FunctionItem
@@ -147,7 +147,7 @@ fun CreateWorkProfileScreen(onNavigateUp: () -> Unit) {
                     if(VERSION.SDK_INT >= 33) { intent.putExtra(EXTRA_PROVISIONING_ALLOW_OFFLINE, offlineProvisioning) }
                     launcher.launch(intent)
                 } catch(_: ActivityNotFoundException) {
-                    Toast.makeText(context, R.string.unsupported, Toast.LENGTH_SHORT).show()
+                    context.popToast(R.string.unsupported)
                 }
             },
             modifier = Modifier.fillMaxWidth()

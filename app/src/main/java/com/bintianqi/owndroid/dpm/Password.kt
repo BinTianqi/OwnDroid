@@ -30,7 +30,6 @@ import android.app.admin.DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY
 import android.content.Context
 import android.os.Build.VERSION
 import android.os.UserManager
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -70,6 +69,7 @@ import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SharedPrefs
 import com.bintianqi.owndroid.myPrivilege
+import com.bintianqi.owndroid.popToast
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
@@ -269,7 +269,7 @@ fun ResetPasswordTokenScreen(onNavigateUp: () -> Unit) {
                 try {
                     context.showOperationResultToast(dpm.setResetPasswordToken(receiver, tokenByteArray))
                 } catch(_:SecurityException) {
-                    Toast.makeText(context, R.string.security_exception, Toast.LENGTH_SHORT).show()
+                    context.popToast(R.string.security_exception)
                 }
             },
             modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
@@ -285,8 +285,8 @@ fun ResetPasswordTokenScreen(onNavigateUp: () -> Unit) {
                 onClick = {
                     if(!dpm.isResetPasswordTokenActive(receiver)) {
                         try { activateToken(context) }
-                        catch(_:NullPointerException) { Toast.makeText(context, R.string.please_set_a_token, Toast.LENGTH_SHORT).show() }
-                    } else { Toast.makeText(context, R.string.token_already_activated, Toast.LENGTH_SHORT).show() }
+                        catch(_:NullPointerException) { context.popToast(R.string.please_set_a_token) }
+                    } else { context.popToast(R.string.token_already_activated) }
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) {
@@ -560,6 +560,6 @@ private fun activateToken(context: Context) {
     if (confirmIntent != null) {
         startActivity(context,confirmIntent, null)
     } else {
-        Toast.makeText(context, R.string.failed, Toast.LENGTH_SHORT).show()
+        context.showOperationResultToast(false)
     }
 }

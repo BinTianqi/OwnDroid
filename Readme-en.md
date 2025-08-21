@@ -57,7 +57,7 @@ Solutions:
 > [!NOTE]
 > Some systems have features such as app cloning and children space, which are usually users.
 
-### MIUI
+### MIUI & HyperOS
 
 ```text
 java.lang.SecurityException: Neither user 2000 nor current process has android.permission.MANAGE_DEVICE_ADMINS.
@@ -65,7 +65,7 @@ java.lang.SecurityException: Neither user 2000 nor current process has android.p
 
 Solutions:
 - Enable `USB debugging (Security setting)` in developer options.
-- Execute activating command in root shell.
+- Or execute activating command in root shell.
 
 ### ColorOS
 
@@ -74,6 +74,14 @@ java.lang.IllegalStateException: Unexpected @ProvisioningPreCondition
 ```
 
 Solution: Use OwnDroid testkey version
+
+### Samsung
+
+```text
+user limit reached
+```
+
+Samsung restricts Android's multiple users feature. There is currently no solution.
 
 ## API
 

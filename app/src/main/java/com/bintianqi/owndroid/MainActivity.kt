@@ -2,7 +2,6 @@ package com.bintianqi.owndroid
 
 import android.os.Build.VERSION
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -481,7 +480,7 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
         if(profileNotActivated) {
             dpm.setProfileEnabled(receiver)
             sp.managedProfileActivated = true
-            Toast.makeText(context, R.string.work_profile_activated, Toast.LENGTH_SHORT).show()
+            context.popToast(R.string.work_profile_activated)
         }
     }
     DhizukuErrorDialog {

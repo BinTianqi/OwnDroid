@@ -43,8 +43,8 @@ fun uriToStream(
             operation(it)
         }
     }
-    catch(_: FileNotFoundException) { Toast.makeText(context, R.string.file_not_exist, Toast.LENGTH_SHORT).show() }
-    catch(_: IOException) { Toast.makeText(context, R.string.io_exception, Toast.LENGTH_SHORT).show() }
+    catch(_: FileNotFoundException) { context.popToast(R.string.file_not_exist) }
+    catch(_: IOException) { context.popToast(R.string.io_exception) }
 }
 
 fun writeClipBoard(context: Context, string: String):Boolean{
@@ -88,7 +88,7 @@ fun formatDate(pattern: String, value: Long): String
     = SimpleDateFormat(pattern, Locale.getDefault()).format(Date(value))
 
 fun Context.showOperationResultToast(success: Boolean) {
-    Toast.makeText(this, if(success) R.string.success else R.string.failed, Toast.LENGTH_SHORT).show()
+    popToast(if(success) R.string.success else R.string.failed)
 }
 
 const val APK_MIME = "application/vnd.android.package-archive"
@@ -142,4 +142,12 @@ fun getPackageSignature(info: PackageInfo): String? {
     val signatures = if (Build.VERSION.SDK_INT >= 28) info.signingInfo?.apkContentsSigners else info.signatures
     return signatures?.firstOrNull()?.toByteArray()
         ?.let { MessageDigest.getInstance("SHA-256").digest(it) }?.toHexString()
+}
+
+fun Context.popToast(resId: Int) {
+    Toast.makeText(this, resId, Toast.LENGTH_SHORT).show()
+}
+
+fun Context.popToast(str: String) {
+    Toast.makeText(this, str, Toast.LENGTH_SHORT).show()
 }

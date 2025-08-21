@@ -32,7 +32,6 @@ import android.net.wifi.WifiSsid
 import android.os.Build.VERSION
 import android.os.Bundle
 import android.telephony.data.ApnSetting
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -135,6 +134,7 @@ import com.bintianqi.owndroid.formatDate
 import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.humanReadableDate
 import com.bintianqi.owndroid.myPrivilege
+import com.bintianqi.owndroid.popToast
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.ErrorDialog
@@ -1396,27 +1396,29 @@ fun PrivateDnsScreen(onNavigateUp: () -> Unit) {
     val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     MyScaffold(R.string.private_dns, onNavigateUp) {
-        val dnsStatus = mapOf(
-            PRIVATE_DNS_MODE_UNKNOWN to stringResource(R.string.unknown),
-            PRIVATE_DNS_MODE_OFF to stringResource(R.string.disabled),
-            PRIVATE_DNS_MODE_OPPORTUNISTIC to stringResource(R.string.auto),
-            PRIVATE_DNS_MODE_PROVIDER_HOSTNAME to stringResource(R.string.dns_provide_hostname)
-        )
-        val operationResult = mapOf(
-            PRIVATE_DNS_SET_NO_ERROR to stringResource(R.string.success),
-            PRIVATE_DNS_SET_ERROR_HOST_NOT_SERVING to stringResource(R.string.host_not_serving_dns_tls),
-            PRIVATE_DNS_SET_ERROR_FAILURE_SETTING to stringResource(R.string.failed)
-        )
-        var status by remember { mutableStateOf(dnsStatus[dpm.getGlobalPrivateDnsMode(receiver)]) }
+        fun getDnsStatus(code: Int) = when (code) {
+            PRIVATE_DNS_MODE_UNKNOWN -> R.string.unknown
+            PRIVATE_DNS_MODE_OFF -> R.string.disabled
+            PRIVATE_DNS_MODE_OPPORTUNISTIC -> R.string.auto
+            PRIVATE_DNS_MODE_PROVIDER_HOSTNAME -> R.string.dns_provide_hostname
+            else -> R.string.place_holder
+        }
+        fun getOperationResult(code: Int) = when (code) {
+            PRIVATE_DNS_SET_NO_ERROR -> R.string.success
+            PRIVATE_DNS_SET_ERROR_HOST_NOT_SERVING -> R.string.host_not_serving_dns_tls
+            PRIVATE_DNS_SET_ERROR_FAILURE_SETTING -> R.string.failed
+            else -> R.string.place_holder
+        }
+        var dnsMode by remember { mutableIntStateOf(dpm.getGlobalPrivateDnsMode(receiver)) }
         Spacer(Modifier.padding(vertical = 5.dp))
-        Text(text = stringResource(R.string.current_state, status?:stringResource(R.string.unknown)))
+        Text(stringResource(R.string.current_state, stringResource(getDnsStatus(dnsMode))))
         AnimatedVisibility(visible = dpm.getGlobalPrivateDnsMode(receiver)!=PRIVATE_DNS_MODE_OPPORTUNISTIC) {
             Spacer(Modifier.padding(vertical = 5.dp))
             Button(
                 onClick = {
                     val result = dpm.setGlobalPrivateDnsModeOpportunistic(receiver)
-                    Toast.makeText(context, operationResult[result], Toast.LENGTH_SHORT).show()
-                    status = dnsStatus[dpm.getGlobalPrivateDnsMode(receiver)]
+                    context.popToast(getOperationResult(result))
+                    dnsMode = dpm.getGlobalPrivateDnsMode(receiver)
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -1438,18 +1440,17 @@ fun PrivateDnsScreen(onNavigateUp: () -> Unit) {
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                val result: Int
                 try {
-                    result = dpm.setGlobalPrivateDnsModeSpecifiedHost(receiver,inputHost)
-                    Toast.makeText(context, operationResult[result], Toast.LENGTH_SHORT).show()
+                    val result = dpm.setGlobalPrivateDnsModeSpecifiedHost(receiver,inputHost)
+                    context.popToast(getOperationResult(result))
                 } catch(e: IllegalArgumentException) {
                     e.printStackTrace()
-                    Toast.makeText(context, R.string.invalid_hostname, Toast.LENGTH_SHORT).show()
+                    context.popToast(R.string.invalid_hostname)
                 } catch(e: SecurityException) {
                     e.printStackTrace()
-                    Toast.makeText(context, R.string.security_exception, Toast.LENGTH_SHORT).show()
+                    context.popToast(R.string.security_exception)
                 } finally {
-                    status = dnsStatus[dpm.getGlobalPrivateDnsMode(receiver)]
+                    dnsMode = dpm.getGlobalPrivateDnsMode(receiver)
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -1483,11 +1484,11 @@ fun AlwaysOnVpnPackageScreen(onNavigateUp: () -> Unit) {
             true
         } catch(e: UnsupportedOperationException) {
             e.printStackTrace()
-            Toast.makeText(context, R.string.unsupported, Toast.LENGTH_SHORT).show()
+            context.popToast(R.string.unsupported)
             false
         } catch(e: NameNotFoundException) {
             e.printStackTrace()
-            Toast.makeText(context, R.string.not_installed, Toast.LENGTH_SHORT).show()
+            context.popToast(R.string.not_installed)
             false
         }
     }
@@ -1588,7 +1589,7 @@ fun RecommendedGlobalProxyScreen(onNavigateUp: () -> Unit) {
                     return@Button
                 }
                 if(proxyUri == "") {
-                    Toast.makeText(context, R.string.invalid_config, Toast.LENGTH_SHORT).show()
+                    context.popToast(R.string.invalid_config)
                     return@Button
                 }
                 val uri = proxyUri.toUri()
@@ -1597,7 +1598,7 @@ fun RecommendedGlobalProxyScreen(onNavigateUp: () -> Unit) {
                     port = proxyPort.toInt()
                 } catch(e: NumberFormatException) {
                     e.printStackTrace()
-                    Toast.makeText(context, R.string.invalid_config, Toast.LENGTH_SHORT).show()
+                    context.popToast(R.string.invalid_config)
                     return@Button
                 }
                 val proxyInfo =
@@ -1611,7 +1612,7 @@ fun RecommendedGlobalProxyScreen(onNavigateUp: () -> Unit) {
                         ProxyInfo.buildDirectProxy(proxyUri, port, exclList.lines())
                     }
                 if(VERSION.SDK_INT >= 30 && !proxyInfo.isValid) {
-                    Toast.makeText(context, R.string.invalid_config, Toast.LENGTH_SHORT).show()
+                    context.popToast(R.string.invalid_config)
                     return@Button
                 }
                 dpm.setRecommendedGlobalProxy(receiver, proxyInfo)

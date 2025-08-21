@@ -10,7 +10,6 @@ import android.os.Build.VERSION
 import android.os.PersistableBundle
 import android.os.UserHandle
 import android.os.UserManager
-import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.bintianqi.owndroid.dpm.handleNetworkLogs
 import com.bintianqi.owndroid.dpm.handlePrivilegeChange
@@ -48,7 +47,7 @@ class Receiver : DeviceAdminReceiver() {
 
     override fun onProfileProvisioningComplete(context: Context, intent: Intent) {
         super.onProfileProvisioningComplete(context, intent)
-        Toast.makeText(context, R.string.create_work_profile_success, Toast.LENGTH_SHORT).show()
+        context.popToast(R.string.create_work_profile_success)
     }
 
     override fun onNetworkLogsAvailable(context: Context, intent: Intent, batchToken: Long, networkLogsCount: Int) {

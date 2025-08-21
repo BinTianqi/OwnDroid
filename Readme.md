@@ -57,15 +57,13 @@ java.lang.IllegalStateException: Not allowed to set the device owner because the
 > [!NOTE]
 > 一些系统有应用克隆、儿童空间等功能，它们通常是用户。
 
-### MIUI
+### MIUI & HyperOS
 
 ```text
 java.lang.SecurityException: Neither user 2000 nor current process has android.permission.MANAGE_DEVICE_ADMINS.
 ```
 
-解决办法：
-- 在开发者设置中打开`USB调试（安全设置）`。
-- 在root命令行中执行激活命令
+解决办法： 在开发者设置中打开`USB调试（安全设置）`，或在root命令行中执行激活命令。
 
 ### ColorOS
 
@@ -74,6 +72,14 @@ java.lang.IllegalStateException: Unexpected @ProvisioningPreCondition
 ```
 
 解决办法：使用 OwnDroid testkey 版本
+
+### 三星
+
+```text
+user limit reached
+```
+
+三星限制了多用户功能，暂无解决办法。
 
 ## API
 

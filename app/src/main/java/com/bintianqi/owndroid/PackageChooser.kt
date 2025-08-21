@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -132,7 +131,7 @@ fun AppChooserScreen(params: ApplicationsList, onChoosePackage: (String?) -> Uni
                         }
                         IconButton({
                             system = !system
-                            Toast.makeText(context, if(system) R.string.show_system_app else R.string.show_user_app, Toast.LENGTH_SHORT).show()
+                            context.popToast(if(system) R.string.show_system_app else R.string.show_user_app)
                         }) {
                             Icon(painter = painterResource(R.drawable.filter_alt_fill0), contentDescription = null)
                         }
