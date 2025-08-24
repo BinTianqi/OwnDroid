@@ -536,7 +536,8 @@ fun PermissionsManagerScreen(onNavigateUp: () -> Unit, param: PermissionsManager
     }
     if(selectedPermission != null) {
         fun changeState(state: Int) {
-            dpm.setPermissionGrantState(receiver, packageName, selectedPermission!!.permission, state)
+            val result = dpm.setPermissionGrantState(receiver, packageName, selectedPermission!!.permission, state)
+            if (!result) context.showOperationResultToast(false)
             statusMap[selectedPermission!!.permission] = dpm.getPermissionGrantState(receiver, packageName, selectedPermission!!.permission)
             selectedPermission = null
         }

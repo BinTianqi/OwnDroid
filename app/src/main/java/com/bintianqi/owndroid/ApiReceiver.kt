@@ -1,5 +1,6 @@
 package com.bintianqi.owndroid
 
+import android.app.admin.DevicePolicyManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -18,8 +19,10 @@ class ApiReceiver: BroadcastReceiver() {
             val dpm = context.getDPM()
             val receiver = context.getReceiver()
             val app = intent.getStringExtra("package")
+            val permission = intent.getStringExtra("permission")
             val restriction = intent.getStringExtra("restriction")
-            if(!app.isNullOrEmpty()) log += "\npackage: $app"
+            if (!app.isNullOrEmpty()) log += "\npackage: $app"
+            if (!permission.isNullOrEmpty()) log += "\npermission: $permission"
             try {
                 @SuppressWarnings("NewApi")
                 val ok = when(intent.action?.removePrefix("com.bintianqi.owndroid.action.")) {
@@ -29,6 +32,24 @@ class ApiReceiver: BroadcastReceiver() {
                     "UNSUSPEND" -> dpm.setPackagesSuspended(receiver, arrayOf(app), false).isEmpty()
                     "ADD_USER_RESTRICTION" -> { dpm.addUserRestriction(receiver, restriction); true }
                     "CLEAR_USER_RESTRICTION" -> { dpm.clearUserRestriction(receiver, restriction); true }
+                    "SET_PERMISSION_DEFAULT" -> {
+                        dpm.setPermissionGrantState(
+                            receiver, app!!, permission!!,
+                            DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT
+                        )
+                    }
+                    "SET_PERMISSION_GRANTED" -> {
+                        dpm.setPermissionGrantState(
+                            receiver, app!!, permission!!,
+                            DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED
+                        )
+                    }
+                    "SET_PERMISSION_DENIED" -> {
+                        dpm.setPermissionGrantState(
+                            receiver, app!!, permission!!,
+                            DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED
+                        )
+                    }
                     "LOCK" -> { dpm.lockNow(); true }
                     "REBOOT" -> { dpm.reboot(receiver); true }
                     else -> {

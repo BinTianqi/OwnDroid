@@ -1,5 +1,8 @@
 [English](Readme-en.md) | [简体中文](Readme.md)
 
+> [!important]
+> The Japanese readme need update
+
 # OwnDroid
 
 AndroidのDevice owner特権を使用してデバイスを管理します。

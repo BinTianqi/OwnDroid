@@ -83,16 +83,19 @@ user limit reached
 
 ## API
 
-| ID                     | Extra         | 最小安卓版本 |
-|------------------------|---------------|:------:|
-| HIDE                   | `package`     |        |
-| UNHIDE                 | `package`     |        |
-| SUSPEND                | `package`     |   7    |
-| UNSUSPEND              | `package`     |   7    |
-| ADD_USER_RESTRICTION   | `restriction` |        |
-| CLEAR_USER_RESTRICTION | `restriction` |        |
-| LOCK                   |               |        |
-| REBOOT                 |               |   7    |
+| ID                       | Extra                  | 最小安卓版本 |
+|--------------------------|------------------------|:------:|
+| `HIDE`                   | `package`              |        |
+| `UNHIDE`                 | `package`              |        |
+| `SUSPEND`                | `package`              |   7    |
+| `UNSUSPEND`              | `package`              |   7    |
+| `ADD_USER_RESTRICTION`   | `restriction`          |        |
+| `CLEAR_USER_RESTRICTION` | `restriction`          |        |
+| `SET_PERMISSION_DEFAULT` | `package` `permission` |   6    |
+| `SET_PERMISSION_GRANTED` | `package` `permission` |   6    |
+| `SET_PERMISSION_DENIED`  | `package` `permission` |   6    |
+| `LOCK`                   |                        |        |
+| `REBOOT`                 |                        |   7    |
 
 [可用的用户限制](https://developer.android.google.cn/reference/android/os/UserManager#constants_1)
 

@@ -323,7 +323,8 @@ fun ApiSettings(onNavigateUp: () -> Unit) {
                 onClick = {
                     sp.apiKey = key
                     context.showOperationResultToast(true)
-                }
+                },
+                enabled = key.isNotEmpty()
             ) {
                 Text(stringResource(R.string.apply))
             }

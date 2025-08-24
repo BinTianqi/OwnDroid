@@ -85,16 +85,19 @@ Samsung restricts Android's multiple users feature. There is currently no soluti
 
 ## API
 
-| ID                     | Extras        | Minimum Android version |
-|------------------------|---------------|:-----------------------:|
-| HIDE                   | `package`     |                         |
-| UNHIDE                 | `package`     |                         |
-| SUSPEND                | `package`     |            7            |
-| UNSUSPEND              | `package`     |            7            |
-| ADD_USER_RESTRICTION   | `restriction` |                         |
-| CLEAR_USER_RESTRICTION | `restriction` |                         |
-| LOCK                   |               |                         |
-| REBOOT                 |               |            7            |
+| ID                       | Extras                 | Minimum Android version |
+|--------------------------|------------------------|:-----------------------:|
+| `HIDE`                   | `package`              |                         |
+| `UNHIDE`                 | `package`              |                         |
+| `SUSPEND`                | `package`              |            7            |
+| `UNSUSPEND`              | `package`              |            7            |
+| `ADD_USER_RESTRICTION`   | `restriction`          |                         |
+| `CLEAR_USER_RESTRICTION` | `restriction`          |                         |
+| `SET_PERMISSION_DEFAULT` | `package` `permission` |            6            |
+| `SET_PERMISSION_GRANTED` | `package` `permission` |            6            |
+| `SET_PERMISSION_DENIED`  | `package` `permission` |            6            |
+| `LOCK`                   |                        |                         |
+| `REBOOT`                 |                        |            7            |
 
 [Available user restrictions](https://developer.android.com/reference/android/os/UserManager#constants_1)
 
