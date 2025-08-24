@@ -11,8 +11,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
@@ -21,6 +27,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -60,8 +67,16 @@ class MyDhizukuService(context: Context, admin: ComponentName, client: IDhizukuC
         val file = mContext.filesDir.resolve(DHIZUKU_CLIENTS_FILE)
         val clients = Json.decodeFromString<List<DhizukuClientInfo>>(file.readText())
         val signature = getPackageSignature(packageInfo)
-        val hasPermission = DhizukuClientInfo(callingUid, signature, true) in clients
-        Log.d(TAG, "UID $callingUid, PID $callingPid, has permission: $hasPermission")
+        val requiredPermission = when (func) {
+            "remote_transact", "remote_process" -> func
+            "bind_user_service", "unbind_user_service" -> "user_service"
+            "get_delegated_scopes", "set_delegated_scopes" -> "delegated_scopes"
+            else -> "other"
+        }
+        val hasPermission = clients.find {
+            callingUid == it.uid && signature == it.signature && requiredPermission in it.permissions
+        } != null
+        Log.d(TAG, "UID $callingUid, PID $callingPid, required permission: $requiredPermission, has permission: $hasPermission")
         return hasPermission
     }
 
@@ -91,9 +106,12 @@ class DhizukuActivity : ComponentActivity() {
         val label = appInfo.loadLabel(packageManager).toString()
         fun close(grantPermission: Boolean) {
             val file = filesDir.resolve(DHIZUKU_CLIENTS_FILE)
-            val clients = Json.decodeFromString<MutableList<DhizukuClientInfo>>(file.readText())
+            val json = Json { ignoreUnknownKeys = true }
+            val clients = json.decodeFromString<MutableList<DhizukuClientInfo>>(file.readText())
             val index = clients.indexOfFirst { it.uid == uid }
-            val clientInfo = DhizukuClientInfo(uid, getPackageSignature(packageInfo), grantPermission)
+            val clientInfo = DhizukuClientInfo(
+                uid, getPackageSignature(packageInfo), if (grantPermission) DhizukuPermissions else emptyList()
+            )
             if (index == -1) clients += clientInfo
             else clients[index] = clientInfo
             file.writeText(Json.encodeToString(clients))
@@ -121,9 +139,9 @@ class DhizukuActivity : ComponentActivity() {
                     confirmButton = {
                         var time by remember { mutableIntStateOf(3) }
                         LaunchedEffect(Unit) {
-                            (1..3).forEach {
+                            for (i in 2 downTo 0) {
                                 delay(1000)
-                                time -= 1
+                                time = i
                             }
                         }
                         TextButton({
@@ -152,10 +170,11 @@ class DhizukuActivity : ComponentActivity() {
     }
 }
 
+val DhizukuPermissions = listOf("remote_transact", "remote_process", "user_service", "delegated_scopes", "other")
 
 @Serializable
 data class DhizukuClientInfo(
     val uid: Int,
     val signature: String?,
-    val allow: Boolean
+    val permissions: List<String> = emptyList()
 )

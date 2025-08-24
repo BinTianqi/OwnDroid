@@ -10,6 +10,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,6 +37,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
@@ -44,6 +47,7 @@ import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -55,10 +59,10 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -72,11 +76,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -84,6 +90,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.ChoosePackageContract
 import com.bintianqi.owndroid.DHIZUKU_CLIENTS_FILE
 import com.bintianqi.owndroid.DhizukuClientInfo
+import com.bintianqi.owndroid.DhizukuPermissions
 import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.IUserService
 import com.bintianqi.owndroid.MyAdminComponent
@@ -509,7 +516,8 @@ fun DhizukuServerSettingsScreen(onNavigateUp: () -> Unit) {
     LaunchedEffect(enabled) {
         if (enabled) {
             clients.clear()
-            clients.addAll(Json.decodeFromString<List<DhizukuClientInfo>>(file.readText()))
+            val json = Json { ignoreUnknownKeys = true }
+            clients.addAll(json.decodeFromString<List<DhizukuClientInfo>>(file.readText()))
         }
     }
     MyLazyScaffold(R.string.dhizuku_server, onNavigateUp) {
@@ -524,25 +532,62 @@ fun DhizukuServerSettingsScreen(onNavigateUp: () -> Unit) {
                 writeList()
             } else {
                 val info = pm.getApplicationInfo(name, 0)
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(HorizontalPadding, 8.dp),
-                    Arrangement.SpaceBetween, Alignment.CenterVertically
+                var expand by remember { mutableStateOf(false) }
+                Card(
+                    Modifier.fillMaxWidth().padding(HorizontalPadding, 8.dp)
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Image(
-                            rememberDrawablePainter(info.loadIcon(pm)), null,
-                            Modifier
-                                .padding(end = 16.dp)
-                                .size(50.dp)
-                        )
-                        Text(info.loadLabel(pm).toString(), style = typography.titleLarge)
+                    Row(
+                        Modifier.fillMaxWidth().padding(8.dp, 8.dp, 0.dp, 8.dp),
+                        Arrangement.SpaceBetween, Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Image(
+                                rememberDrawablePainter(info.loadIcon(pm)), null,
+                                Modifier
+                                    .padding(end = 16.dp)
+                                    .size(50.dp)
+                            )
+                            Column {
+                                Text(info.loadLabel(pm).toString(), style = typography.titleLarge)
+                                Text(name, Modifier.alpha(0.7F), style = typography.bodyMedium)
+                            }
+                        }
+                        val ts = when (DhizukuPermissions.filter { it !in client.permissions }.size) {
+                            0 -> ToggleableState.On
+                            DhizukuPermissions.size -> ToggleableState.Off
+                            else -> ToggleableState.Indeterminate
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            TriStateCheckbox(ts, {
+                                clients[index] = when (ts) {
+                                    ToggleableState.On, ToggleableState.Indeterminate -> client.copy(permissions = emptyList())
+                                    ToggleableState.Off -> client.copy(permissions = DhizukuPermissions)
+                                }
+                            })
+                            val degrees by animateFloatAsState(if(expand) 180F else 0F)
+                            IconButton({ expand = !expand }) {
+                                Icon(Icons.Default.ArrowDropDown, null, Modifier.rotate(degrees))
+                            }
+                        }
                     }
-                    Switch(client.allow, {
-                        clients[index] = client.copy(allow = it)
-                        writeList()
-                    })
+                    AnimatedVisibility(expand, Modifier.padding(8.dp, 0.dp, 8.dp, 8.dp)) {
+                        Column {
+                            mapOf(
+                                "remote_transact" to "Remote transact", "remote_process" to "Remote process",
+                                "user_service" to "User service", "delegated_scopes" to "Delegated scopes",
+                                "other" to context.getString(R.string.other)
+                            ).forEach { (k, v) ->
+                                Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
+                                    Text(v)
+                                    Checkbox(k in client.permissions, {
+                                        val newPermissions = if (it) client.permissions.plus(k) else client.permissions.minus(k)
+                                        clients[index] = client.copy(permissions = newPermissions)
+                                        writeList()
+                                    })
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
