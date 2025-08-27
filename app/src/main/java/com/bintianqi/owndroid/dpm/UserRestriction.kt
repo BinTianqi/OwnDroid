@@ -57,6 +57,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.myPrivilege
+import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.MyLazyScaffold
 import com.bintianqi.owndroid.ui.NavIcon
@@ -149,12 +150,13 @@ fun UserRestrictionOptionsScreen(
     val dpm = context.getDPM()
     val receiver = context.getReceiver()
     val status = remember { mutableStateMapOf<String, Boolean>() }
-    LaunchedEffect(Unit) {
+    fun refresh() {
         val restrictions = dpm.getUserRestrictions(receiver)
         data.items.forEach {
             status.put(it.id, restrictions.getBoolean(it.id))
         }
     }
+    LaunchedEffect(Unit) { refresh() }
     MyLazyScaffold(data.title, onNavigateUp) {
         items(data.items.filter { Build.VERSION.SDK_INT >= it.requiresApi }) { restriction ->
             Row(
@@ -174,12 +176,17 @@ fun UserRestrictionOptionsScreen(
                 Switch(
                     status[restriction.id] == true,
                     {
-                        if (it) {
-                            dpm.addUserRestriction(receiver, restriction.id)
-                        } else {
-                            dpm.clearUserRestriction(receiver, restriction.id)
+                        try {
+                            if (it) {
+                                dpm.addUserRestriction(receiver, restriction.id)
+                            } else {
+                                dpm.clearUserRestriction(receiver, restriction.id)
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            context.showOperationResultToast(false)
                         }
-                        status[restriction.id] = dpm.getUserRestrictions(receiver).getBoolean(restriction.id)
+                        refresh()
                     }
                 )
             }
@@ -272,12 +279,12 @@ object RestrictionData {
         Restriction(UserManager.DISALLOW_SAFE_BOOT, R.string.safe_boot, R.drawable.security_fill0, 23),
         Restriction(UserManager.DISALLOW_DEBUGGING_FEATURES, R.string.debug_features, R.drawable.adb_fill0)
     )
-    fun getAllRestrictions() = internet + connectivity + media + applications + users + other
 }
 
 @Serializable object UserRestrictionEditor
 
 @OptIn(ExperimentalMaterial3Api::class)
+@RequiresApi(24)
 @Composable
 fun UserRestrictionEditorScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
@@ -307,7 +314,12 @@ fun UserRestrictionEditorScreen(onNavigateUp: () -> Unit) {
                 ) {
                     Text(it)
                     IconButton({
-                        dpm.clearUserRestriction(receiver, it)
+                        try {
+                            dpm.clearUserRestriction(receiver, it)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            context.showOperationResultToast(false)
+                        }
                         refresh()
                     }) {
                         Icon(Icons.Outlined.Delete, null)
@@ -317,9 +329,14 @@ fun UserRestrictionEditorScreen(onNavigateUp: () -> Unit) {
             item {
                 var input by remember { mutableStateOf("") }
                 fun add() {
-                    dpm.addUserRestriction(receiver, input)
+                    try {
+                        dpm.addUserRestriction(receiver, input)
+                        input = ""
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        context.showOperationResultToast(false)
+                    }
                     refresh()
-                    input = ""
                 }
                 OutlinedTextField(
                     input, { input = it }, Modifier.fillMaxWidth().padding(HorizontalPadding, 20.dp),

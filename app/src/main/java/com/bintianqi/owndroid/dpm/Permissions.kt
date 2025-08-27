@@ -233,17 +233,14 @@ fun WorkModesScreen(
             if(privilege.profile) Row(
                 Modifier
                     .fillMaxWidth()
-                    .background(if (privilege.device) colorScheme.primaryContainer else Color.Transparent)
+                    .background(colorScheme.primaryContainer)
                     .padding(HorizontalPadding, 10.dp),
                 Arrangement.SpaceBetween, Alignment.CenterVertically
             ) {
                 Column {
                     Text(stringResource(R.string.profile_owner), style = typography.titleLarge)
                 }
-                Icon(
-                    if(privilege.device) Icons.Default.Check else Icons.AutoMirrored.Default.KeyboardArrowRight, null,
-                    tint = if(privilege.device) colorScheme.primary else colorScheme.onBackground
-                )
+                Icon(Icons.Default.Check, null, tint = colorScheme.primary)
             }
             if(privilege.dhizuku || !(privilege.device || privilege.profile)) Row(
                 Modifier
