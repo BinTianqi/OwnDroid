@@ -66,9 +66,9 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.HorizontalPadding
+import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.SharedPrefs
-import com.bintianqi.owndroid.myPrivilege
+import com.bintianqi.owndroid.SP
 import com.bintianqi.owndroid.popToast
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
@@ -88,11 +88,11 @@ import kotlinx.serialization.Serializable
 @Composable
 fun PasswordScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val context = LocalContext.current
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     var dialog by remember { mutableIntStateOf(0) }
     MyScaffold(R.string.password_and_keyguard, onNavigateUp, 0.dp) {
         FunctionItem(R.string.password_info, icon = R.drawable.info_fill0) { onNavigate(PasswordInfo) }
-        if(SharedPrefs(context).displayDangerousFeatures) {
+        if(SP.displayDangerousFeatures) {
             if(VERSION.SDK_INT >= 26) {
                 FunctionItem(R.string.reset_password_token, icon = R.drawable.key_vertical_fill0) { onNavigate(ResetPasswordToken) }
             }
@@ -116,16 +116,14 @@ fun PasswordScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
         }
     }
     if(dialog != 0) {
-        val dpm = context.getDPM()
-        val receiver = context.getReceiver()
         var input by remember { mutableStateOf("") }
         LaunchedEffect(Unit) {
             input = when(dialog) {
-                1 -> dpm.getMaximumTimeToLock(receiver).toString()
-                2 -> dpm.getRequiredStrongAuthTimeout(receiver).toString()
-                3 -> dpm.getPasswordExpirationTimeout(receiver).toString()
-                4 -> dpm.getMaximumFailedPasswordsForWipe(receiver).toString()
-                5 -> dpm.getPasswordHistoryLength(receiver).toString()
+                1 -> Privilege.DPM.getMaximumTimeToLock(Privilege.DAR).toString()
+                2 -> Privilege.DPM.getRequiredStrongAuthTimeout(Privilege.DAR).toString()
+                3 -> Privilege.DPM.getPasswordExpirationTimeout(Privilege.DAR).toString()
+                4 -> Privilege.DPM.getMaximumFailedPasswordsForWipe(Privilege.DAR).toString()
+                5 -> Privilege.DPM.getPasswordHistoryLength(Privilege.DAR).toString()
                 else -> ""
             }
         }
@@ -180,11 +178,11 @@ fun PasswordScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
                 TextButton(
                     onClick = {
                         when(dialog) {
-                            1 -> dpm.setMaximumTimeToLock(receiver, input.toLong())
-                            2 -> dpm.setRequiredStrongAuthTimeout(receiver, input.toLong())
-                            3 -> dpm.setPasswordExpirationTimeout(receiver, input.toLong())
-                            4 -> dpm.setMaximumFailedPasswordsForWipe(receiver, input.toInt())
-                            5 -> dpm.setPasswordHistoryLength(receiver, input.toInt())
+                            1 -> Privilege.DPM.setMaximumTimeToLock(Privilege.DAR, input.toLong())
+                            2 -> Privilege.DPM.setRequiredStrongAuthTimeout(Privilege.DAR, input.toLong())
+                            3 -> Privilege.DPM.setPasswordExpirationTimeout(Privilege.DAR, input.toLong())
+                            4 -> Privilege.DPM.setMaximumFailedPasswordsForWipe(Privilege.DAR, input.toInt())
+                            5 -> Privilege.DPM.setPasswordHistoryLength(Privilege.DAR, input.toInt())
                         }
                         dialog = 0
                     }
@@ -208,14 +206,11 @@ fun PasswordScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
 
 @Composable
 fun PasswordInfoScreen(onNavigateUp: () -> Unit) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     var dialog by remember { mutableIntStateOf(0) } // 0:none, 1:password complexity
     MyScaffold(R.string.password_info, onNavigateUp, 0.dp) {
         if(VERSION.SDK_INT >= 29) {
-            val text = when(dpm.passwordComplexity) {
+            val text = when(Privilege.DPM.passwordComplexity) {
                 PASSWORD_COMPLEXITY_NONE -> R.string.none
                 PASSWORD_COMPLEXITY_LOW -> R.string.low
                 PASSWORD_COMPLEXITY_MEDIUM -> R.string.medium
@@ -224,9 +219,9 @@ fun PasswordInfoScreen(onNavigateUp: () -> Unit) {
             }
             InfoItem(R.string.current_password_complexity, text, true) { dialog = 1 }
         }
-        InfoItem(R.string.password_sufficient, dpm.isActivePasswordSufficient.yesOrNo)
+        InfoItem(R.string.password_sufficient, Privilege.DPM.isActivePasswordSufficient.yesOrNo)
         if(VERSION.SDK_INT >= 28 && privilege.work) {
-            InfoItem(R.string.unified_password, dpm.isUsingUnifiedPassword(receiver).yesOrNo)
+            InfoItem(R.string.unified_password, Privilege.DPM.isUsingUnifiedPassword(Privilege.DAR).yesOrNo)
         }
     }
     if(dialog != 0) AlertDialog(
@@ -246,8 +241,6 @@ fun PasswordInfoScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun ResetPasswordTokenScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     var token by remember { mutableStateOf("") }
     val tokenByteArray = token.toByteArray()
     val focusMgr = LocalFocusManager.current
@@ -267,7 +260,7 @@ fun ResetPasswordTokenScreen(onNavigateUp: () -> Unit) {
         Button(
             onClick = {
                 try {
-                    context.showOperationResultToast(dpm.setResetPasswordToken(receiver, tokenByteArray))
+                    context.showOperationResultToast(Privilege.DPM.setResetPasswordToken(Privilege.DAR, tokenByteArray))
                 } catch(_:SecurityException) {
                     context.popToast(R.string.security_exception)
                 }
@@ -283,7 +276,7 @@ fun ResetPasswordTokenScreen(onNavigateUp: () -> Unit) {
         ) {
             Button(
                 onClick = {
-                    if(!dpm.isResetPasswordTokenActive(receiver)) {
+                    if(!Privilege.DPM.isResetPasswordTokenActive(Privilege.DAR)) {
                         try { activateToken(context) }
                         catch(_:NullPointerException) { context.popToast(R.string.please_set_a_token) }
                     } else { context.popToast(R.string.token_already_activated) }
@@ -293,7 +286,7 @@ fun ResetPasswordTokenScreen(onNavigateUp: () -> Unit) {
                 Text(stringResource(R.string.activate))
             }
             Button(
-                onClick = { context.showOperationResultToast(dpm.clearResetPasswordToken(receiver)) },
+                onClick = { context.showOperationResultToast(Privilege.DPM.clearResetPasswordToken(Privilege.DAR)) },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) {
                 Text(stringResource(R.string.clear))
@@ -309,8 +302,6 @@ fun ResetPasswordTokenScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun ResetPasswordScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var password by remember { mutableStateOf("") }
     var useToken by remember { mutableStateOf(false) }
@@ -401,9 +392,9 @@ fun ResetPasswordScreen(onNavigateUp: () -> Unit) {
                 TextButton(
                     onClick = {
                         val success = if(VERSION.SDK_INT >= 26 && useToken) {
-                            dpm.resetPasswordWithToken(receiver, password, tokenByteArray, flag)
+                            Privilege.DPM.resetPasswordWithToken(Privilege.DAR, password, tokenByteArray, flag)
                         } else {
-                            dpm.resetPassword(password, flag)
+                            Privilege.DPM.resetPassword(password, flag)
                         }
                         context.showOperationResultToast(success)
                         password = ""
@@ -430,7 +421,6 @@ fun ResetPasswordScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun RequiredPasswordComplexityScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
     val passwordComplexity = mapOf(
         PASSWORD_COMPLEXITY_NONE to R.string.none,
         PASSWORD_COMPLEXITY_LOW to R.string.low,
@@ -438,7 +428,7 @@ fun RequiredPasswordComplexityScreen(onNavigateUp: () -> Unit) {
         PASSWORD_COMPLEXITY_HIGH to R.string.high
     )
     var selectedItem by remember { mutableIntStateOf(PASSWORD_COMPLEXITY_NONE) }
-    LaunchedEffect(Unit) { selectedItem = dpm.requiredPasswordComplexity }
+    LaunchedEffect(Unit) { selectedItem = Privilege.DPM.requiredPasswordComplexity }
     MyScaffold(R.string.required_password_complexity, onNavigateUp, 0.dp) {
         passwordComplexity.forEach {
             FullWidthRadioButtonItem(it.value, selectedItem == it.key) { selectedItem = it.key }
@@ -446,8 +436,8 @@ fun RequiredPasswordComplexityScreen(onNavigateUp: () -> Unit) {
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                dpm.requiredPasswordComplexity = selectedItem
-                selectedItem = dpm.requiredPasswordComplexity
+                Privilege.DPM.requiredPasswordComplexity = selectedItem
+                selectedItem = Privilege.DPM.requiredPasswordComplexity
                 context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = HorizontalPadding)
@@ -463,8 +453,6 @@ fun RequiredPasswordComplexityScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun KeyguardDisabledFeaturesScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     var flag by remember { mutableIntStateOf(0) }
     var mode by remember { mutableIntStateOf(0) } // 0:Enable all, 1:Disable all, 2:Custom
     val flagsLiat = mutableListOf(
@@ -482,14 +470,14 @@ fun KeyguardDisabledFeaturesScreen(onNavigateUp: () -> Unit) {
     }
     if(VERSION.SDK_INT >= 34) flagsLiat += R.string.disable_keyguard_features_shortcuts to KEYGUARD_DISABLE_SHORTCUTS_ALL
     fun refresh() {
-        flag = dpm.getKeyguardDisabledFeatures(receiver)
+        flag = Privilege.DPM.getKeyguardDisabledFeatures(Privilege.DAR)
         mode = when(flag) {
             KEYGUARD_DISABLE_FEATURES_NONE -> 0
             KEYGUARD_DISABLE_FEATURES_ALL -> 1
             else -> 2
         }
     }
-    LaunchedEffect(mode) { if(mode != 2) flag = dpm.getKeyguardDisabledFeatures(receiver) }
+    LaunchedEffect(mode) { if(mode != 2) flag = Privilege.DPM.getKeyguardDisabledFeatures(Privilege.DAR) }
     LaunchedEffect(Unit) { refresh() }
     MyScaffold(R.string.disable_keyguard_features, onNavigateUp) {
         FullWidthRadioButtonItem(R.string.enable_all, mode == 0) { mode = 0 }
@@ -507,7 +495,7 @@ fun KeyguardDisabledFeaturesScreen(onNavigateUp: () -> Unit) {
         Button(
             onClick = {
                 val disabledFeatures = if(mode == 0) KEYGUARD_DISABLE_FEATURES_NONE else if(mode == 1) KEYGUARD_DISABLE_FEATURES_ALL else flag
-                dpm.setKeyguardDisabledFeatures(receiver, disabledFeatures)
+                Privilege.DPM.setKeyguardDisabledFeatures(Privilege.DAR, disabledFeatures)
                 refresh()
                 context.showOperationResultToast(true)
             },
@@ -523,8 +511,6 @@ fun KeyguardDisabledFeaturesScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun RequiredPasswordQualityScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val passwordQuality = mapOf(
         PASSWORD_QUALITY_UNSPECIFIED to R.string.password_quality_unspecified,
         PASSWORD_QUALITY_SOMETHING to R.string.password_quality_something,
@@ -535,7 +521,7 @@ fun RequiredPasswordQualityScreen(onNavigateUp: () -> Unit) {
         PASSWORD_QUALITY_NUMERIC_COMPLEX to R.string.password_quality_numeric_complex
     )
     var selectedItem by remember { mutableIntStateOf(PASSWORD_QUALITY_UNSPECIFIED) }
-    LaunchedEffect(Unit) { selectedItem=dpm.getPasswordQuality(receiver) }
+    LaunchedEffect(Unit) { selectedItem = Privilege.DPM.getPasswordQuality(Privilege.DAR) }
     MyScaffold(R.string.required_password_quality, onNavigateUp) {
         passwordQuality.forEach {
             RadioButtonItem(it.value, selectedItem == it.key) { selectedItem = it.key }
@@ -543,7 +529,7 @@ fun RequiredPasswordQualityScreen(onNavigateUp: () -> Unit) {
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                dpm.setPasswordQuality(receiver,selectedItem)
+                Privilege.DPM.setPasswordQuality(Privilege.DAR, selectedItem)
                 context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
@@ -558,7 +544,7 @@ private fun activateToken(context: Context) {
     val keyguardManager = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
     val confirmIntent = keyguardManager.createConfirmDeviceCredentialIntent(context.getString(R.string.app_name), desc)
     if (confirmIntent != null) {
-        startActivity(context,confirmIntent, null)
+        startActivity(context, confirmIntent, null)
     } else {
         context.showOperationResultToast(false)
     }

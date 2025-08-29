@@ -129,11 +129,11 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.ChoosePackageContract
 import com.bintianqi.owndroid.HorizontalPadding
+import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.formatDate
 import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.humanReadableDate
-import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.popToast
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
@@ -166,7 +166,7 @@ import kotlin.reflect.jvm.jvmErasure
 
 @Composable
 fun NetworkScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     MyScaffold(R.string.network, onNavigateUp, 0.dp) {
         if(!privilege.dhizuku) FunctionItem(R.string.wifi, icon = R.drawable.wifi_fill0) { onNavigate(WiFi) }
         if(VERSION.SDK_INT >= 30) {
@@ -202,15 +202,13 @@ fun NetworkScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
 
 @Composable
 fun NetworkOptionsScreen(onNavigateUp: () -> Unit) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     var dialog by remember { mutableIntStateOf(0) }
     MyScaffold(R.string.options, onNavigateUp, 0.dp) {
         if(VERSION.SDK_INT >= 30 && (privilege.device || privilege.org)) {
             SwitchItem(R.string.lockdown_admin_configured_network, icon = R.drawable.wifi_password_fill0,
-                getState = { dpm.hasLockdownAdminConfiguredNetworks(receiver) }, onCheckedChange = { dpm.setConfiguredNetworksLockdownState(receiver,it) },
+                getState = { Privilege.DPM.hasLockdownAdminConfiguredNetworks(Privilege.DAR) },
+                onCheckedChange = { Privilege.DPM.setConfiguredNetworksLockdownState(Privilege.DAR, it) },
                 onClickBlank = { dialog = 1 }
             )
         }
@@ -265,7 +263,7 @@ fun WifiScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit, onNavigateTo
             HorizontalPager(state = pagerState, verticalAlignment = Alignment.Top) { page ->
                 if(page == 0) {
                     val wm = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-                    val privilege by myPrivilege.collectAsStateWithLifecycle()
+                    val privilege by Privilege.status.collectAsStateWithLifecycle()
                     @Suppress("DEPRECATION") Column(
                         modifier = Modifier.fillMaxSize().padding(top = 12.dp)
                     ) {
@@ -313,13 +311,11 @@ fun WifiScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit, onNavigateTo
             }
         }
         if(wifiMacDialog && VERSION.SDK_INT >= 24) {
-            val dpm = context.getDPM()
-            val receiver = context.getReceiver()
             AlertDialog(
                 onDismissRequest = { wifiMacDialog = false },
                 confirmButton = { TextButton(onClick = { wifiMacDialog = false }) { Text(stringResource(R.string.confirm)) } },
                 text = {
-                    val mac = dpm.getWifiMacAddress(receiver)
+                    val mac = Privilege.DPM.getWifiMacAddress(Privilege.DAR)
                     OutlinedTextField(
                         value = mac ?: stringResource(R.string.none), label = { Text(stringResource(R.string.wifi_mac_address)) },
                         onValueChange = {}, readOnly = true, modifier = Modifier.fillMaxWidth(), textStyle = typography.bodyLarge,
@@ -763,9 +759,8 @@ private fun AddNetworkScreen(wifiConfig: WifiConfiguration? = null, onNavigateUp
 @Composable
 fun WifiSecurityLevelScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
     var selectedWifiSecLevel by remember { mutableIntStateOf(0) }
-    LaunchedEffect(Unit) { selectedWifiSecLevel = dpm.minimumRequiredWifiSecurityLevel }
+    LaunchedEffect(Unit) { selectedWifiSecLevel = Privilege.DPM.minimumRequiredWifiSecurityLevel }
     MyScaffold(R.string.min_wifi_security_level, onNavigateUp, 0.dp) {
         FullWidthRadioButtonItem(R.string.wifi_security_open, selectedWifiSecLevel == WIFI_SECURITY_OPEN) { selectedWifiSecLevel = WIFI_SECURITY_OPEN }
         FullWidthRadioButtonItem("WEP, WPA(2)-PSK", selectedWifiSecLevel == WIFI_SECURITY_PERSONAL) { selectedWifiSecLevel = WIFI_SECURITY_PERSONAL }
@@ -773,7 +768,7 @@ fun WifiSecurityLevelScreen(onNavigateUp: () -> Unit) {
         FullWidthRadioButtonItem("WPA3-192bit", selectedWifiSecLevel == WIFI_SECURITY_ENTERPRISE_192) { selectedWifiSecLevel = WIFI_SECURITY_ENTERPRISE_192 }
         Button(
             onClick = {
-                dpm.minimumRequiredWifiSecurityLevel = selectedWifiSecLevel
+                Privilege.DPM.minimumRequiredWifiSecurityLevel = selectedWifiSecLevel
                 context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = HorizontalPadding)
@@ -790,13 +785,12 @@ fun WifiSecurityLevelScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun WifiSsidPolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
     MyScaffold(R.string.wifi_ssid_policy, onNavigateUp, 0.dp) {
         var selectedPolicyType by remember { mutableIntStateOf(-1) }
         val ssidList = remember { mutableStateListOf<WifiSsid>() }
         fun refreshPolicy() {
-            val policy = dpm.wifiSsidPolicy
+            val policy = Privilege.DPM.wifiSsidPolicy
             ssidList.clear()
             selectedPolicyType = policy?.policyType ?: -1
             ssidList.addAll(policy?.ssids ?: mutableSetOf())
@@ -842,7 +836,7 @@ fun WifiSsidPolicyScreen(onNavigateUp: () -> Unit) {
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                dpm.wifiSsidPolicy = if(selectedPolicyType == -1 || ssidList.isEmpty()) {
+                Privilege.DPM.wifiSsidPolicy = if(selectedPolicyType == -1 || ssidList.isEmpty()) {
                     null
                 } else {
                     WifiSsidPolicy(selectedPolicyType, ssidList.toSet())
@@ -894,7 +888,7 @@ fun NetworkStats.toBucketList(): List<NetworkStats.Bucket> {
 @Composable
 fun NetworkStatsScreen(onNavigateUp: () -> Unit, onNavigateToViewer: (NetworkStatsViewer) -> Unit) {
     val context = LocalContext.current
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     val fm = LocalFocusManager.current
     val nsm = context.getSystemService(NetworkStatsManager::class.java)
     val coroutine = rememberCoroutineScope()
@@ -1392,8 +1386,6 @@ fun NetworkStatsViewerScreen(nsv: NetworkStatsViewer, onNavigateUp: () -> Unit) 
 @Composable
 fun PrivateDnsScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     MyScaffold(R.string.private_dns, onNavigateUp) {
         fun getDnsStatus(code: Int) = when (code) {
@@ -1409,16 +1401,16 @@ fun PrivateDnsScreen(onNavigateUp: () -> Unit) {
             PRIVATE_DNS_SET_ERROR_FAILURE_SETTING -> R.string.failed
             else -> R.string.place_holder
         }
-        var dnsMode by remember { mutableIntStateOf(dpm.getGlobalPrivateDnsMode(receiver)) }
+        var dnsMode by remember { mutableIntStateOf(Privilege.DPM.getGlobalPrivateDnsMode(Privilege.DAR)) }
         Spacer(Modifier.padding(vertical = 5.dp))
         Text(stringResource(R.string.current_state, stringResource(getDnsStatus(dnsMode))))
-        AnimatedVisibility(visible = dpm.getGlobalPrivateDnsMode(receiver)!=PRIVATE_DNS_MODE_OPPORTUNISTIC) {
+        AnimatedVisibility(Privilege.DPM.getGlobalPrivateDnsMode(Privilege.DAR) != PRIVATE_DNS_MODE_OPPORTUNISTIC) {
             Spacer(Modifier.padding(vertical = 5.dp))
             Button(
                 onClick = {
-                    val result = dpm.setGlobalPrivateDnsModeOpportunistic(receiver)
+                    val result = Privilege.DPM.setGlobalPrivateDnsModeOpportunistic(Privilege.DAR)
                     context.popToast(getOperationResult(result))
-                    dnsMode = dpm.getGlobalPrivateDnsMode(receiver)
+                    dnsMode = Privilege.DPM.getGlobalPrivateDnsMode(Privilege.DAR)
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -1427,7 +1419,7 @@ fun PrivateDnsScreen(onNavigateUp: () -> Unit) {
         }
         Notes(R.string.info_private_dns_mode_oppertunistic)
         Spacer(Modifier.padding(vertical = 10.dp))
-        var inputHost by remember { mutableStateOf(dpm.getGlobalPrivateDnsHost(receiver) ?: "") }
+        var inputHost by remember { mutableStateOf(Privilege.DPM.getGlobalPrivateDnsHost(Privilege.DAR) ?: "") }
         OutlinedTextField(
             value = inputHost,
             onValueChange = { inputHost=it },
@@ -1441,7 +1433,7 @@ fun PrivateDnsScreen(onNavigateUp: () -> Unit) {
             onClick = {
                 focusMgr.clearFocus()
                 try {
-                    val result = dpm.setGlobalPrivateDnsModeSpecifiedHost(receiver,inputHost)
+                    val result = Privilege.DPM.setGlobalPrivateDnsModeSpecifiedHost(Privilege.DAR, inputHost)
                     context.popToast(getOperationResult(result))
                 } catch(e: IllegalArgumentException) {
                     e.printStackTrace()
@@ -1450,7 +1442,7 @@ fun PrivateDnsScreen(onNavigateUp: () -> Unit) {
                     e.printStackTrace()
                     context.popToast(R.string.security_exception)
                 } finally {
-                    dnsMode = dpm.getGlobalPrivateDnsMode(receiver)
+                    dnsMode = Privilege.DPM.getGlobalPrivateDnsMode(Privilege.DAR)
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -1467,19 +1459,17 @@ fun PrivateDnsScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun AlwaysOnVpnPackageScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     var lockdown by rememberSaveable { mutableStateOf(false) }
     var pkgName by rememberSaveable { mutableStateOf("") }
     val focusMgr = LocalFocusManager.current
-    val refresh = { pkgName = dpm.getAlwaysOnVpnPackage(receiver) ?: "" }
+    val refresh = { pkgName = Privilege.DPM.getAlwaysOnVpnPackage(Privilege.DAR) ?: "" }
     LaunchedEffect(Unit) { refresh() }
     val choosePackage = rememberLauncherForActivityResult(ChoosePackageContract()) { result ->
         result?.let { pkgName = it }
     }
     val setAlwaysOnVpn: (String?, Boolean)->Boolean = { vpnPkg: String?, lockdownEnabled: Boolean ->
         try {
-            dpm.setAlwaysOnVpnPackage(receiver, vpnPkg, lockdownEnabled)
+            Privilege.DPM.setAlwaysOnVpnPackage(Privilege.DAR, vpnPkg, lockdownEnabled)
             context.showOperationResultToast(true)
             true
         } catch(e: UnsupportedOperationException) {
@@ -1532,8 +1522,6 @@ fun AlwaysOnVpnPackageScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun RecommendedGlobalProxyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var proxyType by remember { mutableIntStateOf(0) }
     var proxyUri by remember { mutableStateOf("") }
@@ -1584,7 +1572,7 @@ fun RecommendedGlobalProxyScreen(onNavigateUp: () -> Unit) {
         Button(
             onClick = {
                 if(proxyType == 0) {
-                    dpm.setRecommendedGlobalProxy(receiver, null)
+                    Privilege.DPM.setRecommendedGlobalProxy(Privilege.DAR, null)
                     context.showOperationResultToast(true)
                     return@Button
                 }
@@ -1615,7 +1603,7 @@ fun RecommendedGlobalProxyScreen(onNavigateUp: () -> Unit) {
                     context.popToast(R.string.invalid_config)
                     return@Button
                 }
-                dpm.setRecommendedGlobalProxy(receiver, proxyInfo)
+                Privilege.DPM.setRecommendedGlobalProxy(Privilege.DAR, proxyInfo)
                 context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
@@ -1632,8 +1620,6 @@ fun RecommendedGlobalProxyScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun NetworkLoggingScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val logFile = context.filesDir.resolve("NetworkLogs.json")
     var fileSize by remember { mutableLongStateOf(0) }
     LaunchedEffect(Unit) { fileSize = logFile.length() }
@@ -1648,8 +1634,8 @@ fun NetworkLoggingScreen(onNavigateUp: () -> Unit) {
     MyScaffold(R.string.network_logging, onNavigateUp) {
         SwitchItem(
             R.string.enable,
-            getState = { dpm.isNetworkLoggingEnabled(receiver) },
-            onCheckedChange = { dpm.setNetworkLoggingEnabled(receiver,it) },
+            getState = { Privilege.DPM.isNetworkLoggingEnabled(Privilege.DAR) },
+            onCheckedChange = { Privilege.DPM.setNetworkLoggingEnabled(Privilege.DAR, it) },
             padding = false
         )
         Text(stringResource(R.string.log_file_size_is, formatFileSize(fileSize)))
@@ -1684,7 +1670,6 @@ fun NetworkLoggingScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun WifiAuthKeypairScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
     var keyPair by remember { mutableStateOf("") }
     MyScaffold(R.string.wifi_auth_keypair, onNavigateUp) {
@@ -1698,7 +1683,7 @@ fun WifiAuthKeypairScreen(onNavigateUp: () -> Unit) {
         )
         Spacer(Modifier.padding(vertical = 5.dp))
         val isExist = try {
-            dpm.isKeyPairGrantedToWifiAuth(keyPair)
+            Privilege.DPM.isKeyPairGrantedToWifiAuth(keyPair)
         } catch(e: java.lang.IllegalArgumentException) {
             e.printStackTrace()
             false
@@ -1707,13 +1692,13 @@ fun WifiAuthKeypairScreen(onNavigateUp: () -> Unit) {
         Spacer(Modifier.padding(vertical = 5.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Button(
-                onClick = { context.showOperationResultToast(dpm.grantKeyPairToWifiAuth(keyPair)) },
+                onClick = { context.showOperationResultToast(Privilege.DPM.grantKeyPairToWifiAuth(keyPair)) },
                 modifier = Modifier.fillMaxWidth(0.49F)
             ) {
                 Text(stringResource(R.string.grant))
             }
             Button(
-                onClick = { context.showOperationResultToast(dpm.revokeKeyPairFromWifiAuth(keyPair)) },
+                onClick = { context.showOperationResultToast(Privilege.DPM.revokeKeyPairFromWifiAuth(keyPair)) },
                 modifier = Modifier.fillMaxWidth(0.96F)
             ) {
                 Text(stringResource(R.string.revoke))
@@ -1727,19 +1712,17 @@ fun WifiAuthKeypairScreen(onNavigateUp: () -> Unit) {
 @RequiresApi(33)
 @Composable
 fun PreferentialNetworkServiceScreen(onNavigateUp: () -> Unit, onNavigate: (AddPreferentialNetworkServiceConfig) -> Unit) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
     var masterEnabled by remember { mutableStateOf(false) }
     val configs = remember { mutableStateListOf<PreferentialNetworkServiceConfig>() }
     fun refresh() {
-        masterEnabled = dpm.isPreferentialNetworkServiceEnabled
+        masterEnabled = Privilege.DPM.isPreferentialNetworkServiceEnabled
         configs.clear()
-        configs.addAll(dpm.preferentialNetworkServiceConfigs)
+        configs.addAll(Privilege.DPM.preferentialNetworkServiceConfigs)
     }
     LaunchedEffect(Unit) { refresh() }
     MySmallTitleScaffold(R.string.preferential_network_service, onNavigateUp, 0.dp) {
         SwitchItem(R.string.enabled, state = masterEnabled, onCheckedChange = {
-            dpm.isPreferentialNetworkServiceEnabled = it
+            Privilege.DPM.isPreferentialNetworkServiceEnabled = it
             refresh()
         })
         Spacer(Modifier.padding(vertical = 4.dp))
@@ -1794,7 +1777,6 @@ fun PreferentialNetworkServiceScreen(onNavigateUp: () -> Unit, onNavigate: (AddP
 fun AddPreferentialNetworkServiceConfigScreen(route: AddPreferentialNetworkServiceConfig,onNavigateUp: () -> Unit) {
     val updateMode = route.index != -1
     val context = LocalContext.current
-    val dpm = context.getDPM()
     var enabled by remember { mutableStateOf(route.enabled) }
     var id by remember { mutableIntStateOf(route.id) }
     var allowFallback by remember { mutableStateOf(route.allowFallback) }
@@ -1854,10 +1836,10 @@ fun AddPreferentialNetworkServiceConfigScreen(route: AddPreferentialNetworkServi
                         setIncludedUids(includedUids.lines().filter { it.isNotBlank() }.map { it.toInt() }.toIntArray())
                         if(VERSION.SDK_INT >= 34) setShouldBlockNonMatchingNetworks(blockNonMatching)
                     }.build()
-                    val configs = dpm.preferentialNetworkServiceConfigs
+                    val configs = Privilege.DPM.preferentialNetworkServiceConfigs
                     if(updateMode) configs[route.index] = config
                     else configs += config
-                    dpm.preferentialNetworkServiceConfigs = configs
+                    Privilege.DPM.preferentialNetworkServiceConfigs = configs
                     onNavigateUp()
                 } catch(e: Exception) {
                     context.showOperationResultToast(false)
@@ -1872,7 +1854,7 @@ fun AddPreferentialNetworkServiceConfigScreen(route: AddPreferentialNetworkServi
         if(updateMode) Button(
             onClick = {
                 try {
-                    dpm.preferentialNetworkServiceConfigs = dpm.preferentialNetworkServiceConfigs.drop(route.index)
+                    Privilege.DPM.preferentialNetworkServiceConfigs = Privilege.DPM.preferentialNetworkServiceConfigs.drop(route.index)
                     onNavigateUp()
                 } catch(e: Exception) {
                     context.showOperationResultToast(false)
@@ -1892,22 +1874,19 @@ fun AddPreferentialNetworkServiceConfigScreen(route: AddPreferentialNetworkServi
 @RequiresApi(28)
 @Composable
 fun OverrideApnScreen(onNavigateUp: () -> Unit, onNavigateToAddSetting: (Bundle) -> Unit) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     var enabled by remember { mutableStateOf(false) }
     val settings = remember { mutableStateListOf<ApnSetting>() }
     fun refresh() {
-        enabled = dpm.isOverrideApnEnabled(receiver)
+        enabled = Privilege.DPM.isOverrideApnEnabled(Privilege.DAR)
         settings.clear()
-        settings.addAll(dpm.getOverrideApns(receiver))
+        settings.addAll(Privilege.DPM.getOverrideApns(Privilege.DAR))
     }
     LaunchedEffect(Unit) { refresh() }
     MyScaffold(R.string.override_apn, onNavigateUp, 0.dp) {
         SwitchItem(
             R.string.enable, state = enabled,
             onCheckedChange = {
-                dpm.setOverrideApnsEnabled(receiver, it)
+                Privilege.DPM.setOverrideApnsEnabled(Privilege.DAR, it)
                 refresh()
             }
         )
@@ -1957,9 +1936,6 @@ private val apnTypes = listOf(
 @RequiresApi(28)
 @Composable
 fun AddApnSettingScreen(origin: ApnSetting?, onNavigateUp: () -> Unit) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val fm = LocalFocusManager.current
     var dropdown by remember { mutableIntStateOf(0) } // 1:Auth type, 2:MVNO type, 3:Protocol, 4:Roaming protocol
     var dialog by remember { mutableIntStateOf(0) } // 1:Proxy, 2:MMS proxy
@@ -2204,9 +2180,9 @@ fun AddApnSettingScreen(origin: ApnSetting?, onNavigateUp: () -> Unit) {
                         if(VERSION.SDK_INT >= 35) setAlwaysOn(alwaysOn)
                     }.build()
                     if(origin == null) {
-                        dpm.addOverrideApn(receiver, setting)
+                        Privilege.DPM.addOverrideApn(Privilege.DAR, setting)
                     } else {
-                        dpm.updateOverrideApn(receiver, origin.id, setting)
+                        Privilege.DPM.updateOverrideApn(Privilege.DAR, origin.id, setting)
                     }
                     onNavigateUp()
                 } catch(e: Exception) {
@@ -2219,7 +2195,7 @@ fun AddApnSettingScreen(origin: ApnSetting?, onNavigateUp: () -> Unit) {
         }
         if(origin != null) Button(
             {
-                dpm.removeOverrideApn(receiver, origin.id)
+                Privilege.DPM.removeOverrideApn(Privilege.DAR, origin.id)
                 onNavigateUp()
             },
             Modifier.fillMaxWidth(),

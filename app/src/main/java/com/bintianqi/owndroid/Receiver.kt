@@ -7,7 +7,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build.VERSION
-import android.os.PersistableBundle
 import android.os.UserHandle
 import android.os.UserManager
 import androidx.core.app.NotificationCompat
@@ -35,13 +34,13 @@ class Receiver : DeviceAdminReceiver() {
 
     override fun onEnabled(context: Context, intent: Intent) {
         super.onEnabled(context, intent)
-        updatePrivilege(context)
+        Privilege.updateStatus()
         handlePrivilegeChange(context)
     }
 
     override fun onDisabled(context: Context, intent: Intent) {
         super.onDisabled(context, intent)
-        updatePrivilege(context)
+        Privilege.updateStatus()
         handlePrivilegeChange(context)
     }
 
@@ -72,11 +71,6 @@ class Receiver : DeviceAdminReceiver() {
                 }
             }
         }
-    }
-
-    override fun onTransferOwnershipComplete(context: Context, bundle: PersistableBundle?) {
-        super.onTransferOwnershipComplete(context, bundle)
-        SharedPrefs(context).dhizuku = false
     }
 
     override fun onLockTaskModeEntering(context: Context, intent: Intent, pkg: String) {

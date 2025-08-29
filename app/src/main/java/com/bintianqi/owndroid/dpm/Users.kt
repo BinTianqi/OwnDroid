@@ -62,8 +62,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.HorizontalPadding
+import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.parseTimestamp
 import com.bintianqi.owndroid.popToast
 import com.bintianqi.owndroid.showOperationResultToast
@@ -87,9 +87,7 @@ import kotlinx.serialization.Serializable
 @Composable
 fun UsersScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     var dialog by remember { mutableIntStateOf(0) }
     MyScaffold(R.string.users, onNavigateUp, 0.dp) {
         if(VERSION.SDK_INT >= 28 && privilege.profile && privilege.affiliated) {
@@ -134,7 +132,7 @@ fun UsersScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
         text = {
             if(dialog == 1) {
                 val um = context.getSystemService(Context.USER_SERVICE) as UserManager
-                val list = dpm.getSecondaryUsers(receiver)
+                val list = Privilege.DPM.getSecondaryUsers(Privilege.DAR)
                 if(list.isEmpty()) {
                     Text(stringResource(R.string.no_secondary_users))
                 } else {
@@ -148,7 +146,7 @@ fun UsersScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
             TextButton(
                 onClick = {
                     if(dialog == 2) {
-                        val result = dpm.logoutUser(receiver)
+                        val result = Privilege.DPM.logoutUser(Privilege.DAR)
                         context.popToast(userOperationResultCode(result))
                     }
                     dialog = 0
@@ -170,12 +168,10 @@ fun UsersScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
 
 @Composable
 fun UsersOptionsScreen(onNavigateUp: () -> Unit) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     MyScaffold(R.string.options, onNavigateUp, 0.dp) {
         if(VERSION.SDK_INT >= 28) {
-            SwitchItem(R.string.enable_logout, getState = { dpm.isLogoutEnabled }, onCheckedChange = { dpm.setLogoutEnabled(receiver, it) })
+            SwitchItem(R.string.enable_logout, getState = { Privilege.DPM.isLogoutEnabled },
+                onCheckedChange = { Privilege.DPM.setLogoutEnabled(Privilege.DAR, it) })
         }
     }
 }
@@ -185,9 +181,7 @@ fun UsersOptionsScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun UserInfoScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     val user = Process.myUserHandle()
     var infoDialog by remember { mutableIntStateOf(0) }
@@ -202,8 +196,8 @@ fun UserInfoScreen(onNavigateUp: () -> Unit) {
             if(it != 0L) InfoItem(R.string.creation_time, parseTimestamp(it))
         }
         if (VERSION.SDK_INT >= 28) {
-            InfoItem(R.string.logout_enabled, dpm.isLogoutEnabled.yesOrNo)
-            InfoItem(R.string.ephemeral_user, dpm.isEphemeralUser(receiver).yesOrNo)
+            InfoItem(R.string.logout_enabled, Privilege.DPM.isLogoutEnabled.yesOrNo)
+            InfoItem(R.string.ephemeral_user, Privilege.DPM.isEphemeralUser(Privilege.DAR).yesOrNo)
             InfoItem(R.string.affiliated_user, privilege.affiliated.yesOrNo)
         }
         InfoItem(R.string.user_id, (Binder.getCallingUid() / 100000).toString())
@@ -226,8 +220,6 @@ fun UserInfoScreen(onNavigateUp: () -> Unit) {
 fun UserOperationScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     var input by remember { mutableStateOf("") }
     val focusMgr = LocalFocusManager.current
     var useUserId by remember { mutableStateOf(false) }
@@ -266,7 +258,7 @@ fun UserOperationScreen(onNavigateUp: () -> Unit) {
                 onClick = {
                     focusMgr.clearFocus()
                     withUserHandle {
-                        val result = dpm.startUserInBackground(receiver, it)
+                        val result = Privilege.DPM.startUserInBackground(Privilege.DAR, it)
                         context.popToast(userOperationResultCode(result))
                     }
                 },
@@ -280,7 +272,7 @@ fun UserOperationScreen(onNavigateUp: () -> Unit) {
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                withUserHandle { context.showOperationResultToast(dpm.switchUser(receiver, it)) }
+                withUserHandle { context.showOperationResultToast(Privilege.DPM.switchUser(Privilege.DAR, it)) }
             },
             enabled = legalInput,
             modifier = Modifier.fillMaxWidth()
@@ -293,7 +285,7 @@ fun UserOperationScreen(onNavigateUp: () -> Unit) {
                 onClick = {
                     focusMgr.clearFocus()
                     withUserHandle {
-                        val result = dpm.stopUser(receiver, it)
+                        val result = Privilege.DPM.stopUser(Privilege.DAR, it)
                         context.popToast(userOperationResultCode(result))
                     }
                 },
@@ -308,7 +300,7 @@ fun UserOperationScreen(onNavigateUp: () -> Unit) {
             onClick = {
                 focusMgr.clearFocus()
                 withUserHandle {
-                    if(dpm.removeUser(receiver, it)) {
+                    if(Privilege.DPM.removeUser(Privilege.DAR, it)) {
                         context.showOperationResultToast(true)
                         input = ""
                     } else {
@@ -332,8 +324,6 @@ fun UserOperationScreen(onNavigateUp: () -> Unit) {
 fun CreateUserScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var userName by remember { mutableStateOf("") }
     var creating by remember { mutableStateOf(false) }
@@ -369,7 +359,7 @@ fun CreateUserScreen(onNavigateUp: () -> Unit) {
                 creating = true
                 coroutine.launch(Dispatchers.IO) {
                     try {
-                        val uh = dpm.createAndManageUser(receiver, userName, receiver, null, flag)
+                        val uh = Privilege.DPM.createAndManageUser(Privilege.DAR, userName, Privilege.DAR, null, flag)
                         withContext(Dispatchers.Main) {
                             createdUserSerialNumber = userManager.getSerialNumberForUser(uh)
                         }
@@ -408,14 +398,12 @@ fun CreateUserScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun AffiliationIdScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var input by remember { mutableStateOf("") }
     val list = remember { mutableStateListOf<String>() }
     val refreshIds = {
         list.clear()
-        list.addAll(dpm.getAffiliationIds(receiver))
+        list.addAll(Privilege.DPM.getAffiliationIds(Privilege.DAR))
     }
     LaunchedEffect(Unit) { refreshIds() }
     MyScaffold(R.string.affiliation_id, onNavigateUp) {
@@ -449,7 +437,7 @@ fun AffiliationIdScreen(onNavigateUp: () -> Unit) {
         Button(
             onClick = {
                 list.removeAll(setOf(""))
-                dpm.setAffiliationIds(receiver, list.toSet())
+                Privilege.DPM.setAffiliationIds(Privilege.DAR, list.toSet())
                 context.showOperationResultToast(true)
                 refreshIds()
             },
@@ -466,8 +454,6 @@ fun AffiliationIdScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun ChangeUsernameScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var inputUsername by remember { mutableStateOf("") }
     MyScaffold(R.string.change_username, onNavigateUp) {
@@ -482,7 +468,7 @@ fun ChangeUsernameScreen(onNavigateUp: () -> Unit) {
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                dpm.setProfileName(receiver, inputUsername)
+                Privilege.DPM.setProfileName(Privilege.DAR, inputUsername)
                 context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
@@ -490,7 +476,7 @@ fun ChangeUsernameScreen(onNavigateUp: () -> Unit) {
             Text(stringResource(R.string.apply))
         }
         Button(
-            onClick = { dpm.setProfileName(receiver,null) },
+            onClick = { Privilege.DPM.setProfileName(Privilege.DAR, null) },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.reset))
@@ -504,14 +490,12 @@ fun ChangeUsernameScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun UserSessionMessageScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     var start by remember { mutableStateOf("") }
     var end by remember { mutableStateOf("") }
     val refreshMsg = {
-        start = dpm.getStartUserSessionMessage(receiver)?.toString() ?: ""
-        end = dpm.getEndUserSessionMessage(receiver)?.toString() ?: ""
+        start = Privilege.DPM.getStartUserSessionMessage(Privilege.DAR)?.toString() ?: ""
+        end = Privilege.DPM.getEndUserSessionMessage(Privilege.DAR)?.toString() ?: ""
     }
     LaunchedEffect(Unit) { refreshMsg() }
     MyScaffold(R.string.user_session_msg, onNavigateUp) {
@@ -526,7 +510,7 @@ fun UserSessionMessageScreen(onNavigateUp: () -> Unit) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Button(
                 onClick = {
-                    dpm.setStartUserSessionMessage(receiver,start)
+                    Privilege.DPM.setStartUserSessionMessage(Privilege.DAR, start)
                     refreshMsg()
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
@@ -535,7 +519,7 @@ fun UserSessionMessageScreen(onNavigateUp: () -> Unit) {
             }
             Button(
                 onClick = {
-                    dpm.setStartUserSessionMessage(receiver,null)
+                    Privilege.DPM.setStartUserSessionMessage(Privilege.DAR, null)
                     refreshMsg()
                     context.showOperationResultToast(true)
                 },
@@ -556,7 +540,7 @@ fun UserSessionMessageScreen(onNavigateUp: () -> Unit) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Button(
                 onClick = {
-                    dpm.setEndUserSessionMessage(receiver,end)
+                    Privilege.DPM.setEndUserSessionMessage(Privilege.DAR, end)
                     refreshMsg()
                     context.showOperationResultToast(true)
                 },
@@ -566,7 +550,7 @@ fun UserSessionMessageScreen(onNavigateUp: () -> Unit) {
             }
             Button(
                 onClick = {
-                    dpm.setEndUserSessionMessage(receiver,null)
+                    Privilege.DPM.setEndUserSessionMessage(Privilege.DAR, null)
                     refreshMsg()
                     context.showOperationResultToast(true)
                 },
@@ -594,7 +578,7 @@ private fun ChangeUserIconDialog(bitmap: Bitmap, onClose: () -> Unit) {
         },
         confirmButton = {
             TextButton({
-                context.getDPM().setUserIcon(context.getReceiver(), bitmap)
+                Privilege.DPM.setUserIcon(Privilege.DAR, bitmap)
                 context.showOperationResultToast(true)
                 onClose()
             }) {

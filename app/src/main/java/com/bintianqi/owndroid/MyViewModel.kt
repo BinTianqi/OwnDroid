@@ -2,23 +2,15 @@ package com.bintianqi.owndroid
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 
 class MyViewModel(application: Application): AndroidViewModel(application) {
-    val theme = MutableStateFlow(ThemeSettings())
-
-    init {
-        val sp = SharedPrefs(application)
-        theme.value = ThemeSettings(sp.materialYou, sp.darkTheme, sp.blackTheme)
-        viewModelScope.launch {
-            theme.collect {
-                sp.materialYou = it.materialYou
-                sp.darkTheme = it.darkTheme
-                sp.blackTheme = it.blackTheme
-            }
-        }
+    val theme = MutableStateFlow(ThemeSettings(SP.materialYou, SP.darkTheme, SP.blackTheme))
+    fun changeTheme(newTheme: ThemeSettings) {
+        theme.value = newTheme
+        SP.materialYou = newTheme.materialYou
+        SP.darkTheme = newTheme.darkTheme
+        SP.blackTheme = newTheme.blackTheme
     }
 }
 

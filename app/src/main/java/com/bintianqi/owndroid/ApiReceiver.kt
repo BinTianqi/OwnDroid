@@ -5,19 +5,14 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import com.bintianqi.owndroid.dpm.getDPM
-import com.bintianqi.owndroid.dpm.getReceiver
 
 class ApiReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val requestKey = intent.getStringExtra("key")
         var log = "OwnDroid API request received. action: ${intent.action}\nkey: $requestKey"
-        val sp = SharedPrefs(context)
-        if(!sp.isApiEnabled) return
-        val key = sp.apiKey
+        if(!SP.isApiEnabled) return
+        val key = SP.apiKey
         if(!key.isNullOrEmpty() && key == requestKey) {
-            val dpm = context.getDPM()
-            val receiver = context.getReceiver()
             val app = intent.getStringExtra("package")
             val permission = intent.getStringExtra("permission")
             val restriction = intent.getStringExtra("restriction")
@@ -26,32 +21,32 @@ class ApiReceiver: BroadcastReceiver() {
             try {
                 @SuppressWarnings("NewApi")
                 val ok = when(intent.action?.removePrefix("com.bintianqi.owndroid.action.")) {
-                    "HIDE" -> dpm.setApplicationHidden(receiver, app, true)
-                    "UNHIDE" -> dpm.setApplicationHidden(receiver, app, false)
-                    "SUSPEND" -> dpm.setPackagesSuspended(receiver, arrayOf(app), true).isEmpty()
-                    "UNSUSPEND" -> dpm.setPackagesSuspended(receiver, arrayOf(app), false).isEmpty()
-                    "ADD_USER_RESTRICTION" -> { dpm.addUserRestriction(receiver, restriction); true }
-                    "CLEAR_USER_RESTRICTION" -> { dpm.clearUserRestriction(receiver, restriction); true }
+                    "HIDE" -> Privilege.DPM.setApplicationHidden(Privilege.DAR, app, true)
+                    "UNHIDE" -> Privilege.DPM.setApplicationHidden(Privilege.DAR, app, false)
+                    "SUSPEND" -> Privilege.DPM.setPackagesSuspended(Privilege.DAR, arrayOf(app), true).isEmpty()
+                    "UNSUSPEND" -> Privilege.DPM.setPackagesSuspended(Privilege.DAR, arrayOf(app), false).isEmpty()
+                    "ADD_USER_RESTRICTION" -> { Privilege.DPM.addUserRestriction(Privilege.DAR, restriction); true }
+                    "CLEAR_USER_RESTRICTION" -> { Privilege.DPM.clearUserRestriction(Privilege.DAR, restriction); true }
                     "SET_PERMISSION_DEFAULT" -> {
-                        dpm.setPermissionGrantState(
-                            receiver, app!!, permission!!,
+                        Privilege.DPM.setPermissionGrantState(
+                            Privilege.DAR, app!!, permission!!,
                             DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT
                         )
                     }
                     "SET_PERMISSION_GRANTED" -> {
-                        dpm.setPermissionGrantState(
-                            receiver, app!!, permission!!,
+                        Privilege.DPM.setPermissionGrantState(
+                            Privilege.DAR, app!!, permission!!,
                             DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED
                         )
                     }
                     "SET_PERMISSION_DENIED" -> {
-                        dpm.setPermissionGrantState(
-                            receiver, app!!, permission!!,
+                        Privilege.DPM.setPermissionGrantState(
+                            Privilege.DAR, app!!, permission!!,
                             DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED
                         )
                     }
-                    "LOCK" -> { dpm.lockNow(); true }
-                    "REBOOT" -> { dpm.reboot(receiver); true }
+                    "LOCK" -> { Privilege.DPM.lockNow(); true }
+                    "REBOOT" -> { Privilege.DPM.reboot(Privilege.DAR); true }
                     else -> {
                         log += "\nInvalid action"
                         false

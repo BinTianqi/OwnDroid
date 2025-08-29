@@ -55,8 +55,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.HorizontalPadding
+import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.MyLazyScaffold
@@ -77,7 +77,7 @@ data class Restriction(
 @RequiresApi(24)
 @Composable
 fun UserRestrictionScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     val sb = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     fun navigateToOptions(title: Int, items: List<Restriction>) {
         onNavigate(UserRestrictionOptions(title, items))
@@ -147,11 +147,9 @@ fun UserRestrictionOptionsScreen(
     data: UserRestrictionOptions, onNavigateUp: () -> Unit
 ) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val status = remember { mutableStateMapOf<String, Boolean>() }
     fun refresh() {
-        val restrictions = dpm.getUserRestrictions(receiver)
+        val restrictions = Privilege.DPM.getUserRestrictions(Privilege.DAR)
         data.items.forEach {
             status.put(it.id, restrictions.getBoolean(it.id))
         }
@@ -178,9 +176,9 @@ fun UserRestrictionOptionsScreen(
                     {
                         try {
                             if (it) {
-                                dpm.addUserRestriction(receiver, restriction.id)
+                                Privilege.DPM.addUserRestriction(Privilege.DAR, restriction.id)
                             } else {
-                                dpm.clearUserRestriction(receiver, restriction.id)
+                                Privilege.DPM.clearUserRestriction(Privilege.DAR, restriction.id)
                             }
                         } catch (e: Exception) {
                             e.printStackTrace()
@@ -288,11 +286,9 @@ object RestrictionData {
 @Composable
 fun UserRestrictionEditorScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val list = remember { mutableStateListOf<String>() }
     fun refresh() {
-        val restrictions = dpm.getUserRestrictions(receiver)
+        val restrictions = Privilege.DPM.getUserRestrictions(Privilege.DAR)
         list.clear()
         list.addAll(restrictions.keySet().filter { restrictions.getBoolean(it) })
     }
@@ -315,7 +311,7 @@ fun UserRestrictionEditorScreen(onNavigateUp: () -> Unit) {
                     Text(it)
                     IconButton({
                         try {
-                            dpm.clearUserRestriction(receiver, it)
+                            Privilege.DPM.clearUserRestriction(Privilege.DAR, it)
                         } catch (e: Exception) {
                             e.printStackTrace()
                             context.showOperationResultToast(false)
@@ -330,7 +326,7 @@ fun UserRestrictionEditorScreen(onNavigateUp: () -> Unit) {
                 var input by remember { mutableStateOf("") }
                 fun add() {
                     try {
-                        dpm.addUserRestriction(receiver, input)
+                        Privilege.DPM.addUserRestriction(Privilege.DAR, input)
                         input = ""
                     } catch (e: Exception) {
                         e.printStackTrace()

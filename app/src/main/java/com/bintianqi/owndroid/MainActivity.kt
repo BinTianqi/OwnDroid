@@ -54,7 +54,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -235,17 +234,10 @@ import com.bintianqi.owndroid.dpm.WorkModes
 import com.bintianqi.owndroid.dpm.WorkModesScreen
 import com.bintianqi.owndroid.dpm.WorkProfile
 import com.bintianqi.owndroid.dpm.WorkProfileScreen
-import com.bintianqi.owndroid.dpm.checkPrivilege
 import com.bintianqi.owndroid.dpm.dhizukuErrorStatus
-import com.bintianqi.owndroid.dpm.getDPM
-import com.bintianqi.owndroid.dpm.getReceiver
-import com.bintianqi.owndroid.dpm.setDefaultAffiliationID
 import com.bintianqi.owndroid.ui.Animations
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import org.lsposed.hiddenapibypass.HiddenApiBypass
 import java.util.Locale
 
 @ExperimentalMaterial3Api
@@ -254,12 +246,9 @@ class MainActivity : FragmentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         val context = applicationContext
-        if (VERSION.SDK_INT >= 28) HiddenApiBypass.setHiddenApiExemptions("")
         val locale = context.resources?.configuration?.locale
         zhCN = locale == Locale.SIMPLIFIED_CHINESE || locale == Locale.CHINESE || locale == Locale.CHINA
         val vm by viewModels<MyViewModel>()
-        checkPrivilege(this)
-        lifecycleScope.launch { delay(5000); setDefaultAffiliationID(context) }
         setContent {
             var appLockDialog by rememberSaveable { mutableStateOf(false) }
             val theme by vm.theme.collectAsStateWithLifecycle()
@@ -274,7 +263,6 @@ class MainActivity : FragmentActivity() {
 
     override fun onResume() {
         super.onResume()
-        checkPrivilege(this)
     }
 
 }
@@ -284,14 +272,12 @@ class MainActivity : FragmentActivity() {
 fun Home(vm: MyViewModel, onLock: () -> Unit) {
     val navController = rememberNavController()
     val context = LocalContext.current
-    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     val lifecycleOwner = LocalLifecycleOwner.current
     fun navigateUp() { navController.navigateUp() }
     fun navigate(destination: Any) { navController.navigate(destination) }
     LaunchedEffect(Unit) {
-        val privilege = myPrivilege.value
-        if(!privilege.device && !privilege.profile) {
+        if(!Privilege.status.value.activated) {
             navController.navigate(WorkModes(false)) {
                 popUpTo<Home> { inclusive = true }
             }
@@ -385,7 +371,7 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
             AppChooserScreen(it.toRoute(), { dest ->
                 if(dest == null) navigateUp() else navigate(ApplicationDetails(dest))
             }, {
-                SharedPrefs(context).applicationsListView = false
+                SP.applicationsListView = false
                 navController.navigate(ApplicationsFeatures) {
                     popUpTo(Home)
                 }
@@ -393,7 +379,7 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
         }
         composable<ApplicationsFeatures> {
             ApplicationsFeaturesScreen(::navigateUp, ::navigate) {
-                SharedPrefs(context).applicationsListView = true
+                SP.applicationsListView = true
                 navController.navigate(ApplicationsList(true)) {
                     popUpTo(Home)
                 }
@@ -451,7 +437,7 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
         composable<SettingsOptions> { SettingsOptionsScreen(::navigateUp) }
         composable<Appearance> {
             val theme by vm.theme.collectAsStateWithLifecycle()
-            AppearanceScreen(::navigateUp, theme) { vm.theme.value = it }
+            AppearanceScreen(::navigateUp, theme, vm::changeTheme)
         }
         composable<AppLockSettings> { AppLockSettingsScreen(::navigateUp) }
         composable<ApiSettings> { ApiSettings(::navigateUp) }
@@ -459,11 +445,10 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
         composable<About> { AboutScreen(::navigateUp) }
     }
     DisposableEffect(lifecycleOwner) {
-        val sp = SharedPrefs(context)
         val observer = LifecycleEventObserver { _, event ->
             if (
-                (event == Lifecycle.Event.ON_CREATE && !sp.lockPasswordHash.isNullOrEmpty()) ||
-                (event == Lifecycle.Event.ON_RESUME && sp.lockWhenLeaving)
+                (event == Lifecycle.Event.ON_CREATE && !SP.lockPasswordHash.isNullOrEmpty()) ||
+                (event == Lifecycle.Event.ON_RESUME && SP.lockWhenLeaving)
             ) {
                 onLock()
             }
@@ -474,18 +459,16 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
         }
     }
     LaunchedEffect(Unit) {
-        val dpm = context.getDPM()
-        val sp = SharedPrefs(context)
-        val profileNotActivated = !sp.managedProfileActivated && myPrivilege.value.work
+        val profileNotActivated = !SP.managedProfileActivated && Privilege.status.value.work
         if(profileNotActivated) {
-            dpm.setProfileEnabled(receiver)
-            sp.managedProfileActivated = true
+            Privilege.DPM.setProfileEnabled(Privilege.DAR)
+            SP.managedProfileActivated = true
             context.popToast(R.string.work_profile_activated)
         }
     }
     DhizukuErrorDialog {
         dhizukuErrorStatus.value = 0
-        updatePrivilege(context)
+        Privilege.updateStatus()
         navController.navigate(WorkModes(false)) {
             popUpTo<Home> { inclusive = true }
             launchSingleTop = true
@@ -498,8 +481,7 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeScreen(onNavigate: (Any) -> Unit) {
-    val context = LocalContext.current
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     val sb = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
         Modifier.nestedScroll(sb.nestedScrollConnection),
@@ -527,7 +509,7 @@ private fun HomeScreen(onNavigate: (Any) -> Unit) {
             }
             if(privilege.device || privilege.profile) {
                 HomePageItem(R.string.applications, R.drawable.apps_fill0) {
-                    onNavigate(if(SharedPrefs(context).applicationsListView) ApplicationsList(true) else ApplicationsFeatures)
+                    onNavigate(if(SP.applicationsListView) ApplicationsList(true) else ApplicationsFeatures)
                 }
                 if(VERSION.SDK_INT >= 24) {
                     HomePageItem(R.string.user_restriction, R.drawable.person_off) { onNavigate(UserRestriction) }
@@ -567,9 +549,8 @@ fun HomePageItem(name: Int, imgVector: Int, onClick: () -> Unit) {
 private fun DhizukuErrorDialog(onClose: () -> Unit) {
     val status by dhizukuErrorStatus.collectAsState()
     if (status != 0) {
-        val sp = SharedPrefs(LocalContext.current)
         LaunchedEffect(Unit) {
-            sp.dhizuku = false
+            SP.dhizuku = false
         }
         AlertDialog(
             onDismissRequest = {},
@@ -580,14 +561,13 @@ private fun DhizukuErrorDialog(onClose: () -> Unit) {
             },
             title = { Text(stringResource(R.string.dhizuku)) },
             text = {
-                var text = stringResource(
+                val text = stringResource(
                     when(status){
                         1 -> R.string.failed_to_init_dhizuku
                         2 -> R.string.dhizuku_permission_not_granted
                         else -> R.string.failed_to_init_dhizuku
                     }
                 )
-                if(sp.dhizuku) text += "\n" + stringResource(R.string.dhizuku_mode_disabled)
                 Text(text)
             },
             properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)

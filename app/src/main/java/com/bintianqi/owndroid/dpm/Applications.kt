@@ -86,10 +86,10 @@ import com.bintianqi.owndroid.AppInstallerActivity
 import com.bintianqi.owndroid.AppInstallerViewModel
 import com.bintianqi.owndroid.ChoosePackageContract
 import com.bintianqi.owndroid.HorizontalPadding
+import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.getInstalledAppsFlags
 import com.bintianqi.owndroid.installedApps
-import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.ErrorDialog
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
@@ -191,7 +191,7 @@ fun ApplicationsFeaturesScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Un
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 80.dp)
         ) {
-            val privilege by myPrivilege.collectAsStateWithLifecycle()
+            val privilege by Privilege.status.collectAsStateWithLifecycle()
             if(VERSION.SDK_INT >= 24) FunctionItem(R.string.suspend, icon = R.drawable.block_fill0) { onNavigate(Suspend) }
             FunctionItem(R.string.hide, icon = R.drawable.visibility_off_fill0) { onNavigate(Hide) }
             FunctionItem(R.string.block_uninstall, icon = R.drawable.delete_forever_fill0) { onNavigate(BlockUninstall) }
@@ -246,10 +246,8 @@ fun ApplicationsFeaturesScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Un
 fun ApplicationDetailsScreen(param: ApplicationDetails, onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val packageName = param.packageName
     val context = LocalContext.current
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     val pm = context.packageManager
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     var dialog by remember { mutableIntStateOf(0) } // 1: clear storage, 2: uninstall
     val info = pm.getApplicationInfo(packageName, getInstalledAppsFlags)
     MySmallTitleScaffold(R.string.place_holder, onNavigateUp, 0.dp) {
@@ -261,43 +259,43 @@ fun ApplicationDetailsScreen(param: ApplicationDetails, onNavigateUp: () -> Unit
         FunctionItem(R.string.permissions, icon = R.drawable.shield_fill0) { onNavigate(PermissionsManager(packageName)) }
         if(VERSION.SDK_INT >= 24) SwitchItem(
             R.string.suspend, icon = R.drawable.block_fill0,
-            getState = { dpm.isPackageSuspended(receiver, packageName) },
-            onCheckedChange = { dpm.setPackagesSuspended(receiver, arrayOf(packageName), it) }
+            getState = { Privilege.DPM.isPackageSuspended(Privilege.DAR, packageName) },
+            onCheckedChange = { Privilege.DPM.setPackagesSuspended(Privilege.DAR, arrayOf(packageName), it) }
         )
         SwitchItem(
             R.string.hide, icon = R.drawable.visibility_off_fill0,
-            getState = { dpm.isApplicationHidden(receiver, packageName) },
-            onCheckedChange = { dpm.setApplicationHidden(receiver, packageName, it) }
+            getState = { Privilege.DPM.isApplicationHidden(Privilege.DAR, packageName) },
+            onCheckedChange = { Privilege.DPM.setApplicationHidden(Privilege.DAR, packageName, it) }
         )
         SwitchItem(
             R.string.block_uninstall, icon = R.drawable.delete_forever_fill0,
-            getState = { dpm.isUninstallBlocked(receiver, packageName) },
-            onCheckedChange = { dpm.setUninstallBlocked(receiver, packageName, it) }
+            getState = { Privilege.DPM.isUninstallBlocked(Privilege.DAR, packageName) },
+            onCheckedChange = { Privilege.DPM.setUninstallBlocked(Privilege.DAR, packageName, it) }
         )
         if(VERSION.SDK_INT >= 30) SwitchItem(
             R.string.disable_user_control, icon = R.drawable.do_not_touch_fill0,
-            getState = { packageName in dpm.getUserControlDisabledPackages(receiver) },
+            getState = { packageName in Privilege.DPM.getUserControlDisabledPackages(Privilege.DAR) },
             onCheckedChange = { state ->
-                dpm.setUserControlDisabledPackages(receiver,
-                    dpm.getUserControlDisabledPackages(receiver).let { if(state) it.plus(packageName) else it.minus(packageName) }
+                Privilege.DPM.setUserControlDisabledPackages(Privilege.DAR,
+                    Privilege.DPM.getUserControlDisabledPackages(Privilege.DAR).let { if(state) it.plus(packageName) else it.minus(packageName) }
                 )
             }
         )
         if(VERSION.SDK_INT >= 28) SwitchItem(
             R.string.disable_metered_data, icon = R.drawable.money_off_fill0,
-            getState = { packageName in dpm.getMeteredDataDisabledPackages(receiver) },
+            getState = { packageName in Privilege.DPM.getMeteredDataDisabledPackages(Privilege.DAR) },
             onCheckedChange = { state ->
-                dpm.setMeteredDataDisabledPackages(receiver,
-                    dpm.getMeteredDataDisabledPackages(receiver).let { if(state) it.plus(packageName) else it.minus(packageName) }
+                Privilege.DPM.setMeteredDataDisabledPackages(Privilege.DAR,
+                    Privilege.DPM.getMeteredDataDisabledPackages(Privilege.DAR).let { if(state) it.plus(packageName) else it.minus(packageName) }
                 )
             }
         )
         if(privilege.device && VERSION.SDK_INT >= 28) SwitchItem(
             R.string.keep_after_uninstall, icon = R.drawable.delete_fill0,
-            getState = { dpm.getKeepUninstalledPackages(receiver)?.contains(packageName) == true },
+            getState = { Privilege.DPM.getKeepUninstalledPackages(Privilege.DAR)?.contains(packageName) == true },
             onCheckedChange = { state ->
-                dpm.setKeepUninstalledPackages(receiver,
-                    dpm.getKeepUninstalledPackages(receiver)?.let { if(state) it.plus(packageName) else it.minus(packageName) } ?: listOf(packageName)
+                Privilege.DPM.setKeepUninstalledPackages(Privilege.DAR,
+                    Privilege.DPM.getKeepUninstalledPackages(Privilege.DAR)?.let { if(state) it.plus(packageName) else it.minus(packageName) } ?: listOf(packageName)
                 )
             }
         )
@@ -314,14 +312,14 @@ fun ApplicationDetailsScreen(param: ApplicationDetails, onNavigateUp: () -> Unit
 @Composable
 fun SuspendScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     var packageName by remember { mutableStateOf("") }
     val packages = remember { mutableStateListOf<AppInfo>() }
     fun refresh() {
         val pm = context.packageManager
         packages.clear()
-        pm.getInstalledApplications(getInstalledAppsFlags).filter { dpm.isPackageSuspended(receiver, it.packageName) }.forEach {
+        pm.getInstalledApplications(getInstalledAppsFlags).filter {
+            Privilege.DPM.isPackageSuspended(Privilege.DAR, it.packageName)
+        }.forEach {
             packages += it.retrieveAppInfo(pm)
         }
     }
@@ -329,7 +327,7 @@ fun SuspendScreen(onNavigateUp: () -> Unit) {
     MyLazyScaffold(R.string.suspend, onNavigateUp) {
         items(packages, { it.name }) {
             ApplicationItem(it) {
-                dpm.setPackagesSuspended(receiver, arrayOf(it.name), false)
+                Privilege.DPM.setPackagesSuspended(Privilege.DAR, arrayOf(it.name), false)
                 refresh()
             }
         }
@@ -338,7 +336,7 @@ fun SuspendScreen(onNavigateUp: () -> Unit) {
                 PackageNameTextField(packageName, Modifier.padding(vertical = 8.dp)) { packageName = it }
                 Button(
                     {
-                        if(dpm.setPackagesSuspended(receiver, arrayOf(packageName), true).isEmpty()) packageName = ""
+                        if(Privilege.DPM.setPackagesSuspended(Privilege.DAR, arrayOf(packageName), true).isEmpty()) packageName = ""
                         else context.showOperationResultToast(false)
                         refresh()
                     },
@@ -358,14 +356,12 @@ fun SuspendScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun HideScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     var packageName by remember { mutableStateOf("") }
     val packages = remember { mutableStateListOf<AppInfo>() }
     fun refresh() {
         val pm = context.packageManager
         packages.clear()
-        pm.getInstalledApplications(getInstalledAppsFlags).filter { dpm.isApplicationHidden(receiver, it.packageName) }.forEach {
+        pm.getInstalledApplications(getInstalledAppsFlags).filter { Privilege.DPM.isApplicationHidden(Privilege.DAR, it.packageName) }.forEach {
             packages += it.retrieveAppInfo(pm)
         }
     }
@@ -373,7 +369,7 @@ fun HideScreen(onNavigateUp: () -> Unit) {
     MyLazyScaffold(R.string.hide, onNavigateUp) {
         items(packages, { it.name }) {
             ApplicationItem(it) {
-                dpm.setApplicationHidden(receiver, it.name, false)
+                Privilege.DPM.setApplicationHidden(Privilege.DAR, it.name, false)
                 refresh()
             }
         }
@@ -382,7 +378,7 @@ fun HideScreen(onNavigateUp: () -> Unit) {
                 PackageNameTextField(packageName, Modifier.padding(vertical = 8.dp)) { packageName = it }
                 Button(
                     {
-                        if(dpm.setApplicationHidden(receiver, packageName, true)) packageName = ""
+                        if(Privilege.DPM.setApplicationHidden(Privilege.DAR, packageName, true)) packageName = ""
                         else context.showOperationResultToast(false)
                         refresh()
                     },
@@ -401,14 +397,12 @@ fun HideScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun BlockUninstallScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     var packageName by remember { mutableStateOf("") }
     val packages = remember { mutableStateListOf<AppInfo>() }
     fun refresh() {
         val pm = context.packageManager
         packages.clear()
-        pm.getInstalledApplications(getInstalledAppsFlags).filter { dpm.isUninstallBlocked(receiver, it.packageName) }.forEach {
+        pm.getInstalledApplications(getInstalledAppsFlags).filter { Privilege.DPM.isUninstallBlocked(Privilege.DAR, it.packageName) }.forEach {
             packages += it.retrieveAppInfo(pm)
         }
     }
@@ -416,7 +410,7 @@ fun BlockUninstallScreen(onNavigateUp: () -> Unit) {
     MyLazyScaffold(R.string.block_uninstall, onNavigateUp) {
         items(packages, { it.name }) {
             ApplicationItem(it) {
-                dpm.setUninstallBlocked(receiver, it.name, false)
+                Privilege.DPM.setUninstallBlocked(Privilege.DAR, it.name, false)
                 refresh()
             }
         }
@@ -425,7 +419,7 @@ fun BlockUninstallScreen(onNavigateUp: () -> Unit) {
                 PackageNameTextField(packageName, Modifier.padding(vertical = 8.dp)) { packageName = it }
                 Button(
                     {
-                        dpm.setUninstallBlocked(receiver, packageName, true)
+                        Privilege.DPM.setUninstallBlocked(Privilege.DAR, packageName, true)
                         packageName = ""
                         refresh()
                     },
@@ -445,13 +439,11 @@ fun BlockUninstallScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun DisableUserControlScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val packages = remember { mutableStateListOf<AppInfo>() }
     fun refresh() {
         val pm = context.packageManager
         packages.clear()
-        dpm.getUserControlDisabledPackages(receiver).forEach {
+        Privilege.DPM.getUserControlDisabledPackages(Privilege.DAR).forEach {
             packages += pm.retrieveAppInfo(it)
         }
     }
@@ -459,7 +451,7 @@ fun DisableUserControlScreen(onNavigateUp: () -> Unit) {
     MyLazyScaffold(R.string.disable_user_control, onNavigateUp) {
         items(packages, { it.name }) { info ->
             ApplicationItem(info) {
-                dpm.setUserControlDisabledPackages(receiver, packages.minus(info).map { it.name })
+                Privilege.DPM.setUserControlDisabledPackages(Privilege.DAR, packages.minus(info).map { it.name })
                 refresh()
             }
         }
@@ -468,7 +460,7 @@ fun DisableUserControlScreen(onNavigateUp: () -> Unit) {
             PackageNameTextField(packageName, Modifier.padding(vertical = 8.dp, horizontal = HorizontalPadding)) { packageName = it }
             Button(
                 {
-                    dpm.setUserControlDisabledPackages(receiver, packages.map { it.name } + packageName)
+                    Privilege.DPM.setUserControlDisabledPackages(Privilege.DAR, packages.map { it.name } + packageName)
                     refresh()
                 },
                 Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding).padding(bottom = 8.dp),
@@ -487,15 +479,13 @@ fun DisableUserControlScreen(onNavigateUp: () -> Unit) {
 fun PermissionsManagerScreen(onNavigateUp: () -> Unit, param: PermissionsManager) {
     val packageNameParam = param.packageName
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     var packageName by remember { mutableStateOf(packageNameParam ?: "") }
     var selectedPermission by remember { mutableStateOf<PermissionItem?>(null) }
     val statusMap = remember { mutableStateMapOf<String, Int>() }
     LaunchedEffect(packageName) {
         if(packageName.isValidPackageName) {
-            permissionList().forEach { statusMap[it.permission] = dpm.getPermissionGrantState(receiver, packageName, it.permission) }
+            permissionList().forEach { statusMap[it.permission] = Privilege.DPM.getPermissionGrantState(Privilege.DAR, packageName, it.permission) }
         } else {
             statusMap.clear()
         }
@@ -536,9 +526,9 @@ fun PermissionsManagerScreen(onNavigateUp: () -> Unit, param: PermissionsManager
     }
     if(selectedPermission != null) {
         fun changeState(state: Int) {
-            val result = dpm.setPermissionGrantState(receiver, packageName, selectedPermission!!.permission, state)
+            val result = Privilege.DPM.setPermissionGrantState(Privilege.DAR, packageName, selectedPermission!!.permission, state)
             if (!result) context.showOperationResultToast(false)
-            statusMap[selectedPermission!!.permission] = dpm.getPermissionGrantState(receiver, packageName, selectedPermission!!.permission)
+            statusMap[selectedPermission!!.permission] = Privilege.DPM.getPermissionGrantState(Privilege.DAR, packageName, selectedPermission!!.permission)
             selectedPermission = null
         }
         @Composable
@@ -582,14 +572,12 @@ fun PermissionsManagerScreen(onNavigateUp: () -> Unit, param: PermissionsManager
 @Composable
 fun DisableMeteredDataScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     var packageName by remember { mutableStateOf("") }
     val packages = remember { mutableStateListOf<AppInfo>() }
     fun refresh() {
         val pm = context.packageManager
         packages.clear()
-        dpm.getMeteredDataDisabledPackages(receiver).forEach {
+        Privilege.DPM.getMeteredDataDisabledPackages(Privilege.DAR).forEach {
             packages += pm.retrieveAppInfo(it)
         }
     }
@@ -597,7 +585,7 @@ fun DisableMeteredDataScreen(onNavigateUp: () -> Unit) {
     MyLazyScaffold(R.string.disable_metered_data, onNavigateUp) {
         items(packages, { it.name }) { info ->
             ApplicationItem(info) {
-                dpm.setMeteredDataDisabledPackages(receiver, packages.minus(info).map { it.name })
+                Privilege.DPM.setMeteredDataDisabledPackages(Privilege.DAR, packages.minus(info).map { it.name })
                 refresh()
             }
         }
@@ -605,7 +593,7 @@ fun DisableMeteredDataScreen(onNavigateUp: () -> Unit) {
             PackageNameTextField(packageName, Modifier.padding(HorizontalPadding, 8.dp)) { packageName = it }
             Button(
                 {
-                    if(dpm.setMeteredDataDisabledPackages(receiver, packages.map { it.name } + packageName).isEmpty()) {
+                    if(Privilege.DPM.setMeteredDataDisabledPackages(Privilege.DAR, packages.map { it.name } + packageName).isEmpty()) {
                         packageName = ""
                     } else {
                         context.showOperationResultToast(false)
@@ -655,8 +643,8 @@ private fun ClearAppStorageDialog(packageName: String, onClose: () -> Unit) {
             TextButton(
                 {
                     clearing = true
-                    context.getDPM().clearApplicationUserData(
-                        context.getReceiver(), packageName, Executors.newSingleThreadExecutor()
+                    Privilege.DPM.clearApplicationUserData(
+                        Privilege.DAR, packageName, Executors.newSingleThreadExecutor()
                     ) { _, it ->
                         Looper.prepare()
                         context.showOperationResultToast(it)
@@ -734,13 +722,11 @@ private fun UninstallAppDialog(packageName: String, onClose: () -> Unit) {
 @Composable
 fun KeepUninstalledPackagesScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val packages = remember { mutableStateListOf<AppInfo>() }
     fun refresh() {
         val pm = context.packageManager
         packages.clear()
-        dpm.getKeepUninstalledPackages(receiver)?.forEach {
+        Privilege.DPM.getKeepUninstalledPackages(Privilege.DAR)?.forEach {
             packages += pm.retrieveAppInfo(it)
         }
     }
@@ -748,7 +734,7 @@ fun KeepUninstalledPackagesScreen(onNavigateUp: () -> Unit) {
     MyLazyScaffold(R.string.keep_uninstalled_packages, onNavigateUp) {
         items(packages, { it.name }) { info ->
             ApplicationItem(info) {
-                dpm.setKeepUninstalledPackages(receiver, packages.minus(info).map { it.name })
+                Privilege.DPM.setKeepUninstalledPackages(Privilege.DAR, packages.minus(info).map { it.name })
                 refresh()
             }
         }
@@ -757,7 +743,7 @@ fun KeepUninstalledPackagesScreen(onNavigateUp: () -> Unit) {
             PackageNameTextField(packageName, Modifier.padding(HorizontalPadding, 8.dp)) { packageName = it }
             Button(
                 {
-                    dpm.setKeepUninstalledPackages(receiver, packages.map { it.name } + packageName)
+                    Privilege.DPM.setKeepUninstalledPackages(Privilege.DAR, packages.map { it.name } + packageName)
                     packageName = ""
                 },
                 Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding).padding(bottom = 8.dp),
@@ -782,7 +768,7 @@ fun InstallExistingAppScreen(onNavigateUp: () -> Unit) {
         Button(
             {
                 context.showOperationResultToast(
-                    context.getDPM().installExistingPackage(context.getReceiver(), packageName)
+                    Privilege.DPM.installExistingPackage(Privilege.DAR, packageName)
                 )
             },
             Modifier.fillMaxWidth(),
@@ -800,13 +786,11 @@ fun InstallExistingAppScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun CrossProfilePackagesScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val packages = remember { mutableStateListOf<AppInfo>() }
     fun refresh() {
         val pm = context.packageManager
         packages.clear()
-        dpm.getCrossProfilePackages(receiver).forEach {
+        Privilege.DPM.getCrossProfilePackages(Privilege.DAR).forEach {
             packages += pm.retrieveAppInfo(it)
         }
     }
@@ -814,7 +798,7 @@ fun CrossProfilePackagesScreen(onNavigateUp: () -> Unit) {
     MyLazyScaffold(R.string.cross_profile_apps, onNavigateUp) {
         items(packages, { it.name }) { info ->
             ApplicationItem(info) {
-                dpm.setCrossProfilePackages(receiver, packages.minus(info).map { it.name }.toSet())
+                Privilege.DPM.setCrossProfilePackages(Privilege.DAR, packages.minus(info).map { it.name }.toSet())
                 refresh()
             }
         }
@@ -823,7 +807,7 @@ fun CrossProfilePackagesScreen(onNavigateUp: () -> Unit) {
             PackageNameTextField(packageName, Modifier.padding(vertical = 8.dp)) { packageName = it }
             Button(
                 {
-                    dpm.setCrossProfilePackages(receiver, packages.map { it.name }.toSet() + packageName)
+                    Privilege.DPM.setCrossProfilePackages(Privilege.DAR, packages.map { it.name }.toSet() + packageName)
                     packageName = ""
                     refresh()
                 },
@@ -841,13 +825,11 @@ fun CrossProfilePackagesScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun CrossProfileWidgetProvidersScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val packages = remember { mutableStateListOf<AppInfo>() }
     fun refresh() {
         val pm = context.packageManager
         packages.clear()
-        dpm.getCrossProfileWidgetProviders(receiver).forEach {
+        Privilege.DPM.getCrossProfileWidgetProviders(Privilege.DAR).forEach {
             packages += pm.retrieveAppInfo(it)
         }
     }
@@ -855,7 +837,7 @@ fun CrossProfileWidgetProvidersScreen(onNavigateUp: () -> Unit) {
     MyLazyScaffold(R.string.cross_profile_widget, onNavigateUp) {
         items(packages, { it.name }) {
             ApplicationItem(it) {
-                dpm.removeCrossProfileWidgetProvider(receiver, it.name)
+                Privilege.DPM.removeCrossProfileWidgetProvider(Privilege.DAR, it.name)
                 refresh()
             }
         }
@@ -864,7 +846,7 @@ fun CrossProfileWidgetProvidersScreen(onNavigateUp: () -> Unit) {
             PackageNameTextField(packageName, Modifier.padding(vertical = 8.dp, horizontal = HorizontalPadding)) { packageName = it }
             Button(
                 {
-                    dpm.addCrossProfileWidgetProvider(receiver, packageName)
+                    Privilege.DPM.addCrossProfileWidgetProvider(Privilege.DAR, packageName)
                     packageName = ""
                     refresh()
                 },
@@ -884,11 +866,10 @@ fun CrossProfileWidgetProvidersScreen(onNavigateUp: () -> Unit) {
 fun CredentialManagerPolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val pm = context.packageManager
-    val dpm = context.getDPM()
     var policyType by remember{ mutableIntStateOf(-1) }
     val packages = remember { mutableStateListOf<AppInfo>() }
     fun refresh() {
-        val policy = dpm.credentialManagerPolicy
+        val policy = Privilege.DPM.credentialManagerPolicy
         policyType = policy?.policyType ?: -1
         packages.clear()
         policy?.packageNames?.forEach {
@@ -928,9 +909,9 @@ fun CredentialManagerPolicyScreen(onNavigateUp: () -> Unit) {
                     {
                         try {
                             if(policyType != -1 && packages.isNotEmpty()) {
-                                dpm.credentialManagerPolicy = PackagePolicy(policyType, packages.map { it.name }.toSet())
+                                Privilege.DPM.credentialManagerPolicy = PackagePolicy(policyType, packages.map { it.name }.toSet())
                             } else {
-                            dpm.credentialManagerPolicy = null
+                            Privilege.DPM.credentialManagerPolicy = null
                             }
                             context.showOperationResultToast(true)
                         } catch(_: IllegalArgumentException) {
@@ -954,13 +935,11 @@ fun CredentialManagerPolicyScreen(onNavigateUp: () -> Unit) {
 fun PermittedAccessibilityServicesScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val pm = context.packageManager
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val packages = remember { mutableStateListOf<AppInfo>() }
     var allowAll by remember { mutableStateOf(true) }
     fun refresh() {
         packages.clear()
-        val list = dpm.getPermittedAccessibilityServices(receiver)
+        val list = Privilege.DPM.getPermittedAccessibilityServices(Privilege.DAR)
         allowAll = list == null
         list?.forEach {
             packages += pm.retrieveAppInfo(it)
@@ -989,7 +968,7 @@ fun PermittedAccessibilityServicesScreen(onNavigateUp: () -> Unit) {
             }
             Button(
                 {
-                    val result = dpm.setPermittedAccessibilityServices(receiver, if(allowAll) null else packages.map { it.name })
+                    val result = Privilege.DPM.setPermittedAccessibilityServices(Privilege.DAR, if(allowAll) null else packages.map { it.name })
                     context.showOperationResultToast(result)
                     refresh()
                 },
@@ -1008,13 +987,11 @@ fun PermittedAccessibilityServicesScreen(onNavigateUp: () -> Unit) {
 fun PermittedInputMethodsScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val pm = context.packageManager
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val packages = remember { mutableStateListOf<AppInfo>() }
     var allowAll by remember { mutableStateOf(true) }
     fun refresh() {
         packages.clear()
-        val list = dpm.getPermittedInputMethods(receiver)
+        val list = Privilege.DPM.getPermittedInputMethods(Privilege.DAR)
         allowAll = list == null
         list?.forEach {
             packages += pm.retrieveAppInfo(it)
@@ -1043,7 +1020,7 @@ fun PermittedInputMethodsScreen(onNavigateUp: () -> Unit) {
             }
             Button(
                 {
-                    val result = dpm.setPermittedInputMethods(receiver, if(allowAll) null else packages.map { it.name })
+                    val result = Privilege.DPM.setPermittedInputMethods(Privilege.DAR, if(allowAll) null else packages.map { it.name })
                     context.showOperationResultToast(result)
                     refresh()
                 },
@@ -1067,7 +1044,7 @@ fun EnableSystemAppScreen(onNavigateUp: () -> Unit) {
         PackageNameTextField(packageName, Modifier.padding(bottom = 8.dp)) { packageName = it }
         Button(
             {
-                context.getDPM().enableSystemApp(context.getReceiver(), packageName)
+                Privilege.DPM.enableSystemApp(Privilege.DAR, packageName)
                 packageName = ""
                 context.showOperationResultToast(true)
             },
@@ -1094,7 +1071,7 @@ fun SetDefaultDialerScreen(onNavigateUp: () -> Unit) {
         Button(
             {
                 try {
-                    context.getDPM().setDefaultDialerApplication(packageName)
+                    Privilege.DPM.setDefaultDialerApplication(packageName)
                     context.showOperationResultToast(true)
                 } catch(e: Exception) {
                     errorMessage = e.message

@@ -56,8 +56,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.IUserService
+import com.bintianqi.owndroid.MyAdminComponent
+import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.popToast
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
@@ -72,7 +73,7 @@ import kotlinx.serialization.Serializable
 
 @Composable
 fun WorkProfileScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     MyScaffold(R.string.work_profile, onNavigateUp, 0.dp) {
         if(VERSION.SDK_INT >= 30 && !privilege.org) {
             FunctionItem(R.string.org_owned_work_profile, icon = R.drawable.corporate_fare_fill0) { onNavigate(OrganizationOwnedProfile) }
@@ -90,7 +91,6 @@ fun WorkProfileScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
 @Composable
 fun CreateWorkProfileScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
     MyScaffold(R.string.create_work_profile, onNavigateUp) {
@@ -133,7 +133,7 @@ fun CreateWorkProfileScreen(onNavigateUp: () -> Unit) {
                 try {
                     val intent = Intent(ACTION_PROVISION_MANAGED_PROFILE)
                     if(VERSION.SDK_INT >= 23) {
-                        intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME,receiver)
+                        intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME, MyAdminComponent)
                     } else {
                         intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME, context.packageName)
                     }
@@ -201,26 +201,24 @@ val activateOrgProfileCommand = "dpm mark-profile-owner-on-organization-owned-de
 @Composable
 fun SuspendPersonalAppScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    var suspend by remember { mutableStateOf(dpm.getPersonalAppsSuspendedReasons(receiver) != PERSONAL_APPS_NOT_SUSPENDED) }
+    var suspend by remember { mutableStateOf(Privilege.DPM.getPersonalAppsSuspendedReasons(Privilege.DAR) != PERSONAL_APPS_NOT_SUSPENDED) }
     MyScaffold(R.string.suspend_personal_app, onNavigateUp) {
         SwitchItem(R.string.suspend_personal_app, state = suspend,
             onCheckedChange = {
-                dpm.setPersonalAppsSuspended(receiver,it)
-                suspend = dpm.getPersonalAppsSuspendedReasons(receiver) != PERSONAL_APPS_NOT_SUSPENDED
+                Privilege.DPM.setPersonalAppsSuspended(Privilege.DAR, it)
+                suspend = Privilege.DPM.getPersonalAppsSuspendedReasons(Privilege.DAR) != PERSONAL_APPS_NOT_SUSPENDED
             }, padding = false
         )
         var time by remember { mutableStateOf("") }
-        time = dpm.getManagedProfileMaximumTimeOff(receiver).toString()
+        time = Privilege.DPM.getManagedProfileMaximumTimeOff(Privilege.DAR).toString()
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.profile_max_time_off), style = typography.titleLarge)
         Text(text = stringResource(R.string.profile_max_time_out_desc))
         Text(
             text = stringResource(
                 R.string.personal_app_suspended_because_timeout,
-                dpm.getPersonalAppsSuspendedReasons(receiver) == PERSONAL_APPS_SUSPENDED_PROFILE_TIMEOUT
+                Privilege.DPM.getPersonalAppsSuspendedReasons(Privilege.DAR) == PERSONAL_APPS_SUSPENDED_PROFILE_TIMEOUT
             )
         )
         OutlinedTextField(
@@ -232,7 +230,7 @@ fun SuspendPersonalAppScreen(onNavigateUp: () -> Unit) {
         Text(text = stringResource(R.string.cannot_less_than_72_hours))
         Button(
             onClick = {
-                dpm.setManagedProfileMaximumTimeOff(receiver,time.toLong())
+                Privilege.DPM.setManagedProfileMaximumTimeOff(Privilege.DAR, time.toLong())
                 context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
@@ -248,8 +246,6 @@ fun SuspendPersonalAppScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun CrossProfileIntentFilterScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     MyScaffold(R.string.intent_filter, onNavigateUp) {
         var action by remember { mutableStateOf("") }
@@ -263,7 +259,7 @@ fun CrossProfileIntentFilterScreen(onNavigateUp: () -> Unit) {
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                dpm.addCrossProfileIntentFilter(receiver, IntentFilter(action), FLAG_PARENT_CAN_ACCESS_MANAGED)
+                Privilege.DPM.addCrossProfileIntentFilter(Privilege.DAR, IntentFilter(action), FLAG_PARENT_CAN_ACCESS_MANAGED)
                 context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
@@ -272,7 +268,7 @@ fun CrossProfileIntentFilterScreen(onNavigateUp: () -> Unit) {
         }
         Button(
             onClick = {
-                dpm.addCrossProfileIntentFilter(receiver, IntentFilter(action), FLAG_MANAGED_CAN_ACCESS_PARENT)
+                Privilege.DPM.addCrossProfileIntentFilter(Privilege.DAR, IntentFilter(action), FLAG_MANAGED_CAN_ACCESS_PARENT)
                 context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
@@ -282,7 +278,7 @@ fun CrossProfileIntentFilterScreen(onNavigateUp: () -> Unit) {
         Spacer(Modifier.padding(vertical = 2.dp))
         Button(
             onClick = {
-                dpm.clearCrossProfileIntentFilters(receiver)
+                Privilege.DPM.clearCrossProfileIntentFilters(Privilege.DAR)
                 context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
@@ -297,8 +293,6 @@ fun CrossProfileIntentFilterScreen(onNavigateUp: () -> Unit) {
 
 @Composable
 fun DeleteWorkProfileScreen(onNavigateUp: () -> Unit) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
     var flag by remember { mutableIntStateOf(0) }
     var warning by remember { mutableStateOf(false) }
@@ -342,9 +336,9 @@ fun DeleteWorkProfileScreen(onNavigateUp: () -> Unit) {
                 TextButton(
                     onClick = {
                         if(VERSION.SDK_INT >= 28 && !silent) {
-                            dpm.wipeData(flag, reason)
+                            Privilege.DPM.wipeData(flag, reason)
                         } else {
-                            dpm.wipeData(flag)
+                            Privilege.DPM.wipeData(flag)
                         }
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)

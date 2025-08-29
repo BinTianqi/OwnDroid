@@ -7,7 +7,6 @@ import android.app.admin.DevicePolicyManager
 import android.app.admin.DnsEvent
 import android.app.admin.IDevicePolicyManager
 import android.app.admin.SecurityLog
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.IPackageInstaller
@@ -18,12 +17,10 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.core.content.pm.ShortcutManagerCompat
-import com.bintianqi.owndroid.MyAdminComponent
+import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.SharedPrefs
+import com.bintianqi.owndroid.SP
 import com.bintianqi.owndroid.createShortcuts
-import com.bintianqi.owndroid.myPrivilege
-import com.bintianqi.owndroid.updatePrivilege
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuBinderWrapper
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,24 +33,6 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import java.io.OutputStream
-
-val Context.isDeviceOwner: Boolean
-    get() {
-        val dpm = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        return dpm.isDeviceOwnerApp(
-            if(SharedPrefs(this).dhizuku) {
-                Dhizuku.getOwnerPackageName()
-            } else {
-                "com.bintianqi.owndroid"
-            }
-        )
-    }
-
-val Context.isProfileOwner: Boolean
-    get() {
-        val dpm = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        return dpm.isProfileOwnerApp("com.bintianqi.owndroid")
-    }
 
 @SuppressLint("PrivateApi")
 fun binderWrapperDevicePolicyManager(appContext: Context): DevicePolicyManager? {
@@ -69,7 +48,8 @@ fun binderWrapperDevicePolicyManager(appContext: Context): DevicePolicyManager? 
         val newInterface = IDevicePolicyManager.Stub.asInterface(newBinder)
         field[manager] = newInterface
         return manager
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+        e.printStackTrace()
         dhizukuErrorStatus.value = 1
     }
     return null
@@ -96,7 +76,7 @@ private fun binderWrapperPackageInstaller(appContext: Context): PackageInstaller
 }
 
 fun Context.getPackageInstaller(): PackageInstaller {
-    if(SharedPrefs(this).dhizuku) {
+    if(SP.dhizuku) {
         if (!dhizukuPermissionGranted()) {
             dhizukuErrorStatus.value = 2
             return this.packageManager.packageInstaller
@@ -104,26 +84,6 @@ fun Context.getPackageInstaller(): PackageInstaller {
         return binderWrapperPackageInstaller(this) ?: this.packageManager.packageInstaller
     } else {
         return this.packageManager.packageInstaller
-    }
-}
-
-fun Context.getDPM(): DevicePolicyManager {
-    if(SharedPrefs(this).dhizuku) {
-        if (!dhizukuPermissionGranted()) {
-            dhizukuErrorStatus.value = 2
-            return this.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        }
-        return binderWrapperDevicePolicyManager(this) ?: this.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    } else {
-        return this.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    }
-}
-
-fun Context.getReceiver(): ComponentName {
-    return if(SharedPrefs(this).dhizuku) {
-        Dhizuku.getOwnerComponent()
-    } else {
-        MyAdminComponent
     }
 }
 
@@ -195,7 +155,7 @@ fun permissionList(): List<PermissionItem>{
 
 @RequiresApi(26)
 fun handleNetworkLogs(context: Context, batchToken: Long) {
-    val networkEvents = context.getDPM().retrieveNetworkLogs(context.getReceiver(), batchToken) ?: return
+    val networkEvents = Privilege.DPM.retrieveNetworkLogs(Privilege.DAR, batchToken) ?: return
     val file = context.filesDir.resolve("NetworkLogs.json")
     val fileExist = file.exists()
     val json = Json { ignoreUnknownKeys = true; explicitNulls = false }
@@ -452,19 +412,16 @@ fun parseSecurityEventData(event: SecurityLog.SecurityEvent): JsonElement? {
     }
 }
 
-fun setDefaultAffiliationID(context: Context) {
+fun setDefaultAffiliationID() {
     if(VERSION.SDK_INT < 26) return
-    val sp = SharedPrefs(context)
-    val privilege = myPrivilege.value
-    if(!sp.isDefaultAffiliationIdSet) {
+    val privilege = Privilege.status.value
+    if(!SP.isDefaultAffiliationIdSet) {
         try {
             if(privilege.device || (!privilege.primary && privilege.profile)) {
-                val dpm = context.getDPM()
-                val receiver = context.getReceiver()
-                val affiliationIDs = dpm.getAffiliationIds(receiver)
+                val affiliationIDs = Privilege.DPM.getAffiliationIds(Privilege.DAR)
                 if(affiliationIDs.isEmpty()) {
-                    dpm.setAffiliationIds(receiver, setOf("OwnDroid_default_affiliation_id"))
-                    sp.isDefaultAffiliationIdSet = true
+                    Privilege.DPM.setAffiliationIds(Privilege.DAR, setOf("OwnDroid_default_affiliation_id"))
+                    SP.isDefaultAffiliationIdSet = true
                     Log.d("DPM", "Default affiliation id set")
                 }
             }
@@ -510,33 +467,18 @@ fun parsePackageInstallerMessage(context: Context, result: Intent): String {
 
 
 fun handlePrivilegeChange(context: Context) {
-    val privilege = myPrivilege.value
-    val activated = privilege.device || privilege.profile
-    val sp = SharedPrefs(context)
-    sp.dhizukuServer = false
-    if(activated) {
+    val privilege = Privilege.status.value
+    SP.dhizukuServer = false
+    if (privilege.activated) {
         createShortcuts(context)
-        if(!privilege.dhizuku) {
-            setDefaultAffiliationID(context)
+        if (!privilege.dhizuku) {
+            setDefaultAffiliationID()
         }
     } else {
-        sp.isDefaultAffiliationIdSet = false
+        SP.isDefaultAffiliationIdSet = false
         if(VERSION.SDK_INT >= 25) {
             ShortcutManagerCompat.removeAllDynamicShortcuts(context)
         }
-        sp.isApiEnabled = false
+        SP.isApiEnabled = false
     }
-}
-
-fun checkPrivilege(context: Context) {
-    val sp = SharedPrefs(context)
-    if (sp.dhizuku) {
-        if (Dhizuku.init(context)) {
-            if (!dhizukuPermissionGranted()) { dhizukuErrorStatus.value = 2 }
-        } else {
-            sp.dhizuku = false
-            dhizukuErrorStatus.value = 1
-        }
-    }
-    updatePrivilege(context)
 }

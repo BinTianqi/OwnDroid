@@ -78,7 +78,7 @@ import kotlin.system.exitProcess
 @Composable
 fun SettingsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val context = LocalContext.current
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     val exportLogsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) {
         if(it != null) exportLogs(context, it)
     }
@@ -145,17 +145,16 @@ fun SettingsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
 @Composable
 fun SettingsOptionsScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val sp = SharedPrefs(context)
     MyScaffold(R.string.options, onNavigateUp, 0.dp) {
         SwitchItem(
             R.string.show_dangerous_features, icon = R.drawable.warning_fill0,
-            getState = { sp.displayDangerousFeatures },
-            onCheckedChange = { sp.displayDangerousFeatures = it }
+            getState = { SP.displayDangerousFeatures },
+            onCheckedChange = { SP.displayDangerousFeatures = it }
         )
         SwitchItem(
             R.string.shortcuts, icon = R.drawable.open_in_new,
-            getState = { sp.shortcuts }, onCheckedChange = {
-                sp.shortcuts = it
+            getState = { SP.shortcuts }, onCheckedChange = {
+                SP.shortcuts = it
                 ShortcutManagerCompat.removeAllDynamicShortcuts(context)
                 createShortcuts(context)
             }
@@ -230,13 +229,12 @@ fun AppearanceScreen(onNavigateUp: () -> Unit, currentTheme: ThemeSettings, onTh
 @Composable
 fun AppLockSettingsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.app_lock, onNavigateUp, 0.dp) {
     val fm = LocalFocusManager.current
-    val sp = SharedPrefs(LocalContext.current)
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var allowBiometrics by remember { mutableStateOf(sp.biometricsUnlock) }
-    var lockWhenLeaving by remember { mutableStateOf(sp.lockWhenLeaving) }
+    var allowBiometrics by remember { mutableStateOf(SP.biometricsUnlock) }
+    var lockWhenLeaving by remember { mutableStateOf(SP.lockWhenLeaving) }
     val fr = FocusRequester()
-    val alreadySet = !sp.lockPasswordHash.isNullOrEmpty()
+    val alreadySet = !SP.lockPasswordHash.isNullOrEmpty()
     val isInputLegal = password.length !in 1..3 && (alreadySet || (password.isNotEmpty() && password.isNotBlank()))
     Column(Modifier.widthIn(max = 300.dp).align(Alignment.CenterHorizontally)) {
         OutlinedTextField(
@@ -263,9 +261,9 @@ fun AppLockSettingsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.app_lo
         Button(
             onClick = {
                 fm.clearFocus()
-                if(password.isNotEmpty()) sp.lockPasswordHash = password.hash()
-                sp.biometricsUnlock = allowBiometrics
-                sp.lockWhenLeaving = lockWhenLeaving
+                if(password.isNotEmpty()) SP.lockPasswordHash = password.hash()
+                SP.biometricsUnlock = allowBiometrics
+                SP.lockWhenLeaving = lockWhenLeaving
                 onNavigateUp()
             },
             modifier = Modifier.fillMaxWidth(),
@@ -276,9 +274,9 @@ fun AppLockSettingsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.app_lo
         if(alreadySet) FilledTonalButton(
             onClick = {
                 fm.clearFocus()
-                sp.lockPasswordHash = ""
-                sp.biometricsUnlock = false
-                sp.lockWhenLeaving = false
+                SP.lockPasswordHash = ""
+                SP.biometricsUnlock = false
+                SP.lockWhenLeaving = false
                 onNavigateUp()
             },
             modifier = Modifier.fillMaxWidth()
@@ -293,13 +291,12 @@ fun AppLockSettingsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.app_lo
 @Composable
 fun ApiSettings(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val sp = SharedPrefs(context)
     MyScaffold(R.string.api, onNavigateUp) {
-        var enabled by remember { mutableStateOf(sp.isApiEnabled) }
+        var enabled by remember { mutableStateOf(SP.isApiEnabled) }
         SwitchItem(R.string.enable, state = enabled, onCheckedChange = {
             enabled = it
-            sp.isApiEnabled = it
-            if(!it) sp.sharedPrefs.edit { remove("api.key") }
+            SP.isApiEnabled = it
+            if(!it) SP.sharedPrefs.edit { remove("api.key") }
         }, padding = false)
         if(enabled) {
             var key by remember { mutableStateOf("") }
@@ -321,14 +318,14 @@ fun ApiSettings(onNavigateUp: () -> Unit) {
             Button(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
                 onClick = {
-                    sp.apiKey = key
+                    SP.apiKey = key
                     context.showOperationResultToast(true)
                 },
                 enabled = key.isNotEmpty()
             ) {
                 Text(stringResource(R.string.apply))
             }
-            if(sp.apiKey != null) Notes(R.string.api_key_exist)
+            if(SP.apiKey != null) Notes(R.string.api_key_exist)
         }
     }
 }

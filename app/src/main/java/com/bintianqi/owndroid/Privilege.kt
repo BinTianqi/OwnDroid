@@ -1,39 +1,64 @@
 package com.bintianqi.owndroid
 
+import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
 import android.content.Context
 import android.os.Binder
 import android.os.Build
-import com.bintianqi.owndroid.dpm.getDPM
-import com.bintianqi.owndroid.dpm.getReceiver
-import com.bintianqi.owndroid.dpm.isDeviceOwner
-import com.bintianqi.owndroid.dpm.isProfileOwner
+import com.bintianqi.owndroid.dpm.binderWrapperDevicePolicyManager
+import com.bintianqi.owndroid.dpm.dhizukuErrorStatus
+import com.rosan.dhizuku.api.Dhizuku
 import kotlinx.coroutines.flow.MutableStateFlow
 
-class Privilege(
-    val device: Boolean = false, // Device owner
-    val profile: Boolean = false, // Profile owner
-    val dhizuku: Boolean = false,
-    val work: Boolean = false, // Work profile
-    val org: Boolean = false, // Organization-owned work profile
-    val affiliated: Boolean = false
-) {
-    val primary = Binder.getCallingUid() / 100000 == 0 // Primary user
+object Privilege {
+    fun initialize(context: Context) {
+        if (SP.dhizuku) {
+            Dhizuku.init(context)
+            val hasPermission = try {
+                Dhizuku.isPermissionGranted()
+            } catch(_: Exception) {
+                false
+            }
+            if (hasPermission) {
+                val dhizukuDpm = binderWrapperDevicePolicyManager(context)
+                if (dhizukuDpm != null) {
+                    DPM = dhizukuDpm
+                    DAR = Dhizuku.getOwnerComponent()
+                    return
+                }
+            }
+            dhizukuErrorStatus.value = 2
+        }
+        DPM = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        DAR = MyAdminComponent
+    }
+    lateinit var DPM: DevicePolicyManager
+        private set
+    lateinit var DAR: ComponentName
+        private set
+
+    data class Status(
+        val device: Boolean = false,
+        val profile: Boolean = false,
+        val dhizuku: Boolean = false,
+        val work: Boolean = false,
+        val org: Boolean = false,
+        val affiliated: Boolean = false
+    ) {
+        val activated = device || profile
+        val primary = Binder.getCallingUid() / 100000 == 0 // Primary user
+    }
+    val status = MutableStateFlow(Status())
+    fun updateStatus() {
+        val profile = DPM.isProfileOwnerApp(DAR.packageName)
+        val work = profile && Build.VERSION.SDK_INT >= 24 && DPM.isManagedProfile(DAR)
+        status.value = Status(
+            device = DPM.isDeviceOwnerApp(DAR.packageName),
+            profile = profile,
+            dhizuku = SP.dhizuku,
+            work = work,
+            org = work && Build.VERSION.SDK_INT >= 30 && DPM.isOrganizationOwnedDeviceWithManagedProfile,
+            affiliated = Build.VERSION.SDK_INT >= 28 && DPM.isAffiliatedUser
+        )
+    }
 }
-
-val myPrivilege = MutableStateFlow(Privilege())
-
-fun updatePrivilege(context: Context) {
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val profile = context.isProfileOwner
-    val work = profile && Build.VERSION.SDK_INT >= 24 && dpm.isManagedProfile(receiver)
-    myPrivilege.value = Privilege(
-        device = context.isDeviceOwner,
-        profile = profile,
-        dhizuku = SharedPrefs(context).dhizuku,
-        work = work,
-        org = work && Build.VERSION.SDK_INT >= 30 && dpm.isOrganizationOwnedDeviceWithManagedProfile,
-        affiliated = Build.VERSION.SDK_INT >= 28 && dpm.isAffiliatedUser
-    )
-}
-

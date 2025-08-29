@@ -121,12 +121,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.ChoosePackageContract
 import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.NotificationUtils
+import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.SharedPrefs
+import com.bintianqi.owndroid.SP
 import com.bintianqi.owndroid.createShortcuts
 import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.humanReadableDate
-import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.parseDate
 import com.bintianqi.owndroid.popToast
 import com.bintianqi.owndroid.showOperationResultToast
@@ -161,14 +161,11 @@ import kotlin.math.roundToLong
 @Composable
 fun SystemManagerScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val sp = SharedPrefs(context)
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     /** 1: reboot, 2: bug report, 3: org name, 4: org id, 5: enrollment specific id*/
     var dialog by remember { mutableIntStateOf(0) }
     var enrollmentSpecificId by remember {
-        mutableStateOf(if (VERSION.SDK_INT >= 31 && (privilege.device || privilege.profile)) dpm.enrollmentSpecificId else "")
+        mutableStateOf(if (VERSION.SDK_INT >= 31 && (privilege.device || privilege.profile)) Privilege.DPM.enrollmentSpecificId else "")
     }
     MyScaffold(R.string.system, onNavigateUp, 0.dp) {
         FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { onNavigate(SystemOptions) }
@@ -178,7 +175,7 @@ fun SystemManagerScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
         if(VERSION.SDK_INT >= 24 && privilege.device) {
             FunctionItem(R.string.reboot, icon = R.drawable.restart_alt_fill0) { dialog = 1 }
         }
-        if(VERSION.SDK_INT >= 24 && privilege.device && (VERSION.SDK_INT < 28 || dpm.isAffiliatedUser)) {
+        if(VERSION.SDK_INT >= 24 && privilege.device && (VERSION.SDK_INT < 28 || privilege.affiliated)) {
             FunctionItem(R.string.bug_report, icon = R.drawable.bug_report_fill0) { dialog = 2 }
         }
         if(VERSION.SDK_INT >= 28 && (privilege.device || privilege.org)) {
@@ -235,7 +232,7 @@ fun SystemManagerScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
         if(VERSION.SDK_INT >= 30 && (privilege.device || privilege.org)) {
             FunctionItem(R.string.frp_policy, icon = R.drawable.device_reset_fill0) { onNavigate(FrpPolicy) }
         }
-        if(sp.displayDangerousFeatures && !privilege.work) {
+        if(SP.displayDangerousFeatures && !privilege.work) {
             FunctionItem(R.string.wipe_data, icon = R.drawable.device_reset_fill0) { onNavigate(WipeData) }
         }
     }
@@ -252,9 +249,9 @@ fun SystemManagerScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
             TextButton(
                 onClick = {
                     if(dialog == 1) {
-                        dpm.reboot(receiver)
+                        Privilege.DPM.reboot(Privilege.DAR)
                     } else {
-                        context.showOperationResultToast(dpm.requestBugreport(receiver))
+                        context.showOperationResultToast(Privilege.DPM.requestBugreport(Privilege.DAR))
                     }
                     dialog = 0
                 }
@@ -270,7 +267,7 @@ fun SystemManagerScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
             text = {
                 val focusMgr = LocalFocusManager.current
                 LaunchedEffect(Unit) {
-                    if(dialog == 5 && VERSION.SDK_INT >= 31) input = dpm.enrollmentSpecificId
+                    if(dialog == 5 && VERSION.SDK_INT >= 31) input = Privilege.DPM.enrollmentSpecificId
                 }
                 Column {
                     OutlinedTextField(
@@ -306,10 +303,10 @@ fun SystemManagerScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
                 TextButton(
                     onClick = {
                         try {
-                            if (dialog == 3 && VERSION.SDK_INT >= 24) dpm.setOrganizationName(receiver, input)
+                            if (dialog == 3 && VERSION.SDK_INT >= 24) Privilege.DPM.setOrganizationName(Privilege.DAR, input)
                             if (dialog == 4 && VERSION.SDK_INT >= 31) {
-                                dpm.setOrganizationId(input)
-                                enrollmentSpecificId = dpm.enrollmentSpecificId
+                                Privilege.DPM.setOrganizationId(input)
+                                enrollmentSpecificId = Privilege.DPM.enrollmentSpecificId
                             }
                             dialog = 0
                         } catch(_: IllegalStateException) {
@@ -330,66 +327,71 @@ fun SystemManagerScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
 @Composable
 fun SystemOptionsScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     var dialog by remember { mutableIntStateOf(0) }
     MyScaffold(R.string.options, onNavigateUp, 0.dp) {
         SwitchItem(R.string.disable_cam, icon = R.drawable.no_photography_fill0,
-            getState = { dpm.getCameraDisabled(null) }, onCheckedChange = {
-                dpm.setCameraDisabled(receiver, it)
+            getState = { Privilege.DPM.getCameraDisabled(null) }, onCheckedChange = {
+                Privilege.DPM.setCameraDisabled(Privilege.DAR, it)
                 createShortcuts(context)
             }
         )
         SwitchItem(R.string.disable_screen_capture, icon = R.drawable.screenshot_fill0,
-            getState = { dpm.getScreenCaptureDisabled(null) }, onCheckedChange = { dpm.setScreenCaptureDisabled(receiver,it) }
+            getState = { Privilege.DPM.getScreenCaptureDisabled(null) },
+            onCheckedChange = { Privilege.DPM.setScreenCaptureDisabled(Privilege.DAR, it) }
         )
         if(VERSION.SDK_INT >= 34 && (privilege.device || (privilege.profile && privilege.affiliated))) {
             SwitchItem(R.string.disable_status_bar, icon = R.drawable.notifications_fill0,
-                getState = { dpm.isStatusBarDisabled}, onCheckedChange = { dpm.setStatusBarDisabled(receiver,it) }
+                getState = { Privilege.DPM.isStatusBarDisabled},
+                onCheckedChange = { Privilege.DPM.setStatusBarDisabled(Privilege.DAR, it) }
             )
         }
         if(privilege.device || privilege.org) {
             if(VERSION.SDK_INT >= 30) {
                 SwitchItem(R.string.auto_time, icon = R.drawable.schedule_fill0,
-                    getState = { dpm.getAutoTimeEnabled(receiver) }, onCheckedChange = { dpm.setAutoTimeEnabled(receiver,it) }
+                    getState = { Privilege.DPM.getAutoTimeEnabled(Privilege.DAR) },
+                    onCheckedChange = { Privilege.DPM.setAutoTimeEnabled(Privilege.DAR, it) }
                 )
                 SwitchItem(R.string.auto_timezone, icon = R.drawable.globe_fill0,
-                    getState = { dpm.getAutoTimeZoneEnabled(receiver) }, onCheckedChange = { dpm.setAutoTimeZoneEnabled(receiver,it) }
+                    getState = { Privilege.DPM.getAutoTimeZoneEnabled(Privilege.DAR) },
+                    onCheckedChange = { Privilege.DPM.setAutoTimeZoneEnabled(Privilege.DAR, it) }
                 )
             } else {
                 SwitchItem(R.string.require_auto_time, icon = R.drawable.schedule_fill0,
-                    getState = { dpm.autoTimeRequired }, onCheckedChange = { dpm.setAutoTimeRequired(receiver,it) }, padding = false)
+                    getState = { Privilege.DPM.autoTimeRequired },
+                    onCheckedChange = { Privilege.DPM.setAutoTimeRequired(Privilege.DAR, it) }, padding = false)
             }
         }
         if (!privilege.work) SwitchItem(R.string.master_mute, icon = R.drawable.volume_off_fill0,
-            getState = { dpm.isMasterVolumeMuted(receiver) }, onCheckedChange = {
-                dpm.setMasterVolumeMuted(receiver,it)
+            getState = { Privilege.DPM.isMasterVolumeMuted(Privilege.DAR) }, onCheckedChange = {
+                Privilege.DPM.setMasterVolumeMuted(Privilege.DAR, it)
                 createShortcuts(context)
             }
         )
         if(VERSION.SDK_INT >= 26) {
             SwitchItem(R.string.backup_service, icon = R.drawable.backup_fill0,
-                getState = { dpm.isBackupServiceEnabled(receiver) }, onCheckedChange = { dpm.setBackupServiceEnabled(receiver,it) },
+                getState = { Privilege.DPM.isBackupServiceEnabled(Privilege.DAR) },
+                onCheckedChange = { Privilege.DPM.setBackupServiceEnabled(Privilege.DAR, it) },
                 onClickBlank = { dialog = 1 }
             )
         }
         if(VERSION.SDK_INT >= 24 && privilege.work) {
             SwitchItem(R.string.disable_bt_contact_share, icon = R.drawable.account_circle_fill0,
-                getState = { dpm.getBluetoothContactSharingDisabled(receiver) },
-                onCheckedChange = { dpm.setBluetoothContactSharingDisabled(receiver,it) }
+                getState = { Privilege.DPM.getBluetoothContactSharingDisabled(Privilege.DAR) },
+                onCheckedChange = { Privilege.DPM.setBluetoothContactSharingDisabled(Privilege.DAR, it) }
             )
         }
         if(VERSION.SDK_INT >= 30 && privilege.device) {
             SwitchItem(R.string.common_criteria_mode , icon =R.drawable.security_fill0,
-                getState = { dpm.isCommonCriteriaModeEnabled(receiver) }, onCheckedChange = { dpm.setCommonCriteriaModeEnabled(receiver,it) },
+                getState = { Privilege.DPM.isCommonCriteriaModeEnabled(Privilege.DAR) },
+                onCheckedChange = { Privilege.DPM.setCommonCriteriaModeEnabled(Privilege.DAR, it) },
                 onClickBlank = { dialog = 2 }
             )
         }
-        if(VERSION.SDK_INT >= 31 && (privilege.device || privilege.org) && dpm.canUsbDataSignalingBeDisabled()) {
+        if(VERSION.SDK_INT >= 31 && (privilege.device || privilege.org) && Privilege.DPM.canUsbDataSignalingBeDisabled()) {
             SwitchItem(
-                R.string.disable_usb_signal, icon = R.drawable.usb_fill0, getState = { !dpm.isUsbDataSignalingEnabled },
-                onCheckedChange = { dpm.isUsbDataSignalingEnabled = !it },
+                R.string.disable_usb_signal, icon = R.drawable.usb_fill0, getState = { !Privilege.DPM.isUsbDataSignalingEnabled },
+                onCheckedChange = { Privilege.DPM.isUsbDataSignalingEnabled = !it },
             )
         }
     }
@@ -415,9 +417,7 @@ fun SystemOptionsScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun KeyguardScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     MyScaffold(R.string.keyguard, onNavigateUp) {
         if(VERSION.SDK_INT >= 23 && (privilege.device || (VERSION.SDK_INT >= 28 && privilege.profile && privilege.affiliated))) {
             Row(
@@ -425,13 +425,13 @@ fun KeyguardScreen(onNavigateUp: () -> Unit) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Button(
-                    onClick = { context.showOperationResultToast(dpm.setKeyguardDisabled(receiver, true)) },
+                    onClick = { context.showOperationResultToast(Privilege.DPM.setKeyguardDisabled(Privilege.DAR, true)) },
                     modifier = Modifier.fillMaxWidth(0.49F)
                 ) {
                     Text(stringResource(R.string.disable))
                 }
                 Button(
-                    onClick = { context.showOperationResultToast(dpm.setKeyguardDisabled(receiver, false)) },
+                    onClick = { context.showOperationResultToast(Privilege.DPM.setKeyguardDisabled(Privilege.DAR, false)) },
                     modifier = Modifier.fillMaxWidth(0.96F)
                 ) {
                     Text(stringResource(R.string.enable))
@@ -452,7 +452,7 @@ fun KeyguardScreen(onNavigateUp: () -> Unit) {
         }
         Button(
             onClick = {
-                if(VERSION.SDK_INT >= 26) dpm.lockNow(flag) else dpm.lockNow()
+                if(VERSION.SDK_INT >= 26) Privilege.DPM.lockNow(flag) else Privilege.DPM.lockNow()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -553,8 +553,6 @@ fun HardwareMonitorScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun ChangeTimeScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     val pagerState = rememberPagerState { 2 }
     var picker by remember { mutableIntStateOf(0) } //0:None, 1:DatePicker, 2:TimePicker
@@ -617,7 +615,7 @@ fun ChangeTimeScreen(onNavigateUp: () -> Unit) {
                     Button(
                         onClick = {
                             val timeMillis = datePickerState.selectedDateMillis!! + timePickerState.hour * 3600000 + timePickerState.minute * 60000
-                            context.showOperationResultToast(dpm.setTime(receiver, timeMillis))
+                            context.showOperationResultToast(Privilege.DPM.setTime(Privilege.DAR, timeMillis))
                         },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = datePickerState.selectedDateMillis != null
@@ -637,7 +635,7 @@ fun ChangeTimeScreen(onNavigateUp: () -> Unit) {
                     Button(
                         onClick = {
                             val timeMillis = inputTime.toLong()
-                            context.showOperationResultToast(dpm.setTime(receiver, timeMillis))
+                            context.showOperationResultToast(Privilege.DPM.setTime(Privilege.DAR, timeMillis))
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -677,9 +675,7 @@ fun ChangeTimeScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun ChangeTimeZoneScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
-    val receiver = context.getReceiver()
     var inputTimezone by remember { mutableStateOf("") }
     var dialog by remember { mutableStateOf(false) }
     MyScaffold(R.string.change_timezone, onNavigateUp) {
@@ -699,7 +695,7 @@ fun ChangeTimeZoneScreen(onNavigateUp: () -> Unit) {
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                context.showOperationResultToast(dpm.setTimeZone(receiver, inputTimezone))
+                context.showOperationResultToast(Privilege.DPM.setTimeZone(Privilege.DAR, inputTimezone))
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -741,9 +737,7 @@ fun ChangeTimeZoneScreen(onNavigateUp: () -> Unit) {
 @RequiresApi(36)
 @Composable
 fun AutoTimePolicyScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.auto_time_policy, onNavigateUp, 0.dp) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    var policy by remember { mutableIntStateOf(dpm.autoTimePolicy) }
+    var policy by remember { mutableIntStateOf(Privilege.DPM.autoTimePolicy) }
     listOf(
         DevicePolicyManager.AUTO_TIME_ENABLED to R.string.enable,
         DevicePolicyManager.AUTO_TIME_DISABLED to R.string.disabled,
@@ -754,8 +748,8 @@ fun AutoTimePolicyScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.auto_ti
         }
     }
     Button({
-        dpm.autoTimePolicy = policy
-        policy = dpm.autoTimePolicy
+        Privilege.DPM.autoTimePolicy = policy
+        policy = Privilege.DPM.autoTimePolicy
     }, Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding)) {
         Text(stringResource(R.string.apply))
     }
@@ -766,9 +760,7 @@ fun AutoTimePolicyScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.auto_ti
 @RequiresApi(36)
 @Composable
 fun AutoTimeZonePolicyScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.auto_timezone_policy, onNavigateUp, 0.dp) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    var policy by remember { mutableIntStateOf(dpm.autoTimeZonePolicy) }
+    var policy by remember { mutableIntStateOf(Privilege.DPM.autoTimeZonePolicy) }
     listOf(
         DevicePolicyManager.AUTO_TIME_ZONE_ENABLED to R.string.enable,
         DevicePolicyManager.AUTO_TIME_ZONE_DISABLED to R.string.disabled,
@@ -779,8 +771,8 @@ fun AutoTimeZonePolicyScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.aut
         }
     }
     Button({
-        dpm.autoTimeZonePolicy = policy
-        policy = dpm.autoTimeZonePolicy
+        Privilege.DPM.autoTimeZonePolicy = policy
+        policy = Privilege.DPM.autoTimeZonePolicy
     }, Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding)) {
         Text(stringResource(R.string.apply))
     }
@@ -972,10 +964,8 @@ fun KeyPairs(navCtrl: NavHostController) {
 @Composable
 fun ContentProtectionPolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     var policy by remember { mutableIntStateOf(DevicePolicyManager.CONTENT_PROTECTION_NOT_CONTROLLED_BY_POLICY) }
-    fun refresh() { policy = dpm.getContentProtectionPolicy(receiver) }
+    fun refresh() { policy = Privilege.DPM.getContentProtectionPolicy(Privilege.DAR) }
     LaunchedEffect(Unit) { refresh() }
     MyScaffold(R.string.content_protection_policy, onNavigateUp, 0.dp) {
         mapOf(
@@ -987,7 +977,7 @@ fun ContentProtectionPolicyScreen(onNavigateUp: () -> Unit) {
         }
         Button(
             onClick = {
-                dpm.setContentProtectionPolicy(receiver, policy)
+                Privilege.DPM.setContentProtectionPolicy(Privilege.DAR, policy)
                 refresh()
                 context.showOperationResultToast(true)
             },
@@ -1007,9 +997,7 @@ fun ContentProtectionPolicyScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun PermissionPolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
-    var selectedPolicy by remember { mutableIntStateOf(dpm.getPermissionPolicy(receiver)) }
+    var selectedPolicy by remember { mutableIntStateOf(Privilege.DPM.getPermissionPolicy(Privilege.DAR)) }
     MyScaffold(R.string.permission_policy, onNavigateUp, 0.dp) {
         FullWidthRadioButtonItem(R.string.default_stringres, selectedPolicy == PERMISSION_POLICY_PROMPT) {
             selectedPolicy = PERMISSION_POLICY_PROMPT
@@ -1023,7 +1011,7 @@ fun PermissionPolicyScreen(onNavigateUp: () -> Unit) {
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                dpm.setPermissionPolicy(receiver,selectedPolicy)
+                Privilege.DPM.setPermissionPolicy(Privilege.DAR,selectedPolicy)
                 context.showOperationResultToast(true)
             },
             modifier = Modifier
@@ -1042,8 +1030,7 @@ fun PermissionPolicyScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun MtePolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    var selectedMtePolicy by remember { mutableIntStateOf(dpm.mtePolicy) }
+    var selectedMtePolicy by remember { mutableIntStateOf(Privilege.DPM.mtePolicy) }
     MyScaffold(R.string.mte_policy, onNavigateUp, 0.dp) {
         FullWidthRadioButtonItem(R.string.decide_by_user, selectedMtePolicy == MTE_NOT_CONTROLLED_BY_POLICY) {
             selectedMtePolicy = MTE_NOT_CONTROLLED_BY_POLICY
@@ -1053,12 +1040,12 @@ fun MtePolicyScreen(onNavigateUp: () -> Unit) {
         Button(
             onClick = {
                 try {
-                    dpm.mtePolicy = selectedMtePolicy
+                    Privilege.DPM.mtePolicy = selectedMtePolicy
                     context.showOperationResultToast(true)
                 } catch(_: java.lang.UnsupportedOperationException) {
                     context.popToast(R.string.unsupported)
                 }
-                selectedMtePolicy = dpm.mtePolicy
+                selectedMtePolicy = Privilege.DPM.mtePolicy
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -1076,8 +1063,7 @@ fun MtePolicyScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun NearbyStreamingPolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    var appPolicy by remember { mutableIntStateOf(dpm.nearbyAppStreamingPolicy) }
+    var appPolicy by remember { mutableIntStateOf(Privilege.DPM.nearbyAppStreamingPolicy) }
     MySmallTitleScaffold(R.string.nearby_streaming_policy, onNavigateUp, 0.dp) {
         Text(
             stringResource(R.string.nearby_app_streaming),
@@ -1095,8 +1081,8 @@ fun NearbyStreamingPolicyScreen(onNavigateUp: () -> Unit) {
         ) { appPolicy = NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY }
         Button(
             onClick = {
-                dpm.nearbyAppStreamingPolicy = appPolicy
-                appPolicy = dpm.nearbyAppStreamingPolicy
+                Privilege.DPM.nearbyAppStreamingPolicy = appPolicy
+                appPolicy = Privilege.DPM.nearbyAppStreamingPolicy
                 context.showOperationResultToast(true)
             },
             modifier = Modifier
@@ -1106,7 +1092,7 @@ fun NearbyStreamingPolicyScreen(onNavigateUp: () -> Unit) {
             Text(stringResource(R.string.apply))
         }
         Notes(R.string.info_nearby_app_streaming_policy, HorizontalPadding)
-        var notificationPolicy by remember { mutableIntStateOf(dpm.nearbyNotificationStreamingPolicy) }
+        var notificationPolicy by remember { mutableIntStateOf(Privilege.DPM.nearbyNotificationStreamingPolicy) }
         Text(
             stringResource(R.string.nearby_notification_streaming),
             Modifier.padding(start = 8.dp, top = 10.dp, bottom = 4.dp), style = typography.titleLarge
@@ -1129,8 +1115,8 @@ fun NearbyStreamingPolicyScreen(onNavigateUp: () -> Unit) {
         ) { notificationPolicy = NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY }
         Button(
             onClick = {
-                dpm.nearbyNotificationStreamingPolicy = notificationPolicy
-                notificationPolicy = dpm.nearbyNotificationStreamingPolicy
+                Privilege.DPM.nearbyNotificationStreamingPolicy = notificationPolicy
+                notificationPolicy = Privilege.DPM.nearbyNotificationStreamingPolicy
                 context.showOperationResultToast(true)
             },
             modifier = Modifier
@@ -1213,7 +1199,6 @@ fun LockTaskModeScreen(onNavigateUp: () -> Unit) {
 @Composable
 private fun ColumnScope.StartLockTaskMode() {
     val context = LocalContext.current
-    val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
     var startLockTaskApp by rememberSaveable { mutableStateOf("") }
     var startLockTaskActivity by rememberSaveable { mutableStateOf("") }
@@ -1256,7 +1241,7 @@ private fun ColumnScope.StartLockTaskMode() {
         modifier = Modifier.fillMaxWidth(),
         onClick = {
             if(!NotificationUtils.checkPermission(context)) return@Button
-            if(!dpm.isLockTaskPermitted(startLockTaskApp)) {
+            if(!Privilege.DPM.isLockTaskPermitted(startLockTaskApp)) {
                 context.popToast(R.string.app_not_allowed)
                 return@Button
             }
@@ -1281,15 +1266,13 @@ private fun ColumnScope.StartLockTaskMode() {
 @Composable
 private fun ColumnScope.LockTaskPackages() {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     val lockTaskPackages = remember { mutableStateListOf<String>() }
     var input by rememberSaveable { mutableStateOf("") }
     val choosePackage = rememberLauncherForActivityResult(ChoosePackageContract()) { result ->
         result?.let { input = it }
     }
-    LaunchedEffect(Unit) { lockTaskPackages.addAll(dpm.getLockTaskPackages(receiver)) }
+    LaunchedEffect(Unit) { lockTaskPackages.addAll(Privilege.DPM.getLockTaskPackages(Privilege.DAR)) }
     Spacer(Modifier.padding(vertical = 5.dp))
     if(lockTaskPackages.isEmpty()) Text(text = stringResource(R.string.none))
     for(i in lockTaskPackages) {
@@ -1335,7 +1318,7 @@ private fun ColumnScope.LockTaskPackages() {
     Button(
         modifier = Modifier.fillMaxWidth(),
         onClick = {
-            dpm.setLockTaskPackages(receiver, lockTaskPackages.toTypedArray())
+            Privilege.DPM.setLockTaskPackages(Privilege.DAR, lockTaskPackages.toTypedArray())
             context.showOperationResultToast(true)
         }
     ) {
@@ -1348,13 +1331,11 @@ private fun ColumnScope.LockTaskPackages() {
 @Composable
 private fun ColumnScope.LockTaskFeatures() {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     var flags by remember { mutableIntStateOf(0) }
     var custom by rememberSaveable { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     fun refresh() {
-        flags = dpm.getLockTaskFeatures(receiver)
+        flags = Privilege.DPM.getLockTaskFeatures(Privilege.DAR)
         custom = flags != 0
     }
     LaunchedEffect(Unit) { refresh() }
@@ -1385,7 +1366,7 @@ private fun ColumnScope.LockTaskFeatures() {
             .padding(vertical = 4.dp, horizontal = HorizontalPadding),
         onClick = {
             try {
-                dpm.setLockTaskFeatures(receiver, flags)
+                Privilege.DPM.setLockTaskFeatures(Privilege.DAR, flags)
                 context.showOperationResultToast(true)
             } catch (e: IllegalArgumentException) {
                 errorMessage = e.message
@@ -1409,8 +1390,6 @@ data class CaCertInfo(
 @Composable
 fun CaCertScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     /** 0:none, 1:install, 2:info, 3:uninstall all */
     var dialog by remember { mutableIntStateOf(0) }
     var caCertByteArray by remember { mutableStateOf(byteArrayOf()) }
@@ -1436,7 +1415,7 @@ fun CaCertScreen(onNavigateUp: () -> Unit) {
         caCerts.clear()
         coroutine.launch(Dispatchers.IO) {
             val md = MessageDigest.getInstance("SHA-256")
-            dpm.getInstalledCaCerts(receiver).forEach { ba ->
+            Privilege.DPM.getInstalledCaCerts(Privilege.DAR).forEach { ba ->
                 val hash = md.digest(ba).toHexString()
                 withContext(Dispatchers.Main) { caCerts += CaCertInfo(hash, ba) }
             }
@@ -1519,7 +1498,7 @@ fun CaCertScreen(onNavigateUp: () -> Unit) {
                             .padding(top = 4.dp), Arrangement.SpaceBetween) {
                             TextButton(
                                 onClick = {
-                                    dpm.uninstallCaCert(receiver, caCertByteArray)
+                                    Privilege.DPM.uninstallCaCert(Privilege.DAR, caCertByteArray)
                                     refresh()
                                     dialog = 0
                                 },
@@ -1544,10 +1523,10 @@ fun CaCertScreen(onNavigateUp: () -> Unit) {
                 TextButton({
                     try {
                         if(dialog == 1) {
-                            context.showOperationResultToast(dpm.installCaCert(receiver, caCertByteArray))
+                            context.showOperationResultToast(Privilege.DPM.installCaCert(Privilege.DAR, caCertByteArray))
                         }
                         if(dialog == 3) {
-                            dpm.uninstallAllUserCaCerts(receiver)
+                            Privilege.DPM.uninstallAllUserCaCerts(Privilege.DAR)
                         }
                         refresh()
                         dialog = 0
@@ -1575,8 +1554,6 @@ fun CaCertScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun SecurityLoggingScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val logFile = context.filesDir.resolve("SecurityLogs.json")
     var fileSize by remember { mutableLongStateOf(0) }
     LaunchedEffect(Unit) { fileSize = logFile.length() }
@@ -1597,7 +1574,8 @@ fun SecurityLoggingScreen(onNavigateUp: () -> Unit) {
     MyScaffold(R.string.security_logging, onNavigateUp) {
         SwitchItem(
             R.string.enable,
-            getState = { dpm.isSecurityLoggingEnabled(receiver) }, onCheckedChange = { dpm.setSecurityLoggingEnabled(receiver, it) },
+            getState = { Privilege.DPM.isSecurityLoggingEnabled(Privilege.DAR) },
+            onCheckedChange = { Privilege.DPM.setSecurityLoggingEnabled(Privilege.DAR, it) },
             padding = false
         )
         Text(stringResource(R.string.log_file_size_is, formatFileSize(fileSize)))
@@ -1626,7 +1604,7 @@ fun SecurityLoggingScreen(onNavigateUp: () -> Unit) {
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                val logs = dpm.retrievePreRebootSecurityLogs(receiver)
+                val logs = Privilege.DPM.retrievePreRebootSecurityLogs(Privilege.DAR)
                 if(logs == null) {
                     context.popToast(R.string.no_logs)
                     return@Button
@@ -1651,22 +1629,19 @@ fun SecurityLoggingScreen(onNavigateUp: () -> Unit) {
 
 @Composable
 fun DisableAccountManagementScreen(onNavigateUp: () -> Unit) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     MyScaffold(R.string.disable_account_management, onNavigateUp) {
         val list = remember { mutableStateListOf<String>() }
         fun refreshList() {
             list.clear()
-            dpm.accountTypesWithManagementDisabled?.forEach { list += it }
+            Privilege.DPM.accountTypesWithManagementDisabled?.forEach { list += it }
         }
         LaunchedEffect(Unit) { refreshList() }
         Column(modifier = Modifier.animateContentSize()) {
             if(list.isEmpty()) Text(stringResource(R.string.none))
             for(i in list) {
                 ListItem(i) {
-                    dpm.setAccountManagementDisabled(receiver, i, false)
+                    Privilege.DPM.setAccountManagementDisabled(Privilege.DAR, i, false)
                     refreshList()
                 }
             }
@@ -1679,7 +1654,7 @@ fun DisableAccountManagementScreen(onNavigateUp: () -> Unit) {
             trailingIcon = {
                 IconButton(
                     onClick = {
-                        dpm.setAccountManagementDisabled(receiver, inputText, true)
+                        Privilege.DPM.setAccountManagementDisabled(Privilege.DAR, inputText, true)
                         inputText = ""
                         refreshList()
                     },
@@ -1704,10 +1679,7 @@ fun DisableAccountManagementScreen(onNavigateUp: () -> Unit) {
 @RequiresApi(30)
 @Composable
 fun FrpPolicyScreen(onNavigateUp: () -> Unit) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
     val focusMgr = LocalFocusManager.current
-    val receiver = context.getReceiver()
     var usePolicy by remember { mutableStateOf(false) }
     var enabled by remember { mutableStateOf(false) }
     var unsupported by remember { mutableStateOf(false) }
@@ -1716,7 +1688,7 @@ fun FrpPolicyScreen(onNavigateUp: () -> Unit) {
     LaunchedEffect(Unit) {
         var policy: FactoryResetProtectionPolicy? = null
         try {
-            policy = dpm.getFactoryResetProtectionPolicy(receiver)
+            policy = Privilege.DPM.getFactoryResetProtectionPolicy(Privilege.DAR)
         } catch(_: UnsupportedOperationException) {
             unsupported = true
             policy = null
@@ -1789,7 +1761,7 @@ fun FrpPolicyScreen(onNavigateUp: () -> Unit) {
                     .setFactoryResetProtectionEnabled(enabled)
                     .setFactoryResetProtectionAccounts(accountList)
                     .build()
-                dpm.setFactoryResetProtectionPolicy(receiver, policy)
+                Privilege.DPM.setFactoryResetProtectionPolicy(Privilege.DAR, policy)
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -1807,8 +1779,7 @@ fun FrpPolicyScreen(onNavigateUp: () -> Unit) {
 fun WipeDataScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
-    val dpm = context.getDPM()
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     val focusMgr = LocalFocusManager.current
     var flag by remember { mutableIntStateOf(0) }
     var warning by remember { mutableStateOf(false) }
@@ -1887,12 +1858,12 @@ fun WipeDataScreen(onNavigateUp: () -> Unit) {
                     onClick = {
                         if(silent && VERSION.SDK_INT >= 29) { flag = flag or WIPE_SILENTLY }
                         if(wipeDevice && VERSION.SDK_INT >= 34) {
-                            dpm.wipeDevice(flag)
+                            Privilege.DPM.wipeDevice(flag)
                         } else {
                             if(VERSION.SDK_INT >= 28 && reason != "") {
-                                dpm.wipeData(flag, reason)
+                                Privilege.DPM.wipeData(flag, reason)
                             } else {
-                                dpm.wipeData(flag)
+                                Privilege.DPM.wipeData(flag)
                             }
                         }
                     },
@@ -1918,11 +1889,9 @@ fun WipeDataScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun SystemUpdatePolicyScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
     MyScaffold(R.string.system_update_policy, onNavigateUp, 0.dp) {
-        var selectedPolicy by remember { mutableStateOf(dpm.systemUpdatePolicy?.policyType) }
+        var selectedPolicy by remember { mutableStateOf(Privilege.DPM.systemUpdatePolicy?.policyType) }
         FullWidthRadioButtonItem(
             R.string.system_update_policy_automatic,
             selectedPolicy == TYPE_INSTALL_AUTOMATIC
@@ -1974,7 +1943,7 @@ fun SystemUpdatePolicyScreen(onNavigateUp: () -> Unit) {
                         TYPE_POSTPONE-> SystemUpdatePolicy.createPostponeInstallPolicy()
                         else -> null
                     }
-                dpm.setSystemUpdatePolicy(receiver,policy)
+                Privilege.DPM.setSystemUpdatePolicy(Privilege.DAR, policy)
                 context.showOperationResultToast(true)
             },
             modifier = Modifier
@@ -1984,7 +1953,7 @@ fun SystemUpdatePolicyScreen(onNavigateUp: () -> Unit) {
             Text(stringResource(R.string.apply))
         }
         if(VERSION.SDK_INT >= 26) {
-            val sysUpdateInfo = dpm.getPendingSystemUpdate(receiver)
+            val sysUpdateInfo = Privilege.DPM.getPendingSystemUpdate(Privilege.DAR)
             Column(Modifier.padding(HorizontalPadding)) {
                 if(sysUpdateInfo != null) {
                     Text(text = stringResource(R.string.update_received_time, Date(sysUpdateInfo.receivedTime)))
@@ -2008,8 +1977,6 @@ fun SystemUpdatePolicyScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun InstallSystemUpdateScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val callback = object: InstallSystemUpdateCallback() {
         override fun onInstallUpdateError(errorCode: Int, errorMessage: String) {
             super.onInstallUpdateError(errorCode, errorMessage)
@@ -2043,7 +2010,7 @@ fun InstallSystemUpdateScreen(onNavigateUp: () -> Unit) {
                 onClick = {
                     val executor = Executors.newCachedThreadPool()
                     try {
-                        dpm.installSystemUpdate(receiver, uri!!, executor, callback)
+                        Privilege.DPM.installSystemUpdate(Privilege.DAR, uri!!, executor, callback)
                         context.popToast(R.string.start_install_system_update)
                     } catch(e: Exception) {
                         errorMessage = e.message

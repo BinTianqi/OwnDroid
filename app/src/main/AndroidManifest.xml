@@ -24,6 +24,7 @@
         android:enableOnBackInvokedCallback="true"
         android:testOnly="false"
         android:manageSpaceActivity=".ManageSpaceActivity"
+        android:name=".MyApplication"
         tools:targetApi="35">
         <activity
             android:name=".MainActivity"

@@ -11,14 +11,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
@@ -27,7 +21,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -51,14 +44,14 @@ const val DHIZUKU_CLIENTS_FILE = "dhizuku_clients.json"
 class MyDhizukuProvider(): DhizukuProvider() {
     override fun onCreateService(client: IDhizukuClient): DhizukuService? {
         Log.d(TAG, "Creating MyDhizukuService")
-        return if (SharedPrefs(context!!).dhizukuServer) MyDhizukuService(context!!, MyAdminComponent, client) else null
+        return if (SP.dhizukuServer) MyDhizukuService(context!!, MyAdminComponent, client) else null
     }
 }
 
 class MyDhizukuService(context: Context, admin: ComponentName, client: IDhizukuClient) :
     DhizukuService(context, admin, client) {
     override fun checkCallingPermission(func: String?, callingUid: Int, callingPid: Int): Boolean {
-        if (!SharedPrefs(mContext).dhizukuServer) return false
+        if (!SP.dhizukuServer) return false
         val pm = mContext.packageManager
         val packageInfo = pm.getPackageInfo(
             pm.getNameForUid(callingUid) ?: return false,
@@ -87,7 +80,7 @@ class DhizukuActivity : ComponentActivity() {
     @OptIn(ExperimentalStdlibApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (!SharedPrefs(this).dhizukuServer) {
+        if (!SP.dhizukuServer) {
             finish()
             return
         }
@@ -145,7 +138,7 @@ class DhizukuActivity : ComponentActivity() {
                             }
                         }
                         TextButton({
-                            if (SharedPrefs(this).lockPasswordHash.isNullOrEmpty()) {
+                            if (SP.lockPasswordHash.isNullOrEmpty()) {
                                 close(true)
                             } else {
                                 appLockDialog = true

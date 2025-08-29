@@ -44,11 +44,10 @@ import androidx.compose.ui.window.DialogProperties
 fun AppLockDialog(onSucceed: () -> Unit, onDismiss: () -> Unit) = Dialog(onDismiss, DialogProperties(true, false)) {
     val context = LocalContext.current
     val fm = LocalFocusManager.current
-    val sp = SharedPrefs(context)
     var input by remember { mutableStateOf("") }
     var isError by remember { mutableStateOf(false) }
     fun unlock() {
-        if(input.hash() == sp.lockPasswordHash) {
+        if(input.hash() == SP.lockPasswordHash) {
             fm.clearFocus()
             onSucceed()
         } else {
@@ -56,7 +55,7 @@ fun AppLockDialog(onSucceed: () -> Unit, onDismiss: () -> Unit) = Dialog(onDismi
         }
     }
     LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= 28 && sp.biometricsUnlock) startBiometricsUnlock(context, onSucceed)
+        if (Build.VERSION.SDK_INT >= 28 && SP.biometricsUnlock) startBiometricsUnlock(context, onSucceed)
     }
     BackHandler(onBack = onDismiss)
     Card(Modifier.pointerInput(Unit) { detectTapGestures(onTap = { fm.clearFocus() }) }, shape = RoundedCornerShape(16.dp)) {
@@ -70,7 +69,7 @@ fun AppLockDialog(onSucceed: () -> Unit, onDismiss: () -> Unit) = Dialog(onDismi
                     ),
                     keyboardActions = KeyboardActions({ fm.clearFocus() }, { unlock() })
                 )
-                if(Build.VERSION.SDK_INT >= 28 && sp.biometricsUnlock) {
+                if(Build.VERSION.SDK_INT >= 28 && SP.biometricsUnlock) {
                     FilledTonalIconButton({ startBiometricsUnlock(context, onSucceed) }, Modifier.padding(start = 4.dp)) {
                         Icon(painterResource(R.drawable.fingerprint_fill0), null)
                     }

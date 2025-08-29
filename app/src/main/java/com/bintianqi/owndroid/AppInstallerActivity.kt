@@ -125,7 +125,6 @@ private fun AppInstaller(
     result: Intent? = null,
     onResultDialogClose: () -> Unit = {}
 ) {
-    val context = LocalContext.current
     var appLockDialog by rememberSaveable { mutableStateOf(false) }
     val coroutine = rememberCoroutineScope()
     Scaffold(
@@ -142,7 +141,7 @@ private fun AppInstaller(
                     else Icon(Icons.Default.PlayArrow, null)
                 },
                 onClick = {
-                    if(SharedPrefs(context).lockPasswordHash.isNullOrEmpty()) onStartInstall() else appLockDialog = true
+                    if(SP.lockPasswordHash.isNullOrEmpty()) onStartInstall() else appLockDialog = true
                 },
                 expanded = !installing
             )

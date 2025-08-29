@@ -94,10 +94,10 @@ import com.bintianqi.owndroid.DhizukuPermissions
 import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.IUserService
 import com.bintianqi.owndroid.MyAdminComponent
+import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.SP
 import com.bintianqi.owndroid.Settings
-import com.bintianqi.owndroid.SharedPrefs
-import com.bintianqi.owndroid.myPrivilege
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CircularProgressDialog
 import com.bintianqi.owndroid.ui.InfoItem
@@ -107,7 +107,6 @@ import com.bintianqi.owndroid.ui.MySmallTitleScaffold
 import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.SwitchItem
-import com.bintianqi.owndroid.updatePrivilege
 import com.bintianqi.owndroid.useShizuku
 import com.bintianqi.owndroid.yesOrNo
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
@@ -129,13 +128,17 @@ fun WorkModesScreen(
 ) {
     val context = LocalContext.current
     val coroutine = rememberCoroutineScope()
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     /** 0: none, 1: device owner, 2: circular progress indicator, 3: result, 4: deactivate, 5: command */
     var dialog by remember { mutableIntStateOf(0) }
+    var operationSucceed by remember { mutableStateOf(false) }
     LaunchedEffect(privilege) {
         if (!params.canNavigateUp && privilege.device) {
             delay(1000)
-            if (dialog != 3) dialog = 3 // Activated by ADB command
+            if (dialog != 3) { // Activated by ADB command
+                operationSucceed = true
+                dialog = 3
+            }
         }
     }
     Scaffold(
@@ -194,15 +197,13 @@ fun WorkModesScreen(
         contentWindowInsets = WindowInsets.ime
     ) { paddingValues ->
         var navigateUpOnSucceed by remember { mutableStateOf(true) }
-        var operationSucceed by remember { mutableStateOf(false) }
         var resultText by remember { mutableStateOf("") }
         fun handleResult(succeeded: Boolean, activateSucceeded: Boolean, output: String?) {
             if(succeeded) {
                 operationSucceed = activateSucceeded
                 resultText = output ?: ""
                 dialog = 3
-                updatePrivilege(context)
-                handlePrivilegeChange(context)
+                Privilege.updateStatus()
             } else {
                 dialog = 0
                 context.showOperationResultToast(false)
@@ -261,7 +262,7 @@ fun WorkModesScreen(
             }
             if(
                 privilege.work || (VERSION.SDK_INT < 24 ||
-                        context.getDPM().isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE))
+                        Privilege.DPM.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE))
             ) Row(
                 Modifier
                     .fillMaxWidth()
@@ -367,18 +368,18 @@ fun WorkModesScreen(
                 TextButton(
                     {
                         if(privilege.dhizuku) {
-                            SharedPrefs(context).dhizuku = false
+                            SP.dhizuku = false
+                            Privilege.initialize(context)
+                            Privilege.updateStatus()
                         } else {
-                            val dpm = context.getDPM()
                             if(privilege.device) {
-                                dpm.clearDeviceOwnerApp(context.packageName)
+                                Privilege.DPM.clearDeviceOwnerApp(context.packageName)
                             } else if(VERSION.SDK_INT >= 24) {
-                                dpm.clearProfileOwner(MyAdminComponent)
+                                Privilege.DPM.clearProfileOwner(MyAdminComponent)
                             }
+                            // Status updated in Receiver.onDisabled()
                         }
                         dialog = 0
-                        updatePrivilege(context)
-                        handlePrivilegeChange(context)
                     },
                     enabled = time == 0,
                     colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
@@ -440,16 +441,23 @@ fun activateUsingRoot(context: Context, callback: (Boolean, Boolean, String?) ->
 fun activateUsingDhizuku(context: Context, callback: (Boolean, Boolean, String?) -> Unit) {
     fun doTransfer() {
         try {
-            val dpm = binderWrapperDevicePolicyManager(context)
-            if(dpm == null) {
-                context.showOperationResultToast(false)
+            if (SP.dhizuku) {
+                Privilege.DPM.transferOwnership(Privilege.DAR, MyAdminComponent, PersistableBundle())
+                SP.dhizuku = false
+                Privilege.initialize(context)
             } else {
-                dpm.transferOwnership(Dhizuku.getOwnerComponent(), MyAdminComponent, PersistableBundle())
-                callback(true, true, null)
+                val dpm = binderWrapperDevicePolicyManager(context)
+                if (dpm == null) {
+                    callback(false, false, null)
+                    return
+                } else {
+                    dpm.transferOwnership(Dhizuku.getOwnerComponent(), MyAdminComponent, PersistableBundle())
+                }
             }
+            callback(true, true, null)
         } catch (e: Exception) {
             e.printStackTrace()
-            callback(true, false, null)
+            callback(false, false, null)
         }
     }
     if(Dhizuku.init(context)) {
@@ -470,7 +478,8 @@ fun activateUsingDhizuku(context: Context, callback: (Boolean, Boolean, String?)
 
 fun activateDhizukuMode(context: Context, callback: (Boolean, Boolean, String?) -> Unit) {
     fun onSucceed() {
-        SharedPrefs(context).dhizuku = true
+        SP.dhizuku = true
+        Privilege.initialize(context)
         callback(true, true, null)
     }
     if(Dhizuku.init(context)) {
@@ -496,13 +505,12 @@ const val ACTIVATE_DEVICE_OWNER_COMMAND = "dpm set-device-owner com.bintianqi.ow
 fun DhizukuServerSettingsScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val pm = context.packageManager
-    val sp = SharedPrefs(context)
     val file = context.filesDir.resolve(DHIZUKU_CLIENTS_FILE)
-    var enabled by remember { mutableStateOf(sp.dhizukuServer) }
+    var enabled by remember { mutableStateOf(SP.dhizukuServer) }
     val clients = remember { mutableStateListOf<DhizukuClientInfo>() }
     fun changeEnableState(status: Boolean) {
         enabled = status
-        sp.dhizukuServer = status
+        SP.dhizukuServer = status
     }
     fun writeList() {
         file.writeText(Json.encodeToString(clients.toList()))
@@ -519,7 +527,7 @@ fun DhizukuServerSettingsScreen(onNavigateUp: () -> Unit) {
     }
     MyLazyScaffold(R.string.dhizuku_server, onNavigateUp) {
         item {
-            SwitchItem(R.string.enable, getState = { sp.dhizukuServer }, onCheckedChange = ::changeEnableState)
+            SwitchItem(R.string.enable, getState = { SP.dhizukuServer }, onCheckedChange = ::changeEnableState)
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
         }
         if (enabled) itemsIndexed(clients) { index, client ->
@@ -531,10 +539,14 @@ fun DhizukuServerSettingsScreen(onNavigateUp: () -> Unit) {
                 val info = pm.getApplicationInfo(name, 0)
                 var expand by remember { mutableStateOf(false) }
                 Card(
-                    Modifier.fillMaxWidth().padding(HorizontalPadding, 8.dp)
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(HorizontalPadding, 8.dp)
                 ) {
                     Row(
-                        Modifier.fillMaxWidth().padding(8.dp, 8.dp, 0.dp, 8.dp),
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp, 8.dp, 0.dp, 8.dp),
                         Arrangement.SpaceBetween, Alignment.CenterVertically
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -597,10 +609,8 @@ fun DhizukuServerSettingsScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun LockScreenInfoScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val focusMgr = LocalFocusManager.current
-    var infoText by remember { mutableStateOf(dpm.deviceOwnerLockScreenInfo?.toString() ?: "") }
+    var infoText by remember { mutableStateOf(Privilege.DPM.deviceOwnerLockScreenInfo?.toString() ?: "") }
     MyScaffold(R.string.lock_screen_info, onNavigateUp) {
         OutlinedTextField(
             value = infoText,
@@ -615,7 +625,7 @@ fun LockScreenInfoScreen(onNavigateUp: () -> Unit) {
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                dpm.setDeviceOwnerLockScreenInfo(receiver,infoText)
+                Privilege.DPM.setDeviceOwnerLockScreenInfo(Privilege.DAR, infoText)
                 context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
@@ -625,7 +635,7 @@ fun LockScreenInfoScreen(onNavigateUp: () -> Unit) {
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                dpm.setDeviceOwnerLockScreenInfo(receiver, null)
+                Privilege.DPM.setDeviceOwnerLockScreenInfo(Privilege.DAR, null)
                 infoText = ""
                 context.showOperationResultToast(true)
             },
@@ -659,15 +669,12 @@ enum class DelegatedScope(val id: String, @StringRes val string: Int, val requir
 @RequiresApi(26)
 @Composable
 fun DelegatedAdminsScreen(onNavigateUp: () -> Unit, onNavigate: (AddDelegatedAdmin) -> Unit) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     val packages = remember { mutableStateMapOf<String, MutableList<DelegatedScope>>() }
     fun refresh() {
         val list = mutableMapOf<String, MutableList<DelegatedScope>>()
         DelegatedScope.entries.forEach { ds ->
             if(VERSION.SDK_INT >= ds.requiresApi) {
-                dpm.getDelegatePackages(receiver, ds.id)?.forEach { pkg ->
+                Privilege.DPM.getDelegatePackages(Privilege.DAR, ds.id)?.forEach { pkg ->
                     if(list[pkg] != null) {
                         list[pkg]!!.add(ds)
                     } else {
@@ -728,7 +735,6 @@ fun DelegatedAdminsScreen(onNavigateUp: () -> Unit, onNavigate: (AddDelegatedAdm
 fun AddDelegatedAdminScreen(data: AddDelegatedAdmin, onNavigateUp: () -> Unit) {
     val updateMode = data.pkg.isNotEmpty()
     val fm = LocalFocusManager.current
-    val context = LocalContext.current
     var input by remember { mutableStateOf(data.pkg) }
     val scopes = remember { mutableStateListOf(*data.scopes.toTypedArray()) }
     val choosePackage = rememberLauncherForActivityResult(ChoosePackageContract()) { result ->
@@ -768,7 +774,7 @@ fun AddDelegatedAdminScreen(data: AddDelegatedAdmin, onNavigateUp: () -> Unit) {
         }
         Button(
             onClick = {
-                context.getDPM().setDelegatedScopes(context.getReceiver(), input, scopes.map { it.id })
+                Privilege.DPM.setDelegatedScopes(Privilege.DAR, input, scopes.map { it.id })
                 onNavigateUp()
             },
             modifier = Modifier
@@ -780,7 +786,7 @@ fun AddDelegatedAdminScreen(data: AddDelegatedAdmin, onNavigateUp: () -> Unit) {
         }
         if(updateMode) Button(
             onClick = {
-                context.getDPM().setDelegatedScopes(context.getReceiver(), input, emptyList())
+                Privilege.DPM.setDelegatedScopes(Privilege.DAR, input, emptyList())
                 onNavigateUp()
             },
             modifier = Modifier
@@ -797,16 +803,14 @@ fun AddDelegatedAdminScreen(data: AddDelegatedAdmin, onNavigateUp: () -> Unit) {
 
 @Composable
 fun DeviceInfoScreen(onNavigateUp: () -> Unit) {
-    val context = LocalContext.current
-    val dpm = context.getDPM()
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     var dialog by remember { mutableIntStateOf(0) }
     MyScaffold(R.string.device_info, onNavigateUp, 0.dp) {
         if(VERSION.SDK_INT>=34 && (privilege.device || privilege.org)) {
-            InfoItem(R.string.financed_device, dpm.isDeviceFinanced.yesOrNo)
+            InfoItem(R.string.financed_device, Privilege.DPM.isDeviceFinanced.yesOrNo)
         }
         if(VERSION.SDK_INT >= 33) {
-            val dpmRole = dpm.devicePolicyManagementRoleHolderPackage
+            val dpmRole = Privilege.DPM.devicePolicyManagementRoleHolderPackage
             InfoItem(R.string.dpmrh, dpmRole ?: stringResource(R.string.none))
         }
         val encryptionStatus = mutableMapOf(
@@ -816,14 +820,14 @@ fun DeviceInfoScreen(onNavigateUp: () -> Unit) {
         )
         if(VERSION.SDK_INT >= 23) { encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY] = R.string.es_active_default_key }
         if(VERSION.SDK_INT >= 24) { encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER] = R.string.es_active_per_user }
-        InfoItem(R.string.encryption_status, encryptionStatus[dpm.storageEncryptionStatus] ?: R.string.unknown)
+        InfoItem(R.string.encryption_status, encryptionStatus[Privilege.DPM.storageEncryptionStatus] ?: R.string.unknown)
         if(VERSION.SDK_INT >= 28) {
-            InfoItem(R.string.support_device_id_attestation, dpm.isDeviceIdAttestationSupported.yesOrNo, true) { dialog = 1 }
+            InfoItem(R.string.support_device_id_attestation, Privilege.DPM.isDeviceIdAttestationSupported.yesOrNo, true) { dialog = 1 }
         }
         if (VERSION.SDK_INT >= 30) {
-            InfoItem(R.string.support_unique_device_attestation, dpm.isUniqueDeviceAttestationSupported.yesOrNo, true) { dialog = 2 }
+            InfoItem(R.string.support_unique_device_attestation, Privilege.DPM.isUniqueDeviceAttestationSupported.yesOrNo, true) { dialog = 2 }
         }
-        val adminList = dpm.activeAdmins
+        val adminList = Privilege.DPM.activeAdmins
         if(adminList != null) {
             InfoItem(R.string.activated_device_admin, adminList.joinToString("\n") { it.flattenToShortString() })
         }
@@ -841,13 +845,11 @@ fun DeviceInfoScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun SupportMessageScreen(onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    val dpm = context.getDPM()
-    val receiver = context.getReceiver()
     var shortMsg by remember { mutableStateOf("") }
     var longMsg by remember { mutableStateOf("") }
     val refreshMsg = {
-        shortMsg = dpm.getShortSupportMessage(receiver)?.toString() ?: ""
-        longMsg = dpm.getLongSupportMessage(receiver)?.toString() ?: ""
+        shortMsg = Privilege.DPM.getShortSupportMessage(Privilege.DAR)?.toString() ?: ""
+        longMsg = Privilege.DPM.getLongSupportMessage(Privilege.DAR)?.toString() ?: ""
     }
     LaunchedEffect(Unit) { refreshMsg() }
     MyScaffold(R.string.support_messages, onNavigateUp) {
@@ -863,7 +865,7 @@ fun SupportMessageScreen(onNavigateUp: () -> Unit) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Button(
                 onClick = {
-                    dpm.setShortSupportMessage(receiver, shortMsg)
+                    Privilege.DPM.setShortSupportMessage(Privilege.DAR, shortMsg)
                     refreshMsg()
                     context.showOperationResultToast(true)
                 },
@@ -873,7 +875,7 @@ fun SupportMessageScreen(onNavigateUp: () -> Unit) {
             }
             Button(
                 onClick = {
-                    dpm.setShortSupportMessage(receiver, null)
+                    Privilege.DPM.setShortSupportMessage(Privilege.DAR, null)
                     refreshMsg()
                     context.showOperationResultToast(true)
                 },
@@ -896,7 +898,7 @@ fun SupportMessageScreen(onNavigateUp: () -> Unit) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Button(
                 onClick = {
-                    dpm.setLongSupportMessage(receiver, longMsg)
+                    Privilege.DPM.setLongSupportMessage(Privilege.DAR, longMsg)
                     refreshMsg()
                     context.showOperationResultToast(true)
                 },
@@ -906,7 +908,7 @@ fun SupportMessageScreen(onNavigateUp: () -> Unit) {
             }
             Button(
                 onClick = {
-                    dpm.setLongSupportMessage(receiver, null)
+                    Privilege.DPM.setLongSupportMessage(Privilege.DAR, null)
                     refreshMsg()
                     context.showOperationResultToast(true)
                 },
@@ -925,7 +927,7 @@ fun SupportMessageScreen(onNavigateUp: () -> Unit) {
 @Composable
 fun TransferOwnershipScreen(onNavigateUp: () -> Unit, onTransferred: () -> Unit) {
     val context = LocalContext.current
-    val privilege by myPrivilege.collectAsStateWithLifecycle()
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     val focusMgr = LocalFocusManager.current
     var input by remember { mutableStateOf("") }
     val componentName = ComponentName.unflattenFromString(input)
@@ -960,12 +962,10 @@ fun TransferOwnershipScreen(onNavigateUp: () -> Unit, onTransferred: () -> Unit)
         confirmButton = {
             TextButton(
                 onClick = {
-                    val dpm = context.getDPM()
-                    val receiver = context.getReceiver()
                     try {
-                        dpm.transferOwnership(receiver, componentName!!, null)
+                        Privilege.DPM.transferOwnership(Privilege.DAR, componentName!!, null)
+                        Privilege.updateStatus()
                         context.showOperationResultToast(true)
-                        updatePrivilege(context)
                         dialog = false
                         onTransferred()
                     } catch(e: Exception) {
