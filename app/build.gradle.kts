@@ -1,8 +1,10 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose)
-    kotlin("plugin.serialization") version "2.1.20"
+    alias(libs.plugins.serialization)
 }
 
 android {
@@ -24,8 +26,8 @@ android {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 21
         targetSdk = 36
-        versionCode = 39
-        versionName = "7.0"
+        versionCode = 40
+        versionName = "7.1"
         multiDexEnabled = false
     }
 
@@ -44,11 +46,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_20
-        targetCompatibility = JavaVersion.VERSION_20
-    }
-    kotlinOptions {
-        jvmTarget = "20"
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     buildFeatures {
         compose = true
@@ -67,6 +66,9 @@ android {
 }
 
 kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_21
+    }
     sourceSets {
         all {
             languageSettings.optIn("kotlinx.serialization.ExperimentalSerializationApi")
