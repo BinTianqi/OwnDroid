@@ -13,10 +13,12 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import kotlinx.serialization.encodeToString
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -150,4 +152,13 @@ fun Context.popToast(resId: Int) {
 
 fun Context.popToast(str: String) {
     Toast.makeText(this, str, Toast.LENGTH_SHORT).show()
+}
+
+class SerializableSaver<T>(val serializer: KSerializer<T>) : Saver<T, String> {
+    override fun restore(value: String): T? {
+        return Json.decodeFromString(serializer, value)
+    }
+    override fun SaverScope.save(value: T): String? {
+        return Json.encodeToString(serializer, value)
+    }
 }
