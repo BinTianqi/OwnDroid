@@ -57,6 +57,14 @@ java.lang.IllegalStateException: Not allowed to set the device owner because the
 > [!NOTE]
 > 一些系统有应用克隆、儿童空间等功能，它们通常是用户。
 
+#### Device owner 已存在
+
+```text
+java.lang.IllegalStateException: Trying to set the device owner (com.bintianqi.owndroid/.Receiver), but device owner (xxx) is already set.
+```
+
+一个设备只能存在一个device owner，请先停用已存在的device owner。
+
 ### MIUI & HyperOS
 
 ```text

@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -124,7 +125,7 @@ fun LazyItemScope.ApplicationItem(info: AppInfo, onClear: () -> Unit) {
         Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp).animateItem(),
         Arrangement.SpaceBetween, Alignment.CenterVertically
     ) {
-        Row(Modifier.fillMaxWidth(0.87F), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.weight(1F), verticalAlignment = Alignment.CenterVertically) {
             Image(
                 painter = rememberDrawablePainter(info.icon), contentDescription = null,
                 modifier = Modifier.padding(start = 12.dp, end = 18.dp).size(30.dp)

@@ -116,7 +116,6 @@ import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @Serializable data class WorkModes(val canNavigateUp: Boolean)
@@ -549,15 +548,15 @@ fun DhizukuServerSettingsScreen(onNavigateUp: () -> Unit) {
                             .padding(8.dp, 8.dp, 0.dp, 8.dp),
                         Arrangement.SpaceBetween, Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.weight(1F), verticalAlignment = Alignment.CenterVertically) {
                             Image(
                                 rememberDrawablePainter(info.loadIcon(pm)), null,
                                 Modifier
                                     .padding(end = 16.dp)
-                                    .size(50.dp)
+                                    .size(45.dp)
                             )
                             Column {
-                                Text(info.loadLabel(pm).toString(), style = typography.titleLarge)
+                                Text(info.loadLabel(pm).toString(), style = typography.titleMedium)
                                 Text(name, Modifier.alpha(0.7F), style = typography.bodyMedium)
                             }
                         }

@@ -161,7 +161,7 @@ fun UserRestrictionOptionsScreen(
                 Modifier.fillMaxWidth().padding(15.dp, 6.dp),
                 Arrangement.SpaceBetween, Alignment.CenterVertically
             ) {
-                Row(Modifier.fillMaxWidth(0.8F), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.weight(1F), verticalAlignment = Alignment.CenterVertically) {
                     Icon(painterResource(restriction.icon), null, Modifier.padding(start = 6.dp, end = 16.dp))
                     Column {
                         Text(stringResource(restriction.name), style = typography.titleMedium)

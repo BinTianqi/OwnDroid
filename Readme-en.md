@@ -57,6 +57,14 @@ Solutions:
 > [!NOTE]
 > Some systems have features such as app cloning and children space, which are usually users.
 
+#### Device owner is already set
+
+```text
+java.lang.IllegalStateException: Trying to set the device owner (com.bintianqi.owndroid/.Receiver), but device owner (xxx) is already set.
+```
+
+Only 1 device owner can exist on a device. Please deactivate the existing device owner first.
+
 ### MIUI & HyperOS
 
 ```text
