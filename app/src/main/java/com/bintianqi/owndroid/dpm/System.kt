@@ -112,13 +112,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bintianqi.owndroid.ChoosePackageContract
 import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.NotificationUtils
 import com.bintianqi.owndroid.Privilege
@@ -143,6 +141,7 @@ import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.uriToStream
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -1134,7 +1133,9 @@ fun NearbyStreamingPolicyScreen(onNavigateUp: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(28)
 @Composable
-fun LockTaskModeScreen(onNavigateUp: () -> Unit) {
+fun LockTaskModeScreen(
+    chosenPackage: Channel<String>, onChoosePackage: () -> Unit, onNavigateUp: () -> Unit
+) {
     val coroutine = rememberCoroutineScope()
     val pagerState = rememberPagerState { 3 }
     var tabIndex by remember { mutableIntStateOf(0) }
@@ -1177,8 +1178,8 @@ fun LockTaskModeScreen(onNavigateUp: () -> Unit) {
                             .padding(horizontal = HorizontalPadding)
                             .padding(bottom = 80.dp)
                     ) {
-                        if(page == 0) StartLockTaskMode()
-                        else LockTaskPackages()
+                        if(page == 0) StartLockTaskMode(chosenPackage, onChoosePackage)
+                        else LockTaskPackages(chosenPackage, onChoosePackage)
                     }
                 } else {
                     Column(
@@ -1197,33 +1198,20 @@ fun LockTaskModeScreen(onNavigateUp: () -> Unit) {
 
 @RequiresApi(28)
 @Composable
-private fun ColumnScope.StartLockTaskMode() {
+private fun ColumnScope.StartLockTaskMode(
+    chosenPackage: Channel<String>, onChoosePackage: () -> Unit
+) {
     val context = LocalContext.current
     val focusMgr = LocalFocusManager.current
     var startLockTaskApp by rememberSaveable { mutableStateOf("") }
     var startLockTaskActivity by rememberSaveable { mutableStateOf("") }
     var specifyActivity by rememberSaveable { mutableStateOf(false) }
-    val choosePackage = rememberLauncherForActivityResult(ChoosePackageContract()) { result ->
-        result?.let { startLockTaskApp = it }
+    LaunchedEffect(Unit) {
+        startLockTaskApp = chosenPackage.receive()
     }
     Spacer(Modifier.padding(vertical = 5.dp))
-    OutlinedTextField(
-        value = startLockTaskApp,
-        onValueChange = { startLockTaskApp = it },
-        label = { Text(stringResource(R.string.package_name)) },
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-        trailingIcon = {
-            Icon(painter = painterResource(R.drawable.list_fill0), contentDescription = null,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(50))
-                    .clickable { choosePackage.launch(null) }
-                    .padding(3.dp))
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 3.dp)
-    )
+    PackageNameTextField(startLockTaskApp, onChoosePackage,
+        Modifier.padding(vertical = 3.dp), { startLockTaskApp = it })
     CheckBoxItem(R.string.specify_activity, specifyActivity) { specifyActivity = it }
     AnimatedVisibility(specifyActivity) {
         OutlinedTextField(
@@ -1264,37 +1252,23 @@ private fun ColumnScope.StartLockTaskMode() {
 
 @RequiresApi(26)
 @Composable
-private fun ColumnScope.LockTaskPackages() {
+private fun ColumnScope.LockTaskPackages(
+    chosenPackage: Channel<String>, onChoosePackage: () -> Unit
+) {
     val context = LocalContext.current
-    val focusMgr = LocalFocusManager.current
     val lockTaskPackages = remember { mutableStateListOf<String>() }
     var input by rememberSaveable { mutableStateOf("") }
-    val choosePackage = rememberLauncherForActivityResult(ChoosePackageContract()) { result ->
-        result?.let { input = it }
+    LaunchedEffect(Unit) {
+        lockTaskPackages.addAll(Privilege.DPM.getLockTaskPackages(Privilege.DAR))
+        input = chosenPackage.receive()
     }
-    LaunchedEffect(Unit) { lockTaskPackages.addAll(Privilege.DPM.getLockTaskPackages(Privilege.DAR)) }
     Spacer(Modifier.padding(vertical = 5.dp))
     if(lockTaskPackages.isEmpty()) Text(text = stringResource(R.string.none))
     for(i in lockTaskPackages) {
         ListItem(i) { lockTaskPackages -= i }
     }
-    OutlinedTextField(
-        value = input,
-        onValueChange = { input = it },
-        label = { Text(stringResource(R.string.package_name)) },
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-        trailingIcon = {
-            Icon(painter = painterResource(R.drawable.list_fill0), contentDescription = null,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(50))
-                    .clickable { choosePackage.launch(null) }
-                    .padding(3.dp))
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 3.dp)
-    )
+    PackageNameTextField(input, onChoosePackage,
+        Modifier.padding(vertical = 3.dp), { input = it })
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Button(
             onClick = {

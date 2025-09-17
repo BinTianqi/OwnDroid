@@ -233,28 +233,38 @@ fun AppLockSettingsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.app_lo
     var confirmPassword by remember { mutableStateOf("") }
     var allowBiometrics by remember { mutableStateOf(SP.biometricsUnlock) }
     var lockWhenLeaving by remember { mutableStateOf(SP.lockWhenLeaving) }
-    val fr = FocusRequester()
+    val fr = remember { FocusRequester() }
     val alreadySet = !SP.lockPasswordHash.isNullOrEmpty()
     val isInputLegal = password.length !in 1..3 && (alreadySet || (password.isNotEmpty() && password.isNotBlank()))
-    Column(Modifier.widthIn(max = 300.dp).align(Alignment.CenterHorizontally)) {
+    Column(Modifier
+        .widthIn(max = 300.dp)
+        .align(Alignment.CenterHorizontally)) {
         OutlinedTextField(
-            password, { password = it }, Modifier.fillMaxWidth().padding(vertical = 4.dp),
+            password, { password = it }, Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
             label = { Text(stringResource(R.string.password)) },
             supportingText = { Text(stringResource(if(alreadySet) R.string.leave_empty_to_remain_unchanged else R.string.minimum_length_4)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions { fr.requestFocus() }
         )
         OutlinedTextField(
-            confirmPassword, { confirmPassword = it }, Modifier.fillMaxWidth().focusRequester(fr),
+            confirmPassword, { confirmPassword = it }, Modifier
+                .fillMaxWidth()
+                .focusRequester(fr),
             label = { Text(stringResource(R.string.confirm_password)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions { fm.clearFocus() }
         )
-        if(VERSION.SDK_INT >= 28) Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), Arrangement.SpaceBetween, Alignment.CenterVertically) {
+        if(VERSION.SDK_INT >= 28) Row(Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp), Arrangement.SpaceBetween, Alignment.CenterVertically) {
             Text(stringResource(R.string.allow_biometrics))
             Switch(allowBiometrics, { allowBiometrics = it })
         }
-        Row(Modifier.fillMaxWidth().padding(bottom = 6.dp), Arrangement.SpaceBetween, Alignment.CenterVertically) {
+        Row(Modifier
+            .fillMaxWidth()
+            .padding(bottom = 6.dp), Arrangement.SpaceBetween, Alignment.CenterVertically) {
             Text(stringResource(R.string.lock_when_leaving))
             Switch(lockWhenLeaving, { lockWhenLeaving = it })
         }
@@ -302,7 +312,9 @@ fun ApiSettings(onNavigateUp: () -> Unit) {
             var key by remember { mutableStateOf("") }
             OutlinedTextField(
                 value = key, onValueChange = { key = it }, label = { Text(stringResource(R.string.api_key)) },
-                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp), readOnly = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 4.dp), readOnly = true,
                 trailingIcon = {
                     IconButton(
                         onClick = {
@@ -316,7 +328,9 @@ fun ApiSettings(onNavigateUp: () -> Unit) {
                 }
             )
             Button(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp),
                 onClick = {
                     SP.apiKey = key
                     context.showOperationResultToast(true)

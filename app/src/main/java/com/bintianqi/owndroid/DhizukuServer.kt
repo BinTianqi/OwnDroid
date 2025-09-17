@@ -34,7 +34,6 @@ import com.rosan.dhizuku.server_api.DhizukuService
 import com.rosan.dhizuku.shared.DhizukuVariables
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 private const val TAG = "DhizukuServer"

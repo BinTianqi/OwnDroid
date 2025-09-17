@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build.VERSION
 import android.os.PersistableBundle
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
@@ -84,10 +83,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bintianqi.owndroid.ChoosePackageContract
 import com.bintianqi.owndroid.DHIZUKU_CLIENTS_FILE
 import com.bintianqi.owndroid.DhizukuClientInfo
 import com.bintianqi.owndroid.DhizukuPermissions
@@ -113,6 +110,7 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
 import com.topjohnwu.superuser.Shell
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -731,30 +729,19 @@ fun DelegatedAdminsScreen(onNavigateUp: () -> Unit, onNavigate: (AddDelegatedAdm
 
 @RequiresApi(26)
 @Composable
-fun AddDelegatedAdminScreen(data: AddDelegatedAdmin, onNavigateUp: () -> Unit) {
+fun AddDelegatedAdminScreen(
+    chosenPackage: Channel<String>, onChoosePackage: () -> Unit,
+    data: AddDelegatedAdmin, onNavigateUp: () -> Unit
+) {
     val updateMode = data.pkg.isNotEmpty()
-    val fm = LocalFocusManager.current
     var input by remember { mutableStateOf(data.pkg) }
     val scopes = remember { mutableStateListOf(*data.scopes.toTypedArray()) }
-    val choosePackage = rememberLauncherForActivityResult(ChoosePackageContract()) { result ->
-        result?.let { input = it }
+    LaunchedEffect(Unit) {
+        input = chosenPackage.receive()
     }
     MySmallTitleScaffold(if(updateMode) R.string.place_holder else R.string.add_delegated_admin, onNavigateUp, 0.dp) {
-        OutlinedTextField(
-            value = input, onValueChange = { input = it },
-            label = { Text(stringResource(R.string.package_name)) },
-            trailingIcon = {
-                if(!updateMode) IconButton({ choosePackage.launch(null) }) {
-                    Icon(painterResource(R.drawable.list_fill0), null)
-                }
-            },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions { fm.clearFocus() },
-            readOnly = updateMode,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp, horizontal = HorizontalPadding)
-        )
+        PackageNameTextField(input, onChoosePackage,
+            Modifier.padding(HorizontalPadding, 8.dp)) { input = it }
         DelegatedScope.entries.filter { VERSION.SDK_INT >= it.requiresApi }.forEach { scope ->
             val checked = scope in scopes
             Row(

@@ -1,16 +1,9 @@
 package com.bintianqi.owndroid
 
-import android.content.Context
-import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.os.Build
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -44,10 +37,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -62,34 +53,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-
-class PackageChooserActivity: ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val vm by viewModels<MyViewModel>()
-        enableEdgeToEdge()
-        setContent {
-            val theme by vm.theme.collectAsStateWithLifecycle()
-            OwnDroidTheme(theme) {
-                AppChooserScreen(ApplicationsList(false), {
-                    setResult(0, Intent().putExtra("package", it))
-                    finish()
-                }, {})
-            }
-        }
-    }
-}
-
-val installedApps = MutableStateFlow(emptyList<AppInfo>())
 
 data class AppInfo(
     val name: String,
@@ -105,11 +71,14 @@ private fun searchInString(query: String, content: String)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun AppChooserScreen(params: ApplicationsList, onChoosePackage: (String?) -> Unit, onSwitchView: () -> Unit) {
-    val packages by installedApps.collectAsStateWithLifecycle()
-    val coroutine = rememberCoroutineScope()
+fun AppChooserScreen(
+    canSwitchView: Boolean, packageList: MutableStateFlow<List<AppInfo>>,
+    refreshProgress: MutableStateFlow<Float>, onChoosePackage: (String?) -> Unit,
+    onSwitchView: () -> Unit, onRefresh: () -> Unit
+) {
+    val packages by packageList.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    var progress by remember { mutableFloatStateOf(1F) }
+    val progress by refreshProgress.collectAsStateWithLifecycle()
     var system by rememberSaveable { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf("") }
     var searchMode by rememberSaveable { mutableStateOf(false) }
@@ -119,7 +88,7 @@ fun AppChooserScreen(params: ApplicationsList, onChoosePackage: (String?) -> Uni
     }
     val focusMgr = LocalFocusManager.current
     LaunchedEffect(Unit) {
-        if(packages.size <= 1) getInstalledApps(coroutine, context) { progress = it }
+        if(packages.size <= 1) onRefresh()
     }
     Scaffold(
         topBar = {
@@ -135,20 +104,17 @@ fun AppChooserScreen(params: ApplicationsList, onChoosePackage: (String?) -> Uni
                         }) {
                             Icon(painter = painterResource(R.drawable.filter_alt_fill0), contentDescription = null)
                         }
-                        IconButton(
-                            { getInstalledApps(coroutine, context) { progress = it } },
-                            enabled = progress == 1F
-                        ) {
+                        IconButton(onRefresh, enabled = progress == 1F) {
                             Icon(painter = painterResource(R.drawable.refresh_fill0), contentDescription = null)
                         }
-                        if(params.canSwitchView) IconButton(onSwitchView) {
+                        if (canSwitchView) IconButton(onSwitchView) {
                             Icon(Icons.AutoMirrored.Default.List, null)
                         }
                     }
                 },
                 title = {
                     if(searchMode) {
-                        val fr = FocusRequester()
+                        val fr = remember { FocusRequester() }
                         LaunchedEffect(Unit) { fr.requestFocus() }
                         OutlinedTextField(
                             value = query,
@@ -209,24 +175,6 @@ fun AppChooserScreen(params: ApplicationsList, onChoosePackage: (String?) -> Uni
                 }
             }
             item { Spacer(Modifier.padding(vertical = 30.dp)) }
-        }
-    }
-}
-
-fun getInstalledApps(scope: CoroutineScope, context: Context, onProgressUpdated: (Float) -> Unit) {
-    installedApps.value = emptyList()
-    scope.launch(Dispatchers.IO) {
-        val pm = context.packageManager
-        val apps = pm.getInstalledApplications(getInstalledAppsFlags)
-        for(pkg in apps) {
-            val label = pkg.loadLabel(pm).toString()
-            val icon = pkg.loadIcon(pm)
-            withContext(Dispatchers.Main) {
-                installedApps.update {
-                    it + AppInfo(pkg.packageName, label, icon, pkg.flags)
-                }
-                onProgressUpdated(installedApps.value.size.toFloat() / apps.size)
-            }
         }
     }
 }

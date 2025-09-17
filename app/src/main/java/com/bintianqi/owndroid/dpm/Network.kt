@@ -127,7 +127,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bintianqi.owndroid.ChoosePackageContract
 import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
@@ -153,6 +152,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -886,7 +886,10 @@ fun NetworkStats.toBucketList(): List<NetworkStats.Bucket> {
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(23)
 @Composable
-fun NetworkStatsScreen(onNavigateUp: () -> Unit, onNavigateToViewer: (NetworkStatsViewer) -> Unit) {
+fun NetworkStatsScreen(
+    chosenPackage: Channel<String>, onChoosePackage: () -> Unit,
+    onNavigateUp: () -> Unit, onNavigateToViewer: (NetworkStatsViewer) -> Unit
+) {
     val context = LocalContext.current
     val privilege by Privilege.status.collectAsStateWithLifecycle()
     val fm = LocalFocusManager.current
@@ -1053,16 +1056,14 @@ fun NetworkStatsScreen(onNavigateUp: () -> Unit, onNavigateToViewer: (NetworkSta
         ) {
             var uidText by rememberSaveable { mutableStateOf(context.getString(NetworkStatsUID.All.strRes)) }
             var readOnly by rememberSaveable { mutableStateOf(true) }
-            if(!readOnly && uidText.toIntOrNull() != null) uid = uidText.toInt()
-            val choosePackage = rememberLauncherForActivityResult(ChoosePackageContract()) {
-                it ?: return@rememberLauncherForActivityResult
-                if(VERSION.SDK_INT >= 24 && readOnly) {
-                    try {
-                        uid = context.packageManager.getPackageUid(it, 0)
-                        uidText = "$it ($uid)"
-                    } catch(_: NameNotFoundException) {
-                        context.showOperationResultToast(false)
-                    }
+            if (!readOnly && uidText.toIntOrNull() != null) uid = uidText.toInt()
+            if (VERSION.SDK_INT >= 24) LaunchedEffect(Unit) {
+                val pkg = chosenPackage.receive()
+                try {
+                    uid = context.packageManager.getPackageUid(pkg, 0)
+                    uidText = "$uid ($pkg)"
+                } catch(_: NameNotFoundException) {
+                    context.showOperationResultToast(false)
                 }
             }
             OutlinedTextField(
@@ -1093,7 +1094,7 @@ fun NetworkStatsScreen(onNavigateUp: () -> Unit, onNavigateToViewer: (NetworkSta
                     onClick = {
                         readOnly = true
                         activeTextField = NetworkStatsActiveTextField.None
-                        choosePackage.launch(null)
+                        onChoosePackage()
                     }
                 )
                 DropdownMenuItem(
@@ -1457,15 +1458,18 @@ fun PrivateDnsScreen(onNavigateUp: () -> Unit) {
 
 @RequiresApi(24)
 @Composable
-fun AlwaysOnVpnPackageScreen(onNavigateUp: () -> Unit) {
+fun AlwaysOnVpnPackageScreen(
+    chosenPackage: Channel<String>, onChoosePackage: () -> Unit, onNavigateUp: () -> Unit
+) {
     val context = LocalContext.current
     var lockdown by rememberSaveable { mutableStateOf(false) }
     var pkgName by rememberSaveable { mutableStateOf("") }
-    val focusMgr = LocalFocusManager.current
-    val refresh = { pkgName = Privilege.DPM.getAlwaysOnVpnPackage(Privilege.DAR) ?: "" }
-    LaunchedEffect(Unit) { refresh() }
-    val choosePackage = rememberLauncherForActivityResult(ChoosePackageContract()) { result ->
-        result?.let { pkgName = it }
+    fun refresh() {
+        pkgName = Privilege.DPM.getAlwaysOnVpnPackage(Privilege.DAR) ?: ""
+    }
+    LaunchedEffect(Unit) {
+        refresh()
+        pkgName = chosenPackage.receive()
     }
     val setAlwaysOnVpn: (String?, Boolean)->Boolean = { vpnPkg: String?, lockdownEnabled: Boolean ->
         try {
@@ -1483,21 +1487,8 @@ fun AlwaysOnVpnPackageScreen(onNavigateUp: () -> Unit) {
         }
     }
     MyScaffold(R.string.always_on_vpn, onNavigateUp) {
-        OutlinedTextField(
-            value = pkgName,
-            onValueChange = { pkgName = it },
-            label = { Text(stringResource(R.string.package_name)) },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            trailingIcon = {
-                Icon(painter = painterResource(R.drawable.list_fill0), contentDescription = null,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50))
-                        .clickable { choosePackage.launch(null) }
-                        .padding(3.dp))
-            },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
-        )
+        PackageNameTextField(pkgName, onChoosePackage,
+            Modifier.padding(vertical = 4.dp)) { pkgName = it }
         SwitchItem(R.string.enable_lockdown, state = lockdown, onCheckedChange = { lockdown = it }, padding = false)
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
@@ -2067,7 +2058,7 @@ fun AddApnSettingScreen(origin: ApnSetting?, onNavigateUp: () -> Unit) {
             keyboardActions = KeyboardActions { fm.clearFocus() }
         )
         if(VERSION.SDK_INT >= 33) Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), Arrangement.SpaceBetween) {
-            val fr = FocusRequester()
+            val fr = remember { FocusRequester() }
             OutlinedTextField(
                 mtuV4, { mtuV4 = it }, Modifier.fillMaxWidth(0.49F),
                 label = { Text("MTU (IPv4)") },
@@ -2206,7 +2197,7 @@ fun AddApnSettingScreen(origin: ApnSetting?, onNavigateUp: () -> Unit) {
         if(dialog != 0) {
             var address by remember { mutableStateOf((if(dialog == 1) proxyAddress else mmsProxyAddress)) }
             var port by remember { mutableStateOf((if(dialog == 1) proxyPort else mmsProxyPort)) }
-            val fr = FocusRequester()
+            val fr = remember { FocusRequester() }
             AlertDialog(
                 title = { Text(if(dialog == 1) "Proxy" else "MMS proxy") },
                 text = {
