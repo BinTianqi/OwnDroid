@@ -129,7 +129,7 @@
     <string name="backup_service">Служба резервного копирования</string>
     <string name="disable_bt_contact_share">Отключить обмен контактами по Bluetooth</string>
     <string name="common_criteria_mode">Режим общих критериев</string>
-    <string name="disable_usb_signal">Отключить USB-сигнал</string>
+    <string name="enable_usb_signal">Enable USB signal</string> <!--TODO-->
     <string name="keyguard">Блокировка экрана (Keyguard)</string>
     <string name="lock_now">Заблокировать сейчас</string>
     <string name="evict_credential_encryption_key">Удалить ключ шифрования учетных данных</string>

@@ -144,7 +144,7 @@
     <string name="backup_service">Backup service</string>
     <string name="disable_bt_contact_share">Disable bluetooth contact sharing</string>
     <string name="common_criteria_mode">Common criteria mode</string>
-    <string name="disable_usb_signal">Disable USB signal</string>
+    <string name="enable_usb_signal">Enable USB signal</string>
     <string name="keyguard">Keyguard</string>
     <string name="lock_now">Lock screen now</string>
     <string name="lock_screen">Lock screen</string>

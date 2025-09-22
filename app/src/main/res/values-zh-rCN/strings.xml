@@ -135,7 +135,7 @@
     <string name="backup_service">备份服务</string>
     <string name="disable_bt_contact_share">禁止蓝牙分享联系人</string>
     <string name="common_criteria_mode">通用标准模式</string>
-    <string name="disable_usb_signal">禁用USB信号</string>
+    <string name="enable_usb_signal">启用USB信号</string>
     <string name="keyguard">锁屏</string>
     <string name="lock_now">立即锁屏</string>
     <string name="lock_screen">锁屏</string>

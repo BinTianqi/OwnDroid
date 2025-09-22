@@ -138,7 +138,7 @@
     <string name="backup_service">Yedekleme Servisi</string>
     <string name="disable_bt_contact_share">Bluetooth Kişi Paylaşımını Devre Dışı Bırak</string>
     <string name="common_criteria_mode">Ortak Kriterler Modu</string>
-    <string name="disable_usb_signal">USB Sinyalini Devre Dışı Bırak</string>
+    <string name="enable_usb_signal">Enable USB signal</string> <!--TODO-->
     <string name="keyguard">Kilit Ekranı</string>
     <string name="lock_now">Ekranı Şimdi Kilitle</string>
     <string name="lock_screen">Kilit Ekranı</string>

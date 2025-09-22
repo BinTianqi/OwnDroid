@@ -54,6 +54,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -556,7 +557,8 @@ fun CredentialManagerPolicyScreen(
     cmPackages: MutableStateFlow<List<AppInfo>>, getCmPolicy: () -> Int,
     setCmPackage: (String, Boolean) -> Unit, setCmPolicy: (Int) -> Unit, onNavigateUp: () -> Unit
 ) {
-    var policy by remember { mutableIntStateOf(getCmPolicy()) }
+    val context = LocalContext.current
+    var policy by rememberSaveable { mutableIntStateOf(getCmPolicy()) }
     val packages by cmPackages.collectAsStateWithLifecycle()
     var packageName by remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
@@ -574,26 +576,29 @@ fun CredentialManagerPolicyScreen(
             }
             Spacer(Modifier.padding(vertical = 4.dp))
         }
-        items(packages, { it.name }) {
+        if (policy != -1) items(packages, { it.name }) {
             ApplicationItem(it) { setCmPackage(it.name, false) }
         }
         item {
             Column(Modifier.padding(horizontal = HorizontalPadding)) {
-                PackageNameTextField(packageName, onChoosePackage,
-                    Modifier.padding(vertical = 8.dp)) { packageName = it }
-                Button(
-                    {
-                        setCmPackage(packageName, true)
-                        packageName = ""
-                    },
-                    Modifier.fillMaxWidth(),
-                    enabled = packageName.isValidPackageName
-                ) {
-                    Text(stringResource(R.string.add))
+                if (policy != -1) {
+                    PackageNameTextField(packageName, onChoosePackage,
+                        Modifier.padding(vertical = 8.dp)) { packageName = it }
+                    Button(
+                        {
+                            setCmPackage(packageName, true)
+                            packageName = ""
+                        },
+                        Modifier.fillMaxWidth(),
+                        enabled = packageName.isValidPackageName
+                    ) {
+                        Text(stringResource(R.string.add))
+                    }
                 }
                 Button(
                     {
                         setCmPolicy(policy)
+                        context.showOperationResultToast(true)
                     },
                     Modifier.fillMaxWidth()
                 ) {
@@ -617,9 +622,8 @@ fun PermittedAsAndImPackages(
     val context = LocalContext.current
     val packages by packagesState.collectAsStateWithLifecycle()
     var packageName by remember { mutableStateOf("") }
-    var allowAll by remember { mutableStateOf(false) }
+    var allowAll by rememberSaveable { mutableStateOf(getPackages()) }
     LaunchedEffect(Unit) {
-        allowAll = getPackages()
         packageName = chosenPackage.receive()
     }
     MyLazyScaffold(title, onNavigateUp) {

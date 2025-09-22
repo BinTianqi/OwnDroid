@@ -316,29 +316,64 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
             }
         }
 
-        composable<SystemManager> { SystemManagerScreen(::navigateUp, ::navigate) }
-        composable<SystemOptions> { SystemOptionsScreen(::navigateUp) }
-        composable<Keyguard> { KeyguardScreen(::navigateUp) }
-        composable<HardwareMonitor> { HardwareMonitorScreen(::navigateUp) }
-        composable<ChangeTime> { ChangeTimeScreen(::navigateUp) }
-        composable<ChangeTimeZone> { ChangeTimeZoneScreen(::navigateUp) }
-        composable<AutoTimePolicy> { AutoTimePolicyScreen(::navigateUp) }
-        composable<AutoTimeZonePolicy> { AutoTimeZonePolicyScreen(::navigateUp) }
-        //composable<> { KeyPairs(::navigateUp) }
-        composable<ContentProtectionPolicy> { ContentProtectionPolicyScreen(::navigateUp) }
-        composable<PermissionPolicy> { PermissionPolicyScreen(::navigateUp) }
-        composable<MtePolicy> { MtePolicyScreen(::navigateUp) }
-        composable<NearbyStreamingPolicy> { NearbyStreamingPolicyScreen(::navigateUp) }
-        composable<LockTaskMode> {
-            LockTaskModeScreen(vm.chosenPackage, ::choosePackage, ::navigateUp)
+        composable<SystemManager> { SystemManagerScreen(vm, ::navigateUp, ::navigate) }
+        composable<SystemOptions> { SystemOptionsScreen(vm, ::navigateUp) }
+        composable<Keyguard> {
+            KeyguardScreen(vm::setKeyguardDisabled, vm::lockScreen, ::navigateUp)
         }
-        composable<CaCert> { CaCertScreen(::navigateUp) }
+        composable<HardwareMonitor> {
+            HardwareMonitorScreen(vm.hardwareProperties, vm::getHardwareProperties,
+                vm::setHpRefreshInterval, ::navigateUp)
+        }
+        composable<ChangeTime> { ChangeTimeScreen(vm::setTime, ::navigateUp) }
+        composable<ChangeTimeZone> { ChangeTimeZoneScreen(vm::setTimeZone, ::navigateUp) }
+        composable<AutoTimePolicy> {
+            AutoTimePolicyScreen(vm::getAutoTimePolicy, vm::setAutoTimePolicy, ::navigateUp)
+        }
+        composable<AutoTimeZonePolicy> {
+            AutoTimeZonePolicyScreen(vm::getAutoTimeZonePolicy, vm::setAutoTimeZonePolicy,
+                ::navigateUp)
+        }
+        //composable<> { KeyPairs(::navigateUp) }
+        composable<ContentProtectionPolicy> {
+            ContentProtectionPolicyScreen(vm::getContentProtectionPolicy,
+                vm::setContentProtectionPolicy, ::navigateUp)
+        }
+        composable<PermissionPolicy> {
+            PermissionPolicyScreen(vm::getPermissionPolicy, vm::setPermissionPolicy, ::navigateUp)
+        }
+        composable<MtePolicy> {
+            MtePolicyScreen(vm::getMtePolicy, vm::setMtePolicy, ::navigateUp)
+        }
+        composable<NearbyStreamingPolicy> {
+            NearbyStreamingPolicyScreen(vm::getNsAppPolicy, vm::setNsAppPolicy,
+                vm::getNsNotificationPolicy, vm::setNsNotificationPolicy, ::navigateUp)
+        }
+        composable<LockTaskMode> {
+            LockTaskModeScreen(vm.chosenPackage, ::choosePackage, vm.lockTaskPackages,
+                vm::getLockTaskPackages, vm::setLockTaskPackage, vm::startLockTaskMode,
+                vm:: getLockTaskFeatures, vm::setLockTaskFeatures, ::navigateUp)
+        }
+        composable<CaCert> {
+            CaCertScreen(vm.installedCaCerts, vm::getCaCerts, vm::installCaCert, vm::parseCaCert,
+                vm::exportCaCert, vm::uninstallCaCert, vm::uninstallAllCaCerts, ::navigateUp)
+        }
         composable<SecurityLogging> { SecurityLoggingScreen(::navigateUp) }
-        composable<DisableAccountManagement> { DisableAccountManagementScreen(::navigateUp) }
-        composable<SetSystemUpdatePolicy> { SystemUpdatePolicyScreen(::navigateUp) }
-        composable<InstallSystemUpdate> { InstallSystemUpdateScreen(::navigateUp) }
-        composable<FrpPolicy> { FrpPolicyScreen(::navigateUp) }
-        composable<WipeData> { WipeDataScreen(::navigateUp) }
+        composable<DisableAccountManagement> {
+            DisableAccountManagementScreen(vm.mdAccountTypes, vm::getMdAccountTypes,
+                vm::setMdAccountType, ::navigateUp)
+        }
+        composable<SetSystemUpdatePolicy> {
+            SystemUpdatePolicyScreen(vm::getSystemUpdatePolicy, vm::setSystemUpdatePolicy,
+                vm::getPendingSystemUpdate, ::navigateUp)
+        }
+        composable<InstallSystemUpdate> {
+            InstallSystemUpdateScreen(vm::installSystemUpdate, ::navigateUp)
+        }
+        composable<FrpPolicy> {
+            FrpPolicyScreen(vm::getFrpPolicy, vm::setFrpPolicy, ::navigateUp)
+        }
+        composable<WipeData> { WipeDataScreen(vm::wipeData, ::navigateUp) }
 
         composable<Network> { NetworkScreen(::navigateUp, ::navigate) }
         composable<WiFi> { WifiScreen(::navigateUp, ::navigate) { navController.navigate(AddNetwork, it)} }
