@@ -16,7 +16,6 @@ import android.app.admin.DevicePolicyManager.WIPE_EUICC
 import android.app.admin.DevicePolicyManager.WIPE_EXTERNAL_STORAGE
 import android.app.admin.DevicePolicyManager.WIPE_RESET_PROTECTION_DATA
 import android.app.admin.DevicePolicyManager.WIPE_SILENTLY
-import android.app.admin.SystemUpdateInfo
 import android.app.admin.SystemUpdatePolicy.TYPE_INSTALL_AUTOMATIC
 import android.app.admin.SystemUpdatePolicy.TYPE_INSTALL_WINDOWED
 import android.app.admin.SystemUpdatePolicy.TYPE_POSTPONE
@@ -135,7 +134,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import java.io.ByteArrayOutputStream
-import java.util.Date
 import java.util.TimeZone
 import kotlin.math.roundToLong
 

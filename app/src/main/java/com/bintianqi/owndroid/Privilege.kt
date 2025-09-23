@@ -31,6 +31,7 @@ object Privilege {
         }
         DPM = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         DAR = MyAdminComponent
+        updateStatus()
     }
     lateinit var DPM: DevicePolicyManager
         private set

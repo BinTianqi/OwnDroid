@@ -259,7 +259,7 @@ fun InfoItem(title: Int, text: String, withInfo: Boolean = false, onClick: () ->
         Modifier.fillMaxWidth().padding(vertical = 6.dp).padding(start = HorizontalPadding, end = 8.dp),
         Arrangement.SpaceBetween, Alignment.CenterVertically
     ) {
-        Column {
+        Column(Modifier.weight(1F)) {
             Text(stringResource(title), style = typography.titleLarge)
             Text(text, Modifier.alpha(0.8F))
         }

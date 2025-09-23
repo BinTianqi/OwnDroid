@@ -293,23 +293,40 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
     ) {
         composable<Home> { HomeScreen(::navigate) }
         composable<WorkModes> {
-            WorkModesScreen(it.toRoute(), ::navigateUp, {
+            WorkModesScreen(vm, it.toRoute(), ::navigateUp, {
                 navController.navigate(Home) {
                     popUpTo<WorkModes> { inclusive = true }
                 }
+            }, {
+                navController.navigate(WorkModes(false)) {
+                    popUpTo(Home) { inclusive = true }
+                }
             }, ::navigate)
         }
-        composable<DhizukuServerSettings> { DhizukuServerSettingsScreen(::navigateUp) }
-
-        composable<DelegatedAdmins> { DelegatedAdminsScreen(::navigateUp, ::navigate) }
-        composable<AddDelegatedAdmin>{
-            AddDelegatedAdminScreen(vm.chosenPackage, ::choosePackage, it.toRoute(), ::navigateUp)
+        composable<DhizukuServerSettings> {
+            DhizukuServerSettingsScreen(vm.dhizukuClients, vm::getDhizukuClients,
+                vm::updateDhizukuClient, vm::getDhizukuServerEnabled, vm::setDhizukuServerEnabled,
+                ::navigateUp)
         }
-        composable<DeviceInfo> { DeviceInfoScreen(::navigateUp) }
-        composable<LockScreenInfo> { LockScreenInfoScreen(::navigateUp) }
-        composable<SupportMessage> { SupportMessageScreen(::navigateUp) }
+
+        composable<DelegatedAdmins> {
+            DelegatedAdminsScreen(vm.delegatedAdmins, vm::getDelegatedAdmins, ::navigateUp, ::navigate)
+        }
+        composable<AddDelegatedAdmin>{
+            AddDelegatedAdminScreen(vm.chosenPackage, ::choosePackage, it.toRoute(),
+                vm::setDelegatedAdmin,  ::navigateUp)
+        }
+        composable<DeviceInfo> { DeviceInfoScreen(vm, ::navigateUp) }
+        composable<LockScreenInfo> {
+            LockScreenInfoScreen(vm::getLockScreenInfo, vm::setLockScreenInfo, ::navigateUp)
+        }
+        composable<SupportMessage> {
+            SupportMessageScreen(vm::getShortSupportMessage, vm::getLongSupportMessage,
+                vm::setShortSupportMessage, vm::setLongSupportMessage, ::navigateUp)
+        }
         composable<TransferOwnership> {
-            TransferOwnershipScreen(::navigateUp) {
+            TransferOwnershipScreen(vm.deviceAdminReceivers, vm::getDeviceAdminReceivers,
+                vm::transferOwnership, ::navigateUp) {
                 navController.navigate(WorkModes(false)) {
                     popUpTo(Home) { inclusive = true }
                 }

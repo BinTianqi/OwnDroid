@@ -3,6 +3,8 @@ package com.bintianqi.owndroid
 import android.app.ActivityOptions
 import android.app.Application
 import android.app.PendingIntent
+import android.app.admin.DeviceAdminInfo
+import android.app.admin.DeviceAdminReceiver
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.InstallSystemUpdateCallback
 import android.app.admin.FactoryResetProtectionPolicy
@@ -30,18 +32,25 @@ import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.bintianqi.owndroid.Privilege.DAR
 import com.bintianqi.owndroid.Privilege.DPM
+import com.bintianqi.owndroid.dpm.ACTIVATE_DEVICE_OWNER_COMMAND
 import com.bintianqi.owndroid.dpm.AppStatus
 import com.bintianqi.owndroid.dpm.CaCertInfo
+import com.bintianqi.owndroid.dpm.DelegatedAdmin
+import com.bintianqi.owndroid.dpm.DeviceAdmin
 import com.bintianqi.owndroid.dpm.FrpPolicyInfo
 import com.bintianqi.owndroid.dpm.HardwareProperties
 import com.bintianqi.owndroid.dpm.PendingSystemUpdateInfo
 import com.bintianqi.owndroid.dpm.SystemOptionsStatus
 import com.bintianqi.owndroid.dpm.SystemUpdatePolicyInfo
+import com.bintianqi.owndroid.dpm.delegatedScopesList
 import com.bintianqi.owndroid.dpm.getPackageInstaller
 import com.bintianqi.owndroid.dpm.isValidPackageName
 import com.bintianqi.owndroid.dpm.parsePackageInstallerMessage
 import com.bintianqi.owndroid.dpm.permissionList
 import com.bintianqi.owndroid.dpm.temperatureTypes
+import com.rosan.dhizuku.api.Dhizuku
+import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
+import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
@@ -56,6 +65,7 @@ import java.security.cert.X509Certificate
 import java.util.concurrent.Executors
 
 class MyViewModel(application: Application): AndroidViewModel(application) {
+    val myRepo = getApplication<MyApplication>().myRepo
     val PM = application.packageManager
     val theme = MutableStateFlow(ThemeSettings(SP.materialYou, SP.darkTheme, SP.blackTheme))
     fun changeTheme(newTheme: ThemeSettings) {
@@ -786,6 +796,205 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             }
         }
         DPM.installSystemUpdate(DAR, uri, application.mainExecutor, callback)
+    }
+
+    @RequiresApi(24)
+    fun isCreatingWorkProfileAllowed(): Boolean {
+        return DPM.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)
+    }
+    fun activateDoByShizuku(callback: (Boolean, String?) -> Unit) {
+        viewModelScope.launch {
+            useShizuku(application) { service ->
+                try {
+                    val result = IUserService.Stub.asInterface(service)
+                        .execute(ACTIVATE_DEVICE_OWNER_COMMAND)
+                    if (result == null || result.getInt("code", -1) != 0) {
+                        callback(false, null)
+                    } else {
+                        Privilege.updateStatus()
+                        callback(
+                            true, result.getString("output") + "\n" + result.getString("error")
+                        )
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    callback(false, null)
+                }
+            }
+        }
+    }
+    fun activateDoByRoot(callback: (Boolean, String?) -> Unit) {
+        Shell.getShell { shell ->
+            if(shell.isRoot) {
+                val result = Shell.cmd(ACTIVATE_DEVICE_OWNER_COMMAND).exec()
+                val output = result.out.joinToString("\n") + "\n" + result.err.joinToString("\n")
+                Privilege.updateStatus()
+                callback(result.isSuccess, output)
+            } else {
+                callback(false, application.getString(R.string.permission_denied))
+            }
+        }
+    }
+    @RequiresApi(28)
+    fun activateDoByDhizuku(callback: (Boolean, String?) -> Unit) {
+        DPM.transferOwnership(DAR, MyAdminComponent, null)
+        SP.dhizuku = false
+        Privilege.initialize(application)
+        callback(true, null)
+    }
+    fun activateDhizukuMode(callback: (Boolean, String?) -> Unit) {
+        fun onSucceed() {
+            SP.dhizuku = true
+            Privilege.initialize(application)
+            callback(true, null)
+        }
+        if (Dhizuku.init(application)) {
+            if (Dhizuku.isPermissionGranted()) {
+                onSucceed()
+            } else {
+                Dhizuku.requestPermission(object : DhizukuRequestPermissionListener() {
+                    override fun onRequestPermission(grantResult: Int) {
+                        if(grantResult == PackageManager.PERMISSION_GRANTED) onSucceed()
+                    }
+                })
+            }
+        } else {
+            callback(false, application.getString(R.string.failed_to_init_dhizuku))
+        }
+    }
+    fun clearDeviceOwner() {
+        DPM.clearDeviceOwnerApp(application.packageName)
+    }
+    @RequiresApi(24)
+    fun clearProfileOwner() {
+        DPM.clearProfileOwner(MyAdminComponent)
+    }
+    fun deactivateDhizukuMode() {
+        SP.dhizuku = false
+        Privilege.initialize(application)
+    }
+    val dhizukuClients = MutableStateFlow(emptyList<Pair<DhizukuClientInfo, AppInfo>>())
+    fun getDhizukuClients() {
+        viewModelScope.launch {
+            dhizukuClients.value = myRepo.getDhizukuClients().mapNotNull {
+                val packageName = PM.getNameForUid(it.uid)
+                if (packageName == null) {
+                    myRepo.deleteDhizukuClient(it)
+                    null
+                } else {
+                    it to getAppInfo(packageName)
+                }
+            }
+        }
+    }
+    fun getDhizukuServerEnabled(): Boolean {
+        return SP.dhizukuServer
+    }
+    fun setDhizukuServerEnabled(status: Boolean) {
+        SP.dhizukuServer = status
+    }
+    fun updateDhizukuClient(info: DhizukuClientInfo) {
+        myRepo.setDhizukuClient(info)
+        dhizukuClients.update { list ->
+            val ml = list.toMutableList()
+            val index = ml.indexOfFirst { it.first.uid == info.uid }
+            ml[index] = info to ml[index].second
+            ml
+        }
+    }
+    @RequiresApi(24)
+    fun getLockScreenInfo(): String {
+        return DPM.deviceOwnerLockScreenInfo?.toString() ?: ""
+    }
+    @RequiresApi(24)
+    fun setLockScreenInfo(text: String) {
+        DPM.setDeviceOwnerLockScreenInfo(DAR, text)
+    }
+    val delegatedAdmins = MutableStateFlow(emptyList<DelegatedAdmin>())
+    @RequiresApi(26)
+    fun getDelegatedAdmins() {
+        val list = mutableListOf<DelegatedAdmin>()
+        delegatedScopesList.forEach { scope ->
+            DPM.getDelegatePackages(DAR, scope.id)?.forEach { pkg ->
+                val index = list.indexOfFirst { it.app.name == pkg }
+                if (index == -1) {
+                    list += DelegatedAdmin(getAppInfo(pkg), listOf(scope.id))
+                } else {
+                    list[index] = DelegatedAdmin(list[index].app, list[index].scopes + scope.id)
+                }
+            }
+        }
+        delegatedAdmins.value = list
+    }
+    @RequiresApi(26)
+    fun setDelegatedAdmin(name: String, scopes: List<String>) {
+        DPM.setDelegatedScopes(DAR, name, scopes)
+        getDelegatedAdmins()
+    }
+    @RequiresApi(34)
+    fun getDeviceFinanced(): Boolean {
+        return DPM.isDeviceFinanced
+    }
+    @RequiresApi(33)
+    fun getDpmRh(): String? {
+        return DPM.devicePolicyManagementRoleHolderPackage
+    }
+    fun getStorageEncryptionStatus(): Int {
+        return DPM.storageEncryptionStatus
+    }
+    @RequiresApi(28)
+    fun getDeviceIdAttestationSupported(): Boolean {
+        return DPM.isDeviceIdAttestationSupported
+    }
+    @RequiresApi(30)
+    fun getUniqueDeviceAttestationSupported(): Boolean {
+        return DPM.isUniqueDeviceAttestationSupported
+    }
+    fun getActiveAdmins(): String {
+        return DPM.activeAdmins?.joinToString("\n") {
+            it.flattenToShortString()
+        } ?: application.getString(R.string.none)
+    }
+    @RequiresApi(24)
+    fun getShortSupportMessage(): String {
+        return DPM.getShortSupportMessage(DAR)?.toString() ?: ""
+    }
+    @RequiresApi(24)
+    fun getLongSupportMessage(): String {
+        return DPM.getLongSupportMessage(DAR)?.toString() ?: ""
+    }
+    @RequiresApi(24)
+    fun setShortSupportMessage(text: String?) {
+        DPM.setShortSupportMessage(DAR, text)
+    }
+    @RequiresApi(24)
+    fun setLongSupportMessage(text: String?) {
+        DPM.setLongSupportMessage(DAR, text)
+    }
+    val deviceAdminReceivers = MutableStateFlow(emptyList<DeviceAdmin>())
+    fun getDeviceAdminReceivers() {
+        viewModelScope.launch {
+            deviceAdminReceivers.value = PM.queryBroadcastReceivers(
+                Intent(DeviceAdminReceiver.ACTION_DEVICE_ADMIN_ENABLED),
+                PackageManager.GET_META_DATA
+            ).mapNotNull {
+                try {
+                    DeviceAdminInfo(application, it)
+                } catch(_: Exception) {
+                    null
+                }
+            }.filter {
+                it.isVisible && it.packageName != "com.bintianqi.owndroid" &&
+                        it.activityInfo.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM == 0
+            }.map {
+                DeviceAdmin(getAppInfo(it.packageName), it.component)
+            }
+        }
+    }
+    @RequiresApi(28)
+    fun transferOwnership(component: ComponentName) {
+        DPM.transferOwnership(DAR, component, null)
+        Privilege.updateStatus()
     }
 }
 

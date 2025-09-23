@@ -7,7 +7,6 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.ui.AppInstaller
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 
@@ -15,11 +14,10 @@ class AppInstallerActivity:FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        val myVm by viewModels<MyViewModel>()
         val vm by viewModels<AppInstallerViewModel>()
         vm.initialize(intent)
+        val theme = ThemeSettings(SP.materialYou, SP.darkTheme, SP.blackTheme)
         setContent {
-            val theme by myVm.theme.collectAsStateWithLifecycle()
             OwnDroidTheme(theme) {
                 val uiState by vm.uiState.collectAsState()
                 AppInstaller(
