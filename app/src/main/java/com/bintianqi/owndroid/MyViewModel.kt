@@ -996,6 +996,25 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         DPM.transferOwnership(DAR, component, null)
         Privilege.updateStatus()
     }
+    val userRestrictions = MutableStateFlow(emptyMap<String, Boolean>())
+    @RequiresApi(24)
+    fun getUserRestrictions() {
+        val bundle = DPM.getUserRestrictions(DAR)
+        userRestrictions.value = bundle.keySet().associateWith { bundle.getBoolean(it) }
+    }
+    fun setUserRestriction(name: String, state: Boolean): Boolean {
+        return try {
+            if (state) {
+                DPM.addUserRestriction(DAR, name)
+            } else {
+                DPM.clearUserRestriction(DAR, name)
+            }
+            userRestrictions.update { it.plus(name to state) }
+            true
+        } catch (_: SecurityException) {
+            false
+        }
+    }
 }
 
 data class ThemeSettings(

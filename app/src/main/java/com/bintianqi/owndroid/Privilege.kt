@@ -24,6 +24,7 @@ object Privilege {
                 if (dhizukuDpm != null) {
                     DPM = dhizukuDpm
                     DAR = Dhizuku.getOwnerComponent()
+                    updateStatus()
                     return
                 }
             }

@@ -526,15 +526,14 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
         }
 
         composable<UserRestriction> {
-            UserRestrictionScreen(::navigateUp) {
-                navigate(it)
-            }
+            UserRestrictionScreen(vm::getUserRestrictions, ::navigateUp, ::navigate)
         }
         composable<UserRestrictionEditor> {
-            UserRestrictionEditorScreen(::navigateUp)
+            UserRestrictionEditorScreen(vm.userRestrictions, vm::setUserRestriction, ::navigateUp)
         }
         composable<UserRestrictionOptions>(mapOf(serializableNavTypePair<List<Restriction>>())) {
-            UserRestrictionOptionsScreen(it.toRoute(), ::navigateUp)
+            UserRestrictionOptionsScreen(it.toRoute(), vm.userRestrictions,
+                vm::setUserRestriction, ::navigateUp)
         }
 
         composable<Users> { UsersScreen(::navigateUp, ::navigate) }
