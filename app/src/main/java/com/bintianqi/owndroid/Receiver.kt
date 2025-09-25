@@ -11,7 +11,6 @@ import android.os.UserHandle
 import android.os.UserManager
 import androidx.core.app.NotificationCompat
 import com.bintianqi.owndroid.dpm.handleNetworkLogs
-import com.bintianqi.owndroid.dpm.handlePrivilegeChange
 import com.bintianqi.owndroid.dpm.processSecurityLogs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,13 +34,11 @@ class Receiver : DeviceAdminReceiver() {
     override fun onEnabled(context: Context, intent: Intent) {
         super.onEnabled(context, intent)
         Privilege.updateStatus()
-        handlePrivilegeChange(context)
     }
 
     override fun onDisabled(context: Context, intent: Intent) {
         super.onDisabled(context, intent)
         Privilege.updateStatus()
-        handlePrivilegeChange(context)
     }
 
     override fun onProfileProvisioningComplete(context: Context, intent: Intent) {

@@ -91,6 +91,8 @@ user limit reached
 
 ## API
 
+OwnDroid提供了一个基于Intent和BroadcastReceiver的API。
+
 | ID                       | Extra                  | 最小安卓版本 |
 |--------------------------|------------------------|:------:|
 | `HIDE`                   | `package`              |        |
@@ -102,6 +104,10 @@ user limit reached
 | `SET_PERMISSION_DEFAULT` | `package` `permission` |   6    |
 | `SET_PERMISSION_GRANTED` | `package` `permission` |   6    |
 | `SET_PERMISSION_DENIED`  | `package` `permission` |   6    |
+| `SET_CAMERA_DISABLED`    |                        |        |
+| `SET_CAMERA_ENABLED`     |                        |        |
+| `SET_USB_DISABLED`       |                        |   12   |
+| `SET_USB_ENABLED`        |                        |   12   |
 | `LOCK`                   |                        |        |
 | `REBOOT`                 |                        |   7    |
 

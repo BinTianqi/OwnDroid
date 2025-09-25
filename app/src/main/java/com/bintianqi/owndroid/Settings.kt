@@ -57,7 +57,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
-import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.ui.FunctionItem
@@ -155,8 +154,7 @@ fun SettingsOptionsScreen(onNavigateUp: () -> Unit) {
             R.string.shortcuts, icon = R.drawable.open_in_new,
             getState = { SP.shortcuts }, onCheckedChange = {
                 SP.shortcuts = it
-                ShortcutManagerCompat.removeAllDynamicShortcuts(context)
-                createShortcuts(context)
+                ShortcutUtils.setAllShortcuts(context)
             }
         )
     }

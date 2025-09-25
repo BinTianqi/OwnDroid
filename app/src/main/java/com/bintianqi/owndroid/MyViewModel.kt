@@ -44,9 +44,10 @@ import com.bintianqi.owndroid.dpm.SystemOptionsStatus
 import com.bintianqi.owndroid.dpm.SystemUpdatePolicyInfo
 import com.bintianqi.owndroid.dpm.delegatedScopesList
 import com.bintianqi.owndroid.dpm.getPackageInstaller
+import com.bintianqi.owndroid.dpm.handlePrivilegeChange
 import com.bintianqi.owndroid.dpm.isValidPackageName
 import com.bintianqi.owndroid.dpm.parsePackageInstallerMessage
-import com.bintianqi.owndroid.dpm.permissionList
+import com.bintianqi.owndroid.dpm.runtimePermissions
 import com.bintianqi.owndroid.dpm.temperatureTypes
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
@@ -165,7 +166,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     @RequiresApi(23)
     fun getPackagePermissions(name: String) {
         if (name.isValidPackageName) {
-            packagePermissions.value = permissionList().associate {
+            packagePermissions.value = runtimePermissions.associate {
                 it.permission to DPM.getPermissionGrantState(DAR, name, it.permission)
             }
         } else {
@@ -458,7 +459,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     }
     fun setCameraDisabled(disabled: Boolean) {
         DPM.setCameraDisabled(DAR, disabled)
-        createShortcuts(application)
+        ShortcutUtils.setShortcut(application, MyShortcut.DisableCamera, !disabled)
         systemOptionsStatus.update { it.copy(cameraDisabled = DPM.getCameraDisabled(null)) }
     }
     fun setScreenCaptureDisabled(disabled: Boolean) {
@@ -491,7 +492,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     }
     fun setMasterVolumeMuted(muted: Boolean) {
         DPM.setMasterVolumeMuted(DAR, muted)
-        createShortcuts(application)
+        ShortcutUtils.setShortcut(application, MyShortcut.Mute, !muted)
         systemOptionsStatus.update { it.copy(masterVolumeMuted = DPM.isMasterVolumeMuted(DAR)) }
     }
     @RequiresApi(26)
@@ -812,6 +813,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
                         callback(false, null)
                     } else {
                         Privilege.updateStatus()
+                        handlePrivilegeChange(application)
                         callback(
                             true, result.getString("output") + "\n" + result.getString("error")
                         )
@@ -828,7 +830,10 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             if(shell.isRoot) {
                 val result = Shell.cmd(ACTIVATE_DEVICE_OWNER_COMMAND).exec()
                 val output = result.out.joinToString("\n") + "\n" + result.err.joinToString("\n")
-                Privilege.updateStatus()
+                if (result.isSuccess) {
+                    Privilege.updateStatus()
+                    handlePrivilegeChange(application)
+                }
                 callback(result.isSuccess, output)
             } else {
                 callback(false, application.getString(R.string.permission_denied))
@@ -840,12 +845,14 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         DPM.transferOwnership(DAR, MyAdminComponent, null)
         SP.dhizuku = false
         Privilege.initialize(application)
+        handlePrivilegeChange(application)
         callback(true, null)
     }
     fun activateDhizukuMode(callback: (Boolean, String?) -> Unit) {
         fun onSucceed() {
             SP.dhizuku = true
             Privilege.initialize(application)
+            handlePrivilegeChange(application)
             callback(true, null)
         }
         if (Dhizuku.init(application)) {

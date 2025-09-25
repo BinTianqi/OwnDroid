@@ -315,7 +315,7 @@ fun PermissionsManagerScreen(
                 Spacer(Modifier.padding(vertical = 4.dp))
             }
         }
-        items(permissionList(), { it.permission }) {
+        items(runtimePermissions, { it.permission }) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -630,11 +630,11 @@ fun PermittedAsAndImPackages(
         item {
             SwitchItem(R.string.allow_all, state = allowAll, onCheckedChange = { allowAll = it })
         }
-        if (allowAll) items(packages, { it.name }) {
+        if (!allowAll) items(packages, { it.name }) {
             ApplicationItem(it) { setPackage(it.name, false) }
         }
         item {
-            if (allowAll) {
+            if (!allowAll) {
                 PackageNameTextField(packageName, onChoosePackage,
                     Modifier.padding(HorizontalPadding, 8.dp)) { packageName = it }
                 Button(

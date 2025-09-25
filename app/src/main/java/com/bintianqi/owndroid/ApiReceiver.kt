@@ -47,6 +47,22 @@ class ApiReceiver: BroadcastReceiver() {
                     }
                     "LOCK" -> { Privilege.DPM.lockNow(); true }
                     "REBOOT" -> { Privilege.DPM.reboot(Privilege.DAR); true }
+                    "SET_CAMERA_DISABLED" -> {
+                        Privilege.DPM.setCameraDisabled(Privilege.DAR, true)
+                        true
+                    }
+                    "SET_CAMERA_ENABLED" -> {
+                        Privilege.DPM.setCameraDisabled(Privilege.DAR, false)
+                        true
+                    }
+                    "SET_USB_DISABLED" -> {
+                        Privilege.DPM.isUsbDataSignalingEnabled = false
+                        true
+                    }
+                    "SET_USB_ENABLED" -> {
+                        Privilege.DPM.isUsbDataSignalingEnabled = true
+                        true
+                    }
                     else -> {
                         log += "\nInvalid action"
                         false

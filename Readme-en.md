@@ -93,6 +93,8 @@ Samsung restricts Android's multiple users feature. There is currently no soluti
 
 ## API
 
+OwnDroid provides an API based on Intent and BroadcastReceiver.
+
 | ID                       | Extras                 | Minimum Android version |
 |--------------------------|------------------------|:-----------------------:|
 | `HIDE`                   | `package`              |                         |
@@ -104,6 +106,10 @@ Samsung restricts Android's multiple users feature. There is currently no soluti
 | `SET_PERMISSION_DEFAULT` | `package` `permission` |            6            |
 | `SET_PERMISSION_GRANTED` | `package` `permission` |            6            |
 | `SET_PERMISSION_DENIED`  | `package` `permission` |            6            |
+| `SET_CAMERA_DISABLED`    |                        |                         |
+| `SET_CAMERA_ENABLED`     |                        |                         |
+| `SET_USB_DISABLED`       |                        |           12            |
+| `SET_USB_ENABLED`        |                        |           12            |
 | `LOCK`                   |                        |                         |
 | `REBOOT`                 |                        |            7            |
 
