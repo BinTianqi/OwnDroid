@@ -417,11 +417,22 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
         composable<AddApnSetting> { AddApnSettingScreen(it.arguments?.getParcelable("setting"), ::navigateUp) }
 
         composable<WorkProfile> { WorkProfileScreen(::navigateUp, ::navigate) }
-        composable<OrganizationOwnedProfile> { OrganizationOwnedProfileScreen(::navigateUp) }
-        composable<CreateWorkProfile> { CreateWorkProfileScreen(::navigateUp) }
-        composable<SuspendPersonalApp> { SuspendPersonalAppScreen(::navigateUp) }
-        composable<CrossProfileIntentFilter> { CrossProfileIntentFilterScreen(::navigateUp) }
-        composable<DeleteWorkProfile> { DeleteWorkProfileScreen(::navigateUp) }
+        composable<OrganizationOwnedProfile> {
+            OrganizationOwnedProfileScreen(vm::activateOrgProfileByShizuku, ::navigateUp)
+        }
+        composable<CreateWorkProfile> {
+            CreateWorkProfileScreen(vm::createWorkProfile, ::navigateUp)
+        }
+        composable<SuspendPersonalApp> {
+            SuspendPersonalAppScreen(
+                vm::getPersonalAppsSuspendedReason, vm::setPersonalAppsSuspended,
+                vm::getProfileMaxTimeOff, vm::setProfileMaxTimeOff, ::navigateUp
+            )
+        }
+        composable<CrossProfileIntentFilter> {
+            CrossProfileIntentFilterScreen(vm::addCrossProfileIntentFilter, ::navigateUp)
+        }
+        composable<DeleteWorkProfile> { DeleteWorkProfileScreen(vm::wipeData, ::navigateUp) }
 
         composable<ApplicationsList> {
             val canSwitchView = (it.toRoute() as ApplicationsList).canSwitchView

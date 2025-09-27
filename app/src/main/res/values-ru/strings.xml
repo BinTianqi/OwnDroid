@@ -75,7 +75,6 @@
     <string name="profile_owner">Владелец профиля</string>
     <string name="device_owner">Владелец устройства</string>
     <string name="delegated_admins">Делегированные администраторы</string>
-    <string name="delegated_scope">делегированные возможности</string>
     <string name="manage_application_restrictions">Управление ограничениями для приложений</string>
     <string name="manage_certificates">Управление сертификатами</string>
     <string name="select_keychain_certificates">Выберите сертификат связки ключей</string>
@@ -101,7 +100,6 @@
     <string name="disable_account_management">Отключить управление аккаунтами</string>
     <string name="account_type">Тип аккаунта</string>
     <string name="transfer_ownership">Передача прав владения</string>
-    <string name="target_component_name">Имя целевого компонента</string>
     <string name="lock_screen_info">Информация на экране блокировки</string>
     <string name="support_messages">Сообщение поддержки</string>
     <string name="short_support_msg">Краткое сообщение</string>
@@ -212,8 +210,6 @@
     <string name="update_received_time">Время получения обновления: %1$s</string>
     <string name="install_system_update">Установить системное обновление</string>
     <string name="select_ota_package" tools:ignore="TypographyEllipsis">Выберите OTA-пакет...</string>
-    <string name="start_install_system_update">Начать установку системного обновления</string>
-    <string name="install_system_update_failed">Установка системного обновления не удалась: </string>
     <string name="battery_low">Низкий заряд батареи</string>
     <string name="update_file_invalid">Файл обновления недействителен</string>
     <string name="incorrect_os_ver">Неверная версия ОС</string>
@@ -339,10 +335,7 @@
     <string name="profile_max_time_off">Максимальное время отключения</string>
     <string name="profile_max_time_out_desc">Личные приложения будут приостановлены после закрытия рабочего профиля на указанное время. 0 означает отсутствие ограничения.</string>
     <string name="personal_app_suspended_because_timeout">Личное приложение приостановлено по причине: %1$s</string>
-    <string name="cannot_less_than_72_hours">Не может быть меньше 72 часов</string>
     <string name="intent_filter">Фильтр намерений</string>
-    <string name="add_intent_filter_work_to_personal">Добавить (из рабочего в личный)</string>
-    <string name="add_intent_filter_personal_to_work">Добавить (из личного в рабочий)</string>
     <string name="clear_cross_profile_filters">Очистить все фильтры</string>
     <string name="org_id">Идентификатор организации</string>
     <string name="length_6_to_64">Длина должна быть от 6 до 64 символов</string>

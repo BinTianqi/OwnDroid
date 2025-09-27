@@ -38,6 +38,7 @@
                 <action android:name="android.app.action.PROVISION_MANAGED_PROFILE"/>
                 <action android:name="android.app.action.MANAGED_PROFILE_PROVISIONED"/>
                 <action android:name="android.app.action.PROFILE_PROVISIONING_COMPLETE"/>
+                <action android:name="android.app.action.CHECK_POLICY_COMPLIANCE"/>
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>

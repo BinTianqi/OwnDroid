@@ -273,6 +273,7 @@ fun ApplicationDetailsScreen(
         )
         if(VERSION.SDK_INT >= 28) FunctionItem(R.string.clear_app_storage, icon = R.drawable.mop_fill0) { dialog = 1 }
         FunctionItem(R.string.uninstall, icon = R.drawable.delete_fill0) { dialog = 2 }
+        Spacer(Modifier.height(40.dp))
     }
     if(dialog == 1 && VERSION.SDK_INT >= 28)
         ClearAppStorageDialog(packageName, vm::clearAppData) { dialog = 0 }
@@ -604,6 +605,7 @@ fun CredentialManagerPolicyScreen(
                 ) {
                     Text(stringResource(R.string.apply))
                 }
+                Spacer(Modifier.height(40.dp))
             }
         }
     }
@@ -658,6 +660,7 @@ fun PermittedAsAndImPackages(
             }
             Spacer(Modifier.height(10.dp))
             Notes(note, HorizontalPadding)
+            Spacer(Modifier.height(40.dp))
         }
     }
 }
@@ -767,6 +770,7 @@ fun PackageFunctionScreen(
                 Text(stringResource(R.string.add))
             }
             if (notes != null) Notes(notes, HorizontalPadding)
+            Spacer(Modifier.height(40.dp))
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.bintianqi.owndroid
 
+import android.accounts.Account
 import android.app.ActivityOptions
 import android.app.Application
 import android.app.PendingIntent
@@ -35,13 +36,17 @@ import com.bintianqi.owndroid.Privilege.DPM
 import com.bintianqi.owndroid.dpm.ACTIVATE_DEVICE_OWNER_COMMAND
 import com.bintianqi.owndroid.dpm.AppStatus
 import com.bintianqi.owndroid.dpm.CaCertInfo
+import com.bintianqi.owndroid.dpm.CreateWorkProfileOptions
 import com.bintianqi.owndroid.dpm.DelegatedAdmin
 import com.bintianqi.owndroid.dpm.DeviceAdmin
 import com.bintianqi.owndroid.dpm.FrpPolicyInfo
 import com.bintianqi.owndroid.dpm.HardwareProperties
+import com.bintianqi.owndroid.dpm.IntentFilterDirection
+import com.bintianqi.owndroid.dpm.IntentFilterOptions
 import com.bintianqi.owndroid.dpm.PendingSystemUpdateInfo
 import com.bintianqi.owndroid.dpm.SystemOptionsStatus
 import com.bintianqi.owndroid.dpm.SystemUpdatePolicyInfo
+import com.bintianqi.owndroid.dpm.activateOrgProfileCommand
 import com.bintianqi.owndroid.dpm.delegatedScopesList
 import com.bintianqi.owndroid.dpm.getPackageInstaller
 import com.bintianqi.owndroid.dpm.handlePrivilegeChange
@@ -294,7 +299,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     }
     fun setCmPackage(name: String, status: Boolean) {
         cmPackages.update { list ->
-            if (status) list + getAppInfo(name) else list.dropWhile { it.name == name }
+            if (status) list + getAppInfo(name) else list.filter { it.name != name }
         }
     }
     @RequiresApi(34)
@@ -315,7 +320,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     }
     fun setPimPackage(name: String, status: Boolean) {
         pimPackages.update { packages ->
-            if (status) packages + getAppInfo(name) else packages.dropWhile { it.name == name }
+            if (status) packages + getAppInfo(name) else packages.filter { it.name != name }
         }
     }
     fun setPimPolicy(allowAll: Boolean): Boolean {
@@ -335,7 +340,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     }
     fun setPasPackage(name: String, status: Boolean) {
         pasPackages.update { packages ->
-            if (status) packages + getAppInfo(name) else packages.dropWhile { it.name == name }
+            if (status) packages + getAppInfo(name) else packages.filter { it.name != name }
         }
     }
     fun setPasPolicy(allowAll: Boolean): Boolean {
@@ -1021,6 +1026,81 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         } catch (_: SecurityException) {
             false
         }
+    }
+    fun createWorkProfile(options: CreateWorkProfileOptions): Intent {
+        val intent = Intent(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)
+        if (VERSION.SDK_INT >= 23) {
+            intent.putExtra(
+                DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME,
+                MyAdminComponent
+            )
+        } else {
+            intent.putExtra(
+                DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME,
+                application.packageName
+            )
+        }
+        if (options.migrateAccount && VERSION.SDK_INT >= 22) {
+            intent.putExtra(
+                DevicePolicyManager.EXTRA_PROVISIONING_ACCOUNT_TO_MIGRATE,
+                Account(options.accountName, options.accountType)
+            )
+            if (VERSION.SDK_INT >= 26) {
+                intent.putExtra(
+                    DevicePolicyManager.EXTRA_PROVISIONING_KEEP_ACCOUNT_ON_MIGRATION,
+                    options.keepAccount
+                )
+            }
+        }
+        if (VERSION.SDK_INT >= 24) {
+            intent.putExtra(
+                DevicePolicyManager.EXTRA_PROVISIONING_SKIP_ENCRYPTION,
+                options.skipEncrypt
+            )
+        }
+        if (VERSION.SDK_INT >= 33) {
+            intent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_ALLOW_OFFLINE, options.offline)
+        }
+        return intent
+    }
+    fun activateOrgProfileByShizuku(callback: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            var succeed = false
+            useShizuku(application) { service ->
+                val result = IUserService.Stub.asInterface(service).execute(activateOrgProfileCommand)
+                succeed = result?.getInt("code", -1) == 0
+                callback(succeed)
+            }
+            if (succeed) Privilege.updateStatus()
+        }
+    }
+    @RequiresApi(30)
+    fun getPersonalAppsSuspendedReason(): Int {
+        return DPM.getPersonalAppsSuspendedReasons(DAR)
+    }
+    @RequiresApi(30)
+    fun setPersonalAppsSuspended(suspended: Boolean) {
+        DPM.setPersonalAppsSuspended(DAR, suspended)
+    }
+    @RequiresApi(30)
+    fun getProfileMaxTimeOff(): Long {
+        return DPM.getManagedProfileMaximumTimeOff(DAR)
+    }
+    @RequiresApi(30)
+    fun setProfileMaxTimeOff(time: Long) {
+        DPM.setManagedProfileMaximumTimeOff(DAR, time)
+    }
+    fun addCrossProfileIntentFilter(options: IntentFilterOptions) {
+        val filter = IntentFilter(options.action)
+        if (options.category.isNotEmpty()) filter.addCategory(options.category)
+        if (options.mimeType.isNotEmpty()) filter.addDataType(options.mimeType)
+        val flags = when(options.direction) {
+            IntentFilterDirection.ToManaged -> DevicePolicyManager.FLAG_PARENT_CAN_ACCESS_MANAGED
+            IntentFilterDirection.ToParent -> DevicePolicyManager.FLAG_MANAGED_CAN_ACCESS_PARENT
+            IntentFilterDirection.Both -> DevicePolicyManager.FLAG_PARENT_CAN_ACCESS_MANAGED or
+                    DevicePolicyManager.FLAG_MANAGED_CAN_ACCESS_PARENT
+        }
+        DPM.addCrossProfileIntentFilter(DAR, filter, flags)
     }
 }
 

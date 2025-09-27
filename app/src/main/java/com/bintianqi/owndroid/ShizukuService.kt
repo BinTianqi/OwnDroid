@@ -57,7 +57,9 @@ fun useShizuku(context: Context, action: (IBinder?) -> Unit) {
         } else {
             Sui.init(context.packageName)
             fun requestPermissionResultListener(requestCode: Int, grantResult: Int) {
-                if(grantResult != PackageManager.PERMISSION_GRANTED) {
+                if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                    Shizuku.bindUserService(getShizukuArgs(context), connection)
+                } else {
                     context.popToast(R.string.permission_denied)
                 }
                 Shizuku.removeRequestPermissionResultListener(::requestPermissionResultListener)

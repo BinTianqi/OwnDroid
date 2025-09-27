@@ -76,7 +76,6 @@
     <string name="profile_owner">Profil Sahibi</string>
     <string name="device_owner">Cihaz Sahibi</string>
     <string name="delegated_admins">Yetkilendirilmiş Yöneticiler</string>
-    <string name="delegated_scope">Yetkilendirilmiş Kapsam</string>
     <string name="manage_application_restrictions">Uygulama Kısıtlamalarını Yönet</string>
     <string name="manage_certificates">Sertifikaları Yönet</string>
     <string name="select_keychain_certificates">KeyChain Sertifikasını Seç</string>
@@ -102,7 +101,6 @@
     <string name="disable_account_management">Hesap Yönetimini Devre Dışı Bırak</string>
     <string name="account_type">Hesap Türü</string>
     <string name="transfer_ownership">Sahipliği Devret</string>
-    <string name="target_component_name">Hedef Bileşen Adı</string>
     <string name="lock_screen_info">Kilit Ekranı Bilgisi</string>
     <string name="support_messages">Destek Mesajları</string>
     <string name="short_support_msg">Kısa Mesaj</string>
@@ -243,8 +241,6 @@
 
     <string name="install_system_update">Sistem Güncellemesini Yükle</string>
     <string name="select_ota_package" tools:ignore="TypographyEllipsis">OTA paketini seç...</string>
-    <string name="start_install_system_update">Sistem güncellemesini yüklemeye başla</string>
-    <string name="install_system_update_failed">"Sistem güncellemesi yüklenemedi: "</string>
     <string name="battery_low">Pil seviyesi düşük</string>
     <string name="update_file_invalid">Güncelleme dosyası geçersiz</string>
     <string name="incorrect_os_ver">Yanlış işletim sistemi sürümü</string>
@@ -365,10 +361,7 @@
     <string name="profile_max_time_off">Maksimum Kapalı Kalma Süresi</string>
     <string name="profile_max_time_out_desc">İş profili kapatıldıktan sonra kişisel uygulamalar bu süre boyunca askıya alınacak. 0, sınırsız anlamına gelir.</string>
     <string name="personal_app_suspended_because_timeout">Kişisel uygulama şu nedenle askıya alındı: %1$s</string>
-    <string name="cannot_less_than_72_hours">72 saatten az olamaz</string>
     <string name="intent_filter">Niyet Filtresi</string>
-    <string name="add_intent_filter_work_to_personal">Ekle (işten kişisel profile)</string>
-    <string name="add_intent_filter_personal_to_work">Ekle (kişisel profilden işe)</string>
     <string name="clear_cross_profile_filters">Tüm filtreleri temizle</string>
     <string name="org_id">Kurum Kimliği</string>
     <string name="length_6_to_64">Uzunluk 6 ile 64 karakter arasında olmalıdır</string>

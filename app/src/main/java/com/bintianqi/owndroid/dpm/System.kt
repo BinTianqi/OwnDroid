@@ -1262,6 +1262,7 @@ private fun LockTaskPackages(
                     Text(stringResource(R.string.add))
                 }
                 Notes(R.string.info_lock_task_packages)
+                Spacer(Modifier.height(40.dp))
             }
         }
     }
