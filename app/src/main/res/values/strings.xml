@@ -133,6 +133,7 @@
     <string name="enable_camera">Enable camera</string>
     <string name="disable_screen_capture">Disable screen capture</string>
     <string name="disable_status_bar">Disable status bar</string>
+    <string name="status_bar">Status bar</string>
     <string name="auto_time">Auto time</string>
     <string name="require_auto_time">Require auto time</string>
     <string name="auto_timezone">Auto timezone</string>
@@ -166,6 +167,7 @@
     <string name="manually_input">Manually input</string>
     <string name="date">Date</string>
     <string name="time">Time</string>
+    <string name="use_current_timezone">Use current timezone</string>
     <string name="change_timezone">Change timezone</string>
     <string name="timezone_id">Timezone ID</string>
     <string name="disable_auto_time_zone_before_set">Auto timezone should be disabled before set a custom timezone. </string>
@@ -516,12 +518,13 @@
     <string name="logout">Logout</string>
     <string name="start_in_background">Start in background</string>
     <string name="user_operation_switch">Switch</string>
+    <string name="limit_reached">Limit reached</string>
+    <string name="delete_user_confirmation">Are you sure you want to delete user %1$s ?</string>
     <string name="create_user">Create user</string>
     <string name="username">Username</string>
     <string name="create_user_skip_wizard">Skip wizard</string>
     <string name="create_user_ephemeral_user">Ephemeral user</string>
     <string name="create_user_enable_all_system_app">Enable all system app</string>
-    <string name="serial_number_of_new_user_is">Serial number of this user: %1$d</string>
     <string name="affiliation_id">Affiliation ID</string>
     <string name="change_user_icon">Change user icon</string>
     <string name="select_an_image">Select an image</string>
@@ -678,7 +681,7 @@
 
     <string name="info_device_id_attestation">Indicates if the device supports attestation of device identifiers in addition to key attestation.</string>
     <string name="info_unique_device_attestation">Yes if the StrongBox Keymaster implementation on the device was provisioned with an individual attestation certificate and can sign attestation records using it (only Keymaster with StrongBox security level can use an individual attestation certificate).</string>
-    <string name="info_org_id">Sets the Enterprise ID. This is a requirement for generating an enrollment-specific ID for the device.</string>
+    <string name="info_org_id">Sets the Enterprise ID. This is a requirement for generating an enrollment-specific ID for the device. The ID can only be set once.</string>
     <string name="info_enrollment_specific_id">The identifier would be consistent even if the work profile is removed and create again (to the same Organization ID), or the device is factory reset and re-enrolled.</string>
     <string name="info_lock_screen_info">Show a brief message on your lock screen.\nOverrides any owner information manually set by the user and prevents the user from further changing it.</string>
     <string name="info_short_support_message">This will be displayed to the user in settings screens where functionality has been disabled by the admin. If the message is longer than 200 characters it may be truncated</string>

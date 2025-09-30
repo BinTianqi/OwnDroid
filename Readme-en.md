@@ -93,27 +93,25 @@ Samsung restricts Android's multiple users feature. There is currently no soluti
 
 ## API
 
-OwnDroid provides an API based on Intent and BroadcastReceiver.
+OwnDroid provides an Intent-based API. You need to set the API key in settings and enable the API. The numbers in brackets represent the minimum Android version required.
 
-| ID                       | Extras                 | Minimum Android version |
-|--------------------------|------------------------|:-----------------------:|
-| `HIDE`                   | `package`              |                         |
-| `UNHIDE`                 | `package`              |                         |
-| `SUSPEND`                | `package`              |            7            |
-| `UNSUSPEND`              | `package`              |            7            |
-| `ADD_USER_RESTRICTION`   | `restriction`          |                         |
-| `CLEAR_USER_RESTRICTION` | `restriction`          |                         |
-| `SET_PERMISSION_DEFAULT` | `package` `permission` |            6            |
-| `SET_PERMISSION_GRANTED` | `package` `permission` |            6            |
-| `SET_PERMISSION_DENIED`  | `package` `permission` |            6            |
-| `SET_CAMERA_DISABLED`    |                        |                         |
-| `SET_CAMERA_ENABLED`     |                        |                         |
-| `SET_USB_DISABLED`       |                        |           12            |
-| `SET_USB_ENABLED`        |                        |           12            |
-| `LOCK`                   |                        |                         |
-| `REBOOT`                 |                        |            7            |
-
-[Available user restrictions](https://developer.android.com/reference/android/os/UserManager#constants_1)
+- HIDE(package: String)
+- UNHIDE(package: String)
+- SUSPEND(package: String) (7)
+- UNSUSPEND(package: String) (7)
+- ADD_USER_RESTRICTION(restriction: Boolean)
+- CLEAR_USER_RESTRICTION(restriction: Boolean)
+- SET_PERMISSION_DEFAULT(package: String, permission: String) (6)
+- SET_PERMISSION_GRANTED(package: String, permission: String) (6)
+- SET_PERMISSION_DENIED(package: String, permission: String) (6)
+- SET_SCREEN_CAPTURE_DISABLED()
+- SET_SCREEN_CAPTURE_ENABLED()
+- SET_CAMERA_DISABLED()
+- SET_CAMERA_ENABLED()
+- SET_USB_DISABLED() (12)
+- SET_USB_ENABLED() (12)
+- LOCK()
+- REBOOT() (7)
 
 ```shell
 # An example of hiding app in ADB shell
@@ -128,6 +126,8 @@ val intent = Intent("com.bintianqi.owndroid.action.HIDE")
     .putExtra("package", "com.example.app")
 context.sendBroadcast(intent)
 ```
+
+[Available user restrictions](https://developer.android.com/reference/android/os/UserManager#constants_1)
 
 ## Build
 

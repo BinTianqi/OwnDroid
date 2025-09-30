@@ -53,6 +53,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -130,9 +131,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.formatDate
 import com.bintianqi.owndroid.formatFileSize
-import com.bintianqi.owndroid.humanReadableDate
+import com.bintianqi.owndroid.formatTime
 import com.bintianqi.owndroid.popToast
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
@@ -157,9 +157,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import java.net.InetAddress
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import kotlin.reflect.jvm.jvmErasure
 
 @Serializable object Network
@@ -1036,14 +1033,14 @@ fun NetworkStatsScreen(
             }
         }
         OutlinedTextField(
-            value = startTime.let { if(it == -1L) "" else it.humanReadableDate }, onValueChange = {}, readOnly = true,
+            value = startTime.let { if(it == -1L) "" else formatTime(it) }, onValueChange = {}, readOnly = true,
             label = { Text(stringResource(R.string.start_time)) },
             interactionSource = startTimeTextFieldInteractionSource,
             isError = startTime >= endTime,
             modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
         )
         OutlinedTextField(
-            value = endTime.humanReadableDate, onValueChange = {}, readOnly = true,
+            value = formatTime(endTime), onValueChange = {}, readOnly = true,
             label = { Text(stringResource(R.string.end_time)) },
             interactionSource = endTimeTextFieldInteractionSource,
             isError = startTime >= endTime,
@@ -1315,18 +1312,9 @@ fun NetworkStatsViewerScreen(nsv: NetworkStatsViewer, onNavigateUp: () -> Unit) 
         HorizontalPager(ps, Modifier.padding(top = 8.dp)) { page ->
             val data = nsv.stats[page]
             Column(Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding)) {
-                Row(Modifier.align(Alignment.CenterHorizontally).padding(bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    SimpleDateFormat("", Locale.getDefault()).format(Date(data.startTime))
-                    Text(
-                        formatDate("yyyy/MM/dd", data.startTime) + "\n" + formatDate("HH:mm:ss", data.startTime),
-                        textAlign = TextAlign.Center
-                    )
-                    Text("~", Modifier.padding(horizontal = 8.dp))
-                    Text(
-                        formatDate("yyyy/MM/dd", data.endTime) + "\n" + formatDate("HH:mm:ss", data.endTime),
-                        textAlign = TextAlign.Center
-                    )
-                }
+                Text(formatTime(data.startTime) + "\n~\n" + formatTime(data.endTime),
+                    Modifier.align(Alignment.CenterHorizontally), textAlign = TextAlign.Center)
+                Spacer(Modifier.height(5.dp))
                 val txBytes = data.txBytes
                 Text(stringResource(R.string.transmitted), style = typography.titleLarge)
                 Column(modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)) {

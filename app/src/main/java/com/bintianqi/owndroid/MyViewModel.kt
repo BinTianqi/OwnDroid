@@ -20,9 +20,13 @@ import android.content.IntentFilter
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Binder
 import android.os.Build.VERSION
 import android.os.HardwarePropertiesManager
+import android.os.UserHandle
+import android.os.UserManager
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -36,6 +40,7 @@ import com.bintianqi.owndroid.Privilege.DPM
 import com.bintianqi.owndroid.dpm.ACTIVATE_DEVICE_OWNER_COMMAND
 import com.bintianqi.owndroid.dpm.AppStatus
 import com.bintianqi.owndroid.dpm.CaCertInfo
+import com.bintianqi.owndroid.dpm.CreateUserResult
 import com.bintianqi.owndroid.dpm.CreateWorkProfileOptions
 import com.bintianqi.owndroid.dpm.DelegatedAdmin
 import com.bintianqi.owndroid.dpm.DeviceAdmin
@@ -46,6 +51,7 @@ import com.bintianqi.owndroid.dpm.IntentFilterOptions
 import com.bintianqi.owndroid.dpm.PendingSystemUpdateInfo
 import com.bintianqi.owndroid.dpm.SystemOptionsStatus
 import com.bintianqi.owndroid.dpm.SystemUpdatePolicyInfo
+import com.bintianqi.owndroid.dpm.UserInformation
 import com.bintianqi.owndroid.dpm.activateOrgProfileCommand
 import com.bintianqi.owndroid.dpm.delegatedScopesList
 import com.bintianqi.owndroid.dpm.getPackageInstaller
@@ -68,6 +74,8 @@ import java.security.MessageDigest
 import java.security.cert.CertificateException
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.concurrent.Executors
 
 class MyViewModel(application: Application): AndroidViewModel(application) {
@@ -124,11 +132,9 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
 
     val hiddenPackages = MutableStateFlow(emptyList<AppInfo>())
     fun getHiddenPackages() {
-        viewModelScope.launch {
-            hiddenPackages.value = PM.getInstalledApplications(getInstalledAppsFlags).filter {
-                DPM.isApplicationHidden(DAR, it.packageName)
-            }.map { getAppInfo(it) }
-        }
+        hiddenPackages.value = PM.getInstalledApplications(getInstalledAppsFlags).filter {
+            DPM.isApplicationHidden(DAR, it.packageName)
+        }.map { getAppInfo(it) }
     }
     fun setPackageHidden(name: String, status: Boolean): Boolean {
         val result = DPM.setApplicationHidden(DAR, name, status)
@@ -139,11 +145,9 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     // Uninstall blocked packages
     val ubPackages = MutableStateFlow(emptyList<AppInfo>())
     fun getUbPackages() {
-        viewModelScope.launch {
-            ubPackages.value = PM.getInstalledApplications(getInstalledAppsFlags).filter {
-                DPM.isUninstallBlocked(DAR, it.packageName)
-            }.map { getAppInfo(it) }
-        }
+        ubPackages.value = PM.getInstalledApplications(getInstalledAppsFlags).filter {
+            DPM.isUninstallBlocked(DAR, it.packageName)
+        }.map { getAppInfo(it) }
     }
     fun setPackageUb(name: String, status: Boolean) {
         DPM.setUninstallBlocked(DAR, name, status)
@@ -421,19 +425,33 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     }
     @RequiresApi(24)
     fun requestBugReport(): Boolean {
-        return DPM.requestBugreport(DAR)
+        return try {
+            DPM.requestBugreport(DAR)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
     }
     @RequiresApi(24)
     fun getOrgName(): String {
-        return DPM.getOrganizationName(DAR).toString()
+        return try {
+            DPM.getOrganizationName(DAR)?.toString() ?: ""
+        } catch (_: Exception) {
+            ""
+        }
     }
     @RequiresApi(24)
     fun setOrgName(name: String) {
         DPM.setOrganizationName(DAR, name)
     }
     @RequiresApi(31)
-    fun setOrgId(id: String) {
-        DPM.setOrganizationId(id)
+    fun setOrgId(id: String): Boolean {
+        return try {
+            DPM.setOrganizationId(id)
+            true
+        } catch (_: IllegalStateException) {
+            false
+        }
     }
     @RequiresApi(31)
     fun getEnrollmentSpecificId(): String {
@@ -557,12 +575,16 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
                 properties.temperatures.isEmpty()) {
                 break
             }
+            hardwareProperties.value = properties
             delay(hpRefreshInterval)
         }
     }
     @RequiresApi(28)
-    fun setTime(time: Long): Boolean {
-        return DPM.setTime(DAR, time)
+    fun setTime(time: Long, useCurrentTz: Boolean): Boolean {
+        val offset = if (useCurrentTz) {
+            ZonedDateTime.now(ZoneId.systemDefault()).offset.totalSeconds * 1000L
+        } else 0L
+        return DPM.setTime(DAR, time - offset)
     }
     @RequiresApi(28)
     fun setTimeZone(tz: String): Boolean {
@@ -674,9 +696,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     }
     val installedCaCerts = MutableStateFlow(emptyList<CaCertInfo>())
     fun getCaCerts() {
-        viewModelScope.launch {
-            installedCaCerts.value = DPM.getInstalledCaCerts(DAR).mapNotNull { parseCaCert(it) }
-        }
+        installedCaCerts.value = DPM.getInstalledCaCerts(DAR).mapNotNull { parseCaCert(it) }
     }
     fun parseCaCert(uri: Uri): CaCertInfo? {
         return try {
@@ -696,7 +716,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             CaCertInfo(
                 hash, cert.serialNumber.toString(16),
                 cert.issuerX500Principal.name, cert.subjectX500Principal.name,
-                parseDate(cert.notBefore), parseDate(cert.notAfter), bytes
+                cert.notBefore.time, cert.notAfter.time, bytes
             )
         } catch (e: CertificateException) {
             e.printStackTrace()
@@ -809,7 +829,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         return DPM.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)
     }
     fun activateDoByShizuku(callback: (Boolean, String?) -> Unit) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             useShizuku(application) { service ->
                 try {
                     val result = IUserService.Stub.asInterface(service)
@@ -887,7 +907,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     }
     val dhizukuClients = MutableStateFlow(emptyList<Pair<DhizukuClientInfo, AppInfo>>())
     fun getDhizukuClients() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             dhizukuClients.value = myRepo.getDhizukuClients().mapNotNull {
                 val packageName = PM.getNameForUid(it.uid)
                 if (packageName == null) {
@@ -985,7 +1005,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     }
     val deviceAdminReceivers = MutableStateFlow(emptyList<DeviceAdmin>())
     fun getDeviceAdminReceivers() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             deviceAdminReceivers.value = PM.queryBroadcastReceivers(
                 Intent(DeviceAdminReceiver.ACTION_DEVICE_ADMIN_ENABLED),
                 PackageManager.GET_META_DATA
@@ -1064,7 +1084,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         return intent
     }
     fun activateOrgProfileByShizuku(callback: (Boolean) -> Unit) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             var succeed = false
             useShizuku(application) { service ->
                 val result = IUserService.Stub.asInterface(service).execute(activateOrgProfileCommand)
@@ -1101,6 +1121,130 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
                     DevicePolicyManager.FLAG_MANAGED_CAN_ACCESS_PARENT
         }
         DPM.addCrossProfileIntentFilter(DAR, filter, flags)
+    }
+
+    val UM = application.getSystemService(Context.USER_SERVICE) as UserManager
+    @RequiresApi(28)
+    fun getLogoutEnabled(): Boolean {
+        return DPM.isLogoutEnabled
+    }
+    @RequiresApi(28)
+    fun setLogoutEnabled(enabled: Boolean) {
+        DPM.setLogoutEnabled(DAR, enabled)
+    }
+    fun getUserInformation(): UserInformation {
+        val uh = Binder.getCallingUserHandle()
+        return UserInformation(
+            if (VERSION.SDK_INT >= 24) UserManager.supportsMultipleUsers() else false,
+            if (VERSION.SDK_INT >= 31) UserManager.isHeadlessSystemUserMode() else false,
+            if (VERSION.SDK_INT >= 23) UM.isSystemUser else false,
+            if (VERSION.SDK_INT >= 34) UM.isAdminUser else false,
+            if (VERSION.SDK_INT >= 25) UM.isDemoUser else false,
+            if (VERSION.SDK_INT >= 23) UM.getUserCreationTime(uh) else 0,
+            if (VERSION.SDK_INT >= 28) DPM.isLogoutEnabled else false,
+            if (VERSION.SDK_INT >= 28) DPM.isEphemeralUser(DAR) else false,
+            if (VERSION.SDK_INT >= 28) DPM.isAffiliatedUser else false,
+            UM.getSerialNumberForUser(uh)
+        )
+    }
+    @RequiresApi(28)
+    fun startUser(id: Int, isUserId: Boolean): Int {
+        val uh = getUserHandle(id, isUserId)
+        if (uh == null) return R.string.user_not_exist
+        return getUserOperationResultText(DPM.startUserInBackground(DAR, uh))
+    }
+    fun switchUser(id: Int, isUserId: Boolean): Boolean {
+        val uh = getUserHandle(id, isUserId)
+        if (uh == null) return false
+        DPM.switchUser(DAR, uh)
+        return true
+    }
+    @RequiresApi(28)
+    fun stopUser(id: Int, isUserId: Boolean): Int {
+        val uh = getUserHandle(id, isUserId)
+        if (uh == null) return R.string.user_not_exist
+        return getUserOperationResultText(DPM.stopUser(DAR, uh))
+    }
+    fun deleteUser(id: Int, isUserId: Boolean): Boolean {
+        val uh = getUserHandle(id, isUserId)
+        if (uh == null) return false
+        return DPM.removeUser(DAR, uh)
+    }
+    fun getUserHandle(id: Int, isUserId: Boolean): UserHandle? {
+        return if (isUserId && VERSION.SDK_INT >= 24) {
+            UserHandle.getUserHandleForUid(id * 100000)
+        } else {
+            UM.getUserForSerialNumber(id.toLong())
+        }
+    }
+    fun getUserOperationResultText(code: Int): Int {
+        return when (code) {
+            UserManager.USER_OPERATION_SUCCESS -> R.string.success
+            UserManager.USER_OPERATION_ERROR_UNKNOWN -> R.string.unknown_error
+            UserManager.USER_OPERATION_ERROR_MANAGED_PROFILE-> R.string.fail_managed_profile
+            UserManager.USER_OPERATION_ERROR_MAX_RUNNING_USERS -> R.string.limit_reached
+            UserManager.USER_OPERATION_ERROR_CURRENT_USER -> R.string.fail_current_user
+            else -> R.string.unknown
+        }
+    }
+    @RequiresApi(24)
+    fun createUser(name: String, flags: Int, callback: (CreateUserResult) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val uh = DPM.createAndManageUser(DAR, name, DAR, null, flags)
+                if (uh == null) {
+                    callback(CreateUserResult(R.string.failed))
+                } else {
+                    callback(CreateUserResult(R.string.succeeded, UM.getSerialNumberForUser(uh)))
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                if (VERSION.SDK_INT >= 28 && e is UserManager.UserOperationException) {
+                    callback(CreateUserResult(getUserOperationResultText(e.userOperationResult)))
+                } else {
+                    callback(CreateUserResult(R.string.error))
+                }
+            }
+        }
+    }
+    val affiliationIds = MutableStateFlow(emptyList<String>())
+    @RequiresApi(26)
+    fun getAffiliationIds() {
+        affiliationIds.value = DPM.getAffiliationIds(DAR).toList()
+    }
+    @RequiresApi(26)
+    fun setAffiliationId(id: String, state: Boolean) {
+        val newList = affiliationIds.value.run { if (state) plus(id) else minus(id) }
+        DPM.setAffiliationIds(DAR, newList.toSet())
+        affiliationIds.value = newList
+    }
+    fun setProfileName(name: String) {
+        DPM.setProfileName(DAR, name)
+    }
+    @RequiresApi(23)
+    fun setUserIcon(bitmap: Bitmap) {
+        DPM.setUserIcon(DAR, bitmap)
+    }
+    @RequiresApi(28)
+    fun getSecondaryUsers(): List<Long> {
+        return DPM.getSecondaryUsers(DAR).map { UM.getSerialNumberForUser(it) }
+    }
+    @RequiresApi(28)
+    fun getUserSessionMessages(): Pair<String, String> {
+        return (DPM.getStartUserSessionMessage(DAR)?.toString() ?: "") to
+                (DPM.getEndUserSessionMessage(DAR)?.toString() ?: "")
+    }
+    @RequiresApi(28)
+    fun setStartUserSessionMessage(message: String?) {
+        DPM.setStartUserSessionMessage(DAR, message)
+    }
+    @RequiresApi(28)
+    fun setEndUserSessionMessage(message: String?) {
+        DPM.setEndUserSessionMessage(DAR, message)
+    }
+    @RequiresApi(28)
+    fun logoutUser(): Int {
+        return getUserOperationResultText(DPM.logoutUser(DAR))
     }
 }
 

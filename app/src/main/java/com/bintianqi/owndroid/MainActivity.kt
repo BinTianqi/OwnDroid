@@ -547,14 +547,24 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
                 vm::setUserRestriction, ::navigateUp)
         }
 
-        composable<Users> { UsersScreen(::navigateUp, ::navigate) }
-        composable<UserInfo> { UserInfoScreen(::navigateUp) }
-        composable<UsersOptions> { UsersOptionsScreen(::navigateUp) }
-        composable<UserOperation> { UserOperationScreen(::navigateUp) }
-        composable<CreateUser> { CreateUserScreen(::navigateUp) }
-        composable<ChangeUsername> { ChangeUsernameScreen(::navigateUp) }
-        composable<UserSessionMessage> { UserSessionMessageScreen(::navigateUp) }
-        composable<AffiliationId> { AffiliationIdScreen(::navigateUp) }
+        composable<Users> { UsersScreen(vm, ::navigateUp, ::navigate) }
+        composable<UserInfo> { UserInfoScreen(vm::getUserInformation, ::navigateUp) }
+        composable<UsersOptions> {
+            UsersOptionsScreen(vm::getLogoutEnabled, vm::setLogoutEnabled, ::navigateUp)
+        }
+        composable<UserOperation> {
+            UserOperationScreen(vm::startUser, vm::switchUser, vm::stopUser, vm::deleteUser, ::navigateUp)
+        }
+        composable<CreateUser> { CreateUserScreen(vm::createUser, ::navigateUp) }
+        composable<ChangeUsername> { ChangeUsernameScreen(vm::setProfileName, ::navigateUp) }
+        composable<UserSessionMessage> {
+            UserSessionMessageScreen(vm::getUserSessionMessages, vm::setStartUserSessionMessage,
+                vm::setEndUserSessionMessage, ::navigateUp)
+        }
+        composable<AffiliationId> {
+            AffiliationIdScreen(vm.affiliationIds, vm::getAffiliationIds, vm::setAffiliationId,
+                ::navigateUp)
+        }
 
         composable<Password> { PasswordScreen(::navigateUp, ::navigate) }
         composable<PasswordInfo> { PasswordInfoScreen(::navigateUp) }

@@ -112,8 +112,7 @@ import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SP
 import com.bintianqi.owndroid.formatFileSize
-import com.bintianqi.owndroid.humanReadableDate
-import com.bintianqi.owndroid.parseTimestamp
+import com.bintianqi.owndroid.formatTime
 import com.bintianqi.owndroid.popToast
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
@@ -290,7 +289,7 @@ fun SystemManagerScreen(
                     onClick = {
                         if (dialog == 3 && VERSION.SDK_INT >= 24) vm.setOrgName(input)
                         if (dialog == 4 && VERSION.SDK_INT >= 31) {
-                            vm.setOrgId(input)
+                            context.showOperationResultToast(vm.setOrgId(input))
                             enrollmentSpecificId = vm.getEnrollmentSpecificId()
                         }
                         dialog = 0
@@ -367,6 +366,24 @@ fun SystemOptionsScreen(vm: MyViewModel, onNavigateUp: () -> Unit) {
         if (VERSION.SDK_INT >= 31 && (privilege.device || privilege.org) && status.canDisableUsbSignal) {
             SwitchItem(R.string.enable_usb_signal, status.usbSignalEnabled,
                 vm::setUsbSignalEnabled, R.drawable.usb_fill0)
+        }
+        if (VERSION.SDK_INT >= 23 && VERSION.SDK_INT < 34) {
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(stringResource(R.string.status_bar), style = typography.titleMedium)
+                Button({
+                    vm.setStatusBarDisabled(true)
+                }, Modifier.padding(horizontal = 4.dp)) {
+                    Text(stringResource(R.string.disable))
+                }
+                Button({
+                    vm.setStatusBarDisabled(false)
+                }) {
+                    Text(stringResource(R.string.enable))
+                }
+            }
         }
     }
     if(dialog != 0) AlertDialog(
@@ -520,7 +537,7 @@ fun HardwareMonitorScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(28)
 @Composable
-fun ChangeTimeScreen(setTime: (Long) -> Boolean, onNavigateUp: () -> Unit) {
+fun ChangeTimeScreen(setTime: (Long, Boolean) -> Boolean, onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val focusMgr = LocalFocusManager.current
     var tab by remember { mutableIntStateOf(0) }
@@ -528,8 +545,9 @@ fun ChangeTimeScreen(setTime: (Long) -> Boolean, onNavigateUp: () -> Unit) {
     tab = pagerState.currentPage
     val coroutine = rememberCoroutineScope()
     var picker by remember { mutableIntStateOf(0) } //0:None, 1:DatePicker, 2:TimePicker
+    var useCurrentTz by remember { mutableStateOf(true) }
     val datePickerState = rememberDatePickerState()
-    val timePickerState = rememberTimePickerState()
+    val timePickerState = rememberTimePickerState(is24Hour = true)
     val dateInteractionSource = remember { MutableInteractionSource() }
     val timeInteractionSource = remember { MutableInteractionSource() }
     if(dateInteractionSource.collectIsPressedAsState().value) picker = 1
@@ -571,14 +589,15 @@ fun ChangeTimeScreen(setTime: (Long) -> Boolean, onNavigateUp: () -> Unit) {
                 ) {
                     if(page == 0) {
                         OutlinedTextField(
-                            value = datePickerState.selectedDateMillis?.humanReadableDate ?: "",
+                            value = datePickerState.selectedDateMillis?.let { formatTime(it) } ?: "",
                             onValueChange = {}, readOnly = true,
                             label = { Text(stringResource(R.string.date)) },
                             interactionSource = dateInteractionSource,
                             modifier = Modifier.fillMaxWidth()
                         )
                         OutlinedTextField(
-                            value = timePickerState.hour.toString() + ":" + timePickerState.minute.toString(),
+                            value = timePickerState.hour.toString().padStart(2, '0') + ":" +
+                                    timePickerState.minute.toString().padStart(2, '0'),
                             onValueChange = {}, readOnly = true,
                             label = { Text(stringResource(R.string.time)) },
                             interactionSource = timeInteractionSource,
@@ -586,11 +605,14 @@ fun ChangeTimeScreen(setTime: (Long) -> Boolean, onNavigateUp: () -> Unit) {
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp)
                         )
+                        CheckBoxItem(R.string.use_current_timezone, useCurrentTz) {
+                            useCurrentTz = it
+                        }
                         Button(
                             onClick = {
                                 val timeMillis = datePickerState.selectedDateMillis!! +
                                         timePickerState.hour * 3600000 + timePickerState.minute * 60000
-                                context.showOperationResultToast(setTime(timeMillis))
+                                context.showOperationResultToast(setTime(timeMillis, useCurrentTz))
                             },
                             modifier = Modifier.fillMaxWidth(),
                             enabled = datePickerState.selectedDateMillis != null
@@ -609,7 +631,7 @@ fun ChangeTimeScreen(setTime: (Long) -> Boolean, onNavigateUp: () -> Unit) {
                         )
                         Button(
                             onClick = {
-                                context.showOperationResultToast(setTime(inputTime.toLong()))
+                                context.showOperationResultToast(setTime(inputTime.toLong(), false))
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -653,11 +675,14 @@ fun ChangeTimeZoneScreen(setTimeZone: (String) -> Boolean, onNavigateUp: () -> U
     val focusMgr = LocalFocusManager.current
     var inputTimezone by remember { mutableStateOf("") }
     var dialog by remember { mutableStateOf(false) }
-    MyScaffold(R.string.change_timezone, onNavigateUp) {
+    val availableIds = TimeZone.getAvailableIDs()
+    val validInput = inputTimezone in availableIds
+            MyScaffold(R.string.change_timezone, onNavigateUp) {
         OutlinedTextField(
             value = inputTimezone,
             label = { Text(stringResource(R.string.timezone_id)) },
             onValueChange = { inputTimezone = it },
+            isError = inputTimezone.isNotEmpty() && !validInput,
             trailingIcon = {
                 IconButton(onClick = { dialog = true }) {
                     Icon(imageVector = Icons.AutoMirrored.Default.List, contentDescription = null)
@@ -673,7 +698,7 @@ fun ChangeTimeZoneScreen(setTimeZone: (String) -> Boolean, onNavigateUp: () -> U
                 context.showOperationResultToast(setTimeZone(inputTimezone))
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = inputTimezone.isNotEmpty()
+            enabled = inputTimezone.isNotEmpty() && validInput
         ) {
             Text(stringResource(R.string.apply))
         }
@@ -683,7 +708,7 @@ fun ChangeTimeZoneScreen(setTimeZone: (String) -> Boolean, onNavigateUp: () -> U
     if(dialog) AlertDialog(
         text = {
             LazyColumn {
-                items(TimeZone.getAvailableIDs()) {
+                items(availableIds) {
                     Text(
                         text = it,
                         modifier = Modifier
@@ -1322,8 +1347,8 @@ data class CaCertInfo(
     val serialNumber: String,
     val issuer: String,
     val subject: String,
-    val issuedTime: String,
-    val expiresTime: String,
+    val issuedTime: Long,
+    val expiresTime: Long,
     val bytes: ByteArray
 )
 
@@ -1373,8 +1398,7 @@ fun CaCertScreen(
             }) {
                 Icon(Icons.Default.Add, stringResource(R.string.install))
             }
-        },
-        contentWindowInsets = WindowInsets.ime
+        }
     ) { paddingValues ->
         LazyColumn(
             Modifier
@@ -1388,6 +1412,7 @@ fun CaCertScreen(
                         .fillMaxWidth()
                         .clickable {
                             selectedCaCert = cert
+                            dialog = 2
                         }
                         .animateItem()
                         .padding(vertical = 10.dp, horizontal = 8.dp)
@@ -1412,9 +1437,9 @@ fun CaCertScreen(
                         Text("Issuer", style = typography.labelLarge)
                         SelectionContainer { Text(cert.issuer) }
                         Text("Issued on", style = typography.labelLarge)
-                        SelectionContainer { Text(cert.issuedTime) }
+                        SelectionContainer { Text(formatTime(cert.issuedTime)) }
                         Text("Expires on", style = typography.labelLarge)
-                        SelectionContainer { Text(cert.expiresTime) }
+                        SelectionContainer { Text(formatTime(cert.expiresTime)) }
                         Text("SHA-256 fingerprint", style = typography.labelLarge)
                         SelectionContainer { Text(cert.hash) }
                         if (dialog == 2) Row(
@@ -1693,17 +1718,17 @@ fun FrpPolicyScreen(
                     keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
                     modifier = Modifier.fillMaxWidth()
                 )
-            }
-            Button(
-                onClick = {
-                    focusMgr.clearFocus()
-                    setFrpPolicy(FrpPolicyInfo(true, usePolicy, enabled, accountList))
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-            ) {
-                Text(stringResource(R.string.apply))
+                Button(
+                    onClick = {
+                        focusMgr.clearFocus()
+                        setFrpPolicy(FrpPolicyInfo(true, usePolicy, enabled, accountList))
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                ) {
+                    Text(stringResource(R.string.apply))
+                }
             }
         }
         Notes(R.string.info_frp_policy, HorizontalPadding)
@@ -1755,7 +1780,7 @@ fun WipeDataScreen(
                     dialog = 1
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(HorizontalPadding, 5.dp)
             ) {
                 Text("WipeData")
             }
@@ -1767,7 +1792,7 @@ fun WipeDataScreen(
                     dialog = 2
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(HorizontalPadding, 5.dp)
             ) {
                 Text("WipeDevice")
             }
@@ -1905,8 +1930,7 @@ fun SystemUpdatePolicyScreen(
         if (VERSION.SDK_INT >= 26) {
             Column(Modifier.padding(HorizontalPadding)) {
                 if (pendingUpdate.exists) {
-                    Text(stringResource(R.string.update_received_time,
-                        parseTimestamp(pendingUpdate.time)))
+                    Text(stringResource(R.string.update_received_time, formatTime(pendingUpdate.time)))
                     Text(stringResource(R.string.is_security_patch,
                         stringResource(pendingUpdate.securityPatch.yesOrNo)))
                 } else {

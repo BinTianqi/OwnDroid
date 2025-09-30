@@ -9,7 +9,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
@@ -23,9 +22,6 @@ import java.io.IOException
 import java.io.InputStream
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -72,20 +68,12 @@ fun formatFileSize(bytes: Long): String {
 val Boolean.yesOrNo
     @StringRes get() = if(this) R.string.yes else R.string.no
 
-@RequiresApi(26)
-fun parseTimestamp(timestamp: Long): String {
-    val instant = Instant.ofEpochMilli(timestamp)
-    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())
-    return formatter.format(instant)
+fun formatTime(ms: Long): String {
+    return SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(Date(ms))
 }
-
-fun parseDate(date: Date): String = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(date)
-
-val Long.humanReadableDate: String
-    get() = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault()).format(Date(this))
-
-fun formatDate(pattern: String, value: Long): String
-    = SimpleDateFormat(pattern, Locale.getDefault()).format(Date(value))
+fun formatDate(date: Date): String {
+    return SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(date)
+}
 
 fun Context.showOperationResultToast(success: Boolean) {
     popToast(if(success) R.string.success else R.string.failed)

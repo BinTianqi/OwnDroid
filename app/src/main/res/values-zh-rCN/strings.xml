@@ -124,6 +124,7 @@
     <string name="enable_camera">启用相机</string>
     <string name="disable_screen_capture">禁止屏幕捕获</string>
     <string name="disable_status_bar">禁用状态栏</string>
+    <string name="status_bar">状态栏</string>
     <string name="auto_time">自动设置时间</string>
     <string name="auto_timezone">自动设置时区</string>
     <string name="require_auto_time">要求自动时间</string>
@@ -157,6 +158,7 @@
     <string name="manually_input">手动输入</string>
     <string name="date">日期</string>
     <string name="time">时间</string>
+    <string name="use_current_timezone">使用当前时区</string>
     <string name="change_timezone">更改时区</string>
     <string name="timezone_id">时区ID</string>
     <string name="disable_auto_time_zone_before_set">在设置时区前需要关闭自动时区</string>
@@ -483,12 +485,13 @@
     <string name="logout">登出</string>
     <string name="start_in_background">在后台启动</string>
     <string name="user_operation_switch">切换</string>
+    <string name="limit_reached">已达到上限</string>
+    <string name="delete_user_confirmation">你确定要删除用户%1$s吗？</string>
     <string name="create_user">创建用户</string>
     <string name="username">用户名</string>
     <string name="create_user_skip_wizard">跳过创建用户向导</string>
     <string name="create_user_ephemeral_user">临时用户</string>
     <string name="create_user_enable_all_system_app">启用所有系统应用</string>
-    <string name="serial_number_of_new_user_is">新用户的序列号：%1$d</string>
     <string name="affiliation_id">附属用户ID</string>
     <string name="change_user_icon">更换用户头像</string>
     <string name="select_an_image">选择一个图片</string>
@@ -644,7 +647,7 @@
 
     <string name="info_device_id_attestation">指示设备是否除了密钥证明之外还支持设备标识符证明</string>
     <string name="info_unique_device_attestation">如果设备上的StrongBox Keymaster可以配置单独的证明证书并且可以使用该证书签署证明记录，则返回true（只有StrongBox安全级别的Keymaster才能使用单独的证明证书进行证明）</string>
-    <string name="info_org_id">设置组织ID后才能获取设备注册专用ID</string>
+    <string name="info_org_id">设置组织ID后才能获取设备注册专用ID。ID只能设置一次。</string>
     <string name="info_enrollment_specific_id">不同组织ID的设备注册专用ID不同，恢复出厂设置或删除工作资料后不变</string>
     <string name="info_lock_screen_info">在锁屏界面上显示的一段简短的消息。将会覆盖用户当前设置的锁屏信息，并且防止用户在系统设置中设置新的锁屏信息</string>
     <string name="info_short_support_message">用户试图使用被管理员禁用的功能时会显示此消息。不应多于200字</string>
