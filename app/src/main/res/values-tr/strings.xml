@@ -195,7 +195,6 @@
     <string name="nearby_notification_streaming">Yakındaki Bildirim Akışı</string>
     <string name="enable_if_secure_enough">Yalnızca aynı yönetilen hesap</string>
     <string name="lock_task_mode">Görev Kilitleme Modu</string>
-    <string name="specify_activity">Etkinliği Belirt</string>
     <string name="app_not_allowed">Uygulamaya izin verilmiyor</string>
     <string name="disable_all">Hepsini Devre Dışı Bırak</string>
     <!--ltf: lock task feature-->
@@ -283,7 +282,6 @@
     <string name="network_type">Ağ Türü</string>
     <string name="mobile">Mobil</string>
     <string name="ethernet">Ethernet</string>
-    <string name="subscriber_id">Abone Kimliği</string>
     <string name="all">Tümü</string>
     <string name="uninstalled">Kaldırılmış</string>
     <string name="tethering">Bağlantı Paylaşımı</string>
@@ -298,13 +296,9 @@
     <string name="roaming">Dolaşım</string>
     <string name="metered">Ölçülü</string>
     <string name="private_dns">Özel DNS</string>
-    <string name="dns_provide_hostname">Ana bilgisayar adı sağla</string>
-    <string name="host_not_serving_dns_tls">Ana bilgisayar DNS TLS sunmuyor</string>
-    <string name="set_to_opportunistic">Fırsatçı olarak ayarla</string>
     <string name="dns_hostname">DNS Ana Bilgisayar Adı</string>
     <string name="invalid_hostname">Geçersiz ana bilgisayar adı</string>
     <string name="security_exception">Güvenlik İstisnası</string>
-    <string name="set_dns_host">DNS Ana Bilgisayarı Ayarla</string>
     <string name="recommended_global_proxy">Önerilen küresel vekil</string>
     <string name="proxy_type_off">Vekil yok</string>
     <string name="proxy_type_pac">PAC vekil</string>
@@ -327,22 +321,12 @@
     <string name="one_uid_per_line">Satır başına bir UID</string>
     <string name="override_apn">APN\'yi Geçersiz Kıl</string>
     <string name="apn_setting">APN Ayarı</string>
-    <string name="apn_name">APN Adı</string>
-    <string name="entry_name">Giriş Adı</string>
     <string name="name">Ad</string>
-    <string name="profile_id">Profil Kimliği</string>
-    <string name="auth_type">Kimlik Doğrulama Türü</string>
     <string name="description">Açıklama</string>
-    <string name="mms_proxy">MMS Vekil</string>
     <string name="address">Adres</string>
     <string name="port">Port</string>
     <string name="proxy">Vekil</string>
     <string name="persistent">Kalıcı</string>
-    <string name="protocol">Protokol</string>
-    <string name="roaming_protocol">Dolaşım Protokolü</string>
-    <string name="carrier_id">Operatör Kimliği</string>
-    <string name="mvno_type">MVNO Türü</string>
-    <string name="network_type_bitmask">Ağ Türü Bitmask</string>
     <string name="always_on">Her Zaman Açık</string>
     <string name="update">Güncelle</string>
 
@@ -688,8 +672,6 @@
     <string name="info_wipe_data_in_managed_user">Bu kullanıcının tüm verileri silinecek, ancak kullanıcı kaldırılmayacak.</string>
     <string name="info_lockdown_admin_configured_network">Kullanıcının yönetici tarafından yapılandırılan ağları değiştirip değiştiremeyeceğini kontrol eder.\nBu kilit etkinleştirildiğinde, kullanıcı hala diğer Wi-Fi ağlarını yapılandırabilir ve bağlanabilir veya bağlantı paylaşımı gibi diğer Wi-Fi özelliklerini kullanabilir.</string>
     <string name="info_minimum_wifi_security_level">Wi-Fi ağları için gereken minimum güvenlik seviyesini belirtir. Cihaz, minimum güvenlik seviyesini karşılamayan ağlara bağlanmayabilir. Mevcut ağ minimum güvenlik seviyesini karşılamıyorsa bağlantısı kesilecektir.</string>
-    <string name="info_private_dns_mode_oppertunistic">Bu modda, DNS alt sistemi, açık metinle ad çözümlemesi yapmadan önce ağ tarafından sağlanan çözücüye TLS el sıkışması yapmaya çalışır.</string>
-    <string name="info_set_private_dns_host">Çözücünün geçerli olduğunu doğrulamak için bir bağlantı kontrolü gerçekleştirir.\nÖzel DNS çözücüsü ile birlikte bir VPN kullanıldığında, Özel DNS çözücüsüne hem VPN içinden hem de dışından erişilebilir olmalıdır. Aksi takdirde, sistem trafiği VPN üzerinden çözücüye gitmeyebilir ve cihaz ana bilgisayar adlarını çözümleme yeteneğini kaybedebilir.</string>
     <string name="info_always_on_vpn">Geçerli kullanıcı için belirli bir uygulama aracılığıyla her zaman açık bir VPN bağlantısı yapılandırır. Bu bağlantı otomatik olarak verilir ve yeniden başlatma sonrası kalıcıdır.\nKilitlemeyi etkinleştir: VPN bağlı değilken ağ kullanımını engelle.</string>
     <string name="info_recommended_global_proxy">Bu vekil yalnızca bir öneridir ve bazı uygulamalar bunu yok sayabilir.</string>
     <string name="info_network_log">Ağ kayıtları, DNS aramalarını ve connect() kütüphane çağrı olaylarını içerir.\nBu işlev iş profilinde kullanıldığında yalnızca iş profilindeki ağ kayıtlarını alır.\nCihaz sahibi tarafından kullanılıyorsa, cihazda bağlı olmayan kullanıcı olmamalıdır.</string>

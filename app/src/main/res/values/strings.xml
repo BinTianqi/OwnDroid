@@ -203,7 +203,6 @@
     <string name="nearby_notification_streaming">Nearby notification streaming policy</string>
     <string name="enable_if_secure_enough">Same managed account only</string>
     <string name="lock_task_mode">Lock task mode</string>
-    <string name="specify_activity">Specify Activity</string>
     <string name="app_not_allowed">App is not allowed</string>
     <string name="disable_all">Disable all</string>
     <!--ltf: lock task feature-->
@@ -277,6 +276,10 @@
     <string name="add_network_result_invalid_configuration">Invalid configuration</string>
     <string name="min_wifi_security_level">Minimum Wi-Fi security level</string>
     <string name="wifi_security_open">Open</string>
+    <string name="wifi_security_psk" translatable="false">PSK</string>
+    <string name="wifi_mode_dhcp" translatable="false">DHCP</string>
+    <string name="http" translatable="false">HTTP</string>
+    <string name="unchanged">Unchanged</string>
     <string name="lockdown_admin_configured_network">Lockdown admin configured network</string>
     <string name="wifi_ssid_policy">Wi-Fi SSID policy</string>
     <string name="already_exist">Already exist</string>
@@ -294,13 +297,13 @@
     <string name="mobile">Mobile</string>
     <string name="ethernet">Ethernet</string>
     <string name="vpn" translatable="false">VPN</string>
-    <string name="subscriber_id">Subscriber ID</string>
     <string name="all">All</string>
     <string name="uninstalled">Uninstalled</string>
     <string name="tethering">Tethering</string>
     <string name="choose_an_app" tools:ignore="TypographyEllipsis">Choose an app...</string>
     <string name="input">Input</string>
     <string name="query">Query</string>
+    <string name="no_data">No data</string>
     <string name="transmitted">Transmitted</string>
     <string name="received">Received</string>
     <string name="state">State</string>
@@ -309,13 +312,10 @@
     <string name="roaming">Roaming</string>
     <string name="metered">Metered</string>
     <string name="private_dns">Private DNS</string>
-    <string name="dns_provide_hostname">Provide hostname</string>
-    <string name="host_not_serving_dns_tls">Host not serving</string>
-    <string name="set_to_opportunistic">Set to opportunistic</string>
+    <string name="automatic">Automatic</string>
     <string name="dns_hostname">DNS hostname</string>
     <string name="invalid_hostname">Invalid hostname</string>
     <string name="security_exception">Security Exception</string>
-    <string name="set_dns_host">Set DNS host</string>
     <string name="recommended_global_proxy">Recommended global proxy</string>
     <string name="proxy_type_off">No proxy</string>
     <string name="proxy_type_pac">PAC proxy</string>
@@ -338,22 +338,12 @@
     <string name="one_uid_per_line">One UID per line</string>
     <string name="override_apn">Override APN</string>
     <string name="apn_setting">APN setting</string>
-    <string name="apn_name">APN name</string>
-    <string name="entry_name">Entry name</string>
     <string name="name">Name</string>
-    <string name="profile_id">Profile ID</string>
-    <string name="auth_type">Auth type</string>
     <string name="description">Description</string>
-    <string name="mms_proxy">MMS proxy</string>
     <string name="address">Address</string>
     <string name="port">Port</string>
     <string name="proxy">Proxy</string>
     <string name="persistent">Persistent</string>
-    <string name="protocol">Protocol</string>
-    <string name="roaming_protocol">Roaming protocol</string>
-    <string name="carrier_id">Carrier ID</string>
-    <string name="mvno_type">MVNO type</string>
-    <string name="network_type_bitmask">Network type bitmask</string>
     <string name="always_on">Always on</string>
     <string name="update">Update</string>
 
@@ -706,8 +696,6 @@
     <string name="info_wipe_data_in_managed_user">All data of this user will be wiped, but that user won\'t be removed.</string>
     <string name="info_lockdown_admin_configured_network">Control whether the user can change networks configured by the admin.\nWhen this lockdown is enabled, the user can still configure and connect to other Wi-Fi networks, or use other Wi-Fi capabilities such as tethering.</string>
     <string name="info_minimum_wifi_security_level">Specify the minimum security level required for Wi-Fi networks. The device may not connect to networks that do not meet the minimum security level. If the current network does not meet the minimum security level set, it will be disconnected.</string>
-    <string name="info_private_dns_mode_oppertunistic">In this mode, the DNS subsystem will attempt a TLS handshake to the network-supplied resolver prior to attempting name resolution in cleartext.</string>
-    <string name="info_set_private_dns_host">It will perform a connectivity check to the resolver, to ensure it is valid.\nIn case a VPN is used in conjunction with Private DNS resolver, the Private DNS resolver must be reachable both from within and outside the VPN. Otherwise, the device may lose the ability to resolve hostnames as system traffic to the resolver may not go through the VPN.</string>
     <string name="info_always_on_vpn">Configure an always-on VPN connection through a specific application for the current user. This connection is automatically granted and persisted after a reboot.\nEnable lockdown: Disallow networking when the VPN is not connected.</string>
     <string name="info_recommended_global_proxy">This proxy is only a recommendation and it is possible that some apps will ignore it.</string>
     <string name="info_network_log">Network logs contain DNS lookup and connect() library call events.\nUse this function in work profile will only retrieve network logs in work profile.\nThere shouldn\'t be unaffiliated user on this device if used by Device owner.</string>

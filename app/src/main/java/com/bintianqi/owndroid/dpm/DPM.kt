@@ -391,19 +391,13 @@ fun parseSecurityEventData(event: SecurityLog.SecurityEvent): JsonElement? {
 }
 
 fun setDefaultAffiliationID() {
-    if(VERSION.SDK_INT < 26) return
-    val privilege = Privilege.status.value
+    if (VERSION.SDK_INT < 26) return
     if(!SP.isDefaultAffiliationIdSet) {
         try {
-            if(privilege.device || (!privilege.primary && privilege.profile)) {
-                val affiliationIDs = Privilege.DPM.getAffiliationIds(Privilege.DAR)
-                if(affiliationIDs.isEmpty()) {
-                    Privilege.DPM.setAffiliationIds(Privilege.DAR, setOf("OwnDroid_default_affiliation_id"))
-                    SP.isDefaultAffiliationIdSet = true
-                    Log.d("DPM", "Default affiliation id set")
-                }
-            }
-        } catch(e: Exception) {
+            Privilege.DPM.setAffiliationIds(Privilege.DAR, setOf("OwnDroid_default_affiliation_id"))
+            SP.isDefaultAffiliationIdSet = true
+            Log.d("DPM", "Default affiliation id set")
+        } catch (e: Exception) {
             e.printStackTrace()
         }
     }

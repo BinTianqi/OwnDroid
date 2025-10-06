@@ -175,7 +175,6 @@
     <string name="nearby_notification_streaming">附近通知传输</string>
     <string name="enable_if_secure_enough">在足够安全时启用</string>
     <string name="lock_task_mode">锁定任务模式</string>
-    <string name="specify_activity">指定Activity</string>
     <string name="app_not_allowed">应用未被允许</string>
     <string name="disable_all">禁用全部</string>
     <string name="ltf_sys_info">允许状态栏信息</string>
@@ -248,6 +247,7 @@
     <string name="add_network_result_invalid_configuration">Invalid configuration</string>
     <string name="min_wifi_security_level">最低Wi-Fi安全等级</string>
     <string name="wifi_security_open">开放</string>
+    <string name="unchanged">不更改</string>
     <string name="lockdown_admin_configured_network">锁定由管理员配置的网络</string>
     <string name="wifi_ssid_policy">Wi-Fi SSID策略</string>
     <string name="already_exist">已经存在</string>
@@ -263,13 +263,13 @@
     <string name="network_type">网络类型</string>
     <string name="mobile">移动</string>
     <string name="ethernet">以太网</string>
-    <string name="subscriber_id">订阅者ID</string>
     <string name="all">全部</string>
     <string name="uninstalled">已卸载</string>
     <string name="tethering">热点</string>
     <string name="choose_an_app" tools:ignore="TypographyEllipsis">选择一个app...</string>
     <string name="input">输入</string>
     <string name="query">查询</string>
+    <string name="no_data">无数据</string>
     <string name="transmitted">发送</string>
     <string name="received">接收</string>
     <string name="state">状态</string>
@@ -278,13 +278,10 @@
     <string name="roaming">漫游</string>
     <string name="metered">按量计费</string>
     <string name="private_dns">私人DNS</string>
-    <string name="dns_provide_hostname">指定主机名</string>
-    <string name="host_not_serving_dns_tls">主机不支持</string>
-    <string name="set_to_opportunistic">设为自动</string>
+    <string name="automatic">自动</string>
     <string name="dns_hostname">DNS主机名</string>
     <string name="invalid_hostname">无效主机名</string>
     <string name="security_exception">安全错误</string>
-    <string name="set_dns_host">设置DNS主机</string>
     <string name="recommended_global_proxy">建议的全局代理</string>
     <string name="proxy_type_off">无代理</string>
     <string name="proxy_type_pac">PAC代理</string>
@@ -307,22 +304,12 @@
     <string name="one_uid_per_line">每行一个UID</string>
     <string name="override_apn">覆盖APN</string>
     <string name="apn_setting">APN设置</string>
-    <string name="apn_name">APN名称</string>
-    <string name="entry_name">条目名称</string>
     <string name="name">名称</string>
-    <string name="profile_id">资料ID</string>
-    <string name="auth_type">认证类型</string>
     <string name="description">描述</string>
-    <string name="mms_proxy">MMS代理</string>
     <string name="address">地址</string>
     <string name="port">端口</string>
     <string name="proxy">代理</string>
     <string name="persistent">持久化</string>
-    <string name="protocol">协议</string>
-    <string name="roaming_protocol">漫游协议</string>
-    <string name="carrier_id">运营商ID</string>
-    <string name="mvno_type">MVNO类型</string>
-    <string name="network_type_bitmask">网络类型位掩码</string>
     <string name="always_on">总是开启</string>
     <string name="update">更新</string>
 
@@ -672,8 +659,6 @@
     <string name="info_wipe_data_in_managed_user">此用户的所有数据将会被清除，但是用户不会被删除。</string>
     <string name="info_lockdown_admin_configured_network">控制用户是否可以更改管理员配置的网络。启用此锁定后，用户仍然可以配置和连接到其他Wi-Fi，或使用其他Wi-Fi功能（如网络共享）。</string>
     <string name="info_minimum_wifi_security_level">指定Wi-Fi网络所需的最低安全等级。设备将无法连接到低于最低安全等级的网络。如果当前网络不满足要求，则会断开连接。</string>
-    <string name="info_private_dns_mode_oppertunistic">在此模式下，DNS子系统将在尝试以明文形式进行域名解析之前，尝试与网络提供的DNS服务器进行TLS握手。</string>
-    <string name="info_set_private_dns_host">将对DNS服务器执行连接检查，以确保其有效。\n如果将VPN与私人DNS结合使用，则私人DNS必须可从VPN内部和外部访问。否则设备可能会失去解析域名的能力，因为到DNS服务器的系统流量可能不会通过VPN。</string>
     <string name="info_always_on_vpn">通过一个指定的app，为当前用户设置一个保持打开的VPN连接。自动授权连接并在重启后保留。\n启用锁定：如果VPN未连接，则禁止使用网络。</string>
     <string name="info_recommended_global_proxy">这个代理只是一个建议，一些app有可能忽略它。</string>
     <string name="info_network_log">网络日志包含DNS查询和connect()库调用记录</string>

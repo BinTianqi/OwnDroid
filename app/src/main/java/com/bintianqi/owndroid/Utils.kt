@@ -7,14 +7,11 @@ import android.content.Context
 import android.content.pm.PackageInfo
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import java.io.FileNotFoundException
@@ -25,7 +22,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
-import kotlin.reflect.typeOf
 
 var zhCN = true
 
@@ -81,18 +77,6 @@ fun Context.showOperationResultToast(success: Boolean) {
 
 const val APK_MIME = "application/vnd.android.package-archive"
 
-inline fun <reified T> serializableNavTypePair() =
-    typeOf<T>() to object : NavType<T>(false) {
-    override fun get(bundle: Bundle, key: String): T? =
-        bundle.getString(key)?.let { parseValue(it) }
-    override fun put(bundle: Bundle, key: String, value: T) =
-        bundle.putString(key, serializeAsValue(value))
-    override fun parseValue(value: String): T =
-        Json.decodeFromString(value)
-    override fun serializeAsValue(value: T): String =
-        Json.encodeToString(value)
-}
-
 fun exportLogs(context: Context, uri: Uri) {
     context.contentResolver.openOutputStream(uri)?.use { output ->
         val proc = Runtime.getRuntime().exec("logcat -d")
@@ -101,10 +85,6 @@ fun exportLogs(context: Context, uri: Uri) {
         else proc.waitFor()
         context.showOperationResultToast(proc.exitValue() == 0)
     }
-}
-
-fun <T> NavHostController.navigate(route: T, args: Bundle) {
-    navigate(graph.findNode(route)!!.id, args)
 }
 
 val HorizontalPadding = 16.dp

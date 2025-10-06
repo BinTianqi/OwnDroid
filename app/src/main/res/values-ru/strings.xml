@@ -164,7 +164,6 @@
     <string name="nearby_notification_streaming">Политика потоковой передачи уведомлений Nearby</string>
     <string name="enable_if_secure_enough">Только для одной управляемой учетной записи</string>
     <string name="lock_task_mode">Режим закрепления задачи</string>
-    <string name="specify_activity">Указать Acitvity</string>
     <string name="app_not_allowed">Приложение не разрешено</string>
     <string name="disable_all">Отключить все</string>
     <!--ltf: функция закрепления задачи-->
@@ -254,7 +253,6 @@
     <string name="network_type">Тип сети</string>
     <string name="mobile">Мобильный</string>
     <string name="ethernet">Ethernet</string>
-    <string name="subscriber_id">ID подписчика</string>
     <string name="all">Всё</string>
     <string name="uninstalled">Удалённый</string>
     <string name="tethering">Режим модема</string>
@@ -269,13 +267,9 @@
     <string name="roaming">Роуминг</string>
     <string name="metered">Измеренный</string>
     <string name="private_dns">Частный DNS</string>
-    <string name="dns_provide_hostname">Укажите имя хоста</string>
-    <string name="host_not_serving_dns_tls">Хост не обслуживает DNS через TLS</string>
-    <string name="set_to_opportunistic">Установить в оппортунистический режим</string>
     <string name="dns_hostname">Имя хоста DNS</string>
     <string name="invalid_hostname">Неверное имя хоста</string>
     <string name="security_exception">Исключение безопасности</string>
-    <string name="set_dns_host">Установить хост DNS</string>
     <string name="recommended_global_proxy">Рекомендуемый глобальный прокси</string>
     <string name="proxy_type_off">Без прокси</string>
     <string name="proxy_type_pac">PAC-прокси</string>
@@ -296,27 +290,15 @@
     <string name="included_uids">Включенные UID</string>
     <string name="excluded_uids">Исключенные UID</string>
     <string name="one_uid_per_line">Один UID на строку</string>
-    <!--TODO: following 4 strings-->
+    <!--TODO: following 2 strings-->
     <string name="override_apn">Override APN</string>
     <string name="apn_setting">APN setting</string>
-    <string name="apn_name">APN name</string>
-    <string name="entry_name">Entry name</string>
     <string name="name">Имя</string>
-    <string name="profile_id">Идентификатор профиля</string>
-    <string name="auth_type">Тип аутентификации</string>
     <string name="description">Описание</string>
-    <string name="mms_proxy">MMS-прокси</string>
     <string name="address">Адрес</string>
     <string name="port">Порт</string>
     <string name="proxy">Прокси</string>
     <string name="persistent">Постоянный</string>
-    <string name="protocol">Протокол</string>
-    <string name="roaming_protocol">Протокол роуминга</string>
-    <!--TODO: following 4 strings-->
-    <string name="carrier_id">Carrier ID</string>
-    <string name="mvno_type">MVNO type</string>
-    <string name="network_type_bitmask">Network type bitmask</string>
-    <string name="always_on">Always on</string>
     <string name="update">Обновить</string>
 
 

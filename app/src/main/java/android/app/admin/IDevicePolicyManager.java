@@ -1,5 +1,6 @@
 package android.app.admin;
 
+import android.content.ComponentName;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.IInterface;
@@ -14,4 +15,5 @@ public interface IDevicePolicyManager extends IInterface {
             throw new UnsupportedOperationException();
         }
     }
+    int setGlobalPrivateDns(ComponentName who, int mode, String privateDnsHost);
 }

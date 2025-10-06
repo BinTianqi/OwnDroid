@@ -1,6 +1,7 @@
 package com.bintianqi.owndroid
 
 import android.accounts.Account
+import android.annotation.SuppressLint
 import android.app.ActivityOptions
 import android.app.Application
 import android.app.PendingIntent
@@ -9,9 +10,14 @@ import android.app.admin.DeviceAdminReceiver
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.InstallSystemUpdateCallback
 import android.app.admin.FactoryResetProtectionPolicy
+import android.app.admin.IDevicePolicyManager
 import android.app.admin.PackagePolicy
+import android.app.admin.PreferentialNetworkServiceConfig
 import android.app.admin.SystemUpdateInfo
 import android.app.admin.SystemUpdatePolicy
+import android.app.admin.WifiSsidPolicy
+import android.app.usage.NetworkStats
+import android.app.usage.NetworkStatsManager
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -21,23 +27,36 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.net.IpConfiguration
+import android.net.LinkAddress
+import android.net.ProxyInfo
+import android.net.StaticIpConfiguration
 import android.net.Uri
+import android.net.wifi.WifiConfiguration
+import android.net.wifi.WifiManager
+import android.net.wifi.WifiSsid
 import android.os.Binder
 import android.os.Build.VERSION
 import android.os.HardwarePropertiesManager
 import android.os.UserHandle
 import android.os.UserManager
+import android.telephony.data.ApnSetting
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
+import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.bintianqi.owndroid.Privilege.DAR
 import com.bintianqi.owndroid.Privilege.DPM
 import com.bintianqi.owndroid.dpm.ACTIVATE_DEVICE_OWNER_COMMAND
+import com.bintianqi.owndroid.dpm.ApnAuthType
+import com.bintianqi.owndroid.dpm.ApnConfig
+import com.bintianqi.owndroid.dpm.ApnMvnoType
+import com.bintianqi.owndroid.dpm.ApnProtocol
 import com.bintianqi.owndroid.dpm.AppStatus
 import com.bintianqi.owndroid.dpm.CaCertInfo
 import com.bintianqi.owndroid.dpm.CreateUserResult
@@ -48,10 +67,24 @@ import com.bintianqi.owndroid.dpm.FrpPolicyInfo
 import com.bintianqi.owndroid.dpm.HardwareProperties
 import com.bintianqi.owndroid.dpm.IntentFilterDirection
 import com.bintianqi.owndroid.dpm.IntentFilterOptions
+import com.bintianqi.owndroid.dpm.IpMode
+import com.bintianqi.owndroid.dpm.NetworkStatsData
+import com.bintianqi.owndroid.dpm.NetworkStatsTarget
 import com.bintianqi.owndroid.dpm.PendingSystemUpdateInfo
+import com.bintianqi.owndroid.dpm.PreferentialNetworkServiceInfo
+import com.bintianqi.owndroid.dpm.PrivateDnsConfiguration
+import com.bintianqi.owndroid.dpm.ProxyMode
+import com.bintianqi.owndroid.dpm.ProxyType
+import com.bintianqi.owndroid.dpm.QueryNetworkStatsParams
+import com.bintianqi.owndroid.dpm.RecommendedProxyConf
+import com.bintianqi.owndroid.dpm.SsidPolicy
+import com.bintianqi.owndroid.dpm.SsidPolicyType
 import com.bintianqi.owndroid.dpm.SystemOptionsStatus
 import com.bintianqi.owndroid.dpm.SystemUpdatePolicyInfo
 import com.bintianqi.owndroid.dpm.UserInformation
+import com.bintianqi.owndroid.dpm.WifiInfo
+import com.bintianqi.owndroid.dpm.WifiSecurity
+import com.bintianqi.owndroid.dpm.WifiStatus
 import com.bintianqi.owndroid.dpm.activateOrgProfileCommand
 import com.bintianqi.owndroid.dpm.delegatedScopesList
 import com.bintianqi.owndroid.dpm.getPackageInstaller
@@ -70,6 +103,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.net.InetAddress
 import java.security.MessageDigest
 import java.security.cert.CertificateException
 import java.security.cert.CertificateFactory
@@ -77,6 +112,8 @@ import java.security.cert.X509Certificate
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.concurrent.Executors
+import kotlin.reflect.jvm.jvmErasure
+import kotlin.system.measureTimeMillis
 
 class MyViewModel(application: Application): AndroidViewModel(application) {
     val myRepo = getApplication<MyApplication>().myRepo
@@ -1245,6 +1282,368 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     @RequiresApi(28)
     fun logoutUser(): Int {
         return getUserOperationResultText(DPM.logoutUser(DAR))
+    }
+
+    val WM = application.getSystemService(Context.WIFI_SERVICE) as WifiManager
+    // Lockdown admin configured networks
+    @RequiresApi(30)
+    fun getLanEnabled(): Boolean {
+        return DPM.hasLockdownAdminConfiguredNetworks(DAR)
+    }
+    @RequiresApi(30)
+    fun setLanEnabled(state: Boolean) {
+        DPM.setConfiguredNetworksLockdownState(DAR, state)
+    }
+    fun setWifiEnabled(enabled: Boolean): Boolean {
+        return WM.setWifiEnabled(enabled)
+    }
+    fun disconnectWifi(): Boolean {
+        return WM.disconnect()
+    }
+    fun reconnectWifi(): Boolean {
+        return WM.reconnect()
+    }
+    @RequiresApi(24)
+    fun getWifiMac(): String? {
+        return DPM.getWifiMacAddress(DAR)
+    }
+    val configuredNetworks = MutableStateFlow(emptyList<WifiInfo>())
+    fun getConfiguredNetworks() {
+        configuredNetworks.value = WM.configuredNetworks.distinctBy { it.networkId }.map { conf ->
+            WifiInfo(
+                conf.networkId, conf.SSID.removeSurrounding("\""), null, conf.BSSID ?: "", null,
+                WifiStatus.entries.find { it.id == conf.status }!!, null, "", null, null, null, null
+            )
+        }
+    }
+    fun enableNetwork(id: Int): Boolean {
+        return WM.enableNetwork(id, false)
+    }
+    fun disableNetwork(id: Int): Boolean {
+        return WM.disableNetwork(id)
+    }
+    fun removeNetwork(id: Int): Boolean{
+        return WM.removeNetwork(id)
+    }
+    fun setWifi(info: WifiInfo): Boolean {
+        val conf = WifiConfiguration()
+        conf.SSID = "\"" + info.ssid + "\""
+        info.hiddenSsid?.let { conf.hiddenSSID = it }
+        if (VERSION.SDK_INT >= 30) info.security?.let { conf.setSecurityParams(it.id) }
+        if (info.security == WifiSecurity.Psk) conf.preSharedKey = info.password
+        if (VERSION.SDK_INT >= 33) info.macRandomization?.let { conf.macRandomizationSetting = it.id }
+        if (VERSION.SDK_INT >= 33 && info.ipMode != null) {
+            val ipConf = if (info.ipMode == IpMode.Static && info.ipConf != null) {
+                val constructor = LinkAddress::class.constructors.find {
+                    it.parameters.size == 1 && it.parameters[0].type.jvmErasure == String::class
+                }
+                val address = constructor!!.call(info.ipConf.address)
+                val staticIpConf = StaticIpConfiguration.Builder()
+                    .setIpAddress(address)
+                    .setGateway(InetAddress.getByName(info.ipConf.gateway))
+                    .setDnsServers(info.ipConf.dns.map { InetAddress.getByName(it) })
+                    .build()
+                IpConfiguration.Builder().setStaticIpConfiguration(staticIpConf).build()
+            } else null
+            conf.setIpConfiguration(ipConf)
+        }
+        if (VERSION.SDK_INT >= 26 && info.proxyMode != null) {
+            val proxy = if (info.proxyMode == ProxyMode.Http) {
+                info.proxyConf?.let {
+                    ProxyInfo.buildDirectProxy(it.host, it.port, it.exclude)
+                }
+            } else null
+            conf.httpProxy = proxy
+        }
+        val result = if (info.id != -1) {
+            conf.networkId = info.id
+            WM.updateNetwork(conf)
+        } else {
+            WM.addNetwork(conf)
+        }
+        if (result != -1) {
+            when (info.status) {
+                WifiStatus.Current -> WM.enableNetwork(result, true)
+                WifiStatus.Enabled -> WM.enableNetwork(result, false)
+                WifiStatus.Disabled -> WM.disableNetwork(result)
+            }
+        }
+        return result != -1
+    }
+    @RequiresApi(33)
+    fun getMinimumWifiSecurityLevel(): Int {
+        return DPM.minimumRequiredWifiSecurityLevel
+    }
+    @RequiresApi(33)
+    fun setMinimumWifiSecurityLevel(level: Int) {
+        DPM.minimumRequiredWifiSecurityLevel = level
+    }
+    @RequiresApi(33)
+    fun getSsidPolicy(): SsidPolicy {
+        val policy = DPM.wifiSsidPolicy
+        return SsidPolicy(
+            SsidPolicyType.entries.find { it.id == policy?.policyType } ?: SsidPolicyType.None,
+            policy?.ssids?.map { it.bytes.decodeToString() } ?: emptyList()
+        )
+    }
+    @RequiresApi(33)
+    fun setSsidPolicy(policy: SsidPolicy) {
+        val newPolicy = if (policy.type != SsidPolicyType.None) {
+            WifiSsidPolicy(
+                policy.type.id, policy.list.map { WifiSsid.fromBytes(it.encodeToByteArray()) }.toSet()
+            )
+        } else null
+        DPM.wifiSsidPolicy = newPolicy
+    }
+    @RequiresApi(24)
+    fun getPackageUid(name: String): Int {
+        return PM.getPackageUid(name, 0)
+    }
+    var networkStatsData = emptyList<NetworkStatsData>()
+    @RequiresApi(23)
+    fun readNetworkStats(stats: NetworkStats): List<NetworkStatsData> {
+        val list = mutableListOf<NetworkStatsData>()
+        while (stats.hasNextBucket()) {
+            val bucket = NetworkStats.Bucket()
+            stats.getNextBucket(bucket)
+            list += readNetworkStatsBucket(bucket)
+        }
+        stats.close()
+        return list
+    }
+    @RequiresApi(23)
+    fun readNetworkStatsBucket(bucket: NetworkStats.Bucket): NetworkStatsData {
+        return NetworkStatsData(
+            bucket.rxBytes, bucket.rxPackets, bucket.txBytes, bucket.txPackets,
+            bucket.uid, bucket.state, bucket.startTimeStamp, bucket.endTimeStamp,
+            if (VERSION.SDK_INT >= 24) bucket.tag else null,
+            if (VERSION.SDK_INT >= 24) bucket.roaming else null,
+            if (VERSION.SDK_INT >= 26) bucket.metered else null
+        )
+    }
+    @Suppress("NewApi")
+    fun queryNetworkStats(params: QueryNetworkStatsParams, callback: (String?) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val nsm = application.getSystemService(NetworkStatsManager::class.java)
+            try {
+                val data = when (params.target) {
+                    NetworkStatsTarget.Device -> listOf(readNetworkStatsBucket(
+                        nsm.querySummaryForDevice(
+                            params.networkType.type, null, params.startTime, params.endTime
+                        )
+                    ))
+                    NetworkStatsTarget.User -> listOf(readNetworkStatsBucket(
+                        nsm.querySummaryForUser(
+                            params.networkType.type, null, params.startTime, params.endTime
+                        )
+                    ))
+                    NetworkStatsTarget.Uid -> readNetworkStats(nsm.queryDetailsForUid(
+                        params.networkType.type, null, params.startTime, params.endTime, params.uid
+                    ))
+                    NetworkStatsTarget.UidTag -> readNetworkStats(nsm.queryDetailsForUidTag(
+                        params.networkType.type, null, params.startTime, params.endTime,
+                        params.uid, params.tag
+                    ))
+                    NetworkStatsTarget.UidTagState -> readNetworkStats(
+                        nsm.queryDetailsForUidTagState(
+                            params.networkType.type, null, params.startTime, params.endTime,
+                            params.uid, params.tag, params.state.id
+                        )
+                    )
+                }
+                networkStatsData = data
+                withContext(Dispatchers.Main) {
+                    if (data.isEmpty()) {
+                        callback(application.getString(R.string.no_data))
+                    } else {
+                        callback(null)
+                    }
+                }
+            } catch(e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    callback(e.message ?: "")
+                }
+            }
+        }
+    }
+    fun clearNetworkStats() {
+        networkStatsData = emptyList()
+    }
+    @RequiresApi(29)
+    fun getPrivateDns(): PrivateDnsConfiguration {
+        return PrivateDnsConfiguration(
+            DPM.getGlobalPrivateDnsMode(DAR), DPM.getGlobalPrivateDnsHost(DAR) ?: ""
+        )
+    }
+    @Suppress("PrivateApi")
+    @RequiresApi(29)
+    fun setPrivateDns(conf: PrivateDnsConfiguration): Boolean {
+        return try {
+            val field = DevicePolicyManager::class.java.getDeclaredField("mService")
+            field.isAccessible = true
+            val dpm = field.get(DPM) as IDevicePolicyManager
+            val result = dpm.setGlobalPrivateDns(DAR, conf.mode, conf.host)
+            result == DevicePolicyManager.PRIVATE_DNS_SET_NO_ERROR
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+    @RequiresApi(24)
+    fun getAlwaysOnVpnPackage(): String {
+        return DPM.getAlwaysOnVpnPackage(DAR) ?: ""
+    }
+    @RequiresApi(29)
+    fun getAlwaysOnVpnLockdown(): Boolean {
+        return DPM.isAlwaysOnVpnLockdownEnabled(DAR)
+    }
+    @RequiresApi(24)
+    fun setAlwaysOnVpn(name: String?, lockdown: Boolean): Int {
+        return try {
+            DPM.setAlwaysOnVpnPackage(DAR, name, lockdown)
+            R.string.succeeded
+        } catch (_: UnsupportedOperationException) {
+            R.string.unsupported
+        } catch (_: PackageManager.NameNotFoundException) {
+            R.string.not_installed
+        }
+    }
+    fun setRecommendedGlobalProxy(conf: RecommendedProxyConf) {
+        val info = when (conf.type) {
+            ProxyType.Off -> null
+            ProxyType.Pac -> {
+                if (VERSION.SDK_INT >= 30 && conf.specifyPort) {
+                    ProxyInfo.buildPacProxy(conf.url.toUri(), conf.port)
+                } else {
+                    ProxyInfo.buildPacProxy(conf.url.toUri())
+                }
+            }
+            ProxyType.Direct -> {
+                ProxyInfo.buildDirectProxy(conf.host, conf.port, conf.exclude)
+            }
+        }
+        DPM.setRecommendedGlobalProxy(DAR, info)
+    }
+    // PNS: preferential network service
+    @RequiresApi(31)
+    fun getPnsEnabled(): Boolean {
+        return DPM.isPreferentialNetworkServiceEnabled
+    }
+    @RequiresApi(31)
+    fun setPnsEnabled(enabled: Boolean) {
+        DPM.isPreferentialNetworkServiceEnabled = enabled
+    }
+    val pnsConfigs = MutableStateFlow(emptyList<PreferentialNetworkServiceInfo>())
+    @RequiresApi(33)
+    fun getPnsConfigs() {
+        pnsConfigs.value = DPM.preferentialNetworkServiceConfigs.map {
+            PreferentialNetworkServiceInfo(
+                it.isEnabled, it.networkId, it.isFallbackToDefaultConnectionAllowed,
+                if (VERSION.SDK_INT >= 34) it.shouldBlockNonMatchingNetworks() else false,
+                it.excludedUids.toList(), it.includedUids.toList()
+            )
+        }
+    }
+    @RequiresApi(33)
+    fun buildPnsConfig(
+        info: PreferentialNetworkServiceInfo
+    ): PreferentialNetworkServiceConfig {
+        return PreferentialNetworkServiceConfig.Builder().apply {
+            setEnabled(info.enabled)
+            @Suppress("WrongConstant")
+            setNetworkId(info.id)
+            setFallbackToDefaultConnectionAllowed(info.allowFallback)
+            if (VERSION.SDK_INT >= 34) setShouldBlockNonMatchingNetworks(info.blockNonMatching)
+            setIncludedUids(info.includedUids.toIntArray())
+            setExcludedUids(info.excludedUids.toIntArray())
+        }.build()
+    }
+    @RequiresApi(33)
+    fun setPnsConfig(info: PreferentialNetworkServiceInfo, state: Boolean) {
+        val configs = pnsConfigs.value.run {
+            if (state) plus(info) else minus(info)
+        }.map { buildPnsConfig(it) }
+        DPM.preferentialNetworkServiceConfigs = configs
+    }
+    val apnConfigs = MutableStateFlow(listOf<ApnConfig>())
+    @RequiresApi(28)
+    fun getApnEnabled(): Boolean {
+        return DPM.isOverrideApnEnabled(DAR)
+    }
+    @RequiresApi(28)
+    fun setApnEnabled(enabled: Boolean) {
+        DPM.setOverrideApnsEnabled(DAR, enabled)
+    }
+    @RequiresApi(28)
+    fun getApnConfigs() {
+        apnConfigs.value = DPM.getOverrideApns(DAR).map {
+            val proxy = if (VERSION.SDK_INT >= 29) it.proxyAddressAsString else it.proxyAddress.hostName
+            val mmsProxy = if (VERSION.SDK_INT >= 29) it.mmsProxyAddressAsString else it.mmsProxyAddress.hostName
+            ApnConfig(
+                it.isEnabled, it.entryName, it.apnName, proxy, it.proxyPort,
+                it.user, it.password, it.apnTypeBitmask, it.mmsc.toString(),
+                mmsProxy, it.mmsProxyPort,
+                ApnAuthType.entries.find { type -> type.id == it.authType }!!,
+                ApnProtocol.entries.find { protocol -> protocol.id == it.protocol }!!,
+                ApnProtocol.entries.find { protocol -> protocol.id == it.roamingProtocol }!!,
+                it.networkTypeBitmask,
+                if (VERSION.SDK_INT >= 33) it.profileId else 0,
+                if (VERSION.SDK_INT >= 29) it.carrierId else 0,
+                if (VERSION.SDK_INT >= 33) it.mtuV4 else 0,
+                if (VERSION.SDK_INT >= 33) it.mtuV6 else 0,
+                ApnMvnoType.entries.find { type ->  type.id == it.mvnoType }!!,
+                it.operatorNumeric,
+                if (VERSION.SDK_INT >= 33) it.isPersistent else true,
+                if (VERSION.SDK_INT >= 35) it.isAlwaysOn else true,
+                it.id
+            )
+        }
+    }
+    @RequiresApi(28)
+    fun buildApnSetting(config: ApnConfig): ApnSetting? {
+        val builder = ApnSetting.Builder()
+        builder.setCarrierEnabled(config.enabled)
+        builder.setEntryName(config.name)
+        builder.setApnName(config.apn)
+        if (VERSION.SDK_INT >= 29) builder.setProxyAddress(config.proxy)
+        else builder.setProxyAddress(InetAddress.getByName(config.proxy))
+        config.port?.let { builder.setProxyPort(it) }
+        builder.setUser(config.username)
+        builder.setPassword(config.password)
+        builder.setApnTypeBitmask(config.apnType)
+        builder.setMmsc(config.mmsc.toUri())
+        if (VERSION.SDK_INT >= 29) builder.setMmsProxyAddress(config.mmsProxy)
+        else builder.setMmsProxyAddress(InetAddress.getByName(config.mmsProxy))
+        builder.setAuthType(config.authType.id)
+        builder.setProtocol(config.protocol.id)
+        builder.setRoamingProtocol(config.roamingProtocol.id)
+        builder.setNetworkTypeBitmask(config.networkType)
+        if (VERSION.SDK_INT >= 33) config.profileId?.let { builder.setProfileId(it) }
+        if (VERSION.SDK_INT >= 29) config.carrierId?.let { builder.setCarrierId(it) }
+        if (VERSION.SDK_INT >= 33) {
+            config.mtuV4?.let { builder.setMtuV4(it) }
+            config.mtuV6?.let { builder.setMtuV6(it) }
+        }
+        builder.setMvnoType(config.mvno.id)
+        builder.setOperatorNumeric(config.operatorNumeric)
+        if (VERSION.SDK_INT >= 33) builder.setPersistent(config.persistent)
+        if (VERSION.SDK_INT >= 35) builder.setAlwaysOn(config.alwaysOn)
+        return builder.build()
+    }
+    @RequiresApi(28)
+    fun setApnConfig(config: ApnConfig): Boolean {
+        val settings = buildApnSetting(config)
+        if (settings == null) return false
+        return if (config.id == -1) {
+            DPM.addOverrideApn(DAR, settings) != -1
+        } else {
+            DPM.updateOverrideApn(DAR, config.id, settings)
+        }
+    }
+    @RequiresApi(28)
+    fun removeApnConfig(id: Int): Boolean {
+        return DPM.removeOverrideApn(DAR, id)
     }
 }
 
