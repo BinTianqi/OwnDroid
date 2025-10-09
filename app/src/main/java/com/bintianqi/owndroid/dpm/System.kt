@@ -146,9 +146,6 @@ fun SystemManagerScreen(
     val privilege by Privilege.status.collectAsStateWithLifecycle()
     /** 1: reboot, 2: bug report, 3: org name, 4: org id, 5: enrollment specific id*/
     var dialog by remember { mutableIntStateOf(0) }
-    var enrollmentSpecificId by remember {
-        mutableStateOf(if (VERSION.SDK_INT >= 31 && (privilege.device || privilege.profile)) Privilege.DPM.enrollmentSpecificId else "")
-    }
     MyScaffold(R.string.system, onNavigateUp, 0.dp) {
         FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { onNavigate(SystemOptions) }
         FunctionItem(R.string.keyguard, icon = R.drawable.screen_lock_portrait_fill0) { onNavigate(Keyguard) }
@@ -195,7 +192,7 @@ fun SystemManagerScreen(
         if(VERSION.SDK_INT >= 31) {
             FunctionItem(R.string.org_id, icon = R.drawable.corporate_fare_fill0) { dialog = 4 }
         }
-        if(enrollmentSpecificId != "") {
+        if (VERSION.SDK_INT >= 31) {
             FunctionItem(R.string.enrollment_specific_id, icon = R.drawable.id_card_fill0) { dialog = 5 }
         }
         if(VERSION.SDK_INT >= 24 && (privilege.device || privilege.org)) {
@@ -249,7 +246,10 @@ fun SystemManagerScreen(
             text = {
                 val focusMgr = LocalFocusManager.current
                 LaunchedEffect(Unit) {
-                    if (dialog == 5 && VERSION.SDK_INT >= 31) input = vm.getEnrollmentSpecificId()
+                    if (dialog == 5 && VERSION.SDK_INT >= 31) {
+                        val id = vm.getEnrollmentSpecificId()
+                        input = id.ifEmpty { context.getString(R.string.none) }
+                    }
                     if (dialog == 3 && VERSION.SDK_INT >= 24) input = vm.getOrgName()
                 }
                 Column {
@@ -290,7 +290,6 @@ fun SystemManagerScreen(
                         if (dialog == 3 && VERSION.SDK_INT >= 24) vm.setOrgName(input)
                         if (dialog == 4 && VERSION.SDK_INT >= 31) {
                             context.showOperationResultToast(vm.setOrgId(input))
-                            enrollmentSpecificId = vm.getEnrollmentSpecificId()
                         }
                         dialog = 0
                     },

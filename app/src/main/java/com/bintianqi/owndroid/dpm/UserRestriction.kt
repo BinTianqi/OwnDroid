@@ -114,7 +114,7 @@ fun UserRestrictionScreen(
             Spacer(Modifier.padding(vertical = 2.dp))
             UserRestrictionCategory.entries.forEach {
                 FunctionItem(it.title, icon = it.icon) {
-                    onNavigate(UserRestrictionOptions(it.id))
+                    onNavigate(UserRestrictionOptions(it.name))
                 }
             }
         }

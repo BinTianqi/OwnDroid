@@ -177,7 +177,6 @@ import com.bintianqi.owndroid.dpm.ResetPassword
 import com.bintianqi.owndroid.dpm.ResetPasswordScreen
 import com.bintianqi.owndroid.dpm.ResetPasswordToken
 import com.bintianqi.owndroid.dpm.ResetPasswordTokenScreen
-import com.bintianqi.owndroid.dpm.Restriction
 import com.bintianqi.owndroid.dpm.SecurityLogging
 import com.bintianqi.owndroid.dpm.SecurityLoggingScreen
 import com.bintianqi.owndroid.dpm.SetDefaultDialer
@@ -216,8 +215,6 @@ import com.bintianqi.owndroid.dpm.UsersOptions
 import com.bintianqi.owndroid.dpm.UsersOptionsScreen
 import com.bintianqi.owndroid.dpm.UsersScreen
 import com.bintianqi.owndroid.dpm.WiFi
-import com.bintianqi.owndroid.dpm.WifiAuthKeypair
-import com.bintianqi.owndroid.dpm.WifiAuthKeypairScreen
 import com.bintianqi.owndroid.dpm.WifiScreen
 import com.bintianqi.owndroid.dpm.WifiSecurityLevel
 import com.bintianqi.owndroid.dpm.WifiSecurityLevelScreen
@@ -601,12 +598,24 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
                 ::navigateUp)
         }
 
-        composable<Password> { PasswordScreen(::navigateUp, ::navigate) }
-        composable<PasswordInfo> { PasswordInfoScreen(::navigateUp) }
-        composable<ResetPasswordToken> { ResetPasswordTokenScreen(::navigateUp) }
-        composable<ResetPassword> { ResetPasswordScreen(::navigateUp) }
-        composable<RequiredPasswordComplexity> { RequiredPasswordComplexityScreen(::navigateUp) }
-        composable<KeyguardDisabledFeatures> { KeyguardDisabledFeaturesScreen(::navigateUp) }
+        composable<Password> { PasswordScreen(vm, ::navigateUp, ::navigate) }
+        composable<PasswordInfo> {
+            PasswordInfoScreen(vm::getPasswordComplexity, vm::isPasswordComplexitySufficient,
+                vm::isUsingUnifiedPassword, ::navigateUp)
+        }
+        composable<ResetPasswordToken> {
+            ResetPasswordTokenScreen(vm::getRpTokenState, vm::setRpToken,
+                vm::createActivateRpTokenIntent, vm::clearRpToken, ::navigateUp)
+        }
+        composable<ResetPassword> { ResetPasswordScreen(vm::resetPassword, ::navigateUp) }
+        composable<RequiredPasswordComplexity> {
+            RequiredPasswordComplexityScreen(vm::getRequiredPasswordComplexity,
+                vm::setRequiredPasswordComplexity, ::navigateUp)
+        }
+        composable<KeyguardDisabledFeatures> {
+            KeyguardDisabledFeaturesScreen(vm::getKeyguardDisableConfig,
+                vm::setKeyguardDisableConfig, ::navigateUp)
+        }
         composable<RequiredPasswordQuality> { RequiredPasswordQualityScreen(::navigateUp) }
 
         composable<Settings> { SettingsScreen(::navigateUp, ::navigate) }

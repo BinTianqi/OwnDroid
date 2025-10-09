@@ -88,7 +88,7 @@ object UserRestrictionsRepository {
     )
 
     fun getData(id: String): Pair<Int, List<Restriction>> {
-        val category = UserRestrictionCategory.entries.find { it.id == id }!!
+        val category = UserRestrictionCategory.valueOf(id)
         return category.title to when (category) {
             UserRestrictionCategory.Network -> network
             UserRestrictionCategory.Connectivity -> connectivity
@@ -100,11 +100,11 @@ object UserRestrictionsRepository {
     }
 }
 
-enum class UserRestrictionCategory(val id: String, val title: Int, val icon: Int) {
-    Network("network", R.string.network, R.drawable.language_fill0),
-    Connectivity("connectivity", R.string.connectivity, R.drawable.devices_other_fill0),
-    Applications("applications", R.string.applications, R.drawable.apps_fill0),
-    Media("media", R.string.media, R.drawable.volume_up_fill0),
-    Users("users", R.string.users, R.drawable.manage_accounts_fill0),
-    Other("other", R.string.other, R.drawable.more_horiz_fill0)
+enum class UserRestrictionCategory(val title: Int, val icon: Int) {
+    Network(R.string.network, R.drawable.language_fill0),
+    Connectivity(R.string.connectivity, R.drawable.devices_other_fill0),
+    Applications(R.string.applications, R.drawable.apps_fill0),
+    Media(R.string.media, R.drawable.volume_up_fill0),
+    Users(R.string.users, R.drawable.manage_accounts_fill0),
+    Other(R.string.other, R.drawable.more_horiz_fill0)
 }

@@ -517,7 +517,7 @@
     <string name="reset_password_token">Parola Sıfırlama Jetonu</string>
     <string name="token">Jeton</string>
     <string name="token_must_longer_than_32_byte">Jeton 32 bayttan uzun olmalıdır</string>
-    <string name="token_already_activated">Jeton zaten etkinleştirildi</string>
+    <string name="token_activated">Token activated</string><!--TODO-->
     <string name="clear">Temizle</string>
     <string name="set">Ayarla</string>
     <string name="please_set_a_token">Lütfen bir jeton ayarlayın</string>
@@ -548,7 +548,6 @@
     <string name="password_quality_biometrics_weak">Biyometrik (Zayıf)</string>
     <string name="password_quality_numeric_complex">Sayısal karmaşık (tekrar eden karakterler olmadan)</string>
     <string name="required_password_quality">Gerekli Parola Kalitesi</string>
-    <string name="activate_reset_password_token_here">Parola sıfırlama jetonunu burada etkinleştir.</string>
 
     <!--Settings&About-->
     <string name="settings">Ayarlar</string>

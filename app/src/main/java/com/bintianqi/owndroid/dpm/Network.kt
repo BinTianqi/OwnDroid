@@ -1346,12 +1346,11 @@ fun NetworkStatsViewerScreen(
 
 @RequiresApi(29)
 enum class PrivateDnsMode(val id: Int, val text: Int) {
-    Off(DevicePolicyManager.PRIVATE_DNS_MODE_OFF, R.string.off),
     Opportunistic(DevicePolicyManager.PRIVATE_DNS_MODE_OPPORTUNISTIC, R.string.automatic),
     Host(DevicePolicyManager.PRIVATE_DNS_MODE_PROVIDER_HOSTNAME, R.string.enabled)
 }
 
-data class PrivateDnsConfiguration(val mode: Int, val host: String)
+data class PrivateDnsConfiguration(val mode: PrivateDnsMode, val host: String)
 
 @Serializable object PrivateDns
 
@@ -1363,11 +1362,11 @@ fun PrivateDnsScreen(
 ) {
     val context = LocalContext.current
     val focusMgr = LocalFocusManager.current
-    var mode by remember { mutableStateOf(PrivateDnsMode.Off) }
+    var mode by remember { mutableStateOf(PrivateDnsMode.Opportunistic) }
     var inputHost by remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
         val conf = getPrivateDns()
-        mode = PrivateDnsMode.entries.find { it.id == conf.mode } ?: PrivateDnsMode.Off
+        mode = conf.mode
         inputHost = conf.host
     }
     MyScaffold(R.string.private_dns, onNavigateUp, 0.dp) {
@@ -1383,7 +1382,7 @@ fun PrivateDnsScreen(
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                val result = setPrivateDns(PrivateDnsConfiguration(mode.id, inputHost))
+                val result = setPrivateDns(PrivateDnsConfiguration(mode, inputHost))
                 context.showOperationResultToast(result)
             },
             modifier = Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding)

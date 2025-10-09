@@ -540,8 +540,9 @@
     <string name="unified_password">Unified password</string>
     <string name="reset_password_token">Reset password token</string>
     <string name="token">Token</string>
-    <string name="token_must_longer_than_32_byte">The token must be longer than 32-byte</string>
-    <string name="token_already_activated">Token already activated</string>
+    <string name="token_must_longer_than_32_byte">The token must be longer than 32 byte</string>
+    <string name="activate_reset_password_token">Activate reset password token</string>
+    <string name="token_activated">Token activated</string>
     <string name="clear">Clear</string>
     <string name="set">Set</string>
     <string name="please_set_a_token">Please set a token</string>
@@ -572,7 +573,6 @@
     <string name="password_quality_biometrics_weak">Biometrics (Weak)</string>
     <string name="password_quality_numeric_complex">Numeric complex (No repeating characters)</string>
     <string name="required_password_quality">Required password quality</string>
-    <string name="activate_reset_password_token_here">Activate reset password token here. </string>
 
     <!--Settings&About-->
     <string name="settings">Settings</string>

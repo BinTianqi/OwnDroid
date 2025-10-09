@@ -505,7 +505,8 @@
     <string name="reset_password_token">密码重置令牌</string>
     <string name="token">令牌</string>
     <string name="token_must_longer_than_32_byte">令牌必须大于32字节</string>
-    <string name="token_already_activated">令牌已经激活</string>
+    <string name="activate_reset_password_token">激活密码重置令牌</string>
+    <string name="token_activated">令牌已激活</string>
     <string name="clear">清除</string>
     <string name="set">设置</string>
     <string name="please_set_a_token">请先设置令牌</string>
@@ -525,7 +526,7 @@
     <string name="disable_keyguard_features_trust_agents">禁用可信代理</string>
     <string name="disable_keyguard_features_fingerprint">禁用指纹解锁</string>
     <string name="disable_keyguard_features_face">禁用人脸解锁</string>
-    <string name="disable_keyguard_features_iris">禁用虹膜解锁(?)</string>
+    <string name="disable_keyguard_features_iris">禁用虹膜解锁</string>
     <string name="disable_keyguard_features_biometrics">禁用生物识别</string>
     <string name="disable_keyguard_features_shortcuts">禁用快捷方式</string>
     <string name="password_quality_unspecified">未指定</string>
@@ -536,7 +537,6 @@
     <string name="password_quality_biometrics_weak">生物识别（弱）</string>
     <string name="password_quality_numeric_complex">复杂数字（无连续性）</string>
     <string name="required_password_quality">密码质量要求</string>
-    <string name="activate_reset_password_token_here">在这里激活密码重置令牌</string>
 
     <!--Settings&About-->
     <string name="settings">设置</string>

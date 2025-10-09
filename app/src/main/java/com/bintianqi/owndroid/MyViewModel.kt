@@ -1,9 +1,9 @@
 package com.bintianqi.owndroid
 
 import android.accounts.Account
-import android.annotation.SuppressLint
 import android.app.ActivityOptions
 import android.app.Application
+import android.app.KeyguardManager
 import android.app.PendingIntent
 import android.app.admin.DeviceAdminInfo
 import android.app.admin.DeviceAdminReceiver
@@ -68,15 +68,20 @@ import com.bintianqi.owndroid.dpm.HardwareProperties
 import com.bintianqi.owndroid.dpm.IntentFilterDirection
 import com.bintianqi.owndroid.dpm.IntentFilterOptions
 import com.bintianqi.owndroid.dpm.IpMode
+import com.bintianqi.owndroid.dpm.KeyguardDisableConfig
+import com.bintianqi.owndroid.dpm.KeyguardDisableMode
 import com.bintianqi.owndroid.dpm.NetworkStatsData
 import com.bintianqi.owndroid.dpm.NetworkStatsTarget
+import com.bintianqi.owndroid.dpm.PasswordComplexity
 import com.bintianqi.owndroid.dpm.PendingSystemUpdateInfo
 import com.bintianqi.owndroid.dpm.PreferentialNetworkServiceInfo
 import com.bintianqi.owndroid.dpm.PrivateDnsConfiguration
+import com.bintianqi.owndroid.dpm.PrivateDnsMode
 import com.bintianqi.owndroid.dpm.ProxyMode
 import com.bintianqi.owndroid.dpm.ProxyType
 import com.bintianqi.owndroid.dpm.QueryNetworkStatsParams
 import com.bintianqi.owndroid.dpm.RecommendedProxyConf
+import com.bintianqi.owndroid.dpm.RpTokenState
 import com.bintianqi.owndroid.dpm.SsidPolicy
 import com.bintianqi.owndroid.dpm.SsidPolicyType
 import com.bintianqi.owndroid.dpm.SystemOptionsStatus
@@ -113,7 +118,6 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.concurrent.Executors
 import kotlin.reflect.jvm.jvmErasure
-import kotlin.system.measureTimeMillis
 
 class MyViewModel(application: Application): AndroidViewModel(application) {
     val myRepo = getApplication<MyApplication>().myRepo
@@ -1472,8 +1476,9 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     }
     @RequiresApi(29)
     fun getPrivateDns(): PrivateDnsConfiguration {
+        val mode = DPM.getGlobalPrivateDnsMode(DAR)
         return PrivateDnsConfiguration(
-            DPM.getGlobalPrivateDnsMode(DAR), DPM.getGlobalPrivateDnsHost(DAR) ?: ""
+            PrivateDnsMode.entries.find { it.id == mode }!!, DPM.getGlobalPrivateDnsHost(DAR) ?: ""
         )
     }
     @Suppress("PrivateApi")
@@ -1483,7 +1488,8 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             val field = DevicePolicyManager::class.java.getDeclaredField("mService")
             field.isAccessible = true
             val dpm = field.get(DPM) as IDevicePolicyManager
-            val result = dpm.setGlobalPrivateDns(DAR, conf.mode, conf.host)
+            val host = if (conf.mode == PrivateDnsMode.Host) conf.host else null
+            val result = dpm.setGlobalPrivateDns(DAR, conf.mode.id, host)
             result == DevicePolicyManager.PRIVATE_DNS_SET_NO_ERROR
         } catch (e: Exception) {
             e.printStackTrace()
@@ -1644,6 +1650,107 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     @RequiresApi(28)
     fun removeApnConfig(id: Int): Boolean {
         return DPM.removeOverrideApn(DAR, id)
+    }
+
+    @RequiresApi(29)
+    fun getPasswordComplexity(): PasswordComplexity {
+        val complexity = DPM.passwordComplexity
+        return PasswordComplexity.entries.find { it.id == complexity }!!
+    }
+    fun isPasswordComplexitySufficient(): Boolean {
+        return DPM.isActivePasswordSufficient
+    }
+    @RequiresApi(28)
+    fun isUsingUnifiedPassword(): Boolean {
+        return DPM.isUsingUnifiedPassword(DAR)
+    }
+    // Reset password token
+    @RequiresApi(26)
+    fun getRpTokenState(): RpTokenState {
+        return try {
+            RpTokenState(true, DPM.isResetPasswordTokenActive(DAR))
+        } catch (_: IllegalArgumentException) {
+            RpTokenState(false, false)
+        }
+    }
+    @RequiresApi(26)
+    fun setRpToken(token: String): Boolean {
+        return DPM.setResetPasswordToken(DAR, token.encodeToByteArray())
+    }
+    @RequiresApi(26)
+    fun clearRpToken(): Boolean {
+        return DPM.clearResetPasswordToken(DAR)
+    }
+    @RequiresApi(26)
+    fun createActivateRpTokenIntent(): Intent? {
+        val km = application.getSystemService(KeyguardManager::class.java)
+        val title = application.getString(R.string.activate_reset_password_token)
+        return km.createConfirmDeviceCredentialIntent(title, "")
+    }
+    fun resetPassword(password: String, token: String, flags: Int): Boolean {
+        return if (VERSION.SDK_INT >= 26) {
+            DPM.resetPasswordWithToken(DAR, password, token.encodeToByteArray(), flags)
+        } else {
+            DPM.resetPassword(password, flags)
+        }
+    }
+    @RequiresApi(31)
+    fun getRequiredPasswordComplexity(): PasswordComplexity {
+        val complexity = DPM.requiredPasswordComplexity
+        return PasswordComplexity.entries.find { it.id == complexity }!!
+    }
+    @RequiresApi(31)
+    fun setRequiredPasswordComplexity(complexity: PasswordComplexity) {
+        DPM.requiredPasswordComplexity = complexity.id
+    }
+    fun getKeyguardDisableConfig(): KeyguardDisableConfig {
+        val flags = DPM.getKeyguardDisabledFeatures(DAR)
+        val mode = when (flags) {
+            DevicePolicyManager.KEYGUARD_DISABLE_FEATURES_NONE -> KeyguardDisableMode.None
+            DevicePolicyManager.KEYGUARD_DISABLE_FEATURES_ALL -> KeyguardDisableMode.All
+            else -> KeyguardDisableMode.Custom
+        }
+        return KeyguardDisableConfig(mode, flags)
+    }
+    fun setKeyguardDisableConfig(config: KeyguardDisableConfig) {
+        val flags = when (config.mode) {
+            KeyguardDisableMode.None -> DevicePolicyManager.KEYGUARD_DISABLE_FEATURES_NONE
+            KeyguardDisableMode.All -> DevicePolicyManager.KEYGUARD_DISABLE_FEATURES_ALL
+            else -> config.flags
+        }
+        DPM.setKeyguardDisabledFeatures(DAR, flags)
+    }
+    fun getMaxTimeToLock(): Long {
+        return DPM.getMaximumTimeToLock(DAR)
+    }
+    @RequiresApi(26)
+    fun getRequiredStrongAuthTimeout(): Long {
+        return DPM.getRequiredStrongAuthTimeout(DAR)
+    }
+    fun getPasswordExpirationTimeout(): Long {
+        return DPM.getPasswordExpirationTimeout(DAR)
+    }
+    fun getMaxFailedPasswordsForWipe(): Int {
+        return DPM.getMaximumFailedPasswordsForWipe(DAR)
+    }
+    fun getPasswordHistoryLength(): Int {
+        return DPM.getPasswordHistoryLength(DAR)
+    }
+    fun setMaxTimeToLock(time: Long) {
+        DPM.setMaximumTimeToLock(DAR, time)
+    }
+    @RequiresApi(26)
+    fun setRequiredStrongAuthTimeout(time: Long) {
+        DPM.setRequiredStrongAuthTimeout(DAR, time)
+    }
+    fun setPasswordExpirationTimeout(time: Long) {
+        DPM.setPasswordExpirationTimeout(DAR, time)
+    }
+    fun setMaxFailedPasswordsForWipe(times: Int) {
+        DPM.setMaximumFailedPasswordsForWipe(DAR, times)
+    }
+    fun setPasswordHistoryLength(length: Int) {
+        DPM.setPasswordHistoryLength(DAR, length)
     }
 }
 
