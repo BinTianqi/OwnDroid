@@ -476,7 +476,6 @@
     <!--Пароль и блокировка экрана-->
     <string name="password_and_keyguard">Пароль и блокировка экрана</string>
     <string name="password_info">Информация о пароле</string>
-    <string name="reset_pwd_desc">Оставьте пустым, чтобы удалить пароль</string>
     <string name="max_pwd_fail">Максимальное количество неудачных попыток ввода пароля</string>
     <string name="max_pwd_fail_textfield">Максимальное количество неудачных попыток</string>
     <string name="pwd_expiration_timeout">Время истечения срока действия пароля</string>
@@ -492,17 +491,14 @@
     <string name="unified_password">Единый пароль</string>
     <string name="reset_password_token">Сбросить токен пароля</string>
     <string name="token">Токен</string>
-    <string name="token_must_longer_than_32_byte">Токен должен быть длиннее 32 байт</string>
     <string name="token_activated">Тoken activated</string><!--TODO-->
     <string name="clear">Очистить</string>
     <string name="set">Установить</string>
-    <string name="please_set_a_token">Установите токен</string>
     <string name="activate_token_not_required_when_no_password">Токен будет автоматически активирован, если пароль не установлен.</string>
     <string name="reset_password">Сбросить пароль</string>
     <string name="confirm_password">Подтвердите пароль</string>
     <string name="do_not_ask_credentials_on_boot">Не запрашивать учетные данные при загрузке</string>
     <string name="reset_password_require_entry">Требовать ввод</string>
-    <string name="reset_password_with_token">Сбросить пароль с помощью токена</string>
     <string name="required_password_complexity">Требуемая сложность пароля</string>
     <string name="disable_keyguard_features">Функции блокировки экрана (Keyguard)</string>
     <string name="enable_all">Включить все</string>

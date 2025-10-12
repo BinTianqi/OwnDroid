@@ -9,10 +9,9 @@ import android.util.Log
 class ApiReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val requestKey = intent.getStringExtra("key")
-        var log = "OwnDroid API request received. action: ${intent.action}\nkey: $requestKey"
-        if(!SP.isApiEnabled) return
-        val key = SP.apiKey
-        if(!key.isNullOrEmpty() && key == requestKey) {
+        var log = "OwnDroid API request received. action: ${intent.action}"
+        val key = SP.apiKeyHash
+        if(!key.isNullOrEmpty() && key == requestKey?.hash()) {
             val app = intent.getStringExtra("package")
             val permission = intent.getStringExtra("permission")
             val restriction = intent.getStringExtra("restriction")

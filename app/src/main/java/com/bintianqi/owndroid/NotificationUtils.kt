@@ -7,6 +7,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.core.app.NotificationCompat
 
 object NotificationUtils {
     fun checkPermission(context: Context): Boolean {
@@ -14,36 +15,57 @@ object NotificationUtils {
             context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
         else false
     }
-    fun registerChannels(context: Context) {
-        if(Build.VERSION.SDK_INT < 26) return
+    fun createChannels(context: Context) {
+        if (Build.VERSION.SDK_INT < 26) return
         val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val lockTaskMode = NotificationChannel(Channel.LOCK_TASK_MODE, context.getString(R.string.lock_task_mode), NotificationManager.IMPORTANCE_HIGH)
-        val events = NotificationChannel(Channel.EVENTS, context.getString(R.string.events), NotificationManager.IMPORTANCE_HIGH)
+        val lockTaskMode = NotificationChannel(
+            MyNotificationChannel.LockTaskMode.id,
+            context.getString(MyNotificationChannel.LockTaskMode.text),
+            NotificationManager.IMPORTANCE_HIGH
+        )
+        val events = NotificationChannel(
+            MyNotificationChannel.Events.id,
+            context.getString(MyNotificationChannel.Events.text),
+            NotificationManager.IMPORTANCE_HIGH
+        )
         nm.createNotificationChannels(listOf(lockTaskMode, events))
     }
-    fun notify(context: Context, id: Int, notification: Notification) {
-        val sp = context.getSharedPreferences("data", Context.MODE_PRIVATE)
-        if(sp.getBoolean("n_$id", true) && checkPermission(context)) {
-            registerChannels(context)
+    fun notifyEvent(context: Context, type: NotificationType, text: String) {
+        val notification = NotificationCompat.Builder(context, MyNotificationChannel.Events.id)
+            .setSmallIcon(type.icon)
+            .setContentTitle(context.getString(type.text))
+            .setContentText(text)
+            .build()
+        notify(context, type, notification)
+    }
+    fun notify(context: Context, type: NotificationType, notification: Notification) {
+        val enabledNotifications = SP.notifications?.split(',')?.mapNotNull { it.toIntOrNull() }
+        if (enabledNotifications == null || type.id in enabledNotifications) {
             val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            nm.notify(id, notification)
+            nm.notify(type.id, notification)
         }
     }
-    object Channel {
-        const val LOCK_TASK_MODE = "LockTaskMode"
-        const val EVENTS = "Events"
+    fun cancel(context: Context, type: NotificationType) {
+        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        nm.cancel(type.id)
     }
-    object ID {
-        const val LOCK_TASK_MODE = 1
-        const val PASSWORD_CHANGED = 2
-        const val USER_ADDED = 3
-        const val USER_STARTED = 4
-        const val USER_SWITCHED = 5
-        const val USER_STOPPED = 6
-        const val USER_REMOVED = 7
-        const val BUG_REPORT_SHARED = 8
-        const val BUG_REPORT_SHARING_DECLINED = 9
-        const val BUG_REPORT_FAILED = 10
-        const val SYSTEM_UPDATE_PENDING = 11
-    }
+}
+
+enum class NotificationType(val id: Int, val text: Int, val icon: Int) {
+    LockTaskMode(1, R.string.lock_task_mode, R.drawable.lock_fill0),
+    PasswordChanged(2, R.string.password_changed, R.drawable.password_fill0),
+    UserAdded(3, R.string.user_added, R.drawable.person_add_fill0),
+    UserStarted(4, R.string.user_started, R.drawable.person_fill0),
+    UserSwitched(5, R.string.user_switched, R.drawable.person_fill0),
+    UserStopped(6, R.string.user_stopped, R.drawable.person_off),
+    UserRemoved(7, R.string.user_removed, R.drawable.person_remove_fill0),
+    BugReportShared(8, R.string.bug_report_shared, R.drawable.bug_report_fill0),
+    BugReportSharingDeclined(9, R.string.bug_report_sharing_declined, R.drawable.bug_report_fill0),
+    BugReportFailed(10, R.string.bug_report_failed, R.drawable.bug_report_fill0),
+    SystemUpdatePending(11, R.string.system_update_pending, R.drawable.system_update_fill0)
+}
+
+enum class MyNotificationChannel(val id: String, val text: Int) {
+    LockTaskMode("LockTaskMode", R.string.lock_task_mode),
+    Events("Events", R.string.events)
 }

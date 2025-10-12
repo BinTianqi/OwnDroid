@@ -122,12 +122,61 @@ import kotlin.reflect.jvm.jvmErasure
 class MyViewModel(application: Application): AndroidViewModel(application) {
     val myRepo = getApplication<MyApplication>().myRepo
     val PM = application.packageManager
+
     val theme = MutableStateFlow(ThemeSettings(SP.materialYou, SP.darkTheme, SP.blackTheme))
     fun changeTheme(newTheme: ThemeSettings) {
         theme.value = newTheme
         SP.materialYou = newTheme.materialYou
         SP.darkTheme = newTheme.darkTheme
         SP.blackTheme = newTheme.blackTheme
+    }
+    fun getDisplayDangerousFeatures(): Boolean {
+        return SP.displayDangerousFeatures
+    }
+    fun getShortcutsEnabled(): Boolean {
+        return SP.shortcuts
+    }
+    fun setDisplayDangerousFeatures(state: Boolean) {
+        SP.displayDangerousFeatures = state
+    }
+    fun setShortcutsEnabled(enabled: Boolean) {
+        SP.shortcuts = enabled
+        ShortcutUtils.setAllShortcuts(application, enabled)
+    }
+    fun getAppLockConfig(): AppLockConfig {
+        val passwordHash = SP.lockPasswordHash
+        return AppLockConfig(passwordHash?.ifEmpty { null }, SP.biometricsUnlock, SP.lockWhenLeaving)
+    }
+    fun setAppLockConfig(config: AppLockConfig) {
+        SP.lockPasswordHash = if (config.password == null) {
+            ""
+        } else {
+            config.password.hash()
+        }
+        SP.biometricsUnlock = config.biometrics
+        SP.lockWhenLeaving = config.whenLeaving
+    }
+    fun getApiEnabled(): Boolean {
+        return SP.apiKeyHash?.isNotEmpty() ?: false
+    }
+    fun setApiKey(key: String) {
+        SP.apiKeyHash = if (key.isEmpty()) "" else key.hash()
+    }
+    fun getEnabledNotifications(): List<NotificationType> {
+        val list = SP.notifications?.split(',')?.mapNotNull { it.toIntOrNull() }
+        return if (list == null) {
+            NotificationType.entries
+        } else {
+            NotificationType.entries.filter { it.id in list }
+        }
+    }
+    fun setNotificationEnabled(type: NotificationType, enabled: Boolean) {
+        val list = SP.notifications?.split(',')?.mapNotNull { it.toIntOrNull() }
+        SP.notifications = if (list == null) {
+            NotificationType.entries.minus(type).map { it.id }
+        } else {
+            list.run { if (enabled) plus(type.id) else minus(type.id) }
+        }.joinToString { it.toString() }
     }
 
     val chosenPackage = Channel<String>(1, BufferOverflow.DROP_LATEST)
@@ -1083,10 +1132,16 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
                 DPM.clearUserRestriction(DAR, name)
             }
             userRestrictions.update { it.plus(name to state) }
+            ShortcutUtils.updateUserRestrictionShortcut(application, name, !state, true)
             true
         } catch (_: SecurityException) {
             false
         }
+    }
+    fun createUserRestrictionShortcut(id: String): Boolean {
+        return ShortcutUtils.setUserRestrictionShortcut(
+            application, id, userRestrictions.value[id] ?: true
+        )
     }
     fun createWorkProfile(options: CreateWorkProfileOptions): Intent {
         val intent = Intent(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)
@@ -1478,7 +1533,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     fun getPrivateDns(): PrivateDnsConfiguration {
         val mode = DPM.getGlobalPrivateDnsMode(DAR)
         return PrivateDnsConfiguration(
-            PrivateDnsMode.entries.find { it.id == mode }!!, DPM.getGlobalPrivateDnsHost(DAR) ?: ""
+            PrivateDnsMode.entries.find { it.id == mode }, DPM.getGlobalPrivateDnsHost(DAR) ?: ""
         )
     }
     @Suppress("PrivateApi")
@@ -1489,7 +1544,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             field.isAccessible = true
             val dpm = field.get(DPM) as IDevicePolicyManager
             val host = if (conf.mode == PrivateDnsMode.Host) conf.host else null
-            val result = dpm.setGlobalPrivateDns(DAR, conf.mode.id, host)
+            val result = dpm.setGlobalPrivateDns(DAR, conf.mode!!.id, host)
             result == DevicePolicyManager.PRIVATE_DNS_SET_NO_ERROR
         } catch (e: Exception) {
             e.printStackTrace()
@@ -1669,7 +1724,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     fun getRpTokenState(): RpTokenState {
         return try {
             RpTokenState(true, DPM.isResetPasswordTokenActive(DAR))
-        } catch (_: IllegalArgumentException) {
+        } catch (_: IllegalStateException) {
             RpTokenState(false, false)
         }
     }

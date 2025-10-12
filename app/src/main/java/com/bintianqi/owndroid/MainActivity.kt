@@ -1,9 +1,11 @@
 package com.bintianqi.owndroid
 
+import android.Manifest
 import android.os.Build.VERSION
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -240,6 +242,10 @@ class MainActivity : FragmentActivity() {
         val locale = context.resources?.configuration?.locale
         zhCN = locale == Locale.SIMPLIFIED_CHINESE || locale == Locale.CHINESE || locale == Locale.CHINA
         val vm by viewModels<MyViewModel>()
+        if (VERSION.SDK_INT >= 33) {
+            val launcher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
+            launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
         setContent {
             var appLockDialog by rememberSaveable { mutableStateOf(false) }
             val theme by vm.theme.collectAsStateWithLifecycle()
@@ -576,7 +582,7 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
         }
         composable<UserRestrictionOptions> {
             UserRestrictionOptionsScreen(it.toRoute(), vm.userRestrictions,
-                vm::setUserRestriction, ::navigateUp)
+                vm::setUserRestriction, vm::createUserRestrictionShortcut, ::navigateUp)
         }
 
         composable<Users> { UsersScreen(vm, ::navigateUp, ::navigate) }
@@ -619,14 +625,22 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
         composable<RequiredPasswordQuality> { RequiredPasswordQualityScreen(::navigateUp) }
 
         composable<Settings> { SettingsScreen(::navigateUp, ::navigate) }
-        composable<SettingsOptions> { SettingsOptionsScreen(::navigateUp) }
-        composable<Appearance> {
-            val theme by vm.theme.collectAsStateWithLifecycle()
-            AppearanceScreen(::navigateUp, theme, vm::changeTheme)
+        composable<SettingsOptions> {
+            SettingsOptionsScreen(vm::getDisplayDangerousFeatures, vm::getShortcutsEnabled,
+                vm::setDisplayDangerousFeatures, vm::setShortcutsEnabled, ::navigateUp)
         }
-        composable<AppLockSettings> { AppLockSettingsScreen(::navigateUp) }
-        composable<ApiSettings> { ApiSettings(::navigateUp) }
-        composable<Notifications> { NotificationsScreen(::navigateUp) }
+        composable<Appearance> {
+            AppearanceScreen(::navigateUp, vm.theme, vm::changeTheme)
+        }
+        composable<AppLockSettings> {
+            AppLockSettingsScreen(vm::getAppLockConfig, vm::setAppLockConfig, ::navigateUp)
+        }
+        composable<ApiSettings> {
+            ApiSettings(vm::getApiEnabled, vm::setApiKey, ::navigateUp)
+        }
+        composable<Notifications> {
+            NotificationsScreen(vm::getEnabledNotifications, vm::setNotificationEnabled, ::navigateUp)
+        }
         composable<About> { AboutScreen(::navigateUp) }
     }
     DisposableEffect(lifecycleOwner) {

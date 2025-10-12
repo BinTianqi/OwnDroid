@@ -5,10 +5,13 @@ import android.content.Intent
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
+import java.security.SecureRandom
+import kotlin.io.encoding.Base64
 
 object ShortcutUtils {
-    fun setAllShortcuts(context: Context) {
-        if (SP.shortcuts) {
+    fun setAllShortcuts(context: Context, enabled: Boolean) {
+        if (enabled) {
+            setShortcutKey()
             val list = listOf(
                 createShortcut(context, MyShortcut.Lock, true),
                 createShortcut(context, MyShortcut.DisableCamera,
@@ -22,6 +25,7 @@ object ShortcutUtils {
         }
     }
     fun setShortcut(context: Context, shortcut: MyShortcut, state: Boolean) {
+        setShortcutKey()
         ShortcutManagerCompat.pushDynamicShortcut(
             context, createShortcut(context, shortcut, state)
         )
@@ -41,8 +45,46 @@ object ShortcutUtils {
             .setIntent(
                 Intent(context, ShortcutsReceiverActivity::class.java)
                     .setAction("com.bintianqi.owndroid.action.${shortcut.id}")
+                    .putExtra("key", SP.shortcutKey)
             )
             .build()
+    }
+    /** @param state If true, set the user restriction */
+    fun createUserRestrictionShortcut(context: Context, id: String, state: Boolean): ShortcutInfoCompat {
+        val restriction = UserRestrictionsRepository.findRestrictionById(id)
+        val label = context.getString(if (state) R.string.disable else R.string.enable) + " " +
+                context.getString(restriction.name)
+        setShortcutKey()
+        return ShortcutInfoCompat.Builder(context, "USER_RESTRICTION-$id")
+            .setIcon(IconCompat.createWithResource(context, restriction.icon))
+            .setShortLabel(label)
+            .setIntent(
+                Intent(context, ShortcutsReceiverActivity::class.java)
+                    .setAction("com.bintianqi.owndroid.action.USER_RESTRICTION")
+                    .putExtra("restriction", id)
+                    .putExtra("state", state)
+                    .putExtra("key", SP.shortcutKey)
+            )
+            .build()
+    }
+    fun setUserRestrictionShortcut(context: Context, id: String, state: Boolean): Boolean {
+        val shortcut = createUserRestrictionShortcut(context, id, state)
+        return ShortcutManagerCompat.requestPinShortcut(context, shortcut, null)
+    }
+    fun updateUserRestrictionShortcut(context: Context, id: String, state: Boolean, checkExist: Boolean) {
+        if (checkExist) {
+            val shortcuts = ShortcutManagerCompat.getShortcuts(
+                context, ShortcutManagerCompat.FLAG_MATCH_PINNED
+            )
+            if (shortcuts.find { it.id == "USER_RESTRICTION-$id" } == null) return
+        }
+        val shortcut = createUserRestrictionShortcut(context, id, state)
+        ShortcutManagerCompat.updateShortcuts(context, listOf(shortcut))
+    }
+    fun setShortcutKey() {
+        if (SP.shortcutKey.isNullOrEmpty()) {
+            SP.shortcutKey = generateBase64Key(10)
+        }
     }
 }
 

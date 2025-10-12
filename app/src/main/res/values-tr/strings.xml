@@ -501,7 +501,6 @@
     <!--Password&Keyguard-->
     <string name="password_and_keyguard">Parola ve Kilit Ekranı</string>
     <string name="password_info">Parola Bilgisi</string>
-    <string name="reset_pwd_desc">Parolayı kaldırmak için boş bırakın</string>
     <string name="max_pwd_fail">Maksimum Başarısız Parola</string>
     <string name="max_pwd_fail_textfield">Maksimum başarısız deneme sayısı</string>
     <string name="pwd_expiration_timeout">Parola Son Kullanma Zaman Aşımı</string>
@@ -516,17 +515,14 @@
     <string name="unified_password">Birleşik Parola</string>
     <string name="reset_password_token">Parola Sıfırlama Jetonu</string>
     <string name="token">Jeton</string>
-    <string name="token_must_longer_than_32_byte">Jeton 32 bayttan uzun olmalıdır</string>
     <string name="token_activated">Token activated</string><!--TODO-->
     <string name="clear">Temizle</string>
     <string name="set">Ayarla</string>
-    <string name="please_set_a_token">Lütfen bir jeton ayarlayın</string>
     <string name="activate_token_not_required_when_no_password">Parola ayarlanmamışsa jeton otomatik olarak etkinleştirilir.</string>
     <string name="reset_password">Parolayı Sıfırla</string>
     <string name="confirm_password">Parolayı Onayla</string>
     <string name="do_not_ask_credentials_on_boot">Başlangıçta kimlik bilgisi sorma</string>
     <string name="reset_password_require_entry">Giriş gerektir</string>
-    <string name="reset_password_with_token">Jeton ile parolayı sıfırla</string>
     <string name="required_password_complexity">Gerekli Parola Karmaşıklığı</string>
     <string name="disable_keyguard_features">Kilit Ekranı Özelliklerini Devre Dışı Bırak</string>
     <string name="enable_all">Hepsini Etkinleştir</string>

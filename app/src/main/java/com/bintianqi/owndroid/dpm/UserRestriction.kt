@@ -1,6 +1,8 @@
 package com.bintianqi.owndroid.dpm
 
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -21,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,6 +58,7 @@ import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.UserRestrictionCategory
 import com.bintianqi.owndroid.UserRestrictionsRepository
+import com.bintianqi.owndroid.popToast
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.MyLazyScaffold
@@ -117,6 +122,17 @@ fun UserRestrictionScreen(
                     onNavigate(UserRestrictionOptions(it.name))
                 }
             }
+            Row(
+                Modifier
+                    .padding(HorizontalPadding, 10.dp)
+                    .fillMaxWidth()
+                    .background(colorScheme.primaryContainer, RoundedCornerShape(8.dp))
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Outlined.Info, null, Modifier.padding(end = 8.dp), colorScheme.onPrimaryContainer)
+                Text(stringResource(R.string.user_restriction_tip), color = colorScheme.onPrimaryContainer)
+            }
         }
     }
 }
@@ -128,7 +144,8 @@ data class UserRestrictionOptions(val id: String)
 @Composable
 fun UserRestrictionOptionsScreen(
     args: UserRestrictionOptions, userRestrictions: StateFlow<Map<String, Boolean>>,
-    setRestriction: (String, Boolean) -> Boolean, onNavigateUp: () -> Unit
+    setRestriction: (String, Boolean) -> Boolean, setShortcut: (String) -> Boolean,
+    onNavigateUp: () -> Unit
 ) {
     val context = LocalContext.current
     val status by userRestrictions.collectAsStateWithLifecycle()
@@ -136,7 +153,12 @@ fun UserRestrictionOptionsScreen(
     MyLazyScaffold(title, onNavigateUp) {
         items(items) { restriction ->
             Row(
-                Modifier.fillMaxWidth().padding(15.dp, 6.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .combinedClickable(onClick = {}, onLongClick = {
+                        if (!setShortcut(restriction.id)) context.popToast(R.string.unsupported)
+                    })
+                    .padding(15.dp, 6.dp),
                 Arrangement.SpaceBetween, Alignment.CenterVertically
             ) {
                 Row(Modifier.weight(1F), verticalAlignment = Alignment.CenterVertically) {

@@ -112,7 +112,7 @@ import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SP
 import com.bintianqi.owndroid.formatFileSize
-import com.bintianqi.owndroid.formatTime
+import com.bintianqi.owndroid.formatDate
 import com.bintianqi.owndroid.popToast
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
@@ -588,7 +588,7 @@ fun ChangeTimeScreen(setTime: (Long, Boolean) -> Boolean, onNavigateUp: () -> Un
                 ) {
                     if(page == 0) {
                         OutlinedTextField(
-                            value = datePickerState.selectedDateMillis?.let { formatTime(it) } ?: "",
+                            value = datePickerState.selectedDateMillis?.let { formatDate(it) } ?: "",
                             onValueChange = {}, readOnly = true,
                             label = { Text(stringResource(R.string.date)) },
                             interactionSource = dateInteractionSource,
@@ -1436,9 +1436,9 @@ fun CaCertScreen(
                         Text("Issuer", style = typography.labelLarge)
                         SelectionContainer { Text(cert.issuer) }
                         Text("Issued on", style = typography.labelLarge)
-                        SelectionContainer { Text(formatTime(cert.issuedTime)) }
+                        SelectionContainer { Text(formatDate(cert.issuedTime)) }
                         Text("Expires on", style = typography.labelLarge)
-                        SelectionContainer { Text(formatTime(cert.expiresTime)) }
+                        SelectionContainer { Text(formatDate(cert.expiresTime)) }
                         Text("SHA-256 fingerprint", style = typography.labelLarge)
                         SelectionContainer { Text(cert.hash) }
                         if (dialog == 2) Row(
@@ -1929,7 +1929,7 @@ fun SystemUpdatePolicyScreen(
         if (VERSION.SDK_INT >= 26) {
             Column(Modifier.padding(HorizontalPadding)) {
                 if (pendingUpdate.exists) {
-                    Text(stringResource(R.string.update_received_time, formatTime(pendingUpdate.time)))
+                    Text(stringResource(R.string.update_received_time, formatDate(pendingUpdate.time)))
                     Text(stringResource(R.string.is_security_patch,
                         stringResource(pendingUpdate.securityPatch.yesOrNo)))
                 } else {

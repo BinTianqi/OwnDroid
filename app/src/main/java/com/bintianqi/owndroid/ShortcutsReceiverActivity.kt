@@ -9,7 +9,9 @@ class ShortcutsReceiverActivity : Activity() {
         super.onCreate(savedInstanceState)
         try {
             val action = intent.action?.removePrefix("com.bintianqi.owndroid.action.")
-            if (action != null && SP.shortcuts) {
+            val key = SP.shortcutKey
+            val requestKey = intent?.getStringExtra("key")
+            if (action != null && SP.shortcuts && key != null && requestKey == key) {
                 when (action) {
                     "LOCK" -> Privilege.DPM.lockNow()
                     "DISABLE_CAMERA" -> {
@@ -22,9 +24,22 @@ class ShortcutsReceiverActivity : Activity() {
                         Privilege.DPM.setMasterVolumeMuted(Privilege.DAR, !state)
                         ShortcutUtils.setShortcut(this, MyShortcut.Mute, state)
                     }
+                    "USER_RESTRICTION" -> {
+                        val state = intent?.getBooleanExtra("state", false)
+                        val id = intent?.getStringExtra("restriction")
+                        if (state == null || id == null) return
+                        if (state) {
+                            Privilege.DPM.addUserRestriction(Privilege.DAR, id)
+                        } else {
+                            Privilege.DPM.clearUserRestriction(Privilege.DAR, id)
+                        }
+                        ShortcutUtils.updateUserRestrictionShortcut(this, id, !state, false)
+                    }
                 }
                 Log.d(TAG, "Received intent: $action")
                 showOperationResultToast(true)
+            } else {
+                showOperationResultToast(false)
             }
         } finally {
             finish()

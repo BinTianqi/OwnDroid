@@ -18,10 +18,12 @@ import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
 import java.security.MessageDigest
+import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import kotlin.io.encoding.Base64
 
 var zhCN = true
 
@@ -64,8 +66,8 @@ fun formatFileSize(bytes: Long): String {
 val Boolean.yesOrNo
     @StringRes get() = if(this) R.string.yes else R.string.no
 
-fun formatTime(ms: Long): String {
-    return SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(Date(ms))
+fun formatDate(ms: Long): String {
+    return formatDate(Date(ms))
 }
 fun formatDate(date: Date): String {
     return SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(date)
@@ -120,4 +122,10 @@ class SerializableSaver<T>(val serializer: KSerializer<T>) : Saver<T, String> {
     override fun SaverScope.save(value: T): String? {
         return Json.encodeToString(serializer, value)
     }
+}
+
+fun generateBase64Key(length: Int): String {
+    val ba = ByteArray(length)
+    SecureRandom().nextBytes(ba)
+    return Base64.withPadding(Base64.PaddingOption.ABSENT).encode(ba)
 }

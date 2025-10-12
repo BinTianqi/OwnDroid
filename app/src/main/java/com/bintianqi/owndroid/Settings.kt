@@ -17,9 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -39,24 +37,23 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.ui.FunctionItem
@@ -64,8 +61,8 @@ import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.SwitchItem
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.Serializable
-import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -142,20 +139,25 @@ fun SettingsScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
 @Serializable object SettingsOptions
 
 @Composable
-fun SettingsOptionsScreen(onNavigateUp: () -> Unit) {
-    val context = LocalContext.current
+fun SettingsOptionsScreen(
+    getDisplayDangerousFeatures: () -> Boolean, getShortcutsEnabled: () -> Boolean,
+    setDisplayDangerousFeatures: (Boolean) -> Unit, setShortcutsEnabled: (Boolean) -> Unit,
+    onNavigateUp: () -> Unit
+) {
+    var dangerousFeatures by remember { mutableStateOf(getDisplayDangerousFeatures()) }
+    var shortcuts by remember { mutableStateOf(getShortcutsEnabled()) }
     MyScaffold(R.string.options, onNavigateUp, 0.dp) {
         SwitchItem(
-            R.string.show_dangerous_features, icon = R.drawable.warning_fill0,
-            getState = { SP.displayDangerousFeatures },
-            onCheckedChange = { SP.displayDangerousFeatures = it }
+            R.string.show_dangerous_features, dangerousFeatures, {
+                setDisplayDangerousFeatures(it)
+                dangerousFeatures = it
+            }, R.drawable.warning_fill0
         )
         SwitchItem(
-            R.string.shortcuts, icon = R.drawable.open_in_new,
-            getState = { SP.shortcuts }, onCheckedChange = {
-                SP.shortcuts = it
-                ShortcutUtils.setAllShortcuts(context)
-            }
+            R.string.shortcuts, shortcuts, {
+                setShortcutsEnabled(it)
+                shortcuts = it
+            }, R.drawable.open_in_new
         )
     }
 }
@@ -163,13 +165,12 @@ fun SettingsOptionsScreen(onNavigateUp: () -> Unit) {
 @Serializable object Appearance
 
 @Composable
-fun AppearanceScreen(onNavigateUp: () -> Unit, currentTheme: ThemeSettings, onThemeChange: (ThemeSettings) -> Unit) {
+fun AppearanceScreen(
+    onNavigateUp: () -> Unit, currentTheme: StateFlow<ThemeSettings>,
+    setTheme: (ThemeSettings) -> Unit
+) {
     var darkThemeMenu by remember { mutableStateOf(false) }
-    var theme by remember { mutableStateOf(currentTheme) }
-    fun update(it: ThemeSettings) {
-        theme = it
-        onThemeChange(it)
-    }
+    val theme by currentTheme.collectAsStateWithLifecycle()
     val darkThemeTextID = when(theme.darkTheme) {
         1 -> R.string.on
         0 -> R.string.off
@@ -180,7 +181,7 @@ fun AppearanceScreen(onNavigateUp: () -> Unit, currentTheme: ThemeSettings, onTh
             SwitchItem(
                 R.string.material_you_color,
                 state = theme.materialYou,
-                onCheckedChange = { update(theme.copy(materialYou = it)) }
+                onCheckedChange = { setTheme(theme.copy(materialYou = it)) }
             )
         }
         Box {
@@ -192,22 +193,21 @@ fun AppearanceScreen(onNavigateUp: () -> Unit, currentTheme: ThemeSettings, onTh
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.follow_system)) },
                     onClick = {
-                        update(theme.copy(darkTheme = -1))
+                        setTheme(theme.copy(darkTheme = -1))
                         darkThemeMenu = false
                     }
                 )
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.on)) },
                     onClick = {
-                        update(theme.copy(darkTheme = 1))
-                        theme = theme.copy(darkTheme = 1)
+                        setTheme(theme.copy(darkTheme = 1))
                         darkThemeMenu = false
                     }
                 )
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.off)) },
                     onClick = {
-                        update(theme.copy(darkTheme = 0))
+                        setTheme(theme.copy(darkTheme = 0))
                         darkThemeMenu = false
                     }
                 )
@@ -216,148 +216,138 @@ fun AppearanceScreen(onNavigateUp: () -> Unit, currentTheme: ThemeSettings, onTh
         AnimatedVisibility(theme.darkTheme == 1 || (theme.darkTheme == -1 && isSystemInDarkTheme())) {
             SwitchItem(
                 R.string.black_theme, state = theme.blackTheme,
-                onCheckedChange = { update(theme.copy(blackTheme = it)) }
+                onCheckedChange = { setTheme(theme.copy(blackTheme = it)) }
             )
         }
     }
 }
 
+data class AppLockConfig(
+    /** null means no password, empty means password already set */
+    val password: String?, val biometrics: Boolean, val whenLeaving: Boolean
+)
+
 @Serializable object AppLockSettings
 
 @Composable
-fun AppLockSettingsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.app_lock, onNavigateUp, 0.dp) {
-    val fm = LocalFocusManager.current
+fun AppLockSettingsScreen(
+    getConfig: () -> AppLockConfig, setConfig: (AppLockConfig) -> Unit,
+    onNavigateUp: () -> Unit
+) = MyScaffold(R.string.app_lock, onNavigateUp) {
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var allowBiometrics by remember { mutableStateOf(SP.biometricsUnlock) }
-    var lockWhenLeaving by remember { mutableStateOf(SP.lockWhenLeaving) }
-    val fr = remember { FocusRequester() }
-    val alreadySet = !SP.lockPasswordHash.isNullOrEmpty()
-    val isInputLegal = password.length !in 1..3 && (alreadySet || (password.isNotEmpty() && password.isNotBlank()))
-    Column(Modifier
-        .widthIn(max = 300.dp)
-        .align(Alignment.CenterHorizontally)) {
-        OutlinedTextField(
-            password, { password = it }, Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp),
-            label = { Text(stringResource(R.string.password)) },
-            supportingText = { Text(stringResource(if(alreadySet) R.string.leave_empty_to_remain_unchanged else R.string.minimum_length_4)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
-            keyboardActions = KeyboardActions { fr.requestFocus() }
-        )
-        OutlinedTextField(
-            confirmPassword, { confirmPassword = it }, Modifier
-                .fillMaxWidth()
-                .focusRequester(fr),
-            label = { Text(stringResource(R.string.confirm_password)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions { fm.clearFocus() }
-        )
-        if(VERSION.SDK_INT >= 28) Row(Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp), Arrangement.SpaceBetween, Alignment.CenterVertically) {
-            Text(stringResource(R.string.allow_biometrics))
-            Switch(allowBiometrics, { allowBiometrics = it })
-        }
-        Row(Modifier
-            .fillMaxWidth()
-            .padding(bottom = 6.dp), Arrangement.SpaceBetween, Alignment.CenterVertically) {
-            Text(stringResource(R.string.lock_when_leaving))
-            Switch(lockWhenLeaving, { lockWhenLeaving = it })
-        }
-        Button(
-            onClick = {
-                fm.clearFocus()
-                if(password.isNotEmpty()) SP.lockPasswordHash = password.hash()
-                SP.biometricsUnlock = allowBiometrics
-                SP.lockWhenLeaving = lockWhenLeaving
-                onNavigateUp()
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = isInputLegal && confirmPassword == password
-        ) {
-            Text(stringResource(if(alreadySet) R.string.update else R.string.set))
-        }
-        if(alreadySet) FilledTonalButton(
-            onClick = {
-                fm.clearFocus()
-                SP.lockPasswordHash = ""
-                SP.biometricsUnlock = false
-                SP.lockWhenLeaving = false
-                onNavigateUp()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.disable))
-        }
+    var allowBiometrics by remember { mutableStateOf(false) }
+    var lockWhenLeaving by remember { mutableStateOf(false) }
+    var alreadySet by remember { mutableStateOf(false) }
+    val isInputLegal = password.length !in 1..3 && (alreadySet || password.isNotBlank())
+    LaunchedEffect(Unit) {
+        val config = getConfig()
+        password = config.password ?: ""
+        allowBiometrics = config.biometrics
+        lockWhenLeaving = config.whenLeaving
+        alreadySet = config.password != null
+    }
+    OutlinedTextField(
+        password, { password = it }, Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        label = { Text(stringResource(R.string.password)) },
+        supportingText = { Text(stringResource(if(alreadySet) R.string.leave_empty_to_remain_unchanged else R.string.minimum_length_4)) },
+        visualTransformation = PasswordVisualTransformation(),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next)
+    )
+    OutlinedTextField(
+        confirmPassword, { confirmPassword = it }, Modifier.fillMaxWidth(),
+        label = { Text(stringResource(R.string.confirm_password)) },
+        visualTransformation = PasswordVisualTransformation(),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done)
+    )
+    if (VERSION.SDK_INT >= 28) Row(
+        Modifier.fillMaxWidth().padding(vertical = 6.dp),
+        Arrangement.SpaceBetween, Alignment.CenterVertically
+    ) {
+        Text(stringResource(R.string.allow_biometrics))
+        Switch(allowBiometrics, { allowBiometrics = it })
+    }
+    Row(
+        Modifier.fillMaxWidth().padding(bottom = 6.dp),
+        Arrangement.SpaceBetween, Alignment.CenterVertically
+    ) {
+        Text(stringResource(R.string.lock_when_leaving))
+        Switch(lockWhenLeaving, { lockWhenLeaving = it })
+    }
+    Button(
+        onClick = {
+            setConfig(AppLockConfig(password, allowBiometrics, lockWhenLeaving))
+            onNavigateUp()
+        },
+        modifier = Modifier.fillMaxWidth(),
+        enabled = isInputLegal && confirmPassword == password
+    ) {
+        Text(stringResource(if(alreadySet) R.string.update else R.string.set))
+    }
+    if (alreadySet) FilledTonalButton(
+        onClick = {
+            setConfig(AppLockConfig(null, false, false))
+            onNavigateUp()
+        },
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(stringResource(R.string.disable))
     }
 }
 
 @Serializable object ApiSettings
 
 @Composable
-fun ApiSettings(onNavigateUp: () -> Unit) {
+fun ApiSettings(
+    getEnabled: () -> Boolean, setKey: (String) -> Unit, onNavigateUp: () -> Unit
+) {
     val context = LocalContext.current
+    var alreadyEnabled by remember { mutableStateOf(getEnabled()) }
     MyScaffold(R.string.api, onNavigateUp) {
-        var enabled by remember { mutableStateOf(SP.isApiEnabled) }
+        var enabled by remember { mutableStateOf(alreadyEnabled) }
+        var key by remember { mutableStateOf("") }
         SwitchItem(R.string.enable, state = enabled, onCheckedChange = {
             enabled = it
-            SP.isApiEnabled = it
-            if(!it) SP.sharedPrefs.edit { remove("api.key") }
         }, padding = false)
-        if(enabled) {
-            var key by remember { mutableStateOf("") }
+        if (enabled) {
             OutlinedTextField(
-                value = key, onValueChange = { key = it }, label = { Text(stringResource(R.string.api_key)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 4.dp), readOnly = true,
+                key, { key = it }, Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                label = { Text(stringResource(R.string.api_key)) },
                 trailingIcon = {
-                    IconButton(
-                        onClick = {
-                            val charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-                            val sr = SecureRandom()
-                            key = (1..20).map { charset[sr.nextInt(charset.length)] }.joinToString("")
-                        }
-                    ) {
-                        Icon(painter = painterResource(R.drawable.casino_fill0), contentDescription = "Random")
+                    IconButton({ key = generateBase64Key(10) }) {
+                        Icon(painterResource(R.drawable.casino_fill0), null)
                     }
                 }
             )
-            Button(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 10.dp),
-                onClick = {
-                    SP.apiKey = key
-                    context.showOperationResultToast(true)
-                },
-                enabled = key.isNotEmpty()
-            ) {
-                Text(stringResource(R.string.apply))
-            }
-            if(SP.apiKey != null) Notes(R.string.api_key_exist)
         }
+        Button(
+            onClick = {
+                setKey(if (enabled) key else "")
+                alreadyEnabled = enabled
+                context.showOperationResultToast(true)
+            },
+            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+            enabled = !enabled || key.length !in 0..7
+        ) {
+            Text(stringResource(R.string.apply))
+        }
+        if (enabled && alreadyEnabled) Notes(R.string.api_key_exist)
     }
 }
 
 @Serializable object Notifications
 
 @Composable
-fun NotificationsScreen(onNavigateUp: () -> Unit) = MyScaffold(R.string.notifications, onNavigateUp, 0.dp) {
-    val sp = LocalContext.current.getSharedPreferences("data", Context.MODE_PRIVATE)
-    val map = mapOf(
-        NotificationUtils.ID.PASSWORD_CHANGED to R.string.password_changed, NotificationUtils.ID.USER_ADDED to R.string.user_added,
-        NotificationUtils.ID.USER_STARTED to R.string.user_started, NotificationUtils.ID.USER_SWITCHED to R.string.user_switched,
-        NotificationUtils.ID.USER_STOPPED to R.string.user_stopped, NotificationUtils.ID.USER_REMOVED to R.string.user_removed,
-        NotificationUtils.ID.BUG_REPORT_SHARED to R.string.bug_report_shared,
-        NotificationUtils.ID.BUG_REPORT_SHARING_DECLINED to R.string.bug_report_sharing_declined,
-        NotificationUtils.ID.BUG_REPORT_FAILED to R.string.bug_report_failed,
-        NotificationUtils.ID.SYSTEM_UPDATE_PENDING to R.string.system_update_pending
-    )
-    map.forEach { (k, v) ->
-        SwitchItem(v, getState = { sp.getBoolean("n_$k", true) }, onCheckedChange = { sp.edit(true) { putBoolean("n_$k", it) } })
+fun NotificationsScreen(
+    getState: () -> List<NotificationType>, setNotification: (NotificationType, Boolean) -> Unit,
+    onNavigateUp: () -> Unit
+) = MyScaffold(R.string.notifications, onNavigateUp, 0.dp) {
+    val enabledNotifications = remember { mutableStateListOf(*getState().toTypedArray()) }
+    NotificationType.entries.forEach { type ->
+        SwitchItem(type.text, type in enabledNotifications, {
+            setNotification(type, it)
+            enabledNotifications.run { if (it) plusAssign(type) else minusAssign(type) }
+        })
     }
 }
 

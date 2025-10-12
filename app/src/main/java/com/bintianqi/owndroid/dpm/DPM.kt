@@ -443,13 +443,13 @@ fun handlePrivilegeChange(context: Context) {
     SP.dhizukuServer = false
     SP.shortcuts = privilege.activated
     if (privilege.activated) {
-        ShortcutUtils.setAllShortcuts(context)
+        ShortcutUtils.setAllShortcuts(context, true)
         if (!privilege.dhizuku) {
             setDefaultAffiliationID()
         }
     } else {
         SP.isDefaultAffiliationIdSet = false
-        ShortcutUtils.setAllShortcuts(context)
-        SP.isApiEnabled = false
+        ShortcutUtils.setAllShortcuts(context, false)
+        SP.apiKeyHash = ""
     }
 }

@@ -13,6 +13,7 @@ class MyApplication : Application() {
         val dbHelper = MyDbHelper(this)
         myRepo = MyRepository(dbHelper)
         Privilege.initialize(applicationContext)
+        NotificationUtils.createChannels(this)
     }
 }
 
