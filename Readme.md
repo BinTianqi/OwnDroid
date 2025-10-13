@@ -1,61 +1,61 @@
-[English](Readme-en.md) | [日本語](Readme-ja.md)
+[日本語](Readme-ja.md) | [简体中文](Readme-Chinese.md)
 
 # OwnDroid
 
-使用安卓的设备策略管理器API管理你的设备。
+Use Android's DevicePolicyManager API to manage your device.
 
-## 下载
+## Download
 
 - [IzzyOnDroid F-Droid Repository](https://apt.izzysoft.de/fdroid/index/apk/com.bintianqi.owndroid)
 - [Releases on GitHub](https://github.com/BinTianqi/OwnDroid/releases)
 
 > [!NOTE]
-> ColorOS用户应在GitHub上的releases下载testkey版本
+> ColorOS users should download testkey version from releases on GitHub
 
-## 功能
+## Features
 
-- 系统：禁用摄像头、禁止截屏、全局静音、禁用USB信号、锁定任务模式、清除数据...
-- 网络：添加/修改/删除 Wi-Fi、网络统计、网络日志...
-- 应用：挂起/隐藏应用、阻止应用卸载、授予/撤销权限、清除应用存储、安装/卸载应用...
-- 用户限制：禁止发送短信、禁止拨出电话、禁用蓝牙、禁用NFC、禁用USB文件传输、禁止安装/卸载应用...
-- 用户：用户信息、创建/启动/切换/停止/删除用户...
-- 密码与锁屏：重置密码、设置屏幕超时...
+- System: disable camera, disable screenshot, master volume mute, disable USB signal, lock task mode, wipe data...
+- Network: add/modify/delete Wi-Fi, network stats, network logging...
+- Applications: suspend/hide app, block app uninstallation, grant/revoke permissions, clear app storage, install/uninstall app...
+- User restriction: disable SMS, disable outgoing call, disable bluetooth, disable NFC, disable USB file transfer, disable app installing/uninstalling...
+- Users: user information, create/start/switch/stop/delete user...
+- Password and keyguard: reset password, set screen timeout...
 
-## 工作模式
+## Working modes
 
-- Device owner（推荐）
+- Device owner (recommended)
 
-  激活方式：
+  Activating methods:
   - Shizuku
   - Dhizuku
   - Root
-  - ADB shell命令 `dpm set-device-owner com.bintianqi.owndroid/.Receiver`
+  - ADB shell command `dpm set-device-owner com.bintianqi.owndroid/.Receiver`
 - [Dhizuku](https://github.com/iamr0s/Dhizuku)
-- 工作资料
+- Work profile
 
 ## FAQ
 
-### 设备上有账号
+### Already some accounts on the device
 
 ```text
 java.lang.IllegalStateException: Not allowed to set the device owner because there are already some accounts on the device
 ```
 
-解决办法：
-- 冻结持有这些账号的app。
-- 删除这些账号。
+Solutions:
+- Freeze apps who hold those accounts.
+- Delete these accounts.
 
-### 设备上有多个用户
+### Already several users on the device
 
 ```text
 java.lang.IllegalStateException: Not allowed to set the device owner because there are already several users on the device
 ```
 
-解决办法：
-- 删除次级用户。
+Solutions:
+- Delete secondary users.
 
 > [!NOTE]
-> 一些系统有应用克隆、儿童空间等功能，它们通常是用户。
+> Some systems have features such as app cloning and children space, which are usually users.
 
 ### MIUI & HyperOS
 
@@ -63,7 +63,9 @@ java.lang.IllegalStateException: Not allowed to set the device owner because the
 java.lang.SecurityException: Neither user 2000 nor current process has android.permission.MANAGE_DEVICE_ADMINS.
 ```
 
-解决办法： 在开发者设置中打开`USB调试（安全设置）`，或在root命令行中执行激活命令。
+Solutions:
+- Enable `USB debugging (Security setting)` in developer options.
+- Or execute activating command in root shell.
 
 ### ColorOS
 
@@ -71,41 +73,41 @@ java.lang.SecurityException: Neither user 2000 nor current process has android.p
 java.lang.IllegalStateException: Unexpected @ProvisioningPreCondition
 ```
 
-解决办法：使用 OwnDroid testkey 版本
+Solution: Use OwnDroid testkey version
 
-### 三星
+### Samsung
 
 ```text
 user limit reached
 ```
 
-三星限制了多用户功能，暂无解决办法。
+Samsung restricts Android's multiple users feature. There is currently no solution.
 
 ## API
 
-| ID                       | Extra                  | 最小安卓版本 |
-|--------------------------|------------------------|:------:|
-| `HIDE`                   | `package`              |        |
-| `UNHIDE`                 | `package`              |        |
-| `SUSPEND`                | `package`              |   7    |
-| `UNSUSPEND`              | `package`              |   7    |
-| `ADD_USER_RESTRICTION`   | `restriction`          |        |
-| `CLEAR_USER_RESTRICTION` | `restriction`          |        |
-| `SET_PERMISSION_DEFAULT` | `package` `permission` |   6    |
-| `SET_PERMISSION_GRANTED` | `package` `permission` |   6    |
-| `SET_PERMISSION_DENIED`  | `package` `permission` |   6    |
-| `LOCK`                   |                        |        |
-| `REBOOT`                 |                        |   7    |
+| ID                       | Extras                 | Minimum Android version |
+|--------------------------|------------------------|:-----------------------:|
+| `HIDE`                   | `package`              |                         |
+| `UNHIDE`                 | `package`              |                         |
+| `SUSPEND`                | `package`              |            7            |
+| `UNSUSPEND`              | `package`              |            7            |
+| `ADD_USER_RESTRICTION`   | `restriction`          |                         |
+| `CLEAR_USER_RESTRICTION` | `restriction`          |                         |
+| `SET_PERMISSION_DEFAULT` | `package` `permission` |            6            |
+| `SET_PERMISSION_GRANTED` | `package` `permission` |            6            |
+| `SET_PERMISSION_DENIED`  | `package` `permission` |            6            |
+| `LOCK`                   |                        |                         |
+| `REBOOT`                 |                        |            7            |
 
-[可用的用户限制](https://developer.android.google.cn/reference/android/os/UserManager#constants_1)
+[Available user restrictions](https://developer.android.com/reference/android/os/UserManager#constants_1)
 
 ```shell
-# 一个在ADB shell中隐藏app的示例
+# An example of hiding app in ADB shell
 am broadcast -a com.bintianqi.owndroid.action.HIDE -n com.bintianqi.owndroid/.ApiReceiver --es key abcdefg --es package com.example.app
 ```
 
 ```kotlin
-// 一个在Kotlin中隐藏app的示例
+// An example of hiding app in Kotlin
 val intent = Intent("com.bintianqi.owndroid.action.HIDE")
     .setComponent(ComponentName("com.bintianqi.owndroid", "com.bintianqi.owndroid.ApiReceiver"))
     .putExtra("key", "abcdefg")
@@ -113,18 +115,18 @@ val intent = Intent("com.bintianqi.owndroid.action.HIDE")
 context.sendBroadcast(intent)
 ```
 
-## 构建
+## Build
 
-你可以在命令行中使用Gradle以构建OwnDroid
+You can use Gradle in command line to build OwnDroid.
 ```shell
-# 使用testkey签名（默认）
+# Use testkey for signing (default)
 ./gradlew build
-# 使用你的jks密钥签名
+# Use your custom .jks key for signing
 ./gradlew build -PStoreFile="/path/to/your/jks/file" -PStorePassword="YOUR_KEYSTORE_PASSWORD" -PKeyPassword="YOUR_KEY_PASSWORD" -PKeyAlias="YOUR_KEY_ALIAS"
 ```
-（在Windows系统中应使用`./gradlew.bat`)
+(Use `./gradlew.bat` instead on Windows)
 
-## 许可证
+## License
 
 [License.md](LICENSE.md)
 
