@@ -35,7 +35,6 @@
     <string name="time_unit_ms">Zaman (ms)</string>
     <string name="length">Uzunluk</string>
     <string name="none">Yok</string>
-    <string name="no_logs">Kayıt Yok</string>
     <string name="default_stringres">Varsayılan</string>
     <string name="apply">Uygula</string>
     <string name="decide_by_user">Kullanıcı Tarafından Karar Ver</string>

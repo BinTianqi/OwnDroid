@@ -26,8 +26,8 @@ android {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 21
         targetSdk = 36
-        versionCode = 40
-        versionName = "7.1"
+        versionCode = 41
+        versionName = "7.2"
         multiDexEnabled = false
     }
 

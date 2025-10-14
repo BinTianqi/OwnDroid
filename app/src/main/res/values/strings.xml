@@ -37,7 +37,6 @@
     <string name="time_unit_ms">Time(ms)</string>
     <string name="length">Length</string>
     <string name="none">None</string>
-    <string name="no_logs">No logs</string>
     <string name="default_stringres">Default</string>
     <string name="apply">Apply</string>
     <string name="decide_by_user">Decide by user</string>
@@ -221,6 +220,8 @@
     <string name="uninstall_all_user_ca_cert">Uninstall all user CA certificate</string>
     <string name="security_logging">Security logging</string>
     <string name="pre_reboot_security_logs">Pre-reboot security logs</string>
+    <string name="security_logs_collected">Security logs collected</string>
+    <string name="n_logs_in_total">%1$d logs in total</string>
     <string name="wipe_data">Wipe data</string>
     <string name="wipe_external_storage">Wipe external storage</string>
     <string name="wipe_reset_protection_data">Wipe protected data</string>

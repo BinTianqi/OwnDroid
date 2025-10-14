@@ -88,7 +88,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -111,11 +110,11 @@ import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SP
-import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.formatDate
 import com.bintianqi.owndroid.popToast
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.CircularProgressDialog
 import com.bintianqi.owndroid.ui.ErrorDialog
 import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
@@ -132,7 +131,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import java.io.ByteArrayOutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.TimeZone
 import kotlin.math.roundToLong
 
@@ -178,7 +179,7 @@ fun SystemManagerScreen(
         if(VERSION.SDK_INT >= 31) {
             FunctionItem(R.string.nearby_streaming_policy, icon = R.drawable.share_fill0) { onNavigate(NearbyStreamingPolicy) }
         }
-        if(VERSION.SDK_INT >= 28 && privilege.device) {
+        if (VERSION.SDK_INT >= 28 && privilege.device && !privilege.dhizuku) {
             FunctionItem(R.string.lock_task_mode, icon = R.drawable.lock_fill0) { onNavigate(LockTaskMode) }
         }
         FunctionItem(R.string.ca_cert, icon = R.drawable.license_fill0) { onNavigate(CaCert) }
@@ -676,7 +677,7 @@ fun ChangeTimeZoneScreen(setTimeZone: (String) -> Boolean, onNavigateUp: () -> U
     var dialog by remember { mutableStateOf(false) }
     val availableIds = TimeZone.getAvailableIDs()
     val validInput = inputTimezone in availableIds
-            MyScaffold(R.string.change_timezone, onNavigateUp) {
+    MyScaffold(R.string.change_timezone, onNavigateUp) {
         OutlinedTextField(
             value = inputTimezone,
             label = { Text(stringResource(R.string.timezone_id)) },
@@ -1147,7 +1148,7 @@ fun NearbyStreamingPolicyScreen(
 fun LockTaskModeScreen(
     chosenPackage: Channel<String>, onChoosePackage: () -> Unit,
     lockTaskPackages: StateFlow<List<AppInfo>>, getLockTaskPackages: () -> Unit,
-    setLockTaskPackage: (String, Boolean) -> Unit, startLockTaskMode: (String, String) -> Unit,
+    setLockTaskPackage: (String, Boolean) -> Unit, startLockTaskMode: (String, String) -> Boolean,
     getLockTaskFeatures: () -> Int, setLockTaskFeature: (Int) -> String?, onNavigateUp: () -> Unit
 ) {
     val coroutine = rememberCoroutineScope()
@@ -1202,9 +1203,10 @@ fun LockTaskModeScreen(
 @RequiresApi(28)
 @Composable
 private fun StartLockTaskMode(
-    startLockTaskMode: (String, String) -> Unit,
+    startLockTaskMode: (String, String) -> Boolean,
     chosenPackage: Channel<String>, onChoosePackage: () -> Unit
 ) {
+    val context = LocalContext.current
     val focusMgr = LocalFocusManager.current
     var packageName by rememberSaveable { mutableStateOf("") }
     var activity by rememberSaveable { mutableStateOf("") }
@@ -1244,7 +1246,8 @@ private fun StartLockTaskMode(
                 .fillMaxWidth()
                 .padding(bottom = 5.dp),
             onClick = {
-                startLockTaskMode(packageName, activity)
+                val result = startLockTaskMode(packageName, activity)
+                if (!result) context.showOperationResultToast(false)
             },
             enabled = packageName.isNotBlank() && (!specifyActivity || activity.isNotBlank())
         ) {
@@ -1525,77 +1528,104 @@ fun CaCertScreen(
 
 @RequiresApi(24)
 @Composable
-fun SecurityLoggingScreen(onNavigateUp: () -> Unit) {
+fun SecurityLoggingScreen(
+    getEnabled: () -> Boolean, setEnabled: (Boolean) -> Unit, exportLogs: (Uri, () -> Unit) -> Unit,
+    getCount: () -> Int, deleteLogs: () -> Unit, getPRLogs: () -> Boolean,
+    exportPRLogs: (Uri, () -> Unit) -> Unit, onNavigateUp: () -> Unit
+) {
     val context = LocalContext.current
-    val logFile = context.filesDir.resolve("SecurityLogs.json")
-    var fileSize by remember { mutableLongStateOf(0) }
-    LaunchedEffect(Unit) { fileSize = logFile.length() }
-    var preRebootSecurityLogs by remember { mutableStateOf(byteArrayOf()) }
-    val exportPreRebootSecurityLogs = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
-        if(uri != null) context.contentResolver.openOutputStream(uri)?.use { outStream ->
-            preRebootSecurityLogs.inputStream().copyTo(outStream)
+    var enabled by remember { mutableStateOf(false) }
+    var logsCount by remember { mutableIntStateOf(0) }
+    var exporting by remember { mutableStateOf(false) }
+    var dialog by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        enabled = getEnabled()
+        logsCount = getCount()
+    }
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) {
+        if (it != null) {
+            exporting = true
+            exportLogs(it) {
+                exporting = false
+                context.showOperationResultToast(true)
+            }
         }
     }
-    val exportSecurityLogs = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
-        if(uri != null) context.contentResolver.openOutputStream(uri)?.use { outStream ->
-            outStream.write("[".toByteArray())
-            logFile.inputStream().use { it.copyTo(outStream) }
-            outStream.write("]".toByteArray())
-            context.showOperationResultToast(true)
+    val exportPRLogsLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) {
+        if (it != null) {
+            exporting = true
+            exportPRLogs(it) {
+                exporting = false
+                context.showOperationResultToast(true)
+            }
         }
     }
-    MyScaffold(R.string.security_logging, onNavigateUp) {
+    MyScaffold(R.string.security_logging, onNavigateUp, 0.dp) {
         SwitchItem(
-            R.string.enable,
-            getState = { Privilege.DPM.isSecurityLoggingEnabled(Privilege.DAR) },
-            onCheckedChange = { Privilege.DPM.setSecurityLoggingEnabled(Privilege.DAR, it) },
-            padding = false
+            R.string.enable, enabled, {
+                setEnabled(it)
+                enabled = it
+            }
         )
-        Text(stringResource(R.string.log_file_size_is, formatFileSize(fileSize)))
-        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-            Button(
-                onClick = {
-                    exportSecurityLogs.launch("SecurityLogs.json")
-                },
-                enabled = fileSize > 0,
-                modifier = Modifier.fillMaxWidth(0.49F)
-            ) {
-                Text(stringResource(R.string.export_logs))
-            }
-            Button(
-                onClick = {
-                    logFile.delete()
-                    fileSize = logFile.length()
-                },
-                enabled = fileSize > 0,
-                modifier = Modifier.fillMaxWidth(0.96F)
-            ) {
-                Text(stringResource(R.string.delete_logs))
-            }
+        Text(
+            stringResource(R.string.n_logs_in_total, logsCount),
+            Modifier.padding(HorizontalPadding)
+        )
+        Button(
+            {
+                val date = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date())
+                exportLauncher.launch("security_logs_$date")
+            },
+            Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding),
+            logsCount > 0
+        ) {
+            Text(stringResource(R.string.export_logs))
         }
-        Notes(R.string.info_security_log)
-        Spacer(Modifier.padding(vertical = 5.dp))
+        if (logsCount > 0) FilledTonalButton(
+            { dialog = true },
+            Modifier.fillMaxWidth().padding(HorizontalPadding, 4.dp)
+        ) {
+            Text(stringResource(R.string.delete_logs))
+        }
+        Notes(R.string.info_security_log, HorizontalPadding)
         Button(
             onClick = {
-                val logs = Privilege.DPM.retrievePreRebootSecurityLogs(Privilege.DAR)
-                if(logs == null) {
-                    context.popToast(R.string.no_logs)
-                    return@Button
+                if (getPRLogs()) {
+                    val date = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date())
+                    exportPRLogsLauncher.launch("pre_reboot_security_logs_$date")
                 } else {
-                    val outputStream = ByteArrayOutputStream()
-                    outputStream.write("[".encodeToByteArray())
-                    processSecurityLogs(logs, outputStream)
-                    outputStream.write("]".encodeToByteArray())
-                    preRebootSecurityLogs = outputStream.toByteArray()
-                    exportPreRebootSecurityLogs.launch("PreRebootSecurityLogs.json")
+                    context.showOperationResultToast(false)
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(HorizontalPadding, 15.dp)
         ) {
             Text(stringResource(R.string.pre_reboot_security_logs))
         }
-        Notes(R.string.info_pre_reboot_security_log)
+        Notes(R.string.info_pre_reboot_security_log, HorizontalPadding)
     }
+    if (exporting) CircularProgressDialog { exporting = false }
+    if (dialog) AlertDialog(
+        text = { Text(stringResource(R.string.delete_logs)) },
+        confirmButton = {
+            TextButton({
+                deleteLogs()
+                logsCount = 0
+                dialog = false
+            }) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        dismissButton = {
+            TextButton({ dialog = false }) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+        onDismissRequest = { dialog = false }
+    )
 }
 
 @Serializable object DisableAccountManagement

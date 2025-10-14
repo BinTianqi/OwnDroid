@@ -14,21 +14,28 @@ import android.content.pm.PackageInstaller
 import android.os.Build.VERSION
 import android.util.Log
 import androidx.annotation.RequiresApi
+import com.bintianqi.owndroid.MyApplication
+import com.bintianqi.owndroid.MyNotificationChannel
+import com.bintianqi.owndroid.NotificationType
+import com.bintianqi.owndroid.NotificationUtils
 import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SP
 import com.bintianqi.owndroid.ShortcutUtils
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuBinderWrapper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
-import java.io.OutputStream
 
 @SuppressLint("PrivateApi")
 fun binderWrapperDevicePolicyManager(appContext: Context): DevicePolicyManager? {
@@ -166,227 +173,333 @@ fun handleNetworkLogs(context: Context, batchToken: Long) {
     buffer.close()
 }
 
-@RequiresApi(24)
-fun processSecurityLogs(securityEvents: List<SecurityLog.SecurityEvent>, outputStream: OutputStream) {
-    val json = Json { ignoreUnknownKeys = true; explicitNulls = false }
-    val buffer = outputStream.bufferedWriter()
-    securityEvents.forEachIndexed { index, event ->
-        val item = buildJsonObject {
-            put("time", event.timeNanos / 1000)
-            put("tag", event.tag)
-            if(VERSION.SDK_INT >= 28) put("level", event.logLevel)
-            if(VERSION.SDK_INT >= 28) put("id", event.id)
-            parseSecurityEventData(event).let { if(it != null) put("data", it) }
-        }
-        buffer.write(json.encodeToString(item))
-        if(index < securityEvents.size - 1) buffer.write(",")
-    }
-    buffer.close()
+@Serializable
+class SecurityEvent(
+    val id: Long?, val tag: Int, val level: Int?, val time: Long, val data: JsonObject?
+)
+
+@Serializable
+class SecurityEventWithData(
+    val id: Long?, val tag: Int, val level: Int?, val time: Long, val data: SecurityEventData?
+)
+
+@Serializable
+sealed class SecurityEventData {
+    @Serializable
+    class AdbShellCmd(val command: String): SecurityEventData()
+    @Serializable
+    class AppProcessStart(
+        val name: String,
+        val time: Long,
+        val uid: Int,
+        val pid: Int,
+        val seinfo: String,
+        val hash: String
+    ): SecurityEventData()
+    @Serializable
+    class BackupServiceToggled(
+        val admin: String,
+        val user: Int,
+        val state: Int
+    ): SecurityEventData()
+    @Serializable
+    class BluetoothConnection(
+        val mac: String,
+        val successful: Int,
+        @SerialName("failure_reason") val failureReason: String
+    ): SecurityEventData()
+    @Serializable
+    class BluetoothDisconnection(
+        val mac: String,
+        val reason: String
+    ): SecurityEventData()
+    @Serializable
+    class CameraPolicySet(
+        val admin: String,
+        @SerialName("admin_user") val adminUser: Int,
+        @SerialName("target_user") val targetUser: Int,
+        val disabled: Int
+    ): SecurityEventData()
+    @Serializable
+    class CaInstalledRemoved(
+        val result: Int,
+        val subject: String,
+        val user: Int
+    ): SecurityEventData()
+    @Serializable
+    class CertValidationFailure(val reason: String): SecurityEventData()
+    @Serializable
+    class CryptoSelfTestCompleted(val result: Int): SecurityEventData()
+    @Serializable
+    class KeyguardDisabledFeaturesSet(
+        val admin: String,
+        @SerialName("admin_user") val adminUser: Int,
+        @SerialName("target_user") val targetUser: Int,
+        val mask: Int
+    ): SecurityEventData()
+    @Serializable
+    class KeyguardDismissAuthAttempt(
+        val result: Int,
+        val strength: Int
+    ): SecurityEventData()
+    @Serializable
+    class KeyGeneratedImportDestruction(
+        val result: Int,
+        val alias: String,
+        val uid: Int
+    ): SecurityEventData()
+    @Serializable
+    class KeyIntegrityViolation(
+        val alias: String,
+        val uid: Int
+    ): SecurityEventData()
+    @Serializable
+    class MaxPasswordAttemptsSet(
+        val admin: String,
+        @SerialName("admin_user") val adminUser: Int,
+        @SerialName("target_user") val targetUser: Int,
+        val value: Int
+    ): SecurityEventData()
+    @Serializable
+    class MaxScreenLockTimeoutSet(
+        val admin: String,
+        @SerialName("admin_user") val adminUser: Int,
+        @SerialName("target_user") val targetUser: Int,
+        val timeout: Long
+    ): SecurityEventData()
+    @Serializable
+    class MediaMountUnmount(
+        @SerialName("mount_point") val mountPoint: String,
+        val label: String
+    ): SecurityEventData()
+    @Serializable
+    class OsStartup(
+        @SerialName("verified_boot_state") val verifiedBootState: String,
+        @SerialName("dm_verity_mode") val dmVerityMode: String
+    ): SecurityEventData()
+    @Serializable
+    class PackageInstalledUninstalledUpdated(
+        val name: String,
+        val version: Long,
+        val user: Int
+    ): SecurityEventData()
+    @Serializable
+    class PasswordChanged(
+        val complexity: Int,
+        val user: Int
+    ): SecurityEventData()
+    @Serializable
+    class PasswordComplexityRequired(
+        val admin: String,
+        @SerialName("admin_user") val adminUser: Int,
+        @SerialName("target_user") val targetUser: Int,
+        val complexity: Int
+    ): SecurityEventData()
+    @Serializable
+    class PasswordComplexitySet(
+        val admin: String,
+        @SerialName("admin_user") val adminUser: Int,
+        @SerialName("target_user") val targetUser: Int,
+        val length: Int,
+        val quality: Int,
+        val letters: Int,
+        @SerialName("non_letters") val nonLetters: Int,
+        val digits: Int,
+        val uppercase: Int,
+        val lowercase: Int,
+        val symbols: Int
+    ): SecurityEventData()
+    @Serializable
+    class PasswordExpirationSet(
+        val admin: String,
+        @SerialName("admin_user") val adminUser: Int,
+        @SerialName("target_user") val targetUser: Int,
+        val expiration: Long
+    ): SecurityEventData()
+    @Serializable
+    class PasswordHistoryLengthSet(
+        val admin: String,
+        @SerialName("admin_user") val adminUser: Int,
+        @SerialName("target_user") val targetUser: Int,
+        val length: Int
+    ): SecurityEventData()
+    @Serializable
+    class RemoteLock(
+        val admin: String,
+        @SerialName("admin_user") val adminUser: Int,
+        @SerialName("target_user") val targetUser: Int,
+    ): SecurityEventData()
+    @Serializable
+    class SyncRecvSendFile(val path: String): SecurityEventData()
+    @Serializable
+    class UserRestrictionAddedRemoved(
+        val admin: String,
+        val user: Int,
+        val restriction: String
+    ): SecurityEventData()
+    @Serializable
+    class WifiConnection(
+        val bssid: String,
+        val type: String,
+        @SerialName("failure_reason") val failureReason: String
+    ): SecurityEventData()
+    @Serializable
+    class WifiDisconnection(
+        val bssid: String,
+        val reason: String
+    ): SecurityEventData()
 }
 
-@RequiresApi(24)
-fun parseSecurityEventData(event: SecurityLog.SecurityEvent): JsonElement? {
-    return when(event.tag) {
-        SecurityLog.TAG_ADB_SHELL_CMD -> JsonPrimitive(event.data as String)
+fun transformSecurityEventData(tag: Int, payload: Any): SecurityEventData? {
+    return when(tag) {
+        SecurityLog.TAG_ADB_SHELL_CMD -> SecurityEventData.AdbShellCmd(payload as String)
         SecurityLog.TAG_ADB_SHELL_INTERACTIVE -> null
         SecurityLog.TAG_APP_PROCESS_START -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("name", payload[0] as String)
-                put("time", payload[1] as Long)
-                put("uid", payload[2] as Int)
-                put("pid", payload[3] as Int)
-                put("seinfo", payload[4] as String)
-                put("apk_hash", payload[5] as String)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.AppProcessStart(
+                data[0] as String, data[1] as Long, data[2] as Int, data[3] as Int,
+                data[4] as String, data[5] as String
+            )
         }
         SecurityLog.TAG_BACKUP_SERVICE_TOGGLED -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("admin", payload[0] as String)
-                put("admin_user_id", payload[1] as Int)
-                put("state", payload[2] as Int)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.BackupServiceToggled(data[0] as String, data[1] as Int, data[2] as Int)
         }
         SecurityLog.TAG_BLUETOOTH_CONNECTION -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("mac", payload[0] as String)
-                put("successful", payload[1] as Int)
-                (payload[2] as String).let { if(it != "") put("failure_reason", it) }
-            }
+            val data = payload as Array<*>
+            SecurityEventData.BluetoothConnection(data[0] as String, data[1] as Int, data[2] as String)
         }
         SecurityLog.TAG_BLUETOOTH_DISCONNECTION -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("mac", payload[0] as String)
-                (payload[1] as String).let { if(it != "") put("reason", it) }
-            }
+            val data = payload as Array<*>
+            SecurityEventData.BluetoothDisconnection(data[0] as String, data[1] as String)
         }
         SecurityLog.TAG_CAMERA_POLICY_SET -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("admin", payload[0] as String)
-                put("admin_user_id", payload[1] as Int)
-                put("target_user_id", payload[2] as Int)
-                put("disabled", payload[3] as Int)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.CameraPolicySet(
+                data[0] as String, data[1] as Int, data[2] as Int, data[3] as Int
+            )
         }
         SecurityLog.TAG_CERT_AUTHORITY_INSTALLED, SecurityLog.TAG_CERT_AUTHORITY_REMOVED -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("result", payload[0] as Int)
-                put("subject", payload[1] as String)
-                if(VERSION.SDK_INT >= 30) put("user", payload[2] as Int)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.CaInstalledRemoved(data[0] as Int, data[1] as String, data[2] as Int)
         }
-        SecurityLog.TAG_CERT_VALIDATION_FAILURE -> JsonPrimitive(event.data as String)
-        SecurityLog.TAG_CRYPTO_SELF_TEST_COMPLETED -> JsonPrimitive(event.data as Int)
+        SecurityLog.TAG_CERT_VALIDATION_FAILURE ->
+            SecurityEventData.CertValidationFailure(payload as String)
+        SecurityLog.TAG_CRYPTO_SELF_TEST_COMPLETED ->
+            SecurityEventData.CryptoSelfTestCompleted(payload as Int)
         SecurityLog.TAG_KEYGUARD_DISABLED_FEATURES_SET -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("admin", payload[0] as String)
-                put("admin_user_id", payload[1] as Int)
-                put("target_user_id", payload[2] as Int)
-                put("mask", payload[3] as Int)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.KeyguardDisabledFeaturesSet(
+                data[0] as String, data[1] as Int, data[2] as Int, data[3] as Int
+            )
         }
         SecurityLog.TAG_KEYGUARD_DISMISSED -> null
         SecurityLog.TAG_KEYGUARD_DISMISS_AUTH_ATTEMPT -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("result", payload[0] as Int)
-                put("strength", payload[1] as Int)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.KeyguardDismissAuthAttempt(data[0] as Int, data[1] as Int)
         }
         SecurityLog.TAG_KEYGUARD_SECURED -> null
-        SecurityLog.TAG_KEY_DESTRUCTION, SecurityLog.TAG_KEY_GENERATED, SecurityLog.TAG_KEY_IMPORT -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("result", payload[0] as Int)
-                put("alias", payload[1] as String)
-                put("uid", payload[2] as Int)
-            }
-        }
-        SecurityLog.TAG_KEY_INTEGRITY_VIOLATION -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("alias", payload[0] as String)
-                put("uid", payload[1] as Int)
-            }
+        SecurityLog.TAG_KEY_GENERATED, SecurityLog.TAG_KEY_IMPORT, SecurityLog.TAG_KEY_DESTRUCTION -> {
+            val data = payload as Array<*>
+            SecurityEventData.KeyGeneratedImportDestruction(
+                data[0] as Int, data[1] as String, data[2] as Int
+            )
         }
         SecurityLog.TAG_LOGGING_STARTED, SecurityLog.TAG_LOGGING_STOPPED -> null
         SecurityLog.TAG_LOG_BUFFER_SIZE_CRITICAL -> null
         SecurityLog.TAG_MAX_PASSWORD_ATTEMPTS_SET -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("admin", payload[0] as String)
-                put("admin_user_id", payload[1] as Int)
-                put("target_user_id", payload[2] as Int)
-                put("value", payload[3] as Int)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.MaxPasswordAttemptsSet(
+                data[0] as String, data[1] as Int, data[2] as Int, data[3] as Int
+            )
         }
         SecurityLog.TAG_MAX_SCREEN_LOCK_TIMEOUT_SET -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("admin", payload[0] as String)
-                put("admin_user_id", payload[1] as Int)
-                put("target_user_id", payload[2] as Int)
-                put("timeout", payload[3] as Long)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.MaxScreenLockTimeoutSet(
+                data[0] as String, data[1] as Int, data[2] as Int, data[3] as Long
+            )
         }
         SecurityLog.TAG_MEDIA_MOUNT, SecurityLog.TAG_MEDIA_UNMOUNT -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("mount_point", payload[0] as String)
-                put("volume_label", payload[1] as String)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.MediaMountUnmount(data[0] as String, data[1] as String)
         }
+        SecurityLog.TAG_NFC_ENABLED, SecurityLog.TAG_NFC_DISABLED -> null
         SecurityLog.TAG_OS_SHUTDOWN -> null
         SecurityLog.TAG_OS_STARTUP -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("verified_boot_state", payload[0] as String)
-                put("dm_verify_state", payload[1] as String)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.OsStartup(data[0] as String, data[1] as String)
         }
-        SecurityLog.TAG_PACKAGE_INSTALLED, SecurityLog.TAG_PACKAGE_UNINSTALLED, SecurityLog.TAG_PACKAGE_UPDATED -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("name", payload[0] as String)
-                put("version", payload[1] as Long)
-                put("user_id", payload[2] as Int)
-            }
+        SecurityLog.TAG_PACKAGE_INSTALLED, SecurityLog.TAG_PACKAGE_UPDATED,
+        SecurityLog.TAG_PACKAGE_UNINSTALLED -> {
+            val data = payload as Array<*>
+            SecurityEventData.PackageInstalledUninstalledUpdated(
+                data[0] as String, data[1] as Long, data[2] as Int
+            )
         }
         SecurityLog.TAG_PASSWORD_CHANGED -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("complexity", payload[0] as Int)
-                put("user_id", payload[1] as Int)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.PasswordChanged(data[0] as Int, data[1] as Int)
         }
-        SecurityLog. TAG_PASSWORD_COMPLEXITY_REQUIRED -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("admin", payload[0] as String)
-                put("admin_user_id", payload[1] as Int)
-                put("target_user_id", payload[2] as Int)
-                put("complexity", payload[3] as Int)
-            }
+        SecurityLog.TAG_PASSWORD_COMPLEXITY_REQUIRED -> {
+            val data = payload as Array<*>
+            SecurityEventData.PasswordComplexityRequired(
+                data[0] as String, data[1] as Int, data[2] as Int, data[3] as Int
+            )
         }
-        SecurityLog.TAG_PASSWORD_COMPLEXITY_SET -> null //Deprecated
+        SecurityLog.TAG_PASSWORD_COMPLEXITY_SET -> {
+            val data = payload as Array<*>
+            SecurityEventData.PasswordComplexitySet(
+                data[0] as String, data[1] as Int, data[2] as Int, data[3] as Int, data[4] as Int,
+                data[5] as Int, data[6] as Int, data[7] as Int, data[8] as Int, data[9] as Int,
+                data[10] as Int
+            )
+        }
         SecurityLog.TAG_PASSWORD_EXPIRATION_SET -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("admin", payload[0] as String)
-                put("admin_user_id", payload[1] as Int)
-                put("target_user_id", payload[2] as Int)
-                put("timeout", payload[3] as Long)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.PasswordExpirationSet(
+                data[0] as String, data[1] as Int, data[2] as Int, data[3] as Long
+            )
         }
         SecurityLog.TAG_PASSWORD_HISTORY_LENGTH_SET -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("admin", payload[0] as String)
-                put("admin_user_id", payload[1] as Int)
-                put("target_user_id", payload[2] as Int)
-                put("length", payload[3] as Int)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.PasswordHistoryLengthSet(
+                data[0] as String, data[1] as Int, data[2] as Int, data[3] as Int
+            )
         }
         SecurityLog.TAG_REMOTE_LOCK -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("admin", payload[0] as String)
-                put("admin_user_id", payload[1] as Int)
-                put("target_user_id", payload[2] as Int)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.RemoteLock(data[0] as String, data[1] as Int, data[2] as Int)
         }
-        SecurityLog.TAG_SYNC_RECV_FILE, SecurityLog.TAG_SYNC_SEND_FILE -> JsonPrimitive(event.data as String)
+        SecurityLog.TAG_SYNC_RECV_FILE, SecurityLog.TAG_SYNC_SEND_FILE ->
+            SecurityEventData.SyncRecvSendFile(payload as String)
         SecurityLog.TAG_USER_RESTRICTION_ADDED, SecurityLog.TAG_USER_RESTRICTION_REMOVED -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("admin", payload[0] as String)
-                put("admin_user_id", payload[1] as Int)
-                put("restriction", payload[2] as String)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.UserRestrictionAddedRemoved(
+                data[0] as String, data[1] as Int, data[2] as String
+            )
         }
         SecurityLog.TAG_WIFI_CONNECTION -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("bssid", payload[0] as String)
-                put("type", payload[1] as String)
-                (payload[2] as String).let { if(it != "") put("failure_reason", it) }
-            }
+            val data = payload as Array<*>
+            SecurityEventData.WifiConnection(data[0] as String, data[1] as String, data[2] as String)
         }
         SecurityLog.TAG_WIFI_DISCONNECTION -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("bssid", payload[0] as String)
-                (payload[1] as String).let { if(it != "") put("reason", it) }
-            }
+            val data = payload as Array<*>
+            SecurityEventData.WifiDisconnection(data[0] as String, data[1] as String)
         }
         SecurityLog.TAG_WIPE_FAILURE -> null
         else -> null
+    }
+}
+
+@RequiresApi(24)
+fun retrieveSecurityLogs(app: MyApplication) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val logs = Privilege.DPM.retrieveSecurityLogs(Privilege.DAR) ?: return@launch
+        app.myRepo.writeSecurityLogs(logs)
+        NotificationUtils.sendBasicNotification(
+            app, NotificationType.SecurityLogsCollected, MyNotificationChannel.SecurityLogging,
+            app.getString(R.string.n_logs_in_total, logs.size)
+        )
     }
 }
 

@@ -1567,49 +1567,6 @@ fun NetworkLoggingScreen(onNavigateUp: () -> Unit) {
     }
 }
 
-@Serializable object WifiAuthKeypair
-
-@RequiresApi(31)
-@Composable
-fun WifiAuthKeypairScreen(onNavigateUp: () -> Unit) {
-    val context = LocalContext.current
-    val focusMgr = LocalFocusManager.current
-    var keyPair by remember { mutableStateOf("") }
-    MyScaffold(R.string.wifi_auth_keypair, onNavigateUp) {
-        OutlinedTextField(
-            value = keyPair,
-            label = { Text(stringResource(R.string.alias)) },
-            onValueChange = { keyPair = it },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(Modifier.padding(vertical = 5.dp))
-        val isExist = try {
-            Privilege.DPM.isKeyPairGrantedToWifiAuth(keyPair)
-        } catch(e: java.lang.IllegalArgumentException) {
-            e.printStackTrace()
-            false
-        }
-        Text(stringResource(R.string.already_exist)+"：$isExist")
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Button(
-                onClick = { context.showOperationResultToast(Privilege.DPM.grantKeyPairToWifiAuth(keyPair)) },
-                modifier = Modifier.fillMaxWidth(0.49F)
-            ) {
-                Text(stringResource(R.string.grant))
-            }
-            Button(
-                onClick = { context.showOperationResultToast(Privilege.DPM.revokeKeyPairFromWifiAuth(keyPair)) },
-                modifier = Modifier.fillMaxWidth(0.96F)
-            ) {
-                Text(stringResource(R.string.revoke))
-            }
-        }
-    }
-}
-
 @Serializable object PreferentialNetworkService
 
 @RequiresApi(33)

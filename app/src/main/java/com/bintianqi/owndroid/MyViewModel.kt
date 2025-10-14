@@ -13,6 +13,7 @@ import android.app.admin.FactoryResetProtectionPolicy
 import android.app.admin.IDevicePolicyManager
 import android.app.admin.PackagePolicy
 import android.app.admin.PreferentialNetworkServiceConfig
+import android.app.admin.SecurityLog
 import android.app.admin.SystemUpdateInfo
 import android.app.admin.SystemUpdatePolicy
 import android.app.admin.WifiSsidPolicy
@@ -756,9 +757,12 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         getLockTaskPackages()
     }
     @RequiresApi(28)
-    fun startLockTaskMode(packageName: String, activity: String): Int {
-        if (!NotificationUtils.checkPermission(application)) return 0
-        if (!DPM.isLockTaskPermitted(packageName)) return 1
+    fun startLockTaskMode(packageName: String, activity: String): Boolean {
+        if (!DPM.isLockTaskPermitted(packageName)) {
+            val list = lockTaskPackages.value.map { it.name } + packageName
+            DPM.setLockTaskPackages(DAR, list.toTypedArray())
+            getLockTaskPackages()
+        }
         val options = ActivityOptions.makeBasic().setLockTaskEnabled(true)
         val intent = if(activity.isNotEmpty()) {
             Intent().setComponent(ComponentName(packageName, activity))
@@ -766,9 +770,9 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         if (intent != null) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             application.startActivity(intent, options.toBundle())
-            return 0
+            return true
         } else {
-            return 2
+            return false
         }
     }
     @RequiresApi(28)
@@ -912,6 +916,53 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             }
         }
         DPM.installSystemUpdate(DAR, uri, application.mainExecutor, callback)
+    }
+    @RequiresApi(24)
+    fun getSecurityLoggingEnabled(): Boolean {
+        return DPM.isSecurityLoggingEnabled(DAR)
+    }
+    @RequiresApi(24)
+    fun setSecurityLoggingEnabled(enabled: Boolean) {
+        DPM.setSecurityLoggingEnabled(DAR, enabled)
+    }
+    fun exportSecurityLogs(uri: Uri, callback: () -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            application.contentResolver.openOutputStream(uri)?.use {
+                myRepo.exportSecurityLogs(it)
+            }
+            withContext(Dispatchers.Main) {
+                callback()
+            }
+        }
+    }
+    fun getSecurityLogsCount(): Int {
+        return myRepo.getSecurityLogsCount().toInt()
+    }
+    fun deleteSecurityLogs() {
+        myRepo.deleteSecurityLogs()
+    }
+    var preRebootSecurityLogs = emptyList<SecurityLog.SecurityEvent>()
+    @RequiresApi(24)
+    fun getPreRebootSecurityLogs(): Boolean {
+        if (preRebootSecurityLogs.isNotEmpty()) return true
+        return try {
+            val logs = DPM.retrievePreRebootSecurityLogs(DAR)
+            if (logs != null && logs.isNotEmpty()) {
+                preRebootSecurityLogs = logs
+                true
+            } else false
+        } catch (_: SecurityException) {
+            false
+        }
+    }
+    @RequiresApi(24)
+    fun exportPreRebootSecurityLogs(uri: Uri, callback: () -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val stream = application.contentResolver.openOutputStream(uri) ?: return@launch
+            myRepo.exportPRSecurityLogs(preRebootSecurityLogs, stream)
+            stream.close()
+            withContext(Dispatchers.Main) { callback() }
+        }
     }
 
     @RequiresApi(24)

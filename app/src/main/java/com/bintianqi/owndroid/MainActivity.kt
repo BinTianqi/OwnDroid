@@ -1,6 +1,7 @@
 package com.bintianqi.owndroid
 
 import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Build.VERSION
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -242,7 +243,10 @@ class MainActivity : FragmentActivity() {
         val locale = context.resources?.configuration?.locale
         zhCN = locale == Locale.SIMPLIFIED_CHINESE || locale == Locale.CHINESE || locale == Locale.CHINA
         val vm by viewModels<MyViewModel>()
-        if (VERSION.SDK_INT >= 33) {
+        if (
+            VERSION.SDK_INT >= 33 &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
             val launcher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
             launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
@@ -379,7 +383,11 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
             CaCertScreen(vm.installedCaCerts, vm::getCaCerts, vm::installCaCert, vm::parseCaCert,
                 vm::exportCaCert, vm::uninstallCaCert, vm::uninstallAllCaCerts, ::navigateUp)
         }
-        composable<SecurityLogging> { SecurityLoggingScreen(::navigateUp) }
+        composable<SecurityLogging> {
+            SecurityLoggingScreen(vm::getSecurityLoggingEnabled, vm::setSecurityLoggingEnabled,
+                vm::exportSecurityLogs, vm::getSecurityLogsCount, vm::deleteSecurityLogs,
+                vm::getPreRebootSecurityLogs, vm::exportPreRebootSecurityLogs, ::navigateUp)
+        }
         composable<DisableAccountManagement> {
             DisableAccountManagementScreen(vm.mdAccountTypes, vm::getMdAccountTypes,
                 vm::setMdAccountType, ::navigateUp)

@@ -1,5 +1,6 @@
 package com.bintianqi.owndroid
 
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.admin.DeviceAdminReceiver
 import android.content.ComponentName
@@ -12,7 +13,7 @@ import android.os.UserManager
 import androidx.core.app.NotificationCompat
 import com.bintianqi.owndroid.dpm.handleNetworkLogs
 import com.bintianqi.owndroid.dpm.handlePrivilegeChange
-import com.bintianqi.owndroid.dpm.processSecurityLogs
+import com.bintianqi.owndroid.dpm.retrieveSecurityLogs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,11 +22,10 @@ class Receiver : DeviceAdminReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         if(VERSION.SDK_INT >= 26 && intent.action == "com.bintianqi.owndroid.action.STOP_LOCK_TASK_MODE") {
-            val dpm = getManager(context)
             val receiver = ComponentName(context, this::class.java)
-            val packages = dpm.getLockTaskPackages(receiver)
-            dpm.setLockTaskPackages(receiver, arrayOf())
-            dpm.setLockTaskPackages(receiver, packages)
+            val packages = Privilege.DPM.getLockTaskPackages(receiver)
+            Privilege.DPM.setLockTaskPackages(receiver, arrayOf())
+            Privilege.DPM.setLockTaskPackages(receiver, packages)
         }
     }
 
@@ -56,29 +56,23 @@ class Receiver : DeviceAdminReceiver() {
 
     override fun onSecurityLogsAvailable(context: Context, intent: Intent) {
         super.onSecurityLogsAvailable(context, intent)
-        if(VERSION.SDK_INT >= 24) {
-            CoroutineScope(Dispatchers.IO).launch {
-                val events = getManager(context).retrieveSecurityLogs(MyAdminComponent) ?: return@launch
-                val file = context.filesDir.resolve("SecurityLogs.json")
-                val fileExists = file.exists()
-                file.outputStream().use {
-                    if(fileExists) it.write(",".encodeToByteArray())
-                    processSecurityLogs(events, it)
-                }
-            }
+        if (VERSION.SDK_INT >= 24) {
+            retrieveSecurityLogs(context.applicationContext as MyApplication)
         }
     }
 
     override fun onLockTaskModeEntering(context: Context, intent: Intent, pkg: String) {
         super.onLockTaskModeEntering(context, intent, pkg)
-        if (!NotificationUtils.checkPermission(context)) return
-        val intent = Intent(context, this::class.java).setAction("com.bintianqi.owndroid.action.STOP_LOCK_TASK_MODE")
-        val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-        val builder = NotificationCompat.Builder(context, MyNotificationChannel.LockTaskMode.id)
+        val stopIntent = Intent(context, this::class.java)
+            .setAction("com.bintianqi.owndroid.action.STOP_LOCK_TASK_MODE")
+        val pendingIntent = PendingIntent.getBroadcast(context, 0, stopIntent, PendingIntent.FLAG_IMMUTABLE)
+        val notification = NotificationCompat.Builder(context, MyNotificationChannel.LockTaskMode.id)
             .setContentTitle(context.getText(R.string.lock_task_mode))
             .setSmallIcon(R.drawable.lock_fill0)
             .addAction(NotificationCompat.Action.Builder(null, context.getString(R.string.stop), pendingIntent).build())
-        NotificationUtils.notify(context, NotificationType.LockTaskMode, builder.build())
+            .build()
+        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        nm.notify(NotificationType.LockTaskMode.id, notification)
     }
 
     override fun onLockTaskModeExiting(context: Context, intent: Intent) {

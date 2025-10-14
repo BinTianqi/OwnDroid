@@ -35,7 +35,6 @@
     <string name="time_unit_ms">时间（毫秒）</string>
     <string name="length">长度</string>
     <string name="none">无</string>
-    <string name="no_logs">无日志</string>
     <string name="default_stringres">默认</string>
     <string name="apply">应用</string>
     <string name="decide_by_user">由用户决定</string>
@@ -194,6 +193,8 @@
     <string name="uninstall_all_user_ca_cert">卸载所有用户证书</string>
     <string name="security_logging">安全日志</string>
     <string name="pre_reboot_security_logs">重启前安全日志</string>
+    <string name="security_logs_collected">安全日志已收集</string>
+    <string name="n_logs_in_total">总共 %1$d 条日志</string>
     <string name="wipe_data">清除数据</string>
     <string name="wipe_external_storage">清除外部存储</string>
     <string name="wipe_reset_protection_data">清除受保护的数据</string>

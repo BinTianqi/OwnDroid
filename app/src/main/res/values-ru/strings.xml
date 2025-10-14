@@ -35,7 +35,6 @@
     <string name="time_unit_ms">Время (мс)</string>
     <string name="length">Длина</string>
     <string name="none">Нет</string>
-    <string name="no_logs">Нет журналов</string>
     <string name="default_stringres">По умолчанию</string>
     <string name="apply">Применить</string>
     <string name="decide_by_user">Определять пользователем</string>
