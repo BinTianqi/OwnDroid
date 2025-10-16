@@ -42,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -81,7 +82,7 @@ fun UsersScreen(vm: MyViewModel, onNavigateUp: () -> Unit, onNavigate: (Any) -> 
     val context = LocalContext.current
     val privilege by Privilege.status.collectAsStateWithLifecycle()
     /** 1: secondary users, 2: logout*/
-    var dialog by remember { mutableIntStateOf(0) }
+    var dialog by rememberSaveable { mutableIntStateOf(0) }
     MyScaffold(R.string.users, onNavigateUp, 0.dp) {
         if(VERSION.SDK_INT >= 28 && privilege.profile && privilege.affiliated) {
             FunctionItem(R.string.logout, icon = R.drawable.logout_fill0) { dialog = 2 }
@@ -194,7 +195,7 @@ data class UserInformation(
 @Composable
 fun UserInfoScreen(getInfo: () -> UserInformation, onNavigateUp: () -> Unit) {
     var info by remember { mutableStateOf(UserInformation()) }
-    var infoDialog by remember { mutableIntStateOf(0) }
+    var infoDialog by rememberSaveable { mutableIntStateOf(0) }
     LaunchedEffect(Unit) {
         info = getInfo()
     }
@@ -234,10 +235,10 @@ fun UserOperationScreen(
     stopUser: (Int, Boolean) -> Int, deleteUser: (Int, Boolean) -> Boolean, onNavigateUp: () -> Unit
 ) {
     val context = LocalContext.current
-    var input by remember { mutableStateOf("") }
+    var input by rememberSaveable { mutableStateOf("") }
     val focusMgr = LocalFocusManager.current
-    var useUserId by remember { mutableStateOf(false) }
-    var dialog by remember { mutableStateOf(false) }
+    var useUserId by rememberSaveable { mutableStateOf(false) }
+    var dialog by rememberSaveable { mutableStateOf(false) }
     val legalInput = input.toIntOrNull() != null
     MyScaffold(R.string.user_operation, onNavigateUp) {
         if(VERSION.SDK_INT >= 24) SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
@@ -335,9 +336,9 @@ fun CreateUserScreen(
 ) {
     var result by remember { mutableStateOf<CreateUserResult?>(null) }
     val focusMgr = LocalFocusManager.current
-    var userName by remember { mutableStateOf("") }
-    var creating by remember { mutableStateOf(false) }
-    var flags by remember { mutableIntStateOf(0) }
+    var userName by rememberSaveable { mutableStateOf("") }
+    var creating by rememberSaveable { mutableStateOf(false) }
+    var flags by rememberSaveable { mutableIntStateOf(0) }
     MyScaffold(R.string.create_user, onNavigateUp, 0.dp) {
         OutlinedTextField(
             userName, { userName= it }, Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding),
@@ -401,7 +402,7 @@ fun AffiliationIdScreen(
     onNavigateUp: () -> Unit
 ) {
     val focusMgr = LocalFocusManager.current
-    var input by remember { mutableStateOf("") }
+    var input by rememberSaveable { mutableStateOf("") }
     val list by affiliationIds.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { getIds() }
     MyScaffold(R.string.affiliation_id, onNavigateUp) {
@@ -440,7 +441,7 @@ fun AffiliationIdScreen(
 fun ChangeUsernameScreen(setName: (String) -> Unit, onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val focusMgr = LocalFocusManager.current
-    var inputUsername by remember { mutableStateOf("") }
+    var inputUsername by rememberSaveable { mutableStateOf("") }
     MyScaffold(R.string.change_username, onNavigateUp) {
         OutlinedTextField(
             value = inputUsername,
@@ -473,8 +474,8 @@ fun UserSessionMessageScreen(
 ) {
     val context = LocalContext.current
     val focusMgr = LocalFocusManager.current
-    var start by remember { mutableStateOf("") }
-    var end by remember { mutableStateOf("") }
+    var start by rememberSaveable { mutableStateOf("") }
+    var end by rememberSaveable { mutableStateOf("") }
     LaunchedEffect(Unit) {
         val messages = getMessages()
         start = messages.first

@@ -2,7 +2,6 @@ package com.bintianqi.owndroid.ui
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,10 +9,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,7 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -51,7 +47,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -60,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.adaptiveInsets
 import com.bintianqi.owndroid.zhCN
 
 @Composable
@@ -313,7 +309,7 @@ fun MyScaffold(
                 scrollBehavior = sb
             )
         },
-        contentWindowInsets = WindowInsets.ime
+        contentWindowInsets = adaptiveInsets()
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -345,7 +341,7 @@ fun MyLazyScaffold(
                 scrollBehavior = sb
             )
         },
-        contentWindowInsets = WindowInsets.ime
+        contentWindowInsets = adaptiveInsets()
     ) { paddingValues ->
         LazyColumn(Modifier.fillMaxSize().padding(paddingValues), content = content)
     }
@@ -367,7 +363,7 @@ fun MySmallTitleScaffold(
                 colors = TopAppBarDefaults.topAppBarColors(colorScheme.surfaceContainer)
             )
         },
-        contentWindowInsets = WindowInsets.ime
+        contentWindowInsets = adaptiveInsets()
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -380,15 +376,6 @@ fun MySmallTitleScaffold(
             content()
         }
     }
-}
-
-@Composable
-fun ExpandExposedTextFieldIcon(active: Boolean) {
-    val degrees by animateFloatAsState(if(active) 180F else 0F)
-    Icon(
-        imageVector = Icons.Default.ArrowDropDown, contentDescription = null,
-        modifier = Modifier.rotate(degrees)
-    )
 }
 
 @Composable

@@ -5,8 +5,6 @@ import android.content.Intent
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
-import java.security.SecureRandom
-import kotlin.io.encoding.Base64
 
 object ShortcutUtils {
     fun setAllShortcuts(context: Context, enabled: Boolean) {

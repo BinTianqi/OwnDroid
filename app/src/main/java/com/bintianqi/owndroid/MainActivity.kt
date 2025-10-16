@@ -14,10 +14,9 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -400,7 +399,7 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
             InstallSystemUpdateScreen(vm::installSystemUpdate, ::navigateUp)
         }
         composable<FrpPolicy> {
-            FrpPolicyScreen(vm::getFrpPolicy, vm::setFrpPolicy, ::navigateUp)
+            FrpPolicyScreen(vm.getFrpPolicy(), vm::setFrpPolicy, ::navigateUp)
         }
         composable<WipeData> { WipeDataScreen(vm::wipeData, ::navigateUp) }
 
@@ -641,13 +640,14 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
             AppearanceScreen(::navigateUp, vm.theme, vm::changeTheme)
         }
         composable<AppLockSettings> {
-            AppLockSettingsScreen(vm::getAppLockConfig, vm::setAppLockConfig, ::navigateUp)
+            AppLockSettingsScreen(vm.getAppLockConfig(), vm::setAppLockConfig, ::navigateUp)
         }
         composable<ApiSettings> {
             ApiSettings(vm::getApiEnabled, vm::setApiKey, ::navigateUp)
         }
         composable<Notifications> {
-            NotificationsScreen(vm::getEnabledNotifications, vm::setNotificationEnabled, ::navigateUp)
+            NotificationsScreen(vm.enabledNotifications, vm::getEnabledNotifications,
+                vm::setNotificationEnabled, ::navigateUp)
         }
         composable<About> { AboutScreen(::navigateUp) }
     }
@@ -702,7 +702,7 @@ private fun HomeScreen(onNavigate: (Any) -> Unit) {
                 scrollBehavior = sb
             )
         },
-        contentWindowInsets = WindowInsets.ime
+        contentWindowInsets = adaptiveInsets()
     ) {
         Column(Modifier
             .fillMaxSize()
@@ -727,7 +727,7 @@ private fun HomeScreen(onNavigate: (Any) -> Unit) {
                 HomePageItem(R.string.users,R.drawable.manage_accounts_fill0) { onNavigate(Users) }
                 HomePageItem(R.string.password_and_keyguard, R.drawable.password_fill0) { onNavigate(Password) }
             }
-            Spacer(Modifier.padding(vertical = 20.dp))
+            Spacer(Modifier.height(BottomPadding))
         }
     }
 }

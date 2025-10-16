@@ -43,6 +43,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -80,7 +81,7 @@ import kotlinx.serialization.Serializable
 fun PasswordScreen(vm: MyViewModel,onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     val context = LocalContext.current
     val privilege by Privilege.status.collectAsStateWithLifecycle()
-    var dialog by remember { mutableIntStateOf(0) }
+    var dialog by rememberSaveable { mutableIntStateOf(0) }
     MyScaffold(R.string.password_and_keyguard, onNavigateUp, 0.dp) {
         FunctionItem(R.string.password_info, icon = R.drawable.info_fill0) { onNavigate(PasswordInfo) }
         if (SP.displayDangerousFeatures) {
@@ -210,7 +211,7 @@ fun PasswordInfoScreen(
     onNavigateUp: () -> Unit
 ) {
     val privilege by Privilege.status.collectAsStateWithLifecycle()
-    var dialog by remember { mutableIntStateOf(0) } // 0:none, 1:password complexity
+    var dialog by rememberSaveable { mutableIntStateOf(0) } // 0:none, 1:password complexity
     MyScaffold(R.string.password_info, onNavigateUp, 0.dp) {
         if (VERSION.SDK_INT >= 29) {
             InfoItem(R.string.current_password_complexity, getComplexity().text, true) { dialog = 1 }
@@ -242,8 +243,8 @@ fun ResetPasswordTokenScreen(
     clearToken: () -> Boolean, onNavigateUp: () -> Unit
 ) {
     val context = LocalContext.current
-    var token by remember { mutableStateOf("") }
-    var state by remember { mutableStateOf(getState()) }
+    var token by rememberSaveable { mutableStateOf("") }
+    var state by rememberSaveable { mutableStateOf(getState()) }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == Activity.RESULT_OK) {
             context.popToast(R.string.token_activated)
@@ -305,10 +306,10 @@ fun ResetPasswordTokenScreen(
 @Composable
 fun ResetPasswordScreen(resetPassword: (String, String, Int) -> Boolean, onNavigateUp: () -> Unit) {
     val context = LocalContext.current
-    var password by remember { mutableStateOf("") }
-    var token by remember { mutableStateOf("") }
-    var flags by remember { mutableIntStateOf(0) }
-    var confirmPassword by remember { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+    var token by rememberSaveable { mutableStateOf("") }
+    var flags by rememberSaveable { mutableIntStateOf(0) }
+    var confirmPassword by rememberSaveable { mutableStateOf("") }
     MyScaffold(R.string.reset_password, onNavigateUp) {
         if (VERSION.SDK_INT >= 26) {
             OutlinedTextField(
@@ -366,7 +367,7 @@ fun RequiredPasswordComplexityScreen(
     onNavigateUp: () -> Unit
 ) {
     val context = LocalContext.current
-    var complexity by remember { mutableStateOf(PasswordComplexity.None) }
+    var complexity by rememberSaveable { mutableStateOf(PasswordComplexity.None) }
     LaunchedEffect(Unit) { complexity = getComplexity() }
     MyScaffold(R.string.required_password_complexity, onNavigateUp, 0.dp) {
         PasswordComplexity.entries.forEach {
@@ -415,8 +416,8 @@ fun KeyguardDisabledFeaturesScreen(
     onNavigateUp: () -> Unit
 ) {
     val context = LocalContext.current
-    var mode by remember { mutableStateOf(KeyguardDisableMode.None) }
-    var flags by remember { mutableIntStateOf(0) }
+    var mode by rememberSaveable { mutableStateOf(KeyguardDisableMode.None) }
+    var flags by rememberSaveable { mutableIntStateOf(0) }
     LaunchedEffect(Unit) {
         val config = getConfig()
         mode = config.mode
@@ -462,7 +463,7 @@ fun RequiredPasswordQualityScreen(onNavigateUp: () -> Unit) {
         PASSWORD_QUALITY_BIOMETRIC_WEAK to R.string.password_quality_biometrics_weak,
         PASSWORD_QUALITY_NUMERIC_COMPLEX to R.string.password_quality_numeric_complex
     )
-    var selectedItem by remember { mutableIntStateOf(PASSWORD_QUALITY_UNSPECIFIED) }
+    var selectedItem by rememberSaveable { mutableIntStateOf(PASSWORD_QUALITY_UNSPECIFIED) }
     LaunchedEffect(Unit) { selectedItem = Privilege.DPM.getPasswordQuality(Privilege.DAR) }
     MyScaffold(R.string.required_password_quality, onNavigateUp) {
         passwordQuality.forEach {

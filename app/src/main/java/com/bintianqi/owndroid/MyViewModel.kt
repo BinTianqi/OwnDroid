@@ -163,21 +163,16 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     fun setApiKey(key: String) {
         SP.apiKeyHash = if (key.isEmpty()) "" else key.hash()
     }
-    fun getEnabledNotifications(): List<NotificationType> {
+    val enabledNotifications = MutableStateFlow(emptyList<Int>())
+    fun getEnabledNotifications() {
         val list = SP.notifications?.split(',')?.mapNotNull { it.toIntOrNull() }
-        return if (list == null) {
-            NotificationType.entries
-        } else {
-            NotificationType.entries.filter { it.id in list }
-        }
+        enabledNotifications.value = list ?: NotificationType.entries.map { it.id }
     }
     fun setNotificationEnabled(type: NotificationType, enabled: Boolean) {
-        val list = SP.notifications?.split(',')?.mapNotNull { it.toIntOrNull() }
-        SP.notifications = if (list == null) {
-            NotificationType.entries.minus(type).map { it.id }
-        } else {
-            list.run { if (enabled) plus(type.id) else minus(type.id) }
-        }.joinToString { it.toString() }
+        enabledNotifications.update { list ->
+            if (enabled) list.plus(type.id) else list.minus(type.id)
+        }
+        SP.notifications = enabledNotifications.value.joinToString(",") { it.toString() }
     }
 
     val chosenPackage = Channel<String>(1, BufferOverflow.DROP_LATEST)
@@ -267,7 +262,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     fun getPackagePermissions(name: String) {
         if (name.isValidPackageName) {
             packagePermissions.value = runtimePermissions.associate {
-                it.permission to DPM.getPermissionGrantState(DAR, name, it.permission)
+                it.id to DPM.getPermissionGrantState(DAR, name, it.id)
             }
         } else {
             packagePermissions.value = emptyMap()
@@ -1027,7 +1022,8 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             } else {
                 Dhizuku.requestPermission(object : DhizukuRequestPermissionListener() {
                     override fun onRequestPermission(grantResult: Int) {
-                        if(grantResult == PackageManager.PERMISSION_GRANTED) onSucceed()
+                        if (grantResult == PackageManager.PERMISSION_GRANTED) onSucceed()
+                        else callback(false, application.getString(R.string.dhizuku_permission_not_granted))
                     }
                 })
             }

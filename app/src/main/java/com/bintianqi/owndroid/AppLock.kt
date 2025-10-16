@@ -25,7 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,8 +44,8 @@ import androidx.compose.ui.window.DialogProperties
 fun AppLockDialog(onSucceed: () -> Unit, onDismiss: () -> Unit) = Dialog(onDismiss, DialogProperties(true, false)) {
     val context = LocalContext.current
     val fm = LocalFocusManager.current
-    var input by remember { mutableStateOf("") }
-    var isError by remember { mutableStateOf(false) }
+    var input by rememberSaveable { mutableStateOf("") }
+    var isError by rememberSaveable { mutableStateOf(false) }
     fun unlock() {
         if(input.hash() == SP.lockPasswordHash) {
             fm.clearFocus()

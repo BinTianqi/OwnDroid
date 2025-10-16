@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -103,7 +104,7 @@ class DhizukuActivity : ComponentActivity() {
         enableEdgeToEdge()
         val theme = ThemeSettings(SP.materialYou, SP.darkTheme, SP.blackTheme)
         setContent {
-            var appLockDialog by remember { mutableStateOf(false) }
+            var appLockDialog by rememberSaveable { mutableStateOf(false) }
             OwnDroidTheme(theme) {
                 if (!appLockDialog) AlertDialog(
                     icon = {

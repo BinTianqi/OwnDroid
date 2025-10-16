@@ -9,8 +9,22 @@ import android.net.Uri
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.StringRes
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.union
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
@@ -91,6 +105,8 @@ fun exportLogs(context: Context, uri: Uri) {
 
 val HorizontalPadding = 16.dp
 
+val BottomPadding = 60.dp
+
 @OptIn(ExperimentalStdlibApi::class)
 fun String.hash(): String {
     val md = MessageDigest.getInstance("SHA-256")
@@ -128,4 +144,19 @@ fun generateBase64Key(length: Int): String {
     val ba = ByteArray(length)
     SecureRandom().nextBytes(ba)
     return Base64.withPadding(Base64.PaddingOption.ABSENT).encode(ba)
+}
+
+fun Modifier.clickableTextField(onClick: () -> Unit) =
+    pointerInput(Unit) {
+        awaitEachGesture {
+            awaitFirstDown(pass = PointerEventPass.Initial)
+            val upEvent = waitForUpOrCancellation(pass = PointerEventPass.Initial)
+            if (upEvent != null) onClick()
+        }
+    }
+
+@Composable
+fun adaptiveInsets(): WindowInsets {
+    val navbar = WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)
+    return WindowInsets.ime.union(navbar).union(WindowInsets.displayCutout)
 }

@@ -31,17 +31,13 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -110,7 +106,9 @@ import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SP
+import com.bintianqi.owndroid.clickableTextField
 import com.bintianqi.owndroid.formatDate
+import com.bintianqi.owndroid.adaptiveInsets
 import com.bintianqi.owndroid.popToast
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
@@ -146,7 +144,7 @@ fun SystemManagerScreen(
     val context = LocalContext.current
     val privilege by Privilege.status.collectAsStateWithLifecycle()
     /** 1: reboot, 2: bug report, 3: org name, 4: org id, 5: enrollment specific id*/
-    var dialog by remember { mutableIntStateOf(0) }
+    var dialog by rememberSaveable { mutableIntStateOf(0) }
     MyScaffold(R.string.system, onNavigateUp, 0.dp) {
         FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { onNavigate(SystemOptions) }
         FunctionItem(R.string.keyguard, icon = R.drawable.screen_lock_portrait_fill0) { onNavigate(Keyguard) }
@@ -242,7 +240,7 @@ fun SystemManagerScreen(
         modifier = Modifier.fillMaxWidth()
     )
     if(dialog in 3..5) {
-        var input by remember { mutableStateOf("") }
+        var input by rememberSaveable { mutableStateOf("") }
         AlertDialog(
             text = {
                 val focusMgr = LocalFocusManager.current
@@ -323,7 +321,7 @@ data class SystemOptionsStatus(
 @Composable
 fun SystemOptionsScreen(vm: MyViewModel, onNavigateUp: () -> Unit) {
     val privilege by Privilege.status.collectAsStateWithLifecycle()
-    var dialog by remember { mutableIntStateOf(0) }
+    var dialog by rememberSaveable { mutableIntStateOf(0) }
     val status by vm.systemOptionsStatus.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { vm.getSystemOptionsStatus() }
     MyScaffold(R.string.options, onNavigateUp, 0.dp) {
@@ -436,7 +434,7 @@ fun KeyguardScreen(
         }
         if(VERSION.SDK_INT >= 23) Text(text = stringResource(R.string.lock_now), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 2.dp))
-        var evictKey by remember { mutableStateOf(false) }
+        var evictKey by rememberSaveable { mutableStateOf(false) }
         Button(
             onClick = { lock(evictKey) },
             modifier = Modifier.fillMaxWidth()
@@ -475,7 +473,7 @@ fun HardwareMonitorScreen(
     onNavigateUp: () -> Unit
 ) {
     val properties by hardwareProperties.collectAsStateWithLifecycle()
-    var refreshInterval by remember { mutableFloatStateOf(1F) }
+    var refreshInterval by rememberSaveable { mutableFloatStateOf(1F) }
     val refreshIntervalMs = (refreshInterval * 1000).roundToLong()
     LaunchedEffect(Unit) {
         getHardwareProperties()
@@ -540,18 +538,14 @@ fun HardwareMonitorScreen(
 fun ChangeTimeScreen(setTime: (Long, Boolean) -> Boolean, onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val focusMgr = LocalFocusManager.current
-    var tab by remember { mutableIntStateOf(0) }
+    var tab by rememberSaveable { mutableIntStateOf(0) }
     val pagerState = rememberPagerState { 2 }
     tab = pagerState.currentPage
     val coroutine = rememberCoroutineScope()
-    var picker by remember { mutableIntStateOf(0) } //0:None, 1:DatePicker, 2:TimePicker
-    var useCurrentTz by remember { mutableStateOf(true) }
+    var picker by rememberSaveable { mutableIntStateOf(0) } //0:None, 1:DatePicker, 2:TimePicker
+    var useCurrentTz by rememberSaveable { mutableStateOf(true) }
     val datePickerState = rememberDatePickerState()
     val timePickerState = rememberTimePickerState(is24Hour = true)
-    val dateInteractionSource = remember { MutableInteractionSource() }
-    val timeInteractionSource = remember { MutableInteractionSource() }
-    if(dateInteractionSource.collectIsPressedAsState().value) picker = 1
-    if(timeInteractionSource.collectIsPressedAsState().value) picker = 2
     Scaffold(
         topBar = {
             TopAppBar(
@@ -560,7 +554,7 @@ fun ChangeTimeScreen(setTime: (Long, Boolean) -> Boolean, onNavigateUp: () -> Un
                 colors = TopAppBarDefaults.topAppBarColors(colorScheme.surfaceContainer)
             )
         },
-        contentWindowInsets = WindowInsets.ime
+        contentWindowInsets = adaptiveInsets()
     ) { paddingValues ->
         Column(
             Modifier
@@ -592,17 +586,16 @@ fun ChangeTimeScreen(setTime: (Long, Boolean) -> Boolean, onNavigateUp: () -> Un
                             value = datePickerState.selectedDateMillis?.let { formatDate(it) } ?: "",
                             onValueChange = {}, readOnly = true,
                             label = { Text(stringResource(R.string.date)) },
-                            interactionSource = dateInteractionSource,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth().clickableTextField { picker = 1 }
                         )
                         OutlinedTextField(
                             value = timePickerState.hour.toString().padStart(2, '0') + ":" +
                                     timePickerState.minute.toString().padStart(2, '0'),
                             onValueChange = {}, readOnly = true,
                             label = { Text(stringResource(R.string.time)) },
-                            interactionSource = timeInteractionSource,
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .clickableTextField { picker = 2 }
                                 .padding(vertical = 4.dp)
                         )
                         CheckBoxItem(R.string.use_current_timezone, useCurrentTz) {
@@ -620,13 +613,12 @@ fun ChangeTimeScreen(setTime: (Long, Boolean) -> Boolean, onNavigateUp: () -> Un
                             Text(stringResource(R.string.apply))
                         }
                     } else {
-                        var inputTime by remember { mutableStateOf("") }
+                        var inputTime by rememberSaveable { mutableStateOf("") }
                         OutlinedTextField(
                             value = inputTime,
                             label = { Text(stringResource(R.string.time_unit_ms)) },
                             onValueChange = { inputTime = it },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
                             modifier = Modifier.fillMaxWidth()
                         )
                         Button(
@@ -673,8 +665,8 @@ fun ChangeTimeScreen(setTime: (Long, Boolean) -> Boolean, onNavigateUp: () -> Un
 fun ChangeTimeZoneScreen(setTimeZone: (String) -> Boolean, onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     val focusMgr = LocalFocusManager.current
-    var inputTimezone by remember { mutableStateOf("") }
-    var dialog by remember { mutableStateOf(false) }
+    var inputTimezone by rememberSaveable { mutableStateOf("") }
+    var dialog by rememberSaveable { mutableStateOf(false) }
     val availableIds = TimeZone.getAvailableIDs()
     val validInput = inputTimezone in availableIds
     MyScaffold(R.string.change_timezone, onNavigateUp) {
@@ -741,7 +733,7 @@ fun AutoTimePolicyScreen(
     getPolicy: () -> Int, setPolicy: (Int) -> Unit, onNavigateUp: () -> Unit
 ) = MyScaffold(R.string.auto_time_policy, onNavigateUp, 0.dp) {
     val context = LocalContext.current
-    var policy by remember { mutableIntStateOf(getPolicy()) }
+    var policy by rememberSaveable { mutableIntStateOf(getPolicy()) }
     listOf(
         DevicePolicyManager.AUTO_TIME_ENABLED to R.string.enable,
         DevicePolicyManager.AUTO_TIME_DISABLED to R.string.disabled,
@@ -772,7 +764,7 @@ fun AutoTimeZonePolicyScreen(
     getPolicy: () -> Int, setPolicy: (Int) -> Unit, onNavigateUp: () -> Unit
 ) = MyScaffold(R.string.auto_timezone_policy, onNavigateUp, 0.dp) {
     val context = LocalContext.current
-    var policy by remember { mutableIntStateOf(getPolicy()) }
+    var policy by rememberSaveable { mutableIntStateOf(getPolicy()) }
     listOf(
         DevicePolicyManager.AUTO_TIME_ZONE_ENABLED to R.string.enable,
         DevicePolicyManager.AUTO_TIME_ZONE_DISABLED to R.string.disabled,
@@ -980,7 +972,7 @@ fun ContentProtectionPolicyScreen(
     getPolicy: () -> Int, setPolicy: (Int) -> Unit, onNavigateUp: () -> Unit
 ) {
     val context = LocalContext.current
-    var policy by remember { mutableIntStateOf(getPolicy()) }
+    var policy by rememberSaveable { mutableIntStateOf(getPolicy()) }
     MyScaffold(R.string.content_protection_policy, onNavigateUp, 0.dp) {
         mapOf(
             DevicePolicyManager.CONTENT_PROTECTION_NOT_CONTROLLED_BY_POLICY to R.string.not_controlled_by_policy,
@@ -1012,7 +1004,7 @@ fun PermissionPolicyScreen(
     getPolicy: () -> Int, setPolicy: (Int) -> Unit, onNavigateUp: () -> Unit
 ) {
     val context = LocalContext.current
-    var selectedPolicy by remember { mutableIntStateOf(getPolicy()) }
+    var selectedPolicy by rememberSaveable { mutableIntStateOf(getPolicy()) }
     MyScaffold(R.string.permission_policy, onNavigateUp, 0.dp) {
         FullWidthRadioButtonItem(R.string.default_stringres, selectedPolicy == PERMISSION_POLICY_PROMPT) {
             selectedPolicy = PERMISSION_POLICY_PROMPT
@@ -1045,7 +1037,7 @@ fun PermissionPolicyScreen(
 fun MtePolicyScreen(
     getPolicy: () -> Int, setPolicy: (Int) -> Boolean, onNavigateUp: () -> Unit
 ) {
-    var policy by remember { mutableIntStateOf(getPolicy()) }
+    var policy by rememberSaveable { mutableIntStateOf(getPolicy()) }
     MyScaffold(R.string.mte_policy, onNavigateUp, 0.dp) {
         FullWidthRadioButtonItem(R.string.decide_by_user, policy == MTE_NOT_CONTROLLED_BY_POLICY) {
             policy = MTE_NOT_CONTROLLED_BY_POLICY
@@ -1075,7 +1067,7 @@ fun NearbyStreamingPolicyScreen(
     setNotificationPolicy: (Int) -> Unit, onNavigateUp: () -> Unit
 ) {
     val context = LocalContext.current
-    var appPolicy by remember { mutableIntStateOf(getAppPolicy()) }
+    var appPolicy by rememberSaveable { mutableIntStateOf(getAppPolicy()) }
     MySmallTitleScaffold(R.string.nearby_streaming_policy, onNavigateUp, 0.dp) {
         Text(
             stringResource(R.string.nearby_app_streaming),
@@ -1104,7 +1096,7 @@ fun NearbyStreamingPolicyScreen(
         }
         Notes(R.string.info_nearby_app_streaming_policy, HorizontalPadding)
         Spacer(Modifier.height(20.dp))
-        var notificationPolicy by remember { mutableIntStateOf(getNotificationPolicy()) }
+        var notificationPolicy by rememberSaveable { mutableIntStateOf(getNotificationPolicy()) }
         Text(
             stringResource(R.string.nearby_notification_streaming),
             Modifier.padding(start = 8.dp, top = 10.dp, bottom = 4.dp), style = typography.titleLarge
@@ -1153,7 +1145,7 @@ fun LockTaskModeScreen(
 ) {
     val coroutine = rememberCoroutineScope()
     val pagerState = rememberPagerState { 3 }
-    var tabIndex by remember { mutableIntStateOf(0) }
+    var tabIndex by rememberSaveable { mutableIntStateOf(0) }
     tabIndex = pagerState.targetPage
     LaunchedEffect(Unit) {
         getLockTaskPackages()
@@ -1166,7 +1158,7 @@ fun LockTaskModeScreen(
                 colors = TopAppBarDefaults.topAppBarColors(colorScheme.surfaceContainer)
             )
         },
-        contentWindowInsets = WindowInsets.ime
+        contentWindowInsets = adaptiveInsets()
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -1301,8 +1293,8 @@ private fun LockTaskFeatures(
     getLockTaskFeatures: () -> Int, setLockTaskFeature: (Int) -> String?
 ) {
     val context = LocalContext.current
-    var flags by remember { mutableIntStateOf(getLockTaskFeatures()) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var flags by rememberSaveable { mutableIntStateOf(getLockTaskFeatures()) }
+    var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
     Column(
         Modifier
             .fillMaxWidth()
@@ -1366,9 +1358,9 @@ fun CaCertScreen(
 ) {
     val context = LocalContext.current
     /** 0:none, 1:install, 2:info, 3:uninstall all */
-    var dialog by remember { mutableIntStateOf(0) }
+    var dialog by rememberSaveable { mutableIntStateOf(0) }
     val caCerts by caCertificates.collectAsStateWithLifecycle()
-    var selectedCaCert by remember { mutableStateOf<CaCertInfo?>(null) }
+    var selectedCaCert by rememberSaveable { mutableStateOf<CaCertInfo?>(null) }
     val getCertLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()) { uri ->
         if(uri != null) {
@@ -1400,7 +1392,8 @@ fun CaCertScreen(
             }) {
                 Icon(Icons.Default.Add, stringResource(R.string.install))
             }
-        }
+        },
+        contentWindowInsets = adaptiveInsets()
     ) { paddingValues ->
         LazyColumn(
             Modifier
@@ -1534,14 +1527,10 @@ fun SecurityLoggingScreen(
     exportPRLogs: (Uri, () -> Unit) -> Unit, onNavigateUp: () -> Unit
 ) {
     val context = LocalContext.current
-    var enabled by remember { mutableStateOf(false) }
-    var logsCount by remember { mutableIntStateOf(0) }
-    var exporting by remember { mutableStateOf(false) }
-    var dialog by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        enabled = getEnabled()
-        logsCount = getCount()
-    }
+    var enabled by rememberSaveable { mutableStateOf(getEnabled()) }
+    var logsCount by rememberSaveable { mutableIntStateOf(getCount()) }
+    var exporting by rememberSaveable { mutableStateOf(false) }
+    var dialog by rememberSaveable { mutableStateOf(false) }
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/json")
     ) {
@@ -1686,24 +1675,16 @@ data class FrpPolicyInfo(
 @RequiresApi(30)
 @Composable
 fun FrpPolicyScreen(
-    getFrpPolicy: () -> FrpPolicyInfo, setFrpPolicy: (FrpPolicyInfo) -> Unit,
+    frpPolicy: FrpPolicyInfo, setFrpPolicy: (FrpPolicyInfo) -> Unit,
     onNavigateUp: () -> Unit
 ) {
+    val context = LocalContext.current
     val focusMgr = LocalFocusManager.current
-    var usePolicy by remember { mutableStateOf(false) }
-    var enabled by remember { mutableStateOf(false) }
-    var supported by remember { mutableStateOf(false) }
-    val accountList = remember { mutableStateListOf<String>() }
-    var inputAccount by remember { mutableStateOf("") }
-    LaunchedEffect(Unit) {
-        val info = getFrpPolicy()
-        supported = info.supported
-        if (info.supported) {
-            usePolicy = info.usePolicy
-            enabled = info.enabled
-            accountList.addAll(info.accounts)
-        }
-    }
+    var usePolicy by rememberSaveable { mutableStateOf(frpPolicy.usePolicy) }
+    var enabled by rememberSaveable { mutableStateOf(frpPolicy.enabled) }
+    var supported by rememberSaveable { mutableStateOf(frpPolicy.supported) }
+    val accountList = rememberSaveable { mutableStateListOf(*frpPolicy.accounts.toTypedArray()) }
+    var inputAccount by rememberSaveable { mutableStateOf("") }
     MyScaffold(R.string.frp_policy, onNavigateUp, 0.dp) {
         if (!supported) {
             Column(
@@ -1751,6 +1732,7 @@ fun FrpPolicyScreen(
                     onClick = {
                         focusMgr.clearFocus()
                         setFrpPolicy(FrpPolicyInfo(true, usePolicy, enabled, accountList))
+                        context.showOperationResultToast(true)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1774,9 +1756,9 @@ fun WipeDataScreen(
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     val privilege by Privilege.status.collectAsStateWithLifecycle()
     val focusMgr = LocalFocusManager.current
-    var flag by remember { mutableIntStateOf(WIPE_SILENTLY) }
-    var dialog by remember { mutableIntStateOf(0) } // 0: none, 1: wipe data, 2: wipe device
-    var reason by remember { mutableStateOf("") }
+    var flag by rememberSaveable { mutableIntStateOf(0) }
+    var dialog by rememberSaveable { mutableIntStateOf(0) } // 0: none, 1: wipe data, 2: wipe device
+    var reason by rememberSaveable { mutableStateOf("") }
     MyScaffold(R.string.wipe_data, onNavigateUp, 0.dp) {
         FullWidthCheckBoxItem(R.string.wipe_external_storage, flag and WIPE_EXTERNAL_STORAGE != 0) {
             flag = flag xor WIPE_EXTERNAL_STORAGE
@@ -1978,8 +1960,8 @@ fun InstallSystemUpdateScreen(
     installSystemUpdate: (Uri, (String) -> Unit) -> Unit, onNavigateUp: () -> Unit
 ) {
     var uri by remember { mutableStateOf<Uri?>(null) }
-    var installing by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var installing by rememberSaveable { mutableStateOf(false) }
+    var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
     val getFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri = it }
     MyScaffold(R.string.install_system_update, onNavigateUp) {
         Button(

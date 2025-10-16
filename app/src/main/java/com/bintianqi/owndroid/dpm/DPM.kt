@@ -15,7 +15,6 @@ import android.os.Build.VERSION
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.bintianqi.owndroid.MyApplication
-import com.bintianqi.owndroid.MyNotificationChannel
 import com.bintianqi.owndroid.NotificationType
 import com.bintianqi.owndroid.NotificationUtils
 import com.bintianqi.owndroid.Privilege
@@ -93,7 +92,7 @@ fun Context.getPackageInstaller(): PackageInstaller {
 val dhizukuErrorStatus = MutableStateFlow(0)
 
 data class PermissionItem(
-    val permission: String,
+    val id: String,
     val label: Int,
     val icon: Int,
     val profileOwnerRestricted: Boolean = false,
@@ -497,7 +496,7 @@ fun retrieveSecurityLogs(app: MyApplication) {
         val logs = Privilege.DPM.retrieveSecurityLogs(Privilege.DAR) ?: return@launch
         app.myRepo.writeSecurityLogs(logs)
         NotificationUtils.sendBasicNotification(
-            app, NotificationType.SecurityLogsCollected, MyNotificationChannel.SecurityLogging,
+            app, NotificationType.SecurityLogsCollected,
             app.getString(R.string.n_logs_in_total, logs.size)
         )
     }
