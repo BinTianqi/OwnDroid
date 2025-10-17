@@ -306,7 +306,6 @@
     <string name="invalid_config">Geçersiz yapılandırma</string>
     <string name="excluded_hosts">Hariç tutulan ana bilgisayarlar</string>
     <string name="network_logging">Ağ Kayıtları</string>
-    <string name="log_file_size_is">Kayıt dosyası boyutu: %1$s</string>
     <string name="delete_logs">Kayıtları Sil</string>
     <string name="export_logs">Kayıtları Dışa Aktar</string>
     <string name="wifi_auth_keypair">Wi-Fi Kimlik Doğrulama Anahtar Çifti</string>

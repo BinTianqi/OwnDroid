@@ -239,7 +239,7 @@ fun UserRestrictionEditorScreen(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions { add() }
                 )
-                Spacer(Modifier.height(40.dp))
+                Spacer(Modifier.height(BottomPadding))
             }
         }
     }

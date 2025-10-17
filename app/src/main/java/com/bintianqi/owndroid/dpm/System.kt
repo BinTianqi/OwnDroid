@@ -101,6 +101,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.AppInfo
+import com.bintianqi.owndroid.BottomPadding
 import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.Privilege
@@ -1281,7 +1282,7 @@ private fun LockTaskPackages(
                     Text(stringResource(R.string.add))
                 }
                 Notes(R.string.info_lock_task_packages)
-                Spacer(Modifier.height(40.dp))
+                Spacer(Modifier.height(BottomPadding))
             }
         }
     }
@@ -1331,7 +1332,7 @@ private fun LockTaskFeatures(
         ) {
             Text(stringResource(R.string.apply))
         }
-        Spacer(Modifier.height(40.dp))
+        Spacer(Modifier.height(BottomPadding))
         ErrorDialog(errorMessage) { errorMessage = null }
     }
 }
@@ -1417,7 +1418,7 @@ fun CaCertScreen(
                 HorizontalDivider()
             }
             item {
-                Spacer(Modifier.height(40.dp))
+                Spacer(Modifier.height(BottomPadding))
             }
         }
         if (selectedCaCert != null && (dialog == 1 || dialog == 2)) {

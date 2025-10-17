@@ -325,7 +325,7 @@
     <string name="invalid_config">Invalid config</string>
     <string name="excluded_hosts">Excluded hosts</string>
     <string name="network_logging">Network logging</string>
-    <string name="log_file_size_is">Log file size: %1$s</string>
+    <string name="network_logs_collected">Network logs collected</string>
     <string name="delete_logs">Delete logs</string>
     <string name="export_logs">Export logs</string>
     <string name="wifi_auth_keypair">Wi-Fi keypair</string>

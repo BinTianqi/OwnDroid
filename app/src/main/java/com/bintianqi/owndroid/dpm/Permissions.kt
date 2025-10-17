@@ -81,6 +81,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.AppInfo
+import com.bintianqi.owndroid.BottomPadding
 import com.bintianqi.owndroid.DhizukuClientInfo
 import com.bintianqi.owndroid.DhizukuPermissions
 import com.bintianqi.owndroid.HorizontalPadding
@@ -615,7 +616,7 @@ fun AddDelegatedAdminScreen(
         ) {
             Text(stringResource(R.string.delete))
         }
-        Spacer(Modifier.height(40.dp))
+        Spacer(Modifier.height(BottomPadding))
     }
 }
 

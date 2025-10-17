@@ -11,12 +11,9 @@ import android.os.Build.VERSION
 import android.os.UserHandle
 import android.os.UserManager
 import androidx.core.app.NotificationCompat
-import com.bintianqi.owndroid.dpm.handleNetworkLogs
 import com.bintianqi.owndroid.dpm.handlePrivilegeChange
+import com.bintianqi.owndroid.dpm.retrieveNetworkLogs
 import com.bintianqi.owndroid.dpm.retrieveSecurityLogs
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class Receiver : DeviceAdminReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -47,10 +44,8 @@ class Receiver : DeviceAdminReceiver() {
 
     override fun onNetworkLogsAvailable(context: Context, intent: Intent, batchToken: Long, networkLogsCount: Int) {
         super.onNetworkLogsAvailable(context, intent, batchToken, networkLogsCount)
-        if(VERSION.SDK_INT >= 26) {
-            CoroutineScope(Dispatchers.IO).launch {
-                handleNetworkLogs(context, batchToken)
-            }
+        if (VERSION.SDK_INT >= 26) {
+            retrieveNetworkLogs(context.applicationContext as MyApplication, batchToken)
         }
     }
 

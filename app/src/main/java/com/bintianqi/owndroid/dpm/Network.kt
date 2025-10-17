@@ -10,6 +10,7 @@ import android.app.admin.DevicePolicyManager.WIFI_SECURITY_PERSONAL
 import android.app.admin.WifiSsidPolicy
 import android.app.usage.NetworkStats
 import android.net.ConnectivityManager
+import android.net.Uri
 import android.net.wifi.WifiConfiguration
 import android.os.Build.VERSION
 import android.provider.Telephony
@@ -106,6 +107,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.bintianqi.owndroid.BottomPadding
 import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.Privilege
@@ -116,6 +118,7 @@ import com.bintianqi.owndroid.formatFileSize
 import com.bintianqi.owndroid.adaptiveInsets
 import com.bintianqi.owndroid.popToast
 import com.bintianqi.owndroid.showOperationResultToast
+import com.bintianqi.owndroid.ui.CircularProgressDialog
 import com.bintianqi.owndroid.ui.ErrorDialog
 import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
@@ -135,6 +138,9 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Serializable object Network
 
@@ -803,7 +809,7 @@ private fun AddNetworkScreen(
         ) {
             Text(stringResource(if (updating) R.string.update else R.string.add))
         }
-        Spacer(Modifier.height(60.dp))
+        Spacer(Modifier.height(BottomPadding))
     }
 }
 
@@ -1539,50 +1545,82 @@ fun RecommendedGlobalProxyScreen(
 
 @RequiresApi(26)
 @Composable
-fun NetworkLoggingScreen(onNavigateUp: () -> Unit) {
+fun NetworkLoggingScreen(
+    getEnabled: () -> Boolean, setEnabled: (Boolean) -> Unit, getCount: () -> Int,
+    exportLogs: (Uri, () -> Unit) -> Unit, deleteLogs: () -> Unit, onNavigateUp: () -> Unit
+) {
     val context = LocalContext.current
-    val logFile = context.filesDir.resolve("NetworkLogs.json")
-    var fileSize by remember { mutableLongStateOf(0) }
-    LaunchedEffect(Unit) { fileSize = logFile.length() }
-    val exportNetworkLogsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
-        if(uri != null) context.contentResolver.openOutputStream(uri)?.use { outStream ->
-            outStream.write("[".encodeToByteArray())
-            logFile.inputStream().use { it.copyTo(outStream) }
-            outStream.write("]".encodeToByteArray())
-            context.showOperationResultToast(true)
+    var enabled by remember { mutableStateOf(false) }
+    var count by remember { mutableIntStateOf(0) }
+    var dialog by rememberSaveable { mutableStateOf(false) }
+    var exporting by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        enabled = getEnabled()
+        count = getCount()
+    }
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        if (uri != null) {
+            exporting = true
+            exportLogs(uri) {
+                exporting = false
+                context.showOperationResultToast(true)
+            }
         }
     }
-    MyScaffold(R.string.network_logging, onNavigateUp) {
+    MyScaffold(R.string.network_logging, onNavigateUp, 0.dp) {
         SwitchItem(
-            R.string.enable,
-            getState = { Privilege.DPM.isNetworkLoggingEnabled(Privilege.DAR) },
-            onCheckedChange = { Privilege.DPM.setNetworkLoggingEnabled(Privilege.DAR, it) },
-            padding = false
+            R.string.enable, enabled, {
+                setEnabled(it)
+                enabled = it
+            }
         )
-        Text(stringResource(R.string.log_file_size_is, formatFileSize(fileSize)))
-        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-            Button(
-                onClick = {
-                    exportNetworkLogsLauncher.launch("NetworkLogs.json")
-                },
-                enabled = fileSize > 0,
-                modifier = Modifier.fillMaxWidth(0.49F)
-            ) {
-                Text(stringResource(R.string.export_logs))
-            }
-            Button(
-                onClick = {
-                    logFile.delete()
-                    fileSize = logFile.length()
-                },
-                enabled = fileSize > 0,
-                modifier = Modifier.fillMaxWidth(0.96F)
-            ) {
-                Text(stringResource(R.string.delete_logs))
-            }
+        Text(
+            stringResource(R.string.n_logs_in_total, count),
+            Modifier.padding(HorizontalPadding, 5.dp)
+        )
+        Button(
+            {
+                val date = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date())
+                exportLauncher.launch("network_logs_$date")
+            },
+            Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding),
+            count > 0
+        ) {
+            Text(stringResource(R.string.export_logs))
         }
-        Notes(R.string.info_network_log)
+        if (count > 0) Button(
+            {
+                dialog = true
+            },
+            Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding),
+        ) {
+            Text(stringResource(R.string.delete_logs))
+        }
+        Spacer(Modifier.height(10.dp))
+        Notes(R.string.info_network_log, HorizontalPadding)
     }
+    if (exporting) CircularProgressDialog { exporting = false }
+    if (dialog) AlertDialog(
+        text = {
+            Text(stringResource(R.string.delete_logs))
+        },
+        confirmButton = {
+            TextButton({
+                deleteLogs()
+                dialog = false
+            }) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        dismissButton = {
+            TextButton({ dialog = false }) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+        onDismissRequest = { dialog = false }
+    )
 }
 
 @Serializable object PreferentialNetworkService

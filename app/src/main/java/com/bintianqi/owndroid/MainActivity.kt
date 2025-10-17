@@ -440,7 +440,10 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
         composable<RecommendedGlobalProxy> {
             RecommendedGlobalProxyScreen(vm::setRecommendedGlobalProxy, ::navigateUp)
         }
-        composable<NetworkLogging> { NetworkLoggingScreen(::navigateUp) }
+        composable<NetworkLogging> {
+            NetworkLoggingScreen(vm::getNetworkLoggingEnabled, vm::setNetworkLoggingEnabled,
+                vm::getNetworkLogsCount, vm::exportNetworkLogs, vm::deleteNetworkLogs, ::navigateUp)
+        }
         //composable<WifiAuthKeypair> { WifiAuthKeypairScreen(::navigateUp) }
         composable<PreferentialNetworkService> {
             PreferentialNetworkServiceScreen(vm::getPnsEnabled, vm::setPnsEnabled, vm.pnsConfigs,

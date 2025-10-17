@@ -1753,6 +1753,28 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     fun removeApnConfig(id: Int): Boolean {
         return DPM.removeOverrideApn(DAR, id)
     }
+    @RequiresApi(26)
+    fun getNetworkLoggingEnabled(): Boolean {
+        return DPM.isNetworkLoggingEnabled(DAR)
+    }
+    @RequiresApi(26)
+    fun setNetworkLoggingEnabled(enabled: Boolean) {
+        DPM.setNetworkLoggingEnabled(DAR, enabled)
+    }
+    fun getNetworkLogsCount(): Int {
+        return myRepo.getNetworkLogsCount().toInt()
+    }
+    fun exportNetworkLogs(uri: Uri, callback: () -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            application.contentResolver.openOutputStream(uri)?.use {
+                myRepo.exportNetworkLogs(it)
+            }
+            withContext(Dispatchers.Main) { callback() }
+        }
+    }
+    fun deleteNetworkLogs() {
+        myRepo.deleteNetworkLogs()
+    }
 
     @RequiresApi(29)
     fun getPasswordComplexity(): PasswordComplexity {

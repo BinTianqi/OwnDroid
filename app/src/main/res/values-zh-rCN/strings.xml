@@ -291,7 +291,7 @@
     <string name="invalid_config">无效配置</string>
     <string name="excluded_hosts">排除的主机</string>
     <string name="network_logging">网络日志</string>
-    <string name="log_file_size_is">日志文件大小：%1$s</string>
+    <string name="network_logs_collected">网络日志已收集</string>
     <string name="delete_logs">删除日志</string>
     <string name="export_logs">导出日志</string>
     <string name="wifi_auth_keypair">Wi-Fi密钥对</string>

@@ -173,7 +173,7 @@ fun AppChooserScreen(
                     }
                 }
             }
-            item { Spacer(Modifier.height(60.dp)) }
+            item { Spacer(Modifier.height(BottomPadding)) }
         }
     }
 }

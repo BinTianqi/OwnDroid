@@ -72,10 +72,15 @@ enum class NotificationType(
         12, R.string.security_logs_collected, R.drawable.description_fill0,
         MyNotificationChannel.SecurityLogging
     ),
+    NetworkLogsCollected(
+        13, R.string.network_logs_collected, R.drawable.description_fill0,
+        MyNotificationChannel.NetworkLogging
+    ),
 }
 
 enum class MyNotificationChannel(val id: String, val text: Int, val importance: Int) {
     LockTaskMode("LockTaskMode", R.string.lock_task_mode, NotificationManagerCompat.IMPORTANCE_HIGH),
     Events("Events", R.string.events, NotificationManagerCompat.IMPORTANCE_LOW),
-    SecurityLogging("SecurityLogging", R.string.security_logging, NotificationManagerCompat.IMPORTANCE_MIN)
+    SecurityLogging("SecurityLogging", R.string.security_logging, NotificationManagerCompat.IMPORTANCE_MIN),
+    NetworkLogging("NetworkLogging", R.string.network_logging, NotificationManagerCompat.IMPORTANCE_MIN)
 }

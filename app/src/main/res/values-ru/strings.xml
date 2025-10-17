@@ -277,7 +277,6 @@
     <string name="invalid_config">Неверная конфигурация</string>
     <string name="excluded_hosts">Исключить хосты</string> 
     <string name="network_logging">Сетевой журнал</string> 
-    <string name="log_file_size_is">Размер файла журнала: %1$s</string>
     <string name="delete_logs">Удалить журналы</string>
     <string name="export_logs">Экспортировать журналы</string>
     <string name="wifi_auth_keypair">Пара ключей Wi-Fi</string>

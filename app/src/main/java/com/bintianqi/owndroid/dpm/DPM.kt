@@ -29,12 +29,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.add
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
-import kotlinx.serialization.json.putJsonArray
 
 @SuppressLint("PrivateApi")
 fun binderWrapperDevicePolicyManager(appContext: Context): DevicePolicyManager? {
@@ -137,39 +132,37 @@ val runtimePermissions = listOf(
     PermissionItem(Manifest.permission.ACTIVITY_RECOGNITION, R.string.permission_ACTIVITY_RECOGNITION, R.drawable.history_fill0, true, 29)
 ).filter { VERSION.SDK_INT >= it.requiresApi }
 
+@Serializable
+class NetworkLog(
+    val id: Long?, @SerialName("package") val packageName: String, val time: Long, val type: String,
+    val host: String?, val count: Int?, val addresses: List<String>?,
+    val address: String?, val port: Int?
+)
+
 @RequiresApi(26)
-fun handleNetworkLogs(context: Context, batchToken: Long) {
-    val networkEvents = Privilege.DPM.retrieveNetworkLogs(Privilege.DAR, batchToken) ?: return
-    val file = context.filesDir.resolve("NetworkLogs.json")
-    val fileExist = file.exists()
-    val json = Json { ignoreUnknownKeys = true; explicitNulls = false }
-    val buffer = file.bufferedWriter()
-    networkEvents.forEachIndexed { index, event ->
-        if(fileExist && index == 0) buffer.write(",")
-        val item = buildJsonObject {
-            if(VERSION.SDK_INT >= 28) put("id", event.id)
-            put("time", event.timestamp)
-            put("package", event.packageName)
-            if(event is DnsEvent) {
-                put("type", "dns")
-                put("host", event.hostname)
-                put("count", event.totalResolvedAddressCount)
-                putJsonArray("addresses") {
-                    event.inetAddresses.forEach { inetAddresses ->
-                        add(inetAddresses.hostAddress)
-                    }
-                }
-            }
-            if(event is ConnectEvent) {
-                put("type", "connect")
-                put("address", event.inetAddress.hostAddress)
-                put("port", event.port)
+fun retrieveNetworkLogs(app: MyApplication, token: Long) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val logs = Privilege.DPM.retrieveNetworkLogs(Privilege.DAR, token)?.mapNotNull {
+            when (it) {
+                is DnsEvent -> NetworkLog(
+                    if (VERSION.SDK_INT >= 28) it.id else null, it.packageName, it.timestamp, "dns",
+                    it.hostname, it.totalResolvedAddressCount,
+                    it.inetAddresses.mapNotNull { address -> address.hostAddress }, null, null
+                )
+                is ConnectEvent -> NetworkLog(
+                    if (VERSION.SDK_INT >= 28) it.id else null, it.packageName, it.timestamp,
+                    "connect", null, null, null, it.inetAddress.hostAddress, it.port
+                )
+                else -> null
             }
         }
-        buffer.write(json.encodeToString(item))
-        if(index < networkEvents.size - 1) buffer.write(",")
+        if (logs.isNullOrEmpty()) return@launch
+        app.myRepo.writeNetworkLogs(logs)
+        NotificationUtils.sendBasicNotification(
+            app, NotificationType.NetworkLogsCollected,
+            app.getString(R.string.n_logs_in_total, logs.size)
+        )
     }
-    buffer.close()
 }
 
 @Serializable
@@ -493,7 +486,8 @@ fun transformSecurityEventData(tag: Int, payload: Any): SecurityEventData? {
 @RequiresApi(24)
 fun retrieveSecurityLogs(app: MyApplication) {
     CoroutineScope(Dispatchers.IO).launch {
-        val logs = Privilege.DPM.retrieveSecurityLogs(Privilege.DAR) ?: return@launch
+        val logs = Privilege.DPM.retrieveSecurityLogs(Privilege.DAR)
+        if (logs.isNullOrEmpty()) return@launch
         app.myRepo.writeSecurityLogs(logs)
         NotificationUtils.sendBasicNotification(
             app, NotificationType.SecurityLogsCollected,
