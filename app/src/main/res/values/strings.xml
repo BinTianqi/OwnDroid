@@ -505,6 +505,9 @@
     <string name="secondary_users">Secondary users</string>
     <string name="no_secondary_users">No secondary users</string>
     <string name="user_operation">User operation</string>
+    <string name="start_user_n">Start user %1$d</string>
+    <string name="switch_to_user_n">Switch to user %1$d</string>
+    <string name="stop_user_n">Stop user %1$d</string>
     <string name="user_not_exist">User does not exist</string>
     <string name="serial_number">Serial number</string>
     <string name="logout">Logout</string>

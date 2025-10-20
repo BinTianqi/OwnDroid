@@ -1,15 +1,15 @@
 [versions]
-agp = "8.12.2"
-kotlin = "2.2.10"
+agp = "8.13.0"
+kotlin = "2.2.20"
 
-navigation-compose = "2.9.3"
-composeBom = "2025.08.01"
+navigation-compose = "2.9.5"
+composeBom = "2025.10.00"
 accompanist-drawablepainter = "0.37.3"
 accompanist-permissions = "0.37.3"
 shizuku = "13.1.5"
 fragment = "1.8.9"
-dhizuku = "2.5.3"
-dhizuku-server = "0.0.5"
+dhizuku = "2.5.4"
+dhizuku-server = "0.0.6"
 hiddenApiBypass = "6.1"
 libsu = "6.0.0"
 serialization = "1.9.0"
@@ -22,6 +22,7 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose" }
 androidx-material3 = { module = "androidx.compose.material3:material3" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
 androidx-fragment = { group = "androidx.fragment", name = "fragment", version.ref = "fragment" }
+material-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
 
 accompanist-drawablepainter = { module = "com.google.accompanist:accompanist-drawablepainter", version.ref = "accompanist-drawablepainter" }
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist-permissions" }
@@ -39,4 +40,4 @@ serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.2.10" }
+serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.2.20" }

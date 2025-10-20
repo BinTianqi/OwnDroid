@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
+import com.bintianqi.owndroid.dpm.UserOperationType
 
 object ShortcutUtils {
     fun setAllShortcuts(context: Context, enabled: Boolean) {
@@ -19,7 +20,7 @@ object ShortcutUtils {
             )
             ShortcutManagerCompat.setDynamicShortcuts(context, list)
         } else {
-            ShortcutManagerCompat.removeAllDynamicShortcuts(context)
+            ShortcutManagerCompat.removeDynamicShortcuts(context, MyShortcut.entries.map { it.id })
         }
     }
     fun setShortcut(context: Context, shortcut: MyShortcut, state: Boolean) {
@@ -78,6 +79,46 @@ object ShortcutUtils {
         }
         val shortcut = createUserRestrictionShortcut(context, id, state)
         ShortcutManagerCompat.updateShortcuts(context, listOf(shortcut))
+    }
+    fun buildUserOperationShortcut(
+        context: Context, type: UserOperationType, serial: Int
+    ): ShortcutInfoCompat {
+        setShortcutKey()
+        val icon = when (type) {
+            UserOperationType.Start, UserOperationType.Switch -> R.drawable.person_fill0
+            UserOperationType.Stop -> R.drawable.person_off
+            else -> R.drawable.person_fill0
+        }
+        val text = when (type) {
+            UserOperationType.Start -> R.string.start_user_n
+            UserOperationType.Switch -> R.string.switch_to_user_n
+            UserOperationType.Stop -> R.string.stop_user_n
+            else -> R.string.place_holder
+        }
+        return ShortcutInfoCompat.Builder(context, "USER_OPERATION-${type.name}-$serial")
+            .setIcon(IconCompat.createWithResource(context, icon))
+            .setShortLabel(context.getString(text, serial))
+            .setIntent(
+                Intent(context, ShortcutsReceiverActivity::class.java)
+                    .setAction("com.bintianqi.owndroid.action.USER_OPERATION")
+                    .putExtra("operation", type.name)
+                    .putExtra("serial", serial)
+                    .putExtra("key", SP.shortcutKey)
+            )
+            .build()
+    }
+    fun setUserOperationShortcut(context: Context, type: UserOperationType, serial: Int): Boolean {
+        val shortcut = buildUserOperationShortcut(context, type, serial)
+        return ShortcutManagerCompat.requestPinShortcut(context, shortcut, null)
+    }
+    fun deleteUserOperationShortcut(context: Context, serial: Int) {
+        val shortcuts = ShortcutManagerCompat.getShortcuts(
+            context, ShortcutManagerCompat.FLAG_MATCH_PINNED
+        )
+        val matchedShortcuts = shortcuts.filter {
+            it.id.startsWith("USER_OPERATION-") && it.id.endsWith("-$serial")
+        }.map { it.id }
+        ShortcutManagerCompat.removeLongLivedShortcuts(context, matchedShortcuts)
     }
     fun setShortcutKey() {
         if (SP.shortcutKey.isNullOrEmpty()) {

@@ -87,12 +87,15 @@ import com.bintianqi.owndroid.dpm.SsidPolicy
 import com.bintianqi.owndroid.dpm.SsidPolicyType
 import com.bintianqi.owndroid.dpm.SystemOptionsStatus
 import com.bintianqi.owndroid.dpm.SystemUpdatePolicyInfo
+import com.bintianqi.owndroid.dpm.UserIdentifier
 import com.bintianqi.owndroid.dpm.UserInformation
+import com.bintianqi.owndroid.dpm.UserOperationType
 import com.bintianqi.owndroid.dpm.WifiInfo
 import com.bintianqi.owndroid.dpm.WifiSecurity
 import com.bintianqi.owndroid.dpm.WifiStatus
 import com.bintianqi.owndroid.dpm.activateOrgProfileCommand
 import com.bintianqi.owndroid.dpm.delegatedScopesList
+import com.bintianqi.owndroid.dpm.doUserOperationWithContext
 import com.bintianqi.owndroid.dpm.getPackageInstaller
 import com.bintianqi.owndroid.dpm.handlePrivilegeChange
 import com.bintianqi.owndroid.dpm.isValidPackageName
@@ -1290,35 +1293,28 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             UM.getSerialNumberForUser(uh)
         )
     }
+    @Suppress("PrivateApi")
     @RequiresApi(28)
-    fun startUser(id: Int, isUserId: Boolean): Int {
-        val uh = getUserHandle(id, isUserId)
-        if (uh == null) return R.string.user_not_exist
-        return getUserOperationResultText(DPM.startUserInBackground(DAR, uh))
+    fun getUserIdentifiers(): List<UserIdentifier> {
+        return DPM.getSecondaryUsers(DAR)?.mapNotNull {
+            try {
+                val field = UserHandle::class.java.getDeclaredField("mHandle")
+                field.isAccessible = true
+                UserIdentifier(field.get(it) as Int, UM.getSerialNumberForUser(it))
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        } ?: emptyList()
     }
-    fun switchUser(id: Int, isUserId: Boolean): Boolean {
-        val uh = getUserHandle(id, isUserId)
-        if (uh == null) return false
-        DPM.switchUser(DAR, uh)
-        return true
+    fun doUserOperation(type: UserOperationType, id: Int, isUserId: Boolean): Boolean {
+        return doUserOperationWithContext(application, type, id, isUserId)
     }
-    @RequiresApi(28)
-    fun stopUser(id: Int, isUserId: Boolean): Int {
-        val uh = getUserHandle(id, isUserId)
-        if (uh == null) return R.string.user_not_exist
-        return getUserOperationResultText(DPM.stopUser(DAR, uh))
-    }
-    fun deleteUser(id: Int, isUserId: Boolean): Boolean {
-        val uh = getUserHandle(id, isUserId)
-        if (uh == null) return false
-        return DPM.removeUser(DAR, uh)
-    }
-    fun getUserHandle(id: Int, isUserId: Boolean): UserHandle? {
-        return if (isUserId && VERSION.SDK_INT >= 24) {
-            UserHandle.getUserHandleForUid(id * 100000)
-        } else {
-            UM.getUserForSerialNumber(id.toLong())
-        }
+    fun createUserOperationShortcut(type: UserOperationType, id: Int, isUserId: Boolean): Boolean {
+        val serial = if (isUserId && VERSION.SDK_INT >= 24) {
+            UM.getSerialNumberForUser(UserHandle.getUserHandleForUid(id * 100000))
+        } else id
+        return ShortcutUtils.setUserOperationShortcut(application, type, serial.toInt())
     }
     fun getUserOperationResultText(code: Int): Int {
         return when (code) {
@@ -1367,10 +1363,6 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     @RequiresApi(23)
     fun setUserIcon(bitmap: Bitmap) {
         DPM.setUserIcon(DAR, bitmap)
-    }
-    @RequiresApi(28)
-    fun getSecondaryUsers(): List<Long> {
-        return DPM.getSecondaryUsers(DAR).map { UM.getSerialNumberForUser(it) }
     }
     @RequiresApi(28)
     fun getUserSessionMessages(): Pair<String, String> {

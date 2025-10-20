@@ -103,6 +103,10 @@ class Receiver : DeviceAdminReceiver() {
     override fun onUserRemoved(context: Context, intent: Intent, removedUser: UserHandle) {
         super.onUserRemoved(context, intent, removedUser)
         sendUserRelatedNotification(context, removedUser, NotificationType.UserRemoved)
+        val um = context.getSystemService(Context.USER_SERVICE) as UserManager
+        ShortcutUtils.deleteUserOperationShortcut(
+            context, um.getSerialNumberForUser(removedUser).toInt()
+        )
     }
 
     override fun onBugreportShared(context: Context, intent: Intent, hash: String) {

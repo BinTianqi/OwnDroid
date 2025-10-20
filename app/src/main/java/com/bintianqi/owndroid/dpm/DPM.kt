@@ -12,12 +12,16 @@ import android.content.Intent
 import android.content.pm.IPackageInstaller
 import android.content.pm.PackageInstaller
 import android.os.Build.VERSION
+import android.os.UserHandle
+import android.os.UserManager
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.NotificationType
 import com.bintianqi.owndroid.NotificationUtils
 import com.bintianqi.owndroid.Privilege
+import com.bintianqi.owndroid.Privilege.DAR
+import com.bintianqi.owndroid.Privilege.DPM
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SP
 import com.bintianqi.owndroid.ShortcutUtils
@@ -142,7 +146,7 @@ class NetworkLog(
 @RequiresApi(26)
 fun retrieveNetworkLogs(app: MyApplication, token: Long) {
     CoroutineScope(Dispatchers.IO).launch {
-        val logs = Privilege.DPM.retrieveNetworkLogs(Privilege.DAR, token)?.mapNotNull {
+        val logs = DPM.retrieveNetworkLogs(DAR, token)?.mapNotNull {
             when (it) {
                 is DnsEvent -> NetworkLog(
                     if (VERSION.SDK_INT >= 28) it.id else null, it.packageName, it.timestamp, "dns",
@@ -486,7 +490,7 @@ fun transformSecurityEventData(tag: Int, payload: Any): SecurityEventData? {
 @RequiresApi(24)
 fun retrieveSecurityLogs(app: MyApplication) {
     CoroutineScope(Dispatchers.IO).launch {
-        val logs = Privilege.DPM.retrieveSecurityLogs(Privilege.DAR)
+        val logs = DPM.retrieveSecurityLogs(DAR)
         if (logs.isNullOrEmpty()) return@launch
         app.myRepo.writeSecurityLogs(logs)
         NotificationUtils.sendBasicNotification(
@@ -500,7 +504,7 @@ fun setDefaultAffiliationID() {
     if (VERSION.SDK_INT < 26) return
     if(!SP.isDefaultAffiliationIdSet) {
         try {
-            Privilege.DPM.setAffiliationIds(Privilege.DAR, setOf("OwnDroid_default_affiliation_id"))
+            DPM.setAffiliationIds(DAR, setOf("OwnDroid_default_affiliation_id"))
             SP.isDefaultAffiliationIdSet = true
             Log.d("DPM", "Default affiliation id set")
         } catch (e: Exception) {
@@ -557,5 +561,31 @@ fun handlePrivilegeChange(context: Context) {
         SP.isDefaultAffiliationIdSet = false
         ShortcutUtils.setAllShortcuts(context, false)
         SP.apiKeyHash = ""
+    }
+}
+
+fun doUserOperationWithContext(
+    context: Context, type: UserOperationType, id: Int, isUserId: Boolean
+): Boolean {
+    val um = context.getSystemService(Context.USER_SERVICE) as UserManager
+    val handle = if (isUserId && VERSION.SDK_INT >= 24) {
+        UserHandle.getUserHandleForUid(id * 100000)
+    } else {
+        um.getUserForSerialNumber(id.toLong())
+    }
+    if (handle == null) return false
+    return when (type) {
+        UserOperationType.Start -> {
+            if (VERSION.SDK_INT >= 28)
+                DPM.startUserInBackground(DAR, handle) == UserManager.USER_OPERATION_SUCCESS
+            else false
+        }
+        UserOperationType.Switch -> DPM.switchUser(DAR, handle)
+        UserOperationType.Stop -> {
+            if (VERSION.SDK_INT >= 28)
+                DPM.stopUser(DAR, handle) == UserManager.USER_OPERATION_SUCCESS
+            else false
+        }
+        UserOperationType.Delete -> DPM.removeUser(DAR, handle)
     }
 }

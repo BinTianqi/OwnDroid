@@ -91,6 +91,7 @@ dependencies {
     implementation(libs.accompanist.permissions)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.material.icons.core)
     implementation(libs.shizuku.provider)
     implementation(libs.shizuku.api)
     implementation(libs.dhizuku.api)

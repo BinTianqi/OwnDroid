@@ -469,6 +469,9 @@
     <string name="secondary_users">次要用户</string>
     <string name="no_secondary_users">无次要用户</string>
     <string name="user_operation">用户操作</string>
+    <string name="start_user_n">启动用户 %1$d</string>
+    <string name="switch_to_user_n">切换到用户 %1$d</string>
+    <string name="stop_user_n">停止用户 %1$d</string>
     <string name="user_not_exist">用户不存在</string>
     <string name="serial_number">序列号</string>
     <string name="logout">登出</string>

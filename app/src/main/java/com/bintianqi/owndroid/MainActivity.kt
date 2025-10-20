@@ -601,7 +601,8 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
             UsersOptionsScreen(vm::getLogoutEnabled, vm::setLogoutEnabled, ::navigateUp)
         }
         composable<UserOperation> {
-            UserOperationScreen(vm::startUser, vm::switchUser, vm::stopUser, vm::deleteUser, ::navigateUp)
+            UserOperationScreen(vm::getUserIdentifiers, vm::doUserOperation,
+                vm::createUserOperationShortcut, ::navigateUp)
         }
         composable<CreateUser> { CreateUserScreen(vm::createUser, ::navigateUp) }
         composable<ChangeUsername> { ChangeUsernameScreen(vm::setProfileName, ::navigateUp) }
