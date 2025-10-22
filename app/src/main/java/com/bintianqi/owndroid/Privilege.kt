@@ -13,20 +13,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 object Privilege {
     fun initialize(context: Context) {
         if (SP.dhizuku) {
-            Dhizuku.init(context)
-            val hasPermission = try {
-                Dhizuku.isPermissionGranted()
+            if (Dhizuku.init(context)) try {
+                if (Dhizuku.isPermissionGranted()) {
+                    val dhizukuDpm = binderWrapperDevicePolicyManager(context)
+                    if (dhizukuDpm != null) {
+                        DPM = dhizukuDpm
+                        DAR = Dhizuku.getOwnerComponent()
+                        updateStatus()
+                        return
+                    }
+                }
             } catch(_: Exception) {
                 false
-            }
-            if (hasPermission) {
-                val dhizukuDpm = binderWrapperDevicePolicyManager(context)
-                if (dhizukuDpm != null) {
-                    DPM = dhizukuDpm
-                    DAR = Dhizuku.getOwnerComponent()
-                    updateStatus()
-                    return
-                }
             }
             dhizukuErrorStatus.value = 2
         }
