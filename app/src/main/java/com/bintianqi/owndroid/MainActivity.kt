@@ -228,7 +228,7 @@ import com.bintianqi.owndroid.dpm.WorkModesScreen
 import com.bintianqi.owndroid.dpm.WorkProfile
 import com.bintianqi.owndroid.dpm.WorkProfileScreen
 import com.bintianqi.owndroid.dpm.dhizukuErrorStatus
-import com.bintianqi.owndroid.ui.Animations
+import com.bintianqi.owndroid.ui.NavTransition
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import kotlinx.serialization.Serializable
 import java.util.Locale
@@ -275,7 +275,11 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
     val focusMgr = LocalFocusManager.current
     val lifecycleOwner = LocalLifecycleOwner.current
     fun navigateUp() { navController.navigateUp() }
-    fun navigate(destination: Any) { navController.navigate(destination) }
+    fun navigate(destination: Any) {
+        navController.navigate(destination) {
+            launchSingleTop = true
+        }
+    }
     fun choosePackage() {
         navController.navigate(ApplicationsList(false))
     }
@@ -293,10 +297,10 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
             .fillMaxSize()
             .background(colorScheme.background)
             .pointerInput(Unit) { detectTapGestures(onTap = { focusMgr.clearFocus() }) },
-        enterTransition = Animations.navHostEnterTransition,
-        exitTransition = Animations.navHostExitTransition,
-        popEnterTransition = Animations.navHostPopEnterTransition,
-        popExitTransition = Animations.navHostPopExitTransition
+        enterTransition = { NavTransition.enterTransition },
+        exitTransition = { NavTransition.exitTransition },
+        popEnterTransition = { NavTransition.popEnterTransition },
+        popExitTransition = { NavTransition.popExitTransition }
     ) {
         composable<Home> { HomeScreen(::navigate) }
         composable<WorkModes> {

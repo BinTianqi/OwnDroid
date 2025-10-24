@@ -44,6 +44,10 @@ android {
         debug {
             signingConfig = signingConfigs.getByName("defaultSignature")
         }
+        create("fastDebug") {
+            initWith(getByName("debug"))
+            isDebuggable = false
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
