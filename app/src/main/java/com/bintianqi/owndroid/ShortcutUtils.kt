@@ -111,14 +111,13 @@ object ShortcutUtils {
         val shortcut = buildUserOperationShortcut(context, type, serial)
         return ShortcutManagerCompat.requestPinShortcut(context, shortcut, null)
     }
-    fun deleteUserOperationShortcut(context: Context, serial: Int) {
-        val shortcuts = ShortcutManagerCompat.getShortcuts(
-            context, ShortcutManagerCompat.FLAG_MATCH_PINNED
+    fun disableUserOperationShortcut(context: Context, serial: Int) {
+        val shortcuts = UserOperationType.entries.map {
+            "USER_OPERATION-${it.name}-$serial"
+        }
+        ShortcutManagerCompat.disableShortcuts(
+            context, shortcuts, context.getString(R.string.user_removed)
         )
-        val matchedShortcuts = shortcuts.filter {
-            it.id.startsWith("USER_OPERATION-") && it.id.endsWith("-$serial")
-        }.map { it.id }
-        ShortcutManagerCompat.removeLongLivedShortcuts(context, matchedShortcuts)
     }
     fun setShortcutKey() {
         if (SP.shortcutKey.isNullOrEmpty()) {

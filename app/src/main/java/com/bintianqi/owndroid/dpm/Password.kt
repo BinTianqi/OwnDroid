@@ -213,7 +213,7 @@ fun PasswordInfoScreen(
     val privilege by Privilege.status.collectAsStateWithLifecycle()
     var dialog by rememberSaveable { mutableIntStateOf(0) } // 0:none, 1:password complexity
     MyScaffold(R.string.password_info, onNavigateUp, 0.dp) {
-        if (VERSION.SDK_INT >= 29) {
+        if (VERSION.SDK_INT >= 31) {
             InfoItem(R.string.current_password_complexity, getComplexity().text, true) { dialog = 1 }
         }
         InfoItem(R.string.password_sufficient, isSufficient().yesOrNo)

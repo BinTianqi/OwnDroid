@@ -1,6 +1,7 @@
 package com.bintianqi.owndroid
 
 import android.accounts.Account
+import android.annotation.SuppressLint
 import android.app.ActivityOptions
 import android.app.Application
 import android.app.KeyguardManager
@@ -521,12 +522,21 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             false
         }
     }
+    @SuppressLint("PrivateApi")
     @RequiresApi(24)
     fun getOrgName(): String {
         return try {
             DPM.getOrganizationName(DAR)?.toString() ?: ""
         } catch (_: Exception) {
-            ""
+            try {
+                val method = DevicePolicyManager::class.java.getDeclaredMethod(
+                    "getDeviceOwnerOrganizationName"
+                )
+                method.isAccessible = true
+                (method.invoke(DPM) as CharSequence).toString()
+            } catch (_: Exception) {
+                ""
+            }
         }
     }
     @RequiresApi(24)
