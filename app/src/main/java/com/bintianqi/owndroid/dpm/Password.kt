@@ -244,7 +244,7 @@ fun ResetPasswordTokenScreen(
 ) {
     val context = LocalContext.current
     var token by rememberSaveable { mutableStateOf("") }
-    var state by rememberSaveable { mutableStateOf(getState()) }
+    var state by remember { mutableStateOf(getState()) }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == Activity.RESULT_OK) {
             context.popToast(R.string.token_activated)

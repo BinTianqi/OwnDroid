@@ -797,17 +797,20 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         }
     }
     val installedCaCerts = MutableStateFlow(emptyList<CaCertInfo>())
+    val selectedCaCert = MutableStateFlow<CaCertInfo?>(null)
     fun getCaCerts() {
         installedCaCerts.value = DPM.getInstalledCaCerts(DAR).mapNotNull { parseCaCert(it) }
     }
-    fun parseCaCert(uri: Uri): CaCertInfo? {
-        return try {
+    fun selectCaCert(cert: CaCertInfo) {
+        selectedCaCert.value = cert
+    }
+    fun parseCaCert(uri: Uri) {
+        try {
             application.contentResolver.openInputStream(uri)?.use {
-                parseCaCert(it.readBytes())
+                selectedCaCert.value = parseCaCert(it.readBytes())
             }
         } catch(e: Exception) {
             e.printStackTrace()
-            null
         }
     }
     fun parseCaCert(bytes: ByteArray): CaCertInfo? {
@@ -825,22 +828,22 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             null
         }
     }
-    fun installCaCert(cert: CaCertInfo): Boolean {
-        val result =  DPM.installCaCert(DAR, cert.bytes)
+    fun installCaCert(): Boolean {
+        val result =  DPM.installCaCert(DAR, selectedCaCert.value!!.bytes)
         if (result) getCaCerts()
         return result
     }
-    fun uninstallCaCert(cert: CaCertInfo) {
-        DPM.uninstallCaCert(DAR, cert.bytes)
+    fun uninstallCaCert() {
+        DPM.uninstallCaCert(DAR, selectedCaCert.value!!.bytes)
         getCaCerts()
     }
     fun uninstallAllCaCerts() {
         DPM.uninstallAllUserCaCerts(DAR)
         getCaCerts()
     }
-    fun exportCaCert(uri: Uri, cert: CaCertInfo) {
+    fun exportCaCert(uri: Uri) {
         application.contentResolver.openOutputStream(uri)?.use {
-            it.write(cert.bytes)
+            it.write(selectedCaCert.value!!.bytes)
         }
     }
     val mdAccountTypes = MutableStateFlow(emptyList<String>())

@@ -68,6 +68,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Tab
@@ -75,6 +76,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDialog
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
@@ -127,6 +129,7 @@ import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.yesOrNo
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -562,7 +565,7 @@ fun ChangeTimeScreen(setTime: (Long, Boolean) -> Boolean, onNavigateUp: () -> Un
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            TabRow(tab) {
+            PrimaryTabRow(tab) {
                 Tab(
                     tab == 0, { coroutine.launch { pagerState.animateScrollToPage(0) } },
                     text = { Text(stringResource(R.string.selector)) }
@@ -579,6 +582,7 @@ fun ChangeTimeScreen(setTime: (Long, Boolean) -> Boolean, onNavigateUp: () -> Un
                 Column(
                     Modifier
                         .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
                         .padding(top = 8.dp)
                         .padding(horizontal = HorizontalPadding)
                 ) {
@@ -634,6 +638,7 @@ fun ChangeTimeScreen(setTime: (Long, Boolean) -> Boolean, onNavigateUp: () -> Un
                             Text(stringResource(R.string.apply))
                         }
                     }
+                    Spacer(Modifier.height(BottomPadding))
                 }
             }
         }
@@ -646,17 +651,21 @@ fun ChangeTimeScreen(setTime: (Long, Boolean) -> Boolean, onNavigateUp: () -> Un
         },
         onDismissRequest = { picker = 0; focusMgr.clearFocus() }
     ) {
-        DatePicker(datePickerState)
+        Column(Modifier.verticalScroll(rememberScrollState())) {
+            DatePicker(datePickerState)
+        }
     }
-    if(picker == 2) AlertDialog(
-        text = { TimePicker(timePickerState) },
+    if (picker == 2) TimePickerDialog(
+        title = {},
         confirmButton = {
-            TextButton(onClick = { picker = 0; focusMgr.clearFocus() } ) {
+            TextButton({ picker = 0 }) {
                 Text(stringResource(R.string.confirm))
             }
         },
-        onDismissRequest = { picker = 0; focusMgr.clearFocus() }
-    )
+        onDismissRequest = { picker = 0 }
+    ) {
+        TimePicker(timePickerState)
+    }
 }
 
 @Serializable object ChangeTimeZone
@@ -1353,25 +1362,26 @@ data class CaCertInfo(
 @Composable
 fun CaCertScreen(
     caCertificates: StateFlow<List<CaCertInfo>>, getCerts: () -> Unit,
-    installCert: (CaCertInfo) -> Boolean, parseCert: (Uri) -> CaCertInfo?,
-    exportCert: (Uri, CaCertInfo) -> Unit, uninstallCert: (CaCertInfo) -> Unit,
+    selectedCaCert: MutableStateFlow<CaCertInfo?>, selectCaCert: (CaCertInfo) -> Unit,
+    installCert: () -> Boolean, parseCert: (Uri) -> Unit,
+    exportCert: (Uri) -> Unit, uninstallCert: () -> Unit,
     uninstallAllCerts: () -> Unit, onNavigateUp: () -> Unit
 ) {
     val context = LocalContext.current
     /** 0:none, 1:install, 2:info, 3:uninstall all */
     var dialog by rememberSaveable { mutableIntStateOf(0) }
     val caCerts by caCertificates.collectAsStateWithLifecycle()
-    var selectedCaCert by rememberSaveable { mutableStateOf<CaCertInfo?>(null) }
+    val selectedCert by selectedCaCert.collectAsStateWithLifecycle()
     val getCertLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()) { uri ->
-        if(uri != null) {
-            selectedCaCert = parseCert(uri)
+        if (uri != null) {
+            parseCert(uri)
             dialog = 1
         }
     }
     val exportCertLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument()) { uri ->
-        if(uri != null) exportCert(uri, selectedCaCert!!)
+        if (uri != null) exportCert(uri)
     }
     LaunchedEffect(Unit) { getCerts() }
     Scaffold(
@@ -1407,7 +1417,7 @@ fun CaCertScreen(
                     Modifier
                         .fillMaxWidth()
                         .clickable {
-                            selectedCaCert = cert
+                            selectCaCert(cert)
                             dialog = 2
                         }
                         .animateItem()
@@ -1421,11 +1431,11 @@ fun CaCertScreen(
                 Spacer(Modifier.height(BottomPadding))
             }
         }
-        if (selectedCaCert != null && (dialog == 1 || dialog == 2)) {
-            val cert = selectedCaCert!!
+        if (selectedCert != null && (dialog == 1 || dialog == 2)) {
+            val cert = selectedCert!!
             AlertDialog(
                 text = {
-                    Column {
+                    Column(Modifier.verticalScroll(rememberScrollState())) {
                         Text("Serial number", style = typography.labelLarge)
                         SelectionContainer { Text(cert.serialNumber) }
                         Text("Subject", style = typography.labelLarge)
@@ -1445,7 +1455,7 @@ fun CaCertScreen(
                         ) {
                             TextButton(
                                 onClick = {
-                                    uninstallCert(cert)
+                                    uninstallCert()
                                     dialog = 0
                                 },
                                 modifier = Modifier.fillMaxWidth(0.49F),
@@ -1467,7 +1477,7 @@ fun CaCertScreen(
                 confirmButton = {
                     if (dialog == 1) {
                         TextButton({
-                            context.showOperationResultToast(installCert(cert))
+                            context.showOperationResultToast(installCert())
                             dialog = 0
                         }) {
                             Text(stringResource(R.string.install))
@@ -1489,7 +1499,7 @@ fun CaCertScreen(
                         }
                     }
                 },
-                onDismissRequest = {}
+                onDismissRequest = { dialog = 0 }
             )
         }
         if (dialog == 3) {

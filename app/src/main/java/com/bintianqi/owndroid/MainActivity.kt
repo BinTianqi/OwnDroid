@@ -384,7 +384,7 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
                 vm:: getLockTaskFeatures, vm::setLockTaskFeatures, ::navigateUp)
         }
         composable<CaCert> {
-            CaCertScreen(vm.installedCaCerts, vm::getCaCerts, vm::installCaCert, vm::parseCaCert,
+            CaCertScreen(vm.installedCaCerts, vm::getCaCerts, vm.selectedCaCert, vm::selectCaCert, vm::installCaCert, vm::parseCaCert,
                 vm::exportCaCert, vm::uninstallCaCert, vm::uninstallAllCaCerts, ::navigateUp)
         }
         composable<SecurityLogging> {
