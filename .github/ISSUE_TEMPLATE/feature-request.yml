@@ -1,5 +1,5 @@
 name: ⭐ Feature Request
-description: Share Youur Ideas To Improve Canta
+description: Share Youur Ideas To Improve OwnDroid
 title: "Feature Request: "
 labels: enhancement
 
@@ -8,7 +8,7 @@ body:
     id: describe
     attributes:
       label: Describe Your Idea
-      description: What feature or improvement would you like to see in Canta ?
+      description: What feature or improvement would you like to see in OwnDroid ?
       placeholder: |
         Please be as specific as possible about:
         - What you want to Achieve
