@@ -1,5 +1,5 @@
 name: 🐞 Bug Report
-description: Help us fix bugs by reporting issues you've encountered
+description: Help us fix bugs by reporting issues You've encountered
 title: "[BUG] "
 labels: bug
 
@@ -15,7 +15,6 @@ body:
       label: What happened?
       description: Tell us what went wrong. Be as detailed as possible.
       placeholder: |
-        Example: The app crashes when I try to Uninstall a system App.
     validations:
       required: true
 
@@ -54,7 +53,7 @@ body:
       placeholder: |
         - Device: Pixel 9a
         - Android version: Android 15 (API 35)
-        - Canta version: 3.x.x
+        - OwnDroid version: x.x
     validations:
       required: true
 
