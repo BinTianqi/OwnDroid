@@ -6,20 +6,25 @@ import android.database.sqlite.SQLiteOpenHelper
 
 class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 3) {
     override fun onCreate(db: SQLiteDatabase) {
-        db.execSQL("CREATE TABLE dhizuku_clients (uid INTEGER PRIMARY KEY," +
-                "signature TEXT, permissions TEXT)")
+        db.execSQL(DHIZUKU_CLIENTS_TABLE)
+        db.execSQL(SECURITY_LOGS_TABLE)
+        db.execSQL(NETWORK_LOGS_TABLE)
     }
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         if (oldVersion < 2) {
-            db.execSQL("CREATE TABLE security_logs (id INTEGER, tag INTEGER, level INTEGER," +
-                    "time INTEGER, data TEXT)")
+            db.execSQL(SECURITY_LOGS_TABLE)
         }
         if (oldVersion < 3) {
-            db.execSQL(
-                "CREATE TABLE network_logs (id INTEGER, package INTEGER, time INTEGER," +
-                        "type TEXT, host TEXT, count INTEGER, addresses TEXT, address TEXT," +
-                        "port INTEGER)"
-            )
+            db.execSQL(NETWORK_LOGS_TABLE)
         }
+    }
+    companion object {
+        const val DHIZUKU_CLIENTS_TABLE = "CREATE TABLE dhizuku_clients (uid INTEGER PRIMARY KEY," +
+                "signature TEXT, permissions TEXT)"
+        const val SECURITY_LOGS_TABLE = "CREATE TABLE security_logs (id INTEGER, tag INTEGER," +
+                "level INTEGER, time INTEGER, data TEXT)"
+        const val NETWORK_LOGS_TABLE = "CREATE TABLE network_logs (id INTEGER, package INTEGER," +
+                "time INTEGER, type TEXT, host TEXT, count INTEGER, addresses TEXT," +
+                "address TEXT, port INTEGER)"
     }
 }
