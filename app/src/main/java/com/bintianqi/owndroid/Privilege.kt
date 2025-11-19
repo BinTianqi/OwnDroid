@@ -23,8 +23,8 @@ object Privilege {
                         return
                     }
                 }
-            } catch(_: Exception) {
-                false
+            } catch(e: Exception) {
+                e.printStackTrace()
             }
             dhizukuErrorStatus.value = 2
         }

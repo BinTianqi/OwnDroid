@@ -112,7 +112,6 @@
     <!--Dhizuku-->
     <string name="failed_to_init_dhizuku">Не удалось инициализировать Dhizuku</string>
     <string name="dhizuku_permission_not_granted">Разрешение Dhizuku не предоставлено</string>
-    <string name="dhizuku_mode_disabled">Режим Dhizuku отключен</string>
 
     <!--Системные-->
     <string name="system">Система</string> 

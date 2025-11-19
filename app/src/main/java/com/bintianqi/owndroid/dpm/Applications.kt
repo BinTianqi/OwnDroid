@@ -12,6 +12,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -30,12 +32,20 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
@@ -46,12 +56,15 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -89,6 +102,7 @@ import com.bintianqi.owndroid.ui.SwitchItem
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.Serializable
 
 val String.isValidPackageName
@@ -729,49 +743,238 @@ fun SetDefaultDialerScreen(
 fun PackageFunctionScreenWithoutResult(
     title: Int, packagesState: MutableStateFlow<List<AppInfo>>, onGet: () -> Unit,
     onSet: (String, Boolean) -> Unit, onNavigateUp: () -> Unit,
-    chosenPackage: Channel<String>, onChoosePackage: () -> Unit, notes: Int? = null
+    chosenPackage: Channel<String>, onChoosePackage: () -> Unit,
+    navigateToGroups: () -> Unit, appGroups: StateFlow<List<AppGroup>>, notes: Int? = null
 ) {
     PackageFunctionScreen(
         title, packagesState, onGet, { name, status -> onSet(name, status); null },
-        onNavigateUp, chosenPackage, onChoosePackage, notes
+        onNavigateUp, chosenPackage, onChoosePackage, navigateToGroups, appGroups, notes
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PackageFunctionScreen(
     title: Int, packagesState: MutableStateFlow<List<AppInfo>>, onGet: () -> Unit,
     onSet: (String, Boolean) -> Boolean?, onNavigateUp: () -> Unit,
-    chosenPackage: Channel<String>, onChoosePackage: () -> Unit, notes: Int? = null
+    chosenPackage: Channel<String>, onChoosePackage: () -> Unit,
+    navigateToGroups: () -> Unit, appGroups: StateFlow<List<AppGroup>>, notes: Int? = null
 ) {
+    val groups by appGroups.collectAsStateWithLifecycle()
     val packages by packagesState.collectAsStateWithLifecycle()
     var packageName by rememberSaveable { mutableStateOf("") }
+    var selectedGroup by remember { mutableStateOf<AppGroup?>(null) }
     LaunchedEffect(Unit) {
         onGet()
         packageName = chosenPackage.receive()
     }
-    MyLazyScaffold(title, onNavigateUp) {
-        items(packages, { it.name }) {
-            ApplicationItem(it) {
-                onSet(it.name, false)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                { Text(stringResource(title)) },
+                navigationIcon = { NavIcon(onNavigateUp) },
+                actions = {
+                    var expand by remember { mutableStateOf(false) }
+                    Box {
+                        IconButton({
+                            expand = true
+                        }) {
+                            Icon(Icons.Default.MoreVert, null)
+                        }
+                        DropdownMenu(expand, { expand = false }) {
+                            groups.forEach {
+                                DropdownMenuItem(
+                                    { Text("(${it.apps.size}) ${it.name}") },
+                                    {
+                                        selectedGroup = it
+                                        expand = false
+                                    }
+                                )
+                            }
+                            if (groups.isNotEmpty()) HorizontalDivider()
+                            DropdownMenuItem(
+                                { Text(stringResource(R.string.manage_app_groups)) },
+                                {
+                                    navigateToGroups()
+                                    expand = false
+                                }
+                            )
+                        }
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        LazyColumn(Modifier.padding(paddingValues)) {
+            items(packages, { it.name }) {
+                ApplicationItem(it) {
+                    onSet(it.name, false)
+                }
+            }
+            item {
+                PackageNameTextField(packageName, onChoosePackage,
+                    Modifier.padding(HorizontalPadding, 8.dp)) { packageName = it }
+                Button(
+                    {
+                        if (onSet(packageName, true) != false) {
+                            packageName = ""
+                        }
+                    },
+                    Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding).padding(bottom = 10.dp),
+                    packageName.isValidPackageName
+                ) {
+                    Text(stringResource(R.string.add))
+                }
+                if (notes != null) Notes(notes, HorizontalPadding)
+                Spacer(Modifier.height(BottomPadding))
             }
         }
-        item {
-            PackageNameTextField(packageName, onChoosePackage,
-                Modifier.padding(HorizontalPadding, 8.dp)) { packageName = it }
-            Button(
-                {
-                    if (onSet(packageName, true) != false) {
-                        println("reset")
-                        packageName = ""
+    }
+    if (selectedGroup != null) AlertDialog(
+        text = {
+            Column {
+                Button({
+                    selectedGroup!!.apps.forEach {
+                        onSet(it, true)
                     }
-                },
-                Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding).padding(bottom = 10.dp),
-                packageName.isValidPackageName
-            ) {
-                Text(stringResource(R.string.add))
+                    selectedGroup = null
+                }) {
+                    Text(stringResource(R.string.add_to_list))
+                }
+                Button({
+                    selectedGroup!!.apps.forEach {
+                        onSet(it, false)
+                    }
+                    selectedGroup = null
+                }) {
+                    Text(stringResource(R.string.remove_from_list))
+                }
             }
-            if (notes != null) Notes(notes, HorizontalPadding)
-            Spacer(Modifier.height(BottomPadding))
+        },
+        confirmButton = {
+            TextButton({ selectedGroup = null }) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+        onDismissRequest = { selectedGroup = null }
+    )
+}
+
+class AppGroup(val id: Int, val name: String, val apps: List<String>)
+
+@Serializable object ManageAppGroups
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ManageAppGroupsScreen(
+    appGroups: StateFlow<List<AppGroup>>,
+    navigateToEditScreen: (Int?, String, List<String>) -> Unit, navigateUp: () -> Unit
+) {
+    val groups by appGroups.collectAsStateWithLifecycle()
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                { Text(stringResource(R.string.app_group)) },
+                navigationIcon = { NavIcon(navigateUp) }
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton({
+                navigateToEditScreen(null, "", emptyList())
+            }) {
+                Icon(Icons.Default.Add, null)
+            }
+        }
+    ) { paddingValues ->
+        LazyColumn(Modifier.padding(paddingValues)) {
+            items(groups, { it.id }) {
+                Column(
+                    Modifier.fillMaxWidth().clickable {
+                        navigateToEditScreen(it.id, it.name, it.apps)
+                    }.padding(HorizontalPadding, 8.dp)
+                ) {
+                    Text(it.name)
+                    Text(
+                        it.apps.size.toString() + " apps", Modifier.alpha(0.7F),
+                        style = typography.bodyMedium
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Serializable class EditAppGroup(val id: Int?, val name: String, val apps: List<String>)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditAppGroupScreen(
+    params: EditAppGroup, getAppInfo: (String) -> AppInfo, navigateUp: () -> Unit,
+    setGroup: (Int?, String, List<String>) -> Unit, deleteGroup: (Int) -> Unit,
+    onChoosePackage: () -> Unit, chosenPackage: Channel<String>
+) {
+    var name by rememberSaveable { mutableStateOf(params.name) }
+    val list = rememberSaveable { mutableStateListOf(*params.apps.toTypedArray()) }
+    val appInfoList = list.map { getAppInfo(it) }
+    var packageName by rememberSaveable { mutableStateOf("") }
+    LaunchedEffect(Unit) {
+        packageName = chosenPackage.receive()
+    }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                { Text(stringResource(R.string.edit_app_group)) },
+                navigationIcon = {
+                    NavIcon(navigateUp)
+                },
+                actions = {
+                    if (params.id != null) IconButton({
+                        deleteGroup(params.id)
+                        navigateUp()
+                    }) {
+                        Icon(Icons.Outlined.Delete, null)
+                    }
+                    IconButton(
+                        {
+                            setGroup(params.id, name, list)
+                            navigateUp()
+                        },
+                        enabled = name.isNotBlank() && list.isNotEmpty()
+                    ) {
+                        Icon(Icons.Default.Check, null)
+                    }
+                }
+            )
+        },
+        contentWindowInsets = adaptiveInsets()
+    ) { paddingValues ->
+        LazyColumn(Modifier.padding(paddingValues)) {
+            item {
+                OutlinedTextField(
+                    name, { name = it }, Modifier.fillMaxWidth().padding(HorizontalPadding, 8.dp),
+                    label = { Text(stringResource(R.string.name)) }
+                )
+            }
+            items(appInfoList, { it.name }) {
+                ApplicationItem(it) {
+                    list -= it.name
+                }
+            }
+            item {
+                PackageNameTextField(packageName, onChoosePackage,
+                    Modifier.padding(HorizontalPadding, 8.dp)) { packageName = it }
+                Button(
+                    {
+                        list += packageName
+                        packageName = ""
+                    },
+                    Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding).padding(bottom = 10.dp),
+                    packageName.isValidPackageName
+                ) {
+                    Text(stringResource(R.string.add))
+                }
+                Spacer(Modifier.height(BottomPadding))
+            }
         }
     }
 }

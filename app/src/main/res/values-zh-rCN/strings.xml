@@ -115,7 +115,6 @@
     <!--Dhizuku-->
     <string name="failed_to_init_dhizuku">Dhizuku初始化失败</string>
     <string name="dhizuku_permission_not_granted">Dhizuku未授权</string>
-    <string name="dhizuku_mode_disabled">Dhizuku模式已禁用</string>
 
     <!--System-->
     <string name="system">系统</string>
@@ -370,6 +369,11 @@
     <string name="enable_system_app">启用系统应用</string>
     <string name="keep_after_uninstall">卸载后保留</string>
     <string name="search">搜索</string>
+    <string name="app_group">应用组</string>
+    <string name="manage_app_groups">管理组</string>
+    <string name="edit_app_group">编辑组</string>
+    <string name="add_to_list">添加到列表</string>
+    <string name="remove_from_list">从列表中移除</string>
 
     <!--UserRestriction-->
     <string name="user_restriction">用户限制</string>

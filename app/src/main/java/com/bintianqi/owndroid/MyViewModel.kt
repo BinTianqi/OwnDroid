@@ -59,6 +59,7 @@ import com.bintianqi.owndroid.dpm.ApnAuthType
 import com.bintianqi.owndroid.dpm.ApnConfig
 import com.bintianqi.owndroid.dpm.ApnMvnoType
 import com.bintianqi.owndroid.dpm.ApnProtocol
+import com.bintianqi.owndroid.dpm.AppGroup
 import com.bintianqi.owndroid.dpm.AppStatus
 import com.bintianqi.owndroid.dpm.CaCertInfo
 import com.bintianqi.owndroid.dpm.CreateUserResult
@@ -506,6 +507,24 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         } catch (e: IllegalArgumentException) {
             e.printStackTrace()
             false
+        }
+    }
+
+    val appGroups = MutableStateFlow(emptyList<AppGroup>())
+    init {
+        getAppGroups()
+    }
+    fun getAppGroups() {
+        appGroups.value = myRepo.getAppGroups()
+    }
+    fun setAppGroup(id: Int?, name: String, apps: List<String>) {
+        myRepo.setAppGroup(id, name, apps)
+        getAppGroups()
+    }
+    fun deleteAppGroup(id: Int) {
+        myRepo.deleteAppGroup(id)
+        appGroups.update { group ->
+            group.filter { it.id != id }
         }
     }
 

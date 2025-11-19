@@ -66,7 +66,6 @@ class ApiReceiver: BroadcastReceiver() {
                     }
                     else -> {
                         log += "\nInvalid action"
-                        false
                     }
                 }
             } catch(e: Exception) {

@@ -9,6 +9,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.database.getIntOrNull
 import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
+import com.bintianqi.owndroid.dpm.AppGroup
 import com.bintianqi.owndroid.dpm.NetworkLog
 import com.bintianqi.owndroid.dpm.SecurityEvent
 import com.bintianqi.owndroid.dpm.SecurityEventWithData
@@ -223,5 +224,28 @@ class MyRepository(val dbHelper: MyDbHelper) {
     }
     fun deleteNetworkLogs() {
         dbHelper.writableDatabase.execSQL("DELETE FROM network_logs")
+    }
+
+    fun getAppGroups(): List<AppGroup> {
+        val list = mutableListOf<AppGroup>()
+        dbHelper.readableDatabase.rawQuery("SELECT * FROM app_groups", null).use {
+            while (it.moveToNext()) {
+                list += AppGroup(it.getInt(0), it.getString(1), it.getString(2).split(','))
+            }
+        }
+        return list
+    }
+    fun setAppGroup(id: Int?, name: String, apps: List<String>) {
+        val cv = ContentValues()
+        cv.put("name", name)
+        cv.put("apps", apps.joinToString(","))
+        if (id == null) {
+            dbHelper.writableDatabase.insert("app_groups", null, cv)
+        } else {
+            dbHelper.writableDatabase.update("app_groups", cv, "id = ?", arrayOf(id.toString()))
+        }
+    }
+    fun deleteAppGroup(id: Int) {
+        dbHelper.writableDatabase.delete("app_groups", "id = ?", arrayOf(id.toString()))
     }
 }

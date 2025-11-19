@@ -135,7 +135,7 @@ class SerializableSaver<T>(val serializer: KSerializer<T>) : Saver<T, String> {
     override fun restore(value: String): T? {
         return Json.decodeFromString(serializer, value)
     }
-    override fun SaverScope.save(value: T): String? {
+    override fun SaverScope.save(value: T): String {
         return Json.encodeToString(serializer, value)
     }
 }

@@ -122,7 +122,6 @@
     <string name="dhizuku" translatable="false">Dhizuku</string>
     <string name="failed_to_init_dhizuku">Failed to initialize Dhizuku</string>
     <string name="dhizuku_permission_not_granted">Dhizuku permission not granted</string>
-    <string name="dhizuku_mode_disabled">Dhizuku mode disabled</string>
 
     <string name="shizuku" translatable="false">Shizuku</string>
 
@@ -404,6 +403,11 @@
     <string name="install_existing_app">Install existing app</string>
     <string name="keep_after_uninstall">Keep after uninstall</string>
     <string name="search">Search</string>
+    <string name="app_group">App group</string>
+    <string name="manage_app_groups">Manage groups</string>
+    <string name="edit_app_group">Edit group</string>
+    <string name="add_to_list">Add to list</string>
+    <string name="remove_from_list">Remove from list</string>
 
     <!--UserRestriction-->
     <string name="user_restriction">User restriction</string>

@@ -118,7 +118,6 @@
     <!--Dhizuku-->
     <string name="failed_to_init_dhizuku">Dhizuku Başlatılamadı</string>
     <string name="dhizuku_permission_not_granted">Dhizuku İzni Verilmedi</string>
-    <string name="dhizuku_mode_disabled">Dhizuku Modu Devre Dışı</string>
 
     <!--System-->
     <string name="system">Sistem</string>
