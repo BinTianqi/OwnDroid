@@ -763,6 +763,7 @@ fun PackageFunctionScreen(
     val groups by appGroups.collectAsStateWithLifecycle()
     val packages by packagesState.collectAsStateWithLifecycle()
     var packageName by rememberSaveable { mutableStateOf("") }
+    var dialog by remember { mutableStateOf(false) }
     var selectedGroup by remember { mutableStateOf<AppGroup?>(null) }
     LaunchedEffect(Unit) {
         onGet()
@@ -787,6 +788,7 @@ fun PackageFunctionScreen(
                                     { Text("(${it.apps.size}) ${it.name}") },
                                     {
                                         selectedGroup = it
+                                        dialog = true
                                         expand = false
                                     }
                                 )
@@ -821,7 +823,8 @@ fun PackageFunctionScreen(
                         }
                     },
                     Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding).padding(bottom = 10.dp),
-                    packageName.isValidPackageName
+                    packageName.isValidPackageName &&
+                            packages.find { it.name == packageName } == null
                 ) {
                     Text(stringResource(R.string.add))
                 }
@@ -830,14 +833,14 @@ fun PackageFunctionScreen(
             }
         }
     }
-    if (selectedGroup != null) AlertDialog(
+    if (dialog) AlertDialog(
         text = {
             Column {
                 Button({
                     selectedGroup!!.apps.forEach {
                         onSet(it, true)
                     }
-                    selectedGroup = null
+                    dialog = false
                 }) {
                     Text(stringResource(R.string.add_to_list))
                 }
@@ -845,18 +848,18 @@ fun PackageFunctionScreen(
                     selectedGroup!!.apps.forEach {
                         onSet(it, false)
                     }
-                    selectedGroup = null
+                    dialog = false
                 }) {
                     Text(stringResource(R.string.remove_from_list))
                 }
             }
         },
         confirmButton = {
-            TextButton({ selectedGroup = null }) {
+            TextButton({ dialog = false }) {
                 Text(stringResource(R.string.cancel))
             }
         },
-        onDismissRequest = { selectedGroup = null }
+        onDismissRequest = { dialog = false }
     )
 }
 
@@ -969,7 +972,7 @@ fun EditAppGroupScreen(
                         packageName = ""
                     },
                     Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding).padding(bottom = 10.dp),
-                    packageName.isValidPackageName
+                    packageName.isValidPackageName && packageName !in list
                 ) {
                     Text(stringResource(R.string.add))
                 }

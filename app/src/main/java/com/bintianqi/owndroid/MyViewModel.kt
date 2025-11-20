@@ -249,7 +249,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     val ucdPackages = MutableStateFlow(emptyList<AppInfo>())
     @RequiresApi(30)
     fun getUcdPackages() {
-        ucdPackages.value = DPM.getUserControlDisabledPackages(DAR).map {
+        ucdPackages.value = DPM.getUserControlDisabledPackages(DAR).distinct().map {
             getAppInfo(it)
         }
     }
@@ -284,7 +284,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     val mddPackages = MutableStateFlow(emptyList<AppInfo>())
     @RequiresApi(28)
     fun getMddPackages() {
-        mddPackages.value = DPM.getMeteredDataDisabledPackages(DAR).map { getAppInfo(it) }
+        mddPackages.value = DPM.getMeteredDataDisabledPackages(DAR).distinct().map { getAppInfo(it) }
     }
     @RequiresApi(28)
     fun setPackageMdd(name: String, status: Boolean): Boolean {
@@ -299,7 +299,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     val kuPackages = MutableStateFlow(emptyList<AppInfo>())
     @RequiresApi(28)
     fun getKuPackages() {
-        kuPackages.value = DPM.getKeepUninstalledPackages(DAR)?.map { getAppInfo(it) } ?: emptyList()
+        kuPackages.value = DPM.getKeepUninstalledPackages(DAR)?.distinct()?.map { getAppInfo(it) } ?: emptyList()
     }
     @RequiresApi(28)
     fun setPackageKu(name: String, status: Boolean) {
@@ -327,7 +327,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     // Cross-profile widget providers
     val cpwProviders = MutableStateFlow(emptyList<AppInfo>())
     fun getCpwProviders() {
-        cpwProviders.value = DPM.getCrossProfileWidgetProviders(DAR).map { getAppInfo(it) }
+        cpwProviders.value = DPM.getCrossProfileWidgetProviders(DAR).distinct().map { getAppInfo(it) }
     }
     fun setCpwProvider(name: String, status: Boolean): Boolean {
         val result = if (status) {
@@ -388,7 +388,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     @RequiresApi(34)
     fun getCmPolicy(): Int {
         return DPM.credentialManagerPolicy?.let { policy ->
-            cmPackages.value = policy.packageNames.map { getAppInfo(it) }
+            cmPackages.value = policy.packageNames.distinct().map { getAppInfo(it) }
             policy.policyType
         } ?: -1
     }
@@ -409,7 +409,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     val pimPackages = MutableStateFlow(emptyList<AppInfo>())
     fun getPimPackages(): Boolean {
         return DPM.getPermittedInputMethods(DAR).let { packages ->
-            pimPackages.value = packages?.map { getAppInfo(it) } ?: emptyList()
+            pimPackages.value = packages?.distinct()?.map { getAppInfo(it) } ?: emptyList()
             packages == null
         }
     }
@@ -429,7 +429,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     val pasPackages = MutableStateFlow(emptyList<AppInfo>())
     fun getPasPackages(): Boolean {
         return DPM.getPermittedAccessibilityServices(DAR).let { packages ->
-            pasPackages.value = packages?.map { getAppInfo(it) } ?: emptyList()
+            pasPackages.value = packages?.distinct()?.map { getAppInfo(it) } ?: emptyList()
             packages == null
         }
     }
