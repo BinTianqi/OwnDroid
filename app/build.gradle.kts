@@ -26,8 +26,8 @@ android {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 21
         targetSdk = 36
-        versionCode = 40
-        versionName = "7.1"
+        versionCode = 41
+        versionName = "7.2"
         multiDexEnabled = false
     }
 
@@ -43,6 +43,10 @@ android {
         }
         debug {
             signingConfig = signingConfigs.getByName("defaultSignature")
+        }
+        create("fastDebug") {
+            initWith(getByName("debug"))
+            isDebuggable = false
         }
     }
     compileOptions {
@@ -91,6 +95,7 @@ dependencies {
     implementation(libs.accompanist.permissions)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.material.icons.core)
     implementation(libs.shizuku.provider)
     implementation(libs.shizuku.api)
     implementation(libs.dhizuku.api)

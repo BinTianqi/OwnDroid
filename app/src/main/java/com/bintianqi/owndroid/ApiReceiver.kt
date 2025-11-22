@@ -9,10 +9,9 @@ import android.util.Log
 class ApiReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val requestKey = intent.getStringExtra("key")
-        var log = "OwnDroid API request received. action: ${intent.action}\nkey: $requestKey"
-        if(!SP.isApiEnabled) return
-        val key = SP.apiKey
-        if(!key.isNullOrEmpty() && key == requestKey) {
+        var log = "OwnDroid API request received. action: ${intent.action}"
+        val key = SP.apiKeyHash
+        if(!key.isNullOrEmpty() && key == requestKey?.hash()) {
             val app = intent.getStringExtra("package")
             val permission = intent.getStringExtra("permission")
             val restriction = intent.getStringExtra("restriction")
@@ -20,13 +19,13 @@ class ApiReceiver: BroadcastReceiver() {
             if (!permission.isNullOrEmpty()) log += "\npermission: $permission"
             try {
                 @SuppressWarnings("NewApi")
-                val ok = when(intent.action?.removePrefix("com.bintianqi.owndroid.action.")) {
+                when(intent.action?.removePrefix("com.bintianqi.owndroid.action.")) {
                     "HIDE" -> Privilege.DPM.setApplicationHidden(Privilege.DAR, app, true)
                     "UNHIDE" -> Privilege.DPM.setApplicationHidden(Privilege.DAR, app, false)
-                    "SUSPEND" -> Privilege.DPM.setPackagesSuspended(Privilege.DAR, arrayOf(app), true).isEmpty()
-                    "UNSUSPEND" -> Privilege.DPM.setPackagesSuspended(Privilege.DAR, arrayOf(app), false).isEmpty()
-                    "ADD_USER_RESTRICTION" -> { Privilege.DPM.addUserRestriction(Privilege.DAR, restriction); true }
-                    "CLEAR_USER_RESTRICTION" -> { Privilege.DPM.clearUserRestriction(Privilege.DAR, restriction); true }
+                    "SUSPEND" -> Privilege.DPM.setPackagesSuspended(Privilege.DAR, arrayOf(app), true)
+                    "UNSUSPEND" -> Privilege.DPM.setPackagesSuspended(Privilege.DAR, arrayOf(app), false)
+                    "ADD_USER_RESTRICTION" -> { Privilege.DPM.addUserRestriction(Privilege.DAR, restriction) }
+                    "CLEAR_USER_RESTRICTION" -> { Privilege.DPM.clearUserRestriction(Privilege.DAR, restriction) }
                     "SET_PERMISSION_DEFAULT" -> {
                         Privilege.DPM.setPermissionGrantState(
                             Privilege.DAR, app!!, permission!!,
@@ -45,14 +44,30 @@ class ApiReceiver: BroadcastReceiver() {
                             DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED
                         )
                     }
-                    "LOCK" -> { Privilege.DPM.lockNow(); true }
-                    "REBOOT" -> { Privilege.DPM.reboot(Privilege.DAR); true }
+                    "LOCK" -> { Privilege.DPM.lockNow() }
+                    "REBOOT" -> { Privilege.DPM.reboot(Privilege.DAR) }
+                    "SET_CAMERA_DISABLED" -> {
+                        Privilege.DPM.setCameraDisabled(Privilege.DAR, true)
+                    }
+                    "SET_CAMERA_ENABLED" -> {
+                        Privilege.DPM.setCameraDisabled(Privilege.DAR, false)
+                    }
+                    "SET_USB_DISABLED" -> {
+                        Privilege.DPM.isUsbDataSignalingEnabled = false
+                    }
+                    "SET_USB_ENABLED" -> {
+                        Privilege.DPM.isUsbDataSignalingEnabled = true
+                    }
+                    "SET_SCREEN_CAPTURE_DISABLED" -> {
+                        Privilege.DPM.setScreenCaptureDisabled(Privilege.DAR, true)
+                    }
+                    "SET_SCREEN_CAPTURE_ENABLED" -> {
+                        Privilege.DPM.setScreenCaptureDisabled(Privilege.DAR, false)
+                    }
                     else -> {
                         log += "\nInvalid action"
-                        false
                     }
                 }
-                log += "\nsuccess: $ok"
             } catch(e: Exception) {
                 e.printStackTrace()
                 val message = (e::class.qualifiedName ?: "Exception") + ": " + (e.message ?: "")

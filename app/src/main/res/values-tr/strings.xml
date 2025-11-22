@@ -35,7 +35,6 @@
     <string name="time_unit_ms">Zaman (ms)</string>
     <string name="length">Uzunluk</string>
     <string name="none">Yok</string>
-    <string name="no_logs">Kayıt Yok</string>
     <string name="default_stringres">Varsayılan</string>
     <string name="apply">Uygula</string>
     <string name="decide_by_user">Kullanıcı Tarafından Karar Ver</string>
@@ -76,7 +75,6 @@
     <string name="profile_owner">Profil Sahibi</string>
     <string name="device_owner">Cihaz Sahibi</string>
     <string name="delegated_admins">Yetkilendirilmiş Yöneticiler</string>
-    <string name="delegated_scope">Yetkilendirilmiş Kapsam</string>
     <string name="manage_application_restrictions">Uygulama Kısıtlamalarını Yönet</string>
     <string name="manage_certificates">Sertifikaları Yönet</string>
     <string name="select_keychain_certificates">KeyChain Sertifikasını Seç</string>
@@ -102,7 +100,6 @@
     <string name="disable_account_management">Hesap Yönetimini Devre Dışı Bırak</string>
     <string name="account_type">Hesap Türü</string>
     <string name="transfer_ownership">Sahipliği Devret</string>
-    <string name="target_component_name">Hedef Bileşen Adı</string>
     <string name="lock_screen_info">Kilit Ekranı Bilgisi</string>
     <string name="support_messages">Destek Mesajları</string>
     <string name="short_support_msg">Kısa Mesaj</string>
@@ -121,7 +118,6 @@
     <!--Dhizuku-->
     <string name="failed_to_init_dhizuku">Dhizuku Başlatılamadı</string>
     <string name="dhizuku_permission_not_granted">Dhizuku İzni Verilmedi</string>
-    <string name="dhizuku_mode_disabled">Dhizuku Modu Devre Dışı</string>
 
     <!--System-->
     <string name="system">Sistem</string>
@@ -138,7 +134,7 @@
     <string name="backup_service">Yedekleme Servisi</string>
     <string name="disable_bt_contact_share">Bluetooth Kişi Paylaşımını Devre Dışı Bırak</string>
     <string name="common_criteria_mode">Ortak Kriterler Modu</string>
-    <string name="disable_usb_signal">USB Sinyalini Devre Dışı Bırak</string>
+    <string name="enable_usb_signal">Enable USB signal</string> <!--TODO-->
     <string name="keyguard">Kilit Ekranı</string>
     <string name="lock_now">Ekranı Şimdi Kilitle</string>
     <string name="lock_screen">Kilit Ekranı</string>
@@ -197,7 +193,6 @@
     <string name="nearby_notification_streaming">Yakındaki Bildirim Akışı</string>
     <string name="enable_if_secure_enough">Yalnızca aynı yönetilen hesap</string>
     <string name="lock_task_mode">Görev Kilitleme Modu</string>
-    <string name="specify_activity">Etkinliği Belirt</string>
     <string name="app_not_allowed">Uygulamaya izin verilmiyor</string>
     <string name="disable_all">Hepsini Devre Dışı Bırak</string>
     <!--ltf: lock task feature-->
@@ -243,8 +238,6 @@
 
     <string name="install_system_update">Sistem Güncellemesini Yükle</string>
     <string name="select_ota_package" tools:ignore="TypographyEllipsis">OTA paketini seç...</string>
-    <string name="start_install_system_update">Sistem güncellemesini yüklemeye başla</string>
-    <string name="install_system_update_failed">"Sistem güncellemesi yüklenemedi: "</string>
     <string name="battery_low">Pil seviyesi düşük</string>
     <string name="update_file_invalid">Güncelleme dosyası geçersiz</string>
     <string name="incorrect_os_ver">Yanlış işletim sistemi sürümü</string>
@@ -287,7 +280,6 @@
     <string name="network_type">Ağ Türü</string>
     <string name="mobile">Mobil</string>
     <string name="ethernet">Ethernet</string>
-    <string name="subscriber_id">Abone Kimliği</string>
     <string name="all">Tümü</string>
     <string name="uninstalled">Kaldırılmış</string>
     <string name="tethering">Bağlantı Paylaşımı</string>
@@ -302,13 +294,9 @@
     <string name="roaming">Dolaşım</string>
     <string name="metered">Ölçülü</string>
     <string name="private_dns">Özel DNS</string>
-    <string name="dns_provide_hostname">Ana bilgisayar adı sağla</string>
-    <string name="host_not_serving_dns_tls">Ana bilgisayar DNS TLS sunmuyor</string>
-    <string name="set_to_opportunistic">Fırsatçı olarak ayarla</string>
     <string name="dns_hostname">DNS Ana Bilgisayar Adı</string>
     <string name="invalid_hostname">Geçersiz ana bilgisayar adı</string>
     <string name="security_exception">Güvenlik İstisnası</string>
-    <string name="set_dns_host">DNS Ana Bilgisayarı Ayarla</string>
     <string name="recommended_global_proxy">Önerilen küresel vekil</string>
     <string name="proxy_type_off">Vekil yok</string>
     <string name="proxy_type_pac">PAC vekil</string>
@@ -317,7 +305,6 @@
     <string name="invalid_config">Geçersiz yapılandırma</string>
     <string name="excluded_hosts">Hariç tutulan ana bilgisayarlar</string>
     <string name="network_logging">Ağ Kayıtları</string>
-    <string name="log_file_size_is">Kayıt dosyası boyutu: %1$s</string>
     <string name="delete_logs">Kayıtları Sil</string>
     <string name="export_logs">Kayıtları Dışa Aktar</string>
     <string name="wifi_auth_keypair">Wi-Fi Kimlik Doğrulama Anahtar Çifti</string>
@@ -331,22 +318,12 @@
     <string name="one_uid_per_line">Satır başına bir UID</string>
     <string name="override_apn">APN\'yi Geçersiz Kıl</string>
     <string name="apn_setting">APN Ayarı</string>
-    <string name="apn_name">APN Adı</string>
-    <string name="entry_name">Giriş Adı</string>
     <string name="name">Ad</string>
-    <string name="profile_id">Profil Kimliği</string>
-    <string name="auth_type">Kimlik Doğrulama Türü</string>
     <string name="description">Açıklama</string>
-    <string name="mms_proxy">MMS Vekil</string>
     <string name="address">Adres</string>
     <string name="port">Port</string>
     <string name="proxy">Vekil</string>
     <string name="persistent">Kalıcı</string>
-    <string name="protocol">Protokol</string>
-    <string name="roaming_protocol">Dolaşım Protokolü</string>
-    <string name="carrier_id">Operatör Kimliği</string>
-    <string name="mvno_type">MVNO Türü</string>
-    <string name="network_type_bitmask">Ağ Türü Bitmask</string>
     <string name="always_on">Her Zaman Açık</string>
     <string name="update">Güncelle</string>
 
@@ -365,10 +342,7 @@
     <string name="profile_max_time_off">Maksimum Kapalı Kalma Süresi</string>
     <string name="profile_max_time_out_desc">İş profili kapatıldıktan sonra kişisel uygulamalar bu süre boyunca askıya alınacak. 0, sınırsız anlamına gelir.</string>
     <string name="personal_app_suspended_because_timeout">Kişisel uygulama şu nedenle askıya alındı: %1$s</string>
-    <string name="cannot_less_than_72_hours">72 saatten az olamaz</string>
     <string name="intent_filter">Niyet Filtresi</string>
-    <string name="add_intent_filter_work_to_personal">Ekle (işten kişisel profile)</string>
-    <string name="add_intent_filter_personal_to_work">Ekle (kişisel profilden işe)</string>
     <string name="clear_cross_profile_filters">Tüm filtreleri temizle</string>
     <string name="org_id">Kurum Kimliği</string>
     <string name="length_6_to_64">Uzunluk 6 ile 64 karakter arasında olmalıdır</string>
@@ -514,7 +488,6 @@
     <string name="create_user_skip_wizard">Sihirbazı Atla</string>
     <string name="create_user_ephemeral_user">Geçici Kullanıcı</string>
     <string name="create_user_enable_all_system_app">Tüm Sistem Uygulamalarını Etkinleştir</string>
-    <string name="serial_number_of_new_user_is">Bu kullanıcının seri numarası: %1$d</string>
     <string name="affiliation_id">Bağlılık Kimliği</string>
     <string name="change_user_icon">Kullanıcı Simgesini Değiştir</string>
     <string name="select_an_image">Bir görüntü seç</string>
@@ -525,7 +498,6 @@
     <!--Password&Keyguard-->
     <string name="password_and_keyguard">Parola ve Kilit Ekranı</string>
     <string name="password_info">Parola Bilgisi</string>
-    <string name="reset_pwd_desc">Parolayı kaldırmak için boş bırakın</string>
     <string name="max_pwd_fail">Maksimum Başarısız Parola</string>
     <string name="max_pwd_fail_textfield">Maksimum başarısız deneme sayısı</string>
     <string name="pwd_expiration_timeout">Parola Son Kullanma Zaman Aşımı</string>
@@ -540,17 +512,14 @@
     <string name="unified_password">Birleşik Parola</string>
     <string name="reset_password_token">Parola Sıfırlama Jetonu</string>
     <string name="token">Jeton</string>
-    <string name="token_must_longer_than_32_byte">Jeton 32 bayttan uzun olmalıdır</string>
-    <string name="token_already_activated">Jeton zaten etkinleştirildi</string>
+    <string name="token_activated">Token activated</string><!--TODO-->
     <string name="clear">Temizle</string>
     <string name="set">Ayarla</string>
-    <string name="please_set_a_token">Lütfen bir jeton ayarlayın</string>
     <string name="activate_token_not_required_when_no_password">Parola ayarlanmamışsa jeton otomatik olarak etkinleştirilir.</string>
     <string name="reset_password">Parolayı Sıfırla</string>
     <string name="confirm_password">Parolayı Onayla</string>
     <string name="do_not_ask_credentials_on_boot">Başlangıçta kimlik bilgisi sorma</string>
     <string name="reset_password_require_entry">Giriş gerektir</string>
-    <string name="reset_password_with_token">Jeton ile parolayı sıfırla</string>
     <string name="required_password_complexity">Gerekli Parola Karmaşıklığı</string>
     <string name="disable_keyguard_features">Kilit Ekranı Özelliklerini Devre Dışı Bırak</string>
     <string name="enable_all">Hepsini Etkinleştir</string>
@@ -572,7 +541,6 @@
     <string name="password_quality_biometrics_weak">Biyometrik (Zayıf)</string>
     <string name="password_quality_numeric_complex">Sayısal karmaşık (tekrar eden karakterler olmadan)</string>
     <string name="required_password_quality">Gerekli Parola Kalitesi</string>
-    <string name="activate_reset_password_token_here">Parola sıfırlama jetonunu burada etkinleştir.</string>
 
     <!--Settings&About-->
     <string name="settings">Ayarlar</string>
@@ -671,7 +639,7 @@
 
     <string name="info_device_id_attestation">Cihazın, anahtar doğrulamasına ek olarak cihaz kimlik doğrulamalarını destekleyip desteklemediğini belirtir.</string>
     <string name="info_unique_device_attestation">Evet, eğer cihazdaki StrongBox Keymaster uygulaması bireysel bir doğrulama sertifikasıyla sağlanmışsa ve bunu kullanarak doğrulama kayıtlarını imzalayabiliyorsa (yalnızca StrongBox güvenlik seviyesine sahip Keymaster bireysel doğrulama sertifikası kullanabilir).</string>
-    <string name="info_org_id">Kurumsal Kimliği ayarlar. Bu, cihaz için kayıt özel bir kimlik oluşturmak için bir gerekliliktir.</string>
+    <!--TODO--><string name="info_org_id">Kurumsal Kimliği ayarlar. Bu, cihaz için kayıt özel bir kimlik oluşturmak için bir gerekliliktir.</string>
     <string name="info_enrollment_specific_id">Kimlik, iş profili kaldırılsa ve aynı Kurum Kimliği ile yeniden oluşturulsa veya cihaz fabrika ayarlarına sıfırlanıp yeniden kaydedilse bile tutarlı kalır.</string>
     <string name="info_lock_screen_info">Kilit ekranında kısa bir mesaj gösterir.\nKullanıcı tarafından manuel olarak ayarlanan herhangi bir sahip bilgisini geçersiz kılar ve kullanıcının bunu daha fazla değiştirmesini engeller.</string>
     <string name="info_short_support_message">Bu, yönetici tarafından devre dışı bırakılan işlevlerin bulunduğu ayar ekranlarında kullanıcıya gösterilecektir. Mesaj 200 karakterden uzunsa kesilebilir.</string>
@@ -696,8 +664,6 @@
     <string name="info_wipe_data_in_managed_user">Bu kullanıcının tüm verileri silinecek, ancak kullanıcı kaldırılmayacak.</string>
     <string name="info_lockdown_admin_configured_network">Kullanıcının yönetici tarafından yapılandırılan ağları değiştirip değiştiremeyeceğini kontrol eder.\nBu kilit etkinleştirildiğinde, kullanıcı hala diğer Wi-Fi ağlarını yapılandırabilir ve bağlanabilir veya bağlantı paylaşımı gibi diğer Wi-Fi özelliklerini kullanabilir.</string>
     <string name="info_minimum_wifi_security_level">Wi-Fi ağları için gereken minimum güvenlik seviyesini belirtir. Cihaz, minimum güvenlik seviyesini karşılamayan ağlara bağlanmayabilir. Mevcut ağ minimum güvenlik seviyesini karşılamıyorsa bağlantısı kesilecektir.</string>
-    <string name="info_private_dns_mode_oppertunistic">Bu modda, DNS alt sistemi, açık metinle ad çözümlemesi yapmadan önce ağ tarafından sağlanan çözücüye TLS el sıkışması yapmaya çalışır.</string>
-    <string name="info_set_private_dns_host">Çözücünün geçerli olduğunu doğrulamak için bir bağlantı kontrolü gerçekleştirir.\nÖzel DNS çözücüsü ile birlikte bir VPN kullanıldığında, Özel DNS çözücüsüne hem VPN içinden hem de dışından erişilebilir olmalıdır. Aksi takdirde, sistem trafiği VPN üzerinden çözücüye gitmeyebilir ve cihaz ana bilgisayar adlarını çözümleme yeteneğini kaybedebilir.</string>
     <string name="info_always_on_vpn">Geçerli kullanıcı için belirli bir uygulama aracılığıyla her zaman açık bir VPN bağlantısı yapılandırır. Bu bağlantı otomatik olarak verilir ve yeniden başlatma sonrası kalıcıdır.\nKilitlemeyi etkinleştir: VPN bağlı değilken ağ kullanımını engelle.</string>
     <string name="info_recommended_global_proxy">Bu vekil yalnızca bir öneridir ve bazı uygulamalar bunu yok sayabilir.</string>
     <string name="info_network_log">Ağ kayıtları, DNS aramalarını ve connect() kütüphane çağrı olaylarını içerir.\nBu işlev iş profilinde kullanıldığında yalnızca iş profilindeki ağ kayıtlarını alır.\nCihaz sahibi tarafından kullanılıyorsa, cihazda bağlı olmayan kullanıcı olmamalıdır.</string>

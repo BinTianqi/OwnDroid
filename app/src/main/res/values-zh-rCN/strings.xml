@@ -35,7 +35,6 @@
     <string name="time_unit_ms">时间（毫秒）</string>
     <string name="length">长度</string>
     <string name="none">无</string>
-    <string name="no_logs">无日志</string>
     <string name="default_stringres">默认</string>
     <string name="apply">应用</string>
     <string name="decide_by_user">由用户决定</string>
@@ -74,7 +73,6 @@
     <string name="profile_owner">Profile owner</string>
     <string name="device_owner">Device owner</string>
     <string name="delegated_admins">委托管理员</string>
-    <string name="delegated_scope">委托作用域</string>
     <string name="manage_application_restrictions">管理应用限制</string>
     <string name="manage_certificates">管理证书</string>
     <string name="select_keychain_certificates">选择密钥链证书</string>
@@ -99,7 +97,6 @@
     <string name="disable_account_management">禁用账号管理</string>
     <string name="account_type">账号类型</string>
     <string name="transfer_ownership">转移所有权</string>
-    <string name="target_component_name">目标组件名</string>
     <string name="lock_screen_info">锁屏提示信息</string>
     <string name="support_messages">提供支持的消息</string>
     <string name="short_support_msg">提供支持的短消息</string>
@@ -118,7 +115,6 @@
     <!--Dhizuku-->
     <string name="failed_to_init_dhizuku">Dhizuku初始化失败</string>
     <string name="dhizuku_permission_not_granted">Dhizuku未授权</string>
-    <string name="dhizuku_mode_disabled">Dhizuku模式已禁用</string>
 
     <!--System-->
     <string name="system">系统</string>
@@ -126,6 +122,7 @@
     <string name="enable_camera">启用相机</string>
     <string name="disable_screen_capture">禁止屏幕捕获</string>
     <string name="disable_status_bar">禁用状态栏</string>
+    <string name="status_bar">状态栏</string>
     <string name="auto_time">自动设置时间</string>
     <string name="auto_timezone">自动设置时区</string>
     <string name="require_auto_time">要求自动时间</string>
@@ -135,7 +132,7 @@
     <string name="backup_service">备份服务</string>
     <string name="disable_bt_contact_share">禁止蓝牙分享联系人</string>
     <string name="common_criteria_mode">通用标准模式</string>
-    <string name="disable_usb_signal">禁用USB信号</string>
+    <string name="enable_usb_signal">启用USB信号</string>
     <string name="keyguard">锁屏</string>
     <string name="lock_now">立即锁屏</string>
     <string name="lock_screen">锁屏</string>
@@ -159,6 +156,7 @@
     <string name="manually_input">手动输入</string>
     <string name="date">日期</string>
     <string name="time">时间</string>
+    <string name="use_current_timezone">使用当前时区</string>
     <string name="change_timezone">更改时区</string>
     <string name="timezone_id">时区ID</string>
     <string name="disable_auto_time_zone_before_set">在设置时区前需要关闭自动时区</string>
@@ -175,7 +173,6 @@
     <string name="nearby_notification_streaming">附近通知传输</string>
     <string name="enable_if_secure_enough">在足够安全时启用</string>
     <string name="lock_task_mode">锁定任务模式</string>
-    <string name="specify_activity">指定Activity</string>
     <string name="app_not_allowed">应用未被允许</string>
     <string name="disable_all">禁用全部</string>
     <string name="ltf_sys_info">允许状态栏信息</string>
@@ -195,6 +192,8 @@
     <string name="uninstall_all_user_ca_cert">卸载所有用户证书</string>
     <string name="security_logging">安全日志</string>
     <string name="pre_reboot_security_logs">重启前安全日志</string>
+    <string name="security_logs_collected">安全日志已收集</string>
+    <string name="n_logs_in_total">总共 %1$d 条日志</string>
     <string name="wipe_data">清除数据</string>
     <string name="wipe_external_storage">清除外部存储</string>
     <string name="wipe_reset_protection_data">清除受保护的数据</string>
@@ -221,8 +220,6 @@
     <string name="update_received_time">系统更新接收时间: %1$s</string>
     <string name="install_system_update">安装系统更新</string>
     <string name="select_ota_package" tools:ignore="TypographyEllipsis">选择OTA包...</string>
-    <string name="start_install_system_update">开始安装系统更新</string>
-    <string name="install_system_update_failed">安装系统更新失败：</string>
     <string name="battery_low">电量低</string>
     <string name="update_file_invalid">OTA包无效</string>
     <string name="incorrect_os_ver">系统版本错误</string>
@@ -250,6 +247,7 @@
     <string name="add_network_result_invalid_configuration">Invalid configuration</string>
     <string name="min_wifi_security_level">最低Wi-Fi安全等级</string>
     <string name="wifi_security_open">开放</string>
+    <string name="unchanged">不更改</string>
     <string name="lockdown_admin_configured_network">锁定由管理员配置的网络</string>
     <string name="wifi_ssid_policy">Wi-Fi SSID策略</string>
     <string name="already_exist">已经存在</string>
@@ -265,13 +263,13 @@
     <string name="network_type">网络类型</string>
     <string name="mobile">移动</string>
     <string name="ethernet">以太网</string>
-    <string name="subscriber_id">订阅者ID</string>
     <string name="all">全部</string>
     <string name="uninstalled">已卸载</string>
     <string name="tethering">热点</string>
     <string name="choose_an_app" tools:ignore="TypographyEllipsis">选择一个app...</string>
     <string name="input">输入</string>
     <string name="query">查询</string>
+    <string name="no_data">无数据</string>
     <string name="transmitted">发送</string>
     <string name="received">接收</string>
     <string name="state">状态</string>
@@ -280,13 +278,10 @@
     <string name="roaming">漫游</string>
     <string name="metered">按量计费</string>
     <string name="private_dns">私人DNS</string>
-    <string name="dns_provide_hostname">指定主机名</string>
-    <string name="host_not_serving_dns_tls">主机不支持</string>
-    <string name="set_to_opportunistic">设为自动</string>
+    <string name="automatic">自动</string>
     <string name="dns_hostname">DNS主机名</string>
     <string name="invalid_hostname">无效主机名</string>
     <string name="security_exception">安全错误</string>
-    <string name="set_dns_host">设置DNS主机</string>
     <string name="recommended_global_proxy">建议的全局代理</string>
     <string name="proxy_type_off">无代理</string>
     <string name="proxy_type_pac">PAC代理</string>
@@ -295,7 +290,7 @@
     <string name="invalid_config">无效配置</string>
     <string name="excluded_hosts">排除的主机</string>
     <string name="network_logging">网络日志</string>
-    <string name="log_file_size_is">日志文件大小：%1$s</string>
+    <string name="network_logs_collected">网络日志已收集</string>
     <string name="delete_logs">删除日志</string>
     <string name="export_logs">导出日志</string>
     <string name="wifi_auth_keypair">Wi-Fi密钥对</string>
@@ -309,22 +304,12 @@
     <string name="one_uid_per_line">每行一个UID</string>
     <string name="override_apn">覆盖APN</string>
     <string name="apn_setting">APN设置</string>
-    <string name="apn_name">APN名称</string>
-    <string name="entry_name">条目名称</string>
     <string name="name">名称</string>
-    <string name="profile_id">资料ID</string>
-    <string name="auth_type">认证类型</string>
     <string name="description">描述</string>
-    <string name="mms_proxy">MMS代理</string>
     <string name="address">地址</string>
     <string name="port">端口</string>
     <string name="proxy">代理</string>
     <string name="persistent">持久化</string>
-    <string name="protocol">协议</string>
-    <string name="roaming_protocol">漫游协议</string>
-    <string name="carrier_id">运营商ID</string>
-    <string name="mvno_type">MVNO类型</string>
-    <string name="network_type_bitmask">网络类型位掩码</string>
     <string name="always_on">总是开启</string>
     <string name="update">更新</string>
 
@@ -343,10 +328,11 @@
     <string name="profile_max_time_off">资料关闭时间</string>
     <string name="profile_max_time_out_desc">工作资料处于关闭状态的时间达到该限制后会挂起个人应用，0为无限制</string>
     <string name="personal_app_suspended_because_timeout">个人应用已经因此挂起：%1$s</string>
-    <string name="cannot_less_than_72_hours">不能少于72小时</string>
     <string name="intent_filter">Intent过滤器</string>
-    <string name="add_intent_filter_work_to_personal">添加（工作到个人）</string>
-    <string name="add_intent_filter_personal_to_work">添加（个人到工作）</string>
+    <string name="direction">方向</string>
+    <string name="both_direction">双向</string>
+    <string name="work_to_personal">工作到个人</string>
+    <string name="personal_to_work">个人到工作</string>
     <string name="clear_cross_profile_filters">清除所有过滤器</string>
     <string name="org_id">组织ID</string>
     <string name="length_6_to_64">长度应在6~64个字符之间</string>
@@ -383,9 +369,15 @@
     <string name="enable_system_app">启用系统应用</string>
     <string name="keep_after_uninstall">卸载后保留</string>
     <string name="search">搜索</string>
+    <string name="app_group">应用组</string>
+    <string name="manage_app_groups">管理组</string>
+    <string name="edit_app_group">编辑组</string>
+    <string name="add_to_list">添加到列表</string>
+    <string name="remove_from_list">从列表中移除</string>
 
     <!--UserRestriction-->
     <string name="user_restriction">用户限制</string>
+    <string name="user_restriction_tip">长按一个条目以创建快捷方式</string>
     <string name="profile_owner_is_restricted">Profile owner无法使用部分功能</string>
     <string name="switch_to_disable_feature">打开开关后会禁用对应的功能</string>
     <string name="some_features_invalid_in_work_profile">工作资料中部分功能无效</string>
@@ -481,17 +473,21 @@
     <string name="secondary_users">次要用户</string>
     <string name="no_secondary_users">无次要用户</string>
     <string name="user_operation">用户操作</string>
+    <string name="start_user_n">启动用户 %1$d</string>
+    <string name="switch_to_user_n">切换到用户 %1$d</string>
+    <string name="stop_user_n">停止用户 %1$d</string>
     <string name="user_not_exist">用户不存在</string>
     <string name="serial_number">序列号</string>
     <string name="logout">登出</string>
     <string name="start_in_background">在后台启动</string>
     <string name="user_operation_switch">切换</string>
+    <string name="limit_reached">已达到上限</string>
+    <string name="delete_user_confirmation">你确定要删除用户%1$s吗？</string>
     <string name="create_user">创建用户</string>
     <string name="username">用户名</string>
     <string name="create_user_skip_wizard">跳过创建用户向导</string>
     <string name="create_user_ephemeral_user">临时用户</string>
     <string name="create_user_enable_all_system_app">启用所有系统应用</string>
-    <string name="serial_number_of_new_user_is">新用户的序列号：%1$d</string>
     <string name="affiliation_id">附属用户ID</string>
     <string name="change_user_icon">更换用户头像</string>
     <string name="select_an_image">选择一个图片</string>
@@ -502,7 +498,6 @@
     <!--Password&Keyguard-->
     <string name="password_and_keyguard">密码与锁屏</string>
     <string name="password_info">密码信息</string>
-    <string name="reset_pwd_desc">留空以清除密码</string>
     <string name="max_pwd_fail">最大密码错误次数</string>
     <string name="max_pwd_fail_textfield">错误次数</string>
     <string name="pwd_expiration_timeout">密码失效超时</string>
@@ -517,17 +512,15 @@
     <string name="unified_password">一致的密码</string>
     <string name="reset_password_token">密码重置令牌</string>
     <string name="token">令牌</string>
-    <string name="token_must_longer_than_32_byte">令牌必须大于32字节</string>
-    <string name="token_already_activated">令牌已经激活</string>
+    <string name="activate_reset_password_token">激活密码重置令牌</string>
+    <string name="token_activated">令牌已激活</string>
     <string name="clear">清除</string>
     <string name="set">设置</string>
-    <string name="please_set_a_token">请先设置令牌</string>
     <string name="activate_token_not_required_when_no_password">没有密码时会自动激活令牌</string>
     <string name="reset_password">重置密码</string>
     <string name="confirm_password">确认密码</string>
     <string name="do_not_ask_credentials_on_boot">启动(boot)时不要求密码</string>
     <string name="reset_password_require_entry">不允许其他设备管理员重置密码直至用户输入一次密码</string>
-    <string name="reset_password_with_token">使用令牌重置密码</string>
     <string name="required_password_complexity">密码复杂度要求</string>
     <string name="disable_keyguard_features">锁屏功能</string>
     <string name="enable_all">启用全部</string>
@@ -538,7 +531,7 @@
     <string name="disable_keyguard_features_trust_agents">禁用可信代理</string>
     <string name="disable_keyguard_features_fingerprint">禁用指纹解锁</string>
     <string name="disable_keyguard_features_face">禁用人脸解锁</string>
-    <string name="disable_keyguard_features_iris">禁用虹膜解锁(?)</string>
+    <string name="disable_keyguard_features_iris">禁用虹膜解锁</string>
     <string name="disable_keyguard_features_biometrics">禁用生物识别</string>
     <string name="disable_keyguard_features_shortcuts">禁用快捷方式</string>
     <string name="password_quality_unspecified">未指定</string>
@@ -549,7 +542,6 @@
     <string name="password_quality_biometrics_weak">生物识别（弱）</string>
     <string name="password_quality_numeric_complex">复杂数字（无连续性）</string>
     <string name="required_password_quality">密码质量要求</string>
-    <string name="activate_reset_password_token_here">在这里激活密码重置令牌</string>
 
     <!--Settings&About-->
     <string name="settings">设置</string>
@@ -647,7 +639,7 @@
 
     <string name="info_device_id_attestation">指示设备是否除了密钥证明之外还支持设备标识符证明</string>
     <string name="info_unique_device_attestation">如果设备上的StrongBox Keymaster可以配置单独的证明证书并且可以使用该证书签署证明记录，则返回true（只有StrongBox安全级别的Keymaster才能使用单独的证明证书进行证明）</string>
-    <string name="info_org_id">设置组织ID后才能获取设备注册专用ID</string>
+    <string name="info_org_id">设置组织ID后才能获取设备注册专用ID。ID只能设置一次。</string>
     <string name="info_enrollment_specific_id">不同组织ID的设备注册专用ID不同，恢复出厂设置或删除工作资料后不变</string>
     <string name="info_lock_screen_info">在锁屏界面上显示的一段简短的消息。将会覆盖用户当前设置的锁屏信息，并且防止用户在系统设置中设置新的锁屏信息</string>
     <string name="info_short_support_message">用户试图使用被管理员禁用的功能时会显示此消息。不应多于200字</string>
@@ -672,8 +664,6 @@
     <string name="info_wipe_data_in_managed_user">此用户的所有数据将会被清除，但是用户不会被删除。</string>
     <string name="info_lockdown_admin_configured_network">控制用户是否可以更改管理员配置的网络。启用此锁定后，用户仍然可以配置和连接到其他Wi-Fi，或使用其他Wi-Fi功能（如网络共享）。</string>
     <string name="info_minimum_wifi_security_level">指定Wi-Fi网络所需的最低安全等级。设备将无法连接到低于最低安全等级的网络。如果当前网络不满足要求，则会断开连接。</string>
-    <string name="info_private_dns_mode_oppertunistic">在此模式下，DNS子系统将在尝试以明文形式进行域名解析之前，尝试与网络提供的DNS服务器进行TLS握手。</string>
-    <string name="info_set_private_dns_host">将对DNS服务器执行连接检查，以确保其有效。\n如果将VPN与私人DNS结合使用，则私人DNS必须可从VPN内部和外部访问。否则设备可能会失去解析域名的能力，因为到DNS服务器的系统流量可能不会通过VPN。</string>
     <string name="info_always_on_vpn">通过一个指定的app，为当前用户设置一个保持打开的VPN连接。自动授权连接并在重启后保留。\n启用锁定：如果VPN未连接，则禁止使用网络。</string>
     <string name="info_recommended_global_proxy">这个代理只是一个建议，一些app有可能忽略它。</string>
     <string name="info_network_log">网络日志包含DNS查询和connect()库调用记录</string>

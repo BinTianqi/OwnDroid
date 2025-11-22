@@ -1,4 +1,4 @@
-[English](Readme-en.md) | [简体中文](Readme.md)
+[English](Readme.md) | [简体中文](Readme-zh_CN.md)
 
 > [!important]
 > The Japanese readme need update

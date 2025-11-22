@@ -12,27 +12,28 @@ import android.content.Intent
 import android.content.pm.IPackageInstaller
 import android.content.pm.PackageInstaller
 import android.os.Build.VERSION
+import android.os.UserHandle
+import android.os.UserManager
 import android.util.Log
-import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
-import androidx.annotation.StringRes
-import androidx.core.content.pm.ShortcutManagerCompat
+import com.bintianqi.owndroid.MyApplication
+import com.bintianqi.owndroid.NotificationType
+import com.bintianqi.owndroid.NotificationUtils
 import com.bintianqi.owndroid.Privilege
+import com.bintianqi.owndroid.Privilege.DAR
+import com.bintianqi.owndroid.Privilege.DPM
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SP
-import com.bintianqi.owndroid.createShortcuts
+import com.bintianqi.owndroid.ShortcutUtils
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuBinderWrapper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.add
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
-import kotlinx.serialization.json.putJsonArray
-import java.io.OutputStream
+import kotlinx.coroutines.launch
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
 
 @SuppressLint("PrivateApi")
 fun binderWrapperDevicePolicyManager(appContext: Context): DevicePolicyManager? {
@@ -90,342 +91,423 @@ fun Context.getPackageInstaller(): PackageInstaller {
 val dhizukuErrorStatus = MutableStateFlow(0)
 
 data class PermissionItem(
-    val permission: String,
-    @StringRes val label: Int,
-    @DrawableRes val icon: Int,
-    val profileOwnerRestricted: Boolean = false
+    val id: String,
+    val label: Int,
+    val icon: Int,
+    val profileOwnerRestricted: Boolean = false,
+    val requiresApi: Int = 23
 )
 
-fun permissionList(): List<PermissionItem>{
-    val list = mutableListOf<PermissionItem>()
-    if(VERSION.SDK_INT >= 33) {
-        list.add(PermissionItem(Manifest.permission.POST_NOTIFICATIONS, R.string.permission_POST_NOTIFICATIONS, R.drawable.notifications_fill0))
-    }
-    list.add(PermissionItem(Manifest.permission.READ_EXTERNAL_STORAGE, R.string.permission_READ_EXTERNAL_STORAGE, R.drawable.folder_fill0))
-    list.add(PermissionItem(Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.permission_WRITE_EXTERNAL_STORAGE, R.drawable.folder_fill0))
-    if(VERSION.SDK_INT >= 33) {
-        list.add(PermissionItem(Manifest.permission.READ_MEDIA_AUDIO, R.string.permission_READ_MEDIA_AUDIO, R.drawable.music_note_fill0))
-        list.add(PermissionItem(Manifest.permission.READ_MEDIA_VIDEO, R.string.permission_READ_MEDIA_VIDEO, R.drawable.movie_fill0))
-        list.add(PermissionItem(Manifest.permission.READ_MEDIA_IMAGES, R.string.permission_READ_MEDIA_IMAGES, R.drawable.image_fill0))
-    }
-    list.add(PermissionItem(Manifest.permission.CAMERA, R.string.permission_CAMERA, R.drawable.photo_camera_fill0, true))
-    list.add(PermissionItem(Manifest.permission.RECORD_AUDIO, R.string.permission_RECORD_AUDIO, R.drawable.mic_fill0, true))
-    list.add(PermissionItem(Manifest.permission.ACCESS_COARSE_LOCATION, R.string.permission_ACCESS_COARSE_LOCATION, R.drawable.location_on_fill0, true))
-    list.add(PermissionItem(Manifest.permission.ACCESS_FINE_LOCATION, R.string.permission_ACCESS_FINE_LOCATION, R.drawable.location_on_fill0, true))
-    if(VERSION.SDK_INT >= 29) {
-        list.add(PermissionItem(Manifest.permission.ACCESS_BACKGROUND_LOCATION, R.string.permission_ACCESS_BACKGROUND_LOCATION, R.drawable.location_on_fill0, true))
-    }
-    list.add(PermissionItem(Manifest.permission.READ_CONTACTS, R.string.permission_READ_CONTACTS, R.drawable.contacts_fill0))
-    list.add(PermissionItem(Manifest.permission.WRITE_CONTACTS, R.string.permission_WRITE_CONTACTS, R.drawable.contacts_fill0))
-    list.add(PermissionItem(Manifest.permission.READ_CALENDAR, R.string.permission_READ_CALENDAR, R.drawable.calendar_month_fill0))
-    list.add(PermissionItem(Manifest.permission.WRITE_CALENDAR, R.string.permission_WRITE_CALENDAR, R.drawable.calendar_month_fill0))
-    if(VERSION.SDK_INT >= 31) {
-        list.add(PermissionItem(Manifest.permission.BLUETOOTH_CONNECT, R.string.permission_BLUETOOTH_CONNECT, R.drawable.bluetooth_fill0))
-        list.add(PermissionItem(Manifest.permission.BLUETOOTH_SCAN, R.string.permission_BLUETOOTH_SCAN, R.drawable.bluetooth_searching_fill0))
-        list.add(PermissionItem(Manifest.permission.BLUETOOTH_ADVERTISE, R.string.permission_BLUETOOTH_ADVERTISE, R.drawable.bluetooth_fill0))
-    }
-    if(VERSION.SDK_INT >= 33) {
-        list.add(PermissionItem(Manifest.permission.NEARBY_WIFI_DEVICES, R.string.permission_NEARBY_WIFI_DEVICES, R.drawable.wifi_fill0))
-    }
-    list.add(PermissionItem(Manifest.permission.CALL_PHONE, R.string.permission_CALL_PHONE, R.drawable.call_fill0))
-    if(VERSION.SDK_INT >= 26) {
-        list.add(PermissionItem(Manifest.permission.ANSWER_PHONE_CALLS, R.string.permission_ANSWER_PHONE_CALLS, R.drawable.call_fill0))
-        list.add(PermissionItem(Manifest.permission.READ_PHONE_NUMBERS, R.string.permission_READ_PHONE_STATE, R.drawable.mobile_phone_fill0))
-    }
-    list.add(PermissionItem(Manifest.permission.READ_PHONE_STATE, R.string.permission_READ_PHONE_STATE, R.drawable.mobile_phone_fill0))
-    list.add(PermissionItem(Manifest.permission.USE_SIP, R.string.permission_USE_SIP, R.drawable.call_fill0))
-    if(VERSION.SDK_INT >= 31) {
-        list.add(PermissionItem(Manifest.permission.UWB_RANGING, R.string.permission_UWB_RANGING, R.drawable.cell_tower_fill0))
-    }
-    list.add(PermissionItem(Manifest.permission.READ_SMS, R.string.permission_READ_SMS, R.drawable.sms_fill0))
-    list.add(PermissionItem(Manifest.permission.RECEIVE_SMS, R.string.permission_RECEIVE_SMS, R.drawable.sms_fill0))
-    list.add(PermissionItem(Manifest.permission.SEND_SMS, R.string.permission_SEND_SMS, R.drawable.sms_fill0))
-    list.add(PermissionItem(Manifest.permission.READ_CALL_LOG, R.string.permission_READ_CALL_LOG, R.drawable.call_log_fill0))
-    list.add(PermissionItem(Manifest.permission.WRITE_CALL_LOG, R.string.permission_WRITE_CALL_LOG, R.drawable.call_log_fill0))
-    list.add(PermissionItem(Manifest.permission.RECEIVE_WAP_PUSH, R.string.permission_RECEIVE_WAP_PUSH, R.drawable.wifi_fill0))
-    list.add(PermissionItem(Manifest.permission.BODY_SENSORS, R.string.permission_BODY_SENSORS, R.drawable.sensors_fill0, true))
-    if(VERSION.SDK_INT >= 33) {
-        list.add(PermissionItem(Manifest.permission.BODY_SENSORS_BACKGROUND, R.string.permission_BODY_SENSORS_BACKGROUND, R.drawable.sensors_fill0))
-    }
-    if(VERSION.SDK_INT > 29) {
-        list.add(PermissionItem(Manifest.permission.ACTIVITY_RECOGNITION, R.string.permission_ACTIVITY_RECOGNITION, R.drawable.history_fill0, true))
-    }
-    return list
-}
+@Suppress("InlinedApi")
+val runtimePermissions = listOf(
+    PermissionItem(Manifest.permission.POST_NOTIFICATIONS, R.string.permission_POST_NOTIFICATIONS, R.drawable.notifications_fill0, requiresApi = 33),
+    PermissionItem(Manifest.permission.READ_EXTERNAL_STORAGE, R.string.permission_READ_EXTERNAL_STORAGE, R.drawable.folder_fill0),
+    PermissionItem(Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.permission_WRITE_EXTERNAL_STORAGE, R.drawable.folder_fill0),
+    PermissionItem(Manifest.permission.READ_MEDIA_AUDIO, R.string.permission_READ_MEDIA_AUDIO, R.drawable.music_note_fill0, requiresApi = 33),
+    PermissionItem(Manifest.permission.READ_MEDIA_VIDEO, R.string.permission_READ_MEDIA_VIDEO, R.drawable.movie_fill0, requiresApi = 33),
+    PermissionItem(Manifest.permission.READ_MEDIA_IMAGES, R.string.permission_READ_MEDIA_IMAGES, R.drawable.image_fill0, requiresApi = 33),
+    PermissionItem(Manifest.permission.CAMERA, R.string.permission_CAMERA, R.drawable.photo_camera_fill0, true),
+    PermissionItem(Manifest.permission.RECORD_AUDIO, R.string.permission_RECORD_AUDIO, R.drawable.mic_fill0, true),
+    PermissionItem(Manifest.permission.ACCESS_COARSE_LOCATION, R.string.permission_ACCESS_COARSE_LOCATION, R.drawable.location_on_fill0, true),
+    PermissionItem(Manifest.permission.ACCESS_FINE_LOCATION, R.string.permission_ACCESS_FINE_LOCATION, R.drawable.location_on_fill0, true),
+    PermissionItem(Manifest.permission.ACCESS_BACKGROUND_LOCATION, R.string.permission_ACCESS_BACKGROUND_LOCATION, R.drawable.location_on_fill0, true, 29),
+    PermissionItem(Manifest.permission.READ_CONTACTS, R.string.permission_READ_CONTACTS, R.drawable.contacts_fill0),
+    PermissionItem(Manifest.permission.WRITE_CONTACTS, R.string.permission_WRITE_CONTACTS, R.drawable.contacts_fill0),
+    PermissionItem(Manifest.permission.READ_CALENDAR, R.string.permission_READ_CALENDAR, R.drawable.calendar_month_fill0),
+    PermissionItem(Manifest.permission.WRITE_CALENDAR, R.string.permission_WRITE_CALENDAR, R.drawable.calendar_month_fill0),
+    PermissionItem(Manifest.permission.BLUETOOTH_CONNECT, R.string.permission_BLUETOOTH_CONNECT, R.drawable.bluetooth_fill0, requiresApi = 31),
+    PermissionItem(Manifest.permission.BLUETOOTH_SCAN, R.string.permission_BLUETOOTH_SCAN, R.drawable.bluetooth_searching_fill0, requiresApi = 31),
+    PermissionItem(Manifest.permission.BLUETOOTH_ADVERTISE, R.string.permission_BLUETOOTH_ADVERTISE, R.drawable.bluetooth_fill0, requiresApi = 31),
+    PermissionItem(Manifest.permission.NEARBY_WIFI_DEVICES, R.string.permission_NEARBY_WIFI_DEVICES, R.drawable.wifi_fill0, requiresApi = 33),
+    PermissionItem(Manifest.permission.CALL_PHONE, R.string.permission_CALL_PHONE, R.drawable.call_fill0),
+    PermissionItem(Manifest.permission.ANSWER_PHONE_CALLS, R.string.permission_ANSWER_PHONE_CALLS, R.drawable.call_fill0, requiresApi = 26),
+    PermissionItem(Manifest.permission.READ_PHONE_NUMBERS, R.string.permission_READ_PHONE_STATE, R.drawable.mobile_phone_fill0, requiresApi = 26),
+    PermissionItem(Manifest.permission.READ_PHONE_STATE, R.string.permission_READ_PHONE_STATE, R.drawable.mobile_phone_fill0),
+    PermissionItem(Manifest.permission.USE_SIP, R.string.permission_USE_SIP, R.drawable.call_fill0),
+    PermissionItem(Manifest.permission.UWB_RANGING, R.string.permission_UWB_RANGING, R.drawable.cell_tower_fill0, requiresApi = 31),
+    PermissionItem(Manifest.permission.READ_SMS, R.string.permission_READ_SMS, R.drawable.sms_fill0),
+    PermissionItem(Manifest.permission.RECEIVE_SMS, R.string.permission_RECEIVE_SMS, R.drawable.sms_fill0),
+    PermissionItem(Manifest.permission.SEND_SMS, R.string.permission_SEND_SMS, R.drawable.sms_fill0),
+    PermissionItem(Manifest.permission.READ_CALL_LOG, R.string.permission_READ_CALL_LOG, R.drawable.call_log_fill0),
+    PermissionItem(Manifest.permission.WRITE_CALL_LOG, R.string.permission_WRITE_CALL_LOG, R.drawable.call_log_fill0),
+    PermissionItem(Manifest.permission.RECEIVE_WAP_PUSH, R.string.permission_RECEIVE_WAP_PUSH, R.drawable.wifi_fill0),
+    PermissionItem(Manifest.permission.BODY_SENSORS, R.string.permission_BODY_SENSORS, R.drawable.sensors_fill0, true),
+    PermissionItem(Manifest.permission.BODY_SENSORS_BACKGROUND, R.string.permission_BODY_SENSORS_BACKGROUND, R.drawable.sensors_fill0, requiresApi = 33),
+    PermissionItem(Manifest.permission.ACTIVITY_RECOGNITION, R.string.permission_ACTIVITY_RECOGNITION, R.drawable.history_fill0, true, 29)
+).filter { VERSION.SDK_INT >= it.requiresApi }
+
+@Serializable
+class NetworkLog(
+    val id: Long?, @SerialName("package") val packageName: String, val time: Long, val type: String,
+    val host: String?, val count: Int?, val addresses: List<String>?,
+    val address: String?, val port: Int?
+)
 
 @RequiresApi(26)
-fun handleNetworkLogs(context: Context, batchToken: Long) {
-    val networkEvents = Privilege.DPM.retrieveNetworkLogs(Privilege.DAR, batchToken) ?: return
-    val file = context.filesDir.resolve("NetworkLogs.json")
-    val fileExist = file.exists()
-    val json = Json { ignoreUnknownKeys = true; explicitNulls = false }
-    val buffer = file.bufferedWriter()
-    networkEvents.forEachIndexed { index, event ->
-        if(fileExist && index == 0) buffer.write(",")
-        val item = buildJsonObject {
-            if(VERSION.SDK_INT >= 28) put("id", event.id)
-            put("time", event.timestamp)
-            put("package", event.packageName)
-            if(event is DnsEvent) {
-                put("type", "dns")
-                put("host", event.hostname)
-                put("count", event.totalResolvedAddressCount)
-                putJsonArray("addresses") {
-                    event.inetAddresses.forEach { inetAddresses ->
-                        add(inetAddresses.hostAddress)
-                    }
-                }
-            }
-            if(event is ConnectEvent) {
-                put("type", "connect")
-                put("address", event.inetAddress.hostAddress)
-                put("port", event.port)
+fun retrieveNetworkLogs(app: MyApplication, token: Long) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val logs = DPM.retrieveNetworkLogs(DAR, token)?.mapNotNull {
+            when (it) {
+                is DnsEvent -> NetworkLog(
+                    if (VERSION.SDK_INT >= 28) it.id else null, it.packageName, it.timestamp, "dns",
+                    it.hostname, it.totalResolvedAddressCount,
+                    it.inetAddresses.mapNotNull { address -> address.hostAddress }, null, null
+                )
+                is ConnectEvent -> NetworkLog(
+                    if (VERSION.SDK_INT >= 28) it.id else null, it.packageName, it.timestamp,
+                    "connect", null, null, null, it.inetAddress.hostAddress, it.port
+                )
+                else -> null
             }
         }
-        buffer.write(json.encodeToString(item))
-        if(index < networkEvents.size - 1) buffer.write(",")
+        if (logs.isNullOrEmpty()) return@launch
+        app.myRepo.writeNetworkLogs(logs)
+        NotificationUtils.sendBasicNotification(
+            app, NotificationType.NetworkLogsCollected,
+            app.getString(R.string.n_logs_in_total, logs.size)
+        )
     }
-    buffer.close()
 }
 
-@RequiresApi(24)
-fun processSecurityLogs(securityEvents: List<SecurityLog.SecurityEvent>, outputStream: OutputStream) {
-    val json = Json { ignoreUnknownKeys = true; explicitNulls = false }
-    val buffer = outputStream.bufferedWriter()
-    securityEvents.forEachIndexed { index, event ->
-        val item = buildJsonObject {
-            put("time", event.timeNanos / 1000)
-            put("tag", event.tag)
-            if(VERSION.SDK_INT >= 28) put("level", event.logLevel)
-            if(VERSION.SDK_INT >= 28) put("id", event.id)
-            parseSecurityEventData(event).let { if(it != null) put("data", it) }
-        }
-        buffer.write(json.encodeToString(item))
-        if(index < securityEvents.size - 1) buffer.write(",")
-    }
-    buffer.close()
+@Serializable
+class SecurityEvent(
+    val id: Long?, val tag: Int, val level: Int?, val time: Long, val data: JsonObject?
+)
+
+@Serializable
+class SecurityEventWithData(
+    val id: Long?, val tag: Int, val level: Int?, val time: Long, val data: SecurityEventData?
+)
+
+@Serializable
+sealed class SecurityEventData {
+    @Serializable
+    class AdbShellCmd(val command: String): SecurityEventData()
+    @Serializable
+    class AppProcessStart(
+        val name: String,
+        val time: Long,
+        val uid: Int,
+        val pid: Int,
+        val seinfo: String,
+        val hash: String
+    ): SecurityEventData()
+    @Serializable
+    class BackupServiceToggled(
+        val admin: String,
+        val user: Int,
+        val state: Int
+    ): SecurityEventData()
+    @Serializable
+    class BluetoothConnection(
+        val mac: String,
+        val successful: Int,
+        @SerialName("failure_reason") val failureReason: String
+    ): SecurityEventData()
+    @Serializable
+    class BluetoothDisconnection(
+        val mac: String,
+        val reason: String
+    ): SecurityEventData()
+    @Serializable
+    class CameraPolicySet(
+        val admin: String,
+        @SerialName("admin_user") val adminUser: Int,
+        @SerialName("target_user") val targetUser: Int,
+        val disabled: Int
+    ): SecurityEventData()
+    @Serializable
+    class CaInstalledRemoved(
+        val result: Int,
+        val subject: String,
+        val user: Int
+    ): SecurityEventData()
+    @Serializable
+    class CertValidationFailure(val reason: String): SecurityEventData()
+    @Serializable
+    class CryptoSelfTestCompleted(val result: Int): SecurityEventData()
+    @Serializable
+    class KeyguardDisabledFeaturesSet(
+        val admin: String,
+        @SerialName("admin_user") val adminUser: Int,
+        @SerialName("target_user") val targetUser: Int,
+        val mask: Int
+    ): SecurityEventData()
+    @Serializable
+    class KeyguardDismissAuthAttempt(
+        val result: Int,
+        val strength: Int
+    ): SecurityEventData()
+    @Serializable
+    class KeyGeneratedImportDestruction(
+        val result: Int,
+        val alias: String,
+        val uid: Int
+    ): SecurityEventData()
+    @Serializable
+    class KeyIntegrityViolation(
+        val alias: String,
+        val uid: Int
+    ): SecurityEventData()
+    @Serializable
+    class MaxPasswordAttemptsSet(
+        val admin: String,
+        @SerialName("admin_user") val adminUser: Int,
+        @SerialName("target_user") val targetUser: Int,
+        val value: Int
+    ): SecurityEventData()
+    @Serializable
+    class MaxScreenLockTimeoutSet(
+        val admin: String,
+        @SerialName("admin_user") val adminUser: Int,
+        @SerialName("target_user") val targetUser: Int,
+        val timeout: Long
+    ): SecurityEventData()
+    @Serializable
+    class MediaMountUnmount(
+        @SerialName("mount_point") val mountPoint: String,
+        val label: String
+    ): SecurityEventData()
+    @Serializable
+    class OsStartup(
+        @SerialName("verified_boot_state") val verifiedBootState: String,
+        @SerialName("dm_verity_mode") val dmVerityMode: String
+    ): SecurityEventData()
+    @Serializable
+    class PackageInstalledUninstalledUpdated(
+        val name: String,
+        val version: Long,
+        val user: Int
+    ): SecurityEventData()
+    @Serializable
+    class PasswordChanged(
+        val complexity: Int,
+        val user: Int
+    ): SecurityEventData()
+    @Serializable
+    class PasswordComplexityRequired(
+        val admin: String,
+        @SerialName("admin_user") val adminUser: Int,
+        @SerialName("target_user") val targetUser: Int,
+        val complexity: Int
+    ): SecurityEventData()
+    @Serializable
+    class PasswordComplexitySet(
+        val admin: String,
+        @SerialName("admin_user") val adminUser: Int,
+        @SerialName("target_user") val targetUser: Int,
+        val length: Int,
+        val quality: Int,
+        val letters: Int,
+        @SerialName("non_letters") val nonLetters: Int,
+        val digits: Int,
+        val uppercase: Int,
+        val lowercase: Int,
+        val symbols: Int
+    ): SecurityEventData()
+    @Serializable
+    class PasswordExpirationSet(
+        val admin: String,
+        @SerialName("admin_user") val adminUser: Int,
+        @SerialName("target_user") val targetUser: Int,
+        val expiration: Long
+    ): SecurityEventData()
+    @Serializable
+    class PasswordHistoryLengthSet(
+        val admin: String,
+        @SerialName("admin_user") val adminUser: Int,
+        @SerialName("target_user") val targetUser: Int,
+        val length: Int
+    ): SecurityEventData()
+    @Serializable
+    class RemoteLock(
+        val admin: String,
+        @SerialName("admin_user") val adminUser: Int,
+        @SerialName("target_user") val targetUser: Int,
+    ): SecurityEventData()
+    @Serializable
+    class SyncRecvSendFile(val path: String): SecurityEventData()
+    @Serializable
+    class UserRestrictionAddedRemoved(
+        val admin: String,
+        val user: Int,
+        val restriction: String
+    ): SecurityEventData()
+    @Serializable
+    class WifiConnection(
+        val bssid: String,
+        val type: String,
+        @SerialName("failure_reason") val failureReason: String
+    ): SecurityEventData()
+    @Serializable
+    class WifiDisconnection(
+        val bssid: String,
+        val reason: String
+    ): SecurityEventData()
 }
 
-@RequiresApi(24)
-fun parseSecurityEventData(event: SecurityLog.SecurityEvent): JsonElement? {
-    return when(event.tag) {
-        SecurityLog.TAG_ADB_SHELL_CMD -> JsonPrimitive(event.data as String)
+fun transformSecurityEventData(tag: Int, payload: Any): SecurityEventData? {
+    return when(tag) {
+        SecurityLog.TAG_ADB_SHELL_CMD -> SecurityEventData.AdbShellCmd(payload as String)
         SecurityLog.TAG_ADB_SHELL_INTERACTIVE -> null
         SecurityLog.TAG_APP_PROCESS_START -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("name", payload[0] as String)
-                put("time", payload[1] as Long)
-                put("uid", payload[2] as Int)
-                put("pid", payload[3] as Int)
-                put("seinfo", payload[4] as String)
-                put("apk_hash", payload[5] as String)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.AppProcessStart(
+                data[0] as String, data[1] as Long, data[2] as Int, data[3] as Int,
+                data[4] as String, data[5] as String
+            )
         }
         SecurityLog.TAG_BACKUP_SERVICE_TOGGLED -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("admin", payload[0] as String)
-                put("admin_user_id", payload[1] as Int)
-                put("state", payload[2] as Int)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.BackupServiceToggled(data[0] as String, data[1] as Int, data[2] as Int)
         }
         SecurityLog.TAG_BLUETOOTH_CONNECTION -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("mac", payload[0] as String)
-                put("successful", payload[1] as Int)
-                (payload[2] as String).let { if(it != "") put("failure_reason", it) }
-            }
+            val data = payload as Array<*>
+            SecurityEventData.BluetoothConnection(data[0] as String, data[1] as Int, data[2] as String)
         }
         SecurityLog.TAG_BLUETOOTH_DISCONNECTION -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("mac", payload[0] as String)
-                (payload[1] as String).let { if(it != "") put("reason", it) }
-            }
+            val data = payload as Array<*>
+            SecurityEventData.BluetoothDisconnection(data[0] as String, data[1] as String)
         }
         SecurityLog.TAG_CAMERA_POLICY_SET -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("admin", payload[0] as String)
-                put("admin_user_id", payload[1] as Int)
-                put("target_user_id", payload[2] as Int)
-                put("disabled", payload[3] as Int)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.CameraPolicySet(
+                data[0] as String, data[1] as Int, data[2] as Int, data[3] as Int
+            )
         }
         SecurityLog.TAG_CERT_AUTHORITY_INSTALLED, SecurityLog.TAG_CERT_AUTHORITY_REMOVED -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("result", payload[0] as Int)
-                put("subject", payload[1] as String)
-                if(VERSION.SDK_INT >= 30) put("user", payload[2] as Int)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.CaInstalledRemoved(data[0] as Int, data[1] as String, data[2] as Int)
         }
-        SecurityLog.TAG_CERT_VALIDATION_FAILURE -> JsonPrimitive(event.data as String)
-        SecurityLog.TAG_CRYPTO_SELF_TEST_COMPLETED -> JsonPrimitive(event.data as Int)
+        SecurityLog.TAG_CERT_VALIDATION_FAILURE ->
+            SecurityEventData.CertValidationFailure(payload as String)
+        SecurityLog.TAG_CRYPTO_SELF_TEST_COMPLETED ->
+            SecurityEventData.CryptoSelfTestCompleted(payload as Int)
         SecurityLog.TAG_KEYGUARD_DISABLED_FEATURES_SET -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("admin", payload[0] as String)
-                put("admin_user_id", payload[1] as Int)
-                put("target_user_id", payload[2] as Int)
-                put("mask", payload[3] as Int)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.KeyguardDisabledFeaturesSet(
+                data[0] as String, data[1] as Int, data[2] as Int, data[3] as Int
+            )
         }
         SecurityLog.TAG_KEYGUARD_DISMISSED -> null
         SecurityLog.TAG_KEYGUARD_DISMISS_AUTH_ATTEMPT -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("result", payload[0] as Int)
-                put("strength", payload[1] as Int)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.KeyguardDismissAuthAttempt(data[0] as Int, data[1] as Int)
         }
         SecurityLog.TAG_KEYGUARD_SECURED -> null
-        SecurityLog.TAG_KEY_DESTRUCTION, SecurityLog.TAG_KEY_GENERATED, SecurityLog.TAG_KEY_IMPORT -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("result", payload[0] as Int)
-                put("alias", payload[1] as String)
-                put("uid", payload[2] as Int)
-            }
-        }
-        SecurityLog.TAG_KEY_INTEGRITY_VIOLATION -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("alias", payload[0] as String)
-                put("uid", payload[1] as Int)
-            }
+        SecurityLog.TAG_KEY_GENERATED, SecurityLog.TAG_KEY_IMPORT, SecurityLog.TAG_KEY_DESTRUCTION -> {
+            val data = payload as Array<*>
+            SecurityEventData.KeyGeneratedImportDestruction(
+                data[0] as Int, data[1] as String, data[2] as Int
+            )
         }
         SecurityLog.TAG_LOGGING_STARTED, SecurityLog.TAG_LOGGING_STOPPED -> null
         SecurityLog.TAG_LOG_BUFFER_SIZE_CRITICAL -> null
         SecurityLog.TAG_MAX_PASSWORD_ATTEMPTS_SET -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("admin", payload[0] as String)
-                put("admin_user_id", payload[1] as Int)
-                put("target_user_id", payload[2] as Int)
-                put("value", payload[3] as Int)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.MaxPasswordAttemptsSet(
+                data[0] as String, data[1] as Int, data[2] as Int, data[3] as Int
+            )
         }
         SecurityLog.TAG_MAX_SCREEN_LOCK_TIMEOUT_SET -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("admin", payload[0] as String)
-                put("admin_user_id", payload[1] as Int)
-                put("target_user_id", payload[2] as Int)
-                put("timeout", payload[3] as Long)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.MaxScreenLockTimeoutSet(
+                data[0] as String, data[1] as Int, data[2] as Int, data[3] as Long
+            )
         }
         SecurityLog.TAG_MEDIA_MOUNT, SecurityLog.TAG_MEDIA_UNMOUNT -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("mount_point", payload[0] as String)
-                put("volume_label", payload[1] as String)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.MediaMountUnmount(data[0] as String, data[1] as String)
         }
+        SecurityLog.TAG_NFC_ENABLED, SecurityLog.TAG_NFC_DISABLED -> null
         SecurityLog.TAG_OS_SHUTDOWN -> null
         SecurityLog.TAG_OS_STARTUP -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("verified_boot_state", payload[0] as String)
-                put("dm_verify_state", payload[1] as String)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.OsStartup(data[0] as String, data[1] as String)
         }
-        SecurityLog.TAG_PACKAGE_INSTALLED, SecurityLog.TAG_PACKAGE_UNINSTALLED, SecurityLog.TAG_PACKAGE_UPDATED -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("name", payload[0] as String)
-                put("version", payload[1] as Long)
-                put("user_id", payload[2] as Int)
-            }
+        SecurityLog.TAG_PACKAGE_INSTALLED, SecurityLog.TAG_PACKAGE_UPDATED,
+        SecurityLog.TAG_PACKAGE_UNINSTALLED -> {
+            val data = payload as Array<*>
+            SecurityEventData.PackageInstalledUninstalledUpdated(
+                data[0] as String, data[1] as Long, data[2] as Int
+            )
         }
         SecurityLog.TAG_PASSWORD_CHANGED -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("complexity", payload[0] as Int)
-                put("user_id", payload[1] as Int)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.PasswordChanged(data[0] as Int, data[1] as Int)
         }
-        SecurityLog. TAG_PASSWORD_COMPLEXITY_REQUIRED -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("admin", payload[0] as String)
-                put("admin_user_id", payload[1] as Int)
-                put("target_user_id", payload[2] as Int)
-                put("complexity", payload[3] as Int)
-            }
+        SecurityLog.TAG_PASSWORD_COMPLEXITY_REQUIRED -> {
+            val data = payload as Array<*>
+            SecurityEventData.PasswordComplexityRequired(
+                data[0] as String, data[1] as Int, data[2] as Int, data[3] as Int
+            )
         }
-        SecurityLog.TAG_PASSWORD_COMPLEXITY_SET -> null //Deprecated
+        SecurityLog.TAG_PASSWORD_COMPLEXITY_SET -> {
+            val data = payload as Array<*>
+            SecurityEventData.PasswordComplexitySet(
+                data[0] as String, data[1] as Int, data[2] as Int, data[3] as Int, data[4] as Int,
+                data[5] as Int, data[6] as Int, data[7] as Int, data[8] as Int, data[9] as Int,
+                data[10] as Int
+            )
+        }
         SecurityLog.TAG_PASSWORD_EXPIRATION_SET -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("admin", payload[0] as String)
-                put("admin_user_id", payload[1] as Int)
-                put("target_user_id", payload[2] as Int)
-                put("timeout", payload[3] as Long)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.PasswordExpirationSet(
+                data[0] as String, data[1] as Int, data[2] as Int, data[3] as Long
+            )
         }
         SecurityLog.TAG_PASSWORD_HISTORY_LENGTH_SET -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("admin", payload[0] as String)
-                put("admin_user_id", payload[1] as Int)
-                put("target_user_id", payload[2] as Int)
-                put("length", payload[3] as Int)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.PasswordHistoryLengthSet(
+                data[0] as String, data[1] as Int, data[2] as Int, data[3] as Int
+            )
         }
         SecurityLog.TAG_REMOTE_LOCK -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("admin", payload[0] as String)
-                put("admin_user_id", payload[1] as Int)
-                put("target_user_id", payload[2] as Int)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.RemoteLock(data[0] as String, data[1] as Int, data[2] as Int)
         }
-        SecurityLog.TAG_SYNC_RECV_FILE, SecurityLog.TAG_SYNC_SEND_FILE -> JsonPrimitive(event.data as String)
+        SecurityLog.TAG_SYNC_RECV_FILE, SecurityLog.TAG_SYNC_SEND_FILE ->
+            SecurityEventData.SyncRecvSendFile(payload as String)
         SecurityLog.TAG_USER_RESTRICTION_ADDED, SecurityLog.TAG_USER_RESTRICTION_REMOVED -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("admin", payload[0] as String)
-                put("admin_user_id", payload[1] as Int)
-                put("restriction", payload[2] as String)
-            }
+            val data = payload as Array<*>
+            SecurityEventData.UserRestrictionAddedRemoved(
+                data[0] as String, data[1] as Int, data[2] as String
+            )
         }
         SecurityLog.TAG_WIFI_CONNECTION -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("bssid", payload[0] as String)
-                put("type", payload[1] as String)
-                (payload[2] as String).let { if(it != "") put("failure_reason", it) }
-            }
+            val data = payload as Array<*>
+            SecurityEventData.WifiConnection(data[0] as String, data[1] as String, data[2] as String)
         }
         SecurityLog.TAG_WIFI_DISCONNECTION -> {
-            val payload = event.data as Array<*>
-            buildJsonObject {
-                put("bssid", payload[0] as String)
-                (payload[1] as String).let { if(it != "") put("reason", it) }
-            }
+            val data = payload as Array<*>
+            SecurityEventData.WifiDisconnection(data[0] as String, data[1] as String)
         }
         SecurityLog.TAG_WIPE_FAILURE -> null
         else -> null
     }
 }
 
+@RequiresApi(24)
+fun retrieveSecurityLogs(app: MyApplication) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val logs = DPM.retrieveSecurityLogs(DAR)
+        if (logs.isNullOrEmpty()) return@launch
+        app.myRepo.writeSecurityLogs(logs)
+        NotificationUtils.sendBasicNotification(
+            app, NotificationType.SecurityLogsCollected,
+            app.getString(R.string.n_logs_in_total, logs.size)
+        )
+    }
+}
+
 fun setDefaultAffiliationID() {
-    if(VERSION.SDK_INT < 26) return
-    val privilege = Privilege.status.value
+    if (VERSION.SDK_INT < 26) return
     if(!SP.isDefaultAffiliationIdSet) {
         try {
-            if(privilege.device || (!privilege.primary && privilege.profile)) {
-                val affiliationIDs = Privilege.DPM.getAffiliationIds(Privilege.DAR)
-                if(affiliationIDs.isEmpty()) {
-                    Privilege.DPM.setAffiliationIds(Privilege.DAR, setOf("OwnDroid_default_affiliation_id"))
-                    SP.isDefaultAffiliationIdSet = true
-                    Log.d("DPM", "Default affiliation id set")
-                }
-            }
-        } catch(e: Exception) {
+            DPM.setAffiliationIds(DAR, setOf("OwnDroid_default_affiliation_id"))
+            SP.isDefaultAffiliationIdSet = true
+            Log.d("DPM", "Default affiliation id set")
+        } catch (e: Exception) {
             e.printStackTrace()
         }
     }
@@ -469,16 +551,41 @@ fun parsePackageInstallerMessage(context: Context, result: Intent): String {
 fun handlePrivilegeChange(context: Context) {
     val privilege = Privilege.status.value
     SP.dhizukuServer = false
+    SP.shortcuts = privilege.activated
     if (privilege.activated) {
-        createShortcuts(context)
+        ShortcutUtils.setAllShortcuts(context, true)
         if (!privilege.dhizuku) {
             setDefaultAffiliationID()
         }
     } else {
         SP.isDefaultAffiliationIdSet = false
-        if(VERSION.SDK_INT >= 25) {
-            ShortcutManagerCompat.removeAllDynamicShortcuts(context)
+        ShortcutUtils.setAllShortcuts(context, false)
+        SP.apiKeyHash = ""
+    }
+}
+
+fun doUserOperationWithContext(
+    context: Context, type: UserOperationType, id: Int, isUserId: Boolean
+): Boolean {
+    val um = context.getSystemService(Context.USER_SERVICE) as UserManager
+    val handle = if (isUserId && VERSION.SDK_INT >= 24) {
+        UserHandle.getUserHandleForUid(id * 100000)
+    } else {
+        um.getUserForSerialNumber(id.toLong())
+    }
+    if (handle == null) return false
+    return when (type) {
+        UserOperationType.Start -> {
+            if (VERSION.SDK_INT >= 28)
+                DPM.startUserInBackground(DAR, handle) == UserManager.USER_OPERATION_SUCCESS
+            else false
         }
-        SP.isApiEnabled = false
+        UserOperationType.Switch -> DPM.switchUser(DAR, handle)
+        UserOperationType.Stop -> {
+            if (VERSION.SDK_INT >= 28)
+                DPM.stopUser(DAR, handle) == UserManager.USER_OPERATION_SUCCESS
+            else false
+        }
+        UserOperationType.Delete -> DPM.removeUser(DAR, handle)
     }
 }

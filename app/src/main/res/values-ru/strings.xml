@@ -35,7 +35,6 @@
     <string name="time_unit_ms">Время (мс)</string>
     <string name="length">Длина</string>
     <string name="none">Нет</string>
-    <string name="no_logs">Нет журналов</string>
     <string name="default_stringres">По умолчанию</string>
     <string name="apply">Применить</string>
     <string name="decide_by_user">Определять пользователем</string>
@@ -75,7 +74,6 @@
     <string name="profile_owner">Владелец профиля</string>
     <string name="device_owner">Владелец устройства</string>
     <string name="delegated_admins">Делегированные администраторы</string>
-    <string name="delegated_scope">делегированные возможности</string>
     <string name="manage_application_restrictions">Управление ограничениями для приложений</string>
     <string name="manage_certificates">Управление сертификатами</string>
     <string name="select_keychain_certificates">Выберите сертификат связки ключей</string>
@@ -101,7 +99,6 @@
     <string name="disable_account_management">Отключить управление аккаунтами</string>
     <string name="account_type">Тип аккаунта</string>
     <string name="transfer_ownership">Передача прав владения</string>
-    <string name="target_component_name">Имя целевого компонента</string>
     <string name="lock_screen_info">Информация на экране блокировки</string>
     <string name="support_messages">Сообщение поддержки</string>
     <string name="short_support_msg">Краткое сообщение</string>
@@ -115,7 +112,6 @@
     <!--Dhizuku-->
     <string name="failed_to_init_dhizuku">Не удалось инициализировать Dhizuku</string>
     <string name="dhizuku_permission_not_granted">Разрешение Dhizuku не предоставлено</string>
-    <string name="dhizuku_mode_disabled">Режим Dhizuku отключен</string>
 
     <!--Системные-->
     <string name="system">Система</string> 
@@ -129,7 +125,7 @@
     <string name="backup_service">Служба резервного копирования</string>
     <string name="disable_bt_contact_share">Отключить обмен контактами по Bluetooth</string>
     <string name="common_criteria_mode">Режим общих критериев</string>
-    <string name="disable_usb_signal">Отключить USB-сигнал</string>
+    <string name="enable_usb_signal">Enable USB signal</string> <!--TODO-->
     <string name="keyguard">Блокировка экрана (Keyguard)</string>
     <string name="lock_now">Заблокировать сейчас</string>
     <string name="evict_credential_encryption_key">Удалить ключ шифрования учетных данных</string>
@@ -166,7 +162,6 @@
     <string name="nearby_notification_streaming">Политика потоковой передачи уведомлений Nearby</string>
     <string name="enable_if_secure_enough">Только для одной управляемой учетной записи</string>
     <string name="lock_task_mode">Режим закрепления задачи</string>
-    <string name="specify_activity">Указать Acitvity</string>
     <string name="app_not_allowed">Приложение не разрешено</string>
     <string name="disable_all">Отключить все</string>
     <!--ltf: функция закрепления задачи-->
@@ -212,8 +207,6 @@
     <string name="update_received_time">Время получения обновления: %1$s</string>
     <string name="install_system_update">Установить системное обновление</string>
     <string name="select_ota_package" tools:ignore="TypographyEllipsis">Выберите OTA-пакет...</string>
-    <string name="start_install_system_update">Начать установку системного обновления</string>
-    <string name="install_system_update_failed">Установка системного обновления не удалась: </string>
     <string name="battery_low">Низкий заряд батареи</string>
     <string name="update_file_invalid">Файл обновления недействителен</string>
     <string name="incorrect_os_ver">Неверная версия ОС</string>
@@ -258,7 +251,6 @@
     <string name="network_type">Тип сети</string>
     <string name="mobile">Мобильный</string>
     <string name="ethernet">Ethernet</string>
-    <string name="subscriber_id">ID подписчика</string>
     <string name="all">Всё</string>
     <string name="uninstalled">Удалённый</string>
     <string name="tethering">Режим модема</string>
@@ -273,13 +265,9 @@
     <string name="roaming">Роуминг</string>
     <string name="metered">Измеренный</string>
     <string name="private_dns">Частный DNS</string>
-    <string name="dns_provide_hostname">Укажите имя хоста</string>
-    <string name="host_not_serving_dns_tls">Хост не обслуживает DNS через TLS</string>
-    <string name="set_to_opportunistic">Установить в оппортунистический режим</string>
     <string name="dns_hostname">Имя хоста DNS</string>
     <string name="invalid_hostname">Неверное имя хоста</string>
     <string name="security_exception">Исключение безопасности</string>
-    <string name="set_dns_host">Установить хост DNS</string>
     <string name="recommended_global_proxy">Рекомендуемый глобальный прокси</string>
     <string name="proxy_type_off">Без прокси</string>
     <string name="proxy_type_pac">PAC-прокси</string>
@@ -288,7 +276,6 @@
     <string name="invalid_config">Неверная конфигурация</string>
     <string name="excluded_hosts">Исключить хосты</string> 
     <string name="network_logging">Сетевой журнал</string> 
-    <string name="log_file_size_is">Размер файла журнала: %1$s</string>
     <string name="delete_logs">Удалить журналы</string>
     <string name="export_logs">Экспортировать журналы</string>
     <string name="wifi_auth_keypair">Пара ключей Wi-Fi</string>
@@ -300,27 +287,15 @@
     <string name="included_uids">Включенные UID</string>
     <string name="excluded_uids">Исключенные UID</string>
     <string name="one_uid_per_line">Один UID на строку</string>
-    <!--TODO: following 4 strings-->
+    <!--TODO: following 2 strings-->
     <string name="override_apn">Override APN</string>
     <string name="apn_setting">APN setting</string>
-    <string name="apn_name">APN name</string>
-    <string name="entry_name">Entry name</string>
     <string name="name">Имя</string>
-    <string name="profile_id">Идентификатор профиля</string>
-    <string name="auth_type">Тип аутентификации</string>
     <string name="description">Описание</string>
-    <string name="mms_proxy">MMS-прокси</string>
     <string name="address">Адрес</string>
     <string name="port">Порт</string>
     <string name="proxy">Прокси</string>
     <string name="persistent">Постоянный</string>
-    <string name="protocol">Протокол</string>
-    <string name="roaming_protocol">Протокол роуминга</string>
-    <!--TODO: following 4 strings-->
-    <string name="carrier_id">Carrier ID</string>
-    <string name="mvno_type">MVNO type</string>
-    <string name="network_type_bitmask">Network type bitmask</string>
-    <string name="always_on">Always on</string>
     <string name="update">Обновить</string>
 
 
@@ -339,10 +314,7 @@
     <string name="profile_max_time_off">Максимальное время отключения</string>
     <string name="profile_max_time_out_desc">Личные приложения будут приостановлены после закрытия рабочего профиля на указанное время. 0 означает отсутствие ограничения.</string>
     <string name="personal_app_suspended_because_timeout">Личное приложение приостановлено по причине: %1$s</string>
-    <string name="cannot_less_than_72_hours">Не может быть меньше 72 часов</string>
     <string name="intent_filter">Фильтр намерений</string>
-    <string name="add_intent_filter_work_to_personal">Добавить (из рабочего в личный)</string>
-    <string name="add_intent_filter_personal_to_work">Добавить (из личного в рабочий)</string>
     <string name="clear_cross_profile_filters">Очистить все фильтры</string>
     <string name="org_id">Идентификатор организации</string>
     <string name="length_6_to_64">Длина должна быть от 6 до 64 символов</string>
@@ -489,7 +461,6 @@
     <string name="create_user_skip_wizard">Пропустить мастер настройки</string>
     <string name="create_user_ephemeral_user">Временный пользователь</string>
     <string name="create_user_enable_all_system_app">Включить все системные приложения</string>
-    <string name="serial_number_of_new_user_is">Серийный номер этого пользователя: %1$d</string>
     <string name="affiliation_id">Аффилированный идентификатор</string>
     <string name="change_user_icon">Изменить значок пользователя</string>
     <string name="select_an_image">Select an image</string> <!--TODO-->
@@ -502,7 +473,6 @@
     <!--Пароль и блокировка экрана-->
     <string name="password_and_keyguard">Пароль и блокировка экрана</string>
     <string name="password_info">Информация о пароле</string>
-    <string name="reset_pwd_desc">Оставьте пустым, чтобы удалить пароль</string>
     <string name="max_pwd_fail">Максимальное количество неудачных попыток ввода пароля</string>
     <string name="max_pwd_fail_textfield">Максимальное количество неудачных попыток</string>
     <string name="pwd_expiration_timeout">Время истечения срока действия пароля</string>
@@ -518,17 +488,14 @@
     <string name="unified_password">Единый пароль</string>
     <string name="reset_password_token">Сбросить токен пароля</string>
     <string name="token">Токен</string>
-    <string name="token_must_longer_than_32_byte">Токен должен быть длиннее 32 байт</string>
-    <string name="token_already_activated">Токен уже активирован</string>
+    <string name="token_activated">Тoken activated</string><!--TODO-->
     <string name="clear">Очистить</string>
     <string name="set">Установить</string>
-    <string name="please_set_a_token">Установите токен</string>
     <string name="activate_token_not_required_when_no_password">Токен будет автоматически активирован, если пароль не установлен.</string>
     <string name="reset_password">Сбросить пароль</string>
     <string name="confirm_password">Подтвердите пароль</string>
     <string name="do_not_ask_credentials_on_boot">Не запрашивать учетные данные при загрузке</string>
     <string name="reset_password_require_entry">Требовать ввод</string>
-    <string name="reset_password_with_token">Сбросить пароль с помощью токена</string>
     <string name="required_password_complexity">Требуемая сложность пароля</string>
     <string name="disable_keyguard_features">Функции блокировки экрана (Keyguard)</string>
     <string name="enable_all">Включить все</string>
@@ -550,7 +517,6 @@
     <string name="password_quality_biometrics_weak">Биометрия (слабая)</string>
     <string name="password_quality_numeric_complex">Сложный числовой (без повторений)</string>
     <string name="required_password_quality">Требуемое качество пароля</string>
-    <string name="activate_reset_password_token_here">Активируйте токен сброса пароля здесь.</string>
 
 
     <!--Настройки и о программе-->
@@ -632,7 +598,7 @@
 
     <string name="info_device_id_attestation">Указывает, поддерживает ли устройство проверку идентификаторов устройств в дополнение к проверке ключей.</string>
     <string name="info_unique_device_attestation">Да, если реализация StrongBox Keymaster на устройстве была обеспечена индивидуальным сертификатом аттестации и может использовать его для подписи записей аттестации (индивидуальный сертификат аттестации могут использовать только Keymaster с уровнем безопасности StrongBox).</string>
-    <string name="info_org_id">Устанавливает идентификатор предприятия (Enterprise ID). Это необходимо для создания идентификатора устройства, специфичного для регистрации.</string>
+    <!--TODO--><string name="info_org_id">Устанавливает идентификатор предприятия (Enterprise ID). Это необходимо для создания идентификатора устройства, специфичного для регистрации.</string>
     <string name="info_enrollment_specific_id">Идентификатор останется неизменным, даже если рабочий профиль будет удален и создан заново (для той же организации), или если устройство будет сброшено до заводских настроек и перерегистрировано</string>
     <string name="info_lock_screen_info">Отобразить краткое сообщение на экране блокировки. Переопределяет любую информацию о владельце, установленную пользователем вручную, и предотвращает ее дальнейшее изменение.</string>
     <string name="info_short_support_message">Это будет отображено пользователю на экранах настроек, функциональность которых была отключена администратором. Если длина сообщения превышает 200 символов, оно может быть обрезано.</string>
@@ -657,8 +623,6 @@
     <string name="info_wipe_data_in_managed_user">Все данные этого пользователя будут стерты, но сам пользователь не будет удален.</string>
     <string name="info_lockdown_admin_configured_network">Контролировать, может ли пользователь изменять сети, настроенные администратором.\nКогда эта блокировка включена, пользователь по-прежнему может настраивать другие сети Wi-Fi и подключаться к ним, а также использовать другие возможности Wi-Fi, такие как режим модема.</string>
     <string name="info_minimum_wifi_security_level">Указать минимальный уровень безопасности, требуемый для сетей Wi-Fi. Устройство может не подключаться к сетям, которые не соответствуют минимальному уровню безопасности. Если текущая сеть не соответствует установленному минимальному уровню безопасности, соединение будет разорвано.</string>
-    <string name="info_private_dns_mode_oppertunistic">В этом режиме подсистема DNS попытается установить TLS-соединение с DNS-сервером, предоставленным сетью, прежде чем пытаться разрешить имена в открытом виде.</string>
-    <string name="info_set_private_dns_host">Будет выполнена проверка соединения с DNS-сервером, чтобы убедиться в его работоспособности.\nВ случае использования VPN совместно с частным DNS-сервером, частный DNS-сервер должен быть доступен как изнутри, так и снаружи VPN. В противном случае устройство может потерять возможность разрешать имена хостов, так как системный трафик к DNS-серверу может не проходить через VPN.</string>
     <string name="info_always_on_vpn">Настроить постоянное VPN-соединение через определенное приложение для текущего пользователя. Это соединение автоматически предоставляется и сохраняется после перезагрузки.\nВключить блокировку: Запретить сетевое подключение, когда VPN не подключен.</string>
     <string name="info_recommended_global_proxy">Этот прокси-сервер является только рекомендацией, и некоторые приложения могут его игнорировать.</string>
     <string name="info_network_log">Журналы сети содержат события поиска DNS и вызовы библиотеки connect().\nИспользование этой функции в рабочем профиле позволит получить журналы сети только в рабочем профиле.\nНа этом устройстве не должно быть неаффилированных пользователей, если оно используется владельцем устройства.</string>

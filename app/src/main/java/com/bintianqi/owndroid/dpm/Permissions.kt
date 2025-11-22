@@ -2,14 +2,8 @@ package com.bintianqi.owndroid.dpm
 
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
-import android.content.Context
-import android.content.pm.PackageManager
 import android.os.Build.VERSION
-import android.os.PersistableBundle
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
-import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
@@ -22,12 +16,12 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -58,6 +52,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -68,10 +63,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -84,20 +78,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bintianqi.owndroid.ChoosePackageContract
-import com.bintianqi.owndroid.DHIZUKU_CLIENTS_FILE
+import com.bintianqi.owndroid.AppInfo
+import com.bintianqi.owndroid.BottomPadding
 import com.bintianqi.owndroid.DhizukuClientInfo
 import com.bintianqi.owndroid.DhizukuPermissions
 import com.bintianqi.owndroid.HorizontalPadding
-import com.bintianqi.owndroid.IUserService
-import com.bintianqi.owndroid.MyAdminComponent
+import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.SP
 import com.bintianqi.owndroid.Settings
+import com.bintianqi.owndroid.adaptiveInsets
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CircularProgressDialog
 import com.bintianqi.owndroid.ui.InfoItem
@@ -107,36 +99,32 @@ import com.bintianqi.owndroid.ui.MySmallTitleScaffold
 import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.SwitchItem
-import com.bintianqi.owndroid.useShizuku
 import com.bintianqi.owndroid.yesOrNo
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import com.rosan.dhizuku.api.Dhizuku
-import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
-import com.topjohnwu.superuser.Shell
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 @Serializable data class WorkModes(val canNavigateUp: Boolean)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun WorkModesScreen(
-    params: WorkModes, onNavigateUp: () -> Unit, onActivate: () -> Unit, onNavigate: (Any) -> Unit
+    vm: MyViewModel, params: WorkModes, onNavigateUp: () -> Unit, onActivate: () -> Unit,
+    onDeactivate: () -> Unit, onNavigate: (Any) -> Unit
 ) {
-    val context = LocalContext.current
-    val coroutine = rememberCoroutineScope()
     val privilege by Privilege.status.collectAsStateWithLifecycle()
     /** 0: none, 1: device owner, 2: circular progress indicator, 3: result, 4: deactivate, 5: command */
-    var dialog by remember { mutableIntStateOf(0) }
-    var operationSucceed by remember { mutableStateOf(false) }
+    var dialog by rememberSaveable { mutableIntStateOf(0) }
+    var operationSucceed by rememberSaveable { mutableStateOf(false) }
+    var resultText by rememberSaveable { mutableStateOf("") }
     LaunchedEffect(privilege) {
         if (!params.canNavigateUp && privilege.device) {
             delay(1000)
             if (dialog != 3) { // Activated by ADB command
                 operationSucceed = true
+                resultText = ""
                 dialog = 3
             }
         }
@@ -194,92 +182,38 @@ fun WorkModesScreen(
                 }
             )
         },
-        contentWindowInsets = WindowInsets.ime
+        contentWindowInsets = adaptiveInsets()
     ) { paddingValues ->
-        var navigateUpOnSucceed by remember { mutableStateOf(true) }
-        var resultText by remember { mutableStateOf("") }
-        fun handleResult(succeeded: Boolean, activateSucceeded: Boolean, output: String?) {
-            if(succeeded) {
-                operationSucceed = activateSucceeded
-                resultText = output ?: ""
-                dialog = 3
-                Privilege.updateStatus()
-            } else {
-                dialog = 0
-                context.showOperationResultToast(false)
-            }
+        fun handleResult(succeeded: Boolean, output: String?) {
+            operationSucceed = succeeded
+            resultText = output ?: ""
+            dialog = 3
         }
-        Column(Modifier
-            .fillMaxSize()
-            .padding(paddingValues)) {
-            if(!privilege.profile && (VERSION.SDK_INT >= 28 || !privilege.dhizuku)) Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clickable(!privilege.device || privilege.dhizuku) { dialog = 1 }
-                    .background(if (privilege.device) colorScheme.primaryContainer else Color.Transparent)
-                    .padding(HorizontalPadding, 10.dp),
-                Arrangement.SpaceBetween, Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(stringResource(R.string.device_owner), style = typography.titleLarge)
-                    if(!privilege.device || privilege.dhizuku) Text(
-                        stringResource(R.string.recommended), color = colorScheme.primary, style = typography.labelLarge
-                    )
-                }
-                Icon(
-                    if(privilege.device) Icons.Default.Check else Icons.AutoMirrored.Default.KeyboardArrowRight, null,
-                    tint = if(privilege.device) colorScheme.primary else colorScheme.onBackground
-                )
-            }
-            if(privilege.profile) Row(
-                Modifier
-                    .fillMaxWidth()
-                    .background(colorScheme.primaryContainer)
-                    .padding(HorizontalPadding, 10.dp),
-                Arrangement.SpaceBetween, Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(stringResource(R.string.profile_owner), style = typography.titleLarge)
-                }
-                Icon(Icons.Default.Check, null, tint = colorScheme.primary)
-            }
-            if(privilege.dhizuku || !(privilege.device || privilege.profile)) Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clickable(!privilege.dhizuku) {
-                        dialog = 2
-                        activateDhizukuMode(context, ::handleResult)
+        Column(Modifier.fillMaxSize().padding(paddingValues)) {
+            if (!privilege.profile) {
+                WorkingModeItem(R.string.device_owner, privilege.device) {
+                    if (!privilege.device || (VERSION.SDK_INT >= 28 && privilege.dhizuku)) {
+                        dialog = 1
                     }
-                    .background(if (privilege.dhizuku) colorScheme.primaryContainer else Color.Transparent)
-                    .padding(HorizontalPadding, 10.dp),
-                Arrangement.SpaceBetween, Alignment.CenterVertically
-            ) {
-                Text(stringResource(R.string.dhizuku), style = typography.titleLarge)
-                Icon(
-                    if(privilege.dhizuku) Icons.Default.Check else Icons.AutoMirrored.Default.KeyboardArrowRight, null,
-                    tint = if(privilege.dhizuku) colorScheme.primary else colorScheme.onBackground
-                )
+                }
+            }
+            if (privilege.profile) WorkingModeItem(R.string.profile_owner, true) { }
+            if (privilege.dhizuku || !privilege.activated) {
+                WorkingModeItem(R.string.dhizuku, privilege.dhizuku) {
+                    if (!privilege.dhizuku) {
+                        dialog = 2
+                        vm.activateDhizukuMode(::handleResult)
+                    }
+                }
             }
             if(
-                privilege.work || (VERSION.SDK_INT < 24 ||
-                        Privilege.DPM.isProvisioningAllowed(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE))
-            ) Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clickable(!privilege.work) { onNavigate(CreateWorkProfile) }
-                    .background(if (privilege.device) colorScheme.primaryContainer else Color.Transparent)
-                    .padding(HorizontalPadding, 10.dp),
-                Arrangement.SpaceBetween, Alignment.CenterVertically
+                privilege.work || (VERSION.SDK_INT < 24 || vm.isCreatingWorkProfileAllowed())
             ) {
-                Column {
-                    Text(stringResource(R.string.work_profile), style = typography.titleLarge)
+                WorkingModeItem(R.string.work_profile, privilege.work) {
+                    if (!privilege.work) onNavigate(CreateWorkProfile)
                 }
-                Icon(
-                    if(privilege.work) Icons.Default.Check else Icons.AutoMirrored.Default.KeyboardArrowRight, null,
-                    tint = if(privilege.device) colorScheme.primary else colorScheme.onBackground
-                )
             }
-            if ((privilege.device || privilege.profile) && !privilege.dhizuku) Row(
+            if (privilege.activated && !privilege.dhizuku) Row(
                 Modifier
                     .padding(top = 20.dp)
                     .fillMaxWidth()
@@ -305,27 +239,29 @@ fun WorkModesScreen(
             title = { Text(stringResource(R.string.activate_method)) },
             text = {
                 FlowRow(Modifier.fillMaxWidth()) {
-                    if(!privilege.dhizuku) Button({
-                        dialog = 2
-                        coroutine.launch {
-                            activateUsingShizuku(context, ::handleResult)
+                    if (!privilege.dhizuku) {
+                        Button({ dialog = 5 }, Modifier.padding(end = 8.dp)) {
+                            Text(stringResource(R.string.adb_command))
                         }
-                    }, Modifier.padding(end = 8.dp)) {
-                        Text(stringResource(R.string.shizuku))
+                        Button({
+                            dialog = 2
+                            vm.activateDoByShizuku(::handleResult)
+                        }, Modifier.padding(end = 8.dp)) {
+                            Text(stringResource(R.string.shizuku))
+                        }
+                        Button({
+                            dialog = 2
+                            vm.activateDoByRoot(::handleResult)
+                        }, Modifier.padding(end = 8.dp)) {
+                            Text("Root")
+                        }
                     }
-                    if(!privilege.dhizuku) Button({
+                    if (VERSION.SDK_INT >= 28 && privilege.dhizuku) Button({
                         dialog = 2
-                        activateUsingRoot(context, ::handleResult)
-                    }, Modifier.padding(end = 8.dp)) {
-                        Text("Root")
-                    }
-                    if(VERSION.SDK_INT >= 28) Button({
-                        dialog = 2
-                        activateUsingDhizuku(context, ::handleResult)
+                        vm.activateDoByDhizuku(::handleResult)
                     }, Modifier.padding(end = 8.dp)) {
                         Text(stringResource(R.string.dhizuku))
                     }
-                    if (!privilege.dhizuku) Button({ dialog = 5 }) { Text(stringResource(R.string.adb_command)) }
                 }
             },
             confirmButton = {
@@ -337,16 +273,14 @@ fun WorkModesScreen(
         if(dialog == 3) AlertDialog(
             title = { Text(stringResource(if(operationSucceed) R.string.succeeded else R.string.failed)) },
             text = {
-                Column(Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())) {
+                Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
                     Text(resultText)
                 }
             },
             confirmButton = {
                 TextButton({
                     dialog = 0
-                    if(navigateUpOnSucceed && operationSucceed && !params.canNavigateUp) onActivate()
+                    if (operationSucceed && !params.canNavigateUp) onActivate()
                 }) {
                     Text(stringResource(R.string.confirm))
                 }
@@ -368,18 +302,17 @@ fun WorkModesScreen(
                 TextButton(
                     {
                         if(privilege.dhizuku) {
-                            SP.dhizuku = false
-                            Privilege.initialize(context)
-                            Privilege.updateStatus()
+                            vm.deactivateDhizukuMode()
                         } else {
                             if(privilege.device) {
-                                Privilege.DPM.clearDeviceOwnerApp(context.packageName)
+                                vm.clearDeviceOwner()
                             } else if(VERSION.SDK_INT >= 24) {
-                                Privilege.DPM.clearProfileOwner(MyAdminComponent)
+                                vm.clearProfileOwner()
                             }
                             // Status updated in Receiver.onDisabled()
                         }
                         dialog = 0
+                        onDeactivate()
                     },
                     enabled = time == 0,
                     colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
@@ -406,94 +339,21 @@ fun WorkModesScreen(
     }
 }
 
-fun activateUsingShizuku(context: Context, callback: (Boolean, Boolean, String?) -> Unit) {
-    useShizuku(context) { service ->
-        try {
-            val result = IUserService.Stub.asInterface(service).execute(ACTIVATE_DEVICE_OWNER_COMMAND)
-            if (result == null) {
-                callback(false, false, null)
-            } else {
-                callback(
-                    true, result.getInt("code", -1) == 0,
-                    result.getString("output") + "\n" + result.getString("error")
-                )
-            }
-        } catch (e: Exception) {
-            callback(false, false, null)
-            e.printStackTrace()
-        }
-    }
-}
-
-fun activateUsingRoot(context: Context, callback: (Boolean, Boolean, String?) -> Unit) {
-    Shell.getShell { shell ->
-        if(shell.isRoot) {
-            val result = Shell.cmd(ACTIVATE_DEVICE_OWNER_COMMAND).exec()
-            val output = result.out.joinToString("\n") + "\n" + result.err.joinToString("\n")
-            callback(true, result.isSuccess, output)
-        } else {
-            callback(true, false, context.getString(R.string.permission_denied))
-        }
-    }
-}
-
-@RequiresApi(28)
-fun activateUsingDhizuku(context: Context, callback: (Boolean, Boolean, String?) -> Unit) {
-    fun doTransfer() {
-        try {
-            if (SP.dhizuku) {
-                Privilege.DPM.transferOwnership(Privilege.DAR, MyAdminComponent, PersistableBundle())
-                SP.dhizuku = false
-                Privilege.initialize(context)
-            } else {
-                val dpm = binderWrapperDevicePolicyManager(context)
-                if (dpm == null) {
-                    callback(false, false, null)
-                    return
-                } else {
-                    dpm.transferOwnership(Dhizuku.getOwnerComponent(), MyAdminComponent, PersistableBundle())
-                }
-            }
-            callback(true, true, null)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            callback(false, false, null)
-        }
-    }
-    if(Dhizuku.init(context)) {
-        if(Dhizuku.isPermissionGranted()) {
-            doTransfer()
-        } else {
-            Dhizuku.requestPermission(object : DhizukuRequestPermissionListener() {
-                override fun onRequestPermission(grantResult: Int) {
-                    if(grantResult == PackageManager.PERMISSION_GRANTED) doTransfer()
-                    else callback(false, false, null)
-                }
-            })
-        }
-    } else {
-        callback(true, false, context.getString(R.string.failed_to_init_dhizuku))
-    }
-}
-
-fun activateDhizukuMode(context: Context, callback: (Boolean, Boolean, String?) -> Unit) {
-    fun onSucceed() {
-        SP.dhizuku = true
-        Privilege.initialize(context)
-        callback(true, true, null)
-    }
-    if(Dhizuku.init(context)) {
-        if(Dhizuku.isPermissionGranted()) {
-            onSucceed()
-        } else {
-            Dhizuku.requestPermission(object : DhizukuRequestPermissionListener() {
-                override fun onRequestPermission(grantResult: Int) {
-                    if(grantResult == PackageManager.PERMISSION_GRANTED) onSucceed()
-                }
-            })
-        }
-    } else {
-        callback(true, false, context.getString(R.string.failed_to_init_dhizuku))
+@Composable
+fun WorkingModeItem(text: Int, active: Boolean, onClick: () -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .background(if (active) colorScheme.primaryContainer else Color.Transparent)
+            .padding(HorizontalPadding, 10.dp),
+        Arrangement.SpaceBetween, Alignment.CenterVertically
+    ) {
+        Text(stringResource(text), style = typography.titleLarge)
+        Icon(
+            if(active) Icons.Default.Check else Icons.AutoMirrored.Default.KeyboardArrowRight, null,
+            tint = if(active) colorScheme.primary else colorScheme.onBackground
+        )
     }
 }
 
@@ -502,98 +362,81 @@ const val ACTIVATE_DEVICE_OWNER_COMMAND = "dpm set-device-owner com.bintianqi.ow
 @Serializable object DhizukuServerSettings
 
 @Composable
-fun DhizukuServerSettingsScreen(onNavigateUp: () -> Unit) {
-    val context = LocalContext.current
-    val pm = context.packageManager
-    val file = context.filesDir.resolve(DHIZUKU_CLIENTS_FILE)
-    var enabled by remember { mutableStateOf(SP.dhizukuServer) }
-    val clients = remember { mutableStateListOf<DhizukuClientInfo>() }
-    fun changeEnableState(status: Boolean) {
-        enabled = status
-        SP.dhizukuServer = status
-    }
-    fun writeList() {
-        file.writeText(Json.encodeToString(clients.toList()))
-    }
-    LaunchedEffect(Unit) {
-        if (!file.exists()) file.writeText("[]")
-    }
-    LaunchedEffect(enabled) {
-        if (enabled) {
-            clients.clear()
-            val json = Json { ignoreUnknownKeys = true }
-            clients.addAll(json.decodeFromString<List<DhizukuClientInfo>>(file.readText()))
-        }
-    }
+fun DhizukuServerSettingsScreen(
+    dhizukuClients: StateFlow<List<Pair<DhizukuClientInfo, AppInfo>>>,
+    getDhizukuClients: () -> Unit, updateDhizukuClient: (DhizukuClientInfo) -> Unit,
+    getServerEnabled: () -> Boolean, setServerEnabled: (Boolean) -> Unit, onNavigateUp: () -> Unit
+) {
+    var enabled by rememberSaveable { mutableStateOf(getServerEnabled()) }
+    val clients by dhizukuClients.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) { getDhizukuClients() }
     MyLazyScaffold(R.string.dhizuku_server, onNavigateUp) {
         item {
-            SwitchItem(R.string.enable, getState = { SP.dhizukuServer }, onCheckedChange = ::changeEnableState)
+            SwitchItem(R.string.enable, enabled, {
+                setServerEnabled(it)
+                enabled = it
+            })
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
         }
-        if (enabled) itemsIndexed(clients) { index, client ->
-            val name = pm.getNameForUid(client.uid)
-            if (name == null) {
-                clients.dropWhile { it.uid == client.uid }
-                writeList()
-            } else {
-                val info = pm.getApplicationInfo(name, 0)
-                var expand by remember { mutableStateOf(false) }
-                Card(
+        if (enabled) items(clients) { (client, app) ->
+            var expand by remember { mutableStateOf(false) }
+            Card(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(HorizontalPadding, 8.dp)
+            ) {
+                Row(
                     Modifier
                         .fillMaxWidth()
-                        .padding(HorizontalPadding, 8.dp)
+                        .padding(8.dp, 8.dp, 0.dp, 8.dp),
+                    Arrangement.SpaceBetween, Alignment.CenterVertically
                 ) {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp, 8.dp, 0.dp, 8.dp),
-                        Arrangement.SpaceBetween, Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Image(
-                                rememberDrawablePainter(info.loadIcon(pm)), null,
-                                Modifier
-                                    .padding(end = 16.dp)
-                                    .size(50.dp)
-                            )
-                            Column {
-                                Text(info.loadLabel(pm).toString(), style = typography.titleLarge)
-                                Text(name, Modifier.alpha(0.7F), style = typography.bodyMedium)
-                            }
-                        }
-                        val ts = when (DhizukuPermissions.filter { it !in client.permissions }.size) {
-                            0 -> ToggleableState.On
-                            DhizukuPermissions.size -> ToggleableState.Off
-                            else -> ToggleableState.Indeterminate
-                        }
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            TriStateCheckbox(ts, {
-                                clients[index] = when (ts) {
-                                    ToggleableState.On, ToggleableState.Indeterminate -> client.copy(permissions = emptyList())
-                                    ToggleableState.Off -> client.copy(permissions = DhizukuPermissions)
-                                }
-                            })
-                            val degrees by animateFloatAsState(if(expand) 180F else 0F)
-                            IconButton({ expand = !expand }) {
-                                Icon(Icons.Default.ArrowDropDown, null, Modifier.rotate(degrees))
-                            }
+                    Row(Modifier.weight(1F), verticalAlignment = Alignment.CenterVertically) {
+                        Image(
+                            rememberDrawablePainter(app.icon), null,
+                            Modifier.padding(end = 16.dp).size(45.dp)
+                        )
+                        Column {
+                            Text(app.label, style = typography.titleMedium)
+                            Text(app.name, Modifier.alpha(0.7F), style = typography.bodyMedium)
                         }
                     }
-                    AnimatedVisibility(expand, Modifier.padding(8.dp, 0.dp, 8.dp, 8.dp)) {
-                        Column {
-                            mapOf(
-                                "remote_transact" to "Remote transact", "remote_process" to "Remote process",
-                                "user_service" to "User service", "delegated_scopes" to "Delegated scopes",
-                                "other" to context.getString(R.string.other)
-                            ).forEach { (k, v) ->
-                                Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
-                                    Text(v)
-                                    Checkbox(k in client.permissions, {
-                                        val newPermissions = if (it) client.permissions.plus(k) else client.permissions.minus(k)
-                                        clients[index] = client.copy(permissions = newPermissions)
-                                        writeList()
-                                    })
-                                }
+                    val ts = when (DhizukuPermissions.filter { it !in client.permissions }.size) {
+                        0 -> ToggleableState.On
+                        DhizukuPermissions.size -> ToggleableState.Off
+                        else -> ToggleableState.Indeterminate
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        TriStateCheckbox(ts, {
+                            if (ts == ToggleableState.Off) {
+                                updateDhizukuClient(client.copy(permissions = DhizukuPermissions))
+                            } else {
+                                updateDhizukuClient(client.copy(permissions = emptyList()))
+                            }
+                        })
+                        val degrees by animateFloatAsState(if(expand) 180F else 0F)
+                        IconButton({ expand = !expand }) {
+                            Icon(Icons.Default.ArrowDropDown, null, Modifier.rotate(degrees))
+                        }
+                    }
+                }
+                AnimatedVisibility(expand, Modifier.padding(8.dp, 0.dp, 8.dp, 8.dp)) {
+                    Column {
+                        mapOf(
+                            "remote_transact" to "Remote transact", "remote_process" to "Remote process",
+                            "user_service" to "User service", "delegated_scopes" to "Delegated scopes",
+                            "other" to "Other"
+                        ).forEach { (k, v) ->
+                            Row(
+                                Modifier.fillMaxWidth(), Arrangement.SpaceBetween,
+                                Alignment.CenterVertically
+                            ) {
+                                Text(v)
+                                Checkbox(k in client.permissions, {
+                                    updateDhizukuClient(client.copy(
+                                        permissions = client.permissions.run { if (it) plus(k) else minus(k) }
+                                    ))
+                                })
                             }
                         }
                     }
@@ -607,10 +450,12 @@ fun DhizukuServerSettingsScreen(onNavigateUp: () -> Unit) {
 
 @RequiresApi(24)
 @Composable
-fun LockScreenInfoScreen(onNavigateUp: () -> Unit) {
+fun LockScreenInfoScreen(
+    getText: () -> String, setText: (String) -> Unit, onNavigateUp: () -> Unit
+) {
     val context = LocalContext.current
     val focusMgr = LocalFocusManager.current
-    var infoText by remember { mutableStateOf(Privilege.DPM.deviceOwnerLockScreenInfo?.toString() ?: "") }
+    var infoText by rememberSaveable { mutableStateOf(getText()) }
     MyScaffold(R.string.lock_screen_info, onNavigateUp) {
         OutlinedTextField(
             value = infoText,
@@ -625,7 +470,7 @@ fun LockScreenInfoScreen(onNavigateUp: () -> Unit) {
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                Privilege.DPM.setDeviceOwnerLockScreenInfo(Privilege.DAR, infoText)
+                setText(infoText)
                 context.showOperationResultToast(true)
             },
             modifier = Modifier.fillMaxWidth()
@@ -635,7 +480,7 @@ fun LockScreenInfoScreen(onNavigateUp: () -> Unit) {
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                Privilege.DPM.setDeviceOwnerLockScreenInfo(Privilege.DAR, null)
+                setText("")
                 infoText = ""
                 context.showOperationResultToast(true)
             },
@@ -648,124 +493,103 @@ fun LockScreenInfoScreen(onNavigateUp: () -> Unit) {
     }
 }
 
-@Keep
+data class DelegatedScope(val id: String, val string: Int, val requiresApi: Int = 26)
 @Suppress("InlinedApi")
-enum class DelegatedScope(val id: String, @StringRes val string: Int, val requiresApi: Int = 0) {
-    AppRestrictions(DevicePolicyManager.DELEGATION_APP_RESTRICTIONS, R.string.manage_application_restrictions),
-    BlockUninstall(DevicePolicyManager.DELEGATION_BLOCK_UNINSTALL, R.string.block_uninstall),
-    CertInstall(DevicePolicyManager.DELEGATION_CERT_INSTALL, R.string.manage_certificates),
-    CertSelection(DevicePolicyManager.DELEGATION_CERT_SELECTION, R.string.select_keychain_certificates, 29),
-    EnableSystemApp(DevicePolicyManager.DELEGATION_ENABLE_SYSTEM_APP, R.string.enable_system_app),
-    InstallExistingPackage(DevicePolicyManager.DELEGATION_INSTALL_EXISTING_PACKAGE, R.string.install_existing_packages, 28),
-    KeepUninstalledPackages(DevicePolicyManager.DELEGATION_KEEP_UNINSTALLED_PACKAGES, R.string.manage_uninstalled_packages, 28),
-    NetworkLogging(DevicePolicyManager.DELEGATION_NETWORK_LOGGING, R.string.network_logging, 29),
-    PackageAccess(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS, R.string.change_package_state),
-    PermissionGrant(DevicePolicyManager.DELEGATION_PERMISSION_GRANT, R.string.grant_permissions),
-    SecurityLogging(DevicePolicyManager.DELEGATION_SECURITY_LOGGING, R.string.security_logging, 31)
-}
+val delegatedScopesList = listOf(
+    DelegatedScope(DevicePolicyManager.DELEGATION_APP_RESTRICTIONS, R.string.manage_application_restrictions),
+    DelegatedScope(DevicePolicyManager.DELEGATION_BLOCK_UNINSTALL, R.string.block_uninstall),
+    DelegatedScope(DevicePolicyManager.DELEGATION_CERT_INSTALL, R.string.manage_certificates),
+    DelegatedScope(DevicePolicyManager.DELEGATION_CERT_SELECTION, R.string.select_keychain_certificates, 29),
+    DelegatedScope(DevicePolicyManager.DELEGATION_ENABLE_SYSTEM_APP, R.string.enable_system_app),
+    DelegatedScope(DevicePolicyManager.DELEGATION_INSTALL_EXISTING_PACKAGE, R.string.install_existing_packages, 28),
+    DelegatedScope(DevicePolicyManager.DELEGATION_KEEP_UNINSTALLED_PACKAGES, R.string.manage_uninstalled_packages, 28),
+    DelegatedScope(DevicePolicyManager.DELEGATION_NETWORK_LOGGING, R.string.network_logging, 29),
+    DelegatedScope(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS, R.string.change_package_state),
+    DelegatedScope(DevicePolicyManager.DELEGATION_PERMISSION_GRANT, R.string.grant_permissions),
+    DelegatedScope(DevicePolicyManager.DELEGATION_SECURITY_LOGGING, R.string.security_logging, 31)
+).filter { VERSION.SDK_INT >= it.requiresApi }
+
+data class DelegatedAdmin(val app: AppInfo, val scopes: List<String>)
 
 @Serializable object DelegatedAdmins
 
 @RequiresApi(26)
 @Composable
-fun DelegatedAdminsScreen(onNavigateUp: () -> Unit, onNavigate: (AddDelegatedAdmin) -> Unit) {
-    val packages = remember { mutableStateMapOf<String, MutableList<DelegatedScope>>() }
-    fun refresh() {
-        val list = mutableMapOf<String, MutableList<DelegatedScope>>()
-        DelegatedScope.entries.forEach { ds ->
-            if(VERSION.SDK_INT >= ds.requiresApi) {
-                Privilege.DPM.getDelegatePackages(Privilege.DAR, ds.id)?.forEach { pkg ->
-                    if(list[pkg] != null) {
-                        list[pkg]!!.add(ds)
-                    } else {
-                        list[pkg] = mutableListOf(ds)
+fun DelegatedAdminsScreen(
+    delegatedAdmins: StateFlow<List<DelegatedAdmin>>, getDelegatedAdmins: () -> Unit,
+    onNavigateUp: () -> Unit, onNavigate: (AddDelegatedAdmin) -> Unit
+) {
+    val admins by delegatedAdmins.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) { getDelegatedAdmins() }
+    MyLazyScaffold(R.string.delegated_admins, onNavigateUp) {
+        items(admins, { it.app.name }) { (app, scopes) ->
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp).animateItem(),
+                Arrangement.SpaceBetween, Alignment.CenterVertically
+            ) {
+                Row(Modifier.weight(1F), verticalAlignment = Alignment.CenterVertically) {
+                    Image(
+                        painter = rememberDrawablePainter(app.icon), contentDescription = null,
+                        modifier = Modifier.padding(start = 12.dp, end = 18.dp).size(40.dp)
+                    )
+                    Column {
+                        Text(app.label)
+                        Text(app.name, Modifier.alpha(0.8F), style = typography.bodyMedium)
                     }
                 }
+                IconButton({ onNavigate(AddDelegatedAdmin(app.name, scopes)) }) {
+                    Icon(Icons.Outlined.Edit, null)
+                }
             }
         }
-        packages.clear()
-        packages.putAll(list)
-    }
-    LaunchedEffect(Unit) { refresh() }
-    MyScaffold(R.string.delegated_admins, onNavigateUp, 0.dp) {
-        packages.forEach { (pkg, scopes) ->
+        item {
             Row(
-                Modifier
+                modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-                    .padding(start = 14.dp, end = 8.dp),
-                Arrangement.SpaceBetween
+                    .clickable { onNavigate(AddDelegatedAdmin()) }
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(pkg, style = typography.titleMedium)
-                    Text(
-                        scopes.size.toString() + " " + stringResource(R.string.delegated_scope),
-                        color = colorScheme.onSurfaceVariant, style = typography.bodyMedium
-                    )
-                }
-                IconButton({ onNavigate(AddDelegatedAdmin(pkg, scopes)) }) {
-                    Icon(Icons.Outlined.Edit, stringResource(R.string.edit))
-                }
+                Icon(Icons.Default.Add, null, modifier = Modifier.padding(end = 12.dp))
+                Text(stringResource(R.string.add_delegated_admin), style = typography.titleMedium)
             }
-        }
-        if(packages.isEmpty()) Text(
-            stringResource(R.string.none),
-            color = colorScheme.onSurfaceVariant,
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(vertical = 4.dp)
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onNavigate(AddDelegatedAdmin()) }
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(Icons.Default.Add, null, modifier = Modifier.padding(end = 12.dp))
-            Text(stringResource(R.string.add_delegated_admin), style = typography.titleMedium)
         }
     }
 }
 
-@Serializable data class AddDelegatedAdmin(val pkg: String = "", val scopes: List<DelegatedScope> = emptyList())
+@Serializable data class AddDelegatedAdmin(val pkg: String = "", val scopes: List<String> = emptyList())
 
 @RequiresApi(26)
 @Composable
-fun AddDelegatedAdminScreen(data: AddDelegatedAdmin, onNavigateUp: () -> Unit) {
+fun AddDelegatedAdminScreen(
+    chosenPackage: Channel<String>, onChoosePackage: () -> Unit, data: AddDelegatedAdmin,
+    setDelegatedAdmin: (String, List<String>) -> Unit,  onNavigateUp: () -> Unit
+) {
     val updateMode = data.pkg.isNotEmpty()
-    val fm = LocalFocusManager.current
-    var input by remember { mutableStateOf(data.pkg) }
-    val scopes = remember { mutableStateListOf(*data.scopes.toTypedArray()) }
-    val choosePackage = rememberLauncherForActivityResult(ChoosePackageContract()) { result ->
-        result?.let { input = it }
+    var input by rememberSaveable { mutableStateOf(data.pkg) }
+    val scopes = rememberSaveable { mutableStateListOf(*data.scopes.toTypedArray()) }
+    LaunchedEffect(Unit) {
+        input = chosenPackage.receive()
     }
     MySmallTitleScaffold(if(updateMode) R.string.place_holder else R.string.add_delegated_admin, onNavigateUp, 0.dp) {
-        OutlinedTextField(
-            value = input, onValueChange = { input = it },
-            label = { Text(stringResource(R.string.package_name)) },
-            trailingIcon = {
-                if(!updateMode) IconButton({ choosePackage.launch(null) }) {
-                    Icon(painterResource(R.drawable.list_fill0), null)
-                }
-            },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions { fm.clearFocus() },
-            readOnly = updateMode,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp, horizontal = HorizontalPadding)
-        )
-        DelegatedScope.entries.filter { VERSION.SDK_INT >= it.requiresApi }.forEach { scope ->
-            val checked = scope in scopes
+        if (updateMode) {
+            OutlinedTextField(input, {}, Modifier.fillMaxWidth().padding(HorizontalPadding, 8.dp),
+                enabled = false, label = { Text(stringResource(R.string.package_name)) })
+        } else {
+            PackageNameTextField(input, onChoosePackage,
+                Modifier.padding(HorizontalPadding, 8.dp)) { input = it }
+        }
+        delegatedScopesList.forEach { scope ->
+            val checked = scope.id in scopes
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .clickable { if (!checked) scopes += scope else scopes -= scope }
+                    .clickable { if (!checked) scopes += scope.id else scopes -= scope.id }
                     .padding(vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Checkbox(checked, { if(it) scopes += scope else scopes -= scope }, modifier = Modifier.padding(horizontal = 4.dp))
+                Checkbox(checked, { if(it) scopes += scope.id else scopes -= scope.id },
+                    modifier = Modifier.padding(horizontal = 4.dp))
                 Column {
                     Text(stringResource(scope.string))
                     Text(scope.id, style = typography.bodyMedium, color = colorScheme.onSurfaceVariant)
@@ -774,63 +598,57 @@ fun AddDelegatedAdminScreen(data: AddDelegatedAdmin, onNavigateUp: () -> Unit) {
         }
         Button(
             onClick = {
-                Privilege.DPM.setDelegatedScopes(Privilege.DAR, input, scopes.map { it.id })
+                setDelegatedAdmin(input, scopes)
                 onNavigateUp()
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(HorizontalPadding, vertical = 4.dp),
+            modifier = Modifier.fillMaxWidth().padding(HorizontalPadding, vertical = 4.dp),
             enabled = input.isNotBlank() && (!updateMode || scopes.toList() != data.scopes)
         ) {
             Text(stringResource(if(updateMode) R.string.update else R.string.add))
         }
         if(updateMode) Button(
             onClick = {
-                Privilege.DPM.setDelegatedScopes(Privilege.DAR, input, emptyList())
+                setDelegatedAdmin(input, emptyList())
                 onNavigateUp()
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(HorizontalPadding),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding),
             colors = ButtonDefaults.buttonColors(colorScheme.error, colorScheme.onError)
         ) {
             Text(stringResource(R.string.delete))
         }
+        Spacer(Modifier.height(BottomPadding))
     }
 }
 
 @Serializable object DeviceInfo
 
 @Composable
-fun DeviceInfoScreen(onNavigateUp: () -> Unit) {
+fun DeviceInfoScreen(vm: MyViewModel, onNavigateUp: () -> Unit) {
     val privilege by Privilege.status.collectAsStateWithLifecycle()
-    var dialog by remember { mutableIntStateOf(0) }
+    var dialog by rememberSaveable { mutableIntStateOf(0) }
     MyScaffold(R.string.device_info, onNavigateUp, 0.dp) {
-        if(VERSION.SDK_INT>=34 && (privilege.device || privilege.org)) {
-            InfoItem(R.string.financed_device, Privilege.DPM.isDeviceFinanced.yesOrNo)
+        if (VERSION.SDK_INT >= 34 && (privilege.device || privilege.org)) {
+            InfoItem(R.string.financed_device, vm.getDeviceFinanced().yesOrNo)
         }
-        if(VERSION.SDK_INT >= 33) {
-            val dpmRole = Privilege.DPM.devicePolicyManagementRoleHolderPackage
-            InfoItem(R.string.dpmrh, dpmRole ?: stringResource(R.string.none))
+        if (VERSION.SDK_INT >= 33) {
+            InfoItem(R.string.dpmrh, vm.getDpmRh() ?: stringResource(R.string.none))
         }
-        val encryptionStatus = mutableMapOf(
-            DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE to R.string.es_inactive,
-            DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE to R.string.es_active,
-            DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED to R.string.es_unsupported
-        )
-        if(VERSION.SDK_INT >= 23) { encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY] = R.string.es_active_default_key }
-        if(VERSION.SDK_INT >= 24) { encryptionStatus[DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER] = R.string.es_active_per_user }
-        InfoItem(R.string.encryption_status, encryptionStatus[Privilege.DPM.storageEncryptionStatus] ?: R.string.unknown)
-        if(VERSION.SDK_INT >= 28) {
-            InfoItem(R.string.support_device_id_attestation, Privilege.DPM.isDeviceIdAttestationSupported.yesOrNo, true) { dialog = 1 }
+        val encryptionStatus = when (vm.getStorageEncryptionStatus()) {
+            DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE -> R.string.es_inactive
+            DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE -> R.string.es_active
+            DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED -> R.string.es_unsupported
+            DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY -> R.string.es_active_default_key
+            DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER -> R.string.es_active_per_user
+            else -> R.string.unknown
+        }
+        InfoItem(R.string.encryption_status, encryptionStatus)
+        if (VERSION.SDK_INT >= 28) {
+            InfoItem(R.string.support_device_id_attestation, vm.getDeviceIdAttestationSupported().yesOrNo, true) { dialog = 1 }
         }
         if (VERSION.SDK_INT >= 30) {
-            InfoItem(R.string.support_unique_device_attestation, Privilege.DPM.isUniqueDeviceAttestationSupported.yesOrNo, true) { dialog = 2 }
+            InfoItem(R.string.support_unique_device_attestation, vm.getUniqueDeviceAttestationSupported().yesOrNo, true) { dialog = 2 }
         }
-        val adminList = Privilege.DPM.activeAdmins
-        if(adminList != null) {
-            InfoItem(R.string.activated_device_admin, adminList.joinToString("\n") { it.flattenToShortString() })
-        }
+        InfoItem(R.string.activated_device_admin, vm.getActiveAdmins())
     }
     if(dialog != 0) AlertDialog(
         text = { Text(stringResource(if(dialog == 1) R.string.info_device_id_attestation else R.string.info_unique_device_attestation)) },
@@ -843,15 +661,17 @@ fun DeviceInfoScreen(onNavigateUp: () -> Unit) {
 
 @RequiresApi(24)
 @Composable
-fun SupportMessageScreen(onNavigateUp: () -> Unit) {
+fun SupportMessageScreen(
+    getShortMessage: () -> String, getLongMessage: () -> String, setShortMessage: (String?) -> Unit,
+    setLongMessage: (String?) -> Unit, onNavigateUp: () -> Unit
+) {
     val context = LocalContext.current
-    var shortMsg by remember { mutableStateOf("") }
-    var longMsg by remember { mutableStateOf("") }
-    val refreshMsg = {
-        shortMsg = Privilege.DPM.getShortSupportMessage(Privilege.DAR)?.toString() ?: ""
-        longMsg = Privilege.DPM.getLongSupportMessage(Privilege.DAR)?.toString() ?: ""
+    var shortMsg by rememberSaveable { mutableStateOf("") }
+    var longMsg by rememberSaveable { mutableStateOf("") }
+    LaunchedEffect(Unit) {
+        shortMsg = getShortMessage()
+        longMsg = getLongMessage()
     }
-    LaunchedEffect(Unit) { refreshMsg() }
     MyScaffold(R.string.support_messages, onNavigateUp) {
         OutlinedTextField(
             value = shortMsg,
@@ -865,8 +685,7 @@ fun SupportMessageScreen(onNavigateUp: () -> Unit) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Button(
                 onClick = {
-                    Privilege.DPM.setShortSupportMessage(Privilege.DAR, shortMsg)
-                    refreshMsg()
+                    setShortMessage(shortMsg)
                     context.showOperationResultToast(true)
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
@@ -875,8 +694,8 @@ fun SupportMessageScreen(onNavigateUp: () -> Unit) {
             }
             Button(
                 onClick = {
-                    Privilege.DPM.setShortSupportMessage(Privilege.DAR, null)
-                    refreshMsg()
+                    setShortMessage(null)
+                    shortMsg = ""
                     context.showOperationResultToast(true)
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
@@ -898,8 +717,7 @@ fun SupportMessageScreen(onNavigateUp: () -> Unit) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Button(
                 onClick = {
-                    Privilege.DPM.setLongSupportMessage(Privilege.DAR, longMsg)
-                    refreshMsg()
+                    setLongMessage(longMsg)
                     context.showOperationResultToast(true)
                 },
                 modifier = Modifier.fillMaxWidth(0.49F)
@@ -908,8 +726,8 @@ fun SupportMessageScreen(onNavigateUp: () -> Unit) {
             }
             Button(
                 onClick = {
-                    Privilege.DPM.setLongSupportMessage(Privilege.DAR, null)
-                    refreshMsg()
+                    setLongMessage(null)
+                    longMsg = ""
                     context.showOperationResultToast(true)
                 },
                 modifier = Modifier.fillMaxWidth(0.96F)
@@ -921,57 +739,60 @@ fun SupportMessageScreen(onNavigateUp: () -> Unit) {
     }
 }
 
+data class DeviceAdmin(val app: AppInfo, val admin: ComponentName)
+
 @Serializable object TransferOwnership
 
 @RequiresApi(28)
 @Composable
-fun TransferOwnershipScreen(onNavigateUp: () -> Unit, onTransferred: () -> Unit) {
-    val context = LocalContext.current
+fun TransferOwnershipScreen(
+    deviceAdmins: StateFlow<List<DeviceAdmin>>, getDeviceAdmins: () -> Unit,
+    transferOwnership: (ComponentName) -> Unit, onNavigateUp: () -> Unit, onTransferred: () -> Unit
+) {
     val privilege by Privilege.status.collectAsStateWithLifecycle()
-    val focusMgr = LocalFocusManager.current
-    var input by remember { mutableStateOf("") }
-    val componentName = ComponentName.unflattenFromString(input)
-    var dialog by remember { mutableStateOf(false) }
-    MyScaffold(R.string.transfer_ownership, onNavigateUp) {
-        OutlinedTextField(
-            value = input, onValueChange = { input = it }, label = { Text(stringResource(R.string.target_component_name)) },
-            modifier = Modifier.fillMaxWidth(),
-            isError = input != "" && componentName == null,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            keyboardActions = KeyboardActions(onNext = { focusMgr.clearFocus() })
-        )
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = { dialog = true },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = componentName != null
-        ) {
-            Text(stringResource(R.string.transfer))
+    var selectedIndex by rememberSaveable { mutableIntStateOf(-1) }
+    var dialog by rememberSaveable { mutableStateOf(false) }
+    val receivers by deviceAdmins.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) { getDeviceAdmins() }
+    MyLazyScaffold(R.string.transfer_ownership, onNavigateUp) {
+        itemsIndexed(receivers) { index, admin ->
+            Row(
+                Modifier.fillMaxWidth().clickable { selectedIndex = index }.padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(selectedIndex == index, { selectedIndex = index })
+                Image(rememberDrawablePainter(admin.app.icon), null, Modifier.size(40.dp))
+                Column(Modifier.padding(start = 8.dp)) {
+                    Text(admin.app.label)
+                    Text(admin.app.name, Modifier.alpha(0.7F), style = typography.bodyMedium)
+                }
+            }
         }
-        Spacer(Modifier.padding(vertical = 10.dp))
-        Notes(R.string.info_transfer_ownership)
+        item {
+            Button(
+                onClick = { dialog = true },
+                modifier = Modifier.fillMaxWidth().padding(HorizontalPadding, 10.dp),
+                enabled = receivers.getOrNull(selectedIndex) != null
+            ) {
+                Text(stringResource(R.string.transfer))
+            }
+            Notes(R.string.info_transfer_ownership, HorizontalPadding)
+        }
     }
-    if(dialog) AlertDialog(
+    if (dialog) AlertDialog(
         text = {
             Text(stringResource(
                 R.string.transfer_ownership_warning,
                 stringResource(if(privilege.device) R.string.device_owner else R.string.profile_owner),
-                ComponentName.unflattenFromString(input)!!.packageName
+                receivers[selectedIndex].app.name
             ))
         },
         confirmButton = {
             TextButton(
                 onClick = {
-                    try {
-                        Privilege.DPM.transferOwnership(Privilege.DAR, componentName!!, null)
-                        Privilege.updateStatus()
-                        context.showOperationResultToast(true)
-                        dialog = false
-                        onTransferred()
-                    } catch(e: Exception) {
-                        e.printStackTrace()
-                        context.showOperationResultToast(false)
-                    }
+                    transferOwnership(receivers[selectedIndex].admin)
+                    dialog = false
+                    onTransferred()
                 },
                 colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
             ) {

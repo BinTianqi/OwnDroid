@@ -12,7 +12,7 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
     <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
-    <uses-sdk tools:overrideLibrary="rikka.shizuku.provider,rikka.shizuku.api,rikka.shizuku.shared,rikka.shizuku.aidl"/>
+    <uses-sdk tools:overrideLibrary="rikka.shizuku.provider,rikka.shizuku.api,rikka.shizuku.shared,rikka.shizuku.aidl,com.rosan.dhizuku.server_api,com.rosan.dhizuku.api"/>
     <uses-feature android:name="android.software.device_admin"/>
     <application
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -38,6 +38,7 @@
                 <action android:name="android.app.action.PROVISION_MANAGED_PROFILE"/>
                 <action android:name="android.app.action.MANAGED_PROFILE_PROVISIONED"/>
                 <action android:name="android.app.action.PROFILE_PROVISIONING_COMPLETE"/>
+                <action android:name="android.app.action.CHECK_POLICY_COMPLIANCE"/>
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
@@ -60,11 +61,6 @@
                 <data android:mimeType="application/vnd.android.package-archive"/>
             </intent-filter>
         </activity>
-        <activity
-            android:name=".PackageChooserActivity"
-            android:label="@string/package_chooser"
-            android:exported="false"
-            android:launchMode="singleInstance"/>
         <activity
             android:name=".ShortcutsReceiverActivity"
             android:permission="com.bintianqi.owndroid.MyPermission"

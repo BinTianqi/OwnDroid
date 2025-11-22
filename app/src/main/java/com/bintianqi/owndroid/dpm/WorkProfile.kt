@@ -1,22 +1,9 @@
 package com.bintianqi.owndroid.dpm
 
-import android.accounts.Account
-import android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE
-import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ACCOUNT_TO_MIGRATE
-import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ALLOW_OFFLINE
-import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME
-import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME
-import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_KEEP_ACCOUNT_ON_MIGRATION
-import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_SKIP_ENCRYPTION
-import android.app.admin.DevicePolicyManager.FLAG_MANAGED_CAN_ACCESS_PARENT
-import android.app.admin.DevicePolicyManager.FLAG_PARENT_CAN_ACCESS_MANAGED
-import android.app.admin.DevicePolicyManager.PERSONAL_APPS_NOT_SUSPENDED
-import android.app.admin.DevicePolicyManager.PERSONAL_APPS_SUSPENDED_PROFILE_TIMEOUT
+import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManager.WIPE_EUICC
 import android.app.admin.DevicePolicyManager.WIPE_EXTERNAL_STORAGE
-import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Binder
 import android.os.Build.VERSION
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -24,6 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -33,8 +21,14 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -45,6 +39,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -55,18 +50,18 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bintianqi.owndroid.IUserService
-import com.bintianqi.owndroid.MyAdminComponent
+import com.bintianqi.owndroid.HorizontalPadding
 import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.popToast
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.CircularProgressDialog
+import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.SwitchItem
-import com.bintianqi.owndroid.useShizuku
+import com.bintianqi.owndroid.yesOrNo
 import kotlinx.serialization.Serializable
 
 @Serializable object WorkProfile
@@ -86,22 +81,28 @@ fun WorkProfileScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
     }
 }
 
+data class CreateWorkProfileOptions(
+    val skipEncrypt: Boolean, val offline: Boolean, val migrateAccount: Boolean,
+    val accountName: String, val accountType: String, val keepAccount: Boolean
+)
+
 @Serializable object CreateWorkProfile
 
 @Composable
-fun CreateWorkProfileScreen(onNavigateUp: () -> Unit) {
-    val context = LocalContext.current
+fun CreateWorkProfileScreen(
+    createIntent: (CreateWorkProfileOptions) -> Intent, onNavigateUp: () -> Unit
+) {
     val focusMgr = LocalFocusManager.current
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
-    MyScaffold(R.string.create_work_profile, onNavigateUp) {
+    MyScaffold(R.string.create_work_profile, onNavigateUp, 0.dp) {
         var skipEncrypt by remember { mutableStateOf(false) }
         var offlineProvisioning by remember { mutableStateOf(true) }
         var migrateAccount by remember { mutableStateOf(false) }
         var migrateAccountName by remember { mutableStateOf("") }
         var migrateAccountType by remember { mutableStateOf("") }
         var keepAccount by remember { mutableStateOf(true) }
-        if(VERSION.SDK_INT >= 22) {
-            CheckBoxItem(R.string.migrate_account, migrateAccount) { migrateAccount = it }
+        if (VERSION.SDK_INT >= 22) {
+            FullWidthCheckBoxItem(R.string.migrate_account, migrateAccount) { migrateAccount = it }
             AnimatedVisibility(migrateAccount) {
                 val fr = FocusRequester()
                 Column(modifier = Modifier.padding(start = 10.dp)) {
@@ -110,47 +111,40 @@ fun CreateWorkProfileScreen(onNavigateUp: () -> Unit) {
                         label = { Text(stringResource(R.string.account_name)) },
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                         keyboardActions = KeyboardActions { fr.requestFocus() },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding)
                     )
                     OutlinedTextField(
                         value = migrateAccountType, onValueChange = { migrateAccountType = it },
                         label = { Text(stringResource(R.string.account_type)) },
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions { focusMgr.clearFocus() },
-                        modifier = Modifier.fillMaxWidth().focusRequester(fr)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = HorizontalPadding)
+                            .focusRequester(fr)
                     )
                     if(VERSION.SDK_INT >= 26) {
-                        CheckBoxItem(R.string.keep_account, keepAccount) { keepAccount = it }
+                        FullWidthCheckBoxItem(R.string.keep_account, keepAccount) { keepAccount = it }
                     }
                 }
             }
         }
-        if(VERSION.SDK_INT >= 24) CheckBoxItem(R.string.skip_encryption, skipEncrypt) { skipEncrypt = it }
-        if(VERSION.SDK_INT >= 33) CheckBoxItem(R.string.offline_provisioning, offlineProvisioning) { offlineProvisioning = it }
+        if (VERSION.SDK_INT >= 24) FullWidthCheckBoxItem(
+            R.string.skip_encryption, skipEncrypt
+        ) { skipEncrypt = it }
+        if (VERSION.SDK_INT >= 33) FullWidthCheckBoxItem(
+            R.string.offline_provisioning, offlineProvisioning
+        ) { offlineProvisioning = it }
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
-                try {
-                    val intent = Intent(ACTION_PROVISION_MANAGED_PROFILE)
-                    if(VERSION.SDK_INT >= 23) {
-                        intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME, MyAdminComponent)
-                    } else {
-                        intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME, context.packageName)
-                    }
-                    if(migrateAccount && VERSION.SDK_INT >= 22) {
-                        intent.putExtra(EXTRA_PROVISIONING_ACCOUNT_TO_MIGRATE, Account(migrateAccountName, migrateAccountType))
-                        if(VERSION.SDK_INT >= 26) {
-                            intent.putExtra(EXTRA_PROVISIONING_KEEP_ACCOUNT_ON_MIGRATION, keepAccount)
-                        }
-                    }
-                    if(VERSION.SDK_INT >= 24) { intent.putExtra(EXTRA_PROVISIONING_SKIP_ENCRYPTION, skipEncrypt) }
-                    if(VERSION.SDK_INT >= 33) { intent.putExtra(EXTRA_PROVISIONING_ALLOW_OFFLINE, offlineProvisioning) }
-                    launcher.launch(intent)
-                } catch(_: ActivityNotFoundException) {
-                    context.popToast(R.string.unsupported)
-                }
+                val intent = createIntent(CreateWorkProfileOptions(
+                    skipEncrypt, offlineProvisioning, migrateAccount, migrateAccountName,
+                    migrateAccountType, keepAccount
+                ))
+                launcher.launch(intent)
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding)
         ) {
             Text(stringResource(R.string.create))
         }
@@ -161,18 +155,19 @@ fun CreateWorkProfileScreen(onNavigateUp: () -> Unit) {
 
 @RequiresApi(30)
 @Composable
-fun OrganizationOwnedProfileScreen(onNavigateUp: () -> Unit) {
+fun OrganizationOwnedProfileScreen(
+    onActivate: ((Boolean) -> Unit) -> Unit, onNavigateUp: () -> Unit
+) {
     val context = LocalContext.current
+    var activating by remember { mutableStateOf(false) }
     var dialog by remember { mutableStateOf(false) }
     MyScaffold(R.string.org_owned_work_profile, onNavigateUp) {
         Button({
-            useShizuku(context) { service ->
-                val result = IUserService.Stub.asInterface(service).execute(activateOrgProfileCommand)
-                if (result?.getInt("code", -1) == 0) {
-                    context.showOperationResultToast(true)
-                } else {
-                    context.showOperationResultToast(false)
-                }
+            activating = true
+            onActivate {
+                activating = false
+                context.showOperationResultToast(it)
+                if (it) onNavigateUp()
             }
         }) {
             Text(stringResource(R.string.shizuku))
@@ -189,6 +184,7 @@ fun OrganizationOwnedProfileScreen(onNavigateUp: () -> Unit) {
             },
             onDismissRequest = { dialog = false }
         )
+        if (activating) CircularProgressDialog {  }
     }
 }
 
@@ -199,41 +195,46 @@ val activateOrgProfileCommand = "dpm mark-profile-owner-on-organization-owned-de
 
 @RequiresApi(30)
 @Composable
-fun SuspendPersonalAppScreen(onNavigateUp: () -> Unit) {
+fun SuspendPersonalAppScreen(
+    getSuspendedReasons: () -> Int, setSuspended: (Boolean) -> Unit, getMaxTime: () -> Long,
+    setMaxTime: (Long) -> Unit, onNavigateUp: () -> Unit
+) {
     val context = LocalContext.current
     val focusMgr = LocalFocusManager.current
-    var suspend by remember { mutableStateOf(Privilege.DPM.getPersonalAppsSuspendedReasons(Privilege.DAR) != PERSONAL_APPS_NOT_SUSPENDED) }
+    var reason by remember { mutableIntStateOf(DevicePolicyManager.PERSONAL_APPS_NOT_SUSPENDED) }
+    var time by remember { mutableStateOf("") }
+    LaunchedEffect(Unit) {
+        reason = getSuspendedReasons()
+        time = getMaxTime().toString()
+    }
     MyScaffold(R.string.suspend_personal_app, onNavigateUp) {
-        SwitchItem(R.string.suspend_personal_app, state = suspend,
+        SwitchItem(R.string.suspend_personal_app, state = reason != 0,
             onCheckedChange = {
-                Privilege.DPM.setPersonalAppsSuspended(Privilege.DAR, it)
-                suspend = Privilege.DPM.getPersonalAppsSuspendedReasons(Privilege.DAR) != PERSONAL_APPS_NOT_SUSPENDED
+                setSuspended(it)
+                reason = if (it) DevicePolicyManager.PERSONAL_APPS_SUSPENDED_EXPLICITLY
+                else DevicePolicyManager.PERSONAL_APPS_NOT_SUSPENDED
             }, padding = false
         )
-        var time by remember { mutableStateOf("") }
-        time = Privilege.DPM.getManagedProfileMaximumTimeOff(Privilege.DAR).toString()
         Spacer(Modifier.padding(vertical = 10.dp))
         Text(text = stringResource(R.string.profile_max_time_off), style = typography.titleLarge)
         Text(text = stringResource(R.string.profile_max_time_out_desc))
-        Text(
-            text = stringResource(
-                R.string.personal_app_suspended_because_timeout,
-                Privilege.DPM.getPersonalAppsSuspendedReasons(Privilege.DAR) == PERSONAL_APPS_SUSPENDED_PROFILE_TIMEOUT
-            )
-        )
+        Text(stringResource(
+            R.string.personal_app_suspended_because_timeout,
+            stringResource((reason == DevicePolicyManager.PERSONAL_APPS_SUSPENDED_PROFILE_TIMEOUT).yesOrNo)
+        ))
         OutlinedTextField(
             value = time, onValueChange = { time=it }, modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
             label = { Text(stringResource(R.string.time_unit_ms)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() })
         )
-        Text(text = stringResource(R.string.cannot_less_than_72_hours))
         Button(
             onClick = {
-                Privilege.DPM.setManagedProfileMaximumTimeOff(Privilege.DAR, time.toLong())
+                setMaxTime(time.toLong())
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = time.toLongOrNull() != null
         ) {
             Text(stringResource(R.string.apply))
         }
@@ -241,14 +242,33 @@ fun SuspendPersonalAppScreen(onNavigateUp: () -> Unit) {
     }
 }
 
+data class IntentFilterOptions(
+    val action: String, val category: String, val mimeType: String,
+    val direction: IntentFilterDirection
+)
+enum class IntentFilterDirection(val text: Int) {
+    ToParent(R.string.work_to_personal), ToManaged(R.string.personal_to_work),
+    Both(R.string.both_direction)
+}
+
 @Serializable object CrossProfileIntentFilter
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CrossProfileIntentFilterScreen(onNavigateUp: () -> Unit) {
+fun CrossProfileIntentFilterScreen(
+    addFilter: (IntentFilterOptions) -> Unit,
+    onNavigateUp: () -> Unit
+) {
     val context = LocalContext.current
     val focusMgr = LocalFocusManager.current
+    var action by remember { mutableStateOf("") }
+    var customCategory by remember { mutableStateOf(false) }
+    var category by remember { mutableStateOf("") }
+    var customMimeType by remember { mutableStateOf(false) }
+    var mimeType by remember { mutableStateOf("") }
+    var dropdown by remember { mutableStateOf(false) }
+    var direction by remember { mutableStateOf(IntentFilterDirection.Both) }
     MyScaffold(R.string.intent_filter, onNavigateUp) {
-        var action by remember { mutableStateOf("") }
         OutlinedTextField(
             value = action, onValueChange = { action = it },
             label = { Text("Action") },
@@ -256,32 +276,61 @@ fun CrossProfileIntentFilterScreen(onNavigateUp: () -> Unit) {
             keyboardActions = KeyboardActions(onDone = {focusMgr.clearFocus() }),
             modifier = Modifier.fillMaxWidth()
         )
-        Spacer(Modifier.padding(vertical = 5.dp))
-        Button(
-            onClick = {
-                Privilege.DPM.addCrossProfileIntentFilter(Privilege.DAR, IntentFilter(action), FLAG_PARENT_CAN_ACCESS_MANAGED)
-                context.showOperationResultToast(true)
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.add_intent_filter_work_to_personal))
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(customCategory, {
+                customCategory = it
+                category = ""
+            })
+            OutlinedTextField(
+                category, { category = it }, Modifier.fillMaxWidth(),
+                label = { Text("Category") }, enabled = customCategory
+            )
+        }
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(customMimeType, {
+                customMimeType = it
+                mimeType = ""
+            })
+            OutlinedTextField(
+                mimeType, { mimeType = it }, Modifier.fillMaxWidth(),
+                label = { Text("MIME type") }, enabled = customMimeType
+            )
+        }
+        ExposedDropdownMenuBox(dropdown, { dropdown = it }, Modifier.padding(vertical = 5.dp)) {
+            OutlinedTextField(
+                stringResource(direction.text), {},
+                Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+                label = { Text(stringResource(R.string.direction)) }, readOnly = true,
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(dropdown) }
+            )
+            ExposedDropdownMenu(dropdown, { dropdown = false }) {
+                IntentFilterDirection.entries.forEach {
+                    DropdownMenuItem({ Text(stringResource(it.text)) }, {
+                        direction = it
+                        dropdown = false
+                    })
+                }
+            }
         }
         Button(
-            onClick = {
-                Privilege.DPM.addCrossProfileIntentFilter(Privilege.DAR, IntentFilter(action), FLAG_MANAGED_CAN_ACCESS_PARENT)
+            {
+                addFilter(IntentFilterOptions(
+                    action, category, mimeType, direction
+                ))
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth()
+            Modifier.fillMaxWidth(),
+            enabled = action.isNotBlank() && (!customCategory || category.isNotBlank()) &&
+                    (!customMimeType || mimeType.isNotBlank())
         ) {
-            Text(stringResource(R.string.add_intent_filter_personal_to_work))
+            Text(stringResource(R.string.add))
         }
-        Spacer(Modifier.padding(vertical = 2.dp))
         Button(
             onClick = {
                 Privilege.DPM.clearCrossProfileIntentFilters(Privilege.DAR)
                 context.showOperationResultToast(true)
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)
         ) {
             Text(stringResource(R.string.clear_cross_profile_filters))
         }
@@ -292,28 +341,34 @@ fun CrossProfileIntentFilterScreen(onNavigateUp: () -> Unit) {
 @Serializable object DeleteWorkProfile
 
 @Composable
-fun DeleteWorkProfileScreen(onNavigateUp: () -> Unit) {
+fun DeleteWorkProfileScreen(
+    deleteProfile: (Boolean, Int, String) -> Unit, onNavigateUp: () -> Unit
+) {
     val focusMgr = LocalFocusManager.current
-    var flag by remember { mutableIntStateOf(0) }
+    var flags by remember { mutableIntStateOf(0) }
     var warning by remember { mutableStateOf(false) }
-    var silent by remember { mutableStateOf(false) }
     var reason by remember { mutableStateOf("") }
     MyScaffold(R.string.delete_work_profile, onNavigateUp) {
-        CheckBoxItem(R.string.wipe_external_storage, flag and WIPE_EXTERNAL_STORAGE != 0) { flag = flag xor WIPE_EXTERNAL_STORAGE }
-        if(VERSION.SDK_INT >= 28) CheckBoxItem(R.string.wipe_euicc, flag and WIPE_EUICC != 0) { flag = flag xor WIPE_EUICC }
-        CheckBoxItem(R.string.wipe_silently, silent) { silent = it }
-        AnimatedVisibility(!silent && VERSION.SDK_INT >= 28) {
-            OutlinedTextField(
-                value = reason, onValueChange = { reason = it },
-                label = { Text(stringResource(R.string.reason)) },
-                modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
-            )
+        CheckBoxItem(R.string.wipe_external_storage, flags and WIPE_EXTERNAL_STORAGE != 0) {
+            flags = flags xor WIPE_EXTERNAL_STORAGE
         }
+        if(VERSION.SDK_INT >= 28) CheckBoxItem(R.string.wipe_euicc, flags and WIPE_EUICC != 0) {
+            flags = flags xor WIPE_EUICC
+        }
+        CheckBoxItem(R.string.wipe_silently, flags and DevicePolicyManager.WIPE_SILENTLY != 0) {
+            flags = flags xor DevicePolicyManager.WIPE_SILENTLY
+            reason = ""
+        }
+        if (VERSION.SDK_INT >= 28) OutlinedTextField(
+            value = reason, onValueChange = { reason = it },
+            label = { Text(stringResource(R.string.reason)) },
+            enabled = flags and DevicePolicyManager.WIPE_SILENTLY == 0,
+            modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
+        )
         Spacer(Modifier.padding(vertical = 5.dp))
         Button(
             onClick = {
                 focusMgr.clearFocus()
-                silent = reason == ""
                 warning = true
             },
             colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = colorScheme.onError),
@@ -322,8 +377,7 @@ fun DeleteWorkProfileScreen(onNavigateUp: () -> Unit) {
             Text(stringResource(R.string.delete))
         }
     }
-    if(warning) {
-        LaunchedEffect(Unit) { silent = reason == "" }
+    if (warning) {
         AlertDialog(
             title = {
                 Text(text = stringResource(R.string.warning), color = colorScheme.error)
@@ -335,11 +389,7 @@ fun DeleteWorkProfileScreen(onNavigateUp: () -> Unit) {
             confirmButton = {
                 TextButton(
                     onClick = {
-                        if(VERSION.SDK_INT >= 28 && !silent) {
-                            Privilege.DPM.wipeData(flag, reason)
-                        } else {
-                            Privilege.DPM.wipeData(flag)
-                        }
+                        deleteProfile(false, flags, reason)
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
                 ) {

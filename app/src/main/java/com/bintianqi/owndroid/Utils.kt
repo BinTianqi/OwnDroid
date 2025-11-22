@@ -4,32 +4,40 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageInfo
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContract
-import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.union
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.SaverScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.NavType
-import kotlinx.serialization.encodeToString
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
 import java.security.MessageDigest
+import java.security.SecureRandom
 import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
-import kotlin.reflect.typeOf
+import kotlin.io.encoding.Base64
 
 var zhCN = true
 
@@ -72,45 +80,18 @@ fun formatFileSize(bytes: Long): String {
 val Boolean.yesOrNo
     @StringRes get() = if(this) R.string.yes else R.string.no
 
-@RequiresApi(26)
-fun parseTimestamp(timestamp: Long): String {
-    val instant = Instant.ofEpochMilli(timestamp)
-    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())
-    return formatter.format(instant)
+fun formatDate(ms: Long): String {
+    return formatDate(Date(ms))
 }
-
-fun parseDate(date: Date): String = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(date)
-
-val Long.humanReadableDate: String
-    get() = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault()).format(Date(this))
-
-fun formatDate(pattern: String, value: Long): String
-    = SimpleDateFormat(pattern, Locale.getDefault()).format(Date(value))
+fun formatDate(date: Date): String {
+    return SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(date)
+}
 
 fun Context.showOperationResultToast(success: Boolean) {
     popToast(if(success) R.string.success else R.string.failed)
 }
 
 const val APK_MIME = "application/vnd.android.package-archive"
-
-inline fun <reified T> serializableNavTypePair() =
-    typeOf<T>() to object : NavType<T>(false) {
-    override fun get(bundle: Bundle, key: String): T? =
-        bundle.getString(key)?.let { parseValue(it) }
-    override fun put(bundle: Bundle, key: String, value: T) =
-        bundle.putString(key, serializeAsValue(value))
-    override fun parseValue(value: String): T =
-        Json.decodeFromString(value)
-    override fun serializeAsValue(value: T): String =
-        Json.encodeToString(value)
-}
-
-class ChoosePackageContract: ActivityResultContract<Nothing?, String?>() {
-    override fun createIntent(context: Context, input: Nothing?): Intent =
-        Intent(context, PackageChooserActivity::class.java)
-    override fun parseResult(resultCode: Int, intent: Intent?): String? =
-        intent?.getStringExtra("package")
-}
 
 fun exportLogs(context: Context, uri: Uri) {
     context.contentResolver.openOutputStream(uri)?.use { output ->
@@ -122,11 +103,9 @@ fun exportLogs(context: Context, uri: Uri) {
     }
 }
 
-fun <T> NavHostController.navigate(route: T, args: Bundle) {
-    navigate(graph.findNode(route)!!.id, args)
-}
-
 val HorizontalPadding = 16.dp
+
+val BottomPadding = 60.dp
 
 @OptIn(ExperimentalStdlibApi::class)
 fun String.hash(): String {
@@ -150,4 +129,34 @@ fun Context.popToast(resId: Int) {
 
 fun Context.popToast(str: String) {
     Toast.makeText(this, str, Toast.LENGTH_SHORT).show()
+}
+
+class SerializableSaver<T>(val serializer: KSerializer<T>) : Saver<T, String> {
+    override fun restore(value: String): T? {
+        return Json.decodeFromString(serializer, value)
+    }
+    override fun SaverScope.save(value: T): String {
+        return Json.encodeToString(serializer, value)
+    }
+}
+
+fun generateBase64Key(length: Int): String {
+    val ba = ByteArray(length)
+    SecureRandom().nextBytes(ba)
+    return Base64.withPadding(Base64.PaddingOption.ABSENT).encode(ba)
+}
+
+fun Modifier.clickableTextField(onClick: () -> Unit) =
+    pointerInput(Unit) {
+        awaitEachGesture {
+            awaitFirstDown(pass = PointerEventPass.Initial)
+            val upEvent = waitForUpOrCancellation(pass = PointerEventPass.Initial)
+            if (upEvent != null) onClick()
+        }
+    }
+
+@Composable
+fun adaptiveInsets(): WindowInsets {
+    val navbar = WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)
+    return WindowInsets.ime.union(navbar).union(WindowInsets.displayCutout)
 }
