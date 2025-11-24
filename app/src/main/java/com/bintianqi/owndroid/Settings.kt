@@ -232,7 +232,7 @@ fun AppLockSettingsScreen(
     config: AppLockConfig, setConfig: (AppLockConfig) -> Unit,
     onNavigateUp: () -> Unit
 ) = MyScaffold(R.string.app_lock, onNavigateUp) {
-    var password by rememberSaveable { mutableStateOf(config.password ?: "") }
+    var password by rememberSaveable { mutableStateOf("") }
     var confirmPassword by rememberSaveable { mutableStateOf("") }
     var allowBiometrics by rememberSaveable { mutableStateOf(config.biometrics) }
     var lockWhenLeaving by rememberSaveable { mutableStateOf(config.whenLeaving) }

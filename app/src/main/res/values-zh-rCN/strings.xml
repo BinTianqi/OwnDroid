@@ -374,6 +374,9 @@
     <string name="edit_app_group">编辑组</string>
     <string name="add_to_list">添加到列表</string>
     <string name="remove_from_list">从列表中移除</string>
+    <string name="managed_configuration">托管配置</string>
+    <string name="clear_configurations">清除配置</string>
+    <string name="specify_value">指定值</string>
 
     <!--UserRestriction-->
     <string name="user_restriction">用户限制</string>

@@ -25,6 +25,8 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.RestrictionEntry
+import android.content.RestrictionsManager
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
@@ -39,6 +41,7 @@ import android.net.wifi.WifiManager
 import android.net.wifi.WifiSsid
 import android.os.Binder
 import android.os.Build.VERSION
+import android.os.Bundle
 import android.os.HardwarePropertiesManager
 import android.os.UserHandle
 import android.os.UserManager
@@ -60,6 +63,7 @@ import com.bintianqi.owndroid.dpm.ApnConfig
 import com.bintianqi.owndroid.dpm.ApnMvnoType
 import com.bintianqi.owndroid.dpm.ApnProtocol
 import com.bintianqi.owndroid.dpm.AppGroup
+import com.bintianqi.owndroid.dpm.AppRestriction
 import com.bintianqi.owndroid.dpm.AppStatus
 import com.bintianqi.owndroid.dpm.CaCertInfo
 import com.bintianqi.owndroid.dpm.CreateUserResult
@@ -508,6 +512,79 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             e.printStackTrace()
             false
         }
+    }
+
+    val appRestrictions = MutableStateFlow(emptyList<AppRestriction>())
+
+    @RequiresApi(23)
+    fun getAppRestrictions(name: String) {
+        val rm = application.getSystemService(Context.RESTRICTIONS_SERVICE) as RestrictionsManager
+        val bundle = DPM.getApplicationRestrictions(DAR, name)
+        println(bundle.keySet())
+        appRestrictions.value = rm.getManifestRestrictions(name).mapNotNull {
+            transformRestrictionEntry(it)
+        }.map {
+            if (bundle.containsKey(it.key)) {
+                when (it) {
+                    is AppRestriction.BooleanItem -> it.value = bundle.getBoolean(it.key)
+                    is AppRestriction.StringItem -> it.value = bundle.getString(it.key)
+                    is AppRestriction.IntItem -> it.value = bundle.getInt(it.key)
+                    is AppRestriction.ChoiceItem -> it.value = bundle.getString(it.key)
+                    is AppRestriction.MultiSelectItem -> it.value = bundle.getStringArray(it.key)
+                }
+            }
+            it
+        }
+    }
+
+    @RequiresApi(23)
+    fun setAppRestrictions(name: String, item: AppRestriction) {
+        viewModelScope.launch(Dispatchers.IO) {
+            appRestrictions.value = emptyList()
+            DPM.setApplicationRestrictions(
+                DAR, name,
+                transformAppRestriction(appRestrictions.value.filter { it.key != item.key }.plus(item))
+            )
+            getAppRestrictions(name)
+        }
+    }
+
+    @RequiresApi(23)
+    fun clearAppRestrictions(name: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            DPM.setApplicationRestrictions(DAR, name, Bundle())
+            getAppRestrictions(name)
+        }
+    }
+
+    fun transformRestrictionEntry(e: RestrictionEntry): AppRestriction? {
+        return when (e.type) {
+            RestrictionEntry.TYPE_INTEGER ->
+                AppRestriction.IntItem(e.key, e.title, e.description, null)
+            RestrictionEntry.TYPE_STRING ->
+                AppRestriction.StringItem(e.key, e.title, e.description, null)
+            RestrictionEntry.TYPE_BOOLEAN ->
+                AppRestriction.BooleanItem(e.key, e.title, e.description, null)
+            RestrictionEntry.TYPE_CHOICE -> AppRestriction.ChoiceItem(e.key, e.title,
+                e.description, e.choiceEntries, e.choiceValues, null)
+            RestrictionEntry.TYPE_MULTI_SELECT -> AppRestriction.MultiSelectItem(e.key, e.title,
+                e.description, e.choiceEntries, e.choiceValues, null)
+            else -> null
+        }
+    }
+
+    fun transformAppRestriction(list: List<AppRestriction>): Bundle {
+        val b = Bundle()
+        for (r in list) {
+            when (r) {
+                is AppRestriction.IntItem -> r.value?.let { b.putInt(r.key, it) }
+                is AppRestriction.StringItem -> r.value?.let { b.putString(r.key, it) }
+                is AppRestriction.BooleanItem -> r.value?.let { b.putBoolean(r.key, it) }
+                is AppRestriction.ChoiceItem -> r.value?.let { b.putString(r.key, it) }
+                is AppRestriction.MultiSelectItem -> r.value?.let { b.putStringArray(r.key, r.value) }
+            }
+        }
+        return b
     }
 
     val appGroups = MutableStateFlow(emptyList<AppGroup>())

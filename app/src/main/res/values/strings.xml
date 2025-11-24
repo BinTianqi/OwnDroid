@@ -408,6 +408,9 @@
     <string name="edit_app_group">Edit group</string>
     <string name="add_to_list">Add to list</string>
     <string name="remove_from_list">Remove from list</string>
+    <string name="managed_configuration">Managed configuration</string>
+    <string name="clear_configurations">Clear configurations</string>
+    <string name="specify_value">Specify value</string>
 
     <!--UserRestriction-->
     <string name="user_restriction">User restriction</string>

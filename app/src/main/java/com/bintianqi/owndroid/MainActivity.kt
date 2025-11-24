@@ -137,6 +137,8 @@ import com.bintianqi.owndroid.dpm.LockTaskMode
 import com.bintianqi.owndroid.dpm.LockTaskModeScreen
 import com.bintianqi.owndroid.dpm.ManageAppGroups
 import com.bintianqi.owndroid.dpm.ManageAppGroupsScreen
+import com.bintianqi.owndroid.dpm.ManagedConfiguration
+import com.bintianqi.owndroid.dpm.ManagedConfigurationScreen
 import com.bintianqi.owndroid.dpm.MtePolicy
 import com.bintianqi.owndroid.dpm.MtePolicyScreen
 import com.bintianqi.owndroid.dpm.NearbyStreamingPolicy
@@ -597,6 +599,12 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
         }
         composable<SetDefaultDialer> {
             SetDefaultDialerScreen(vm.chosenPackage, ::choosePackage, vm::setDefaultDialer, ::navigateUp)
+        }
+        composable<ManagedConfiguration> {
+            ManagedConfigurationScreen(
+                it.toRoute(), vm.appRestrictions, vm::getAppRestrictions, vm::setAppRestrictions,
+                vm::clearAppRestrictions, ::navigateUp
+            )
         }
         composable<ManageAppGroups> {
             ManageAppGroupsScreen(
