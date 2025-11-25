@@ -1024,7 +1024,7 @@ fun ManagedConfigurationScreen(
         restrictions
     } else {
         restrictions.filter {
-            it.key.contentEquals(searchKeyword, true) ||
+            it.key.contains(searchKeyword, true) ||
                     it.title?.contains(searchKeyword, true) ?: true
         }
     }
