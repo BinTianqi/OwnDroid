@@ -518,12 +518,11 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
 
     @RequiresApi(23)
     fun getAppRestrictions(name: String) {
-        val rm = application.getSystemService(Context.RESTRICTIONS_SERVICE) as RestrictionsManager
+        val rm = application.getSystemService(RestrictionsManager::class.java)
         val bundle = DPM.getApplicationRestrictions(DAR, name)
-        println(bundle.keySet())
-        appRestrictions.value = rm.getManifestRestrictions(name).mapNotNull {
+        appRestrictions.value = rm.getManifestRestrictions(name)?.mapNotNull {
             transformRestrictionEntry(it)
-        }.map {
+        }?.map {
             if (bundle.containsKey(it.key)) {
                 when (it) {
                     is AppRestriction.BooleanItem -> it.value = bundle.getBoolean(it.key)
@@ -534,17 +533,16 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
                 }
             }
             it
-        }
+        } ?: emptyList()
     }
 
     @RequiresApi(23)
     fun setAppRestrictions(name: String, item: AppRestriction) {
         viewModelScope.launch(Dispatchers.IO) {
-            appRestrictions.value = emptyList()
-            DPM.setApplicationRestrictions(
-                DAR, name,
-                transformAppRestriction(appRestrictions.value.filter { it.key != item.key }.plus(item))
+            val bundle = transformAppRestriction(
+                appRestrictions.value.filter { it.key != item.key }.plus(item)
             )
+            DPM.setApplicationRestrictions(DAR, name, bundle)
             getAppRestrictions(name)
         }
     }

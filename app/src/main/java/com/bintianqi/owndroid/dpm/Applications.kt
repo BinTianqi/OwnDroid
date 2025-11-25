@@ -40,7 +40,9 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
@@ -79,6 +81,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -258,7 +262,11 @@ fun ApplicationDetailsScreen(
     var dialog by rememberSaveable { mutableIntStateOf(0) } // 1: clear storage, 2: uninstall
     val info = vm.getAppInfo(packageName)
     val status by vm.appStatus.collectAsStateWithLifecycle()
-    LaunchedEffect(Unit) { vm.getAppStatus(packageName) }
+    val appRestrictions by vm.appRestrictions.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) {
+        vm.getAppStatus(packageName)
+        vm.getAppRestrictions(packageName)
+    }
     MySmallTitleScaffold(R.string.place_holder, onNavigateUp, 0.dp) {
         Column(Modifier.align(Alignment.CenterHorizontally).padding(top = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Image(rememberDrawablePainter(info.icon), null, Modifier.size(50.dp))
@@ -295,7 +303,7 @@ fun ApplicationDetailsScreen(
             state = status.keepUninstalled,
             onCheckedChange = { vm.adSetPackageKu(packageName, it) }
         )
-        if (VERSION.SDK_INT >= 23) {
+        if (VERSION.SDK_INT >= 23 && appRestrictions.isNotEmpty()) {
             FunctionItem(R.string.managed_configuration, icon = R.drawable.description_fill0) {
                 onNavigate(ManagedConfiguration(packageName))
             }
@@ -1003,35 +1011,74 @@ fun EditAppGroupScreen(
 @Composable
 fun ManagedConfigurationScreen(
     params: ManagedConfiguration, appRestrictions: StateFlow<List<AppRestriction>>,
-    getRestriction: (String) -> Unit, setRestriction: (String, AppRestriction) -> Unit,
-    clearRestriction: (String) -> Unit, navigateUp: () -> Unit
+    setRestriction: (String, AppRestriction) -> Unit, clearRestriction: (String) -> Unit,
+    navigateUp: () -> Unit
 ) {
     val restrictions by appRestrictions.collectAsStateWithLifecycle()
-    var dialog by remember { mutableIntStateOf(-1) }
-    var clearRestrictionDialog by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        getRestriction(params.packageName)
+    var searchMode by remember { mutableStateOf(false) }
+    var searchKeyword by remember { mutableStateOf("") }
+    val displayRestrictions = if (searchKeyword.isEmpty()) {
+        restrictions
+    } else {
+        restrictions.filter {
+            it.key.contentEquals(searchKeyword, true) ||
+                    it.title?.contains(searchKeyword, true) ?: true
+        }
     }
+    var dialog by remember { mutableStateOf<AppRestriction?>(null) }
+    var clearRestrictionDialog by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopAppBar(
-                { Text(stringResource(R.string.managed_configuration)) },
+                {
+                    if (searchMode) {
+                        val fr = remember { FocusRequester() }
+                        LaunchedEffect(Unit) {
+                            fr.requestFocus()
+                        }
+                        OutlinedTextField(
+                            searchKeyword, { searchKeyword = it },
+                            Modifier.fillMaxWidth().focusRequester(fr),
+                            textStyle = typography.bodyLarge,
+                            placeholder = { Text(stringResource(R.string.search)) },
+                            trailingIcon = {
+                                IconButton({
+                                    searchKeyword = ""
+                                    searchMode = false
+                                }) {
+                                    Icon(Icons.Outlined.Clear, null)
+                                }
+                            },
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+                        )
+                    } else {
+                        Text(stringResource(R.string.managed_configuration))
+                    }
+                },
                 navigationIcon = { NavIcon(navigateUp) },
                 actions = {
-                    IconButton({
-                        clearRestrictionDialog = true
-                    }) {
-                        Icon(Icons.Outlined.Delete, null)
+                    if (!searchMode) {
+                        IconButton({
+                            searchMode = true
+                        }) {
+                            Icon(Icons.Outlined.Search, null)
+                        }
+                        IconButton({
+                            clearRestrictionDialog = true
+                        }) {
+                            Icon(Icons.Outlined.Delete, null)
+                        }
                     }
                 }
             )
-        }
+        },
+        contentWindowInsets = adaptiveInsets()
     ) { paddingValues ->
         LazyColumn(Modifier.padding(paddingValues)) {
-            itemsIndexed(restrictions) { index, entry ->
+            items(displayRestrictions, { it.key }) { entry ->
                 Row(
                     Modifier.fillMaxWidth().clickable {
-                        dialog = index
+                        dialog = entry
                     }.padding(HorizontalPadding, 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -1055,7 +1102,13 @@ fun ManagedConfigurationScreen(
                             is AppRestriction.StringItem -> entry.value?.take(30)
                             is AppRestriction.BooleanItem -> entry.value?.toString()
                             is AppRestriction.ChoiceItem -> entry.value
-                            is AppRestriction.MultiSelectItem -> entry.value?.joinToString(limit = 30)
+                            is AppRestriction.MultiSelectItem -> {
+                                if (entry.value != null) {
+                                    entry.entryValues
+                                        .filter { entry.value?.contains(it) ?: false }
+                                        .joinToString(limit = 30)
+                                } else null
+                            }
                         }
                         Text(
                             text ?: "null", Modifier.alpha(0.7F),
@@ -1070,8 +1123,8 @@ fun ManagedConfigurationScreen(
             }
         }
     }
-    if (dialog != -1) Dialog({
-        dialog = -1
+    if (dialog != null) Dialog({
+        dialog = null
     }) {
         Surface(
             color = AlertDialogDefaults.containerColor,
@@ -1079,11 +1132,11 @@ fun ManagedConfigurationScreen(
             tonalElevation = AlertDialogDefaults.TonalElevation,
         ) {
             Column(Modifier.verticalScroll(rememberScrollState()).padding(12.dp)) {
-                ManagedConfigurationDialog(restrictions[dialog]) {
+                ManagedConfigurationDialog(dialog!!) {
                     if (it != null) {
                         setRestriction(params.packageName, it)
                     }
-                    dialog = -1
+                    dialog = null
                 }
             }
         }

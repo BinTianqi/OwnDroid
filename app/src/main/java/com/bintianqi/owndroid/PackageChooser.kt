@@ -22,6 +22,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -122,15 +123,12 @@ fun AppChooserScreen(
                             keyboardActions = KeyboardActions { focusMgr.clearFocus() },
                             placeholder = { Text(stringResource(R.string.search)) },
                             trailingIcon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.close_fill0),
-                                    contentDescription = null,
-                                    modifier = Modifier.clickable {
-                                        focusMgr.clearFocus()
-                                        query = ""
-                                        searchMode = false
-                                    }
-                                )
+                                IconButton({
+                                    query = ""
+                                    searchMode = false
+                                }) {
+                                    Icon(Icons.Outlined.Clear, null)
+                                }
                             },
                             textStyle = typography.bodyLarge,
                             modifier = Modifier.fillMaxWidth().focusRequester(fr)

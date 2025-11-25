@@ -602,7 +602,7 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
         }
         composable<ManagedConfiguration> {
             ManagedConfigurationScreen(
-                it.toRoute(), vm.appRestrictions, vm::getAppRestrictions, vm::setAppRestrictions,
+                it.toRoute(), vm.appRestrictions, vm::setAppRestrictions,
                 vm::clearAppRestrictions, ::navigateUp
             )
         }
