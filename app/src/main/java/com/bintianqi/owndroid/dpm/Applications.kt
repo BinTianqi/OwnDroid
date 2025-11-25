@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -118,6 +119,8 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.Serializable
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 val String.isValidPackageName
     get() = Regex("""^(?:[a-zA-Z]\w*\.)+[a-zA-Z]\w*$""").matches(this)
@@ -265,7 +268,7 @@ fun ApplicationDetailsScreen(
     val appRestrictions by vm.appRestrictions.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
         vm.getAppStatus(packageName)
-        vm.getAppRestrictions(packageName)
+        if (VERSION.SDK_INT >= 23) vm.getAppRestrictions(packageName)
     }
     MySmallTitleScaffold(R.string.place_holder, onNavigateUp, 0.dp) {
         Column(Modifier.align(Alignment.CenterHorizontally).padding(top = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -1102,13 +1105,7 @@ fun ManagedConfigurationScreen(
                             is AppRestriction.StringItem -> entry.value?.take(30)
                             is AppRestriction.BooleanItem -> entry.value?.toString()
                             is AppRestriction.ChoiceItem -> entry.value
-                            is AppRestriction.MultiSelectItem -> {
-                                if (entry.value != null) {
-                                    entry.entryValues
-                                        .filter { entry.value?.contains(it) ?: false }
-                                        .joinToString(limit = 30)
-                                } else null
-                            }
+                            is AppRestriction.MultiSelectItem -> entry.value?.joinToString(limit = 30)
                         }
                         Text(
                             text ?: "null", Modifier.alpha(0.7F),
@@ -1131,13 +1128,11 @@ fun ManagedConfigurationScreen(
             shape = AlertDialogDefaults.shape,
             tonalElevation = AlertDialogDefaults.TonalElevation,
         ) {
-            Column(Modifier.verticalScroll(rememberScrollState()).padding(12.dp)) {
-                ManagedConfigurationDialog(dialog!!) {
-                    if (it != null) {
-                        setRestriction(params.packageName, it)
-                    }
-                    dialog = null
+            ManagedConfigurationDialog(dialog!!) {
+                if (it != null) {
+                    setRestriction(params.packageName, it)
                 }
+                dialog = null
             }
         }
     }
@@ -1167,13 +1162,24 @@ fun ManagedConfigurationScreen(
 }
 
 @Composable
-fun ColumnScope.ManagedConfigurationDialog(
+fun ManagedConfigurationDialog(
     restriction: AppRestriction, setRestriction: (AppRestriction?) -> Unit
 ) {
     var specifyValue by remember { mutableStateOf(false) }
     var input by remember { mutableStateOf("") }
     var inputState by remember { mutableStateOf(false) }
-    val inputSelections = remember { mutableStateListOf<String>() }
+    val multiSelectList = remember {
+        mutableStateListOf(
+            *(if (restriction is AppRestriction.MultiSelectItem) {
+                restriction.entryValues.mapIndexed { index, value ->
+                    MultiSelectEntry(
+                        value, restriction.entries.getOrNull(index),
+                        restriction.value?.contains(value) ?: false
+                    )
+                }
+            } else emptyList()).toTypedArray()
+        )
+    }
     LaunchedEffect(Unit) {
         when (restriction) {
             is AppRestriction.IntItem -> restriction.value?.let {
@@ -1193,48 +1199,54 @@ fun ColumnScope.ManagedConfigurationDialog(
                 specifyValue = true
             }
             is AppRestriction.MultiSelectItem -> restriction.value?.let {
-                inputSelections.addAll(it)
                 specifyValue = true
             }
         }
     }
-    SelectionContainer {
-        Column {
-            restriction.title?.let {
-                Text(it, style = typography.titleLarge)
-            }
-            Text(restriction.key, Modifier.padding(vertical = 4.dp), style = typography.labelLarge)
-            Spacer(Modifier.height(4.dp))
-            restriction.description?.let {
-                Text(it, Modifier.alpha(0.8F), style = typography.bodyMedium)
-            }
-            Spacer(Modifier.height(8.dp))
-        }
+    val listState = rememberLazyListState()
+    val reorderableListState = rememberReorderableLazyListState(listState) { from, to ->
+        // `-1` because there's an `item` before items
+        multiSelectList.add(from.index - 1, multiSelectList.removeAt(to.index - 1))
     }
-    Row(
-        Modifier.fillMaxWidth().padding(bottom = 4.dp),
-        Arrangement.SpaceBetween, Alignment.CenterVertically
-    ) {
-        Text(stringResource(R.string.specify_value))
-        Switch(specifyValue, { specifyValue = it })
-    }
-    if (specifyValue) when (restriction) {
-        is AppRestriction.IntItem -> {
-            OutlinedTextField(
-                input, { input = it }, Modifier.fillMaxWidth(),
-                isError = input.toIntOrNull() == null
-            )
+    LazyColumn(Modifier.padding(12.dp), listState) {
+        item {
+            SelectionContainer {
+                Column {
+                    restriction.title?.let {
+                        Text(it, style = typography.titleLarge)
+                    }
+                    Text(restriction.key, Modifier.padding(vertical = 4.dp), style = typography.labelLarge)
+                    Spacer(Modifier.height(4.dp))
+                    restriction.description?.let {
+                        Text(it, Modifier.alpha(0.8F), style = typography.bodyMedium)
+                    }
+                    Spacer(Modifier.height(8.dp))
+                }
+            }
+            Row(
+                Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                Arrangement.SpaceBetween, Alignment.CenterVertically
+            ) {
+                Text(stringResource(R.string.specify_value))
+                Switch(specifyValue, { specifyValue = it })
+            }
         }
-        is AppRestriction.StringItem -> {
-            OutlinedTextField(
-                input, { input = it }, Modifier.fillMaxWidth()
-            )
-        }
-        is AppRestriction.BooleanItem -> {
-            Switch(inputState, { inputState = it })
-        }
-        is AppRestriction.ChoiceItem -> {
-            restriction.entryValues.forEachIndexed { index, value ->
+        if (specifyValue) when (restriction) {
+            is AppRestriction.IntItem -> item {
+                OutlinedTextField(
+                    input, { input = it }, Modifier.fillMaxWidth(),
+                    isError = input.toIntOrNull() == null
+                )
+            }
+            is AppRestriction.StringItem -> item {
+                OutlinedTextField(
+                    input, { input = it }, Modifier.fillMaxWidth()
+                )
+            }
+            is AppRestriction.BooleanItem -> item {
+                Switch(inputState, { inputState = it })
+            }
+            is AppRestriction.ChoiceItem -> itemsIndexed(restriction.entryValues) { index, value ->
                 val label = restriction.entries.getOrNull(index)
                 Row(
                     Modifier.fillMaxWidth().clickable {
@@ -1253,58 +1265,70 @@ fun ColumnScope.ManagedConfigurationDialog(
                     }
                 }
             }
-        }
-        is AppRestriction.MultiSelectItem -> {
-            restriction.entryValues.forEachIndexed { index, value ->
-                val label = restriction.entries.getOrNull(index)
-                Row(
-                    Modifier.fillMaxWidth().clickable {
-                        if (value in inputSelections)
-                            inputSelections -= value else inputSelections += value
-                    }.padding(8.dp, 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(value in inputSelections, null)
-                    Spacer(Modifier.width(8.dp))
-                    if (label == null) {
-                        Text(value)
-                    } else {
-                        Column {
-                            Text(label)
-                            Text(value, Modifier.alpha(0.7F), style = typography.bodyMedium)
+            is AppRestriction.MultiSelectItem -> itemsIndexed(
+                multiSelectList, { _, v -> v.value }
+            ) { index, entry ->
+                ReorderableItem(reorderableListState, entry.value) {
+                    Row(
+                        Modifier.fillMaxWidth().clickable {
+                            val old = multiSelectList[index]
+                            multiSelectList[index] = old.copy(selected = !old.selected)
+                        }.padding(8.dp, 4.dp),
+                        Arrangement.SpaceBetween, Alignment.CenterVertically
+                    ) {
+                        Row(Modifier.weight(1F), verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(entry.selected, null)
+                            Spacer(Modifier.width(8.dp))
+                            if (entry.title == null) {
+                                Text(entry.value)
+                            } else {
+                                Column {
+                                    Text(entry.title)
+                                    Text(entry.value, Modifier.alpha(0.7F), style = typography.bodyMedium)
+                                }
+                            }
                         }
+                        Icon(
+                            painterResource(R.drawable.drag_indicator_fill0), null,
+                            Modifier.draggableHandle()
+                        )
                     }
                 }
             }
         }
-    }
-    Row(Modifier.align(Alignment.End).padding(top = 4.dp)) {
-        TextButton({
-            setRestriction(null)
-        }, Modifier.padding(end = 4.dp)) {
-            Text(stringResource(R.string.cancel))
-        }
-        TextButton({
-            val newRestriction = when (restriction) {
-                is AppRestriction.IntItem -> restriction.copy(
-                    value = if (specifyValue) input.toIntOrNull() else null
-                )
-                is AppRestriction.StringItem -> restriction.copy(
-                    value = if (specifyValue) input else null
-                )
-                is AppRestriction.BooleanItem -> restriction.copy(
-                    value = if (specifyValue) inputState else null
-                )
-                is AppRestriction.ChoiceItem -> restriction.copy(
-                    value = if (specifyValue) input else null
-                )
-                is AppRestriction.MultiSelectItem -> restriction.copy(
-                    value = if (specifyValue) inputSelections.toTypedArray() else null
-                )
+        item {
+            Row(Modifier.fillMaxWidth().padding(top = 4.dp), Arrangement.End) {
+                TextButton({
+                    setRestriction(null)
+                }, Modifier.padding(end = 4.dp)) {
+                    Text(stringResource(R.string.cancel))
+                }
+                TextButton({
+                    val newRestriction = when (restriction) {
+                        is AppRestriction.IntItem -> restriction.copy(
+                            value = if (specifyValue) input.toIntOrNull() else null
+                        )
+                        is AppRestriction.StringItem -> restriction.copy(
+                            value = if (specifyValue) input else null
+                        )
+                        is AppRestriction.BooleanItem -> restriction.copy(
+                            value = if (specifyValue) inputState else null
+                        )
+                        is AppRestriction.ChoiceItem -> restriction.copy(
+                            value = if (specifyValue) input else null
+                        )
+                        is AppRestriction.MultiSelectItem -> restriction.copy(
+                            value = if (specifyValue)
+                                multiSelectList.filter { it.selected }
+                                    .map { it.value }.toTypedArray()
+                            else null
+                        )
+                    }
+                    setRestriction(newRestriction)
+                }) {
+                    Text(stringResource(R.string.confirm))
+                }
             }
-            setRestriction(newRestriction)
-        }) {
-            Text(stringResource(R.string.confirm))
         }
     }
 }
@@ -1347,3 +1371,5 @@ sealed class AppRestriction(
         var value: Array<String>?
     ) : AppRestriction(key, title, description)
 }
+
+data class MultiSelectEntry(val value: String, val title: String?, val selected: Boolean)

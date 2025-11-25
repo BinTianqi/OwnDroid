@@ -3,6 +3,7 @@ package com.bintianqi.owndroid
 import android.content.Context
 import android.hardware.biometrics.BiometricPrompt
 import android.hardware.biometrics.BiometricPrompt.AuthenticationCallback
+import android.hardware.fingerprint.FingerprintManager
 import android.os.Build
 import android.os.CancellationSignal
 import androidx.activity.compose.BackHandler
@@ -92,6 +93,7 @@ fun AppLockDialog(onSucceed: () -> Unit, onDismiss: () -> Unit) = Dialog(onDismi
 
 @RequiresApi(28)
 fun startBiometricsUnlock(context: Context, onSucceed: () -> Unit) {
+    context.getSystemService(FingerprintManager::class.java) ?: return
     val callback = object : AuthenticationCallback() {
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult?) {
             super.onAuthenticationSucceeded(result)

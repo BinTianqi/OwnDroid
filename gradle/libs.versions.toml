@@ -12,6 +12,7 @@ dhizuku = "2.5.4"
 dhizuku-server = "0.0.10"
 hiddenApiBypass = "6.1"
 libsu = "6.0.0"
+reoderable = "3.0.0"
 serialization = "1.9.0"
 
 [libraries]
@@ -33,6 +34,7 @@ dhizuku-api = { module = "io.github.iamr0s:Dhizuku-API", version.ref = "dhizuku"
 dhizuku-server-api = { group = "io.github.iamr0s", name = "Dhizuku-SERVER_API", version.ref = "dhizuku-server" }
 hiddenApiBypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version.ref = "hiddenApiBypass" }
 libsu = { module = "com.github.topjohnwu.libsu:core", version.ref = "libsu" }
+reoderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reoderable" }
 
 serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
 
