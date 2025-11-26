@@ -84,7 +84,7 @@ fun AppLockDialog(onSucceed: () -> Unit, onDismiss: () -> Unit) = Dialog(onDismi
                     }
                 }
             }
-            Button(::unlock, Modifier.align(Alignment.End).padding(top = 8.dp), input.length >= 4) {
+            Button(::unlock, Modifier.align(Alignment.End).padding(top = 8.dp)) {
                 Text(stringResource(R.string.unlock))
             }
         }

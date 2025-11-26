@@ -121,6 +121,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.Serializable
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import kotlin.collections.indexOf
 
 val String.isValidPackageName
     get() = Regex("""^(?:[a-zA-Z]\w*\.)+[a-zA-Z]\w*$""").matches(this)
@@ -317,7 +318,10 @@ fun ApplicationDetailsScreen(
     }
     if(dialog == 1 && VERSION.SDK_INT >= 28)
         ClearAppStorageDialog(packageName, vm::clearAppData) { dialog = 0 }
-    if(dialog == 2) UninstallAppDialog(packageName, vm::uninstallPackage) { dialog = 0 }
+    if(dialog == 2) UninstallAppDialog(packageName, vm::uninstallPackage) {
+        dialog = 0
+        if (it) onNavigateUp()
+    }
 }
 
 @Serializable object Suspend
@@ -522,7 +526,8 @@ fun UninstallAppScreen(
 
 @Composable
 private fun UninstallAppDialog(
-    packageName: String, onUninstall: (String, (String?) -> Unit) -> Unit, onClose: () -> Unit
+    packageName: String, onUninstall: (String, (String?) -> Unit) -> Unit,
+    onClose: (Boolean) -> Unit
 ) {
     var uninstalling by rememberSaveable { mutableStateOf(false) }
     var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
@@ -538,7 +543,7 @@ private fun UninstallAppDialog(
                     uninstalling = true
                     onUninstall(packageName) {
                         uninstalling = false
-                        if(it == null) onClose() else errorMessage = it
+                        if (it == null) onClose(true) else errorMessage = it
                     }
                 },
                 enabled = !uninstalling,
@@ -548,9 +553,11 @@ private fun UninstallAppDialog(
             }
         },
         dismissButton = {
-            TextButton(onClose, enabled = !uninstalling) { Text(stringResource(R.string.cancel)) }
+            TextButton({
+                onClose(false)
+            }, enabled = !uninstalling) { Text(stringResource(R.string.cancel)) }
         },
-        onDismissRequest = onClose,
+        onDismissRequest = { onClose(false) },
         properties = DialogProperties(false, false)
     )
 }
@@ -1176,6 +1183,9 @@ fun ManagedConfigurationDialog(
                         value, restriction.entries.getOrNull(index),
                         restriction.value?.contains(value) ?: false
                     )
+                }.sortedBy { entry ->
+                    val index = restriction.value?.indexOf(entry.value)
+                    if (index == null || index == -1) Int.MAX_VALUE else index
                 }
             } else emptyList()).toTypedArray()
         )

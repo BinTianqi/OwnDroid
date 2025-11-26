@@ -158,10 +158,10 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         return AppLockConfig(passwordHash?.ifEmpty { null }, SP.biometricsUnlock, SP.lockWhenLeaving)
     }
     fun setAppLockConfig(config: AppLockConfig) {
-        SP.lockPasswordHash = if (config.password == null) {
-            ""
-        } else {
-            config.password.hash()
+        if (config.password == null) {
+            SP.lockPasswordHash = ""
+        } else if (!config.password.isEmpty()) {
+            SP.lockPasswordHash = config.password.hash()
         }
         SP.biometricsUnlock = config.biometrics
         SP.lockWhenLeaving = config.whenLeaving
@@ -359,8 +359,11 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
                     context.startActivity(intent.getParcelableExtra(Intent.EXTRA_INTENT) as Intent?)
                 } else {
                     context.unregisterReceiver(this)
-                    if(statusExtra == PackageInstaller.STATUS_SUCCESS) {
+                    if (statusExtra == PackageInstaller.STATUS_SUCCESS) {
                         onComplete(null)
+                        installedPackages.update { pkg ->
+                            pkg.filter { it.name != packageName }
+                        }
                     } else {
                         onComplete(parsePackageInstallerMessage(context, intent))
                     }

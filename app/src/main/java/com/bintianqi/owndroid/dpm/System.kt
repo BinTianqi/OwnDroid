@@ -72,7 +72,6 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -97,6 +96,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -181,7 +181,7 @@ fun SystemManagerScreen(
         if(VERSION.SDK_INT >= 31) {
             FunctionItem(R.string.nearby_streaming_policy, icon = R.drawable.share_fill0) { onNavigate(NearbyStreamingPolicy) }
         }
-        if (VERSION.SDK_INT >= 28 && privilege.device && !privilege.dhizuku) {
+        if (VERSION.SDK_INT >= 28 && privilege.device) {
             FunctionItem(R.string.lock_task_mode, icon = R.drawable.lock_fill0) { onNavigate(LockTaskMode) }
         }
         FunctionItem(R.string.ca_cert, icon = R.drawable.license_fill0) { onNavigate(CaCert) }
@@ -1175,7 +1175,7 @@ fun LockTaskModeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            TabRow(tabIndex) {
+            PrimaryTabRow(tabIndex) {
                 Tab(
                     tabIndex == 0, onClick = { coroutine.launch { pagerState.animateScrollToPage(0) } },
                     text = { Text(stringResource(R.string.start)) }
@@ -1210,6 +1210,7 @@ private fun StartLockTaskMode(
 ) {
     val context = LocalContext.current
     val focusMgr = LocalFocusManager.current
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     var packageName by rememberSaveable { mutableStateOf("") }
     var activity by rememberSaveable { mutableStateOf("") }
     var specifyActivity by rememberSaveable { mutableStateOf(false) }
@@ -1223,6 +1224,17 @@ private fun StartLockTaskMode(
             .verticalScroll(rememberScrollState())
     ) {
         Spacer(Modifier.height(5.dp))
+        if (privilege.dhizuku) Column(
+            Modifier
+                .fillMaxWidth().padding(vertical = 8.dp)
+                .background(colorScheme.errorContainer, RoundedCornerShape(10.dp))
+                .padding(8.dp)
+        ) {
+            Text(
+                stringResource(R.string.start_lock_task_mode_not_supported),
+                color = colorScheme.onErrorContainer
+            )
+        }
         PackageNameTextField(packageName, onChoosePackage) { packageName = it }
         Row(
             Modifier
@@ -1252,10 +1264,11 @@ private fun StartLockTaskMode(
                 if (!result) context.showOperationResultToast(false)
             },
             enabled = packageName.isNotBlank() && (!specifyActivity || activity.isNotBlank())
+                    && !privilege.dhizuku
         ) {
             Text(stringResource(R.string.start))
         }
-        Notes(R.string.info_start_lock_task_mode)
+        if (!privilege.dhizuku) Notes(R.string.info_start_lock_task_mode)
     }
 }
 
