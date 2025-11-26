@@ -1,9 +1,12 @@
 package com.bintianqi.owndroid
 
+import android.content.BroadcastReceiver
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageInfo
 import android.net.Uri
 import android.os.Build
@@ -159,4 +162,18 @@ fun Modifier.clickableTextField(onClick: () -> Unit) =
 fun adaptiveInsets(): WindowInsets {
     val navbar = WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)
     return WindowInsets.ime.union(navbar).union(WindowInsets.displayCutout)
+}
+
+fun registerPackageRemovedReceiver(
+    ctx: Context, callback: (String) -> Unit
+) {
+    val br = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            callback(intent.data!!.schemeSpecificPart)
+        }
+    }
+    val filter = IntentFilter()
+    filter.addAction(Intent.ACTION_PACKAGE_FULLY_REMOVED)
+    filter.addDataScheme("package")
+    ctx.registerReceiver(br, filter)
 }

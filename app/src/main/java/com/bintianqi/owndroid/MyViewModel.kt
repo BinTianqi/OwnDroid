@@ -200,6 +200,11 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             }
         }
     }
+    fun onPackageRemoved(name: String) {
+        installedPackages.update { list ->
+            list.filter { it.name != name }
+        }
+    }
     fun getAppInfo(info: ApplicationInfo) =
         AppInfo(info.packageName, info.loadLabel(PM).toString(), info.loadIcon(PM), info.flags)
     fun getAppInfo(name: String): AppInfo {
@@ -361,9 +366,6 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
                     context.unregisterReceiver(this)
                     if (statusExtra == PackageInstaller.STATUS_SUCCESS) {
                         onComplete(null)
-                        installedPackages.update { pkg ->
-                            pkg.filter { it.name != packageName }
-                        }
                     } else {
                         onComplete(parsePackageInstallerMessage(context, intent))
                     }
@@ -464,14 +466,18 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             DPM.isUninstallBlocked(DAR, name),
             if (VERSION.SDK_INT >= 30) name in DPM.getUserControlDisabledPackages(DAR) else false,
             if (VERSION.SDK_INT >= 28) name in DPM.getMeteredDataDisabledPackages(DAR) else false,
-            if (VERSION.SDK_INT >= 28) DPM.getKeepUninstalledPackages(DAR)?.contains(name) == true else false
+            if (VERSION.SDK_INT >= 28 && Privilege.status.value.device)
+                DPM.getKeepUninstalledPackages(DAR)?.contains(name) == true
+            else false
         )
     }
     // Application details
     @RequiresApi(24)
     fun adSetPackageSuspended(name: String, status: Boolean) {
-        DPM.setPackagesSuspended(DAR, arrayOf(name), status)
-        appStatus.update { it.copy(suspend = DPM.isPackageSuspended(DAR, name)) }
+        try {
+            DPM.setPackagesSuspended(DAR, arrayOf(name), status)
+            appStatus.update { it.copy(suspend = DPM.isPackageSuspended(DAR, name)) }
+        } catch (_: Exception) {}
     }
     fun adSetPackageHidden(name: String, status: Boolean) {
         DPM.setApplicationHidden(DAR, name, status)
@@ -522,21 +528,25 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     @RequiresApi(23)
     fun getAppRestrictions(name: String) {
         val rm = application.getSystemService(RestrictionsManager::class.java)
-        val bundle = DPM.getApplicationRestrictions(DAR, name)
-        appRestrictions.value = rm.getManifestRestrictions(name)?.mapNotNull {
-            transformRestrictionEntry(it)
-        }?.map {
-            if (bundle.containsKey(it.key)) {
-                when (it) {
-                    is AppRestriction.BooleanItem -> it.value = bundle.getBoolean(it.key)
-                    is AppRestriction.StringItem -> it.value = bundle.getString(it.key)
-                    is AppRestriction.IntItem -> it.value = bundle.getInt(it.key)
-                    is AppRestriction.ChoiceItem -> it.value = bundle.getString(it.key)
-                    is AppRestriction.MultiSelectItem -> it.value = bundle.getStringArray(it.key)
+        try {
+            val bundle = DPM.getApplicationRestrictions(DAR, name)
+            appRestrictions.value = rm.getManifestRestrictions(name)?.mapNotNull {
+                transformRestrictionEntry(it)
+            }?.map {
+                if (bundle.containsKey(it.key)) {
+                    when (it) {
+                        is AppRestriction.BooleanItem -> it.value = bundle.getBoolean(it.key)
+                        is AppRestriction.StringItem -> it.value = bundle.getString(it.key)
+                        is AppRestriction.IntItem -> it.value = bundle.getInt(it.key)
+                        is AppRestriction.ChoiceItem -> it.value = bundle.getString(it.key)
+                        is AppRestriction.MultiSelectItem -> it.value = bundle.getStringArray(it.key)
+                    }
                 }
-            }
-            it
-        } ?: emptyList()
+                it
+            } ?: emptyList()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     @RequiresApi(23)

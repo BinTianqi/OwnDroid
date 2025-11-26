@@ -255,6 +255,9 @@ class MainActivity : FragmentActivity() {
             val launcher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
             launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
+        registerPackageRemovedReceiver(this) {
+            vm.onPackageRemoved(it)
+        }
         setContent {
             var appLockDialog by rememberSaveable { mutableStateOf(false) }
             val theme by vm.theme.collectAsStateWithLifecycle()

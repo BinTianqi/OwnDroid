@@ -14,7 +14,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -63,6 +62,9 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -121,7 +123,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.Serializable
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
-import kotlin.collections.indexOf
 
 val String.isValidPackageName
     get() = Regex("""^(?:[a-zA-Z]\w*\.)+[a-zA-Z]\w*$""").matches(this)
@@ -540,20 +541,23 @@ private fun UninstallAppDialog(
         confirmButton = {
             TextButton(
                 {
-                    uninstalling = true
-                    onUninstall(packageName) {
-                        uninstalling = false
-                        if (it == null) onClose(true) else errorMessage = it
+                    if (errorMessage == null) {
+                        uninstalling = true
+                        onUninstall(packageName) {
+                            uninstalling = false
+                            if (it == null) onClose(true) else errorMessage = it
+                        }
+                    } else {
+                        onClose(false)
                     }
                 },
-                enabled = !uninstalling,
-                colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
+                enabled = !uninstalling
             ) {
                 Text(stringResource(R.string.confirm))
             }
         },
         dismissButton = {
-            TextButton({
+            if (errorMessage == null) TextButton({
                 onClose(false)
             }, enabled = !uninstalling) { Text(stringResource(R.string.cancel)) }
         },
@@ -1254,7 +1258,20 @@ fun ManagedConfigurationDialog(
                 )
             }
             is AppRestriction.BooleanItem -> item {
-                Switch(inputState, { inputState = it })
+                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                    SegmentedButton(
+                        inputState, { inputState = true },
+                        SegmentedButtonDefaults.itemShape(0, 2)
+                    ) {
+                        Text("true")
+                    }
+                    SegmentedButton(
+                        !inputState, { inputState = false },
+                        SegmentedButtonDefaults.itemShape(1, 2)
+                    ) {
+                        Text("false")
+                    }
+                }
             }
             is AppRestriction.ChoiceItem -> itemsIndexed(restriction.entryValues) { index, value ->
                 val label = restriction.entries.getOrNull(index)
