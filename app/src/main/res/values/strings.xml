@@ -398,6 +398,7 @@
     <string name="permitted_ime">Permitted IME</string>
     <string name="keep_uninstalled_packages">Keep uninstalled packages</string>
     <string name="clear_app_storage">Clear app storage</string>
+    <string name="clear_app_storage_confirmation">Are you sure to delete app data?</string>
     <string name="set_default_dialer">Set default dialer</string>
     <string name="uninstall_app">Uninstall app</string>
     <string name="install_app">Install app</string>

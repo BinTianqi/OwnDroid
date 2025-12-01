@@ -468,7 +468,8 @@ private fun ClearAppStorageDialog(
     AlertDialog(
         title = { Text(stringResource(R.string.clear_app_storage)) },
         text = {
-            if(clearing) LinearProgressIndicator(Modifier.fillMaxWidth())
+            if (clearing) LinearProgressIndicator(Modifier.fillMaxWidth())
+            else Text(stringResource(R.string.clear_app_storage_confirmation))
         },
         confirmButton = {
             TextButton(

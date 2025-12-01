@@ -681,7 +681,8 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             backupServiceEnabled = if (VERSION.SDK_INT >= 26) DPM.isBackupServiceEnabled(DAR) else false,
             btContactSharingDisabled = if (VERSION.SDK_INT >= 23 && privilege.work)
                 DPM.getBluetoothContactSharingDisabled(DAR) else false,
-            commonCriteriaMode = if (VERSION.SDK_INT >= 30) DPM.isCommonCriteriaModeEnabled(DAR) else false,
+            commonCriteriaMode = if (VERSION.SDK_INT >= 30 && privilege.run { device || org })
+                DPM.isCommonCriteriaModeEnabled(DAR) else false,
             usbSignalEnabled = if (VERSION.SDK_INT >= 31) DPM.isUsbDataSignalingEnabled else false,
             canDisableUsbSignal = if (VERSION.SDK_INT >= 31) DPM.canUsbDataSignalingBeDisabled() else false
         )

@@ -363,6 +363,7 @@
     <string name="permitted_ime">许可的输入法</string>
     <string name="keep_uninstalled_packages">卸载后保留的应用</string>
     <string name="clear_app_storage">清除应用存储</string>
+    <string name="clear_app_storage_confirmation">你确定要删除应用数据吗？</string>
     <string name="set_default_dialer">设置默认拨号器</string>
     <string name="uninstall_app">卸载应用</string>
     <string name="install_app">安装应用</string>

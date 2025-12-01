@@ -186,9 +186,9 @@ fun NetworkOptionsScreen(
 ) {
     val privilege by Privilege.status.collectAsStateWithLifecycle()
     var dialog by rememberSaveable { mutableIntStateOf(0) }
-    var lanEnabled by rememberSaveable { mutableStateOf(getLanEnabled()) }
     MyScaffold(R.string.options, onNavigateUp, 0.dp) {
         if(VERSION.SDK_INT >= 30 && (privilege.device || privilege.org)) {
+            var lanEnabled by rememberSaveable { mutableStateOf(getLanEnabled()) }
             SwitchItem(R.string.lockdown_admin_configured_network, icon = R.drawable.wifi_password_fill0,
                 state = lanEnabled,
                 onCheckedChange = {
