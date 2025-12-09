@@ -1443,6 +1443,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             UserManager.USER_OPERATION_ERROR_UNKNOWN -> R.string.unknown_error
             UserManager.USER_OPERATION_ERROR_MANAGED_PROFILE-> R.string.fail_managed_profile
             UserManager.USER_OPERATION_ERROR_MAX_RUNNING_USERS -> R.string.limit_reached
+            UserManager.USER_OPERATION_ERROR_MAX_USERS -> R.string.limit_reached
             UserManager.USER_OPERATION_ERROR_CURRENT_USER -> R.string.fail_current_user
             else -> R.string.unknown
         }
