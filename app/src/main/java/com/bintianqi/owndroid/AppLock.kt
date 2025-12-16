@@ -20,6 +20,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,6 +41,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -51,6 +54,7 @@ fun AppLockDialog(onSucceed: () -> Unit, onDismiss: () -> Unit) = Dialog(onDismi
     val fr = remember { FocusRequester() }
     var input by rememberSaveable { mutableStateOf("") }
     var isError by rememberSaveable { mutableStateOf(false) }
+    var showPassword by remember { mutableStateOf(false) }
     fun unlock() {
         if(input.hash() == SP.lockPasswordHash) {
             fm.clearFocus()
@@ -76,7 +80,18 @@ fun AppLockDialog(onSucceed: () -> Unit, onDismiss: () -> Unit) = Dialog(onDismi
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password, imeAction = if(input.length >= 4) ImeAction.Go else ImeAction.Done
                     ),
-                    keyboardActions = KeyboardActions({ fm.clearFocus() }, { unlock() })
+                    keyboardActions = KeyboardActions({ fm.clearFocus() }, { unlock() }),
+                    visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = { showPassword = !showPassword }) {
+                            Icon(
+                                painter = painterResource(
+                                    id = if (showPassword) R.drawable.visibility_off_fill0 else R.drawable.visibility_fill0
+                                ),
+                                contentDescription = if (showPassword) "Hide password" else "Show password"
+                            )
+                        }
+                    }
                 )
                 if(Build.VERSION.SDK_INT >= 28 && SP.biometricsUnlock) {
                     FilledTonalIconButton({ startBiometricsUnlock(context, onSucceed) }, Modifier.padding(start = 4.dp)) {
