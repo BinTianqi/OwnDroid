@@ -102,7 +102,7 @@
     <string name="org_name">Organization name</string>
     <string name="disable_account_management">Disable account management</string>
     <string name="account_type">Account type</string>
-    <string name="transfer_ownership">Transfer Ownership</string>
+    <string name="transfer_ownership">Transfer ownership</string>
     <string name="lock_screen_info">Lock screen info</string>
     <string name="support_messages">Support Messages</string>
     <string name="short_support_msg">Short message</string>
@@ -201,7 +201,6 @@
     <string name="nearby_notification_streaming">Nearby notification streaming policy</string>
     <string name="enable_if_secure_enough">Same managed account only</string>
     <string name="lock_task_mode">Lock task mode</string>
-    <string name="start_lock_task_mode_not_supported">Starting lock task mode is not supported under Dhizuku mode</string>
     <string name="app_not_allowed">App is not allowed</string>
     <string name="disable_all">Disable all</string>
     <!--ltf: lock task feature-->
@@ -328,7 +327,6 @@
     <string name="network_logs_collected">Network logs collected</string>
     <string name="delete_logs">Delete logs</string>
     <string name="export_logs">Export logs</string>
-    <string name="wifi_auth_keypair">Wi-Fi keypair</string>
     <string name="preferential_network_service">Preferential network service</string>
     <string name="add_config">Add config</string>
     <string name="network_id">Network ID</string>

@@ -173,7 +173,6 @@
     <string name="nearby_notification_streaming">附近通知传输</string>
     <string name="enable_if_secure_enough">在足够安全时启用</string>
     <string name="lock_task_mode">锁定任务模式</string>
-    <string name="start_lock_task_mode_not_supported">Dhizuku模式下不支持启动锁定任务模式</string>
     <string name="app_not_allowed">应用未被允许</string>
     <string name="disable_all">禁用全部</string>
     <string name="ltf_sys_info">允许状态栏信息</string>
@@ -294,7 +293,6 @@
     <string name="network_logs_collected">网络日志已收集</string>
     <string name="delete_logs">删除日志</string>
     <string name="export_logs">导出日志</string>
-    <string name="wifi_auth_keypair">Wi-Fi密钥对</string>
     <string name="preferential_network_service">首选网络服务</string>
     <string name="add_config">添加配置</string>
     <string name="network_id">网络ID</string>

@@ -1224,17 +1224,6 @@ private fun StartLockTaskMode(
             .verticalScroll(rememberScrollState())
     ) {
         Spacer(Modifier.height(5.dp))
-        if (privilege.dhizuku) Column(
-            Modifier
-                .fillMaxWidth().padding(vertical = 8.dp)
-                .background(colorScheme.errorContainer, RoundedCornerShape(10.dp))
-                .padding(8.dp)
-        ) {
-            Text(
-                stringResource(R.string.start_lock_task_mode_not_supported),
-                color = colorScheme.onErrorContainer
-            )
-        }
         PackageNameTextField(packageName, onChoosePackage) { packageName = it }
         Row(
             Modifier
@@ -1264,7 +1253,6 @@ private fun StartLockTaskMode(
                 if (!result) context.showOperationResultToast(false)
             },
             enabled = packageName.isNotBlank() && (!specifyActivity || activity.isNotBlank())
-                    && !privilege.dhizuku
         ) {
             Text(stringResource(R.string.start))
         }

@@ -86,7 +86,7 @@ fun AppLockDialog(onSucceed: () -> Unit, onDismiss: () -> Unit) = Dialog(onDismi
                         IconButton(onClick = { showPassword = !showPassword }) {
                             Icon(
                                 painter = painterResource(
-                                    id = if (showPassword) R.drawable.visibility_off_fill0 else R.drawable.visibility_fill0
+                                    id = if (showPassword) R.drawable.visibility_fill0 else R.drawable.visibility_off_fill0
                                 ),
                                 contentDescription = if (showPassword) "Hide password" else "Show password"
                             )

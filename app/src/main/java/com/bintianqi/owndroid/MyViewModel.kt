@@ -2,6 +2,7 @@ package com.bintianqi.owndroid
 
 import android.accounts.Account
 import android.annotation.SuppressLint
+import android.app.ActivityManager
 import android.app.ActivityOptions
 import android.app.Application
 import android.app.KeyguardManager
@@ -886,6 +887,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         if (intent != null) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             application.startActivity(intent, options.toBundle())
+            application.startForegroundService(Intent(application, LockTaskService::class.java))
             return true
         } else {
             return false
