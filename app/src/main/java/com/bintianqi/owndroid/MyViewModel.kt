@@ -874,7 +874,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         getLockTaskPackages()
     }
     @RequiresApi(28)
-    fun startLockTaskMode(packageName: String, activity: String): Boolean {
+    fun startLockTaskMode(packageName: String, activity: String, clearTask: Boolean): Boolean {
         if (!DPM.isLockTaskPermitted(packageName)) {
             val list = lockTaskPackages.value.map { it.name } + packageName
             DPM.setLockTaskPackages(DAR, list.toTypedArray())
@@ -885,7 +885,10 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             Intent().setComponent(ComponentName(packageName, activity))
         } else PM.getLaunchIntentForPackage(packageName)
         if (intent != null) {
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            intent.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                    or (if (clearTask) Intent.FLAG_ACTIVITY_CLEAR_TASK else 0)
+            )
             application.startActivity(intent, options.toBundle())
             application.startForegroundService(Intent(application, LockTaskService::class.java))
             return true

@@ -31,6 +31,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -1150,7 +1151,7 @@ fun NearbyStreamingPolicyScreen(
 fun LockTaskModeScreen(
     chosenPackage: Channel<String>, onChoosePackage: () -> Unit,
     lockTaskPackages: StateFlow<List<AppInfo>>, getLockTaskPackages: () -> Unit,
-    setLockTaskPackage: (String, Boolean) -> Unit, startLockTaskMode: (String, String) -> Boolean,
+    setLockTaskPackage: (String, Boolean) -> Unit, startLockTaskMode: (String, String, Boolean) -> Boolean,
     getLockTaskFeatures: () -> Int, setLockTaskFeature: (Int) -> String?, onNavigateUp: () -> Unit
 ) {
     val coroutine = rememberCoroutineScope()
@@ -1205,7 +1206,7 @@ fun LockTaskModeScreen(
 @RequiresApi(28)
 @Composable
 private fun StartLockTaskMode(
-    startLockTaskMode: (String, String) -> Boolean,
+    startLockTaskMode: (String, String, Boolean) -> Boolean,
     chosenPackage: Channel<String>, onChoosePackage: () -> Unit
 ) {
     val context = LocalContext.current
@@ -1214,6 +1215,8 @@ private fun StartLockTaskMode(
     var packageName by rememberSaveable { mutableStateOf("") }
     var activity by rememberSaveable { mutableStateOf("") }
     var specifyActivity by rememberSaveable { mutableStateOf(false) }
+    var clearTask by rememberSaveable { mutableStateOf(true) }
+
     LaunchedEffect(Unit) {
         packageName = chosenPackage.receive()
     }
@@ -1228,7 +1231,30 @@ private fun StartLockTaskMode(
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically
+                .padding(top = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = clearTask,
+                onCheckedChange = { clearTask = it }
+            )
+            Text(
+                text = stringResource(R.string.lock_task_mode_start_clear_task),
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) {
+                        clearTask = !clearTask
+                    }
+            )
+        }
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(bottom = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Checkbox(specifyActivity, {
                 specifyActivity = it
@@ -1249,7 +1275,7 @@ private fun StartLockTaskMode(
                 .fillMaxWidth()
                 .padding(bottom = 5.dp),
             onClick = {
-                val result = startLockTaskMode(packageName, activity)
+                val result = startLockTaskMode(packageName, activity, clearTask)
                 if (!result) context.showOperationResultToast(false)
             },
             enabled = packageName.isNotBlank() && (!specifyActivity || activity.isNotBlank())

@@ -732,4 +732,5 @@
     <string name="activate_method">Activate method</string>
     <string name="adb_command">ADB command</string>
     <string name="owndroid_warning">This app uses Device owner or Profile owner privileges. These privileges are extremely dangerous, please use them with caution. If used improperly, they may result in severe losses. The developers will not be responsible for this.</string>
+    <string name="lock_task_mode_start_clear_task">Clear task (start fresh)</string>
 </resources>
