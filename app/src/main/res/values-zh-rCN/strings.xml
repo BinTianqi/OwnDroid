@@ -173,6 +173,8 @@
     <string name="nearby_notification_streaming">附近通知传输</string>
     <string name="enable_if_secure_enough">在足够安全时启用</string>
     <string name="lock_task_mode">锁定任务模式</string>
+    <string name="lock_task_mode_start_clear_task">清除任务（新实例）</string>
+    <string name="lock_taso_mode_show_notification">显示通知以退出</string>
     <string name="app_not_allowed">应用未被允许</string>
     <string name="disable_all">禁用全部</string>
     <string name="ltf_sys_info">允许状态栏信息</string>

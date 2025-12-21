@@ -2,7 +2,6 @@ package com.bintianqi.owndroid
 
 import android.accounts.Account
 import android.annotation.SuppressLint
-import android.app.ActivityManager
 import android.app.ActivityOptions
 import android.app.Application
 import android.app.KeyguardManager
@@ -874,11 +873,21 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         getLockTaskPackages()
     }
     @RequiresApi(28)
-    fun startLockTaskMode(packageName: String, activity: String, clearTask: Boolean): Boolean {
+    fun startLockTaskMode(
+        packageName: String, activity: String, clearTask: Boolean, showNotification: Boolean
+    ): Boolean {
         if (!DPM.isLockTaskPermitted(packageName)) {
             val list = lockTaskPackages.value.map { it.name } + packageName
             DPM.setLockTaskPackages(DAR, list.toTypedArray())
             getLockTaskPackages()
+        }
+        if (showNotification) {
+            DPM.setLockTaskFeatures(
+                DAR,
+                DPM.getLockTaskFeatures(DAR) or
+                        DevicePolicyManager.LOCK_TASK_FEATURE_NOTIFICATIONS or
+                        DevicePolicyManager.LOCK_TASK_FEATURE_HOME
+            )
         }
         val options = ActivityOptions.makeBasic().setLockTaskEnabled(true)
         val intent = if(activity.isNotEmpty()) {
@@ -890,7 +899,9 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
                     or (if (clearTask) Intent.FLAG_ACTIVITY_CLEAR_TASK else 0)
             )
             application.startActivity(intent, options.toBundle())
-            application.startForegroundService(Intent(application, LockTaskService::class.java))
+            if (showNotification) {
+                application.startForegroundService(Intent(application, LockTaskService::class.java))
+            }
             return true
         } else {
             return false

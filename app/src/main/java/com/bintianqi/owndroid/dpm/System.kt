@@ -31,7 +31,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -97,7 +96,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -110,9 +108,9 @@ import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SP
+import com.bintianqi.owndroid.adaptiveInsets
 import com.bintianqi.owndroid.clickableTextField
 import com.bintianqi.owndroid.formatDate
-import com.bintianqi.owndroid.adaptiveInsets
 import com.bintianqi.owndroid.popToast
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
@@ -1151,7 +1149,8 @@ fun NearbyStreamingPolicyScreen(
 fun LockTaskModeScreen(
     chosenPackage: Channel<String>, onChoosePackage: () -> Unit,
     lockTaskPackages: StateFlow<List<AppInfo>>, getLockTaskPackages: () -> Unit,
-    setLockTaskPackage: (String, Boolean) -> Unit, startLockTaskMode: (String, String, Boolean) -> Boolean,
+    setLockTaskPackage: (String, Boolean) -> Unit,
+    startLockTaskMode: (String, String, Boolean, Boolean) -> Boolean,
     getLockTaskFeatures: () -> Int, setLockTaskFeature: (Int) -> String?, onNavigateUp: () -> Unit
 ) {
     val coroutine = rememberCoroutineScope()
@@ -1206,7 +1205,7 @@ fun LockTaskModeScreen(
 @RequiresApi(28)
 @Composable
 private fun StartLockTaskMode(
-    startLockTaskMode: (String, String, Boolean) -> Boolean,
+    startLockTaskMode: (String, String, Boolean, Boolean) -> Boolean,
     chosenPackage: Channel<String>, onChoosePackage: () -> Unit
 ) {
     val context = LocalContext.current
@@ -1216,44 +1215,28 @@ private fun StartLockTaskMode(
     var activity by rememberSaveable { mutableStateOf("") }
     var specifyActivity by rememberSaveable { mutableStateOf(false) }
     var clearTask by rememberSaveable { mutableStateOf(true) }
-
+    var showNotification by rememberSaveable() { mutableStateOf(true) }
     LaunchedEffect(Unit) {
         packageName = chosenPackage.receive()
     }
     Column(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = HorizontalPadding)
             .verticalScroll(rememberScrollState())
     ) {
-        Spacer(Modifier.height(5.dp))
-        PackageNameTextField(packageName, onChoosePackage) { packageName = it }
+        PackageNameTextField(
+            packageName, onChoosePackage, Modifier.padding(HorizontalPadding, 8.dp)
+        ) { packageName = it }
+        FullWidthCheckBoxItem(
+            R.string.lock_task_mode_start_clear_task, clearTask
+        ) { clearTask = it }
+        FullWidthCheckBoxItem(
+            R.string.lock_taso_mode_show_notification, showNotification
+        ) { showNotification = it }
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Checkbox(
-                checked = clearTask,
-                onCheckedChange = { clearTask = it }
-            )
-            Text(
-                text = stringResource(R.string.lock_task_mode_start_clear_task),
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .clickable(
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() }
-                    ) {
-                        clearTask = !clearTask
-                    }
-            )
-        }
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(bottom = 4.dp),
+                .padding(start = 4.dp, top = 4.dp, end = HorizontalPadding, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Checkbox(specifyActivity, {
@@ -1273,15 +1256,16 @@ private fun StartLockTaskMode(
         Button(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 5.dp),
+                .padding(horizontal = HorizontalPadding),
             onClick = {
-                val result = startLockTaskMode(packageName, activity, clearTask)
+                val result = startLockTaskMode(packageName, activity, clearTask, showNotification)
                 if (!result) context.showOperationResultToast(false)
             },
             enabled = packageName.isNotBlank() && (!specifyActivity || activity.isNotBlank())
         ) {
             Text(stringResource(R.string.start))
         }
+        Spacer(Modifier.height(5.dp))
         if (!privilege.dhizuku) Notes(R.string.info_start_lock_task_mode)
     }
 }

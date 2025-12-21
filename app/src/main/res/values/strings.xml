@@ -201,6 +201,8 @@
     <string name="nearby_notification_streaming">Nearby notification streaming policy</string>
     <string name="enable_if_secure_enough">Same managed account only</string>
     <string name="lock_task_mode">Lock task mode</string>
+    <string name="lock_task_mode_start_clear_task">Clear task (start fresh)</string>
+    <string name="lock_taso_mode_show_notification">Show a notification to exit</string>
     <string name="app_not_allowed">App is not allowed</string>
     <string name="disable_all">Disable all</string>
     <!--ltf: lock task feature-->
@@ -732,5 +734,4 @@
     <string name="activate_method">Activate method</string>
     <string name="adb_command">ADB command</string>
     <string name="owndroid_warning">This app uses Device owner or Profile owner privileges. These privileges are extremely dangerous, please use them with caution. If used improperly, they may result in severe losses. The developers will not be responsible for this.</string>
-    <string name="lock_task_mode_start_clear_task">Clear task (start fresh)</string>
 </resources>
