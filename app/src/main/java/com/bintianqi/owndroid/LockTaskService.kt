@@ -47,6 +47,8 @@ class LockTaskService: Service() {
             .setContentTitle(getText(R.string.lock_task_mode))
             .setSmallIcon(R.drawable.lock_fill0)
             .addAction(NotificationCompat.Action.Builder(null, getString(R.string.stop), pendingIntent).build())
+            .setOngoing(true)
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .build()
         ServiceCompat.startForeground(
             this, NotificationType.LockTaskMode.id, notification,
