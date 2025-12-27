@@ -1147,7 +1147,7 @@ fun NearbyStreamingPolicyScreen(
 @RequiresApi(28)
 @Composable
 fun LockTaskModeScreen(
-    chosenPackage: Channel<String>, onChoosePackage: () -> Unit,
+    chosenPackage: Channel<String>, chooseSinglePackage: () -> Unit, choosePackage: () -> Unit,
     lockTaskPackages: StateFlow<List<AppInfo>>, getLockTaskPackages: () -> Unit,
     setLockTaskPackage: (String, Boolean) -> Unit,
     startLockTaskMode: (String, String, Boolean, Boolean) -> Boolean,
@@ -1191,9 +1191,9 @@ fun LockTaskModeScreen(
             }
             HorizontalPager(pagerState, verticalAlignment = Alignment.Top) { page ->
                 if(page == 0) {
-                    StartLockTaskMode(startLockTaskMode, chosenPackage, onChoosePackage)
+                    StartLockTaskMode(startLockTaskMode, chosenPackage, chooseSinglePackage)
                 } else if (page == 1) {
-                    LockTaskPackages(chosenPackage, onChoosePackage, lockTaskPackages, setLockTaskPackage)
+                    LockTaskPackages(chosenPackage, choosePackage, lockTaskPackages, setLockTaskPackage)
                 } else {
                     LockTaskFeatures(getLockTaskFeatures, setLockTaskFeature)
                 }
@@ -1231,7 +1231,7 @@ private fun StartLockTaskMode(
             R.string.lock_task_mode_start_clear_task, clearTask
         ) { clearTask = it }
         FullWidthCheckBoxItem(
-            R.string.lock_taso_mode_show_notification, showNotification
+            R.string.lock_task_mode_show_notification, showNotification
         ) { showNotification = it }
         Row(
             Modifier

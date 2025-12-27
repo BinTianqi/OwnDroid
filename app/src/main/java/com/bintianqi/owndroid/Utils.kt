@@ -177,3 +177,5 @@ fun registerPackageRemovedReceiver(
     filter.addDataScheme("package")
     ctx.registerReceiver(br, filter)
 }
+
+fun parsePackageNames(input: String) = input.split('\n').filter { it.isNotEmpty() }

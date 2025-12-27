@@ -224,10 +224,9 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         suspendedPackages.value = packages.map { getAppInfo(it) }
     }
     @RequiresApi(24)
-    fun setPackageSuspended(name: String, status: Boolean): Boolean {
-        val result = DPM.setPackagesSuspended(DAR, arrayOf(name), status)
+    fun setPackageSuspended(packages: List<String>, status: Boolean) {
+        DPM.setPackagesSuspended(DAR, packages.toTypedArray(), status)
         getSuspendedPackaged()
-        return result.isEmpty()
     }
 
     val hiddenPackages = MutableStateFlow(emptyList<AppInfo>())
@@ -236,10 +235,11 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             DPM.isApplicationHidden(DAR, it.packageName)
         }.map { getAppInfo(it) }
     }
-    fun setPackageHidden(name: String, status: Boolean): Boolean {
-        val result = DPM.setApplicationHidden(DAR, name, status)
+    fun setPackageHidden(packages: List<String>, status: Boolean) {
+        for (name in packages) {
+            DPM.setApplicationHidden(DAR, name, status)
+        }
         getHiddenPackages()
-        return result
     }
 
     // Uninstall blocked packages
@@ -249,8 +249,10 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             DPM.isUninstallBlocked(DAR, it.packageName)
         }.map { getAppInfo(it) }
     }
-    fun setPackageUb(name: String, status: Boolean) {
-        DPM.setUninstallBlocked(DAR, name, status)
+    fun setPackageUb(packages: List<String>, status: Boolean) {
+        for (name in packages) {
+            DPM.setUninstallBlocked(DAR, name, status)
+        }
         getUbPackages()
     }
 
@@ -263,10 +265,12 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         }
     }
     @RequiresApi(30)
-    fun setPackageUcd(name: String, status: Boolean) {
+    fun setPackageUcd(packages: List<String>, status: Boolean) {
         DPM.setUserControlDisabledPackages(
             DAR,
-            ucdPackages.value.map { it.name }.run { if (status) plus(name) else minus(name) }
+            ucdPackages.value.map { it.name }.run {
+                if (status) plus(packages) else minus(packages)
+            }
         )
         getUcdPackages()
     }
@@ -296,12 +300,13 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         mddPackages.value = DPM.getMeteredDataDisabledPackages(DAR).distinct().map { getAppInfo(it) }
     }
     @RequiresApi(28)
-    fun setPackageMdd(name: String, status: Boolean): Boolean {
-        val result = DPM.setMeteredDataDisabledPackages(
-            DAR, mddPackages.value.map { it.name }.run { if (status) plus(name) else minus(name) }
+    fun setPackageMdd(packages: List<String>, status: Boolean) {
+        DPM.setMeteredDataDisabledPackages(
+            DAR, mddPackages.value.map { it.name }.run {
+                if (status) plus(packages) else minus(packages)
+            }
         )
         getMddPackages()
-        return result.isEmpty()
     }
 
     // Keep uninstalled packages
@@ -311,9 +316,11 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         kuPackages.value = DPM.getKeepUninstalledPackages(DAR)?.distinct()?.map { getAppInfo(it) } ?: emptyList()
     }
     @RequiresApi(28)
-    fun setPackageKu(name: String, status: Boolean) {
+    fun setPackageKu(packages: List<String>, status: Boolean) {
         DPM.setKeepUninstalledPackages(
-            DAR, kuPackages.value.map { it.name }.run { if (status) plus(name) else minus(name) }
+            DAR, kuPackages.value.map { it.name }.run {
+                if (status) plus(packages) else minus(packages)
+            }
         )
         getKuPackages()
     }
@@ -325,10 +332,12 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         cpPackages.value = DPM.getCrossProfilePackages(DAR).map { getAppInfo(it) }
     }
     @RequiresApi(30)
-    fun setPackageCp(name: String, status: Boolean) {
+    fun setPackageCp(packages: List<String>, status: Boolean) {
         DPM.setCrossProfilePackages(
             DAR,
-            cpPackages.value.map { it.name }.toSet().run { if (status) plus(name) else minus(name) }
+            cpPackages.value.map { it.name }.toSet().run {
+                if (status) plus(packages) else minus(packages)
+            }
         )
         getCpPackages()
     }
@@ -338,14 +347,15 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     fun getCpwProviders() {
         cpwProviders.value = DPM.getCrossProfileWidgetProviders(DAR).distinct().map { getAppInfo(it) }
     }
-    fun setCpwProvider(name: String, status: Boolean): Boolean {
-        val result = if (status) {
-            DPM.addCrossProfileWidgetProvider(DAR, name)
-        } else {
-            DPM.removeCrossProfileWidgetProvider(DAR, name)
+    fun setCpwProvider(packages: List<String>, status: Boolean) {
+        for (name in packages) {
+            if (status) {
+                DPM.addCrossProfileWidgetProvider(DAR, name)
+            } else {
+                DPM.removeCrossProfileWidgetProvider(DAR, name)
+            }
         }
         getCpwProviders()
-        return result
     }
 
     @RequiresApi(28)
@@ -401,9 +411,9 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             policy.policyType
         } ?: -1
     }
-    fun setCmPackage(name: String, status: Boolean) {
-        cmPackages.update { list ->
-            if (status) list + getAppInfo(name) else list.filter { it.name != name }
+    fun setCmPackage(packages: List<String>, status: Boolean) {
+        cmPackages.update {
+            updateAppInfoList(it, packages, status)
         }
     }
     @RequiresApi(34)
@@ -414,6 +424,16 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         getCmPolicy()
     }
 
+    fun updateAppInfoList(
+        origin: List<AppInfo>, input: List<String>, status: Boolean
+    ): List<AppInfo> {
+        return if (status) {
+            origin + input.map { getAppInfo(it) }
+        } else {
+            origin.filter { it.name !in input }
+        }
+    }
+
     // Permitted input method
     val pimPackages = MutableStateFlow(emptyList<AppInfo>())
     fun getPimPackages(): Boolean {
@@ -422,9 +442,9 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             packages == null
         }
     }
-    fun setPimPackage(name: String, status: Boolean) {
-        pimPackages.update { packages ->
-            if (status) packages + getAppInfo(name) else packages.filter { it.name != name }
+    fun setPimPackage(packages: List<String>, status: Boolean) {
+        pimPackages.update {
+            updateAppInfoList(it, packages, status)
         }
     }
     fun setPimPolicy(allowAll: Boolean): Boolean {
@@ -442,9 +462,9 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             packages == null
         }
     }
-    fun setPasPackage(name: String, status: Boolean) {
-        pasPackages.update { packages ->
-            if (status) packages + getAppInfo(name) else packages.filter { it.name != name }
+    fun setPasPackage(packages: List<String>, status: Boolean) {
+        pasPackages.update {
+            updateAppInfoList(it, packages, status)
         }
     }
     fun setPasPolicy(allowAll: Boolean): Boolean {
