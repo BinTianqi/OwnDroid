@@ -101,31 +101,29 @@ fun CreateWorkProfileScreen(
         var migrateAccountName by remember { mutableStateOf("") }
         var migrateAccountType by remember { mutableStateOf("") }
         var keepAccount by remember { mutableStateOf(true) }
-        if (VERSION.SDK_INT >= 22) {
-            FullWidthCheckBoxItem(R.string.migrate_account, migrateAccount) { migrateAccount = it }
-            AnimatedVisibility(migrateAccount) {
-                val fr = FocusRequester()
-                Column(modifier = Modifier.padding(start = 10.dp)) {
-                    OutlinedTextField(
-                        value = migrateAccountName, onValueChange = { migrateAccountName = it },
-                        label = { Text(stringResource(R.string.account_name)) },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions { fr.requestFocus() },
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding)
-                    )
-                    OutlinedTextField(
-                        value = migrateAccountType, onValueChange = { migrateAccountType = it },
-                        label = { Text(stringResource(R.string.account_type)) },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions { focusMgr.clearFocus() },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = HorizontalPadding)
-                            .focusRequester(fr)
-                    )
-                    if(VERSION.SDK_INT >= 26) {
-                        FullWidthCheckBoxItem(R.string.keep_account, keepAccount) { keepAccount = it }
-                    }
+        FullWidthCheckBoxItem(R.string.migrate_account, migrateAccount) { migrateAccount = it }
+        AnimatedVisibility(migrateAccount) {
+            val fr = FocusRequester()
+            Column(modifier = Modifier.padding(start = 10.dp)) {
+                OutlinedTextField(
+                    value = migrateAccountName, onValueChange = { migrateAccountName = it },
+                    label = { Text(stringResource(R.string.account_name)) },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions { fr.requestFocus() },
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding)
+                )
+                OutlinedTextField(
+                    value = migrateAccountType, onValueChange = { migrateAccountType = it },
+                    label = { Text(stringResource(R.string.account_type)) },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions { focusMgr.clearFocus() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = HorizontalPadding)
+                        .focusRequester(fr)
+                )
+                if(VERSION.SDK_INT >= 26) {
+                    FullWidthCheckBoxItem(R.string.keep_account, keepAccount) { keepAccount = it }
                 }
             }
         }

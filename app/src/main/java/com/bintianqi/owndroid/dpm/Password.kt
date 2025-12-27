@@ -333,12 +333,10 @@ fun ResetPasswordScreen(resetPassword: (String, String, Int) -> Boolean, onNavig
             visualTransformation = PasswordVisualTransformation()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT >= 23) {
-            CheckBoxItem(
-                R.string.do_not_ask_credentials_on_boot,
-                flags and RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT != 0
-            ) { flags = flags xor RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT }
-        }
+        CheckBoxItem(
+            R.string.do_not_ask_credentials_on_boot,
+            flags and RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT != 0
+        ) { flags = flags xor RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT }
         CheckBoxItem(
             R.string.reset_password_require_entry,
             flags and RESET_PASSWORD_REQUIRE_ENTRY != 0

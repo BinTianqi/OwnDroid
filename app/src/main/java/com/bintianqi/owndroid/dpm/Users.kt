@@ -30,12 +30,12 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -105,25 +105,23 @@ fun UsersScreen(vm: MyViewModel, onNavigateUp: () -> Unit, onNavigate: (Any) -> 
             FunctionItem(R.string.create_user, icon = R.drawable.person_add_fill0) { onNavigate(CreateUser) }
         }
         FunctionItem(R.string.change_username, icon = R.drawable.edit_fill0) { onNavigate(ChangeUsername) }
-        if(VERSION.SDK_INT >= 23) {
-            var changeUserIconDialog by remember { mutableStateOf(false) }
-            var bitmap: Bitmap? by remember { mutableStateOf(null) }
-            val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
-                if(it != null) uriToStream(context, it) { stream ->
-                    bitmap = BitmapFactory.decodeStream(stream)
-                    if(bitmap != null) changeUserIconDialog = true
-                }
+        var changeUserIconDialog by remember { mutableStateOf(false) }
+        var bitmap: Bitmap? by remember { mutableStateOf(null) }
+        val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
+            if(it != null) uriToStream(context, it) { stream ->
+                bitmap = BitmapFactory.decodeStream(stream)
+                if(bitmap != null) changeUserIconDialog = true
             }
-            FunctionItem(R.string.change_user_icon, icon = R.drawable.account_circle_fill0) {
-                context.popToast(R.string.select_an_image)
-                launcher.launch("image/*")
-            }
-            if (changeUserIconDialog) ChangeUserIconDialog(
-                bitmap!!, {
-                    vm.setUserIcon(bitmap!!)
-                    changeUserIconDialog = false
-                }) { changeUserIconDialog = false }
         }
+        FunctionItem(R.string.change_user_icon, icon = R.drawable.account_circle_fill0) {
+            context.popToast(R.string.select_an_image)
+            launcher.launch("image/*")
+        }
+        if (changeUserIconDialog) ChangeUserIconDialog(
+            bitmap!!, {
+                vm.setUserIcon(bitmap!!)
+                changeUserIconDialog = false
+            }) { changeUserIconDialog = false }
         if(VERSION.SDK_INT >= 28 && privilege.device) {
             FunctionItem(R.string.user_session_msg, icon = R.drawable.notifications_fill0) { onNavigate(UserSessionMessage) }
         }
@@ -191,7 +189,7 @@ fun UserInfoScreen(getInfo: () -> UserInformation, onNavigateUp: () -> Unit) {
         if (VERSION.SDK_INT >= 24) InfoItem(R.string.support_multiuser, info.multiUser.yesOrNo)
         if (VERSION.SDK_INT >= 31) InfoItem(R.string.headless_system_user_mode, info.headless.yesOrNo, true) { infoDialog = 1 }
         Spacer(Modifier.height(8.dp))
-        if (VERSION.SDK_INT >= 23) InfoItem(R.string.system_user, info.system.yesOrNo)
+        InfoItem(R.string.system_user, info.system.yesOrNo)
         if (VERSION.SDK_INT >= 34) InfoItem(R.string.admin_user, info.admin.yesOrNo)
         if (VERSION.SDK_INT >= 25) InfoItem(R.string.demo_user, info.demo.yesOrNo)
         if (info.time != 0L) InfoItem(R.string.creation_time, formatDate(info.time))
@@ -264,7 +262,7 @@ fun UserOperationScreen(
                 input, { input = it },
                 Modifier
                     .fillMaxWidth()
-                    .menuAnchor(MenuAnchorType.PrimaryEditable)
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable)
                     .padding(top = 4.dp, bottom = 8.dp),
                 label = {
                     Text(stringResource(if(useUserId) R.string.user_id else R.string.serial_number))
@@ -586,7 +584,6 @@ fun UserSessionMessageScreen(
     }
 }
 
-@RequiresApi(23)
 @Composable
 private fun ChangeUserIconDialog(bitmap: Bitmap, onSet: () -> Unit, onClose: () -> Unit) {
     AlertDialog(

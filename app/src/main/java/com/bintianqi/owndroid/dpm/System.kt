@@ -171,9 +171,7 @@ fun SystemManagerScreen(
             FunctionItem(R.string.key_pairs, icon = R.drawable.key_vertical_fill0) { navCtrl.navigate("KeyPairs") }*/
         if(VERSION.SDK_INT >= 35 && (privilege.device || (privilege.profile && privilege.affiliated)))
             FunctionItem(R.string.content_protection_policy, icon = R.drawable.search_fill0) { onNavigate(ContentProtectionPolicy) }
-        if(VERSION.SDK_INT >= 23) {
-            FunctionItem(R.string.permission_policy, icon = R.drawable.key_fill0) { onNavigate(PermissionPolicy) }
-        }
+        FunctionItem(R.string.permission_policy, icon = R.drawable.key_fill0) { onNavigate(PermissionPolicy) }
         if(VERSION.SDK_INT >= 34 && privilege.device) {
             FunctionItem(R.string.mte_policy, icon = R.drawable.memory_fill0) { onNavigate(MtePolicy) }
         }
@@ -204,7 +202,7 @@ fun SystemManagerScreen(
             FunctionItem(R.string.support_messages, icon = R.drawable.chat_fill0) { onNavigate(SupportMessage) }
         }
         FunctionItem(R.string.disable_account_management, icon = R.drawable.account_circle_fill0) { onNavigate(DisableAccountManagement) }
-        if(VERSION.SDK_INT >= 23 && (privilege.device || privilege.org)) {
+        if (privilege.device || privilege.org) {
             FunctionItem(R.string.system_update_policy, icon = R.drawable.system_update_fill0) { onNavigate(SetSystemUpdatePolicy) }
         }
         if(VERSION.SDK_INT >= 29 && (privilege.device || privilege.org)) {
@@ -368,7 +366,7 @@ fun SystemOptionsScreen(vm: MyViewModel, onNavigateUp: () -> Unit) {
             SwitchItem(R.string.enable_usb_signal, status.usbSignalEnabled,
                 vm::setUsbSignalEnabled, R.drawable.usb_fill0)
         }
-        if (VERSION.SDK_INT >= 23 && VERSION.SDK_INT < 34) {
+        if (VERSION.SDK_INT < 34) {
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding),
                 verticalAlignment = Alignment.CenterVertically
@@ -413,8 +411,8 @@ fun KeyguardScreen(
     val context = LocalContext.current
     val privilege by Privilege.status.collectAsStateWithLifecycle()
     MyScaffold(R.string.keyguard, onNavigateUp) {
-        if (VERSION.SDK_INT >= 23 && (privilege.device ||
-                    (VERSION.SDK_INT >= 28 && privilege.profile && privilege.affiliated))) {
+        if (privilege.device ||
+                    (VERSION.SDK_INT >= 28 && privilege.profile && privilege.affiliated)) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
@@ -435,7 +433,7 @@ fun KeyguardScreen(
             Notes(R.string.info_disable_keyguard)
             Spacer(Modifier.padding(vertical = 12.dp))
         }
-        if(VERSION.SDK_INT >= 23) Text(text = stringResource(R.string.lock_now), style = typography.headlineLarge)
+        Text(text = stringResource(R.string.lock_now), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 2.dp))
         var evictKey by rememberSaveable { mutableStateOf(false) }
         Button(
@@ -1007,7 +1005,6 @@ fun ContentProtectionPolicyScreen(
 
 @Serializable object PermissionPolicy
 
-@RequiresApi(23)
 @Composable
 fun PermissionPolicyScreen(
     getPolicy: () -> Int, setPolicy: (Int) -> Unit, onNavigateUp: () -> Unit
@@ -1215,7 +1212,7 @@ private fun StartLockTaskMode(
     var activity by rememberSaveable { mutableStateOf("") }
     var specifyActivity by rememberSaveable { mutableStateOf(false) }
     var clearTask by rememberSaveable { mutableStateOf(true) }
-    var showNotification by rememberSaveable() { mutableStateOf(true) }
+    var showNotification by rememberSaveable { mutableStateOf(true) }
     LaunchedEffect(Unit) {
         packageName = chosenPackage.receive()
     }
@@ -1785,7 +1782,7 @@ fun WipeDataScreen(
         FullWidthCheckBoxItem(R.string.wipe_external_storage, flag and WIPE_EXTERNAL_STORAGE != 0) {
             flag = flag xor WIPE_EXTERNAL_STORAGE
         }
-        if(VERSION.SDK_INT >= 22 && privilege.device) FullWidthCheckBoxItem(
+        if (privilege.device) FullWidthCheckBoxItem(
             R.string.wipe_reset_protection_data, flag and WIPE_RESET_PROTECTION_DATA != 0) {
             flag = flag xor WIPE_RESET_PROTECTION_DATA
         }
@@ -1839,7 +1836,7 @@ fun WipeDataScreen(
             text = {
                 Text(
                     text = stringResource(
-                        if(VERSION.SDK_INT >= 23 && userManager.isSystemUser) R.string.wipe_data_warning
+                        if (userManager.isSystemUser) R.string.wipe_data_warning
                         else R.string.info_wipe_data_in_managed_user
                     ),
                     color = colorScheme.error
@@ -1880,7 +1877,6 @@ data class PendingSystemUpdateInfo(val exists: Boolean, val time: Long, val secu
 
 @Serializable object SetSystemUpdatePolicy
 
-@RequiresApi(23)
 @Composable
 fun SystemUpdatePolicyScreen(
     getPolicy: () -> SystemUpdatePolicyInfo, setPolicy: (SystemUpdatePolicyInfo) -> Unit,

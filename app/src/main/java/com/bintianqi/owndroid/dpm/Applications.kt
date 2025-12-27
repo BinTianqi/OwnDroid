@@ -65,6 +65,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -78,6 +82,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -121,6 +126,7 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -213,9 +219,7 @@ fun ApplicationsFeaturesScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Un
             if(VERSION.SDK_INT >= 30 && (privilege.device || (VERSION.SDK_INT >= 33 && privilege.profile))) {
                 FunctionItem(R.string.disable_user_control, icon = R.drawable.do_not_touch_fill0) { onNavigate(DisableUserControl) }
             }
-            if(VERSION.SDK_INT >= 23) {
-                FunctionItem(R.string.permissions, icon = R.drawable.shield_fill0) { onNavigate(PermissionsManager()) }
-            }
+            FunctionItem(R.string.permissions, icon = R.drawable.shield_fill0) { onNavigate(PermissionsManager()) }
             if(VERSION.SDK_INT >= 28) {
                 FunctionItem(R.string.disable_metered_data, icon = R.drawable.money_off_fill0) { onNavigate(DisableMeteredData) }
             }
@@ -278,7 +282,7 @@ fun ApplicationDetailsScreen(
     val appRestrictions by vm.appRestrictions.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
         vm.getAppStatus(packageName)
-        if (VERSION.SDK_INT >= 23) vm.getAppRestrictions(packageName)
+        vm.getAppRestrictions(packageName)
     }
     MySmallTitleScaffold(R.string.place_holder, onNavigateUp, 0.dp) {
         Column(Modifier
@@ -320,7 +324,7 @@ fun ApplicationDetailsScreen(
             state = status.keepUninstalled,
             onCheckedChange = { vm.adSetPackageKu(packageName, it) }
         )
-        if (VERSION.SDK_INT >= 23 && appRestrictions.isNotEmpty()) {
+        if (appRestrictions.isNotEmpty()) {
             FunctionItem(R.string.managed_configuration, icon = R.drawable.description_fill0) {
                 onNavigate(ManagedConfiguration(packageName))
             }
@@ -347,7 +351,6 @@ fun ApplicationDetailsScreen(
 
 @Serializable data class PermissionsManager(val packageName: String? = null)
 
-@RequiresApi(23)
 @Composable
 fun PermissionsManagerScreen(
     packagePermissions: MutableStateFlow<Map<String, Int>>, getPackagePermissions: (String) -> Unit,
@@ -806,12 +809,15 @@ fun PackageFunctionScreen(
     chosenPackage: Channel<String>, onChoosePackage: () -> Unit,
     navigateToGroups: () -> Unit, appGroups: StateFlow<List<AppGroup>>, notes: Int? = null
 ) {
+    val context = LocalContext.current
     val groups by appGroups.collectAsStateWithLifecycle()
     val packages by packagesState.collectAsStateWithLifecycle()
     var input by rememberSaveable { mutableStateOf("") }
     val inputPackages = parsePackageNames(input)
     var dialog by remember { mutableStateOf(false) }
     var selectedGroup by remember { mutableStateOf<AppGroup?>(null) }
+    val snackbar = remember { SnackbarHostState() }
+    val coroutine = rememberCoroutineScope()
     LaunchedEffect(Unit) {
         onGet()
         input = chosenPackage.receive()
@@ -852,12 +858,25 @@ fun PackageFunctionScreen(
                     }
                 }
             )
+        },
+        snackbarHost = {
+            SnackbarHost(snackbar)
         }
     ) { paddingValues ->
         LazyColumn(Modifier.padding(paddingValues)) {
             items(packages, { it.name }) {
                 ApplicationItem(it) {
                     onSet(listOf(it.name), false)
+                    coroutine.launch {
+                        val result = snackbar.showSnackbar(
+                            context.getString(R.string.package_removed, it.name),
+                            context.getString(R.string.undo),
+                            true, SnackbarDuration.Short
+                        )
+                        if (result == SnackbarResult.ActionPerformed) {
+                            onSet(listOf(it.name), true)
+                        }
+                    }
                 }
             }
             item {

@@ -276,7 +276,6 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     }
 
     val packagePermissions = MutableStateFlow(emptyMap<String, Int>())
-    @RequiresApi(23)
     fun getPackagePermissions(name: String) {
         if (name.isValidPackageName) {
             packagePermissions.value = runtimePermissions.associate {
@@ -286,7 +285,6 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             packagePermissions.value = emptyMap()
         }
     }
-    @RequiresApi(23)
     fun setPackagePermission(name: String, permission: String, status: Int): Boolean {
         val result = DPM.setPermissionGrantState(DAR, name, permission, status)
         getPackagePermissions(name)
@@ -366,6 +364,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     }
 
     fun uninstallPackage(packageName: String, onComplete: (String?) -> Unit) {
+        val action = "com.bintianqi.owndroid.action.PACKAGE_UNINSTALLED"
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
                 val statusExtra = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, 999)
@@ -383,16 +382,17 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             }
         }
         ContextCompat.registerReceiver(
-            application, receiver, IntentFilter(AppInstallerViewModel.ACTION), null,
-            null, ContextCompat.RECEIVER_EXPORTED
+            application, receiver, IntentFilter(action), null,
+            null, ContextCompat.RECEIVER_NOT_EXPORTED
         )
+        val intent = Intent(action).setPackage(application.packageName)
         val pi = if(VERSION.SDK_INT >= 34) {
             PendingIntent.getBroadcast(
-                application, 0, Intent(AppInstallerViewModel.ACTION),
+                application, 0, intent,
                 PendingIntent.FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT or PendingIntent.FLAG_MUTABLE
             ).intentSender
         } else {
-            PendingIntent.getBroadcast(application, 0, Intent(AppInstallerViewModel.ACTION), PendingIntent.FLAG_MUTABLE).intentSender
+            PendingIntent.getBroadcast(application, 0, intent, PendingIntent.FLAG_MUTABLE).intentSender
         }
         application.getPackageInstaller().uninstall(packageName, pi)
     }
@@ -545,7 +545,6 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
 
     val appRestrictions = MutableStateFlow(emptyList<AppRestriction>())
 
-    @RequiresApi(23)
     fun getAppRestrictions(name: String) {
         val rm = application.getSystemService(RestrictionsManager::class.java)
         try {
@@ -569,7 +568,6 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    @RequiresApi(23)
     fun setAppRestrictions(name: String, item: AppRestriction) {
         viewModelScope.launch(Dispatchers.IO) {
             val bundle = transformAppRestriction(
@@ -580,7 +578,6 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    @RequiresApi(23)
     fun clearAppRestrictions(name: String) {
         viewModelScope.launch(Dispatchers.IO) {
             DPM.setApplicationRestrictions(DAR, name, Bundle())
@@ -699,7 +696,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             autoTimeRequired = if (VERSION.SDK_INT < 30) DPM.autoTimeRequired else false,
             masterVolumeMuted = DPM.isMasterVolumeMuted(DAR),
             backupServiceEnabled = if (VERSION.SDK_INT >= 26) DPM.isBackupServiceEnabled(DAR) else false,
-            btContactSharingDisabled = if (VERSION.SDK_INT >= 23 && privilege.work)
+            btContactSharingDisabled = if (privilege.work)
                 DPM.getBluetoothContactSharingDisabled(DAR) else false,
             commonCriteriaMode = if (VERSION.SDK_INT >= 30 && privilege.run { device || org })
                 DPM.isCommonCriteriaModeEnabled(DAR) else false,
@@ -718,7 +715,6 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             it.copy(screenCaptureDisabled = DPM.getScreenCaptureDisabled(null))
         }
     }
-    @RequiresApi(23)
     fun setStatusBarDisabled(disabled: Boolean) {
         val result = DPM.setStatusBarDisabled(DAR, disabled)
         if (result) systemOptionsStatus.update { it.copy(statusBarDisabled = disabled) }
@@ -752,7 +748,6 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             it.copy(backupServiceEnabled = DPM.isBackupServiceEnabled(DAR))
         }
     }
-    @RequiresApi(23)
     fun setBtContactSharingDisabled(disabled: Boolean) {
         DPM.setBluetoothContactSharingDisabled(DAR, disabled)
         systemOptionsStatus.update {
@@ -771,7 +766,6 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         DPM.isUsbDataSignalingEnabled = enabled
         systemOptionsStatus.update { it.copy(usbSignalEnabled = DPM.isUsbDataSignalingEnabled) }
     }
-    @RequiresApi(23)
     fun setKeyguardDisabled(disabled: Boolean): Boolean {
         return DPM.setKeyguardDisabled(DAR, disabled)
     }
@@ -841,11 +835,9 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     fun setContentProtectionPolicy(policy: Int) {
         DPM.setContentProtectionPolicy(DAR, policy)
     }
-    @RequiresApi(23)
     fun getPermissionPolicy(): Int {
         return DPM.getPermissionPolicy(DAR)
     }
-    @RequiresApi(23)
     fun setPermissionPolicy(policy: Int) {
         DPM.setPermissionPolicy(DAR, policy)
     }
@@ -1031,14 +1023,12 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             }
         }
     }
-    @RequiresApi(23)
     fun getSystemUpdatePolicy(): SystemUpdatePolicyInfo {
         val policy = DPM.systemUpdatePolicy
         return SystemUpdatePolicyInfo(
             policy?.policyType ?: -1, policy?.installWindowStart ?: 0, policy?.installWindowEnd ?: 0
         )
     }
-    @RequiresApi(23)
     fun setSystemUpdatePolicy(info: SystemUpdatePolicyInfo) {
         val policy = when (info.type) {
             SystemUpdatePolicy.TYPE_INSTALL_AUTOMATIC -> SystemUpdatePolicy.createAutomaticInstallPolicy()
@@ -1352,28 +1342,19 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     }
     fun createWorkProfile(options: CreateWorkProfileOptions): Intent {
         val intent = Intent(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)
-        if (VERSION.SDK_INT >= 23) {
+        intent.putExtra(
+            DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME,
+            MyAdminComponent
+        )
+        intent.putExtra(
+            DevicePolicyManager.EXTRA_PROVISIONING_ACCOUNT_TO_MIGRATE,
+            Account(options.accountName, options.accountType)
+        )
+        if (VERSION.SDK_INT >= 26) {
             intent.putExtra(
-                DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME,
-                MyAdminComponent
+                DevicePolicyManager.EXTRA_PROVISIONING_KEEP_ACCOUNT_ON_MIGRATION,
+                options.keepAccount
             )
-        } else {
-            intent.putExtra(
-                DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME,
-                application.packageName
-            )
-        }
-        if (options.migrateAccount && VERSION.SDK_INT >= 22) {
-            intent.putExtra(
-                DevicePolicyManager.EXTRA_PROVISIONING_ACCOUNT_TO_MIGRATE,
-                Account(options.accountName, options.accountType)
-            )
-            if (VERSION.SDK_INT >= 26) {
-                intent.putExtra(
-                    DevicePolicyManager.EXTRA_PROVISIONING_KEEP_ACCOUNT_ON_MIGRATION,
-                    options.keepAccount
-                )
-            }
         }
         if (VERSION.SDK_INT >= 24) {
             intent.putExtra(
@@ -1440,10 +1421,10 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         return UserInformation(
             if (VERSION.SDK_INT >= 24) UserManager.supportsMultipleUsers() else false,
             if (VERSION.SDK_INT >= 31) UserManager.isHeadlessSystemUserMode() else false,
-            if (VERSION.SDK_INT >= 23) UM.isSystemUser else false,
+            UM.isSystemUser,
             if (VERSION.SDK_INT >= 34) UM.isAdminUser else false,
             if (VERSION.SDK_INT >= 25) UM.isDemoUser else false,
-            if (VERSION.SDK_INT >= 23) UM.getUserCreationTime(uh) else 0,
+            UM.getUserCreationTime(uh),
             if (VERSION.SDK_INT >= 28) DPM.isLogoutEnabled else false,
             if (VERSION.SDK_INT >= 28) DPM.isEphemeralUser(DAR) else false,
             if (VERSION.SDK_INT >= 28) DPM.isAffiliatedUser else false,
@@ -1518,7 +1499,6 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     fun setProfileName(name: String) {
         DPM.setProfileName(DAR, name)
     }
-    @RequiresApi(23)
     fun setUserIcon(bitmap: Bitmap) {
         DPM.setUserIcon(DAR, bitmap)
     }
@@ -1656,7 +1636,6 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         return PM.getPackageUid(name, 0)
     }
     var networkStatsData = emptyList<NetworkStatsData>()
-    @RequiresApi(23)
     fun readNetworkStats(stats: NetworkStats): List<NetworkStatsData> {
         val list = mutableListOf<NetworkStatsData>()
         while (stats.hasNextBucket()) {
@@ -1667,7 +1646,6 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         stats.close()
         return list
     }
-    @RequiresApi(23)
     fun readNetworkStatsBucket(bucket: NetworkStats.Bucket): NetworkStatsData {
         return NetworkStatsData(
             bucket.rxBytes, bucket.rxPackets, bucket.txBytes, bucket.txPackets,

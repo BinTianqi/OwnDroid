@@ -269,10 +269,6 @@ class MainActivity : FragmentActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-    }
-
 }
 
 @ExperimentalMaterial3Api

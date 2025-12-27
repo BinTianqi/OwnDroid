@@ -68,6 +68,7 @@
     <string name="timeout">超时</string>
     <string name="continue_str">继续</string>
     <string name="exit">退出</string>
+    <string name="undo">撤销</string>
 
     <!--Permissions-->
     <string name="profile_owner">Profile owner</string>
@@ -381,6 +382,7 @@
     <string name="managed_configuration">托管配置</string>
     <string name="clear_configurations">清除配置</string>
     <string name="specify_value">指定值</string>
+    <string name="package_removed">移除了 %1$s</string>
 
     <!--UserRestriction-->
     <string name="user_restriction">用户限制</string>

@@ -73,6 +73,7 @@
     <string name="timeout">Timeout</string>
     <string name="continue_str">Continue</string>
     <string name="exit">Exit</string>
+    <string name="undo">Undo</string>
 
     <!--Permissions-->
     <string name="profile_owner">Profile owner</string>
@@ -415,6 +416,7 @@
     <string name="managed_configuration">Managed configuration</string>
     <string name="clear_configurations">Clear configurations</string>
     <string name="specify_value">Specify value</string>
+    <string name="package_removed">Removed %1$s</string>
 
     <!--UserRestriction-->
     <string name="user_restriction">User restriction</string>

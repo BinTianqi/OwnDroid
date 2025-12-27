@@ -36,11 +36,17 @@ class AppInstallerViewModel(application: Application): AndroidViewModel(applicat
         intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)?.let { list += it }
         intent.getParcelableArrayExtra(Intent.EXTRA_STREAM)?.forEach { list += it as Uri }
         intent.clipData?.let { clipData ->
-            for(i in 0..clipData.itemCount - 1) {
+            for(i in 0..<clipData.itemCount) {
                 list += clipData.getItemAt(i).uri
             }
         }
         uiState.update { it.copy(it.packages + list.distinct()) }
+    }
+
+    fun registerInstallerReceiver(context: Context) {
+        ContextCompat.registerReceiver(
+            context, Receiver(), IntentFilter(ACTION), ContextCompat.RECEIVER_NOT_EXPORTED
+        )
     }
 
     fun onPackagesAdd(packages: List<Uri>) {
@@ -93,17 +99,14 @@ class AppInstallerViewModel(application: Application): AndroidViewModel(applicat
             uiState.update { it.copy(installing = false, packageWriting = -1) }
             return
         }
-        ContextCompat.registerReceiver(
-            application, Receiver(), IntentFilter(ACTION), null,
-            null, ContextCompat.RECEIVER_EXPORTED
-        )
+        val intent = Intent(ACTION).setPackage(application.packageName)
         val pi = if(Build.VERSION.SDK_INT >= 34) {
             PendingIntent.getBroadcast(
-                application, sessionId, Intent(ACTION),
+                application, sessionId, intent,
                 PendingIntent.FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT or PendingIntent.FLAG_MUTABLE
             ).intentSender
         } else {
-            PendingIntent.getBroadcast(application, sessionId, Intent(ACTION), PendingIntent.FLAG_MUTABLE).intentSender
+            PendingIntent.getBroadcast(application, sessionId, intent, PendingIntent.FLAG_MUTABLE).intentSender
         }
         session.commit(pi)
     }
@@ -119,7 +122,6 @@ class AppInstallerViewModel(application: Application): AndroidViewModel(applicat
                 )
             } else {
                 uiState.update { it.copy(result = intent) }
-                context.unregisterReceiver(this)
             }
         }
     }
