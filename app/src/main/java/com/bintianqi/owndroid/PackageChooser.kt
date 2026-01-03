@@ -242,7 +242,7 @@ fun AppChooserScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .combinedClickable(onLongClick = {
-                            if (params.multiSelect) {
+                            if (params.multiSelect && it !in selectedPackages) {
                                 selectedPackages += it
                                 hf.performHapticFeedback(HapticFeedbackType.LongPress)
                             }

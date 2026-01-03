@@ -689,16 +689,16 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             statusBarDisabled = if (VERSION.SDK_INT >= 34 &&
                 privilege.run { device || (profile && affiliated) })
                 DPM.isStatusBarDisabled else false,
-            autoTimeEnabled = if (VERSION.SDK_INT >= 30 && privilege.run { device || org })
+            autoTimeEnabled = if (VERSION.SDK_INT >= 30 && (privilege.device || privilege.org))
                 DPM.getAutoTimeEnabled(DAR) else false,
-            autoTimeZoneEnabled = if (VERSION.SDK_INT >= 30 && privilege.run { device || org })
+            autoTimeZoneEnabled = if (VERSION.SDK_INT >= 30 && (privilege.device || privilege.org))
                 DPM.getAutoTimeZoneEnabled(DAR) else false,
             autoTimeRequired = if (VERSION.SDK_INT < 30) DPM.autoTimeRequired else false,
             masterVolumeMuted = DPM.isMasterVolumeMuted(DAR),
             backupServiceEnabled = if (VERSION.SDK_INT >= 26) DPM.isBackupServiceEnabled(DAR) else false,
             btContactSharingDisabled = if (privilege.work)
                 DPM.getBluetoothContactSharingDisabled(DAR) else false,
-            commonCriteriaMode = if (VERSION.SDK_INT >= 30 && privilege.run { device || org })
+            commonCriteriaMode = if (VERSION.SDK_INT >= 30 && (privilege.device || privilege.org))
                 DPM.isCommonCriteriaModeEnabled(DAR) else false,
             usbSignalEnabled = if (VERSION.SDK_INT >= 31) DPM.isUsbDataSignalingEnabled else false,
             canDisableUsbSignal = if (VERSION.SDK_INT >= 31) DPM.canUsbDataSignalingBeDisabled() else false
@@ -1346,15 +1346,17 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME,
             MyAdminComponent
         )
-        intent.putExtra(
-            DevicePolicyManager.EXTRA_PROVISIONING_ACCOUNT_TO_MIGRATE,
-            Account(options.accountName, options.accountType)
-        )
-        if (VERSION.SDK_INT >= 26) {
+        if (options.migrateAccount) {
             intent.putExtra(
-                DevicePolicyManager.EXTRA_PROVISIONING_KEEP_ACCOUNT_ON_MIGRATION,
-                options.keepAccount
+                DevicePolicyManager.EXTRA_PROVISIONING_ACCOUNT_TO_MIGRATE,
+                Account(options.accountName, options.accountType)
             )
+            if (VERSION.SDK_INT >= 26) {
+                intent.putExtra(
+                    DevicePolicyManager.EXTRA_PROVISIONING_KEEP_ACCOUNT_ON_MIGRATION,
+                    options.keepAccount
+                )
+            }
         }
         if (VERSION.SDK_INT >= 24) {
             intent.putExtra(
@@ -1927,7 +1929,12 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     }
     @RequiresApi(26)
     fun setRpToken(token: String): Boolean {
-        return DPM.setResetPasswordToken(DAR, token.encodeToByteArray())
+        return try {
+            DPM.setResetPasswordToken(DAR, token.encodeToByteArray())
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
     }
     @RequiresApi(26)
     fun clearRpToken(): Boolean {
