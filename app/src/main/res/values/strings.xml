@@ -410,6 +410,7 @@
     <string name="search">Search</string>
     <string name="app_group">App group</string>
     <string name="manage_app_groups">Manage groups</string>
+    <string name="import_str">Import</string>
     <string name="edit_app_group">Edit group</string>
     <string name="add_to_list">Add to list</string>
     <string name="remove_from_list">Remove from list</string>

@@ -5,8 +5,11 @@ import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED
 import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED
 import android.app.admin.PackagePolicy
 import android.content.Intent
+import android.net.Uri
 import android.os.Build.VERSION
 import android.os.Looper
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -904,6 +907,8 @@ fun PackageFunctionScreen(
     if (dialog) AlertDialog(
         text = {
             Column {
+                Text(selectedGroup!!.name, style = typography.titleLarge)
+                Spacer(Modifier.height(6.dp))
                 Button({
                     onSet(selectedGroup!!.apps, true)
                     dialog = false
@@ -927,22 +932,68 @@ fun PackageFunctionScreen(
     )
 }
 
-class AppGroup(val id: Int, val name: String, val apps: List<String>)
+@Serializable
+open class BasicAppGroup(open val name: String, open val apps: List<String>)
+
+class AppGroup(
+    val id: Int, override val name: String, override val apps: List<String>
+) : BasicAppGroup(name, apps)
 
 @Serializable object ManageAppGroups
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManageAppGroupsScreen(
-    appGroups: StateFlow<List<AppGroup>>,
+    appGroups: StateFlow<List<AppGroup>>, exportData: (Uri) -> Unit, importData: (Uri) -> Unit,
     navigateToEditScreen: (Int?, String, List<String>) -> Unit, navigateUp: () -> Unit
 ) {
     val groups by appGroups.collectAsStateWithLifecycle()
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) {
+        if (it != null) exportData(it)
+    }
+    val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
+        if (it != null) importData(it)
+    }
     Scaffold(
         topBar = {
             TopAppBar(
                 { Text(stringResource(R.string.app_group)) },
-                navigationIcon = { NavIcon(navigateUp) }
+                navigationIcon = { NavIcon(navigateUp) },
+                actions = {
+                    var dropdown by remember { mutableStateOf(false) }
+                    Box {
+                        IconButton({
+                            dropdown = true
+                        }) {
+                            Icon(Icons.Default.MoreVert, null)
+                        }
+                        DropdownMenu(dropdown, { dropdown = false }) {
+                            DropdownMenuItem(
+                                { Text(stringResource(R.string.export)) },
+                                {
+                                    exportLauncher.launch("owndroid_app_groups")
+                                    dropdown = false
+                                },
+                                leadingIcon = {
+                                    Icon(painterResource(R.drawable.file_export_fill0), null)
+                                }
+                            )
+                            DropdownMenuItem(
+                                { Text(stringResource(R.string.import_str)) },
+                                {
+                                    importLauncher.launch(arrayOf("application/json"))
+                                    dropdown = false
+                                },
+                                leadingIcon = {
+                                    Icon(painterResource(R.drawable.file_open_fill0), null)
+                                }
+                            )
+                        }
+                    }
+
+                }
             )
         },
         floatingActionButton = {

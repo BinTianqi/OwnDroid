@@ -642,7 +642,7 @@ fun Home(vm: MyViewModel, onLock: () -> Unit) {
         }
         composable<ManageAppGroups> {
             ManageAppGroupsScreen(
-                vm.appGroups,
+                vm.appGroups, vm::exportAppGroups, vm::importAppGroups,
                 { id, name, apps -> navController.navigate(EditAppGroup(id, name, apps)) },
                 ::navigateUp
             )

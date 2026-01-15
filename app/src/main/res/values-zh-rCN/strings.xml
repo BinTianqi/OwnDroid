@@ -376,6 +376,7 @@
     <string name="search">搜索</string>
     <string name="app_group">应用组</string>
     <string name="manage_app_groups">管理组</string>
+    <string name="import_str">导入</string>
     <string name="edit_app_group">编辑组</string>
     <string name="add_to_list">添加到列表</string>
     <string name="remove_from_list">从列表中移除</string>

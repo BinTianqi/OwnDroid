@@ -65,6 +65,7 @@ import com.bintianqi.owndroid.dpm.ApnProtocol
 import com.bintianqi.owndroid.dpm.AppGroup
 import com.bintianqi.owndroid.dpm.AppRestriction
 import com.bintianqi.owndroid.dpm.AppStatus
+import com.bintianqi.owndroid.dpm.BasicAppGroup
 import com.bintianqi.owndroid.dpm.CaCertInfo
 import com.bintianqi.owndroid.dpm.CreateUserResult
 import com.bintianqi.owndroid.dpm.CreateWorkProfileOptions
@@ -119,6 +120,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.addJsonObject
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.put
 import java.net.InetAddress
 import java.security.MessageDigest
 import java.security.cert.CertificateException
@@ -631,6 +636,20 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         appGroups.update { group ->
             group.filter { it.id != id }
         }
+    }
+    fun exportAppGroups(uri: Uri) {
+        application.contentResolver.openOutputStream(uri)!!.use {
+            val list: List<BasicAppGroup> = appGroups.value
+            it.write(Json.encodeToString(list).encodeToByteArray())
+        }
+    }
+    fun importAppGroups(uri: Uri) {
+        application.contentResolver.openInputStream(uri)!!.use {
+            Json.decodeFromString<List<BasicAppGroup>>(it.readBytes().decodeToString())
+        }.forEach {
+            myRepo.setAppGroup(null, it.name, it.apps)
+        }
+        getAppGroups()
     }
 
     @RequiresApi(24)
