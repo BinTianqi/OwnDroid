@@ -1185,7 +1185,8 @@ fun ManagedConfigurationScreen(
                         .clickable {
                             dialog = entry
                         }
-                        .padding(HorizontalPadding, 8.dp),
+                        .padding(HorizontalPadding, 8.dp)
+                        .animateItem(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     val iconId = when (entry) {

@@ -570,6 +570,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             } ?: emptyList()
         } catch (e: Exception) {
             e.printStackTrace()
+            appRestrictions.value = emptyList()
         }
     }
 
