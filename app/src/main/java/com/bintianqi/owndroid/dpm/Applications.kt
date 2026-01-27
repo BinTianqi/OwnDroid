@@ -180,6 +180,7 @@ fun PackageNameTextField(
                 Icon(Icons.AutoMirrored.Default.List, null)
             }
         },
+        isError = value.isNotEmpty() && !value.isValidPackageName,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions { fm.clearFocus() }
     )
@@ -384,7 +385,7 @@ fun PermissionsManagerScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(packageName.isValidPackageName) {
+                    .clickable {
                         selectedPermission = index
                     }
                     .padding(8.dp)
@@ -467,8 +468,7 @@ fun ClearAppStorageScreen(
             Modifier.padding(vertical = 8.dp)) { packageName = it }
         Button(
             { dialog = true },
-            Modifier.fillMaxWidth(),
-            packageName.isValidPackageName
+            Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.clear))
         }
@@ -532,8 +532,7 @@ fun UninstallAppScreen(
             Modifier.padding(vertical = 8.dp)) { packageName = it }
         Button(
             { dialog = true },
-            Modifier.fillMaxWidth(),
-            packageName.isValidPackageName
+            Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.uninstall))
         }
@@ -607,8 +606,7 @@ fun InstallExistingAppScreen(
             {
                 context.showOperationResultToast(onInstall(packageName))
             },
-            Modifier.fillMaxWidth(),
-            packageName.isValidPackageName
+            Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.install))
         }
@@ -663,8 +661,7 @@ fun CredentialManagerPolicyScreen(
                             setCmPackage(inputPackages, true)
                             input = ""
                         },
-                        Modifier.fillMaxWidth(),
-                        inputPackages.all { it.isValidPackageName }
+                        Modifier.fillMaxWidth()
                     ) {
                         Text(stringResource(R.string.add))
                     }
@@ -721,8 +718,7 @@ fun PermittedAsAndImPackages(
                     },
                     Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = HorizontalPadding),
-                    inputPackages.all { it.isValidPackageName }
+                        .padding(horizontal = HorizontalPadding)
                 ) {
                     Text(stringResource(R.string.add))
                 }
@@ -894,8 +890,7 @@ fun PackageFunctionScreen(
                         .fillMaxWidth()
                         .padding(horizontal = HorizontalPadding)
                         .padding(bottom = 10.dp),
-                    inputPackages.all { it.isValidPackageName } &&
-                            packages.none { it.name in inputPackages }
+                    packages.none { it.name in inputPackages }
                 ) {
                     Text(stringResource(R.string.add))
                 }
@@ -1096,7 +1091,7 @@ fun EditAppGroupScreen(
                         .fillMaxWidth()
                         .padding(horizontal = HorizontalPadding)
                         .padding(bottom = 10.dp),
-                    inputPackages.all { it.isValidPackageName && it !in list }
+                    inputPackages.all { it !in list }
                 ) {
                     Text(stringResource(R.string.add))
                 }
