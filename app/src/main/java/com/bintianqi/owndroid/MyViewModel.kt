@@ -25,6 +25,8 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.RestrictionEntry
+import android.content.RestrictionsManager
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
@@ -39,6 +41,7 @@ import android.net.wifi.WifiManager
 import android.net.wifi.WifiSsid
 import android.os.Binder
 import android.os.Build.VERSION
+import android.os.Bundle
 import android.os.HardwarePropertiesManager
 import android.os.UserHandle
 import android.os.UserManager
@@ -60,7 +63,9 @@ import com.bintianqi.owndroid.dpm.ApnConfig
 import com.bintianqi.owndroid.dpm.ApnMvnoType
 import com.bintianqi.owndroid.dpm.ApnProtocol
 import com.bintianqi.owndroid.dpm.AppGroup
+import com.bintianqi.owndroid.dpm.AppRestriction
 import com.bintianqi.owndroid.dpm.AppStatus
+import com.bintianqi.owndroid.dpm.BasicAppGroup
 import com.bintianqi.owndroid.dpm.CaCertInfo
 import com.bintianqi.owndroid.dpm.CreateUserResult
 import com.bintianqi.owndroid.dpm.CreateWorkProfileOptions
@@ -115,6 +120,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.addJsonObject
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.put
 import java.net.InetAddress
 import java.security.MessageDigest
 import java.security.cert.CertificateException
@@ -154,10 +163,10 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         return AppLockConfig(passwordHash?.ifEmpty { null }, SP.biometricsUnlock, SP.lockWhenLeaving)
     }
     fun setAppLockConfig(config: AppLockConfig) {
-        SP.lockPasswordHash = if (config.password == null) {
-            ""
-        } else {
-            config.password.hash()
+        if (config.password == null) {
+            SP.lockPasswordHash = ""
+        } else if (!config.password.isEmpty()) {
+            SP.lockPasswordHash = config.password.hash()
         }
         SP.biometricsUnlock = config.biometrics
         SP.lockWhenLeaving = config.whenLeaving
@@ -196,6 +205,11 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             }
         }
     }
+    fun onPackageRemoved(name: String) {
+        installedPackages.update { list ->
+            list.filter { it.name != name }
+        }
+    }
     fun getAppInfo(info: ApplicationInfo) =
         AppInfo(info.packageName, info.loadLabel(PM).toString(), info.loadIcon(PM), info.flags)
     fun getAppInfo(name: String): AppInfo {
@@ -215,10 +229,9 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         suspendedPackages.value = packages.map { getAppInfo(it) }
     }
     @RequiresApi(24)
-    fun setPackageSuspended(name: String, status: Boolean): Boolean {
-        val result = DPM.setPackagesSuspended(DAR, arrayOf(name), status)
+    fun setPackageSuspended(packages: List<String>, status: Boolean) {
+        DPM.setPackagesSuspended(DAR, packages.toTypedArray(), status)
         getSuspendedPackaged()
-        return result.isEmpty()
     }
 
     val hiddenPackages = MutableStateFlow(emptyList<AppInfo>())
@@ -227,10 +240,11 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             DPM.isApplicationHidden(DAR, it.packageName)
         }.map { getAppInfo(it) }
     }
-    fun setPackageHidden(name: String, status: Boolean): Boolean {
-        val result = DPM.setApplicationHidden(DAR, name, status)
+    fun setPackageHidden(packages: List<String>, status: Boolean) {
+        for (name in packages) {
+            DPM.setApplicationHidden(DAR, name, status)
+        }
         getHiddenPackages()
-        return result
     }
 
     // Uninstall blocked packages
@@ -240,8 +254,10 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             DPM.isUninstallBlocked(DAR, it.packageName)
         }.map { getAppInfo(it) }
     }
-    fun setPackageUb(name: String, status: Boolean) {
-        DPM.setUninstallBlocked(DAR, name, status)
+    fun setPackageUb(packages: List<String>, status: Boolean) {
+        for (name in packages) {
+            DPM.setUninstallBlocked(DAR, name, status)
+        }
         getUbPackages()
     }
 
@@ -254,16 +270,17 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         }
     }
     @RequiresApi(30)
-    fun setPackageUcd(name: String, status: Boolean) {
+    fun setPackageUcd(packages: List<String>, status: Boolean) {
         DPM.setUserControlDisabledPackages(
             DAR,
-            ucdPackages.value.map { it.name }.run { if (status) plus(name) else minus(name) }
+            ucdPackages.value.map { it.name }.run {
+                if (status) plus(packages) else minus(packages)
+            }
         )
         getUcdPackages()
     }
 
     val packagePermissions = MutableStateFlow(emptyMap<String, Int>())
-    @RequiresApi(23)
     fun getPackagePermissions(name: String) {
         if (name.isValidPackageName) {
             packagePermissions.value = runtimePermissions.associate {
@@ -273,7 +290,6 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             packagePermissions.value = emptyMap()
         }
     }
-    @RequiresApi(23)
     fun setPackagePermission(name: String, permission: String, status: Int): Boolean {
         val result = DPM.setPermissionGrantState(DAR, name, permission, status)
         getPackagePermissions(name)
@@ -287,12 +303,13 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         mddPackages.value = DPM.getMeteredDataDisabledPackages(DAR).distinct().map { getAppInfo(it) }
     }
     @RequiresApi(28)
-    fun setPackageMdd(name: String, status: Boolean): Boolean {
-        val result = DPM.setMeteredDataDisabledPackages(
-            DAR, mddPackages.value.map { it.name }.run { if (status) plus(name) else minus(name) }
+    fun setPackageMdd(packages: List<String>, status: Boolean) {
+        DPM.setMeteredDataDisabledPackages(
+            DAR, mddPackages.value.map { it.name }.run {
+                if (status) plus(packages) else minus(packages)
+            }
         )
         getMddPackages()
-        return result.isEmpty()
     }
 
     // Keep uninstalled packages
@@ -302,9 +319,11 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         kuPackages.value = DPM.getKeepUninstalledPackages(DAR)?.distinct()?.map { getAppInfo(it) } ?: emptyList()
     }
     @RequiresApi(28)
-    fun setPackageKu(name: String, status: Boolean) {
+    fun setPackageKu(packages: List<String>, status: Boolean) {
         DPM.setKeepUninstalledPackages(
-            DAR, kuPackages.value.map { it.name }.run { if (status) plus(name) else minus(name) }
+            DAR, kuPackages.value.map { it.name }.run {
+                if (status) plus(packages) else minus(packages)
+            }
         )
         getKuPackages()
     }
@@ -316,10 +335,12 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         cpPackages.value = DPM.getCrossProfilePackages(DAR).map { getAppInfo(it) }
     }
     @RequiresApi(30)
-    fun setPackageCp(name: String, status: Boolean) {
+    fun setPackageCp(packages: List<String>, status: Boolean) {
         DPM.setCrossProfilePackages(
             DAR,
-            cpPackages.value.map { it.name }.toSet().run { if (status) plus(name) else minus(name) }
+            cpPackages.value.map { it.name }.toSet().run {
+                if (status) plus(packages) else minus(packages)
+            }
         )
         getCpPackages()
     }
@@ -329,14 +350,15 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     fun getCpwProviders() {
         cpwProviders.value = DPM.getCrossProfileWidgetProviders(DAR).distinct().map { getAppInfo(it) }
     }
-    fun setCpwProvider(name: String, status: Boolean): Boolean {
-        val result = if (status) {
-            DPM.addCrossProfileWidgetProvider(DAR, name)
-        } else {
-            DPM.removeCrossProfileWidgetProvider(DAR, name)
+    fun setCpwProvider(packages: List<String>, status: Boolean) {
+        for (name in packages) {
+            if (status) {
+                DPM.addCrossProfileWidgetProvider(DAR, name)
+            } else {
+                DPM.removeCrossProfileWidgetProvider(DAR, name)
+            }
         }
         getCpwProviders()
-        return result
     }
 
     @RequiresApi(28)
@@ -347,6 +369,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     }
 
     fun uninstallPackage(packageName: String, onComplete: (String?) -> Unit) {
+        val action = "com.bintianqi.owndroid.action.PACKAGE_UNINSTALLED"
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
                 val statusExtra = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, 999)
@@ -355,7 +378,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
                     context.startActivity(intent.getParcelableExtra(Intent.EXTRA_INTENT) as Intent?)
                 } else {
                     context.unregisterReceiver(this)
-                    if(statusExtra == PackageInstaller.STATUS_SUCCESS) {
+                    if (statusExtra == PackageInstaller.STATUS_SUCCESS) {
                         onComplete(null)
                     } else {
                         onComplete(parsePackageInstallerMessage(context, intent))
@@ -364,16 +387,17 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             }
         }
         ContextCompat.registerReceiver(
-            application, receiver, IntentFilter(AppInstallerViewModel.ACTION), null,
-            null, ContextCompat.RECEIVER_EXPORTED
+            application, receiver, IntentFilter(action), null,
+            null, ContextCompat.RECEIVER_NOT_EXPORTED
         )
+        val intent = Intent(action).setPackage(application.packageName)
         val pi = if(VERSION.SDK_INT >= 34) {
             PendingIntent.getBroadcast(
-                application, 0, Intent(AppInstallerViewModel.ACTION),
+                application, 0, intent,
                 PendingIntent.FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT or PendingIntent.FLAG_MUTABLE
             ).intentSender
         } else {
-            PendingIntent.getBroadcast(application, 0, Intent(AppInstallerViewModel.ACTION), PendingIntent.FLAG_MUTABLE).intentSender
+            PendingIntent.getBroadcast(application, 0, intent, PendingIntent.FLAG_MUTABLE).intentSender
         }
         application.getPackageInstaller().uninstall(packageName, pi)
     }
@@ -392,9 +416,9 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             policy.policyType
         } ?: -1
     }
-    fun setCmPackage(name: String, status: Boolean) {
-        cmPackages.update { list ->
-            if (status) list + getAppInfo(name) else list.filter { it.name != name }
+    fun setCmPackage(packages: List<String>, status: Boolean) {
+        cmPackages.update {
+            updateAppInfoList(it, packages, status)
         }
     }
     @RequiresApi(34)
@@ -405,6 +429,16 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         getCmPolicy()
     }
 
+    fun updateAppInfoList(
+        origin: List<AppInfo>, input: List<String>, status: Boolean
+    ): List<AppInfo> {
+        return if (status) {
+            origin + input.map { getAppInfo(it) }
+        } else {
+            origin.filter { it.name !in input }
+        }
+    }
+
     // Permitted input method
     val pimPackages = MutableStateFlow(emptyList<AppInfo>())
     fun getPimPackages(): Boolean {
@@ -413,9 +447,9 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             packages == null
         }
     }
-    fun setPimPackage(name: String, status: Boolean) {
-        pimPackages.update { packages ->
-            if (status) packages + getAppInfo(name) else packages.filter { it.name != name }
+    fun setPimPackage(packages: List<String>, status: Boolean) {
+        pimPackages.update {
+            updateAppInfoList(it, packages, status)
         }
     }
     fun setPimPolicy(allowAll: Boolean): Boolean {
@@ -433,9 +467,9 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             packages == null
         }
     }
-    fun setPasPackage(name: String, status: Boolean) {
-        pasPackages.update { packages ->
-            if (status) packages + getAppInfo(name) else packages.filter { it.name != name }
+    fun setPasPackage(packages: List<String>, status: Boolean) {
+        pasPackages.update {
+            updateAppInfoList(it, packages, status)
         }
     }
     fun setPasPolicy(allowAll: Boolean): Boolean {
@@ -457,14 +491,18 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             DPM.isUninstallBlocked(DAR, name),
             if (VERSION.SDK_INT >= 30) name in DPM.getUserControlDisabledPackages(DAR) else false,
             if (VERSION.SDK_INT >= 28) name in DPM.getMeteredDataDisabledPackages(DAR) else false,
-            if (VERSION.SDK_INT >= 28) DPM.getKeepUninstalledPackages(DAR)?.contains(name) == true else false
+            if (VERSION.SDK_INT >= 28 && Privilege.status.value.device)
+                DPM.getKeepUninstalledPackages(DAR)?.contains(name) == true
+            else false
         )
     }
     // Application details
     @RequiresApi(24)
     fun adSetPackageSuspended(name: String, status: Boolean) {
-        DPM.setPackagesSuspended(DAR, arrayOf(name), status)
-        appStatus.update { it.copy(suspend = DPM.isPackageSuspended(DAR, name)) }
+        try {
+            DPM.setPackagesSuspended(DAR, arrayOf(name), status)
+            appStatus.update { it.copy(suspend = DPM.isPackageSuspended(DAR, name)) }
+        } catch (_: Exception) {}
     }
     fun adSetPackageHidden(name: String, status: Boolean) {
         DPM.setApplicationHidden(DAR, name, status)
@@ -510,6 +548,79 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
+    val appRestrictions = MutableStateFlow(emptyList<AppRestriction>())
+
+    fun getAppRestrictions(name: String) {
+        val rm = application.getSystemService(RestrictionsManager::class.java)
+        try {
+            val bundle = DPM.getApplicationRestrictions(DAR, name)
+            appRestrictions.value = rm.getManifestRestrictions(name)?.mapNotNull {
+                transformRestrictionEntry(it)
+            }?.map {
+                if (bundle.containsKey(it.key)) {
+                    when (it) {
+                        is AppRestriction.BooleanItem -> it.value = bundle.getBoolean(it.key)
+                        is AppRestriction.StringItem -> it.value = bundle.getString(it.key)
+                        is AppRestriction.IntItem -> it.value = bundle.getInt(it.key)
+                        is AppRestriction.ChoiceItem -> it.value = bundle.getString(it.key)
+                        is AppRestriction.MultiSelectItem -> it.value = bundle.getStringArray(it.key)
+                    }
+                }
+                it
+            } ?: emptyList()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            appRestrictions.value = emptyList()
+        }
+    }
+
+    fun setAppRestrictions(name: String, item: AppRestriction) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val bundle = transformAppRestriction(
+                appRestrictions.value.filter { it.key != item.key }.plus(item)
+            )
+            DPM.setApplicationRestrictions(DAR, name, bundle)
+            getAppRestrictions(name)
+        }
+    }
+
+    fun clearAppRestrictions(name: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            DPM.setApplicationRestrictions(DAR, name, Bundle())
+            getAppRestrictions(name)
+        }
+    }
+
+    fun transformRestrictionEntry(e: RestrictionEntry): AppRestriction? {
+        return when (e.type) {
+            RestrictionEntry.TYPE_INTEGER ->
+                AppRestriction.IntItem(e.key, e.title, e.description, null)
+            RestrictionEntry.TYPE_STRING ->
+                AppRestriction.StringItem(e.key, e.title, e.description, null)
+            RestrictionEntry.TYPE_BOOLEAN ->
+                AppRestriction.BooleanItem(e.key, e.title, e.description, null)
+            RestrictionEntry.TYPE_CHOICE -> AppRestriction.ChoiceItem(e.key, e.title,
+                e.description, e.choiceEntries, e.choiceValues, null)
+            RestrictionEntry.TYPE_MULTI_SELECT -> AppRestriction.MultiSelectItem(e.key, e.title,
+                e.description, e.choiceEntries, e.choiceValues, null)
+            else -> null
+        }
+    }
+
+    fun transformAppRestriction(list: List<AppRestriction>): Bundle {
+        val b = Bundle()
+        for (r in list) {
+            when (r) {
+                is AppRestriction.IntItem -> r.value?.let { b.putInt(r.key, it) }
+                is AppRestriction.StringItem -> r.value?.let { b.putString(r.key, it) }
+                is AppRestriction.BooleanItem -> r.value?.let { b.putBoolean(r.key, it) }
+                is AppRestriction.ChoiceItem -> r.value?.let { b.putString(r.key, it) }
+                is AppRestriction.MultiSelectItem -> r.value?.let { b.putStringArray(r.key, r.value) }
+            }
+        }
+        return b
+    }
+
     val appGroups = MutableStateFlow(emptyList<AppGroup>())
     init {
         getAppGroups()
@@ -526,6 +637,20 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         appGroups.update { group ->
             group.filter { it.id != id }
         }
+    }
+    fun exportAppGroups(uri: Uri) {
+        application.contentResolver.openOutputStream(uri)!!.use {
+            val list: List<BasicAppGroup> = appGroups.value
+            it.write(Json.encodeToString(list).encodeToByteArray())
+        }
+    }
+    fun importAppGroups(uri: Uri) {
+        application.contentResolver.openInputStream(uri)!!.use {
+            Json.decodeFromString<List<BasicAppGroup>>(it.readBytes().decodeToString())
+        }.forEach {
+            myRepo.setAppGroup(null, it.name, it.apps)
+        }
+        getAppGroups()
     }
 
     @RequiresApi(24)
@@ -584,16 +709,17 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             statusBarDisabled = if (VERSION.SDK_INT >= 34 &&
                 privilege.run { device || (profile && affiliated) })
                 DPM.isStatusBarDisabled else false,
-            autoTimeEnabled = if (VERSION.SDK_INT >= 30 && privilege.run { device || org })
+            autoTimeEnabled = if (VERSION.SDK_INT >= 30 && (privilege.device || privilege.org))
                 DPM.getAutoTimeEnabled(DAR) else false,
-            autoTimeZoneEnabled = if (VERSION.SDK_INT >= 30 && privilege.run { device || org })
+            autoTimeZoneEnabled = if (VERSION.SDK_INT >= 30 && (privilege.device || privilege.org))
                 DPM.getAutoTimeZoneEnabled(DAR) else false,
             autoTimeRequired = if (VERSION.SDK_INT < 30) DPM.autoTimeRequired else false,
             masterVolumeMuted = DPM.isMasterVolumeMuted(DAR),
             backupServiceEnabled = if (VERSION.SDK_INT >= 26) DPM.isBackupServiceEnabled(DAR) else false,
-            btContactSharingDisabled = if (VERSION.SDK_INT >= 23 && privilege.work)
+            btContactSharingDisabled = if (privilege.work)
                 DPM.getBluetoothContactSharingDisabled(DAR) else false,
-            commonCriteriaMode = if (VERSION.SDK_INT >= 30) DPM.isCommonCriteriaModeEnabled(DAR) else false,
+            commonCriteriaMode = if (VERSION.SDK_INT >= 30 && (privilege.device || privilege.org))
+                DPM.isCommonCriteriaModeEnabled(DAR) else false,
             usbSignalEnabled = if (VERSION.SDK_INT >= 31) DPM.isUsbDataSignalingEnabled else false,
             canDisableUsbSignal = if (VERSION.SDK_INT >= 31) DPM.canUsbDataSignalingBeDisabled() else false
         )
@@ -609,7 +735,6 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             it.copy(screenCaptureDisabled = DPM.getScreenCaptureDisabled(null))
         }
     }
-    @RequiresApi(23)
     fun setStatusBarDisabled(disabled: Boolean) {
         val result = DPM.setStatusBarDisabled(DAR, disabled)
         if (result) systemOptionsStatus.update { it.copy(statusBarDisabled = disabled) }
@@ -643,7 +768,6 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             it.copy(backupServiceEnabled = DPM.isBackupServiceEnabled(DAR))
         }
     }
-    @RequiresApi(23)
     fun setBtContactSharingDisabled(disabled: Boolean) {
         DPM.setBluetoothContactSharingDisabled(DAR, disabled)
         systemOptionsStatus.update {
@@ -662,7 +786,6 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         DPM.isUsbDataSignalingEnabled = enabled
         systemOptionsStatus.update { it.copy(usbSignalEnabled = DPM.isUsbDataSignalingEnabled) }
     }
-    @RequiresApi(23)
     fun setKeyguardDisabled(disabled: Boolean): Boolean {
         return DPM.setKeyguardDisabled(DAR, disabled)
     }
@@ -732,11 +855,9 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     fun setContentProtectionPolicy(policy: Int) {
         DPM.setContentProtectionPolicy(DAR, policy)
     }
-    @RequiresApi(23)
     fun getPermissionPolicy(): Int {
         return DPM.getPermissionPolicy(DAR)
     }
-    @RequiresApi(23)
     fun setPermissionPolicy(policy: Int) {
         DPM.setPermissionPolicy(DAR, policy)
     }
@@ -784,19 +905,35 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         getLockTaskPackages()
     }
     @RequiresApi(28)
-    fun startLockTaskMode(packageName: String, activity: String): Boolean {
+    fun startLockTaskMode(
+        packageName: String, activity: String, clearTask: Boolean, showNotification: Boolean
+    ): Boolean {
         if (!DPM.isLockTaskPermitted(packageName)) {
             val list = lockTaskPackages.value.map { it.name } + packageName
             DPM.setLockTaskPackages(DAR, list.toTypedArray())
             getLockTaskPackages()
+        }
+        if (showNotification) {
+            DPM.setLockTaskFeatures(
+                DAR,
+                DPM.getLockTaskFeatures(DAR) or
+                        DevicePolicyManager.LOCK_TASK_FEATURE_NOTIFICATIONS or
+                        DevicePolicyManager.LOCK_TASK_FEATURE_HOME
+            )
         }
         val options = ActivityOptions.makeBasic().setLockTaskEnabled(true)
         val intent = if(activity.isNotEmpty()) {
             Intent().setComponent(ComponentName(packageName, activity))
         } else PM.getLaunchIntentForPackage(packageName)
         if (intent != null) {
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            intent.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                    or (if (clearTask) Intent.FLAG_ACTIVITY_CLEAR_TASK else 0)
+            )
             application.startActivity(intent, options.toBundle())
+            if (showNotification) {
+                application.startForegroundService(Intent(application, LockTaskService::class.java))
+            }
             return true
         } else {
             return false
@@ -906,14 +1043,12 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             }
         }
     }
-    @RequiresApi(23)
     fun getSystemUpdatePolicy(): SystemUpdatePolicyInfo {
         val policy = DPM.systemUpdatePolicy
         return SystemUpdatePolicyInfo(
             policy?.policyType ?: -1, policy?.installWindowStart ?: 0, policy?.installWindowEnd ?: 0
         )
     }
-    @RequiresApi(23)
     fun setSystemUpdatePolicy(info: SystemUpdatePolicyInfo) {
         val policy = when (info.type) {
             SystemUpdatePolicy.TYPE_INSTALL_AUTOMATIC -> SystemUpdatePolicy.createAutomaticInstallPolicy()
@@ -1227,18 +1362,11 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     }
     fun createWorkProfile(options: CreateWorkProfileOptions): Intent {
         val intent = Intent(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)
-        if (VERSION.SDK_INT >= 23) {
-            intent.putExtra(
-                DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME,
-                MyAdminComponent
-            )
-        } else {
-            intent.putExtra(
-                DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_PACKAGE_NAME,
-                application.packageName
-            )
-        }
-        if (options.migrateAccount && VERSION.SDK_INT >= 22) {
+        intent.putExtra(
+            DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME,
+            MyAdminComponent
+        )
+        if (options.migrateAccount) {
             intent.putExtra(
                 DevicePolicyManager.EXTRA_PROVISIONING_ACCOUNT_TO_MIGRATE,
                 Account(options.accountName, options.accountType)
@@ -1315,10 +1443,10 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         return UserInformation(
             if (VERSION.SDK_INT >= 24) UserManager.supportsMultipleUsers() else false,
             if (VERSION.SDK_INT >= 31) UserManager.isHeadlessSystemUserMode() else false,
-            if (VERSION.SDK_INT >= 23) UM.isSystemUser else false,
+            UM.isSystemUser,
             if (VERSION.SDK_INT >= 34) UM.isAdminUser else false,
             if (VERSION.SDK_INT >= 25) UM.isDemoUser else false,
-            if (VERSION.SDK_INT >= 23) UM.getUserCreationTime(uh) else 0,
+            UM.getUserCreationTime(uh),
             if (VERSION.SDK_INT >= 28) DPM.isLogoutEnabled else false,
             if (VERSION.SDK_INT >= 28) DPM.isEphemeralUser(DAR) else false,
             if (VERSION.SDK_INT >= 28) DPM.isAffiliatedUser else false,
@@ -1354,6 +1482,7 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
             UserManager.USER_OPERATION_ERROR_UNKNOWN -> R.string.unknown_error
             UserManager.USER_OPERATION_ERROR_MANAGED_PROFILE-> R.string.fail_managed_profile
             UserManager.USER_OPERATION_ERROR_MAX_RUNNING_USERS -> R.string.limit_reached
+            UserManager.USER_OPERATION_ERROR_MAX_USERS -> R.string.limit_reached
             UserManager.USER_OPERATION_ERROR_CURRENT_USER -> R.string.fail_current_user
             else -> R.string.unknown
         }
@@ -1392,7 +1521,6 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     fun setProfileName(name: String) {
         DPM.setProfileName(DAR, name)
     }
-    @RequiresApi(23)
     fun setUserIcon(bitmap: Bitmap) {
         DPM.setUserIcon(DAR, bitmap)
     }
@@ -1530,7 +1658,6 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         return PM.getPackageUid(name, 0)
     }
     var networkStatsData = emptyList<NetworkStatsData>()
-    @RequiresApi(23)
     fun readNetworkStats(stats: NetworkStats): List<NetworkStatsData> {
         val list = mutableListOf<NetworkStatsData>()
         while (stats.hasNextBucket()) {
@@ -1541,7 +1668,6 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
         stats.close()
         return list
     }
-    @RequiresApi(23)
     fun readNetworkStatsBucket(bucket: NetworkStats.Bucket): NetworkStatsData {
         return NetworkStatsData(
             bucket.rxBytes, bucket.rxPackets, bucket.txBytes, bucket.txPackets,
@@ -1823,7 +1949,12 @@ class MyViewModel(application: Application): AndroidViewModel(application) {
     }
     @RequiresApi(26)
     fun setRpToken(token: String): Boolean {
-        return DPM.setResetPasswordToken(DAR, token.encodeToByteArray())
+        return try {
+            DPM.setResetPasswordToken(DAR, token.encodeToByteArray())
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
     }
     @RequiresApi(26)
     fun clearRpToken(): Boolean {

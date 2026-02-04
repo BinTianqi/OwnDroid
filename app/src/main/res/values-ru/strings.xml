@@ -278,7 +278,6 @@
     <string name="network_logging">Сетевой журнал</string> 
     <string name="delete_logs">Удалить журналы</string>
     <string name="export_logs">Экспортировать журналы</string>
-    <string name="wifi_auth_keypair">Пара ключей Wi-Fi</string>
     <string name="preferential_network_service">Предпочтительная сетевая служба</string>
     <string name="add_config">Add config</string> <!--TODO-->
     <string name="network_id">Идентификатор сети</string>

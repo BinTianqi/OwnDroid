@@ -1,31 +1,17 @@
 package com.bintianqi.owndroid
 
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.admin.DeviceAdminReceiver
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.Build.VERSION
 import android.os.UserHandle
 import android.os.UserManager
-import androidx.core.app.NotificationCompat
 import com.bintianqi.owndroid.dpm.handlePrivilegeChange
 import com.bintianqi.owndroid.dpm.retrieveNetworkLogs
 import com.bintianqi.owndroid.dpm.retrieveSecurityLogs
 
 class Receiver : DeviceAdminReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
-        super.onReceive(context, intent)
-        if(VERSION.SDK_INT >= 26 && intent.action == "com.bintianqi.owndroid.action.STOP_LOCK_TASK_MODE") {
-            val receiver = ComponentName(context, this::class.java)
-            val packages = Privilege.DPM.getLockTaskPackages(receiver)
-            Privilege.DPM.setLockTaskPackages(receiver, arrayOf())
-            Privilege.DPM.setLockTaskPackages(receiver, packages)
-        }
-    }
-
     override fun onEnabled(context: Context, intent: Intent) {
         super.onEnabled(context, intent)
         Privilege.updateStatus()
@@ -54,25 +40,6 @@ class Receiver : DeviceAdminReceiver() {
         if (VERSION.SDK_INT >= 24) {
             retrieveSecurityLogs(context.applicationContext as MyApplication)
         }
-    }
-
-    override fun onLockTaskModeEntering(context: Context, intent: Intent, pkg: String) {
-        super.onLockTaskModeEntering(context, intent, pkg)
-        val stopIntent = Intent(context, this::class.java)
-            .setAction("com.bintianqi.owndroid.action.STOP_LOCK_TASK_MODE")
-        val pendingIntent = PendingIntent.getBroadcast(context, 0, stopIntent, PendingIntent.FLAG_IMMUTABLE)
-        val notification = NotificationCompat.Builder(context, MyNotificationChannel.LockTaskMode.id)
-            .setContentTitle(context.getText(R.string.lock_task_mode))
-            .setSmallIcon(R.drawable.lock_fill0)
-            .addAction(NotificationCompat.Action.Builder(null, context.getString(R.string.stop), pendingIntent).build())
-            .build()
-        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        nm.notify(NotificationType.LockTaskMode.id, notification)
-    }
-
-    override fun onLockTaskModeExiting(context: Context, intent: Intent) {
-        super.onLockTaskModeExiting(context, intent)
-        NotificationUtils.cancel(context, NotificationType.LockTaskMode)
     }
 
     override fun onPasswordChanged(context: Context, intent: Intent, userHandle: UserHandle) {

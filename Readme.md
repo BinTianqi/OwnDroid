@@ -57,7 +57,7 @@ Solutions:
 > [!NOTE]
 > Some systems have features such as app cloning and children space, which are usually users.
 
-#### Device owner is already set
+### Device owner is already set
 
 ```text
 java.lang.IllegalStateException: Trying to set the device owner (com.bintianqi.owndroid/.Receiver), but device owner (xxx) is already set.
@@ -144,7 +144,7 @@ You can use Gradle in command line to build OwnDroid.
 
 [License.md](LICENSE.md)
 
-> Copyright (C)  2024  BinTianqi
+> Copyright (C)  2026  BinTianqi
 >
 > This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 >

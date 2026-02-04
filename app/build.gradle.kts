@@ -24,10 +24,10 @@ android {
 
     defaultConfig {
         applicationId = "com.bintianqi.owndroid"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 36
-        versionCode = 41
-        versionName = "7.2"
+        versionCode = 42
+        versionName = "7.3"
         multiDexEnabled = false
     }
 
@@ -103,6 +103,7 @@ dependencies {
     implementation(libs.androidx.fragment)
     implementation(libs.hiddenApiBypass)
     implementation(libs.libsu)
+    implementation(libs.reoderable)
     implementation(libs.serialization)
     implementation(kotlin("reflect"))
 }

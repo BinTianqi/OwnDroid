@@ -68,6 +68,7 @@
     <string name="timeout">超时</string>
     <string name="continue_str">继续</string>
     <string name="exit">退出</string>
+    <string name="undo">撤销</string>
 
     <!--Permissions-->
     <string name="profile_owner">Profile owner</string>
@@ -173,6 +174,8 @@
     <string name="nearby_notification_streaming">附近通知传输</string>
     <string name="enable_if_secure_enough">在足够安全时启用</string>
     <string name="lock_task_mode">锁定任务模式</string>
+    <string name="lock_task_mode_start_clear_task">清除任务（新实例）</string>
+    <string name="lock_task_mode_show_notification">显示通知以退出</string>
     <string name="app_not_allowed">应用未被允许</string>
     <string name="disable_all">禁用全部</string>
     <string name="ltf_sys_info">允许状态栏信息</string>
@@ -293,7 +296,6 @@
     <string name="network_logs_collected">网络日志已收集</string>
     <string name="delete_logs">删除日志</string>
     <string name="export_logs">导出日志</string>
-    <string name="wifi_auth_keypair">Wi-Fi密钥对</string>
     <string name="preferential_network_service">首选网络服务</string>
     <string name="add_config">添加配置</string>
     <string name="network_id">网络ID</string>
@@ -343,7 +345,9 @@
     <string name="show_user_app">显示用户应用</string>
     <string name="show_system_app">显示系统应用</string>
     <string name="suspend">挂起</string>
+    <string name="unsuspend">取消挂起</string>
     <string name="hide">隐藏</string>
+    <string name="unhide">取消隐藏</string>
     <string name="always_on_vpn">VPN保持打开</string>
     <string name="enable_lockdown">启用锁定</string>
     <string name="clear_current_config">清除当前配置</string>
@@ -362,6 +366,7 @@
     <string name="permitted_ime">许可的输入法</string>
     <string name="keep_uninstalled_packages">卸载后保留的应用</string>
     <string name="clear_app_storage">清除应用存储</string>
+    <string name="clear_app_storage_confirmation">你确定要删除应用数据吗？</string>
     <string name="set_default_dialer">设置默认拨号器</string>
     <string name="uninstall_app">卸载应用</string>
     <string name="install_app">安装应用</string>
@@ -371,9 +376,14 @@
     <string name="search">搜索</string>
     <string name="app_group">应用组</string>
     <string name="manage_app_groups">管理组</string>
+    <string name="import_str">导入</string>
     <string name="edit_app_group">编辑组</string>
     <string name="add_to_list">添加到列表</string>
     <string name="remove_from_list">从列表中移除</string>
+    <string name="managed_configuration">托管配置</string>
+    <string name="clear_configurations">清除配置</string>
+    <string name="specify_value">指定值</string>
+    <string name="package_removed">移除了 %1$s</string>
 
     <!--UserRestriction-->
     <string name="user_restriction">用户限制</string>

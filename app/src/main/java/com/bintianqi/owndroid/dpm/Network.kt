@@ -152,7 +152,7 @@ fun NetworkScreen(onNavigateUp: () -> Unit, onNavigate: (Any) -> Unit) {
         if(VERSION.SDK_INT >= 30) {
             FunctionItem(R.string.options, icon = R.drawable.tune_fill0) { onNavigate(NetworkOptions) }
         }
-        if (VERSION.SDK_INT >= 23 && !privilege.dhizuku)
+        if (!privilege.dhizuku)
             FunctionItem(R.string.network_stats, icon = R.drawable.query_stats_fill0) { onNavigate(QueryNetworkStats) }
         if(VERSION.SDK_INT >= 29 && privilege.device) {
             FunctionItem(R.string.private_dns, icon = R.drawable.dns_fill0) { onNavigate(PrivateDns) }
@@ -186,9 +186,9 @@ fun NetworkOptionsScreen(
 ) {
     val privilege by Privilege.status.collectAsStateWithLifecycle()
     var dialog by rememberSaveable { mutableIntStateOf(0) }
-    var lanEnabled by rememberSaveable { mutableStateOf(getLanEnabled()) }
     MyScaffold(R.string.options, onNavigateUp, 0.dp) {
         if(VERSION.SDK_INT >= 30 && (privilege.device || privilege.org)) {
+            var lanEnabled by rememberSaveable { mutableStateOf(getLanEnabled()) }
             SwitchItem(R.string.lockdown_admin_configured_network, icon = R.drawable.wifi_password_fill0,
                 state = lanEnabled,
                 onCheckedChange = {
@@ -937,7 +937,6 @@ enum class NetworkStatsState(val id: Int, val text: Int) {
     Default(NetworkStats.Bucket.STATE_DEFAULT, R.string.default_str),
     Foreground(NetworkStats.Bucket.STATE_FOREGROUND, R.string.foreground)
 }
-@RequiresApi(23)
 enum class NetworkStatsUID(val uid: Int, val text: Int) {
     All(NetworkStats.Bucket.UID_ALL, R.string.all),
     Removed(NetworkStats.Bucket.UID_REMOVED, R.string.uninstalled),
@@ -952,7 +951,6 @@ data class QueryNetworkStatsParams(
 @Serializable object QueryNetworkStats
 
 @OptIn(ExperimentalMaterial3Api::class)
-@RequiresApi(23)
 @Composable
 fun NetworkStatsScreen(
     chosenPackage: Channel<String>, onChoosePackage: () -> Unit, getUid: (String) -> Int,
@@ -1270,7 +1268,6 @@ data class NetworkStatsData(
 
 @Serializable object NetworkStatsViewer
 
-@RequiresApi(23)
 @Composable
 fun NetworkStatsViewerScreen(
     data: List<NetworkStatsData>, clearData: () -> Unit, onNavigateUp: () -> Unit

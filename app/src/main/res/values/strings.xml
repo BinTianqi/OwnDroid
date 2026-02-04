@@ -73,6 +73,7 @@
     <string name="timeout">Timeout</string>
     <string name="continue_str">Continue</string>
     <string name="exit">Exit</string>
+    <string name="undo">Undo</string>
 
     <!--Permissions-->
     <string name="profile_owner">Profile owner</string>
@@ -102,7 +103,7 @@
     <string name="org_name">Organization name</string>
     <string name="disable_account_management">Disable account management</string>
     <string name="account_type">Account type</string>
-    <string name="transfer_ownership">Transfer Ownership</string>
+    <string name="transfer_ownership">Transfer ownership</string>
     <string name="lock_screen_info">Lock screen info</string>
     <string name="support_messages">Support Messages</string>
     <string name="short_support_msg">Short message</string>
@@ -201,6 +202,8 @@
     <string name="nearby_notification_streaming">Nearby notification streaming policy</string>
     <string name="enable_if_secure_enough">Same managed account only</string>
     <string name="lock_task_mode">Lock task mode</string>
+    <string name="lock_task_mode_start_clear_task">Clear task (start fresh)</string>
+    <string name="lock_task_mode_show_notification">Show a notification to exit</string>
     <string name="app_not_allowed">App is not allowed</string>
     <string name="disable_all">Disable all</string>
     <!--ltf: lock task feature-->
@@ -327,7 +330,6 @@
     <string name="network_logs_collected">Network logs collected</string>
     <string name="delete_logs">Delete logs</string>
     <string name="export_logs">Export logs</string>
-    <string name="wifi_auth_keypair">Wi-Fi keypair</string>
     <string name="preferential_network_service">Preferential network service</string>
     <string name="add_config">Add config</string>
     <string name="network_id">Network ID</string>
@@ -377,7 +379,9 @@
     <string name="show_user_app">Show user apps</string>
     <string name="show_system_app">Show system apps</string>
     <string name="suspend">Suspend</string>
+    <string name="unsuspend">Unsuspend</string>
     <string name="hide">Hide</string>
+    <string name="unhide">Unhide</string>
     <string name="always_on_vpn">Always-on VPN</string>
     <string name="enable_lockdown">Enable lockdown</string>
     <string name="clear_current_config">Clear current config</string>
@@ -397,6 +401,7 @@
     <string name="permitted_ime">Permitted IME</string>
     <string name="keep_uninstalled_packages">Keep uninstalled packages</string>
     <string name="clear_app_storage">Clear app storage</string>
+    <string name="clear_app_storage_confirmation">Are you sure to delete app data?</string>
     <string name="set_default_dialer">Set default dialer</string>
     <string name="uninstall_app">Uninstall app</string>
     <string name="install_app">Install app</string>
@@ -405,9 +410,14 @@
     <string name="search">Search</string>
     <string name="app_group">App group</string>
     <string name="manage_app_groups">Manage groups</string>
+    <string name="import_str">Import</string>
     <string name="edit_app_group">Edit group</string>
     <string name="add_to_list">Add to list</string>
     <string name="remove_from_list">Remove from list</string>
+    <string name="managed_configuration">Managed configuration</string>
+    <string name="clear_configurations">Clear configurations</string>
+    <string name="specify_value">Specify value</string>
+    <string name="package_removed">Removed %1$s</string>
 
     <!--UserRestriction-->
     <string name="user_restriction">User restriction</string>

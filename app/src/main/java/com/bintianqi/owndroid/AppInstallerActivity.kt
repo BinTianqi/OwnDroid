@@ -16,6 +16,7 @@ class AppInstallerActivity:FragmentActivity() {
         super.onCreate(savedInstanceState)
         val vm by viewModels<AppInstallerViewModel>()
         vm.initialize(intent)
+        vm.registerInstallerReceiver(this)
         val theme = ThemeSettings(SP.materialYou, SP.darkTheme, SP.blackTheme)
         setContent {
             OwnDroidTheme(theme) {

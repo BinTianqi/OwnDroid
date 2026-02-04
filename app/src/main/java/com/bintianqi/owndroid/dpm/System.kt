@@ -72,7 +72,6 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -109,9 +108,9 @@ import com.bintianqi.owndroid.MyViewModel
 import com.bintianqi.owndroid.Privilege
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.SP
+import com.bintianqi.owndroid.adaptiveInsets
 import com.bintianqi.owndroid.clickableTextField
 import com.bintianqi.owndroid.formatDate
-import com.bintianqi.owndroid.adaptiveInsets
 import com.bintianqi.owndroid.popToast
 import com.bintianqi.owndroid.showOperationResultToast
 import com.bintianqi.owndroid.ui.CheckBoxItem
@@ -172,16 +171,14 @@ fun SystemManagerScreen(
             FunctionItem(R.string.key_pairs, icon = R.drawable.key_vertical_fill0) { navCtrl.navigate("KeyPairs") }*/
         if(VERSION.SDK_INT >= 35 && (privilege.device || (privilege.profile && privilege.affiliated)))
             FunctionItem(R.string.content_protection_policy, icon = R.drawable.search_fill0) { onNavigate(ContentProtectionPolicy) }
-        if(VERSION.SDK_INT >= 23) {
-            FunctionItem(R.string.permission_policy, icon = R.drawable.key_fill0) { onNavigate(PermissionPolicy) }
-        }
+        FunctionItem(R.string.permission_policy, icon = R.drawable.key_fill0) { onNavigate(PermissionPolicy) }
         if(VERSION.SDK_INT >= 34 && privilege.device) {
             FunctionItem(R.string.mte_policy, icon = R.drawable.memory_fill0) { onNavigate(MtePolicy) }
         }
         if(VERSION.SDK_INT >= 31) {
             FunctionItem(R.string.nearby_streaming_policy, icon = R.drawable.share_fill0) { onNavigate(NearbyStreamingPolicy) }
         }
-        if (VERSION.SDK_INT >= 28 && privilege.device && !privilege.dhizuku) {
+        if (VERSION.SDK_INT >= 28 && privilege.device) {
             FunctionItem(R.string.lock_task_mode, icon = R.drawable.lock_fill0) { onNavigate(LockTaskMode) }
         }
         FunctionItem(R.string.ca_cert, icon = R.drawable.license_fill0) { onNavigate(CaCert) }
@@ -205,7 +202,7 @@ fun SystemManagerScreen(
             FunctionItem(R.string.support_messages, icon = R.drawable.chat_fill0) { onNavigate(SupportMessage) }
         }
         FunctionItem(R.string.disable_account_management, icon = R.drawable.account_circle_fill0) { onNavigate(DisableAccountManagement) }
-        if(VERSION.SDK_INT >= 23 && (privilege.device || privilege.org)) {
+        if (privilege.device || privilege.org) {
             FunctionItem(R.string.system_update_policy, icon = R.drawable.system_update_fill0) { onNavigate(SetSystemUpdatePolicy) }
         }
         if(VERSION.SDK_INT >= 29 && (privilege.device || privilege.org)) {
@@ -369,7 +366,7 @@ fun SystemOptionsScreen(vm: MyViewModel, onNavigateUp: () -> Unit) {
             SwitchItem(R.string.enable_usb_signal, status.usbSignalEnabled,
                 vm::setUsbSignalEnabled, R.drawable.usb_fill0)
         }
-        if (VERSION.SDK_INT >= 23 && VERSION.SDK_INT < 34) {
+        if (VERSION.SDK_INT < 34) {
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding),
                 verticalAlignment = Alignment.CenterVertically
@@ -414,8 +411,8 @@ fun KeyguardScreen(
     val context = LocalContext.current
     val privilege by Privilege.status.collectAsStateWithLifecycle()
     MyScaffold(R.string.keyguard, onNavigateUp) {
-        if (VERSION.SDK_INT >= 23 && (privilege.device ||
-                    (VERSION.SDK_INT >= 28 && privilege.profile && privilege.affiliated))) {
+        if (privilege.device ||
+                    (VERSION.SDK_INT >= 28 && privilege.profile && privilege.affiliated)) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
@@ -436,7 +433,7 @@ fun KeyguardScreen(
             Notes(R.string.info_disable_keyguard)
             Spacer(Modifier.padding(vertical = 12.dp))
         }
-        if(VERSION.SDK_INT >= 23) Text(text = stringResource(R.string.lock_now), style = typography.headlineLarge)
+        Text(text = stringResource(R.string.lock_now), style = typography.headlineLarge)
         Spacer(Modifier.padding(vertical = 2.dp))
         var evictKey by rememberSaveable { mutableStateOf(false) }
         Button(
@@ -1008,7 +1005,6 @@ fun ContentProtectionPolicyScreen(
 
 @Serializable object PermissionPolicy
 
-@RequiresApi(23)
 @Composable
 fun PermissionPolicyScreen(
     getPolicy: () -> Int, setPolicy: (Int) -> Unit, onNavigateUp: () -> Unit
@@ -1148,9 +1144,10 @@ fun NearbyStreamingPolicyScreen(
 @RequiresApi(28)
 @Composable
 fun LockTaskModeScreen(
-    chosenPackage: Channel<String>, onChoosePackage: () -> Unit,
+    chosenPackage: Channel<String>, chooseSinglePackage: () -> Unit, choosePackage: () -> Unit,
     lockTaskPackages: StateFlow<List<AppInfo>>, getLockTaskPackages: () -> Unit,
-    setLockTaskPackage: (String, Boolean) -> Unit, startLockTaskMode: (String, String) -> Boolean,
+    setLockTaskPackage: (String, Boolean) -> Unit,
+    startLockTaskMode: (String, String, Boolean, Boolean) -> Boolean,
     getLockTaskFeatures: () -> Int, setLockTaskFeature: (Int) -> String?, onNavigateUp: () -> Unit
 ) {
     val coroutine = rememberCoroutineScope()
@@ -1175,7 +1172,7 @@ fun LockTaskModeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            TabRow(tabIndex) {
+            PrimaryTabRow(tabIndex) {
                 Tab(
                     tabIndex == 0, onClick = { coroutine.launch { pagerState.animateScrollToPage(0) } },
                     text = { Text(stringResource(R.string.start)) }
@@ -1191,9 +1188,9 @@ fun LockTaskModeScreen(
             }
             HorizontalPager(pagerState, verticalAlignment = Alignment.Top) { page ->
                 if(page == 0) {
-                    StartLockTaskMode(startLockTaskMode, chosenPackage, onChoosePackage)
+                    StartLockTaskMode(startLockTaskMode, chosenPackage, chooseSinglePackage)
                 } else if (page == 1) {
-                    LockTaskPackages(chosenPackage, onChoosePackage, lockTaskPackages, setLockTaskPackage)
+                    LockTaskPackages(chosenPackage, choosePackage, lockTaskPackages, setLockTaskPackage)
                 } else {
                     LockTaskFeatures(getLockTaskFeatures, setLockTaskFeature)
                 }
@@ -1205,29 +1202,39 @@ fun LockTaskModeScreen(
 @RequiresApi(28)
 @Composable
 private fun StartLockTaskMode(
-    startLockTaskMode: (String, String) -> Boolean,
+    startLockTaskMode: (String, String, Boolean, Boolean) -> Boolean,
     chosenPackage: Channel<String>, onChoosePackage: () -> Unit
 ) {
     val context = LocalContext.current
     val focusMgr = LocalFocusManager.current
+    val privilege by Privilege.status.collectAsStateWithLifecycle()
     var packageName by rememberSaveable { mutableStateOf("") }
     var activity by rememberSaveable { mutableStateOf("") }
     var specifyActivity by rememberSaveable { mutableStateOf(false) }
+    var clearTask by rememberSaveable { mutableStateOf(true) }
+    var showNotification by rememberSaveable { mutableStateOf(true) }
     LaunchedEffect(Unit) {
         packageName = chosenPackage.receive()
     }
     Column(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = HorizontalPadding)
             .verticalScroll(rememberScrollState())
     ) {
-        Spacer(Modifier.height(5.dp))
-        PackageNameTextField(packageName, onChoosePackage) { packageName = it }
+        PackageNameTextField(
+            packageName, onChoosePackage, Modifier.padding(HorizontalPadding, 8.dp)
+        ) { packageName = it }
+        FullWidthCheckBoxItem(
+            R.string.lock_task_mode_start_clear_task, clearTask
+        ) { clearTask = it }
+        FullWidthCheckBoxItem(
+            R.string.lock_task_mode_show_notification, showNotification
+        ) { showNotification = it }
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically
+                .padding(start = 4.dp, top = 4.dp, end = HorizontalPadding, bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Checkbox(specifyActivity, {
                 specifyActivity = it
@@ -1246,16 +1253,17 @@ private fun StartLockTaskMode(
         Button(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 5.dp),
+                .padding(horizontal = HorizontalPadding),
             onClick = {
-                val result = startLockTaskMode(packageName, activity)
+                val result = startLockTaskMode(packageName, activity, clearTask, showNotification)
                 if (!result) context.showOperationResultToast(false)
             },
             enabled = packageName.isNotBlank() && (!specifyActivity || activity.isNotBlank())
         ) {
             Text(stringResource(R.string.start))
         }
-        Notes(R.string.info_start_lock_task_mode)
+        Spacer(Modifier.height(5.dp))
+        if (!privilege.dhizuku) Notes(R.string.info_start_lock_task_mode)
     }
 }
 
@@ -1774,7 +1782,7 @@ fun WipeDataScreen(
         FullWidthCheckBoxItem(R.string.wipe_external_storage, flag and WIPE_EXTERNAL_STORAGE != 0) {
             flag = flag xor WIPE_EXTERNAL_STORAGE
         }
-        if(VERSION.SDK_INT >= 22 && privilege.device) FullWidthCheckBoxItem(
+        if (privilege.device) FullWidthCheckBoxItem(
             R.string.wipe_reset_protection_data, flag and WIPE_RESET_PROTECTION_DATA != 0) {
             flag = flag xor WIPE_RESET_PROTECTION_DATA
         }
@@ -1828,7 +1836,7 @@ fun WipeDataScreen(
             text = {
                 Text(
                     text = stringResource(
-                        if(VERSION.SDK_INT >= 23 && userManager.isSystemUser) R.string.wipe_data_warning
+                        if (userManager.isSystemUser) R.string.wipe_data_warning
                         else R.string.info_wipe_data_in_managed_user
                     ),
                     color = colorScheme.error
@@ -1869,7 +1877,6 @@ data class PendingSystemUpdateInfo(val exists: Boolean, val time: Long, val secu
 
 @Serializable object SetSystemUpdatePolicy
 
-@RequiresApi(23)
 @Composable
 fun SystemUpdatePolicyScreen(
     getPolicy: () -> SystemUpdatePolicyInfo, setPolicy: (SystemUpdatePolicyInfo) -> Unit,

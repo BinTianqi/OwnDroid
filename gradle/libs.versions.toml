@@ -1,9 +1,9 @@
 [versions]
-agp = "8.13.1"
-kotlin = "2.2.21"
+agp = "8.13.2"
+kotlin = "2.3.0"
 
 navigation-compose = "2.9.6"
-composeBom = "2025.11.00"
+composeBom = "2025.12.01"
 accompanist-drawablepainter = "0.37.3"
 accompanist-permissions = "0.37.3"
 shizuku = "13.1.5"
@@ -12,6 +12,7 @@ dhizuku = "2.5.4"
 dhizuku-server = "0.0.10"
 hiddenApiBypass = "6.1"
 libsu = "6.0.0"
+reoderable = "3.0.0"
 serialization = "1.9.0"
 
 [libraries]
@@ -33,6 +34,7 @@ dhizuku-api = { module = "io.github.iamr0s:Dhizuku-API", version.ref = "dhizuku"
 dhizuku-server-api = { group = "io.github.iamr0s", name = "Dhizuku-SERVER_API", version.ref = "dhizuku-server" }
 hiddenApiBypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version.ref = "hiddenApiBypass" }
 libsu = { module = "com.github.topjohnwu.libsu:core", version.ref = "libsu" }
+reoderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reoderable" }
 
 serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
 
@@ -40,4 +42,4 @@ serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.2.21" }
+serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.3.0" }

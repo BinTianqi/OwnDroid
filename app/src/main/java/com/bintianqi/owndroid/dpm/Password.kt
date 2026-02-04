@@ -97,7 +97,9 @@ fun PasswordScreen(vm: MyViewModel,onNavigateUp: () -> Unit, onNavigate: (Any) -
         if(privilege.device) {
             FunctionItem(R.string.max_time_to_lock, icon = R.drawable.schedule_fill0) { dialog = 1 }
             FunctionItem(R.string.pwd_expiration_timeout, icon = R.drawable.lock_clock_fill0) { dialog = 3 }
-            FunctionItem(R.string.max_pwd_fail, icon = R.drawable.no_encryption_fill0) { dialog = 4 }
+            if (SP.displayDangerousFeatures) {
+                FunctionItem(R.string.max_pwd_fail, icon = R.drawable.no_encryption_fill0) { dialog = 4 }
+            }
         }
         if(VERSION.SDK_INT >= 26) {
             FunctionItem(R.string.required_strong_auth_timeout, icon = R.drawable.fingerprint_off_fill0) { dialog = 2 }
@@ -333,12 +335,10 @@ fun ResetPasswordScreen(resetPassword: (String, String, Int) -> Boolean, onNavig
             visualTransformation = PasswordVisualTransformation()
         )
         Spacer(Modifier.padding(vertical = 5.dp))
-        if(VERSION.SDK_INT >= 23) {
-            CheckBoxItem(
-                R.string.do_not_ask_credentials_on_boot,
-                flags and RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT != 0
-            ) { flags = flags xor RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT }
-        }
+        CheckBoxItem(
+            R.string.do_not_ask_credentials_on_boot,
+            flags and RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT != 0
+        ) { flags = flags xor RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT }
         CheckBoxItem(
             R.string.reset_password_require_entry,
             flags and RESET_PASSWORD_REQUIRE_ENTRY != 0

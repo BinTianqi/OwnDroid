@@ -307,7 +307,6 @@
     <string name="network_logging">Ağ Kayıtları</string>
     <string name="delete_logs">Kayıtları Sil</string>
     <string name="export_logs">Kayıtları Dışa Aktar</string>
-    <string name="wifi_auth_keypair">Wi-Fi Kimlik Doğrulama Anahtar Çifti</string>
     <string name="preferential_network_service">Tercihli Ağ Servisi</string>
     <string name="add_config">Yapılandırma Ekle</string>
     <string name="network_id">Ağ Kimliği</string>

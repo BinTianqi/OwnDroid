@@ -57,7 +57,7 @@ java.lang.IllegalStateException: Not allowed to set the device owner because the
 > [!NOTE]
 > 一些系统有应用克隆、儿童空间等功能，它们通常是用户。
 
-#### Device owner 已存在
+### Device owner 已存在
 
 ```text
 java.lang.IllegalStateException: Trying to set the device owner (com.bintianqi.owndroid/.Receiver), but device owner (xxx) is already set.
@@ -142,7 +142,7 @@ context.sendBroadcast(intent)
 
 [License.md](LICENSE.md)
 
-> Copyright (C)  2024  BinTianqi
+> Copyright (C)  2026  BinTianqi
 >
 > This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 >
