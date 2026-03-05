@@ -531,7 +531,7 @@
     <string name="appearance">Оформление</string> 
 
     <!--TODO: app lock-->
-    <string name="minimum_length_4">Длина должна быть не менее 4 символов</string>
+    <string name="minimum_length_4">Длина должна быть не менее 4-х символов</string>
     <string name="allow_biometrics">Использовать биометрию</string>
     <string name="lock_when_leaving">Блокировать при выходе</string>
     <string name="app_lock">Блокировка приложения</string>
