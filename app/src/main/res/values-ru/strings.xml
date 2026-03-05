@@ -174,10 +174,10 @@
     <string name="ltf_block_activity_start_in_task">Блокировать запуск активности в задаче</string>
     <string name="ca_cert">CA-сертификат</string>
     <!--TODO: 4 strings-->
-    <string name="no_ca_cert">No user CA certificate installed</string>
-    <string name="parse_cert_failed">Failed to parse certificate</string>
+    <string name="no_ca_cert">Пользовательский сертификат ЦС не установлен</string>
+    <string name="parse_cert_failed">Не удалось обработать сертификат</string>
     <string name="export">Export</string>
-    <string name="select_ca_cert">Select a CA certificate</string>
+    <string name="select_ca_cert">Выберите сертификат ЦС</string>
     <string name="uninstall_all_user_ca_cert">Удалить все пользовательские CA-сертификаты</string>
     <string name="security_logging">Журнал безопасности</string> 
     <string name="pre_reboot_security_logs">Журналы безопасности перед перезагрузкой</string>
@@ -190,7 +190,7 @@
     <string name="wipe_work_profile_warning">Ваш рабочий профиль будет УДАЛЕН</string>
     <string name="encryption_status">Статус шифрования</string>
     <string name="frp_policy">Политика FRP</string>
-    <string name="frp_not_supported">Your device does not support FRP</string> <!--TODO-->
+    <string name="frp_not_supported">Устройство не поддерживает защиту от сброса (FRP)</string> <!--TODO-->
     <string name="enable_frp">Включить FRP</string>
     <string name="account_list_is">Список аккаунтов: </string>
 
