@@ -174,10 +174,10 @@
     <string name="ltf_block_activity_start_in_task">Блокировать запуск активности в задаче</string>
     <string name="ca_cert">CA-сертификат</string>
     <!--TODO: 4 strings-->
-    <string name="no_ca_cert">Пользовательский сертификат ЦС не установлен</string>
+    <string name="no_ca_cert">Пользовательский сертификат CA не установлен</string>
     <string name="parse_cert_failed">Не удалось обработать сертификат</string>
     <string name="export">Export</string>
-    <string name="select_ca_cert">Выберите сертификат ЦС</string>
+    <string name="select_ca_cert">Выберите сертификат CA</string>
     <string name="uninstall_all_user_ca_cert">Удалить все пользовательские CA-сертификаты</string>
     <string name="security_logging">Журнал безопасности</string> 
     <string name="pre_reboot_security_logs">Журналы безопасности перед перезагрузкой</string>
