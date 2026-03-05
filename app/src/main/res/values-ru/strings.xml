@@ -531,6 +531,7 @@
     <string name="appearance">Оформление</string> 
 
     <!--TODO: app lock-->
+    <string name="app_lock">Блокировка приложения</string>
     <string name="security">Безопасность</string>
     <string name="clear_storage">Очистить хранилище</string>
     
