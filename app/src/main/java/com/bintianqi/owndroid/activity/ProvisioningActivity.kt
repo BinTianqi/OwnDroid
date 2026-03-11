@@ -1,5 +1,6 @@
 package com.bintianqi.owndroid.activity
 
+import android.app.admin.DevicePolicyManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -23,7 +24,12 @@ class ProvisioningActivity: ComponentActivity() {
             val theme by myApp.container.themeState.collectAsState()
             OwnDroidTheme(theme) {
                 ProvisioningScreen(vm.params) {
-                    setResult(RESULT_OK, vm.buildResultIntent(it))
+                    val intent = vm.buildResultIntent(it)
+                    intent.putExtra(
+                        DevicePolicyManager.EXTRA_PROVISIONING_MODE,
+                        DevicePolicyManager.PROVISIONING_MODE_FULLY_MANAGED_DEVICE
+                    )
+                    setResult(RESULT_OK, intent)
                     finish()
                 }
             }
