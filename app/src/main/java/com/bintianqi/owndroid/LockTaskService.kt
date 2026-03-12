@@ -7,13 +7,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.ServiceInfo
-import android.os.Build
 import android.os.IBinder
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
-import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
+import com.bintianqi.owndroid.utils.MyNotificationChannel
+import com.bintianqi.owndroid.utils.NotificationType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -50,10 +49,7 @@ class LockTaskService: Service() {
             .setOngoing(true)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .build()
-        ServiceCompat.startForeground(
-            this, NotificationType.LockTaskMode.id, notification,
-            if (Build.VERSION.SDK_INT < 34) 0 else ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
-        )
+        startForeground(NotificationType.LockTaskMode.id, notification)
         coroutineScope.launch {
             val am = getSystemService(ActivityManager::class.java)
             delay(3000)
@@ -71,11 +67,14 @@ class LockTaskService: Service() {
     }
 
     fun stopLockTask() {
-        val features = Privilege.DPM.getLockTaskFeatures(Privilege.DAR)
-        val packages = Privilege.DPM.getLockTaskPackages(Privilege.DAR)
-        Privilege.DPM.setLockTaskPackages(Privilege.DAR, arrayOf())
-        Privilege.DPM.setLockTaskPackages(Privilege.DAR, packages)
-        Privilege.DPM.setLockTaskFeatures(Privilege.DAR, features)
+        val ph = (application as MyApplication).container.privilegeHelper
+        ph.safeDpmCall {
+            val features = dpm.getLockTaskFeatures(dar)
+            val packages = dpm.getLockTaskPackages(dar)
+            dpm.setLockTaskPackages(dar, arrayOf())
+            dpm.setLockTaskPackages(dar, packages)
+            dpm.setLockTaskFeatures(dar, features)
+        }
     }
 
     companion object {

@@ -1,72 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <permission android:name="com.bintianqi.owndroid.MyPermission"/>
-    <uses-permission android:name="com.bintianqi.owndroid.MyPermission"/>
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
-    <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES"/>
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
-    <uses-sdk tools:overrideLibrary="rikka.shizuku.provider,rikka.shizuku.api,rikka.shizuku.shared,rikka.shizuku.aidl,com.rosan.dhizuku.server_api,com.rosan.dhizuku.api"/>
-    <uses-feature android:name="android.software.device_admin"/>
+
+    <permission android:name="com.bintianqi.owndroid.MyPermission" />
+
+    <uses-permission android:name="com.bintianqi.owndroid.MyPermission" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+    <uses-permission
+        android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <uses-sdk tools:overrideLibrary="rikka.shizuku.provider,rikka.shizuku.api,rikka.shizuku.shared,rikka.shizuku.aidl,com.rosan.dhizuku.server_api,com.rosan.dhizuku.api" />
+    <uses-feature android:name="android.software.device_admin" />
     <application
+        android:name=".MyApplication"
         android:dataExtractionRules="@xml/data_extraction_rules"
+        android:enableOnBackInvokedCallback="true"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:manageSpaceActivity=".activity.ManageSpaceActivity"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:theme="@style/Theme.OwnDroid"
-        android:enableOnBackInvokedCallback="true"
         android:testOnly="false"
-        android:manageSpaceActivity=".ManageSpaceActivity"
-        android:name=".MyApplication"
+        android:theme="@style/Theme.OwnDroid"
         tools:targetApi="35">
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize|stateHidden"
+            android:launchMode="singleInstance"
             android:theme="@style/Theme.OwnDroid"
-            android:launchMode="singleInstance">
+            android:windowSoftInputMode="adjustResize|stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.app.action.PROVISIONING_SUCCESSFUL" />
-                <action android:name="android.app.action.PROVISION_MANAGED_PROFILE"/>
-                <action android:name="android.app.action.MANAGED_PROFILE_PROVISIONED"/>
-                <action android:name="android.app.action.PROFILE_PROVISIONING_COMPLETE"/>
-                <action android:name="android.app.action.CHECK_POLICY_COMPLIANCE"/>
+                <action android:name="android.app.action.PROVISION_MANAGED_PROFILE" />
+                <action android:name="android.app.action.MANAGED_PROFILE_PROVISIONED" />
+                <action android:name="android.app.action.PROFILE_PROVISIONING_COMPLETE" />
+                <action android:name="android.app.action.CHECK_POLICY_COMPLIANCE" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".ManageSpaceActivity"
-            android:theme="@style/Theme.Transparent">
-        </activity>
+            android:name=".activity.ManageSpaceActivity"
+            android:theme="@style/Theme.Transparent"></activity>
         <activity
             android:name=".AppInstallerActivity"
-            android:label="@string/app_installer"
-            android:exported="true"
             android:excludeFromRecents="true"
+            android:exported="true"
+            android:label="@string/app_installer"
             android:launchMode="singleInstance">
             <intent-filter>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <action android:name="android.intent.action.VIEW"/>
-                <action android:name="android.intent.action.SEND"/>
-                <action android:name="android.intent.action.SEND_MULTIPLE"/>
-                <data android:mimeType="application/vnd.android.package-archive"/>
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+
+                <data android:mimeType="application/vnd.android.package-archive" />
             </intent-filter>
         </activity>
         <activity
             android:name=".ShortcutsReceiverActivity"
-            android:permission="com.bintianqi.owndroid.MyPermission"
             android:exported="true"
+            android:permission="com.bintianqi.owndroid.MyPermission"
             android:theme="@android:style/Theme.NoDisplay" />
         <activity
             android:name=".DhizukuActivity"
@@ -79,28 +86,54 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".activity.CheckPolicyComplianceActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Transparent">
+            <intent-filter>
+                <action android:name="android.app.action.CHECK_POLICY_COMPLIANCE" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".activity.ProvisioningActivity"
+            android:exported="true"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <intent-filter>
+                <action android:name="android.app.action.GET_PROVISIONING_MODE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".activity.ProvisioningPolicyComplianceActivity"
+            android:exported="true"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <intent-filter>
+                <action android:name="android.app.action.ADMIN_POLICY_COMPLIANCE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <receiver
             android:name=".Receiver"
             android:description="@string/app_name"
-            android:permission="android.permission.BIND_DEVICE_ADMIN"
-            android:exported="false">
+            android:exported="false"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
             <meta-data
                 android:name="android.app.device_admin"
-                android:resource="@xml/device_admin"/>
+                android:resource="@xml/device_admin" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.app.action.PROVISIONING_SUCCESSFUL" />
-                <action android:name="android.app.action.PROFILE_PROVISIONING_COMPLETE"/>
-                <action android:name="android.app.action.PROVISION_MANAGED_PROFILE"/>
-                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED"/>
-                <action android:name="android.app.action.DEVICE_ADMIN_DISABLE_REQUESTED"/>
-                <action android:name="android.app.action.DEVICE_ADMIN_DISABLED"/>
+                <action android:name="android.app.action.PROFILE_PROVISIONING_COMPLETE" />
+                <action android:name="android.app.action.PROVISION_MANAGED_PROFILE" />
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+                <action android:name="android.app.action.DEVICE_ADMIN_DISABLE_REQUESTED" />
+                <action android:name="android.app.action.DEVICE_ADMIN_DISABLED" />
             </intent-filter>
         </receiver>
         <receiver
             android:name=".ApiReceiver"
-            android:exported="true">
-        </receiver>
+            android:exported="true"></receiver>
 
         <service
             android:name=".LockTaskService"
@@ -110,16 +143,15 @@
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
             android:authorities="${applicationId}.shizuku"
-            android:multiprocess="false"
             android:enabled="true"
             android:exported="true"
+            android:multiprocess="false"
             android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
         <provider
             android:name=".MyDhizukuProvider"
             android:authorities="com.bintianqi.owndroid.dhizuku_server.provider"
             android:directBootAware="true"
             android:enabled="true"
-            android:exported="true">
-        </provider>
+            android:exported="true"></provider>
     </application>
 </manifest>

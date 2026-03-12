@@ -3,32 +3,26 @@ package com.bintianqi.owndroid
 import android.app.admin.DeviceAdminReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Binder
 import android.os.Build.VERSION
 import android.os.UserHandle
 import android.os.UserManager
-import com.bintianqi.owndroid.dpm.handlePrivilegeChange
-import com.bintianqi.owndroid.dpm.retrieveNetworkLogs
-import com.bintianqi.owndroid.dpm.retrieveSecurityLogs
+import com.bintianqi.owndroid.utils.NotificationType
+import com.bintianqi.owndroid.utils.NotificationUtils
+import com.bintianqi.owndroid.utils.ShortcutUtils
+import com.bintianqi.owndroid.utils.formatDate
+import com.bintianqi.owndroid.utils.popToast
+import com.bintianqi.owndroid.utils.retrieveNetworkLogs
+import com.bintianqi.owndroid.utils.retrieveSecurityLogs
 
 class Receiver : DeviceAdminReceiver() {
-    override fun onEnabled(context: Context, intent: Intent) {
-        super.onEnabled(context, intent)
-        Privilege.updateStatus()
-        if (Binder.getCallingUid() / 100000 != 0) handlePrivilegeChange(context)
-    }
-
-    override fun onDisabled(context: Context, intent: Intent) {
-        super.onDisabled(context, intent)
-        Privilege.updateStatus()
-    }
-
     override fun onProfileProvisioningComplete(context: Context, intent: Intent) {
         super.onProfileProvisioningComplete(context, intent)
         context.popToast(R.string.create_work_profile_success)
     }
 
-    override fun onNetworkLogsAvailable(context: Context, intent: Intent, batchToken: Long, networkLogsCount: Int) {
+    override fun onNetworkLogsAvailable(
+        context: Context, intent: Intent, batchToken: Long, networkLogsCount: Int
+    ) {
         super.onNetworkLogsAvailable(context, intent, batchToken, networkLogsCount)
         if (VERSION.SDK_INT >= 26) {
             retrieveNetworkLogs(context.applicationContext as MyApplication, batchToken)
@@ -78,28 +72,34 @@ class Receiver : DeviceAdminReceiver() {
 
     override fun onBugreportShared(context: Context, intent: Intent, hash: String) {
         super.onBugreportShared(context, intent, hash)
-        NotificationUtils.notifyEvent(context, NotificationType.BugReportShared, "SHA-256 hash: $hash")
+        NotificationUtils.notifyEvent(
+            context, getSr(context), NotificationType.BugReportShared, "SHA-256 hash: $hash"
+        )
     }
 
     override fun onBugreportSharingDeclined(context: Context, intent: Intent) {
         super.onBugreportSharingDeclined(context, intent)
-        NotificationUtils.notifyEvent(context, NotificationType.BugReportSharingDeclined, "")
+        NotificationUtils.notifyEvent(context, getSr(context), NotificationType.BugReportSharingDeclined, "")
     }
 
     override fun onBugreportFailed(context: Context, intent: Intent, failureCode: Int) {
         super.onBugreportFailed(context, intent, failureCode)
-        val message = when(failureCode) {
+        val message = when (failureCode) {
             BUGREPORT_FAILURE_FAILED_COMPLETING -> R.string.bug_report_failure_failed_completing
             BUGREPORT_FAILURE_FILE_NO_LONGER_AVAILABLE -> R.string.bug_report_failure_no_longer_available
             else -> R.string.place_holder
         }
-        NotificationUtils.notifyEvent(context, NotificationType.BugReportFailed, context.getString(message))
+        NotificationUtils.notifyEvent(
+            context, getSr(context), NotificationType.BugReportFailed, context.getString(message)
+        )
     }
 
     override fun onSystemUpdatePending(context: Context, intent: Intent, receivedTime: Long) {
         super.onSystemUpdatePending(context, intent, receivedTime)
         val text = context.getString(R.string.received_time) + ": " + formatDate(receivedTime)
-        NotificationUtils.notifyEvent(context, NotificationType.SystemUpdatePending, text)
+        NotificationUtils.notifyEvent(
+            context, getSr(context), NotificationType.SystemUpdatePending, text
+        )
     }
 
     private fun sendUserRelatedNotification(
@@ -108,6 +108,11 @@ class Receiver : DeviceAdminReceiver() {
         val um = context.getSystemService(Context.USER_SERVICE) as UserManager
         val serial = um.getSerialNumberForUser(userHandle)
         val text = context.getString(R.string.serial_number) + ": $serial"
-        NotificationUtils.notifyEvent(context, type, text)
+        NotificationUtils.notifyEvent(context, getSr(context), type, text)
+    }
+
+    companion object {
+        fun getSr(context: Context) =
+            (context.applicationContext as MyApplication).container.settingsRepo
     }
 }

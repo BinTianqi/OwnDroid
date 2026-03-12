@@ -191,7 +191,7 @@
     <string name="nearby_app_streaming">Yakındaki Uygulama Akışı</string>
     <string name="nearby_streaming_policy">Yakındaki Akış Politikası</string>
     <string name="nearby_notification_streaming">Yakındaki Bildirim Akışı</string>
-    <string name="enable_if_secure_enough">Yalnızca aynı yönetilen hesap</string>
+    <string name="enable_if_same_account">Yalnızca aynı yönetilen hesap</string>
     <string name="lock_task_mode">Görev Kilitleme Modu</string>
     <string name="app_not_allowed">Uygulamaya izin verilmiyor</string>
     <string name="disable_all">Hepsini Devre Dışı Bırak</string>
@@ -225,11 +225,11 @@
     <string name="account_list_is">"Hesap listesi: "</string>
 
     <!--SystemUpdatePolicy-->
+    <string name="system_update">System update</string> <!--TODO-->
     <string name="is_security_patch">Güvenlik yaması: %1$s</string>
     <string name="no_system_update">Sistem güncellemesi yok</string>
     <string name="system_update_policy">Sistem Güncelleme Politikası</string>
-    <string name="system_update_policy_automatic">Otomatik</string>
-    <string name="system_update_policy_install_windowed">Pencereli Yükleme</string>
+    <string name="system_update_policy_windowed">Pencereli Yükleme</string> <!--TODO-->
     <string name="system_update_policy_postpone">30 Gün Ertele</string>
     <string name="start_time">Başlangıç Zamanı</string>
     <string name="end_time">Bitiş Zamanı</string>
@@ -686,7 +686,7 @@
     <string name="info_required_strong_auth_timeout">Son güçlü kimlik doğrulama yönteminin (parola, PIN veya desen) kullanıldığından beri kullanıcının ikincil, güçlü olmayan kimlik doğrulamayı ne kadar süre kullanabileceğini belirler. Dönen zaman aşımından sonra kullanıcı güçlü kimlik doğrulama yöntemi kullanmak zorundadır.\n0 değeri, yöneticinin zaman aşımı kontrolüne katılmadığı anlamına gelir. Minimum ve maksimum zaman aşımı süreleri platform tarafından tanımlanır ve genellikle sırasıyla 1 saat ve 72 saattir.</string>
     <string name="info_deactivate">OwnDroid yetkilerini kaybedecektir.</string>
 
-    <string name="choose_work_mode">Çalışma Modunu Seç</string>
+    <string name="choose_working_mode">Çalışma Modunu Seç</string>
     <string name="recommended">Önerilen</string>
     <string name="activate_method">Etkinleştirme Yöntemi</string>
     <string name="adb_command">ADB Komutu</string>

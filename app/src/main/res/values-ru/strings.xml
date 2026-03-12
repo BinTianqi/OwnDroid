@@ -160,7 +160,7 @@
     <string name="nearby_app_streaming">Политика потоковой передачи Nearby App</string>
     <string name="nearby_streaming_policy">Политика потоковой передачи Nearby</string>
     <string name="nearby_notification_streaming">Политика потоковой передачи уведомлений Nearby</string>
-    <string name="enable_if_secure_enough">Только для одной управляемой учетной записи</string>
+    <string name="enable_if_same_account">Только для одной управляемой учетной записи</string>
     <string name="lock_task_mode">Режим закрепления задачи</string>
     <string name="app_not_allowed">Приложение не разрешено</string>
     <string name="disable_all">Отключить все</string>
@@ -195,11 +195,11 @@
     <string name="account_list_is">Список аккаунтов: </string>
 
     <!--Политика системных обновлений-->
+    <string name="system_update">System update</string> <!--TODO-->
     <string name="is_security_patch">Патч безопасности: %1$s</string>
     <string name="no_system_update">Нет системных обновлений</string>
     <string name="system_update_policy">Политика системных обновлений</string>
-    <string name="system_update_policy_automatic">Автоматически</string>
-    <string name="system_update_policy_install_windowed">Установить в окне</string>
+    <string name="system_update_policy_windowed">Установить в окне</string> <!--TODO-->
     <string name="system_update_policy_postpone">Отложить на 30 дней</string>
     <string name="start_time">Время начала</string>
     <string name="end_time">Время окончания</string>

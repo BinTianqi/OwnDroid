@@ -7,8 +7,8 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.IBinder
 import androidx.annotation.Keep
+import com.bintianqi.owndroid.utils.popToast
 import rikka.shizuku.Shizuku
-import rikka.sui.Sui
 import kotlin.system.exitProcess
 
 @Keep
@@ -54,13 +54,14 @@ fun useShizuku(context: Context, action: (IBinder?) -> Unit) {
             Shizuku.bindUserService(getShizukuArgs(context), connection)
         } else if(Shizuku.shouldShowRequestPermissionRationale()) {
             context.popToast(R.string.permission_denied)
+            action(null)
         } else {
-            Sui.init(context.packageName)
             fun requestPermissionResultListener(requestCode: Int, grantResult: Int) {
                 if (grantResult == PackageManager.PERMISSION_GRANTED) {
                     Shizuku.bindUserService(getShizukuArgs(context), connection)
                 } else {
                     context.popToast(R.string.permission_denied)
+                    action(null)
                 }
                 Shizuku.removeRequestPermissionResultListener(::requestPermissionResultListener)
             }
@@ -69,5 +70,6 @@ fun useShizuku(context: Context, action: (IBinder?) -> Unit) {
         }
     } catch (e: Exception) {
         e.printStackTrace()
+        action(null)
     }
 }

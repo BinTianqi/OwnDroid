@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import com.bintianqi.owndroid.ThemeSettings
+import com.bintianqi.owndroid.feature.settings.MySettings
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -94,10 +94,11 @@ private val darkScheme = darkColorScheme(
 
 @Composable
 fun OwnDroidTheme(
-    theme: ThemeSettings,
+    theme: MySettings.Theme,
     content: @Composable () -> Unit
 ) {
-    val darkTheme = theme.darkTheme == 1 || (theme.darkTheme == -1 && isSystemInDarkTheme())
+    val darkTheme = theme.dark == MySettings.DarkMode.On ||
+            (theme.dark == MySettings.DarkMode.FollowSystem && isSystemInDarkTheme())
     val context = LocalContext.current
     val colorScheme = when {
         theme.materialYou && VERSION.SDK_INT >= 31 -> {
@@ -106,7 +107,8 @@ fun OwnDroidTheme(
         darkTheme -> darkScheme
         else -> lightScheme
     }.let {
-        if(darkTheme && theme.blackTheme) it.copy(background = Color.Black, surface = Color.Black) else it
+        if (darkTheme && theme.black) it.copy(background = Color.Black, surface = Color.Black)
+        else it
     }
     val view = LocalView.current
     SideEffect {

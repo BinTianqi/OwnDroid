@@ -69,6 +69,7 @@
     <string name="continue_str">继续</string>
     <string name="exit">退出</string>
     <string name="undo">撤销</string>
+    <string name="refresh">刷新</string>
 
     <!--Permissions-->
     <string name="profile_owner">Profile owner</string>
@@ -134,6 +135,10 @@
     <string name="disable_bt_contact_share">禁止蓝牙分享联系人</string>
     <string name="common_criteria_mode">通用标准模式</string>
     <string name="enable_usb_signal">启用USB信号</string>
+    <string name="stay_on_while_plugged_in">充电时保持亮屏</string>
+    <string name="enable_adb">启用ADB</string>
+    <string name="enable_usb_mass_storage">启用USB大容量存储</string>
+    <string name="skip_first_use_hints">跳过首次使用提示</string>
     <string name="keyguard">锁屏</string>
     <string name="lock_now">立即锁屏</string>
     <string name="lock_screen">锁屏</string>
@@ -148,7 +153,8 @@
     <string name="cpu_usages">CPU使用情况</string>
     <string name="active">活动</string>
     <string name="total">总计</string>
-    <string name="fan_speeds">Fan speeds</string>
+    <string name="fan_speeds">风扇速度</string>
+    <string name="default_input_method">默认输入法</string>
     <string name="bug_report">错误报告</string>
     <string name="confirm_bug_report">请求错误报告？</string>
     <string name="reboot">重启</string>
@@ -157,6 +163,7 @@
     <string name="manually_input">手动输入</string>
     <string name="date">日期</string>
     <string name="time">时间</string>
+    <string name="timezone">时区</string>
     <string name="use_current_timezone">使用当前时区</string>
     <string name="change_timezone">更改时区</string>
     <string name="timezone_id">时区ID</string>
@@ -172,7 +179,7 @@
     <string name="nearby_app_streaming">附近应用传输</string>
     <string name="nearby_streaming_policy">附近流式传输策略</string>
     <string name="nearby_notification_streaming">附近通知传输</string>
-    <string name="enable_if_secure_enough">在足够安全时启用</string>
+    <string name="enable_if_same_account">账号相同时启用</string>
     <string name="lock_task_mode">锁定任务模式</string>
     <string name="lock_task_mode_start_clear_task">清除任务（新实例）</string>
     <string name="lock_task_mode_show_notification">显示通知以退出</string>
@@ -211,11 +218,11 @@
     <string name="account_list_is">账户列表：</string>
 
     <!--SystemUpdatePolicy-->
+    <string name="system_update">系统更新</string>
     <string name="is_security_patch">安全补丁: %1$s</string>
     <string name="no_system_update">暂无系统更新</string>
     <string name="system_update_policy">系统更新策略</string>
-    <string name="system_update_policy_automatic">准备好后立即更新</string>
-    <string name="system_update_policy_install_windowed">在某段时间里更新</string>
+    <string name="system_update_policy_windowed">窗口期</string>
     <string name="system_update_policy_postpone">延迟30天</string>
     <string name="start_time">开始时间</string>
     <string name="end_time">结束时间</string>
@@ -331,6 +338,13 @@
     <string name="profile_max_time_out_desc">工作资料处于关闭状态的时间达到该限制后会挂起个人应用，0为无限制</string>
     <string name="personal_app_suspended_because_timeout">个人应用已经因此挂起：%1$s</string>
     <string name="intent_filter">Intent过滤器</string>
+    <string name="presets">预设</string>
+    <string name="open_file">打开文件</string>
+    <string name="share">分享</string>
+    <string name="share_multiple">分享（多个）</string>
+    <string name="get_content">获取内容</string>
+    <string name="choose_file">选择文件</string>
+    <string name="choose_folder">选择文件夹</string>
     <string name="direction">方向</string>
     <string name="both_direction">双向</string>
     <string name="work_to_personal">工作到个人</string>
@@ -342,6 +356,8 @@
 
     <!--Applications-->
     <string name="applications">应用程序</string>
+    <string name="apps_view">应用视图</string>
+    <string name="features_view">功能视图</string>
     <string name="show_user_app">显示用户应用</string>
     <string name="show_system_app">显示系统应用</string>
     <string name="suspend">挂起</string>
@@ -352,6 +368,8 @@
     <string name="enable_lockdown">启用锁定</string>
     <string name="clear_current_config">清除当前配置</string>
     <string name="permissions">权限</string>
+    <string name="user_apps">用户应用</string>
+    <string name="system_apps">系统应用</string>
     <string name="not_installed">未安装</string>
     <string name="block_uninstall">阻止卸载</string>
     <string name="disable_user_control">禁止用户控制</string>
@@ -696,8 +714,9 @@
     <string name="info_password_history_length">设置后，用户将无法输入与历史记录中任何密码相同的新密码。当前密码将保留，直到用户设置新密码为止，因此更改不会立即生效。值为0表示不做限制。</string>
     <string name="info_required_strong_auth_timeout">如果用户在这段时间内没有使用强认证（密码、PIN或图案）解锁设备，则要求使用强认证解锁设备。值为0表示OwnDroid不参与控制超时。一般来说，最少1小时，最多72小时。</string>
     <string name="info_deactivate">OwnDroid将会丢失特权</string>
+    <string name="info_personal_apps_suspended">你的个人应用被OwnDroid挂起</string>
 
-    <string name="choose_work_mode">选择一个工作模式</string>
+    <string name="choose_working_mode">选择一个工作模式</string>
     <string name="recommended">推荐</string>
     <string name="activate_method">激活方法</string>
     <string name="adb_command">ADB命令</string>

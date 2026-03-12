@@ -35,27 +35,21 @@
 
 ## FAQ
 
-### 设备上有账号
+### 设备上已有账号
 
 ```text
 java.lang.IllegalStateException: Not allowed to set the device owner because there are already some accounts on the device
 ```
 
-解决办法：
-- 冻结持有这些账号的app。
-- 删除这些账号。
+解决办法：冻结持有这些账号的app，或删除这些账号。
 
-### 设备上有多个用户
+### 设备上已有多个用户
 
 ```text
 java.lang.IllegalStateException: Not allowed to set the device owner because there are already several users on the device
 ```
 
-解决办法：
-- 删除次级用户。
-
-> [!NOTE]
-> 一些系统有应用克隆、儿童空间等功能，它们通常是用户。
+解决办法：删除其他用户，包括工作资料、私密空间和应用分身。
 
 ### Device owner 已存在
 
@@ -89,7 +83,25 @@ user limit reached
 
 三星限制了多用户功能，暂无解决办法。
 
-## API
+
+### 创建工作资料/用户
+
+在大部分设备上，设置device owner后不能创建工作资料，因为系统在设置device owner时会添加`no_add_managed_profile`等用户限制。
+Device owner不能修改系统设置的用户限制，但如果你有root权限，你可以在adb shell中执行以下命令以关闭这个限制。
+
+```shell
+pm set-user-restriction no_add_user 0
+pm set-user-restriction no_add_managed_profile 0
+pm set-user-restriction no_add_private_profile 0
+pm set-user-restriction no_add_clone_profile 0
+```
+
+一些系统在设置了device owner后不允许在安卓设置中创建用户，你可以在OwnDroid中创建用户。
+如果你有root，你也可以在adb shell中运行以上命令以解除限制。
+
+## 高级用户
+
+### API
 
 OwnDroid提供了一个基于Intent的API。你需要在设置中设置密钥并启用API。括号中的数字是最小的安卓版本。
 
@@ -127,7 +139,9 @@ context.sendBroadcast(intent)
 
 [可用的用户限制](https://developer.android.google.cn/reference/android/os/UserManager#constants_1)
 
-## 构建
+## 开发者
+
+### 构建
 
 你可以在命令行中使用Gradle以构建OwnDroid
 ```shell
@@ -137,6 +151,10 @@ context.sendBroadcast(intent)
 ./gradlew build -PStoreFile="/path/to/your/jks/file" -PStorePassword="YOUR_KEYSTORE_PASSWORD" -PKeyPassword="YOUR_KEY_PASSWORD" -PKeyAlias="YOUR_KEY_ALIAS"
 ```
 （在Windows系统中应使用`./gradlew.bat`)
+
+### 贡献
+
+请使用`dev`分支。
 
 ## 许可证
 

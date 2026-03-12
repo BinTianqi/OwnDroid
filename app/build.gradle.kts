@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose)
     alias(libs.plugins.serialization)
 }
@@ -26,8 +25,8 @@ android {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 23
         targetSdk = 36
-        versionCode = 42
-        versionName = "7.3"
+        versionCode = 43
+        versionName = "8.0"
         multiDexEnabled = false
     }
 
@@ -63,10 +62,11 @@ android {
     dependenciesInfo {
         includeInApk = false
     }
-    composeCompiler {
-        includeSourceInformation = false
-        includeTraceMarkers = false
-    }
+}
+
+composeCompiler {
+    includeSourceInformation = false
+    includeTraceMarkers = false
 }
 
 kotlin {
@@ -89,12 +89,14 @@ gradle.taskGraph.whenReady {
 dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.lifecycle.viewmodel)
+    implementation(libs.androidx.nav3.runtime)
+    implementation(libs.androidx.nav3.ui)
     implementation(libs.androidx.compose.ui.tooling.preview)
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.accompanist.drawablepainter)
     implementation(libs.accompanist.permissions)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.navigation.compose)
     implementation(libs.material.icons.core)
     implementation(libs.shizuku.provider)
     implementation(libs.shizuku.api)

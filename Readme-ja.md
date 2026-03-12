@@ -1,7 +1,8 @@
 [English](Readme.md) | [简体中文](Readme-zh_CN.md)
 
 > [!important]
-> The Japanese readme need update
+> The Japanese readme is outdated
+> 日语的Readme已经过时
 
 # OwnDroid
 

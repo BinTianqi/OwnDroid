@@ -10,6 +10,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 
 /**
  * Learned from AOSP's Activity animation
@@ -42,4 +43,7 @@ object NavTransition {
         ) + fadeOut(
             tween(83, 35, LinearEasing)
         )
+
+    val transition = enterTransition togetherWith exitTransition
+    val popTransition = popEnterTransition togetherWith popExitTransition
 }

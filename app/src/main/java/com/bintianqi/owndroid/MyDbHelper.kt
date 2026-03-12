@@ -4,12 +4,13 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
-class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 4) {
+class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 5) {
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(DHIZUKU_CLIENTS_TABLE)
         db.execSQL(SECURITY_LOGS_TABLE)
         db.execSQL(NETWORK_LOGS_TABLE)
         db.execSQL(APP_GROUPS_TABLE)
+        db.execSQL(CP_INTENTS_TABLE)
     }
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         if (oldVersion < 2) {
@@ -20,6 +21,9 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 4) {
         }
         if (oldVersion < 4) {
             db.execSQL(APP_GROUPS_TABLE)
+        }
+        if (oldVersion < 5) {
+            db.execSQL(CP_INTENTS_TABLE)
         }
     }
     companion object {
@@ -33,5 +37,7 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 4) {
         const val APP_GROUPS_TABLE = "CREATE TABLE app_groups(" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "name TEXT, apps TEXT)"
+        const val CP_INTENTS_TABLE = "CREATE TABLE cross_profile_intent_filters (" +
+                "action_str TEXT, category TEXT, mime_type TEXT, direction INTEGER)"
     }
 }

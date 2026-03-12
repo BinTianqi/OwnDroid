@@ -24,5 +24,3 @@
 -dontwarn android.app.ActivityThread
 -dontwarn android.app.ContextImpl
 -dontwarn android.app.LoadedApk
-
--keep class com.bintianqi.owndroid.MyViewModel { *; }

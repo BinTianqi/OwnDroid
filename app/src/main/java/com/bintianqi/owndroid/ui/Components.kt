@@ -17,9 +17,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -31,6 +34,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -48,15 +52,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.bintianqi.owndroid.HorizontalPadding
+import com.bintianqi.owndroid.utils.HorizontalPadding
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.adaptiveInsets
-import com.bintianqi.owndroid.zhCN
+import com.bintianqi.owndroid.utils.adaptiveInsets
+import com.bintianqi.owndroid.utils.isValidPackageName
+import com.bintianqi.owndroid.utils.parsePackageNames
 
 @Composable
 fun FunctionItem(
@@ -70,20 +78,20 @@ fun FunctionItem(
             .fillMaxWidth()
             .clickable(onClick = operation)
             .padding(start = 25.dp, end = 15.dp)
-            .padding(vertical = 12.dp + (if(desc != "") 0 else 3).dp),
+            .padding(vertical = 12.dp + (if (desc != "") 0 else 3).dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if(icon != null) Icon(
-            painter = painterResource(icon), contentDescription = null,
-            modifier = Modifier.padding(top = 1.dp, end = 20.dp).offset(x = (-2).dp)
+        if (icon != null) Icon(
+            painterResource(icon), null,
+            Modifier
+                .padding(top = 1.dp, end = 20.dp)
+                .offset(x = (-2).dp)
         )
         Column {
-            Text(
-                text = stringResource(title),
-                style = typography.titleLarge,
-                modifier = Modifier.padding(bottom = if(zhCN) 2.dp else 0.dp)
-            )
-            if(desc != null) { Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F)) }
+            Text(stringResource(title), style = typography.titleLarge)
+            if (desc != null) {
+                Text(desc, color = colorScheme.onBackground.copy(alpha = 0.8F))
+            }
         }
     }
 }
@@ -110,13 +118,14 @@ fun RadioButtonItem(
     selected: Boolean,
     operation: () -> Unit
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
-        .fillMaxWidth()
-        .clip(RoundedCornerShape(25))
-        .clickable(onClick = operation)
+    Row(
+        verticalAlignment = Alignment.CenterVertically, modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(25))
+            .clickable(onClick = operation)
     ) {
         RadioButton(selected = selected, onClick = operation)
-        Text(text = text, modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
+        Text(text)
     }
 }
 
@@ -134,11 +143,15 @@ fun FullWidthRadioButtonItem(
     operation: () -> Unit
 ) {
     Row(
+        Modifier
+            .fillMaxWidth()
+            .clickable(onClick = operation),
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().clickable(onClick = operation)
     ) {
-        RadioButton(selected = selected, onClick = operation, modifier = Modifier.padding(horizontal = 4.dp))
-        Text(text = text, modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
+        RadioButton(
+            selected, operation, Modifier.padding(horizontal = 4.dp)
+        )
+        Text(text)
     }
 }
 
@@ -148,16 +161,15 @@ fun CheckBoxItem(
     checked: Boolean,
     operation: (Boolean) -> Unit
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
-        .fillMaxWidth()
-        .clip(RoundedCornerShape(25))
-        .clickable { operation(!checked) }
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(25))
+            .clickable { operation(!checked) },
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Checkbox(
-            checked = checked,
-            onCheckedChange = operation
-        )
-        Text(text = stringResource(text), modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
+        Checkbox(checked, operation)
+        Text(stringResource(text))
     }
 }
 
@@ -168,11 +180,16 @@ fun FullWidthCheckBoxItem(
     operation: (Boolean) -> Unit
 ) {
     Row(
+        Modifier
+            .fillMaxWidth()
+            .clickable { operation(!checked) },
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().clickable { operation(!checked) }
     ) {
-        Checkbox(checked = checked, onCheckedChange = operation, modifier = Modifier.padding(horizontal = 4.dp))
-        Text(text = stringResource(text), modifier = Modifier.padding(bottom = if(zhCN) { 2 } else { 0 }.dp))
+        Checkbox(
+            checked, operation,
+            Modifier.padding(horizontal = 4.dp)
+        )
+        Text(stringResource(text))
     }
 }
 
@@ -182,13 +199,16 @@ fun SwitchItem(
     desc: String? = null,
     @DrawableRes icon: Int? = null,
     getState: () -> Boolean,
-    onCheckedChange: (Boolean)->Unit,
+    onCheckedChange: (Boolean) -> Unit,
     enabled: Boolean = true,
     onClickBlank: (() -> Unit)? = null,
     padding: Boolean = true
 ) {
     var state by remember { mutableStateOf(getState()) }
-    SwitchItem(title, desc, icon, state, { onCheckedChange(it); state = getState() }, enabled, onClickBlank, padding)
+    SwitchItem(
+        title, desc, icon, state, { onCheckedChange(it); state = getState() }, enabled,
+        onClickBlank, padding
+    )
 }
 
 @Composable
@@ -205,21 +225,28 @@ fun SwitchItem(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(enabled = onClickBlank != null, onClick = onClickBlank?:{})
-            .padding(start = if(padding) 25.dp else 0.dp, end = if(padding) 15.dp else 0.dp, top = 5.dp, bottom = 5.dp)
+            .clickable(enabled = onClickBlank != null, onClick = onClickBlank ?: {})
+            .padding(
+                start = if (padding) 25.dp else 0.dp, end = if (padding) 15.dp else 0.dp,
+                top = 5.dp, bottom = 5.dp
+            )
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.align(Alignment.CenterStart)
         ) {
-            if(icon != null) Icon(
+            if (icon != null) Icon(
                 painter = painterResource(icon),
                 contentDescription = null,
-                modifier = Modifier.padding(end = 20.dp).offset(x = (-2).dp)
+                modifier = Modifier
+                    .padding(end = 20.dp)
+                    .offset(x = (-2).dp)
             )
-            Column(modifier = Modifier.padding(end = 60.dp, bottom = if(zhCN) 2.dp else 0.dp)) {
+            Column(modifier = Modifier.padding(end = 60.dp)) {
                 Text(text = stringResource(title), style = typography.titleLarge)
-                if(desc != null) Text(text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F))
+                if (desc != null) Text(
+                    text = desc, color = colorScheme.onBackground.copy(alpha = 0.8F)
+                )
             }
         }
         Switch(
@@ -234,7 +261,9 @@ fun SwitchItem(
     title: Int, state: Boolean, onCheckedChange: (Boolean) -> Unit, icon: Int? = null
 ) {
     Row(
-        Modifier.fillMaxWidth().padding(25.dp, 5.dp, 15.dp, 5.dp),
+        Modifier
+            .fillMaxWidth()
+            .padding(25.dp, 5.dp, 15.dp, 5.dp),
         Arrangement.SpaceBetween, Alignment.CenterVertically
     ) {
         Row(Modifier.weight(1F), verticalAlignment = Alignment.CenterVertically) {
@@ -252,31 +281,34 @@ fun InfoItem(title: Int, text: Int, withInfo: Boolean = false, onClick: () -> Un
 @Composable
 fun InfoItem(title: Int, text: String, withInfo: Boolean = false, onClick: () -> Unit = {}) {
     Row(
-        Modifier.fillMaxWidth().padding(vertical = 6.dp).padding(start = HorizontalPadding, end = 8.dp),
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+            .padding(start = HorizontalPadding, end = 8.dp),
         Arrangement.SpaceBetween, Alignment.CenterVertically
     ) {
         Column(Modifier.weight(1F)) {
             Text(stringResource(title), style = typography.titleLarge)
             Text(text, Modifier.alpha(0.8F))
         }
-        if(withInfo) IconButton(onClick) { Icon(Icons.Outlined.Info, null) }
+        if (withInfo) IconButton(onClick) { Icon(Icons.Outlined.Info, null) }
     }
 }
 
 @Composable
 fun ListItem(text: String, onDelete: () -> Unit) {
     Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(15)).background(colorScheme.surfaceVariant)
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clip(RoundedCornerShape(15))
+            .background(colorScheme.surfaceVariant),
+        Arrangement.SpaceBetween, Alignment.CenterVertically
     ) {
-        Text(text = text, modifier = Modifier.padding(start = 12.dp))
-        IconButton(
-            onClick = onDelete
-        ) {
+        Text(text, Modifier.padding(start = 12.dp))
+        IconButton(onDelete) {
             Icon(
-                painter = painterResource(R.drawable.close_fill0),
-                contentDescription = stringResource(R.string.delete)
+                painterResource(R.drawable.close_fill0), stringResource(R.string.delete)
             )
         }
     }
@@ -284,7 +316,13 @@ fun ListItem(text: String, onDelete: () -> Unit) {
 
 @Composable
 fun Notes(@StringRes strID: Int, horizonPadding: Dp = 0.dp) {
-    Icon(Icons.Outlined.Info, null, Modifier.padding(horizontal = horizonPadding).padding(top = 4.dp, bottom = 8.dp), colorScheme.onSurfaceVariant)
+    Icon(
+        Icons.Outlined.Info, null,
+        Modifier
+            .padding(horizontal = horizonPadding)
+            .padding(top = 4.dp, bottom = 8.dp),
+        colorScheme.onSurfaceVariant
+    )
     Text(
         stringResource(strID), Modifier.padding(horizontal = horizonPadding),
         color = colorScheme.onSurfaceVariant, style = typography.bodyMedium
@@ -343,7 +381,12 @@ fun MyLazyScaffold(
         },
         contentWindowInsets = adaptiveInsets()
     ) { paddingValues ->
-        LazyColumn(Modifier.fillMaxSize().padding(paddingValues), content = content)
+        LazyColumn(
+            Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            content = content
+        )
     }
 }
 
@@ -380,7 +423,7 @@ fun MySmallTitleScaffold(
 
 @Composable
 fun ErrorDialog(message: String?, onDismiss: () -> Unit) {
-    if(!message.isNullOrEmpty()) AlertDialog(
+    if (!message.isNullOrEmpty()) AlertDialog(
         title = { Text(stringResource(R.string.error)) },
         text = { Text(message) },
         confirmButton = {
@@ -397,4 +440,29 @@ fun CircularProgressDialog(onDismiss: () -> Unit) {
             CircularProgressIndicator(Modifier.padding(16.dp))
         }
     }
+}
+
+@Composable
+fun PackageNameTextField(
+    value: String, onChoosePackage: () -> Unit,
+    modifier: Modifier = Modifier, onValueChange: (String) -> Unit
+) {
+    val fm = LocalFocusManager.current
+    OutlinedTextField(
+        value, onValueChange,
+        Modifier
+            .fillMaxWidth()
+            .then(modifier),
+        label = { Text(stringResource(R.string.package_name)) },
+        trailingIcon = {
+            IconButton(onChoosePackage) {
+                Icon(Icons.AutoMirrored.Default.List, null)
+            }
+        },
+        isError = !parsePackageNames(value).all { it.isValidPackageName },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done
+        ),
+        keyboardActions = KeyboardActions { fm.clearFocus() }
+    )
 }
