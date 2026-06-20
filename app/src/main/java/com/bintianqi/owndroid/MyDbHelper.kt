@@ -4,7 +4,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
-class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 6) {
+class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 7) {
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(DHIZUKU_CLIENTS_TABLE)
         db.execSQL(SECURITY_LOGS_TABLE)
@@ -28,6 +28,9 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 6) {
         if (oldVersion < 6) {
             db.execSQL(UPGRADE_CP_INTENTS_TABLE)
         }
+        if (oldVersion < 7) {
+            db.execSQL(RENAME_CP_COLUMN)
+        }
     }
     companion object {
         const val DHIZUKU_CLIENTS_TABLE = "CREATE TABLE dhizuku_clients (uid INTEGER PRIMARY KEY," +
@@ -44,5 +47,7 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 6) {
                 "action_str TEXT, category TEXT, mime_type TEXT, direction INTEGER, time INTEGER)"
         const val UPGRADE_CP_INTENTS_TABLE = "ALTER TABLE cross_profile_intent_filters " +
                 "ADD COLUMN created_at INTEGER NOT NULL DEFAULT 0"
+        const val RENAME_CP_COLUMN = "ALTER TABLE cross_profile_intent_filters " +
+                "RENAME COLUMN created_at TO time"
     }
 }

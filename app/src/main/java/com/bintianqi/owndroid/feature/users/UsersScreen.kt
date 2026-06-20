@@ -114,7 +114,11 @@ fun UsersScreen(vm: UsersViewModel, onNavigateUp: () -> Unit, onNavigate: (Desti
         val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
             if (it != null) uriToStream(context, it) { stream ->
                 bitmap = BitmapFactory.decodeStream(stream)
-                if (bitmap != null) changeUserIconDialog = true
+                if (bitmap != null) {
+                    changeUserIconDialog = true
+                } else {
+                    vm.toastChannel.sendStatus(false)
+                }
             }
         }
         FunctionItem(R.string.change_user_icon, icon = R.drawable.account_circle_fill0) {
@@ -473,7 +477,7 @@ fun AffiliationIdScreen(
             },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
         )
-        Button(vm::applyAffiliationIds) {
+        Button(vm::applyAffiliationIds, Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.apply))
         }
         Notes(R.string.info_affiliation_id)

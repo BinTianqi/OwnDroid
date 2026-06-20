@@ -16,7 +16,7 @@ android {
         }
     }
     namespace = "com.bintianqi.owndroid"
-    compileSdk = 36
+    compileSdk = 37
 
     lint.checkReleaseBuilds = false
     lint.disable += "All"
