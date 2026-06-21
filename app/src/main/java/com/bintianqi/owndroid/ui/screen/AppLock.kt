@@ -1,9 +1,9 @@
 package com.bintianqi.owndroid.ui.screen
 
 import android.content.Context
+import android.hardware.biometrics.BiometricManager
 import android.hardware.biometrics.BiometricPrompt
 import android.hardware.biometrics.BiometricPrompt.AuthenticationCallback
-import android.hardware.fingerprint.FingerprintManager
 import android.os.Build
 import android.os.CancellationSignal
 import androidx.activity.compose.BackHandler
@@ -114,7 +114,15 @@ fun AppLockDialog(
 
 @RequiresApi(28)
 fun startBiometricsUnlock(context: Context, onSucceed: () -> Unit) {
-    context.getSystemService(FingerprintManager::class.java) ?: return
+    if (Build.VERSION.SDK_INT >= 30) {
+        val bm = context.getSystemService(BiometricManager::class.java)
+        val status = bm.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG or
+                BiometricManager.Authenticators.BIOMETRIC_WEAK)
+        if (status != BiometricManager.BIOMETRIC_SUCCESS) {
+            context.showOperationResultToast(false)
+            return
+        }
+    }
     val callback = object : AuthenticationCallback() {
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult?) {
             super.onAuthenticationSucceeded(result)
@@ -122,13 +130,18 @@ fun startBiometricsUnlock(context: Context, onSucceed: () -> Unit) {
         }
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence?) {
             super.onAuthenticationError(errorCode, errString)
-            if(errorCode != BiometricPrompt.BIOMETRIC_ERROR_CANCELED) context.showOperationResultToast(false)
+            if (errorCode != BiometricPrompt.BIOMETRIC_ERROR_CANCELED) {
+                context.showOperationResultToast(false)
+            }
         }
     }
     val cancel = CancellationSignal()
-    BiometricPrompt.Builder(context)
+    val builder = BiometricPrompt.Builder(context)
         .setTitle(context.getText(R.string.unlock))
         .setNegativeButton(context.getString(R.string.cancel), context.mainExecutor) { _, _ -> cancel.cancel() }
-        .build()
-        .authenticate(cancel, context.mainExecutor, callback)
+    if (Build.VERSION.SDK_INT >= 30) {
+        builder.setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG or
+                BiometricManager.Authenticators.BIOMETRIC_WEAK)
+    }
+    builder.build().authenticate(cancel, context.mainExecutor, callback)
 }
