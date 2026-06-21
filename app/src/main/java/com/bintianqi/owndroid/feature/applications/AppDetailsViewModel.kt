@@ -3,6 +3,7 @@ package com.bintianqi.owndroid.feature.applications
 import android.os.Build.VERSION
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.PrivilegeHelper
 import com.bintianqi.owndroid.utils.PrivilegeStatus
@@ -11,9 +12,11 @@ import com.bintianqi.owndroid.utils.getAppInfo
 import com.bintianqi.owndroid.utils.plusOrMinus
 import com.bintianqi.owndroid.utils.runtimePermissions
 import com.bintianqi.owndroid.utils.uninstallPackage
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class AppDetailsViewModel(
     val packageName: String, val application: MyApplication, val ph: PrivilegeHelper,
@@ -103,12 +106,16 @@ class AppDetailsViewModel(
         }
     }
 
-    fun setPermission(permission: String, status: Int) = ph.safeDpmCall {
-        val result = dpm.setPermissionGrantState(dar, packageName, permission, status)
-        if (result) {
-            getPermissions()
-        } else {
-            toastChannel.sendStatus(false)
+    fun setPermission(permission: String, status: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            ph.safeDpmCall {
+                val result = dpm.setPermissionGrantState(dar, packageName, permission, status)
+                if (result) {
+                    getPermissions()
+                } else {
+                    toastChannel.sendStatus(false)
+                }
+            }
         }
     }
 

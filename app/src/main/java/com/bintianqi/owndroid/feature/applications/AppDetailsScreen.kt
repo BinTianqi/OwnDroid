@@ -18,6 +18,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -42,6 +43,8 @@ import com.bintianqi.owndroid.utils.BottomPadding
 import com.bintianqi.owndroid.utils.PermissionItem
 import com.bintianqi.owndroid.utils.runtimePermissions
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun ApplicationDetailsScreen(
@@ -67,7 +70,6 @@ fun ApplicationDetailsScreen(
             )
         }
         FunctionItem(R.string.permissions, icon = R.drawable.shield_fill0) {
-            vm.getPermissions()
             onNavigate(Destination.AppPermissionsManager)
         }
         if (VERSION.SDK_INT >= 24) SwitchItem(
@@ -118,6 +120,11 @@ fun AppPermissionsManagerScreen(
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
     var selectedPermission by remember { mutableStateOf<PermissionItem?>(null) }
     val permissions by vm.permissionsState.collectAsState()
+    LaunchedEffect(Unit) {
+        launch(Dispatchers.IO) {
+            vm.getPermissions()
+        }
+    }
     MyLazyScaffold(R.string.permissions, onNavigateUp) {
         items(runtimePermissions) {
             Row(

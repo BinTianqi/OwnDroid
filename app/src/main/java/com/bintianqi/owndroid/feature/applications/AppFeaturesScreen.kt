@@ -86,6 +86,7 @@ import com.bintianqi.owndroid.utils.runtimePermissions
 import com.bintianqi.owndroid.utils.searchInString
 import com.bintianqi.owndroid.utils.showOperationResultToast
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -256,7 +257,9 @@ fun PermissionDetailScreen(
     }
     val fm = LocalFocusManager.current
     LaunchedEffect(Unit) {
-        vm.getPermissionPackages(param.permission)
+        launch(Dispatchers.IO) {
+            vm.getPermissionPackages(param.permission)
+        }
     }
     Scaffold(
         topBar = {

@@ -94,29 +94,31 @@ class AppFeaturesViewModel(
     val permissionPackagesState = MutableStateFlow(emptyList<Pair<AppInfo, Int>>())
 
     fun getPermissionPackages(permission: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            permissionPackagesState.value = emptyList()
-            ph.safeDpmCall {
-                permissionPackagesState.value = pm.getInstalledPackages(
-                    getInstalledAppsFlags or PackageManager.GET_PERMISSIONS
-                ).filter {
-                    it.requestedPermissions?.contains(permission) ?: false
-                }.map {
-                    getAppInfo(pm, it.packageName) to
-                            dpm.getPermissionGrantState(dar, it.packageName, permission)
-                }
+        permissionPackagesState.value = emptyList()
+        ph.safeDpmCall {
+            permissionPackagesState.value = pm.getInstalledPackages(
+                getInstalledAppsFlags or PackageManager.GET_PERMISSIONS
+            ).filter {
+                it.requestedPermissions?.contains(permission) ?: false
+            }.map {
+                getAppInfo(pm, it.packageName) to
+                        dpm.getPermissionGrantState(dar, it.packageName, permission)
             }
         }
     }
 
     fun setPackagePermission(
         packageName: String, permission: String, state: Int
-    ) = ph.safeDpmCall {
-        val result = dpm.setPermissionGrantState(dar, packageName, permission, state)
-        if (result) {
-            getPermissionPackages(permission)
-        } else {
-            toastChannel.sendStatus(false)
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            ph.safeDpmCall {
+                val result = dpm.setPermissionGrantState(dar, packageName, permission, state)
+                if (result) {
+                    getPermissionPackages(permission)
+                } else {
+                    toastChannel.sendStatus(false)
+                }
+            }
         }
     }
 
@@ -245,7 +247,7 @@ class AppFeaturesViewModel(
         origin: List<AppInfo>, input: List<String>, status: Boolean
     ): List<AppInfo> {
         return if (status) {
-            origin + input.map { getAppInfo(pm, it) }
+            (origin + input.map { getAppInfo(pm, it) }).distinctBy { it.name }
         } else {
             origin.filter { it.name !in input }
         }
