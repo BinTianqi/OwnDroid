@@ -144,7 +144,12 @@ fun UsersScreen(vm: UsersViewModel, onNavigateUp: () -> Unit, onNavigate: (Desti
     if (VERSION.SDK_INT >= 28 && dialog == 1) AlertDialog(
         title = { Text(stringResource(R.string.logout)) },
         text = {
-            Text(stringResource(R.string.info_logout))
+            Column {
+                Text(stringResource(R.string.info_logout))
+                TextButton({
+                    vm.requestPinLogoutShortcut()
+                }) { Text(stringResource(R.string.create_shortcut)) }
+            }
         },
         confirmButton = {
             TextButton({

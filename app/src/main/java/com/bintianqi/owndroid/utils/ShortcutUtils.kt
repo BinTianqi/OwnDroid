@@ -136,6 +136,20 @@ object ShortcutUtils {
             context, shortcuts, context.getString(R.string.user_removed)
         )
     }
+
+    fun requestPinLogoutShortcut(context: Context, sr: SettingsRepository): Boolean {
+        val shortcut = ShortcutInfoCompat.Builder(context, "LOGOUT")
+            .setIcon(IconCompat.createWithResource(context, R.drawable.logout_fill0))
+            .setShortLabel(context.getText(R.string.logout))
+            .setIntent(
+                Intent(context, ShortcutsReceiverActivity::class.java)
+                    .setAction("com.bintianqi.owndroid.action.LOGOUT")
+                    .putExtra("key", sr.data.shortcut.key)
+            )
+            .build()
+        return ShortcutManagerCompat.requestPinShortcut(context, shortcut, null)
+    }
+
     fun setShortcutKey(sr: SettingsRepository) {
         if (sr.data.shortcut.key.isEmpty()) {
             sr.update {

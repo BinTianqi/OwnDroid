@@ -511,6 +511,7 @@
     <string name="user_not_exist">用户不存在</string>
     <string name="serial_number">序列号</string>
     <string name="logout">登出</string>
+    <string name="create_shortcut">创建快捷方式</string>
     <string name="start_in_background">在后台启动</string>
     <string name="user_operation_switch">切换</string>
     <string name="limit_reached">已达到上限</string>

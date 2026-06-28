@@ -547,6 +547,7 @@
     <string name="user_not_exist">User does not exist</string>
     <string name="serial_number">Serial number</string>
     <string name="logout">Logout</string>
+    <string name="create_shortcut">Create shortcut</string>
     <string name="start_in_background">Start in background</string>
     <string name="user_operation_switch">Switch</string>
     <string name="limit_reached">Limit reached</string>
