@@ -595,7 +595,7 @@ fun myEntryProvider(
         ManagedConfigurationScreen(
             viewModel(factory = viewModelFactory {
                 ManagedConfigurationViewModel(
-                    it.packageName, container.app, container.privilegeHelper
+                    it.packageName, container.app, container.privilegeHelper, container.toastChannel
                 )
             }), ::navigateUp
         )

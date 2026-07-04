@@ -1,5 +1,7 @@
 package com.bintianqi.owndroid.feature.applications
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -83,6 +85,14 @@ fun ManagedConfigurationScreen(
     var searchKeyword by rememberSaveable { mutableStateOf("") }
     var showModified by rememberSaveable { mutableStateOf(true) }
     var showUnmodified by rememberSaveable { mutableStateOf(true) }
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) {
+        if (it != null) vm.exportConfiguration(it)
+    }
+    val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
+        if (it != null) vm.importConfiguration(it)
+    }
     val displayRestrictions = restrictions.filter {
         (showModified && !it.isNull()) || (showUnmodified && it.isNull()) &&
                 (!searchMode || searchKeyword.isBlank() ||
@@ -147,6 +157,27 @@ fun ManagedConfigurationScreen(
                                 { Text(stringResource(R.string.unmodified)) },
                                 { showUnmodified = !showUnmodified },
                                 leadingIcon = { Checkbox(showUnmodified, null) }
+                            )
+                            HorizontalDivider()
+                            DropdownMenuItem(
+                                { Text(stringResource(R.string.export)) },
+                                {
+                                    exportLauncher.launch("mc_${vm.packageName}")
+                                    dropdownMenu = false
+                                },
+                                leadingIcon = {
+                                    Icon(painterResource(R.drawable.file_export_fill0), null)
+                                }
+                            )
+                            DropdownMenuItem(
+                                { Text(stringResource(R.string.import_str)) },
+                                {
+                                    importLauncher.launch("application/json")
+                                    dropdownMenu = false
+                                },
+                                leadingIcon = {
+                                    Icon(painterResource(R.drawable.file_open_fill0), null)
+                                }
                             )
                             HorizontalDivider()
                             DropdownMenuItem(
