@@ -11,11 +11,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -33,45 +35,36 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.MyLazyScaffold
-import com.bintianqi.owndroid.ui.MySmallTitleScaffold
-import com.bintianqi.owndroid.ui.Notes
+import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.BottomPadding
 import com.bintianqi.owndroid.utils.HorizontalPadding
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.bintianqi.owndroid.utils.formatDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrossProfileIntentFilterScreen(
     vm: CrossProfileIntentFilterViewModel, onNavigateUp: () -> Unit, navigate: (Destination) -> Unit
 ) {
-    val focusMgr = LocalFocusManager.current
-    var action by remember { mutableStateOf("") }
-    var customCategory by remember { mutableStateOf(false) }
-    var category by remember { mutableStateOf("") }
-    var customMimeType by remember { mutableStateOf(false) }
-    var mimeType by remember { mutableStateOf("") }
-    var dropdown by remember { mutableStateOf(false) }
-    var direction by remember { mutableIntStateOf(3) }
+    val filterList by vm.filterListState.collectAsState()
     val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
         if (it != null) vm.importFilters(it)
     }
@@ -80,86 +73,160 @@ fun CrossProfileIntentFilterScreen(
     ) {
         if (it != null) vm.exportFilters(it)
     }
-    MySmallTitleScaffold(
-        R.string.intent_filter, onNavigateUp, 16.dp,
-        {
-            var menu by remember { mutableStateOf(false) }
-            Box {
-                IconButton({ menu = !menu }) {
-                    Icon(Icons.Default.MoreVert, null)
-                }
-                DropdownMenu(menu, { menu = false }) {
-                    DropdownMenuItem(
-                        { Text(stringResource(R.string.history)) },
-                        {
-                            navigate(Destination.CrossProfileIntentFilterHistory)
-                            menu = false
-                        },
-                        leadingIcon = {
-                            Icon(painterResource(R.drawable.history_fill0), null)
-                        }
-                    )
-                    DropdownMenuItem(
-                        { Text(stringResource(R.string.presets)) },
-                        {
-                            navigate(Destination.CrossProfileIntentFilterPresets)
-                            menu = false
-                        },
-                        leadingIcon = {
-                            Icon(painterResource(R.drawable.list_fill0), null)
-                        }
-                    )
-                    DropdownMenuItem(
-                        { Text(stringResource(R.string.import_str)) },
-                        {
-                            importLauncher.launch(arrayOf("application/json"))
-                            menu = false
-                        },
-                        leadingIcon = {
-                            Icon(painterResource(R.drawable.file_open_fill0), null)
-                        }
-                    )
-                    DropdownMenuItem(
-                        { Text(stringResource(R.string.export)) },
-                        {
-                            exportLauncher.launch("owndroid_intent_filters")
-                            menu = false
-                        },
-                        leadingIcon = {
-                            Icon(painterResource(R.drawable.file_export_fill0), null)
-                        }
-                    )
-                }
+    var confirmDeleteDialog by remember { mutableStateOf(false) }
+    MyLazyScaffold(R.string.intent_filter, onNavigateUp, {
+        IconButton({
+            navigate(Destination.AddCrossProfileIntentFilter)
+        }) {
+            Icon(Icons.Default.Add, null)
+        }
+        IconButton({
+            navigate(Destination.CrossProfileIntentFilterPresets)
+        }) {
+            Icon(Icons.AutoMirrored.Default.List, null)
+        }
+        var menu by remember { mutableStateOf(false) }
+        Box {
+            IconButton({ menu = !menu }) {
+                Icon(Icons.Default.MoreVert, null)
+            }
+            DropdownMenu(menu, { menu = false }) {
+                DropdownMenuItem(
+                    { Text(stringResource(R.string.import_str)) },
+                    {
+                        importLauncher.launch(arrayOf("application/json"))
+                        menu = false
+                    },
+                    leadingIcon = {
+                        Icon(painterResource(R.drawable.file_open_fill0), null)
+                    }
+                )
+                DropdownMenuItem(
+                    { Text(stringResource(R.string.export)) },
+                    {
+                        exportLauncher.launch("owndroid_intent_filters")
+                        menu = false
+                    },
+                    leadingIcon = {
+                        Icon(painterResource(R.drawable.file_export_fill0), null)
+                    }
+                )
+                HorizontalDivider()
+                DropdownMenuItem(
+                    { Text(stringResource(R.string.delete)) },
+                    {
+                        confirmDeleteDialog = true
+                        menu = false
+                    },
+                    leadingIcon = { Icon(Icons.Outlined.Delete, null) }
+                )
             }
         }
-    ) {
+    }) {
+        item {
+            if (filterList.isEmpty()) {
+                Text(stringResource(R.string.none), Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+            }
+        }
+        itemsIndexed(filterList, { _, it -> it.id }) { _, it ->
+            Column(Modifier.animateItem()) {
+                Row(
+                    Modifier.padding(16.dp, 4.dp, 8.dp, 4.dp),
+                    Arrangement.SpaceBetween, Alignment.CenterVertically
+                ) {
+                    Column(Modifier.weight(1F)) {
+                        Text(it.options.action)
+                        if (it.options.category.isNotEmpty()) {
+                            Text(
+                                it.options.category, Modifier.alpha(0.7F),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        if (it.options.mimeType.isNotEmpty()) {
+                            Text(
+                                it.options.mimeType, Modifier.alpha(0.7F),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Text(
+                            stringResource(directionTextMap[it.options.direction]!!),
+                            Modifier.alpha(0.7F), style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            formatDate(it.time),
+                            Modifier.alpha(0.6F), style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    IconButton({
+                        vm.deleteEntry(it.id)
+                    }) {
+                        Icon(Icons.Outlined.Delete, null)
+                    }
+                }
+                HorizontalDivider()
+            }
+        }
+        item {
+            Spacer(Modifier.height(BottomPadding))
+        }
+    }
+    if (confirmDeleteDialog) AlertDialog(
+        text = { Text(stringResource(R.string.delete_all_filters_confirmation)) },
+        onDismissRequest = { confirmDeleteDialog = false },
+        confirmButton = {
+            TextButton({
+                confirmDeleteDialog = false
+                vm.deleteAllFilters()
+            }) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        dismissButton = {
+            TextButton({ confirmDeleteDialog = false }) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddCrossProfileIntentFilterScreen(
+    vm: CrossProfileIntentFilterViewModel, navigateUp: () -> Unit
+) {
+    var action by rememberSaveable { mutableStateOf("") }
+    var enableCategory by rememberSaveable { mutableStateOf(false) }
+    var category by rememberSaveable { mutableStateOf("") }
+    var enableMimeType by rememberSaveable { mutableStateOf(false) }
+    var mimeType by rememberSaveable { mutableStateOf("") }
+    var dropdown by remember { mutableStateOf(false) }
+    var direction by rememberSaveable { mutableIntStateOf(3) }
+    MyScaffold(R.string.add_filter, navigateUp) {
         OutlinedTextField(
-            value = action, onValueChange = { action = it },
+            action, { action = it }, Modifier.fillMaxWidth(),
             label = { Text("Action") },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done
-            ),
-            keyboardActions = KeyboardActions(onDone = { focusMgr.clearFocus() }),
-            modifier = Modifier.fillMaxWidth()
+            )
         )
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(customCategory, {
-                customCategory = it
+            Checkbox(enableCategory, {
+                enableCategory = it
                 category = ""
             })
             OutlinedTextField(
                 category, { category = it }, Modifier.fillMaxWidth(),
-                label = { Text("Category") }, enabled = customCategory
+                label = { Text("Category") }, enabled = enableCategory
             )
         }
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(customMimeType, {
-                customMimeType = it
+            Checkbox(enableMimeType, {
+                enableMimeType = it
                 mimeType = ""
             })
             OutlinedTextField(
                 mimeType, { mimeType = it }, Modifier.fillMaxWidth(),
-                label = { Text("MIME type") }, enabled = customMimeType
+                label = { Text("MIME type") }, enabled = enableMimeType
             )
         }
         ExposedDropdownMenuBox(dropdown, { dropdown = it }, Modifier.padding(vertical = 5.dp)) {
@@ -183,24 +250,14 @@ fun CrossProfileIntentFilterScreen(
         Button(
             {
                 vm.addFilter(IntentFilterOptions(action, category, mimeType, direction))
+                navigateUp()
             },
             Modifier.fillMaxWidth(),
-            enabled = action.isNotBlank() && (!customCategory || category.isNotBlank()) &&
-                    (!customMimeType || mimeType.isNotBlank())
+            enabled = action.isNotBlank() && (!enableCategory || category.isNotBlank()) &&
+                    (!enableMimeType || mimeType.isNotBlank())
         ) {
             Text(stringResource(R.string.add))
         }
-        Button(
-            {
-                vm.clearFilters()
-            },
-            Modifier
-                .fillMaxWidth()
-                .padding(vertical = 6.dp)
-        ) {
-            Text(stringResource(R.string.clear_cross_profile_filters))
-        }
-        Notes(R.string.info_cross_profile_intent_filter)
     }
 }
 
@@ -213,7 +270,7 @@ fun CrossProfileIntentFilterPresetsScreen(
     MyLazyScaffold(R.string.presets, navigateUp) {
         items(crossProfileIntentFilterPresets) {
             Row(
-                Modifier.padding(start = HorizontalPadding, end = 8.dp, bottom = 2.dp),
+                Modifier.padding(HorizontalPadding, 2.dp, 8.dp, 2.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column(Modifier.weight(1F)) {
@@ -278,46 +335,5 @@ fun CrossProfileIntentFilterPresetsScreen(
             },
             onDismissRequest = { dialog = null }
         )
-    }
-}
-
-@Composable
-fun CrossProfileIntentFilterHistoryScreen(
-    vm: CrossProfileIntentFilterViewModel, navigateUp: () -> Unit
-) {
-    val list = remember { mutableStateListOf<IntentFilterOptions>() }
-    LaunchedEffect(Unit) {
-        launch(Dispatchers.IO) {
-            list.addAll(vm.getHistory())
-        }
-    }
-    MyLazyScaffold(R.string.history, navigateUp) {
-        items(list) {
-            Column {
-                Column(Modifier.padding(HorizontalPadding, 4.dp)) {
-                    Text(it.action)
-                    if (it.category.isNotEmpty()) {
-                        Text(
-                            it.category, Modifier.alpha(0.7F),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                    if (it.mimeType.isNotEmpty()) {
-                        Text(
-                            it.mimeType, Modifier.alpha(0.7F),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                    Text(
-                        stringResource(directionTextMap[it.direction]!!),
-                        Modifier.alpha(0.7F), style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-                HorizontalDivider()
-            }
-        }
-        item {
-            Spacer(Modifier.height(BottomPadding))
-        }
     }
 }

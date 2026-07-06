@@ -4,13 +4,13 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
-class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 8) {
+class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 9) {
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(DHIZUKU_CLIENTS_TABLE)
         db.execSQL(SECURITY_LOGS_TABLE)
         db.execSQL(NETWORK_LOGS_TABLE)
         db.execSQL(APP_GROUPS_TABLE)
-        db.execSQL(CPIF_TABLE)
+        db.execSQL(CPIF2_TABLE)
     }
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         if (oldVersion < 2) {
@@ -24,6 +24,10 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 8) {
         }
         if (oldVersion < 8) {
             db.execSQL(CPIF_TABLE)
+        }
+        if (oldVersion < 9) {
+            db.execSQL(DELETE_CPIF)
+            db.execSQL(CPIF2_TABLE)
         }
     }
     companion object {
@@ -39,5 +43,9 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 8) {
                 "name TEXT, apps TEXT)"
         const val CPIF_TABLE = "CREATE TABLE cpif (" +
                 "action_str TEXT, category TEXT, mime_type TEXT, direction INTEGER, time INTEGER)"
+        const val DELETE_CPIF = "DROP TABLE cpif"
+        const val CPIF2_TABLE = "CREATE TABLE cpif2 (id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "action_str TEXT, category TEXT, mime_type TEXT, direction INTEGER," +
+                "created_at INTEGER)"
     }
 }

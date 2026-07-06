@@ -342,7 +342,6 @@
     <string name="profile_max_time_out_desc">İş profili kapatıldıktan sonra kişisel uygulamalar bu süre boyunca askıya alınacak. 0, sınırsız anlamına gelir.</string>
     <string name="personal_app_suspended_because_timeout">Kişisel uygulama şu nedenle askıya alındı: %1$s</string>
     <string name="intent_filter">Niyet Filtresi</string>
-    <string name="clear_cross_profile_filters">Tüm filtreleri temizle</string>
     <string name="org_id">Kurum Kimliği</string>
     <string name="length_6_to_64">Uzunluk 6 ile 64 karakter arasında olmalıdır</string>
     <string name="delete_work_profile">İş Profilini Sil</string>

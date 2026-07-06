@@ -10,6 +10,11 @@ data class IntentFilterOptions(
     val direction: Int // 1: private to work, 2: work to private, 3: both
 )
 
+/** Represents a row in database table `cpif` */
+class IntentFilterEntry(
+    val id: Int, val options: IntentFilterOptions, val time: Long
+)
+
 val directionTextMap = mapOf(
     1 to R.string.personal_to_work,
     2 to R.string.work_to_personal,

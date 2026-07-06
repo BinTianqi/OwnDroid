@@ -314,7 +314,6 @@
     <string name="profile_max_time_out_desc">Личные приложения будут приостановлены после закрытия рабочего профиля на указанное время. 0 означает отсутствие ограничения.</string>
     <string name="personal_app_suspended_because_timeout">Личное приложение приостановлено по причине: %1$s</string>
     <string name="intent_filter">Фильтр намерений</string>
-    <string name="clear_cross_profile_filters">Очистить все фильтры</string>
     <string name="org_id">Идентификатор организации</string>
     <string name="length_6_to_64">Длина должна быть от 6 до 64 символов</string>
     <string name="delete_work_profile">Удалить рабочий профиль</string>

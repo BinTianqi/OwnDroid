@@ -384,7 +384,8 @@
     <string name="both_direction">Both direction</string>
     <string name="work_to_personal">Work to personal</string>
     <string name="personal_to_work">Personal to work</string>
-    <string name="clear_cross_profile_filters">Clear all filters</string>
+    <string name="delete_all_filters_confirmation">Are you sure to delete all filters?</string>
+    <string name="add_filter">Add filter</string>
     <string name="org_id">Organization ID</string>
     <string name="length_6_to_64">The length should be between 6~64 characters</string>
     <string name="delete_work_profile">Delete work profile</string>

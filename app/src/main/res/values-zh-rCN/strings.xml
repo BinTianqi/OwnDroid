@@ -350,7 +350,8 @@
     <string name="both_direction">双向</string>
     <string name="work_to_personal">工作到个人</string>
     <string name="personal_to_work">个人到工作</string>
-    <string name="clear_cross_profile_filters">清除所有过滤器</string>
+    <string name="delete_all_filters_confirmation">你确定要删除所有过滤器吗？</string>
+    <string name="add_filter">添加过滤器</string>
     <string name="org_id">组织ID</string>
     <string name="length_6_to_64">长度应在6~64个字符之间</string>
     <string name="delete_work_profile">删除工作资料</string>
@@ -701,7 +702,7 @@
     <string name="info_recommended_global_proxy">这个代理只是一个建议，一些app有可能忽略它。</string>
     <string name="info_network_log">网络日志包含DNS查询和connect()库调用记录</string>
     <string name="info_profile_maximum_time_off">用户可以关闭工作资料，如果关闭工作资料的时间超过了在这里设置的时间，会挂起个人应用。设置的时间不能小于72小时，如果小于72小时，按72小时算。</string>
-    <string name="info_cross_profile_intent_filter">添加跨资料Intent过滤器，使工作资料中可以发送的指定Intent到主用户，反之亦然。仅支持Activity Intent</string>
+    <string name="info_cross_profile_intent_filter">添加跨资料Intent过滤器，使工作资料中可以发送的指定Intent到主用户，反之亦然。仅支持Activity Intent。</string>
     <string name="info_suspend_app">挂起的应用无法被打开，通知会被隐藏，不会在最近任务中显示，不能弹窗，不能发送Toast。\n有些应用无法被挂起，比如Device admin、启动器和默认拨号应用。</string>
     <string name="info_disable_user_control">用户无法清除这些应用的存储空间，也无法强制停止应用</string>
     <string name="info_keep_uninstalled_apps">这个列表中的应用的APK将会一直保留，即使没有任何用户安装这个应用</string>
