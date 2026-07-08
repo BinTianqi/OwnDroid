@@ -68,7 +68,7 @@ class MainActivity : FragmentActivity() {
         }
         val appChooserVm: AppChooserViewModel by viewModels(
             factoryProducer = {
-                viewModelFactory { AppChooserViewModel(myApp) }
+                viewModelFactory { AppChooserViewModel(myApp, myApp.container.privilegeHelper) }
             }
         )
         registerPackageRemovedReceiver(this) {

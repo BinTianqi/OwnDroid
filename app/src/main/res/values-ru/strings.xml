@@ -321,8 +321,6 @@
 
     <!--Управление приложениями-->
     <string name="applications">Приложения</string>
-    <string name="show_user_app">Показывать пользовательские приложения</string>
-    <string name="show_system_app">Показывать системные приложения</string>
     <string name="suspend">Приостановить</string>
     <string name="hide">Скрыть</string>
     <string name="always_on_vpn">Постоянный VPN</string>

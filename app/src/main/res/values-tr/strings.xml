@@ -348,8 +348,6 @@
 
     <!--Applications-->
     <string name="applications">Uygulamalar</string>
-    <string name="show_user_app">Kullanıcı Uygulamalarını Göster</string>
-    <string name="show_system_app">Sistem Uygulamalarını Göster</string>
     <string name="suspend">Askıya Al</string>
     <string name="hide">Gizle</string>
     <string name="always_on_vpn">Her Zaman Açık VPN</string>

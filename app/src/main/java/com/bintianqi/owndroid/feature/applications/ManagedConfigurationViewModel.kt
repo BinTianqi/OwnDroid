@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.PrivilegeHelper
 import com.bintianqi.owndroid.utils.ToastChannel
+import com.bintianqi.owndroid.utils.transformAppRestrictionEntryList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,21 +33,10 @@ class ManagedConfigurationViewModel(
             val rm = application.getSystemService(RestrictionsManager::class.java)
             ph.safeDpmCall {
                 val bundle = dpm.getApplicationRestrictions(dar, packageName)
-                restrictionsState.value = rm.getManifestRestrictions(packageName)?.mapNotNull {
-                    transformRestrictionEntry(it)
-                }?.map {
-                    if (bundle.containsKey(it.key)) {
-                        when (it) {
-                            is AppRestriction.BooleanItem -> it.value = bundle.getBoolean(it.key)
-                            is AppRestriction.StringItem -> it.value = bundle.getString(it.key)
-                            is AppRestriction.IntItem -> it.value = bundle.getInt(it.key)
-                            is AppRestriction.ChoiceItem -> it.value = bundle.getString(it.key)
-                            is AppRestriction.MultiSelectItem -> it.value =
-                                bundle.getStringArray(it.key)
-                        }
-                    }
-                    it
-                } ?: emptyList()
+                val entries = rm.getManifestRestrictions(packageName)
+                if (entries != null) {
+                    restrictionsState.value = transformAppRestrictionEntryList(entries, bundle)
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -71,31 +61,6 @@ class ManagedConfigurationViewModel(
                 dpm.setApplicationRestrictions(dar, packageName, Bundle())
             }
             getRestrictionsWithoutCoroutine()
-        }
-    }
-
-    private fun transformRestrictionEntry(e: RestrictionEntry): AppRestriction? {
-        return when (e.type) {
-            RestrictionEntry.TYPE_INTEGER ->
-                AppRestriction.IntItem(e.key, e.title, e.description, null)
-
-            RestrictionEntry.TYPE_STRING ->
-                AppRestriction.StringItem(e.key, e.title, e.description, null)
-
-            RestrictionEntry.TYPE_BOOLEAN ->
-                AppRestriction.BooleanItem(e.key, e.title, e.description, null)
-
-            RestrictionEntry.TYPE_CHOICE -> AppRestriction.ChoiceItem(
-                e.key, e.title,
-                e.description, e.choiceEntries, e.choiceValues, null
-            )
-
-            RestrictionEntry.TYPE_MULTI_SELECT -> AppRestriction.MultiSelectItem(
-                e.key, e.title,
-                e.description, e.choiceEntries, e.choiceValues, null
-            )
-
-            else -> null
         }
     }
 

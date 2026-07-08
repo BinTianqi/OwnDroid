@@ -75,6 +75,7 @@
     <string name="exit">Exit</string>
     <string name="undo">Undo</string>
     <string name="refresh">Refresh</string>
+    <string name="filters">Filters</string>
 
     <!--Permissions-->
     <string name="profile_owner">Profile owner</string>
@@ -394,8 +395,18 @@
     <string name="applications">Applications</string>
     <string name="apps_view">Apps view</string>
     <string name="features_view">Features view</string>
-    <string name="show_user_app">Show user apps</string>
-    <string name="show_system_app">Show system apps</string>
+    <string name="support_mc">Support managed configuration</string>
+    <string name="mc_modified">Managed configuration modified</string>
+    <string name="suspended">Suspended</string>
+    <string name="not_suspended">Not suspended</string>
+    <string name="hidden">Hidden</string>
+    <string name="not_hidden">Not hidden</string>
+    <string name="uninstall_blocked">Uninstall blocked</string>
+    <string name="uninstall_not_blocked">Uninstall not blocked</string>
+    <string name="uc_disabled">User control disabled</string>
+    <string name="uc_not_disabled">User control not disabled</string>
+    <string name="md_disabled">Metered data disabled</string>
+    <string name="md_not_disabled">Metered data not disabled</string>
     <string name="suspend">Suspend</string>
     <string name="unsuspend">Unsuspend</string>
     <string name="hide">Hide</string>

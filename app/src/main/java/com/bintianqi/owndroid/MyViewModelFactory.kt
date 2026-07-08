@@ -119,9 +119,6 @@ class MyViewModelFactory(
         if (checkType(AppFeaturesViewModel::class)) {
             return AppFeaturesViewModel(app, ph, ps, tc) as T
         }
-        if (checkType(AppChooserViewModel::class)) {
-            return AppChooserViewModel(app) as T
-        }
 
         if (checkType(WorkProfileViewModel::class)) {
             return WorkProfileViewModel(ph, ps, tc) as T
