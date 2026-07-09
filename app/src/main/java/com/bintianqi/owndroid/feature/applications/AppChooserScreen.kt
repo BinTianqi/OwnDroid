@@ -1,5 +1,6 @@
 package com.bintianqi.owndroid.feature.applications
 
+import android.os.Build
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -92,8 +93,10 @@ fun AppChooserScreen(
     }
     val selectedPackages = remember { mutableStateListOf<AppInfo>() }
     val focusMgr = LocalFocusManager.current
+    var enteredApp by rememberSaveable { mutableStateOf("") }
     LaunchedEffect(Unit) {
         if (packages.size <= 1) vm.refreshPackageList()
+        vm.updateAppState(enteredApp)
     }
     LaunchedEffect(searchMode) {
         query = ""
@@ -221,6 +224,7 @@ fun AppChooserScreen(
                         }, onClick = {
                             if (selectedPackages.isEmpty()) {
                                 focusMgr.clearFocus()
+                                enteredApp = app.info.name
                                 onChoosePackage(app.info.name)
                             } else {
                                 if (app.info in selectedPackages) selectedPackages -= app.info
@@ -306,19 +310,23 @@ private fun AppChooserFilterBottomSheet(
             FullWidthCheckBoxItem(R.string.uninstall_not_blocked, filter.notUb) {
                 update(filter.copy(notUb = it))
             }
-            HorizontalDivider()
-            FullWidthCheckBoxItem(R.string.uc_disabled, filter.ucDisabled) {
-                update(filter.copy(ucDisabled = true))
+            if (Build.VERSION.SDK_INT >= 30) {
+                HorizontalDivider()
+                FullWidthCheckBoxItem(R.string.uc_disabled, filter.ucDisabled) {
+                    update(filter.copy(ucDisabled = true))
+                }
+                FullWidthCheckBoxItem(R.string.uc_not_disabled, filter.ucNotDisabled) {
+                    update(filter.copy(ucNotDisabled = it))
+                }
             }
-            FullWidthCheckBoxItem(R.string.uc_not_disabled, filter.ucNotDisabled) {
-                update(filter.copy(ucNotDisabled = it))
-            }
-            HorizontalDivider()
-            FullWidthCheckBoxItem(R.string.md_disabled, filter.mdDisabled) {
-                update(filter.copy(mdDisabled = it))
-            }
-            FullWidthCheckBoxItem(R.string.md_not_disabled, filter.mdNotDisabled) {
-                update(filter.copy(mdNotDisabled = it))
+            if (Build.VERSION.SDK_INT >= 28) {
+                HorizontalDivider()
+                FullWidthCheckBoxItem(R.string.md_disabled, filter.mdDisabled) {
+                    update(filter.copy(mdDisabled = it))
+                }
+                FullWidthCheckBoxItem(R.string.md_not_disabled, filter.mdNotDisabled) {
+                    update(filter.copy(mdNotDisabled = it))
+                }
             }
         }
     }

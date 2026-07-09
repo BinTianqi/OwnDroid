@@ -119,14 +119,15 @@ fun AppPermissionsManagerScreen(
 ) {
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
     var selectedPermission by remember { mutableStateOf<PermissionItem?>(null) }
+    val requestedPermissions by vm.requestedPermissionsState.collectAsState()
     val permissions by vm.permissionsState.collectAsState()
+    val displayedPermissions = runtimePermissions.filter { it.id in requestedPermissions }
     LaunchedEffect(Unit) {
-        launch(Dispatchers.IO) {
-            vm.getPermissions()
-        }
+        vm.getRequestedPermissions()
+        vm.getPermissions()
     }
     MyLazyScaffold(R.string.permissions, onNavigateUp) {
-        items(runtimePermissions) {
+        items(displayedPermissions) {
             Row(
                 Modifier
                     .fillMaxWidth()

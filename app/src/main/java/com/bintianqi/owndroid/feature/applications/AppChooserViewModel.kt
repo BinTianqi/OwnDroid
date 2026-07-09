@@ -28,15 +28,15 @@ class AppChooserViewModel(val application: MyApplication, val ph: PrivilegeHelpe
             val apps = application.packageManager.getInstalledApplications(getInstalledAppsFlags)
             apps.forEachIndexed { index, info ->
                 packagesState.update {
-                    it + getAppStatus(info)
+                    it + getAppStatus(info.packageName)
                 }
                 progressState.value = (index + 1).toFloat() / apps.size
             }
         }
     }
 
-    private fun getAppStatus(info: ApplicationInfo): AppChooserEntry {
-        val appInfo = getAppInfo(application.packageManager, info)
+    private fun getAppStatus(packageName: String): AppChooserEntry {
+        val appInfo = getAppInfo(application.packageManager, packageName)
         val rm = application.getSystemService(Context.RESTRICTIONS_SERVICE) as RestrictionsManager
         var hasMc = false
         var mcModified = false
@@ -47,8 +47,8 @@ class AppChooserViewModel(val application: MyApplication, val ph: PrivilegeHelpe
         var mdd = false
         try {
             ph.safeDpmCall {
-                val bundle = dpm.getApplicationRestrictions(dar, info.packageName)
-                val entries = rm.getManifestRestrictions(info.packageName)
+                val bundle = dpm.getApplicationRestrictions(dar, packageName)
+                val entries = rm.getManifestRestrictions(packageName)
                 if (entries != null) {
                     hasMc = true
                     val restrictions = transformAppRestrictionEntryList(entries, bundle)
@@ -59,15 +59,15 @@ class AppChooserViewModel(val application: MyApplication, val ph: PrivilegeHelpe
         try {
             ph.safeDpmCall {
                 if (Build.VERSION.SDK_INT >= 24) {
-                    suspended = dpm.isPackageSuspended(dar, info.packageName)
+                    suspended = dpm.isPackageSuspended(dar, packageName)
                 }
-                hidden = dpm.isApplicationHidden(dar, info.packageName)
-                ub = dpm.isUninstallBlocked(dar, info.packageName)
+                hidden = dpm.isApplicationHidden(dar, packageName)
+                ub = dpm.isUninstallBlocked(dar, packageName)
                 if (Build.VERSION.SDK_INT >= 30) {
-                    ucd = info.packageName in dpm.getUserControlDisabledPackages(dar)
+                    ucd = packageName in dpm.getUserControlDisabledPackages(dar)
                 }
                 if (Build.VERSION.SDK_INT >= 28) {
-                    mdd = info.packageName in dpm.getMeteredDataDisabledPackages(dar)
+                    mdd = packageName in dpm.getMeteredDataDisabledPackages(dar)
                 }
             }
         } catch (_: Exception) {}
@@ -96,5 +96,16 @@ class AppChooserViewModel(val application: MyApplication, val ph: PrivilegeHelpe
                         (filter.mdNotDisabled && !app.mdd)) &&
                 (query.isEmpty() || searchInString(query, app.info.name) ||
                         searchInString(query, app.info.label))
+    }
+
+    fun updateAppState(name: String) {
+        if (name.isEmpty()) return
+        packagesState.update { list ->
+            list.map {
+                if (it.info.name == name) {
+                    getAppStatus(name)
+                } else it
+            }
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.bintianqi.owndroid.feature.applications
 
+import android.content.pm.PackageManager
 import android.os.Build.VERSION
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
@@ -98,11 +99,25 @@ class AppDetailsViewModel(
         }
     }
 
+    val requestedPermissionsState = MutableStateFlow(emptyList<String>())
     val permissionsState = MutableStateFlow(emptyMap<String, Int>())
 
-    fun getPermissions() = ph.safeDpmCall {
-        permissionsState.value = runtimePermissions.associate {
-            it.id to dpm.getPermissionGrantState(dar, packageName, it.id)
+    fun getPermissions() {
+        viewModelScope.launch(Dispatchers.IO) {
+            ph.safeDpmCall {
+                permissionsState.value = requestedPermissionsState.value.associateWith {
+                    dpm.getPermissionGrantState(dar, packageName, it)
+                }
+            }
+        }
+    }
+
+    fun getRequestedPermissions() {
+        val permissions = application.packageManager.getPackageInfo(
+            packageName, PackageManager.GET_PERMISSIONS
+        ).requestedPermissions ?: emptyArray()
+        requestedPermissionsState.value = runtimePermissions.map { it.id }.filter {
+            it in permissions
         }
     }
 
