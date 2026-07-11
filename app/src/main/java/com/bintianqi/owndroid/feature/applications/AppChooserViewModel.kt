@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.PrivilegeHelper
-import com.bintianqi.owndroid.utils.AppInfo
 import com.bintianqi.owndroid.utils.getAppInfo
 import com.bintianqi.owndroid.utils.getInstalledAppsFlags
 import com.bintianqi.owndroid.utils.searchInString
@@ -95,7 +94,8 @@ class AppChooserViewModel(val application: MyApplication, val ph: PrivilegeHelpe
                 (filter.mdDisabled == filter.mdNotDisabled || (filter.mdDisabled && app.mdd) ||
                         (filter.mdNotDisabled && !app.mdd)) &&
                 (query.isEmpty() || searchInString(query, app.info.name) ||
-                        searchInString(query, app.info.label))
+                        searchInString(query, app.info.label)) &&
+                (!filter.installed || app.info.flags and ApplicationInfo.FLAG_INSTALLED != 0)
     }
 
     fun updateAppState(name: String) {

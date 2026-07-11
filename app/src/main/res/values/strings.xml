@@ -407,6 +407,7 @@
     <string name="uc_not_disabled">User control not disabled</string>
     <string name="md_disabled">Metered data disabled</string>
     <string name="md_not_disabled">Metered data not disabled</string>
+    <string name="installed_only">Installed only</string>
     <string name="suspend">Suspend</string>
     <string name="unsuspend">Unsuspend</string>
     <string name="hide">Hide</string>
@@ -439,6 +440,9 @@
     <string name="install_existing_app">Install existing app</string>
     <string name="keep_after_uninstall">Keep after uninstall</string>
     <string name="search">Search</string>
+    <string name="switch_view">Switch view</string>
+    <string name="list_view">List view</string>
+    <string name="user_apps_only">User apps only</string>
     <string name="app_group">App group</string>
     <string name="manage_app_groups">Manage groups</string>
     <string name="import_str">Import</string>

@@ -373,6 +373,7 @@
     <string name="uc_not_disabled">未禁止用户控制</string>
     <string name="md_disabled">禁用按量计费流量</string>
     <string name="md_not_disabled">未禁用按量计费流量</string>
+    <string name="installed_only">仅已安装</string>
     <string name="suspend">挂起</string>
     <string name="unsuspend">取消挂起</string>
     <string name="hide">隐藏</string>
@@ -405,6 +406,9 @@
     <string name="enable_system_app">启用系统应用</string>
     <string name="keep_after_uninstall">卸载后保留</string>
     <string name="search">搜索</string>
+    <string name="switch_view">开关视图</string>
+    <string name="list_view">列表视图</string>
+    <string name="user_apps_only">仅用户应用</string>
     <string name="app_group">应用组</string>
     <string name="manage_app_groups">管理组</string>
     <string name="import_str">导入</string>

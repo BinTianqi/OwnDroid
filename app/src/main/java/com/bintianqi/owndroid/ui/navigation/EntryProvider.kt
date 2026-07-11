@@ -432,7 +432,8 @@ fun myEntryProvider(
         PackageFunctionScreen(
             R.string.suspend, vm.suspendedPackages, vm::getSuspendedPackaged,
             vm::setPackageSuspended, ::navigateUp, container.chosenPackage, ::choosePackage,
-            ::navigateToAppGroups, container.appGroupsState, R.string.info_suspend_app
+            ::navigateToAppGroups, container.appGroupsState, R.string.info_suspend_app,
+            vm.allPackagesState, vm::getAllPackages
         )
     }
     entry<Destination.Hide>(
@@ -442,7 +443,7 @@ fun myEntryProvider(
         PackageFunctionScreen(
             R.string.hide, vm.hiddenPackages, vm::getHiddenPackages, vm::setPackageHidden,
             ::navigateUp, container.chosenPackage, ::choosePackage, ::navigateToAppGroups,
-            container.appGroupsState
+            container.appGroupsState, null, vm.allPackagesState, vm::getAllPackages
         )
     }
     entry<Destination.BlockUninstall>(
@@ -452,7 +453,7 @@ fun myEntryProvider(
         PackageFunctionScreen(
             R.string.block_uninstall, vm.ubPackages, vm::getUbPackages, vm::setPackageUb,
             ::navigateUp, container.chosenPackage, ::choosePackage, ::navigateToAppGroups,
-            container.appGroupsState
+            container.appGroupsState, null, vm.allPackagesState, vm::getAllPackages
         )
     }
     entry<Destination.DisableUserControl>(
@@ -462,7 +463,8 @@ fun myEntryProvider(
         PackageFunctionScreen(
             R.string.disable_user_control, vm.ucdPackages, vm::getUcdPackages,
             vm::setPackageUcd, ::navigateUp, container.chosenPackage, ::choosePackage,
-            ::navigateToAppGroups, container.appGroupsState, R.string.info_disable_user_control
+            ::navigateToAppGroups, container.appGroupsState, R.string.info_disable_user_control,
+            vm.allPackagesState, vm::getAllPackages
         )
     }
     entry<Destination.AppPermissionsManager>(
@@ -489,7 +491,8 @@ fun myEntryProvider(
         PackageFunctionScreen(
             R.string.disable_metered_data, vm.mddPackages, vm::getMddPackages,
             vm::setPackageMdd, ::navigateUp, container.chosenPackage, ::choosePackage,
-            ::navigateToAppGroups, container.appGroupsState
+            ::navigateToAppGroups, container.appGroupsState, null,
+            vm.allPackagesState, vm::getAllPackages
         )
     }
     entry<Destination.ClearAppStorage>(
@@ -514,7 +517,8 @@ fun myEntryProvider(
         PackageFunctionScreen(
             R.string.keep_uninstalled_packages, vm.kuPackages, vm::getKuPackages,
             vm::setPackageKu, ::navigateUp, container.chosenPackage, ::choosePackage,
-            ::navigateToAppGroups, container.appGroupsState, R.string.info_keep_uninstalled_apps
+            ::navigateToAppGroups, container.appGroupsState, R.string.info_keep_uninstalled_apps,
+            vm.allPackagesState, vm::getAllPackages
         )
     }
     entry<Destination.InstallExistingApp>(
@@ -532,7 +536,8 @@ fun myEntryProvider(
         PackageFunctionScreen(
             R.string.cross_profile_apps, vm.cpPackages,
             vm::getCpPackages, vm::setPackageCp, ::navigateUp, container.chosenPackage,
-            ::choosePackage, ::navigateToAppGroups, container.appGroupsState
+            ::choosePackage, ::navigateToAppGroups, container.appGroupsState, null,
+            vm.allPackagesState, vm::getAllPackages
         )
     }
     entry<Destination.CrossProfileWidgetProviders>(
@@ -542,7 +547,8 @@ fun myEntryProvider(
         PackageFunctionScreen(
             R.string.cross_profile_widget, vm.cpwProviders,
             vm::getCpwProviders, vm::setCpwProvider, ::navigateUp, container.chosenPackage,
-            ::choosePackage, ::navigateToAppGroups, container.appGroupsState
+            ::choosePackage, ::navigateToAppGroups, container.appGroupsState, null,
+            vm.allPackagesState, vm::getAllPackages
         )
     }
     entry<Destination.CredentialManagerPolicy>(

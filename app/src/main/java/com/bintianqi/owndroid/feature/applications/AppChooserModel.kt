@@ -30,4 +30,5 @@ data class AppChooserFilter(
     val ucNotDisabled: Boolean = true,
     val mdDisabled: Boolean = true,
     val mdNotDisabled: Boolean = true,
+    val installed: Boolean = true
 )

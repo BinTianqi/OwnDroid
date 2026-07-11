@@ -26,7 +26,7 @@ class AppFeaturesViewModel(
     val toastChannel: ToastChannel
 ) : ViewModel() {
     val pm = application.packageManager!!
-    
+
     val suspendedPackages = MutableStateFlow(emptyList<AppInfo>())
 
     @RequiresApi(24)
@@ -157,7 +157,8 @@ class AppFeaturesViewModel(
     @RequiresApi(28)
     fun getKuPackages() = ph.safeDpmCall {
         kuPackages.value =
-            dpm.getKeepUninstalledPackages(dar)?.distinct()?.map { getAppInfo(pm, it) } ?: emptyList()
+            dpm.getKeepUninstalledPackages(dar)?.distinct()?.map { getAppInfo(pm, it) }
+                ?: emptyList()
     }
 
     @RequiresApi(28)
@@ -322,5 +323,15 @@ class AppFeaturesViewModel(
             false
         }
         toastChannel.sendStatus(result)
+    }
+
+    val allPackagesState = MutableStateFlow(emptyList<AppInfo>())
+
+    fun getAllPackages() {
+        viewModelScope.launch(Dispatchers.IO) {
+            allPackagesState.value = application.packageManager.getInstalledApplications(getInstalledAppsFlags).map {
+                getAppInfo(application.packageManager, it)
+            }
+        }
     }
 }

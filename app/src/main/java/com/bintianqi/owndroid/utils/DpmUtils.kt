@@ -292,7 +292,7 @@ enum class DhizukuError {
 fun transformAppRestrictionEntryList(
     list: List<RestrictionEntry>, bundle: Bundle
 ): List<AppRestriction> {
-    return list.map {
+    return list.mapNotNull {
         when (it.type) {
             RestrictionEntry.TYPE_INTEGER ->
                 AppRestriction.IntItem(it.key, it.title, it.description, null)
@@ -313,7 +313,7 @@ fun transformAppRestrictionEntryList(
                 it.description, it.choiceEntries, it.choiceValues, null
             )
 
-            else -> throw Exception("")
+            else -> null
         }
     }.map {
         if (bundle.containsKey(it.key)) {

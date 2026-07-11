@@ -17,9 +17,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Clear
@@ -40,6 +42,7 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -638,7 +641,8 @@ fun PackageFunctionScreen(
     title: Int, packagesState: MutableStateFlow<List<AppInfo>>, onGet: () -> Unit,
     onSet: (List<String>, Boolean) -> Unit, onNavigateUp: () -> Unit,
     chosenPackage: Channel<String>, onChoosePackage: () -> Unit,
-    navigateToGroups: () -> Unit, appGroups: StateFlow<List<AppGroup>>, notes: Int? = null
+    navigateToGroups: () -> Unit, appGroups: StateFlow<List<AppGroup>>, notes: Int? = null,
+    allPackagesState: MutableStateFlow<List<AppInfo>>, getAllPackages: () -> Unit,
 ) {
     val groups by appGroups.collectAsStateWithLifecycle()
     val packages by packagesState.collectAsStateWithLifecycle()
@@ -649,16 +653,55 @@ fun PackageFunctionScreen(
     val snackbar = remember { SnackbarHostState() }
     val res = LocalResources.current
     val coroutine = rememberCoroutineScope()
+    var listView by remember { mutableStateOf(false) }
+    var userAppsOnly by remember { mutableStateOf(true) }
+    var searchMode by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
+    val allPackages by allPackagesState.collectAsState()
+    val displayedPackages = allPackages.filter {
+        (!userAppsOnly || it.flags and ApplicationInfo.FLAG_SYSTEM == 0) &&
+                (!searchMode || query.isBlank() || searchInString(query, it.name) ||
+                        searchInString(query, it.label))
+    }
     LaunchedEffect(Unit) {
         onGet()
+        getAllPackages()
         input = chosenPackage.receive()
     }
     Scaffold(
         topBar = {
             TopAppBar(
-                { Text(stringResource(title)) },
+                {
+                    if (searchMode) {
+                        val fr = remember { FocusRequester() }
+                        LaunchedEffect(Unit) {
+                            fr.requestFocus()
+                        }
+                        OutlinedTextField(
+                            query, { query = it },
+                            Modifier.fillMaxWidth().focusRequester(fr),
+                            textStyle = typography.bodyLarge,
+                            trailingIcon = {
+                                IconButton({
+                                    searchMode = false
+                                    query = ""
+                                }) {
+                                    Icon(Icons.Default.Clear, null)
+                                }
+                            },
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+                        )
+                    } else {
+                        Text(stringResource(title))
+                    }
+                },
                 navigationIcon = { NavIcon(onNavigateUp) },
                 actions = {
+                    if (!listView && !searchMode) IconButton({
+                        searchMode = true
+                    }) {
+                        Icon(Icons.Default.Search, stringResource(R.string.search))
+                    }
                     var expand by remember { mutableStateOf(false) }
                     Box {
                         IconButton({
@@ -667,6 +710,34 @@ fun PackageFunctionScreen(
                             Icon(Icons.Default.MoreVert, null)
                         }
                         DropdownMenu(expand, { expand = false }) {
+                            DropdownMenuItem(
+                                { Text(stringResource(R.string.switch_view)) },
+                                {
+                                    listView = false
+                                    expand = false
+                                },
+                                leadingIcon = { RadioButton(!listView, null) }
+                            )
+                            DropdownMenuItem(
+                                { Text(stringResource(R.string.list_view)) },
+                                {
+                                    listView = true
+                                    expand = false
+                                },
+                                leadingIcon = { RadioButton(listView, null) }
+                            )
+                            HorizontalDivider()
+                            if (!listView) {
+                                DropdownMenuItem(
+                                    { Text(stringResource(R.string.user_apps_only)) },
+                                    {
+                                        userAppsOnly = !userAppsOnly
+                                        expand = false
+                                    },
+                                    leadingIcon = { Checkbox(userAppsOnly, null) }
+                                )
+                                HorizontalDivider()
+                            }
                             groups.forEach {
                                 DropdownMenuItem(
                                     { Text("(${it.apps.size}) ${it.name}") },
@@ -691,11 +762,36 @@ fun PackageFunctionScreen(
             )
         },
         snackbarHost = {
-            SnackbarHost(snackbar)
+            if (listView) SnackbarHost(snackbar)
         }
     ) { paddingValues ->
         LazyColumn(Modifier.padding(paddingValues)) {
-            items(packages, { it.name }) {
+            if (!listView) itemsIndexed(displayedPackages, { _, it -> it.name }) { _, app ->
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp, 6.dp)
+                        .animateItem(),
+                    Arrangement.SpaceBetween, Alignment.CenterVertically
+                ) {
+                    Row(Modifier.weight(1F), verticalAlignment = Alignment.CenterVertically) {
+                        Image(
+                            rememberDrawablePainter(app.icon), null,
+                            Modifier
+                                .padding(start = 12.dp, end = 18.dp)
+                                .size(30.dp)
+                        )
+                        Column {
+                            Text(app.label)
+                            Text(app.name, Modifier.alpha(0.8F), style = typography.bodyMedium)
+                        }
+                    }
+                    Switch(packages.any { it.name == app.name }, {
+                        onSet(listOf(app.name), it)
+                    })
+                }
+            }
+            if (listView) items(packages, { it.name }) {
                 ApplicationItem(it) {
                     onSet(listOf(it.name), false)
                     coroutine.launch {
@@ -710,7 +806,7 @@ fun PackageFunctionScreen(
                     }
                 }
             }
-            item {
+            if (listView) item {
                 PackageNameTextField(
                     input, onChoosePackage,
                     Modifier.padding(HorizontalPadding, 8.dp)
@@ -728,6 +824,9 @@ fun PackageFunctionScreen(
                 ) {
                     Text(stringResource(R.string.add))
                 }
+            }
+            item {
+                Spacer(Modifier.height(8.dp))
                 if (notes != null) Notes(notes, HorizontalPadding)
                 Spacer(Modifier.height(BottomPadding))
             }

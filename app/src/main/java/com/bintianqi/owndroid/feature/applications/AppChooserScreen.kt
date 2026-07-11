@@ -98,9 +98,6 @@ fun AppChooserScreen(
         if (packages.size <= 1) vm.refreshPackageList()
         vm.updateAppState(enteredApp)
     }
-    LaunchedEffect(searchMode) {
-        query = ""
-    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -327,6 +324,10 @@ private fun AppChooserFilterBottomSheet(
                 FullWidthCheckBoxItem(R.string.md_not_disabled, filter.mdNotDisabled) {
                     update(filter.copy(mdNotDisabled = it))
                 }
+            }
+            HorizontalDivider()
+            FullWidthCheckBoxItem(R.string.installed_only, filter.installed) {
+                update(filter.copy(installed = it))
             }
         }
     }
