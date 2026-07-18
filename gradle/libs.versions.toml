@@ -1,6 +1,6 @@
 [versions]
 agp = "9.2.1"
-kotlin = "2.4.0"
+kotlin = "2.4.10"
 
 nav3 = "1.1.4"
 composeBom = "2026.06.01"

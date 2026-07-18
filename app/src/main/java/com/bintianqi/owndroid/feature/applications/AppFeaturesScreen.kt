@@ -66,6 +66,7 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.AppInstallerActivity
@@ -766,6 +767,14 @@ fun PackageFunctionScreen(
         }
     ) { paddingValues ->
         LazyColumn(Modifier.padding(paddingValues)) {
+            if (!listView) item {
+                if (allPackages.isEmpty()) {
+                    Text(
+                        stringResource(R.string.loading), Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
             if (!listView) itemsIndexed(displayedPackages, { _, it -> it.name }) { _, app ->
                 Row(
                     Modifier

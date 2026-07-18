@@ -408,6 +408,7 @@
     <string name="search">搜索</string>
     <string name="switch_view">开关视图</string>
     <string name="list_view">列表视图</string>
+    <string name="loading">加载中</string>
     <string name="user_apps_only">仅用户应用</string>
     <string name="app_group">应用组</string>
     <string name="manage_app_groups">管理组</string>

@@ -442,6 +442,7 @@
     <string name="search">Search</string>
     <string name="switch_view">Switch view</string>
     <string name="list_view">List view</string>
+    <string name="loading">Loading</string>
     <string name="user_apps_only">User apps only</string>
     <string name="app_group">App group</string>
     <string name="manage_app_groups">Manage groups</string>

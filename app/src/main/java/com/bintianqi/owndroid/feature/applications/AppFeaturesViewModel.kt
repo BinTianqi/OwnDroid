@@ -1,6 +1,7 @@
 package com.bintianqi.owndroid.feature.applications
 
 import android.app.admin.PackagePolicy
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
@@ -329,9 +330,12 @@ class AppFeaturesViewModel(
 
     fun getAllPackages() {
         viewModelScope.launch(Dispatchers.IO) {
-            allPackagesState.value = application.packageManager.getInstalledApplications(getInstalledAppsFlags).map {
-                getAppInfo(application.packageManager, it)
-            }
+            allPackagesState.value = application.packageManager
+                .getInstalledApplications(getInstalledAppsFlags)
+                .filter { it.flags and ApplicationInfo.FLAG_INSTALLED != 0 }
+                .map {
+                    getAppInfo(application.packageManager, it)
+                }
         }
     }
 }
