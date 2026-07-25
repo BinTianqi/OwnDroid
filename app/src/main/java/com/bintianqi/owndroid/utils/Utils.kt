@@ -168,7 +168,7 @@ fun adaptiveInsets(): WindowInsets {
 
 fun registerPackageRemovedReceiver(
     ctx: Context, callback: (String) -> Unit
-) {
+): BroadcastReceiver {
     val br = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             callback(intent.data!!.schemeSpecificPart)
@@ -178,6 +178,7 @@ fun registerPackageRemovedReceiver(
     filter.addAction(Intent.ACTION_PACKAGE_FULLY_REMOVED)
     filter.addDataScheme("package")
     ctx.registerReceiver(br, filter)
+    return br
 }
 
 fun parsePackageNames(input: String) = input.lines().filter { it.isNotEmpty() }

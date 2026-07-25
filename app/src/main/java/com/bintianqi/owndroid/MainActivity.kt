@@ -1,6 +1,7 @@
 package com.bintianqi.owndroid
 
 import android.Manifest
+import android.content.BroadcastReceiver
 import android.content.pm.PackageManager
 import android.os.Build.VERSION
 import android.os.Bundle
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -49,8 +49,10 @@ import com.bintianqi.owndroid.utils.registerPackageRemovedReceiver
 import com.bintianqi.owndroid.utils.viewModelFactory
 import kotlinx.coroutines.launch
 
-@ExperimentalMaterial3Api
 class MainActivity : FragmentActivity() {
+    lateinit var appChooserVm: AppChooserViewModel
+    lateinit var packageRemoveReceiver: BroadcastReceiver
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -66,14 +68,11 @@ class MainActivity : FragmentActivity() {
             val launcher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
             launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
-        val appChooserVm: AppChooserViewModel by viewModels(
+        appChooserVm = viewModels<AppChooserViewModel>(
             factoryProducer = {
                 viewModelFactory { AppChooserViewModel(myApp, myApp.container.privilegeHelper) }
             }
-        )
-        registerPackageRemovedReceiver(this) {
-            appChooserVm.onPackageRemoved(it)
-        }
+        ).value
         if (
             myApp.container.privilegeState.value.work &&
             !settingsRepo.data.privilege.managedProfileActivated
@@ -168,6 +167,18 @@ class MainActivity : FragmentActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        packageRemoveReceiver = registerPackageRemovedReceiver(this) {
+            appChooserVm.onPackageRemoved(it)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(packageRemoveReceiver)
     }
 }
 
