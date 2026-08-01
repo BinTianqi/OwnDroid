@@ -55,6 +55,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
@@ -200,6 +201,15 @@ fun AppChooserScreen(
         ) {
             if (progress < 1F) stickyHeader {
                 LinearProgressIndicator({ progress }, Modifier.fillMaxWidth())
+            }
+            item {
+                if (packages.isNotEmpty() && filteredPackages.isEmpty()) {
+                    Text(
+                        stringResource(R.string.no_matching_apps),
+                        Modifier.fillMaxWidth().alpha(0.7F),
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
             items(filteredPackages, { it.info.name }) { app ->
                 Row(

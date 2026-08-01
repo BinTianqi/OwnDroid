@@ -408,6 +408,8 @@
     <string name="md_disabled">Metered data disabled</string>
     <string name="md_not_disabled">Metered data not disabled</string>
     <string name="installed">Installed</string>
+    <string name="not_installed">Not installed</string>
+    <string name="no_matching_apps">No matching apps</string>
     <string name="suspend">Suspend</string>
     <string name="unsuspend">Unsuspend</string>
     <string name="hide">Hide</string>
@@ -418,7 +420,6 @@
     <string name="permissions">Permissions</string>
     <string name="user_apps">User apps</string>
     <string name="system_apps">System apps</string>
-    <string name="not_installed">Not installed</string>
     <string name="block_uninstall">Block uninstall</string>
     <string name="enable_system_app">Enable system app</string>
     <string name="disable_user_control">Disable user control</string>

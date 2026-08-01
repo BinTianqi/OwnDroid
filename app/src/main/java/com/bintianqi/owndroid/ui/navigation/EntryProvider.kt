@@ -591,7 +591,8 @@ fun myEntryProvider(
                 navigate(
                     Destination.ApplicationsList(
                         false, false, AppChooserFilter(
-                            userApps = false, systemApps = true, installed = false
+                            userApps = false, systemApps = true,
+                            installed = false, notInstalled = true
                         )
                     )
                 )

@@ -61,7 +61,7 @@ data class AppChooserFilter(
     val mdDisabled: Boolean = true,
     val mdNotDisabled: Boolean = true,
     val installed: Boolean = true,
-    val notInstalled: Boolean = true
+    val notInstalled: Boolean = false
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -138,7 +138,7 @@ fun AppChooserFilterBottomSheet(
             FullWidthCheckBoxItem(R.string.installed, filter.installed) {
                 update(filter.copy(installed = it))
             }
-            FullWidthCheckBoxItem(R.string.not_installed, filter.installed) {
+            FullWidthCheckBoxItem(R.string.not_installed, filter.notInstalled) {
                 update(filter.copy(notInstalled = it))
             }
         }
