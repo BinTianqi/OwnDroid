@@ -83,6 +83,7 @@ import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.AppInfo
 import com.bintianqi.owndroid.utils.BottomPadding
 import com.bintianqi.owndroid.utils.HorizontalPadding
+import com.bintianqi.owndroid.utils.SerializableSaver
 import com.bintianqi.owndroid.utils.adaptiveInsets
 import com.bintianqi.owndroid.utils.isValidPackageName
 import com.bintianqi.owndroid.utils.parsePackageNames
@@ -643,7 +644,8 @@ fun PackageFunctionScreen(
     onSet: (List<String>, Boolean) -> Unit, onNavigateUp: () -> Unit,
     chosenPackage: Channel<String>, onChoosePackage: () -> Unit,
     navigateToGroups: () -> Unit, appGroups: StateFlow<List<AppGroup>>, notes: Int? = null,
-    allPackagesState: MutableStateFlow<List<AppChooserEntry>>, getAllPackages: () -> Unit
+    allPackagesState: MutableStateFlow<List<AppChooserEntry>>, getAllPackages: () -> Unit,
+    defaultSwitchView: Boolean, setSwitchView: (Boolean) -> Unit
 ) {
     val groups by appGroups.collectAsStateWithLifecycle()
     val packages by packagesState.collectAsStateWithLifecycle()
@@ -654,10 +656,14 @@ fun PackageFunctionScreen(
     val snackbar = remember { SnackbarHostState() }
     val res = LocalResources.current
     val coroutine = rememberCoroutineScope()
-    var listView by remember { mutableStateOf(false) }
-    var searchMode by remember { mutableStateOf(false) }
-    var query by remember { mutableStateOf("") }
-    var filters by remember { mutableStateOf(AppChooserFilter()) }
+    var listView by rememberSaveable { mutableStateOf(!defaultSwitchView) }
+    var searchMode by rememberSaveable { mutableStateOf(false) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var filters by rememberSaveable(
+        stateSaver = SerializableSaver(AppChooserFilter.serializer())
+    ) {
+        mutableStateOf(AppChooserFilter())
+    }
     var filtersSheet by remember { mutableStateOf(false) }
     val allPackages by allPackagesState.collectAsState()
     val displayedPackages = allPackages.filter {
@@ -718,6 +724,7 @@ fun PackageFunctionScreen(
                                 {
                                     listView = false
                                     expand = false
+                                    setSwitchView(true)
                                 },
                                 leadingIcon = { RadioButton(!listView, null) }
                             )
@@ -726,6 +733,7 @@ fun PackageFunctionScreen(
                                 {
                                     listView = true
                                     expand = false
+                                    setSwitchView(false)
                                 },
                                 leadingIcon = { RadioButton(listView, null) }
                             )

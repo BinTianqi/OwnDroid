@@ -13,6 +13,7 @@ data class MySettings(
     val notifications: MutableList<Int> = mutableListOf(),
     var displayDangerousFeatures: Boolean = false,
     var applicationsListView: Boolean = true,
+    var appFeatureSwitchView: Boolean = true,
     var apiKeyHash: String = "",
 ) {
     @Serializable

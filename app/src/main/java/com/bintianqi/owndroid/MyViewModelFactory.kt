@@ -116,7 +116,7 @@ class MyViewModelFactory(
             return AppGroupViewModel(app, agRepo, agState) as T
         }
         if (checkType(AppFeaturesViewModel::class)) {
-            return AppFeaturesViewModel(app, ph, ps, tc) as T
+            return AppFeaturesViewModel(app, ph, ps, tc, sr) as T
         }
 
         if (checkType(WorkProfileViewModel::class)) {

@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.PrivilegeHelper
+import com.bintianqi.owndroid.feature.settings.SettingsRepository
 import com.bintianqi.owndroid.utils.AppInfo
 import com.bintianqi.owndroid.utils.PrivilegeStatus
 import com.bintianqi.owndroid.utils.ToastChannel
@@ -23,7 +24,7 @@ import kotlinx.coroutines.launch
 class AppFeaturesViewModel(
     val application: MyApplication, val ph: PrivilegeHelper,
     val privilegeState: StateFlow<PrivilegeStatus>,
-    val toastChannel: ToastChannel
+    val toastChannel: ToastChannel, val settingsRepo: SettingsRepository
 ) : ViewModel() {
     val pm = application.packageManager!!
 
@@ -333,5 +334,13 @@ class AppFeaturesViewModel(
                 .getInstalledApplications(getInstalledAppsFlags)
                 .map { getAppStatus(application, ph, it.packageName) }
         }
+    }
+
+    fun isDefaultSwitchView(): Boolean {
+        return settingsRepo.data.appFeatureSwitchView
+    }
+
+    fun saveSwitchViewSetting(enabled: Boolean) {
+        settingsRepo.update { it.appFeatureSwitchView = enabled }
     }
 }
