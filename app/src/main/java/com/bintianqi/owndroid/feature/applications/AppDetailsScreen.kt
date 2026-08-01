@@ -43,8 +43,6 @@ import com.bintianqi.owndroid.utils.BottomPadding
 import com.bintianqi.owndroid.utils.PermissionItem
 import com.bintianqi.owndroid.utils.runtimePermissions
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @Composable
 fun ApplicationDetailsScreen(

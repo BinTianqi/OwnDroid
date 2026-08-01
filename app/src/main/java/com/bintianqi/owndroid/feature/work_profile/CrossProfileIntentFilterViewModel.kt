@@ -9,7 +9,6 @@ import com.bintianqi.owndroid.PrivilegeHelper
 import com.bintianqi.owndroid.utils.ToastChannel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 

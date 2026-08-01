@@ -643,7 +643,7 @@ fun PackageFunctionScreen(
     onSet: (List<String>, Boolean) -> Unit, onNavigateUp: () -> Unit,
     chosenPackage: Channel<String>, onChoosePackage: () -> Unit,
     navigateToGroups: () -> Unit, appGroups: StateFlow<List<AppGroup>>, notes: Int? = null,
-    allPackagesState: MutableStateFlow<List<AppInfo>>, getAllPackages: () -> Unit,
+    allPackagesState: MutableStateFlow<List<AppChooserEntry>>, getAllPackages: () -> Unit
 ) {
     val groups by appGroups.collectAsStateWithLifecycle()
     val packages by packagesState.collectAsStateWithLifecycle()
@@ -655,15 +655,14 @@ fun PackageFunctionScreen(
     val res = LocalResources.current
     val coroutine = rememberCoroutineScope()
     var listView by remember { mutableStateOf(false) }
-    var userAppsOnly by remember { mutableStateOf(true) }
     var searchMode by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
+    var filters by remember { mutableStateOf(AppChooserFilter()) }
+    var filtersSheet by remember { mutableStateOf(false) }
     val allPackages by allPackagesState.collectAsState()
     val displayedPackages = allPackages.filter {
-        (!userAppsOnly || it.flags and ApplicationInfo.FLAG_SYSTEM == 0) &&
-                (!searchMode || query.isBlank() || searchInString(query, it.name) ||
-                        searchInString(query, it.label))
-    }
+        filterApp(it, filters, query)
+    }.map { it.info }
     LaunchedEffect(Unit) {
         onGet()
         getAllPackages()
@@ -703,6 +702,9 @@ fun PackageFunctionScreen(
                     }) {
                         Icon(Icons.Default.Search, stringResource(R.string.search))
                     }
+                    if (!listView) IconButton({ filtersSheet = true }) {
+                        Icon(painterResource(R.drawable.filter_alt_fill0), null)
+                    }
                     var expand by remember { mutableStateOf(false) }
                     Box {
                         IconButton({
@@ -728,17 +730,6 @@ fun PackageFunctionScreen(
                                 leadingIcon = { RadioButton(listView, null) }
                             )
                             HorizontalDivider()
-                            if (!listView) {
-                                DropdownMenuItem(
-                                    { Text(stringResource(R.string.user_apps_only)) },
-                                    {
-                                        userAppsOnly = !userAppsOnly
-                                        expand = false
-                                    },
-                                    leadingIcon = { Checkbox(userAppsOnly, null) }
-                                )
-                                HorizontalDivider()
-                            }
                             groups.forEach {
                                 DropdownMenuItem(
                                     { Text("(${it.apps.size}) ${it.name}") },
@@ -783,7 +774,10 @@ fun PackageFunctionScreen(
                         .animateItem(),
                     Arrangement.SpaceBetween, Alignment.CenterVertically
                 ) {
-                    Row(Modifier.weight(1F), verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        Modifier.weight(1F).padding(end = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Image(
                             rememberDrawablePainter(app.icon), null,
                             Modifier
@@ -839,6 +833,9 @@ fun PackageFunctionScreen(
                 if (notes != null) Notes(notes, HorizontalPadding)
                 Spacer(Modifier.height(BottomPadding))
             }
+        }
+        if (filtersSheet) AppChooserFilterBottomSheet(filters, { filtersSheet = false }) {
+            filters = it
         }
     }
     if (dialog) AlertDialog(

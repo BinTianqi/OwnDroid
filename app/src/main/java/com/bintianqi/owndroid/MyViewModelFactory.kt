@@ -2,7 +2,6 @@ package com.bintianqi.owndroid
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.bintianqi.owndroid.feature.applications.AppChooserViewModel
 import com.bintianqi.owndroid.feature.applications.AppFeaturesViewModel
 import com.bintianqi.owndroid.feature.applications.AppGroup
 import com.bintianqi.owndroid.feature.applications.AppGroupRepository

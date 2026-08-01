@@ -1,6 +1,5 @@
 package com.bintianqi.owndroid.feature.applications
 
-import android.content.RestrictionEntry
 import android.content.RestrictionsManager
 import android.net.Uri
 import android.os.Bundle

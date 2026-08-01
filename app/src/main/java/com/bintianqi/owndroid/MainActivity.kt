@@ -3,7 +3,7 @@ package com.bintianqi.owndroid
 import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.pm.PackageManager
-import android.os.Build.VERSION
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -26,7 +26,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
@@ -60,7 +63,7 @@ class MainActivity : FragmentActivity() {
         val myApp = (application as MyApplication)
         val settingsRepo = myApp.container.settingsRepo
         if (
-            VERSION.SDK_INT >= 33 &&
+            Build.VERSION.SDK_INT >= 33 &&
             checkSelfPermission(
                 Manifest.permission.POST_NOTIFICATIONS
             ) != PackageManager.PERMISSION_GRANTED
@@ -108,8 +111,12 @@ class MainActivity : FragmentActivity() {
                         backstack.removeFirstOrNull()
                     }
                 }
+                val blurMod = if (appLockDialog) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Modifier.blur(10.dp)
+                    else Modifier.alpha(0F)
+                } else Modifier
                 NavDisplay(
-                    backstack,
+                    backstack, blurMod,
                     onBack = {
                         backstack.removeLastOrNull()
                     },
@@ -129,6 +136,18 @@ class MainActivity : FragmentActivity() {
                 ) {
                     myEntryProvider(it as Destination, backstack, appChooserVm, myApp.container)
                 }
+                if (dhizukuError != null) DhizukuErrorDialog(
+                    dhizukuError!!, {
+                        myApp.container.dhizukuErrorState.value = null
+                    }, {
+                        myApp.container.dhizukuErrorState.value = null
+                        settingsRepo.update { it.privilege.dhizuku = false }
+                        backstack += Destination.WorkingModes(false)
+                        repeat(backstack.size - 1) {
+                            backstack.removeFirstOrNull()
+                        }
+                    }
+                )
                 val lifecycleOwner = LocalLifecycleOwner.current
                 if (appLockDialog) {
                     AppLockDialog(
@@ -150,20 +169,6 @@ class MainActivity : FragmentActivity() {
                     onDispose {
                         lifecycleOwner.lifecycle.removeObserver(observer)
                     }
-                }
-                if (dhizukuError != null) {
-                    DhizukuErrorDialog(
-                        dhizukuError!!, {
-                            myApp.container.dhizukuErrorState.value = null
-                        }, {
-                            myApp.container.dhizukuErrorState.value = null
-                            settingsRepo.update { it.privilege.dhizuku = false }
-                            backstack += Destination.WorkingModes(false)
-                            repeat(backstack.size - 1) {
-                                backstack.removeFirstOrNull()
-                            }
-                        }
-                    )
                 }
             }
         }

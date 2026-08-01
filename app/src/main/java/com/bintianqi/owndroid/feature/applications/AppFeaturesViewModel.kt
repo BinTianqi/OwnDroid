@@ -1,7 +1,6 @@
 package com.bintianqi.owndroid.feature.applications
 
 import android.app.admin.PackagePolicy
-import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
@@ -326,16 +325,13 @@ class AppFeaturesViewModel(
         toastChannel.sendStatus(result)
     }
 
-    val allPackagesState = MutableStateFlow(emptyList<AppInfo>())
+    val allPackagesState = MutableStateFlow(emptyList<AppChooserEntry>())
 
     fun getAllPackages() {
         viewModelScope.launch(Dispatchers.IO) {
             allPackagesState.value = application.packageManager
                 .getInstalledApplications(getInstalledAppsFlags)
-                .filter { it.flags and ApplicationInfo.FLAG_INSTALLED != 0 }
-                .map {
-                    getAppInfo(application.packageManager, it)
-                }
+                .map { getAppStatus(application, ph, it.packageName) }
         }
     }
 }

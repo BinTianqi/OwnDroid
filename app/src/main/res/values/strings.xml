@@ -407,7 +407,7 @@
     <string name="uc_not_disabled">User control not disabled</string>
     <string name="md_disabled">Metered data disabled</string>
     <string name="md_not_disabled">Metered data not disabled</string>
-    <string name="installed_only">Installed only</string>
+    <string name="installed">Installed</string>
     <string name="suspend">Suspend</string>
     <string name="unsuspend">Unsuspend</string>
     <string name="hide">Hide</string>

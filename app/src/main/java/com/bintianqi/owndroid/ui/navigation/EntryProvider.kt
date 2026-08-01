@@ -7,6 +7,7 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import com.bintianqi.owndroid.AppContainer
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.feature.applications.AppChooserFilter
 import com.bintianqi.owndroid.feature.applications.AppChooserScreen
 import com.bintianqi.owndroid.feature.applications.AppChooserViewModel
 import com.bintianqi.owndroid.feature.applications.AppDetailsViewModel
@@ -586,7 +587,15 @@ fun myEntryProvider(
     ) {
         val vm = viewModel<AppFeaturesViewModel>()
         EnableSystemAppScreen(
-            container.chosenPackage, ::chooseSinglePackage, vm::enableSystemApp, ::navigateUp
+            container.chosenPackage, {
+                navigate(
+                    Destination.ApplicationsList(
+                        false, false, AppChooserFilter(
+                            userApps = false, systemApps = true, installed = false
+                        )
+                    )
+                )
+            }, vm::enableSystemApp, ::navigateUp
         )
     }
     entry<Destination.SetDefaultDialer>(

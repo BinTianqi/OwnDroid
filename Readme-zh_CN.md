@@ -2,7 +2,7 @@
 
 # OwnDroid
 
-使用安卓的设备策略管理器API管理你的设备。
+使用安卓的设备策略管理器 API 管理你的设备。
 
 ## 下载
 
@@ -10,7 +10,7 @@
 - [Releases on GitHub](https://github.com/BinTianqi/OwnDroid/releases)
 
 > [!NOTE]
-> ColorOS用户应在GitHub上的releases下载testkey版本
+> ColorOS 用户应在 GitHub 上的 releases 下载 testkey 版本
 
 ## 功能
 
@@ -41,7 +41,7 @@
 java.lang.IllegalStateException: Not allowed to set the device owner because there are already some accounts on the device
 ```
 
-解决办法：冻结持有这些账号的app，或删除这些账号。
+解决办法：冻结持有这些账号的 app ，或删除这些账号。
 
 ### 设备上已有多个用户
 
@@ -57,7 +57,7 @@ java.lang.IllegalStateException: Not allowed to set the device owner because the
 java.lang.IllegalStateException: Trying to set the device owner (com.bintianqi.owndroid/.Receiver), but device owner (xxx) is already set.
 ```
 
-一个设备只能存在一个device owner，请先停用已存在的device owner。
+一个设备只能存在一个 device owner ，请先停用已存在的 device owner 。
 
 ### MIUI & HyperOS
 
@@ -75,7 +75,7 @@ java.lang.IllegalStateException: Unexpected @ProvisioningPreCondition
 
 解决办法：使用 OwnDroid testkey 版本
 
-testkey版本和signed版本只是签名不同，在功能上没有区别。
+testkey 版本和 signed 版本只是签名不同，在功能上没有区别。
 
 ### 三星
 
@@ -85,12 +85,11 @@ user limit reached
 
 三星限制了多用户功能，暂无解决办法。
 
-
 ### 创建工作资料/用户
 
-在大部分设备上，设置device owner后不能创建工作资料，因为系统在设置device owner时会添加`no_add_managed_profile`等用户限制。
-Device owner不能修改系统设置的用户限制，但如果你有root权限，你可以在adb shell中执行以下命令以关闭这个限制。
-注意：device owner和工作资料的profile owner不能为同一个app，否则device owner可能会在重启时失去特权。
+在大部分设备上，设置 device owner 后不能创建工作资料，因为系统在设置 device owner 时会添加`no_add_managed_profile`等用户限制。
+Device owner 不能修改系统设置的用户限制，但如果你有 root 权限，你可以在 adb shell 中执行以下命令以关闭这个限制。
+注意：device owner 和工作资料的 profile owner 不能为同一个 app ，否则 device owner 可能会在重启时失去特权。
 
 ```shell
 pm set-user-restriction no_add_user 0
@@ -101,14 +100,14 @@ pm set-user-restriction no_add_clone_profile 0
 
 请谨慎绕过这些限制。这可能会导致一些预期之外的行为，比如你创建的用户在重启时被删除。
 
-一些系统在设置了device owner后不允许在安卓设置中创建用户，你可以在OwnDroid中创建用户。
-如果你有root，你也可以在adb shell中运行以上命令以解除限制。
+一些系统在设置了 device owner 后不允许在安卓设置中创建用户，你可以在 OwnDroid 中创建用户。
+如果你有 root ，你也可以在 adb shell 中运行以上命令以解除限制。
 
 ## 高级用户
 
 ### API
 
-OwnDroid提供了一个基于Intent的API。你需要在设置中设置密钥并启用API。括号中的数字是最小的安卓版本。
+OwnDroid 提供了一个基于 Intent 的 API 。你需要在设置中设置密钥并启用 API 。括号中的数字是最小的安卓版本。
 
 - HIDE(package: String)
 - UNHIDE(package: String)
@@ -144,22 +143,29 @@ context.sendBroadcast(intent)
 
 [可用的用户限制](https://developer.android.google.cn/reference/android/os/UserManager#constants_1)
 
-## 开发者
+## 构建
 
-### 构建
+你可以在命令行中使用 Gradle 以构建 OwnDroid
 
-你可以在命令行中使用Gradle以构建OwnDroid
 ```shell
 # 使用testkey签名（默认）
 ./gradlew build
 # 使用你的jks密钥签名
 ./gradlew build -PStoreFile="/path/to/your/jks/file" -PStorePassword="YOUR_KEYSTORE_PASSWORD" -PKeyPassword="YOUR_KEY_PASSWORD" -PKeyAlias="YOUR_KEY_ALIAS"
 ```
-（在Windows系统中应使用`./gradlew.bat`)
 
-### 贡献
+（在 Windows 系统中应使用`./gradlew.bat`)
 
-请使用`dev`分支。
+## 贡献
+
+欢迎提交贡献！
+
+1. [Fork](https://github.com/BinTianqi/OwnDroid/fork) 此仓库（取消勾选 Copy the master branch only）
+2. 克隆你的仓库到本地（请使用`dev`分支）
+3. 做出修改（允许使用 AI ，但是你需要保证质量）
+4. 在你的设备或模拟器上测试（如果是贡献翻译，可以跳过此步）
+5. 使用 git 提交并推送修改
+6. 打开 Pull request
 
 ## 许可证
 

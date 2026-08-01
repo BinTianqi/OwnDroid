@@ -1,11 +1,9 @@
 package com.bintianqi.owndroid.feature.applications
 
-import android.os.Build
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,10 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
@@ -30,13 +26,11 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -64,7 +58,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
 import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.AppInfo
@@ -85,11 +78,11 @@ fun AppChooserScreen(
     var query by rememberSaveable { mutableStateOf("") }
     var searchMode by rememberSaveable { mutableStateOf(false) }
     var filter by rememberSaveable(stateSaver = SerializableSaver(AppChooserFilter.serializer())) {
-        mutableStateOf(AppChooserFilter())
+        mutableStateOf(params.defaultFilter)
     }
     var filterDrawer by remember { mutableStateOf(false) }
     val filteredPackages = packages.filter {
-        vm.filterApp(it, filter, query)
+        filterApp(it, filter, query)
     }
     val selectedPackages = remember { mutableStateListOf<AppInfo>() }
     val focusMgr = LocalFocusManager.current
@@ -251,84 +244,6 @@ fun AppChooserScreen(
         }
         if (filterDrawer) {
             AppChooserFilterBottomSheet(filter, { filterDrawer = false }) { filter = it }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun AppChooserFilterBottomSheet(
-    filter: AppChooserFilter, onDismiss: () -> Unit, update: (AppChooserFilter) -> Unit
-) {
-    ModalBottomSheet(onDismiss) {
-        Column(Modifier.verticalScroll(rememberScrollState())) {
-            Row(
-                Modifier.fillMaxWidth().padding(10.dp, 4.dp),
-                Arrangement.SpaceBetween, Alignment.CenterVertically
-            ) {
-                Text(stringResource(R.string.filters), style = MaterialTheme.typography.titleLarge)
-                FilledTonalIconButton({
-                    update(AppChooserFilter())
-                }) {
-                    Icon(painterResource(R.drawable.restart_alt_fill0), null)
-                }
-            }
-            FullWidthCheckBoxItem(R.string.user_apps, filter.userApps) {
-                update(filter.copy(userApps = it))
-            }
-            FullWidthCheckBoxItem(R.string.system_apps, filter.systemApps) {
-                update(filter.copy(systemApps = it))
-            }
-            HorizontalDivider()
-            FullWidthCheckBoxItem(R.string.support_mc, filter.hasMc) {
-                update(filter.copy(hasMc = it))
-            }
-            FullWidthCheckBoxItem(R.string.mc_modified, filter.mcModified) {
-                update(filter.copy(mcModified = it))
-            }
-            HorizontalDivider()
-            FullWidthCheckBoxItem(R.string.suspended, filter.suspended) {
-                update(filter.copy(suspended = it))
-            }
-            FullWidthCheckBoxItem(R.string.not_suspended, filter.notSuspended) {
-                update(filter.copy(notSuspended = it))
-            }
-            HorizontalDivider()
-            FullWidthCheckBoxItem(R.string.hidden, filter.hidden) {
-                update(filter.copy(hidden = it))
-            }
-            FullWidthCheckBoxItem(R.string.not_hidden, filter.notHidden) {
-                update(filter.copy(notHidden = it))
-            }
-            HorizontalDivider()
-            FullWidthCheckBoxItem(R.string.uninstall_blocked, filter.ub) {
-                update(filter.copy(ub = it))
-            }
-            FullWidthCheckBoxItem(R.string.uninstall_not_blocked, filter.notUb) {
-                update(filter.copy(notUb = it))
-            }
-            if (Build.VERSION.SDK_INT >= 30) {
-                HorizontalDivider()
-                FullWidthCheckBoxItem(R.string.uc_disabled, filter.ucDisabled) {
-                    update(filter.copy(ucDisabled = true))
-                }
-                FullWidthCheckBoxItem(R.string.uc_not_disabled, filter.ucNotDisabled) {
-                    update(filter.copy(ucNotDisabled = it))
-                }
-            }
-            if (Build.VERSION.SDK_INT >= 28) {
-                HorizontalDivider()
-                FullWidthCheckBoxItem(R.string.md_disabled, filter.mdDisabled) {
-                    update(filter.copy(mdDisabled = it))
-                }
-                FullWidthCheckBoxItem(R.string.md_not_disabled, filter.mdNotDisabled) {
-                    update(filter.copy(mdNotDisabled = it))
-                }
-            }
-            HorizontalDivider()
-            FullWidthCheckBoxItem(R.string.installed_only, filter.installed) {
-                update(filter.copy(installed = it))
-            }
         }
     }
 }
