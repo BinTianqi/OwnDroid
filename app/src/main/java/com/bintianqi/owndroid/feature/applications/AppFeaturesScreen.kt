@@ -666,9 +666,15 @@ fun PackageFunctionScreen(
     }
     var filtersSheet by remember { mutableStateOf(false) }
     val allPackages by allPackagesState.collectAsState()
-    val displayedPackages = allPackages.filter {
+    val filteredPackages = allPackages.filter {
         filterApp(it, filters, query)
     }.map { it.info }
+    var a2zSort by remember { mutableStateOf(true) }
+    val sortedPackages = if (a2zSort) {
+        filteredPackages.sortedBy { it.label }
+    } else {
+        filteredPackages.sortedByDescending { it.label }
+    }
     LaunchedEffect(Unit) {
         onGet()
         getAllPackages()
@@ -719,6 +725,25 @@ fun PackageFunctionScreen(
                             Icon(Icons.Default.MoreVert, null)
                         }
                         DropdownMenu(expand, { expand = false }) {
+                            if (!listView) {
+                                DropdownMenuItem(
+                                    { Text("A-Z") },
+                                    {
+                                        a2zSort = true
+                                        expand = false
+                                    },
+                                    leadingIcon = { RadioButton(a2zSort, null) }
+                                )
+                                DropdownMenuItem(
+                                    { Text("Z-A") },
+                                    {
+                                        a2zSort = false
+                                        expand = false
+                                    },
+                                    leadingIcon = { RadioButton(!a2zSort, null) }
+                                )
+                                HorizontalDivider()
+                            }
                             DropdownMenuItem(
                                 { Text(stringResource(R.string.switch_view)) },
                                 {
@@ -774,7 +799,7 @@ fun PackageFunctionScreen(
                     )
                 }
             }
-            if (!listView) itemsIndexed(displayedPackages, { _, it -> it.name }) { _, app ->
+            if (!listView) itemsIndexed(sortedPackages, { _, it -> it.name }) { _, app ->
                 Row(
                     Modifier
                         .fillMaxWidth()

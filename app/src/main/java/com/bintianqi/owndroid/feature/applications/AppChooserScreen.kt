@@ -85,6 +85,12 @@ fun AppChooserScreen(
     val filteredPackages = packages.filter {
         filterApp(it, filter, query)
     }
+    var a2zSort by remember { mutableStateOf(true) }
+    val sortedPackages = if (a2zSort) {
+        filteredPackages.sortedBy { it.info.label }
+    } else {
+        filteredPackages.sortedByDescending { it.info.label }
+    }
     val selectedPackages = remember { mutableStateListOf<AppInfo>() }
     val focusMgr = LocalFocusManager.current
     var enteredApp by rememberSaveable { mutableStateOf("") }
@@ -113,6 +119,23 @@ fun AppChooserScreen(
                             Icon(Icons.Default.MoreVert, null)
                         }
                         DropdownMenu(dropdown, { dropdown = false }) {
+                            DropdownMenuItem(
+                                { Text("A-Z") },
+                                {
+                                    a2zSort = true
+                                    dropdown = false
+                                },
+                                leadingIcon = { RadioButton(a2zSort, null) }
+                            )
+                            DropdownMenuItem(
+                                { Text("Z-A") },
+                                {
+                                    a2zSort = false
+                                    dropdown = false
+                                },
+                                leadingIcon = { RadioButton(!a2zSort, null) }
+                            )
+                            HorizontalDivider()
                             if (searchMode) {
                                 DropdownMenuItem(
                                     { Text(stringResource(R.string.filters)) },
@@ -206,12 +229,14 @@ fun AppChooserScreen(
                 if (packages.isNotEmpty() && filteredPackages.isEmpty()) {
                     Text(
                         stringResource(R.string.no_matching_apps),
-                        Modifier.fillMaxWidth().alpha(0.7F),
+                        Modifier
+                            .fillMaxWidth()
+                            .alpha(0.7F),
                         textAlign = TextAlign.Center
                     )
                 }
             }
-            items(filteredPackages, { it.info.name }) { app ->
+            items(sortedPackages, { it.info.name }) { app ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
