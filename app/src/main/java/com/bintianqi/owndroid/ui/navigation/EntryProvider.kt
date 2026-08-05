@@ -479,8 +479,10 @@ fun myEntryProvider(
             viewModel(), ::navigateUp
         )
     }
-    entry<Destination.PermissionManager> {
-        PermissionManagerScreen(::navigate, ::navigateUp)
+    entry<Destination.PermissionManager>(
+        metadata = navParentKey<Destination.ApplicationFeatures>()
+    ) {
+        PermissionManagerScreen(viewModel(), ::navigate, ::navigateUp)
     }
     entry<Destination.PermissionDetail>(
         metadata = navParentKey<Destination.ApplicationFeatures>()

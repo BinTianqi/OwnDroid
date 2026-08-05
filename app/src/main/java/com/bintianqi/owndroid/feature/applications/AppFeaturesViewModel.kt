@@ -123,6 +123,10 @@ class AppFeaturesViewModel(
         }
     }
 
+    fun clearPermissionPackages() {
+        permissionPackagesState.value = emptyList()
+    }
+
     @RequiresApi(28)
     fun clearStorage(packageName: String, callback: () -> Unit) = ph.safeDpmCall {
         dpm.clearApplicationUserData(dar, packageName, application.mainExecutor) { _, result ->

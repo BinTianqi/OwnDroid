@@ -218,8 +218,10 @@ fun ApplicationsFeaturesScreen(
 
 @Composable
 fun PermissionManagerScreen(
+    vm: AppFeaturesViewModel,
     onNavigate: (Destination.PermissionDetail) -> Unit, onNavigateUp: () -> Unit
 ) {
+    LaunchedEffect(Unit) { vm.clearPermissionPackages() }
     MyLazyScaffold(R.string.permissions, onNavigateUp) {
         items(runtimePermissions) {
             Row(
@@ -248,6 +250,8 @@ fun PermissionDetailScreen(
 ) {
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
     val permissionItem = runtimePermissions.find { it.id == param.permission }!!
+    val grantRestricted = VERSION.SDK_INT >= 31 &&
+            permissionItem.profileOwnerRestricted && privilege.profile
     val packagesList by vm.permissionPackagesState.collectAsState()
     var selectedPackage by remember { mutableStateOf<Pair<String, Int>?>(null) }
     var showUserApps by rememberSaveable { mutableStateOf(true) }
@@ -326,6 +330,9 @@ fun PermissionDetailScreen(
         contentWindowInsets = adaptiveInsets()
     ) { paddingValues ->
         LazyColumn(Modifier.padding(paddingValues)) {
+            item {
+                PermissionRadioButtonHint()
+            }
             items(displayedPackagesList, { it.first.name }) { (info, grantState) ->
                 Row(
                     Modifier
@@ -347,14 +354,8 @@ fun PermissionDetailScreen(
                             Text(info.name, Modifier.alpha(0.8F), style = typography.bodyMedium)
                         }
                     }
-                    if (grantState != 0) {
-                        Icon(
-                            painterResource(
-                                if (grantState == 1) R.drawable.check_circle_fill0
-                                else R.drawable.cancel_fill0
-                            ),
-                            null
-                        )
+                    PermissionRadioButtonRow(grantState, grantRestricted) {
+                        vm.setPackagePermission(info.name, param.permission, it)
                     }
                 }
             }
@@ -363,13 +364,6 @@ fun PermissionDetailScreen(
             }
         }
     }
-    if (selectedPackage != null) PackagePermissionDialog(
-        permissionItem, selectedPackage!!.second, privilege.profile,
-        {
-            vm.setPackagePermission(selectedPackage!!.first, param.permission, it)
-            selectedPackage = null
-        }
-    ) { selectedPackage = null }
 }
 
 @RequiresApi(28)

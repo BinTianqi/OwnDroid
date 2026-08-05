@@ -1,11 +1,8 @@
 package com.bintianqi.owndroid.feature.applications
 
-import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT
-import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED
-import android.app.admin.DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED
 import android.os.Build.VERSION
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,8 +19,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,7 +35,6 @@ import com.bintianqi.owndroid.ui.MySmallTitleScaffold
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.BottomPadding
-import com.bintianqi.owndroid.utils.PermissionItem
 import com.bintianqi.owndroid.utils.runtimePermissions
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
@@ -116,7 +110,6 @@ fun AppPermissionsManagerScreen(
     vm: AppDetailsViewModel, onNavigateUp: () -> Unit
 ) {
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
-    var selectedPermission by remember { mutableStateOf<PermissionItem?>(null) }
     val requestedPermissions by vm.requestedPermissionsState.collectAsState()
     val permissions by vm.permissionsState.collectAsState()
     val displayedPermissions = runtimePermissions.filter { it.id in requestedPermissions }
@@ -125,29 +118,30 @@ fun AppPermissionsManagerScreen(
         vm.getPermissions()
     }
     MyLazyScaffold(R.string.permissions, onNavigateUp) {
+        item {
+            PermissionRadioButtonHint()
+        }
         items(displayedPermissions) {
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .clickable {
-                        selectedPermission = it
-                    }
                     .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                Arrangement.SpaceBetween, Alignment.CenterVertically
             ) {
-                Icon(painterResource(it.icon), null, Modifier.padding(horizontal = 12.dp))
-                Column {
-                    val stateStr = when (permissions[it.id]) {
-                        PERMISSION_GRANT_STATE_DEFAULT -> R.string.default_stringres
-                        PERMISSION_GRANT_STATE_GRANTED -> R.string.granted
-                        PERMISSION_GRANT_STATE_DENIED -> R.string.denied
-                        else -> R.string.unknown
+                Row(
+                    Modifier.weight(1F), verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(painterResource(it.icon), null, Modifier.padding(horizontal = 12.dp))
+                    Column {
+                        Text(stringResource(it.label))
+                        Text(it.id, Modifier.alpha(0.7F), style = typography.bodyMedium)
                     }
-                    Text(stringResource(it.label))
-                    Text(
-                        stringResource(stateStr), Modifier.alpha(0.7F),
-                        style = typography.bodyMedium
-                    )
+                }
+                PermissionRadioButtonRow(
+                    permissions[it.id],
+                    (VERSION.SDK_INT >= 31 && it.profileOwnerRestricted && privilege.profile)
+                ) {
+                    state -> vm.setPermission(it.id, state)
                 }
             }
         }
@@ -155,11 +149,4 @@ fun AppPermissionsManagerScreen(
             Spacer(Modifier.height(BottomPadding))
         }
     }
-    if (selectedPermission != null) PackagePermissionDialog(
-        selectedPermission!!, permissions[selectedPermission!!.id]!!, privilege.profile,
-        {
-            vm.setPermission(selectedPermission!!.id, it)
-            selectedPermission = null
-        }
-    ) { selectedPermission = null }
 }

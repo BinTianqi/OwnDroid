@@ -1,5 +1,6 @@
 package com.bintianqi.owndroid.feature.applications
 
+import android.app.admin.DevicePolicyManager
 import android.content.Context
 import android.content.RestrictionsManager
 import android.content.pm.ApplicationInfo
@@ -17,6 +18,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -208,4 +211,59 @@ fun filterApp(app: AppChooserEntry, filter: AppChooserFilter, query: String): Bo
                             app.info.flags and ApplicationInfo.FLAG_INSTALLED != 0) ||
                     (filter.notInstalled &&
                             app.info.flags and ApplicationInfo.FLAG_INSTALLED == 0))
+}
+
+@Composable
+fun PermissionRadioButtonHint() {
+    Row(Modifier.fillMaxWidth(), Arrangement.End) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            RadioButton(
+                true, null, Modifier.padding(end = 4.dp),
+                colors = RadioButtonDefaults.colors(MaterialTheme.colorScheme.outline)
+            )
+            Text(stringResource(R.string.default_str))
+        }
+        Row(
+            Modifier.padding(start = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            RadioButton(
+                true, null, Modifier.padding(end = 4.dp),
+                colors = RadioButtonDefaults.colors(MaterialTheme.colorScheme.error)
+            )
+            Text(stringResource(R.string.denied))
+        }
+        Row(Modifier.padding(horizontal = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            RadioButton(true, null, Modifier.padding(end = 4.dp),)
+            Text(stringResource(R.string.granted))
+        }
+    }
+}
+
+@Composable
+fun PermissionRadioButtonRow(state: Int?, grantRestricted: Boolean, onSet: (Int) -> Unit) {
+    Row {
+        RadioButton(
+            state == DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT,
+            { onSet(DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT) },
+            colors = RadioButtonDefaults.colors(
+                MaterialTheme.colorScheme.outline, MaterialTheme.colorScheme.outline
+            )
+        )
+        RadioButton(
+            state == DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED,
+            { onSet(DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED) },
+            colors = RadioButtonDefaults.colors(
+                MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.error
+            )
+        )
+        RadioButton(
+            state == DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED,
+            { onSet(DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED) },
+            enabled = !grantRestricted,
+            colors = RadioButtonDefaults.colors(
+                MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary
+            )
+        )
+    }
 }
