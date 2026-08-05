@@ -27,6 +27,27 @@ class ApiReceiver : BroadcastReceiver() {
                         "UNHIDE" -> dpm.setApplicationHidden(dar, app, false)
                         "SUSPEND" -> dpm.setPackagesSuspended(dar, arrayOf(app), true)
                         "UNSUSPEND" -> dpm.setPackagesSuspended(dar, arrayOf(app), false)
+                        "DISABLE_METERED_DATA" -> {
+                            dpm.setMeteredDataDisabledPackages(
+                                dar, dpm.getMeteredDataDisabledPackages(dar) + app
+                            )
+                        }
+                        "ENABLE_METERED_DATA" -> {
+                            dpm.setMeteredDataDisabledPackages(
+                                dar, dpm.getMeteredDataDisabledPackages(dar).filter { it != app }
+                            )
+                        }
+                        "DISABLE_USER_CONTROL" -> {
+                            dpm.setUserControlDisabledPackages(
+                                dar, dpm.getUserControlDisabledPackages(dar) + app
+                            )
+                        }
+                        "ENABLE_USER_CONTROL" -> {
+                            dpm.setUserControlDisabledPackages(
+                                dar, dpm.getUserControlDisabledPackages(dar).filter { it != app }
+                            )
+                        }
+
                         "ADD_USER_RESTRICTION" -> {
                             dpm.addUserRestriction(dar, restriction)
                         }

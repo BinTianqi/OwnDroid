@@ -215,7 +215,7 @@ fun filterApp(app: AppChooserEntry, filter: AppChooserFilter, query: String): Bo
 
 @Composable
 fun PermissionRadioButtonHint() {
-    Row(Modifier.fillMaxWidth(), Arrangement.End) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), Arrangement.End) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             RadioButton(
                 true, null, Modifier.padding(end = 4.dp),

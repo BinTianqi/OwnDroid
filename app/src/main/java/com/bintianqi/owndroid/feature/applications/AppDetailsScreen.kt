@@ -134,7 +134,7 @@ fun AppPermissionsManagerScreen(
                     Icon(painterResource(it.icon), null, Modifier.padding(horizontal = 12.dp))
                     Column {
                         Text(stringResource(it.label))
-                        Text(it.id, Modifier.alpha(0.7F), style = typography.bodyMedium)
+                        Text(it.id, Modifier.alpha(0.7F), style = typography.bodySmall)
                     }
                 }
                 PermissionRadioButtonRow(

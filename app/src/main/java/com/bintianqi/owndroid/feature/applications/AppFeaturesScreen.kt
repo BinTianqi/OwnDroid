@@ -351,7 +351,7 @@ fun PermissionDetailScreen(
                         )
                         Column {
                             Text(info.label)
-                            Text(info.name, Modifier.alpha(0.8F), style = typography.bodyMedium)
+                            Text(info.name, Modifier.alpha(0.8F), style = typography.bodySmall)
                         }
                     }
                     PermissionRadioButtonRow(grantState, grantRestricted) {
