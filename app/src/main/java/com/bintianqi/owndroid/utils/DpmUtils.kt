@@ -215,7 +215,7 @@ fun handlePrivilegeChange(
     } else {
         sr.update {
             it.privilege.defaultAffiliationIdSet = false
-            it.apiKeyHash = ""
+            it.api.enabled = false
         }
         ShortcutUtils.setAllShortcuts(context, sr, ph, false)
     }

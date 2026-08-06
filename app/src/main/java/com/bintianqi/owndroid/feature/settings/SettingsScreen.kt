@@ -309,10 +309,9 @@ fun AppLockSettingsScreen(
 fun ApiSettings(
     vm: SettingsViewModel, onNavigateUp: () -> Unit
 ) {
-    var alreadyEnabled by rememberSaveable { mutableStateOf(vm.getApiEnabled()) }
     MyScaffold(R.string.api, onNavigateUp) {
-        var enabled by rememberSaveable { mutableStateOf(alreadyEnabled) }
-        var key by rememberSaveable { mutableStateOf("") }
+        var enabled by rememberSaveable { mutableStateOf(vm.getApiEnabled()) }
+        var key by rememberSaveable { mutableStateOf(vm.getApiKey()) }
         SwitchItem(R.string.enable, state = enabled, onCheckedChange = {
             enabled = it
         }, padding = false)
@@ -332,8 +331,7 @@ fun ApiSettings(
         }
         Button(
             {
-                vm.setApiKey(if (enabled) key else "")
-                alreadyEnabled = enabled
+                vm.setApiEnabled(enabled, key)
             },
             Modifier
                 .fillMaxWidth()
@@ -342,7 +340,6 @@ fun ApiSettings(
         ) {
             Text(stringResource(R.string.apply))
         }
-        if (enabled && alreadyEnabled) Notes(R.string.api_key_exist)
     }
 }
 

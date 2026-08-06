@@ -14,7 +14,7 @@ data class MySettings(
     var displayDangerousFeatures: Boolean = false,
     var applicationsListView: Boolean = true,
     var appFeatureSwitchView: Boolean = true,
-    var apiKeyHash: String = "",
+    val api: Api = Api()
 ) {
     @Serializable
     data class Privilege(
@@ -48,5 +48,11 @@ data class MySettings(
     data class Shortcut(
         var enabled: Boolean = true,
         var key: String = "",
+    )
+
+    @Serializable
+    data class Api(
+        var enabled: Boolean = false,
+        var key: String = ""
     )
 }

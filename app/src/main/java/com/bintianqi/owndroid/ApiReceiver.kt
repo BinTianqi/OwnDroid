@@ -5,15 +5,14 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import com.bintianqi.owndroid.utils.hash
 
 class ApiReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val requestKey = intent.getStringExtra("key")
         var log = "OwnDroid API request received. action: ${intent.action}"
         val myApp = context.applicationContext as MyApplication
-        val key = myApp.container.settingsRepo.data.apiKeyHash
-        if (key.isNotEmpty() && key == requestKey?.hash()) {
+        val apiSettings = myApp.container.settingsRepo.data.api
+        if (apiSettings.enabled && apiSettings.key == requestKey) {
             val app = intent.getStringExtra("package")
             val permission = intent.getStringExtra("permission")
             val restriction = intent.getStringExtra("restriction")
@@ -45,6 +44,19 @@ class ApiReceiver : BroadcastReceiver() {
                         "ENABLE_USER_CONTROL" -> {
                             dpm.setUserControlDisabledPackages(
                                 dar, dpm.getUserControlDisabledPackages(dar).filter { it != app }
+                            )
+                        }
+
+                        "BLOCK_UNINSTALL" -> {
+                            dpm.setUninstallBlocked(dar, app, true)
+                        }
+                        "UNBLOCK_UNINSTALL" -> {
+                            dpm.setUninstallBlocked(dar, app, false)
+                        }
+
+                        "CLEAR_APP_STORAGE" -> {
+                            dpm.clearApplicationUserData(
+                                dar, app!!, myApp.mainExecutor, { _, _ -> }
                             )
                         }
 

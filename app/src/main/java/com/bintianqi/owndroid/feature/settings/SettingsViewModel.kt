@@ -78,10 +78,12 @@ class SettingsViewModel(
         }
     }
 
-    fun getApiEnabled() = settingsRepo.data.apiKeyHash.isNotEmpty()
-    fun setApiKey(key: String) {
+    fun getApiEnabled() = settingsRepo.data.api.enabled
+    fun getApiKey() = settingsRepo.data.api.key
+    fun setApiEnabled(enabled: Boolean, key: String) {
         settingsRepo.update {
-            it.apiKeyHash = if (key.isEmpty()) "" else key.hash()
+            it.api.enabled = enabled
+            it.api.key = key
         }
         toastChannel.sendStatus(true)
     }
