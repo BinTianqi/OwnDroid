@@ -405,6 +405,7 @@
     <string name="uninstall_not_blocked">Uninstall not blocked</string>
     <string name="uc_disabled">User control disabled</string>
     <string name="uc_not_disabled">User control not disabled</string>
+    <string name="uses_internet">Uses Internet</string>
     <string name="md_disabled">Metered data disabled</string>
     <string name="md_not_disabled">Metered data not disabled</string>
     <string name="installed">Installed</string>

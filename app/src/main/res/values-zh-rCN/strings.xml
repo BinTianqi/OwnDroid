@@ -371,6 +371,7 @@
     <string name="uninstall_not_blocked">未阻值卸载</string>
     <string name="uc_disabled">禁止用户控制</string>
     <string name="uc_not_disabled">未禁止用户控制</string>
+    <string name="uses_internet">使用互联网</string>
     <string name="md_disabled">禁用按量计费流量</string>
     <string name="md_not_disabled">未禁用按量计费流量</string>
     <string name="installed">已安装</string>

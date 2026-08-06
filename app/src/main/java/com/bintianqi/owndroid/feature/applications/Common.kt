@@ -1,12 +1,15 @@
 package com.bintianqi.owndroid.feature.applications
 
+import android.Manifest
 import android.app.admin.DevicePolicyManager
 import android.content.Context
 import android.content.RestrictionsManager
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -14,7 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -29,7 +32,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.bintianqi.owndroid.PrivilegeHelper
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
 import com.bintianqi.owndroid.utils.AppInfo
 import com.bintianqi.owndroid.utils.getAppInfo
 import com.bintianqi.owndroid.utils.searchInString
@@ -45,6 +47,7 @@ class AppChooserEntry(
     val ub: Boolean, // Uninstall blocked
     val ucd: Boolean, // User control disabled
     val mdd: Boolean, // Metered data disabled
+    val internet: Boolean,
 )
 
 @Serializable
@@ -61,6 +64,7 @@ data class AppChooserFilter(
     val notUb: Boolean = true,
     val ucDisabled: Boolean = true,
     val ucNotDisabled: Boolean = true,
+    val usesInternet: Boolean = false,
     val mdDisabled: Boolean = true,
     val mdNotDisabled: Boolean = true,
     val installed: Boolean = true,
@@ -70,8 +74,19 @@ data class AppChooserFilter(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppChooserFilterBottomSheet(
-    filter: AppChooserFilter, onDismiss: () -> Unit, update: (AppChooserFilter) -> Unit
+    filter: AppChooserFilter,
+    defaultFilter: AppChooserFilter,
+    onDismiss: () -> Unit,
+    update: (AppChooserFilter) -> Unit
 ) {
+    @Composable
+    fun Chip(label: Int, icon: Int, state: Boolean, onClick: (Boolean) -> Unit) {
+        FilterChip(
+            state, { onClick(!state) }, { Text(stringResource(label)) },
+            Modifier.padding(start = 8.dp),
+            leadingIcon = { Icon(painterResource(icon), null) }
+        )
+    }
     ModalBottomSheet(onDismiss) {
         Column(Modifier.verticalScroll(rememberScrollState())) {
             Row(
@@ -80,69 +95,83 @@ fun AppChooserFilterBottomSheet(
             ) {
                 Text(stringResource(R.string.filters), style = MaterialTheme.typography.titleLarge)
                 FilledTonalIconButton({
-                    update(AppChooserFilter())
+                    update(defaultFilter)
                 }) {
                     Icon(painterResource(R.drawable.restart_alt_fill0), null)
                 }
             }
-            FullWidthCheckBoxItem(R.string.user_apps, filter.userApps) {
-                update(filter.copy(userApps = it))
+            FlowRow {
+                Chip(R.string.user_apps, R.drawable.apps_fill0, filter.userApps) {
+                    update(filter.copy(userApps = it))
+                }
+                Chip(R.string.system_apps, R.drawable.android_fill0, filter.systemApps) {
+                    update(filter.copy(systemApps = it))
+                }
             }
-            FullWidthCheckBoxItem(R.string.system_apps, filter.systemApps) {
-                update(filter.copy(systemApps = it))
+            FlowRow {
+                Chip(R.string.support_mc, R.drawable.description_fill0, filter.hasMc) {
+                    update(filter.copy(hasMc = it))
+                }
+                Chip(R.string.mc_modified, R.drawable.description_fill0, filter.mcModified) {
+                    update(filter.copy(mcModified = it))
+                }
             }
-            HorizontalDivider()
-            FullWidthCheckBoxItem(R.string.support_mc, filter.hasMc) {
-                update(filter.copy(hasMc = it))
+            FlowRow {
+                Chip(R.string.suspended, R.drawable.block_fill0, filter.suspended) {
+                    update(filter.copy(suspended = it))
+                }
+                Chip(R.string.not_suspended, R.drawable.block_fill0, filter.notSuspended) {
+                    update(filter.copy(notSuspended = it))
+                }
             }
-            FullWidthCheckBoxItem(R.string.mc_modified, filter.mcModified) {
-                update(filter.copy(mcModified = it))
+            FlowRow {
+                Chip(R.string.hidden, R.drawable.visibility_off_fill0, filter.hidden) {
+                    update(filter.copy(hidden = it))
+                }
+                Chip(R.string.not_hidden, R.drawable.visibility_fill0, filter.notHidden) {
+                    update(filter.copy(notHidden = it))
+                }
             }
-            HorizontalDivider()
-            FullWidthCheckBoxItem(R.string.suspended, filter.suspended) {
-                update(filter.copy(suspended = it))
+            FlowRow {
+                Chip(R.string.uninstall_blocked, R.drawable.delete_forever_fill0, filter.ub) {
+                    update(filter.copy(ub = it))
+                }
+                Chip(R.string.uninstall_not_blocked, R.drawable.delete_fill0, filter.notUb) {
+                    update(filter.copy(notUb = it))
+                }
             }
-            FullWidthCheckBoxItem(R.string.not_suspended, filter.notSuspended) {
-                update(filter.copy(notSuspended = it))
-            }
-            HorizontalDivider()
-            FullWidthCheckBoxItem(R.string.hidden, filter.hidden) {
-                update(filter.copy(hidden = it))
-            }
-            FullWidthCheckBoxItem(R.string.not_hidden, filter.notHidden) {
-                update(filter.copy(notHidden = it))
-            }
-            HorizontalDivider()
-            FullWidthCheckBoxItem(R.string.uninstall_blocked, filter.ub) {
-                update(filter.copy(ub = it))
-            }
-            FullWidthCheckBoxItem(R.string.uninstall_not_blocked, filter.notUb) {
-                update(filter.copy(notUb = it))
-            }
-            if (Build.VERSION.SDK_INT >= 30) {
-                HorizontalDivider()
-                FullWidthCheckBoxItem(R.string.uc_disabled, filter.ucDisabled) {
+            if (Build.VERSION.SDK_INT >= 30) FlowRow {
+                Chip(R.string.uc_disabled, R.drawable.do_not_touch_fill0, filter.ucDisabled) {
                     update(filter.copy(ucDisabled = true))
                 }
-                FullWidthCheckBoxItem(R.string.uc_not_disabled, filter.ucNotDisabled) {
+                Chip(
+                    R.string.uc_not_disabled, R.drawable.do_not_touch_fill0, filter.ucNotDisabled
+                ) {
                     update(filter.copy(ucNotDisabled = it))
                 }
             }
-            if (Build.VERSION.SDK_INT >= 28) {
-                HorizontalDivider()
-                FullWidthCheckBoxItem(R.string.md_disabled, filter.mdDisabled) {
-                    update(filter.copy(mdDisabled = it))
+            FlowRow {
+                Chip(R.string.uses_internet, R.drawable.language_fill0, filter.usesInternet) {
+                    update(filter.copy(usesInternet = it))
                 }
-                FullWidthCheckBoxItem(R.string.md_not_disabled, filter.mdNotDisabled) {
-                    update(filter.copy(mdNotDisabled = it))
+                if (Build.VERSION.SDK_INT >= 28) {
+                    Chip(R.string.md_disabled, R.drawable.money_off_fill0, filter.mdDisabled) {
+                        update(filter.copy(mdDisabled = it))
+                    }
+                    Chip(
+                        R.string.md_not_disabled, R.drawable.money_off_fill0, filter.mdNotDisabled
+                    ) {
+                        update(filter.copy(mdNotDisabled = it))
+                    }
                 }
             }
-            HorizontalDivider()
-            FullWidthCheckBoxItem(R.string.installed, filter.installed) {
-                update(filter.copy(installed = it))
-            }
-            FullWidthCheckBoxItem(R.string.not_installed, filter.notInstalled) {
-                update(filter.copy(notInstalled = it))
+            FlowRow {
+                Chip(R.string.installed, R.drawable.apk_install_fill0, filter.installed) {
+                    update(filter.copy(installed = it))
+                }
+                Chip(R.string.not_installed, R.drawable.delete_fill0, filter.notInstalled) {
+                    update(filter.copy(notInstalled = it))
+                }
             }
         }
     }
@@ -187,7 +216,11 @@ fun getAppStatus(
             }
         }
     } catch (_: Exception) {}
-    return AppChooserEntry(appInfo, hasMc, mcModified, suspended, hidden, ub, ucd, mdd)
+    val pkgInfo = context.packageManager.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS)
+    return AppChooserEntry(
+        appInfo, hasMc, mcModified, suspended, hidden, ub, ucd, mdd,
+        Manifest.permission.INTERNET in (pkgInfo.requestedPermissions ?: emptyArray())
+    )
 }
 
 fun filterApp(app: AppChooserEntry, filter: AppChooserFilter, query: String): Boolean {
@@ -210,7 +243,8 @@ fun filterApp(app: AppChooserEntry, filter: AppChooserFilter, query: String): Bo
                     (filter.installed &&
                             app.info.flags and ApplicationInfo.FLAG_INSTALLED != 0) ||
                     (filter.notInstalled &&
-                            app.info.flags and ApplicationInfo.FLAG_INSTALLED == 0))
+                            app.info.flags and ApplicationInfo.FLAG_INSTALLED == 0)) &&
+            (!filter.usesInternet || app.internet)
 }
 
 @Composable

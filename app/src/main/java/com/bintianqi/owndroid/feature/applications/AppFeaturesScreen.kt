@@ -639,7 +639,8 @@ fun PackageFunctionScreen(
     chosenPackage: Channel<String>, onChoosePackage: () -> Unit,
     navigateToGroups: () -> Unit, appGroups: StateFlow<List<AppGroup>>, notes: Int? = null,
     allPackagesState: MutableStateFlow<List<AppChooserEntry>>, getAllPackages: () -> Unit,
-    defaultSwitchView: Boolean, setSwitchView: (Boolean) -> Unit
+    defaultSwitchView: Boolean, setSwitchView: (Boolean) -> Unit,
+    defaultFilter: AppChooserFilter = AppChooserFilter()
 ) {
     val groups by appGroups.collectAsStateWithLifecycle()
     val packages by packagesState.collectAsStateWithLifecycle()
@@ -656,7 +657,7 @@ fun PackageFunctionScreen(
     var filters by rememberSaveable(
         stateSaver = SerializableSaver(AppChooserFilter.serializer())
     ) {
-        mutableStateOf(AppChooserFilter())
+        mutableStateOf(defaultFilter)
     }
     var filtersSheet by remember { mutableStateOf(false) }
     val allPackages by allPackagesState.collectAsState()
@@ -861,7 +862,9 @@ fun PackageFunctionScreen(
                 Spacer(Modifier.height(BottomPadding))
             }
         }
-        if (filtersSheet) AppChooserFilterBottomSheet(filters, { filtersSheet = false }) {
+        if (filtersSheet) AppChooserFilterBottomSheet(
+            filters, defaultFilter, { filtersSheet = false }
+        ) {
             filters = it
         }
     }

@@ -278,7 +278,9 @@ fun AppChooserScreen(
             item { Spacer(Modifier.height(BottomPadding)) }
         }
         if (filterDrawer) {
-            AppChooserFilterBottomSheet(filter, { filterDrawer = false }) { filter = it }
+            AppChooserFilterBottomSheet(
+                filter, params.defaultFilter, { filterDrawer = false }
+            ) { filter = it }
         }
     }
 }

@@ -500,7 +500,8 @@ fun myEntryProvider(
             vm::setPackageMdd, ::navigateUp, container.chosenPackage, ::choosePackage,
             ::navigateToAppGroups, container.appGroupsState, null,
             vm.allPackagesState, vm::getAllPackages,
-            vm.isDefaultSwitchView(), vm::saveSwitchViewSetting
+            vm.isDefaultSwitchView(), vm::saveSwitchViewSetting,
+            AppChooserFilter(usesInternet = true)
         )
     }
     entry<Destination.ClearAppStorage>(

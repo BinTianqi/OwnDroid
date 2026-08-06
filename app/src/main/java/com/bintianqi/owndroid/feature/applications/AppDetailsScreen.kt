@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
@@ -119,7 +120,14 @@ fun AppPermissionsManagerScreen(
     }
     MyLazyScaffold(R.string.permissions, onNavigateUp) {
         item {
-            PermissionRadioButtonHint()
+            if (displayedPermissions.isEmpty()) {
+                Text(
+                    stringResource(R.string.none), Modifier.fillMaxWidth().alpha(0.7F),
+                    textAlign = TextAlign.Center
+                )
+            } else {
+                PermissionRadioButtonHint()
+            }
         }
         items(displayedPermissions) {
             Row(
