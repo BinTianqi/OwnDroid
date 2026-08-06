@@ -1,6 +1,7 @@
 package com.bintianqi.owndroid.feature.applications
 
 import android.content.pm.PackageManager
+import android.content.pm.PermissionInfo
 import android.os.Build.VERSION
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
@@ -11,7 +12,6 @@ import com.bintianqi.owndroid.utils.PrivilegeStatus
 import com.bintianqi.owndroid.utils.ToastChannel
 import com.bintianqi.owndroid.utils.getAppInfo
 import com.bintianqi.owndroid.utils.plusOrMinus
-import com.bintianqi.owndroid.utils.runtimePermissions
 import com.bintianqi.owndroid.utils.uninstallPackage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -99,25 +99,33 @@ class AppDetailsViewModel(
         }
     }
 
-    val requestedPermissionsState = MutableStateFlow(emptyList<String>())
-    val permissionsState = MutableStateFlow(emptyMap<String, Int>())
+    val permissionsState = MutableStateFlow(emptyMap<NewPermissionItem, Int>())
 
     fun getPermissions() {
         viewModelScope.launch(Dispatchers.IO) {
-            ph.safeDpmCall {
-                permissionsState.value = requestedPermissionsState.value.associateWith {
-                    dpm.getPermissionGrantState(dar, packageName, it)
-                }
-            }
+            getPermissionsInternal()
         }
     }
 
-    fun getRequestedPermissions() {
-        val permissions = application.packageManager.getPackageInfo(
+    private fun getPermissionsInternal() {
+        val pm = application.packageManager
+        val allPermissions = mutableListOf<PermissionInfo>()
+        pm.getAllPermissionGroups(0).forEach {
+            allPermissions += pm.queryPermissionsByGroup(it.name, 0)
+        }
+        val requestedPermissions = application.packageManager.getPackageInfo(
             packageName, PackageManager.GET_PERMISSIONS
         ).requestedPermissions ?: emptyArray()
-        requestedPermissionsState.value = runtimePermissions.map { it.id }.filter {
-            it in permissions
+        val actualPermissions = allPermissions.filter {
+            it.protectionLevel and PermissionInfo.PROTECTION_DANGEROUS != 0 &&
+                    it.name in requestedPermissions
+        }.map {
+            NewPermissionItem(it.name, it.loadLabel(pm).toString(), getIconForPermission(it.name))
+        }
+        ph.safeDpmCall {
+            permissionsState.value = actualPermissions.associateWith {
+                dpm.getPermissionGrantState(dar, packageName, it.id)
+            }
         }
     }
 

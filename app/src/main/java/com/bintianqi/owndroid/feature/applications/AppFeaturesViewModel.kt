@@ -2,6 +2,7 @@ package com.bintianqi.owndroid.feature.applications
 
 import android.app.admin.PackagePolicy
 import android.content.pm.PackageManager
+import android.content.pm.PermissionInfo
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -92,30 +93,63 @@ class AppFeaturesViewModel(
         getUcdPackages()
     }
 
-    val permissionPackagesState = MutableStateFlow(emptyList<Pair<AppInfo, Int>>())
+    val availablePermissions = MutableStateFlow(emptyList<NewPermissionItem>())
 
-    fun getPermissionPackages(permission: String) {
+    fun getAvailablePermissions() {
+        val pm = application.packageManager
+        val allPermissions = mutableListOf<PermissionInfo>()
+        pm.getAllPermissionGroups(0).forEach {
+            allPermissions += pm.queryPermissionsByGroup(it.name, 0)
+        }
+        var allRequestedPermissions = mutableListOf<String>()
+        pm.getInstalledPackages(PackageManager.GET_PERMISSIONS).forEach {
+            allRequestedPermissions += it.requestedPermissions ?: emptyArray()
+        }
+        allRequestedPermissions = allRequestedPermissions.distinct().toMutableList()
+        availablePermissions.value = allPermissions.filter {
+            it.protectionLevel and PermissionInfo.PROTECTION_DANGEROUS != 0 &&
+                    it.name in allRequestedPermissions
+        }.map {
+            NewPermissionItem(it.name, it.loadLabel(pm).toString(), getIconForPermission(it.name))
+        }
+    }
+
+    val selectedPermissionItem = MutableStateFlow(NewPermissionItem("", "", null))
+
+    fun setSelectedPermissionItem(permissionItem: NewPermissionItem) {
+        selectedPermissionItem.value = permissionItem
+        viewModelScope.launch(Dispatchers.IO) {
+            getPermissionPackages()
+        }
+    }
+
+    val permissionPackagesState = MutableStateFlow(emptyList<Pair<AppChooserEntry, Int>>())
+
+    private fun getPermissionPackages() {
+        val perm = selectedPermissionItem.value
         permissionPackagesState.value = emptyList()
         ph.safeDpmCall {
             permissionPackagesState.value = pm.getInstalledPackages(
                 getInstalledAppsFlags or PackageManager.GET_PERMISSIONS
             ).filter {
-                it.requestedPermissions?.contains(permission) ?: false
+                it.requestedPermissions?.contains(perm.id) ?: false
             }.map {
-                getAppInfo(pm, it.packageName) to
-                        dpm.getPermissionGrantState(dar, it.packageName, permission)
+                getAppStatus(application, ph, it.packageName) to
+                        dpm.getPermissionGrantState(dar, it.packageName, perm.id)
             }
         }
     }
 
     fun setPackagePermission(
-        packageName: String, permission: String, state: Int
+        packageName: String, state: Int
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             ph.safeDpmCall {
-                val result = dpm.setPermissionGrantState(dar, packageName, permission, state)
+                val result = dpm.setPermissionGrantState(
+                    dar, packageName, selectedPermissionItem.value.id, state
+                )
                 if (result) {
-                    getPermissionPackages(permission)
+                    getPermissionPackages()
                 } else {
                     toastChannel.sendStatus(false)
                 }

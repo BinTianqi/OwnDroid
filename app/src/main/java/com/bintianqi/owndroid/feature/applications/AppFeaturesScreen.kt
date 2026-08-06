@@ -1,7 +1,6 @@
 package com.bintianqi.owndroid.feature.applications
 
 import android.content.Intent
-import android.content.pm.ApplicationInfo
 import android.os.Build.VERSION
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -27,7 +25,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -61,12 +58,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.AppInstallerActivity
@@ -87,11 +84,9 @@ import com.bintianqi.owndroid.utils.SerializableSaver
 import com.bintianqi.owndroid.utils.adaptiveInsets
 import com.bintianqi.owndroid.utils.isValidPackageName
 import com.bintianqi.owndroid.utils.parsePackageNames
-import com.bintianqi.owndroid.utils.runtimePermissions
 import com.bintianqi.owndroid.utils.searchInString
 import com.bintianqi.owndroid.utils.showOperationResultToast
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -216,59 +211,23 @@ fun ApplicationsFeaturesScreen(
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PermissionManagerScreen(
     vm: AppFeaturesViewModel,
     onNavigate: (Destination.PermissionDetail) -> Unit, onNavigateUp: () -> Unit
 ) {
-    LaunchedEffect(Unit) { vm.clearPermissionPackages() }
-    MyLazyScaffold(R.string.permissions, onNavigateUp) {
-        items(runtimePermissions) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        onNavigate(Destination.PermissionDetail(it.id))
-                    }
-                    .padding(8.dp, 12.dp)
-            ) {
-                Icon(painterResource(it.icon), null, Modifier.padding(horizontal = 12.dp))
-                Text(stringResource(it.label))
-            }
-        }
-        item {
-            Spacer(Modifier.height(BottomPadding))
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun PermissionDetailScreen(
-    param: Destination.PermissionDetail, vm: AppFeaturesViewModel, onNavigateUp: () -> Unit
-) {
-    val privilege by vm.privilegeState.collectAsStateWithLifecycle()
-    val permissionItem = runtimePermissions.find { it.id == param.permission }!!
-    val grantRestricted = VERSION.SDK_INT >= 31 &&
-            permissionItem.profileOwnerRestricted && privilege.profile
-    val packagesList by vm.permissionPackagesState.collectAsState()
-    var selectedPackage by remember { mutableStateOf<Pair<String, Int>?>(null) }
-    var showUserApps by rememberSaveable { mutableStateOf(true) }
-    var showSystemApps by rememberSaveable { mutableStateOf(false) }
+    val permissions by vm.availablePermissions.collectAsState()
     var searchMode by rememberSaveable { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf("") }
-    val displayedPackagesList = packagesList.filter {
-        ((showUserApps && it.first.flags and ApplicationInfo.FLAG_SYSTEM == 0) ||
-                (showSystemApps && it.first.flags and ApplicationInfo.FLAG_SYSTEM != 0)) &&
-                (!searchMode || query.isBlank() || searchInString(query, it.first.name) ||
-                        searchInString(query, it.first.label))
+    val displayedPermissions = permissions.filter {
+        !searchMode || query.isBlank() || searchInString(query, it.id) || searchInString(
+            query, it.label
+        )
     }
-    val fm = LocalFocusManager.current
     LaunchedEffect(Unit) {
-        launch(Dispatchers.IO) {
-            vm.getPermissionPackages(param.permission)
-        }
+        vm.getAvailablePermissions()
+        vm.clearPermissionPackages()
     }
     Scaffold(
         topBar = {
@@ -282,8 +241,7 @@ fun PermissionDetailScreen(
                             Modifier
                                 .fillMaxWidth()
                                 .focusRequester(fr),
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                            keyboardActions = KeyboardActions { fm.clearFocus() },
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             placeholder = { Text(stringResource(R.string.search)) },
                             trailingIcon = {
                                 IconButton({
@@ -296,7 +254,93 @@ fun PermissionDetailScreen(
                             textStyle = typography.bodyLarge
                         )
                     } else {
-                        Text(stringResource(permissionItem.label))
+                        Text(stringResource(R.string.permissions))
+                    }
+                },
+                navigationIcon = { NavIcon(onNavigateUp) },
+                actions = {
+                    if (!searchMode) IconButton({ searchMode = true }) {
+                        Icon(Icons.Default.Search, null)
+                    }
+                }
+            )
+        },
+        contentWindowInsets = adaptiveInsets()
+    ) { paddingValues ->
+        LazyColumn(Modifier.padding(paddingValues)) {
+            items(displayedPermissions, { it.id }) {
+                Row(
+                    Modifier
+                        .animateItem()
+                        .clickable {
+                            vm.setSelectedPermissionItem(it)
+                            onNavigate(Destination.PermissionDetail)
+                        }
+                        .padding(8.dp, 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (it.icon != null) Icon(
+                        painterResource(it.icon), null,
+                        Modifier.padding(horizontal = 12.dp)
+                    )
+                    Column {
+                        Text(it.label)
+                        Text(it.id, Modifier.alpha(0.7F), style = typography.bodySmall)
+                    }
+                }
+            }
+            item {
+                Spacer(Modifier.height(BottomPadding))
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PermissionDetailScreen(
+    vm: AppFeaturesViewModel, onNavigateUp: () -> Unit
+) {
+    val permissionItem by vm.selectedPermissionItem.collectAsState()
+    val privilege by vm.privilegeState.collectAsStateWithLifecycle()
+    val grantRestricted = VERSION.SDK_INT >= 31 &&
+            permissionItem.id in profileOwnerRestrictedPermissions && privilege.profile
+    val packagesList by vm.permissionPackagesState.collectAsState()
+    var searchMode by rememberSaveable { mutableStateOf(false) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var filters by rememberSaveable(stateSaver = SerializableSaver(AppChooserFilter.serializer())) {
+        mutableStateOf(AppChooserFilter())
+    }
+    var filtersDrawer by remember { mutableStateOf(false) }
+    val displayedPackagesList = packagesList.filter {
+        filterApp(it.first, filters, query)
+    }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                {
+                    if (searchMode) {
+                        val fr = remember { FocusRequester() }
+                        LaunchedEffect(Unit) { fr.requestFocus() }
+                        OutlinedTextField(
+                            query, { query = it },
+                            Modifier
+                                .fillMaxWidth()
+                                .focusRequester(fr),
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            placeholder = { Text(stringResource(R.string.search)) },
+                            trailingIcon = {
+                                IconButton({
+                                    query = ""
+                                    searchMode = false
+                                }) {
+                                    Icon(Icons.Outlined.Clear, null)
+                                }
+                            },
+                            textStyle = typography.bodyLarge
+                        )
+                    } else {
+                        Text(permissionItem.label, overflow = TextOverflow.Ellipsis, maxLines = 1)
                     }
                 },
                 navigationIcon = { NavIcon(onNavigateUp) },
@@ -306,23 +350,8 @@ fun PermissionDetailScreen(
                             Icon(Icons.Default.Search, null)
                         }
                     }
-                    var menu by remember { mutableStateOf(false) }
-                    Box {
-                        IconButton({ menu = true }) {
-                            Icon(painterResource(R.drawable.filter_alt_fill0), null)
-                        }
-                        DropdownMenu(menu, { menu = false }) {
-                            DropdownMenuItem(
-                                { Text(stringResource(R.string.user_apps)) },
-                                { showUserApps = !showUserApps },
-                                leadingIcon = { Checkbox(showUserApps, null) }
-                            )
-                            DropdownMenuItem(
-                                { Text(stringResource(R.string.system_apps)) },
-                                { showSystemApps = !showSystemApps },
-                                leadingIcon = { Checkbox(showSystemApps, null) }
-                            )
-                        }
+                    IconButton({ filtersDrawer = true }) {
+                        Icon(painterResource(R.drawable.filter_alt_fill0), null)
                     }
                 }
             )
@@ -331,31 +360,39 @@ fun PermissionDetailScreen(
     ) { paddingValues ->
         LazyColumn(Modifier.padding(paddingValues)) {
             item {
-                PermissionRadioButtonHint()
+                if (displayedPackagesList.isEmpty()) {
+                    Text(
+                        stringResource(R.string.no_matching_apps), Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                } else {
+                    PermissionRadioButtonHint()
+                }
             }
-            items(displayedPackagesList, { it.first.name }) { (info, grantState) ->
+            items(displayedPackagesList, { it.first.info.name }) { (entry, grantState) ->
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .clickable { selectedPackage = info.name to grantState }
                         .padding(horizontal = 8.dp, vertical = 6.dp)
                         .animateItem(),
                     Arrangement.SpaceBetween, Alignment.CenterVertically
                 ) {
                     Row(Modifier.weight(1F), verticalAlignment = Alignment.CenterVertically) {
                         Image(
-                            rememberDrawablePainter(info.icon), null,
+                            rememberDrawablePainter(entry.info.icon), null,
                             Modifier
                                 .padding(start = 12.dp, end = 18.dp)
                                 .size(30.dp)
                         )
                         Column {
-                            Text(info.label)
-                            Text(info.name, Modifier.alpha(0.8F), style = typography.bodySmall)
+                            Text(entry.info.label)
+                            Text(
+                                entry.info.name, Modifier.alpha(0.8F), style = typography.bodySmall
+                            )
                         }
                     }
                     PermissionRadioButtonRow(grantState, grantRestricted) {
-                        vm.setPackagePermission(info.name, param.permission, it)
+                        vm.setPackagePermission(entry.info.name, it)
                     }
                 }
             }
@@ -364,6 +401,9 @@ fun PermissionDetailScreen(
             }
         }
     }
+    if (filtersDrawer) AppChooserFilterBottomSheet(
+        filters, AppChooserFilter(), { filtersDrawer = false }
+    ) { filters = it }
 }
 
 @RequiresApi(28)
@@ -686,7 +726,9 @@ fun PackageFunctionScreen(
                         }
                         OutlinedTextField(
                             query, { query = it },
-                            Modifier.fillMaxWidth().focusRequester(fr),
+                            Modifier
+                                .fillMaxWidth()
+                                .focusRequester(fr),
                             textStyle = typography.bodyLarge,
                             trailingIcon = {
                                 IconButton({
@@ -803,7 +845,9 @@ fun PackageFunctionScreen(
                     Arrangement.SpaceBetween, Alignment.CenterVertically
                 ) {
                     Row(
-                        Modifier.weight(1F).padding(end = 8.dp),
+                        Modifier
+                            .weight(1F)
+                            .padding(end = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Image(

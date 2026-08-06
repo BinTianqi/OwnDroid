@@ -488,7 +488,7 @@ fun myEntryProvider(
         metadata = navParentKey<Destination.ApplicationFeatures>()
     ) {
         PermissionDetailScreen(
-            it, viewModel(), ::navigateUp
+            viewModel(), ::navigateUp
         )
     }
     entry<Destination.DisableMeteredData>(

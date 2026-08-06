@@ -71,6 +71,67 @@ data class AppChooserFilter(
     val notInstalled: Boolean = false
 )
 
+class NewPermissionItem(
+    val id: String,
+    val label: String,
+    val icon: Int?
+)
+
+val profileOwnerRestrictedPermissions = listOf(
+    Manifest.permission.CAMERA,
+    Manifest.permission.RECORD_AUDIO,
+    Manifest.permission.ACCESS_COARSE_LOCATION,
+    Manifest.permission.ACCESS_FINE_LOCATION,
+    Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+    Manifest.permission.BODY_SENSORS,
+    Manifest.permission.ACTIVITY_RECOGNITION,
+)
+
+fun getIconForPermission(id: String): Int? {
+    return when (id) {
+        Manifest.permission.POST_NOTIFICATIONS -> R.drawable.notifications_fill0
+        Manifest.permission.READ_EXTERNAL_STORAGE -> R.drawable.folder_fill0
+        Manifest.permission.WRITE_EXTERNAL_STORAGE -> R.drawable.folder_fill0
+        Manifest.permission.READ_MEDIA_AUDIO -> R.drawable.music_note_fill0
+        Manifest.permission.READ_MEDIA_VIDEO -> R.drawable.movie_fill0
+        Manifest.permission.READ_MEDIA_IMAGES -> R.drawable.image_fill0
+        Manifest.permission.CAMERA -> R.drawable.photo_camera_fill0
+        Manifest.permission.RECORD_AUDIO -> R.drawable.mic_fill0
+        Manifest.permission.ACCESS_COARSE_LOCATION -> R.drawable.location_on_fill0
+        Manifest.permission.ACCESS_FINE_LOCATION -> R.drawable.location_on_fill0
+        Manifest.permission.ACCESS_BACKGROUND_LOCATION -> R.drawable.location_on_fill0
+        Manifest.permission.READ_CONTACTS -> R.drawable.contacts_fill0
+        Manifest.permission.WRITE_CONTACTS -> R.drawable.contacts_fill0
+        Manifest.permission.READ_CALENDAR -> R.drawable.calendar_month_fill0
+        Manifest.permission.WRITE_CALENDAR -> R.drawable.calendar_month_fill0
+        Manifest.permission.BLUETOOTH_CONNECT -> R.drawable.bluetooth_fill0
+        Manifest.permission.BLUETOOTH_SCAN -> R.drawable.bluetooth_searching_fill0
+        Manifest.permission.BLUETOOTH_ADVERTISE -> R.drawable.bluetooth_fill0
+        Manifest.permission.NEARBY_WIFI_DEVICES -> R.drawable.wifi_fill0
+        Manifest.permission.CALL_PHONE -> R.drawable.call_fill0
+        Manifest.permission.ANSWER_PHONE_CALLS -> R.drawable.call_fill0
+        Manifest.permission.READ_PHONE_NUMBERS -> R.drawable.mobile_phone_fill0
+        Manifest.permission.READ_PHONE_STATE -> R.drawable.mobile_phone_fill0
+        Manifest.permission.USE_SIP -> R.drawable.call_fill0
+        Manifest.permission.RANGING, Manifest.permission.UWB_RANGING -> R.drawable.cell_tower_fill0
+        Manifest.permission.READ_SMS -> R.drawable.sms_fill0
+        Manifest.permission.RECEIVE_SMS, Manifest.permission.RECEIVE_MMS -> R.drawable.sms_fill0
+        Manifest.permission.SEND_SMS -> R.drawable.sms_fill0
+        Manifest.permission.READ_CALL_LOG -> R.drawable.call_log_fill0
+        Manifest.permission.WRITE_CALL_LOG -> R.drawable.call_log_fill0
+        Manifest.permission.RECEIVE_WAP_PUSH -> R.drawable.wifi_fill0
+        Manifest.permission.BODY_SENSORS -> R.drawable.sensors_fill0
+        Manifest.permission.BODY_SENSORS_BACKGROUND -> R.drawable.sensors_fill0
+        Manifest.permission.ACTIVITY_RECOGNITION -> R.drawable.history_fill0
+        Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED -> R.drawable.perm_media_fill0
+        Manifest.permission.GET_ACCOUNTS -> R.drawable.account_circle_fill0
+        Manifest.permission.ACCESS_MEDIA_LOCATION -> R.drawable.location_on_fill0
+        Manifest.permission.PROCESS_OUTGOING_CALLS -> R.drawable.call_fill0
+        Manifest.permission.ACCEPT_HANDOVER -> R.drawable.call_fill0
+        else -> null
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppChooserFilterBottomSheet(

@@ -36,7 +36,6 @@ import com.bintianqi.owndroid.ui.MySmallTitleScaffold
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.BottomPadding
-import com.bintianqi.owndroid.utils.runtimePermissions
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @Composable
@@ -111,25 +110,25 @@ fun AppPermissionsManagerScreen(
     vm: AppDetailsViewModel, onNavigateUp: () -> Unit
 ) {
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
-    val requestedPermissions by vm.requestedPermissionsState.collectAsState()
     val permissions by vm.permissionsState.collectAsState()
-    val displayedPermissions = runtimePermissions.filter { it.id in requestedPermissions }
     LaunchedEffect(Unit) {
-        vm.getRequestedPermissions()
         vm.getPermissions()
     }
     MyLazyScaffold(R.string.permissions, onNavigateUp) {
         item {
-            if (displayedPermissions.isEmpty()) {
+            if (permissions.isEmpty()) {
                 Text(
-                    stringResource(R.string.none), Modifier.fillMaxWidth().alpha(0.7F),
+                    stringResource(R.string.none),
+                    Modifier
+                        .fillMaxWidth()
+                        .alpha(0.7F),
                     textAlign = TextAlign.Center
                 )
             } else {
                 PermissionRadioButtonHint()
             }
         }
-        items(displayedPermissions) {
+        items(permissions.toList()) { (permission, state) ->
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -139,17 +138,21 @@ fun AppPermissionsManagerScreen(
                 Row(
                     Modifier.weight(1F), verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(painterResource(it.icon), null, Modifier.padding(horizontal = 12.dp))
+                    if (permission.icon != null) Icon(
+                        painterResource(permission.icon), null,
+                        Modifier.padding(horizontal = 12.dp)
+                    )
                     Column {
-                        Text(stringResource(it.label))
-                        Text(it.id, Modifier.alpha(0.7F), style = typography.bodySmall)
+                        Text(permission.label)
+                        Text(permission.id, Modifier.alpha(0.7F), style = typography.bodySmall)
                     }
                 }
                 PermissionRadioButtonRow(
-                    permissions[it.id],
-                    (VERSION.SDK_INT >= 31 && it.profileOwnerRestricted && privilege.profile)
-                ) {
-                    state -> vm.setPermission(it.id, state)
+                    state,
+                    (VERSION.SDK_INT >= 31 &&
+                            permission.id in profileOwnerRestrictedPermissions && privilege.profile)
+                ) { state ->
+                    vm.setPermission(permission.id, state)
                 }
             }
         }

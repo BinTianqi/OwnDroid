@@ -70,7 +70,7 @@ sealed class Destination : NavKey {
     @Serializable object BlockUninstall : Destination()
     @Serializable object DisableUserControl : Destination()
     @Serializable object PermissionManager : Destination()
-    @Serializable class PermissionDetail(val permission: String) : Destination()
+    @Serializable object PermissionDetail : Destination()
     @Serializable object DisableMeteredData : Destination()
     @Serializable object ClearAppStorage : Destination()
     @Serializable object UninstallApp : Destination()

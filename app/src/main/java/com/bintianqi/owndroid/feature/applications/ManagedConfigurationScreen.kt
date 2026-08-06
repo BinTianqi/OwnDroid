@@ -95,7 +95,7 @@ fun ManagedConfigurationScreen(
         if (it != null) vm.importConfiguration(it)
     }
     val displayRestrictions = restrictions.filter {
-        (showModified && !it.isNull()) || (showUnmodified && it.isNull()) &&
+        ((showModified && !it.isNull()) || (showUnmodified && it.isNull())) &&
                 (!searchMode || searchKeyword.isBlank() ||
                         searchInString(searchKeyword, it.key) ||
                         it.title?.contains(searchKeyword, true) ?: true)
