@@ -1,16 +1,22 @@
 package com.bintianqi.owndroid.feature.applications
 
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.PermissionInfo
+import android.net.Uri
 import android.os.Build.VERSION
+import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.PrivilegeHelper
+import com.bintianqi.owndroid.utils.AppInfo
 import com.bintianqi.owndroid.utils.PrivilegeStatus
 import com.bintianqi.owndroid.utils.ToastChannel
 import com.bintianqi.owndroid.utils.getAppInfo
+import com.bintianqi.owndroid.utils.getInstalledAppsFlags
 import com.bintianqi.owndroid.utils.plusOrMinus
 import com.bintianqi.owndroid.utils.uninstallPackage
 import kotlinx.coroutines.Dispatchers
@@ -23,14 +29,31 @@ class AppDetailsViewModel(
     val packageName: String, val application: MyApplication, val ph: PrivilegeHelper,
     val privilegeState: StateFlow<PrivilegeStatus>, val toastChannel: ToastChannel
 ) : ViewModel() {
-    val appInfo = getAppInfo(application.packageManager, packageName)
+    val appInfo = MutableStateFlow<AppInfo?>(null)
+    val detailedAppInfo = MutableStateFlow(DetailedAppInfo())
     val uiState = MutableStateFlow(AppDetailsUiState())
 
-    init {
-        getStatus()
+    fun getInfo() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val pkgInfo = application.packageManager.getPackageInfo(
+                packageName, getInstalledAppsFlags
+            )
+            appInfo.value = getAppInfo(application.packageManager, packageName)
+            detailedAppInfo.value = DetailedAppInfo(pkgInfo.versionName ?: "", pkgInfo.versionCode)
+            getStatus()
+        }
     }
 
-    fun getStatus() = ph.safeDpmCall {
+    fun viewAppDetails(context: Context) {
+        val intent = Intent()
+        intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+        intent.data = Uri.fromParts("package", packageName, null)
+        try {
+            context.startActivity(intent)
+        } catch (_: Exception) {}
+    }
+
+    private fun getStatus() = ph.safeDpmCall {
         uiState.value = AppDetailsUiState(
             if (VERSION.SDK_INT >= 24) dpm.isPackageSuspended(dar, packageName) else false,
             dpm.isApplicationHidden(dar, packageName),
@@ -114,7 +137,7 @@ class AppDetailsViewModel(
             allPermissions += pm.queryPermissionsByGroup(it.name, 0)
         }
         val requestedPermissions = application.packageManager.getPackageInfo(
-            packageName, PackageManager.GET_PERMISSIONS
+            packageName, PackageManager.GET_PERMISSIONS or getInstalledAppsFlags
         ).requestedPermissions ?: emptyArray()
         val actualPermissions = allPermissions.filter {
             it.protectionLevel and PermissionInfo.PROTECTION_DANGEROUS != 0 &&

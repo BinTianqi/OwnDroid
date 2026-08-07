@@ -34,6 +34,7 @@ import com.bintianqi.owndroid.PrivilegeHelper
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.utils.AppInfo
 import com.bintianqi.owndroid.utils.getAppInfo
+import com.bintianqi.owndroid.utils.getInstalledAppsFlags
 import com.bintianqi.owndroid.utils.searchInString
 import com.bintianqi.owndroid.utils.transformAppRestrictionEntryList
 import kotlinx.serialization.Serializable
@@ -277,7 +278,9 @@ fun getAppStatus(
             }
         }
     } catch (_: Exception) {}
-    val pkgInfo = context.packageManager.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS)
+    val pkgInfo = context.packageManager.getPackageInfo(
+        packageName, PackageManager.GET_PERMISSIONS or getInstalledAppsFlags
+    )
     return AppChooserEntry(
         appInfo, hasMc, mcModified, suspended, hidden, ub, ucd, mdd,
         Manifest.permission.INTERNET in (pkgInfo.requestedPermissions ?: emptyArray())

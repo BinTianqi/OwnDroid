@@ -615,7 +615,7 @@
     <string name="lock_when_leaving">离开时锁定</string>
     <string name="unlock">解锁</string>
     <string name="security">安全性</string>
-    <string name="clear_storage">清除存储空间</string>
+    <string name="clear_storage">清除存储</string>
 
     <string name="api_key">API密钥</string>
     <string name="api_key_exist">API密钥已存在，设置新的密钥将会覆盖当前密钥</string>

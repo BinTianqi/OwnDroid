@@ -11,7 +11,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -44,22 +50,38 @@ fun ApplicationDetailsScreen(
 ) {
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
     var dialog by rememberSaveable { mutableIntStateOf(0) } // 1: clear storage, 2: uninstall
+    val appInfo by vm.appInfo.collectAsState()
+    val detailedAppInfo by vm.detailedAppInfo.collectAsState()
     val uiState by vm.uiState.collectAsStateWithLifecycle()
-    MySmallTitleScaffold(R.string.place_holder, onNavigateUp, 0.dp) {
-        Column(
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        vm.getInfo()
+    }
+    MySmallTitleScaffold(R.string.place_holder, onNavigateUp, 0.dp, {
+        IconButton({ vm.viewAppDetails(context) }) {
+            Icon(Icons.Outlined.Info, null)
+        }
+    }) {
+        if (appInfo != null) Column(
             Modifier
                 .align(Alignment.CenterHorizontally)
-                .padding(top = 16.dp), horizontalAlignment = Alignment.CenterHorizontally
+                .padding(top = 16.dp, bottom = 8.dp), horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(rememberDrawablePainter(vm.appInfo.icon), null, Modifier.size(50.dp))
-            Text(vm.appInfo.label, Modifier.padding(top = 4.dp))
-            Text(
-                vm.appInfo.name,
-                Modifier
-                    .alpha(0.7F)
-                    .padding(bottom = 8.dp),
-                style = typography.bodyMedium
-            )
+            Image(rememberDrawablePainter(appInfo!!.icon), null, Modifier.size(50.dp))
+            SelectionContainer {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(appInfo!!.label, Modifier.padding(top = 4.dp))
+                    Text(
+                        appInfo!!.name, Modifier.alpha(0.7F),
+                        style = typography.bodyMedium
+                    )
+                    Text(
+                        detailedAppInfo.version + " (${detailedAppInfo.versionNumber})",
+                        Modifier.alpha(0.7F),
+                        style = typography.bodyMedium
+                    )
+                }
+            }
         }
         FunctionItem(R.string.permissions, icon = R.drawable.shield_fill0) {
             onNavigate(Destination.AppPermissionsManager)
@@ -89,10 +111,20 @@ fun ApplicationDetailsScreen(
         FunctionItem(R.string.managed_configuration, icon = R.drawable.description_fill0) {
             onNavigate(Destination.ManagedConfiguration(vm.packageName))
         }
-        if (VERSION.SDK_INT >= 28) FunctionItem(
-            R.string.clear_app_storage, icon = R.drawable.mop_fill0
-        ) { dialog = 1 }
-        FunctionItem(R.string.uninstall, icon = R.drawable.delete_fill0) { dialog = 2 }
+        Row(Modifier.fillMaxWidth().padding(8.dp)) {
+            FilledTonalButton(
+                { dialog = 1 },
+                Modifier.padding(horizontal = 4.dp).weight(1F)
+            ) {
+                Text(stringResource(R.string.clear_storage))
+            }
+            FilledTonalButton(
+                { dialog = 2 },
+                Modifier.padding(horizontal = 4.dp).weight(1F)
+            ) {
+                Text(stringResource(R.string.uninstall))
+            }
+        }
         Spacer(Modifier.height(BottomPadding))
     }
     if (dialog == 1 && VERSION.SDK_INT >= 28)

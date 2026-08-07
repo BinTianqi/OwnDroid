@@ -102,7 +102,7 @@ class AppFeaturesViewModel(
             allPermissions += pm.queryPermissionsByGroup(it.name, 0)
         }
         var allRequestedPermissions = mutableListOf<String>()
-        pm.getInstalledPackages(PackageManager.GET_PERMISSIONS).forEach {
+        pm.getInstalledPackages(PackageManager.GET_PERMISSIONS or getInstalledAppsFlags).forEach {
             allRequestedPermissions += it.requestedPermissions ?: emptyArray()
         }
         allRequestedPermissions = allRequestedPermissions.distinct().toMutableList()
