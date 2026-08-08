@@ -6,6 +6,11 @@ import java.io.File
 class SettingsRepository(val file: File) {
     var data: MySettings
 
+    val json = Json {
+        ignoreUnknownKeys = true
+        explicitNulls = false
+    }
+
     init {
         if (file.exists()) {
             data = readData()
@@ -16,7 +21,7 @@ class SettingsRepository(val file: File) {
     }
 
     fun readData(): MySettings {
-        return Json.Default.decodeFromString(file.readText())
+        return json.decodeFromString(file.readText())
     }
 
     fun update(block: (MySettings) -> Unit) {
@@ -25,6 +30,6 @@ class SettingsRepository(val file: File) {
     }
 
     fun write() {
-        file.writeText(Json.encodeToString(data))
+        file.writeText(json.encodeToString(data))
     }
 }

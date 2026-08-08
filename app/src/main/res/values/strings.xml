@@ -393,6 +393,7 @@
 
     <!--Applications-->
     <string name="applications">Applications</string>
+    <string name="applications_state">Applications state</string>
     <string name="apps_view">Apps view</string>
     <string name="features_view">Features view</string>
     <string name="support_mc">Support managed configuration</string>
@@ -421,6 +422,8 @@
     <string name="permissions">Permissions</string>
     <string name="user_apps">User apps</string>
     <string name="system_apps">System apps</string>
+    <string name="user_app">User app</string>
+    <string name="system_app">System app</string>
     <string name="block_uninstall">Block uninstall</string>
     <string name="enable_system_app">Enable system app</string>
     <string name="disable_user_control">Disable user control</string>

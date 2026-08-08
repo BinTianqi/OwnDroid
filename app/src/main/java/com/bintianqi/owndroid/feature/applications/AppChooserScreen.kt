@@ -71,7 +71,7 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 @Composable
 fun AppChooserScreen(
     params: Destination.ApplicationsList, vm: AppChooserViewModel,
-    onChoosePackage: (String?) -> Unit, onSwitchView: () -> Unit,
+    onChoosePackage: (String?) -> Unit,
 ) {
     val packages by vm.packagesState.collectAsStateWithLifecycle()
     val hf = LocalHapticFeedback.current
@@ -156,25 +156,9 @@ fun AppChooserScreen(
                                 },
                                 leadingIcon = { Icon(Icons.Default.Refresh, null) }
                             )
-                            if (params.canSwitchView) {
-                                HorizontalDivider()
-                                DropdownMenuItem(
-                                    { Text(stringResource(R.string.apps_view)) },
-                                    {},
-                                    leadingIcon = { RadioButton(true, null) }
-                                )
-                                DropdownMenuItem(
-                                    { Text(stringResource(R.string.features_view)) },
-                                    {
-                                        dropdown = false
-                                        onSwitchView()
-                                    },
-                                    leadingIcon = { RadioButton(false, null) }
-                                )
-                            }
                         }
                     }
-                    if (selectedPackages.isNotEmpty() && !params.canSwitchView) {
+                    if (selectedPackages.isNotEmpty() && params.mode == AppChooserMode.Choose) {
                         FilledIconButton({
                             onChoosePackage(selectedPackages.joinToString("\n") { it.name })
                         }) {
@@ -242,7 +226,9 @@ fun AppChooserScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .combinedClickable(onLongClick = {
-                            if (params.multiSelect && app.info !in selectedPackages) {
+                            if (params.mode == AppChooserMode.Choose &&
+                                app.info !in selectedPackages
+                            ) {
                                 selectedPackages += app.info
                                 hf.performHapticFeedback(HapticFeedbackType.LongPress)
                             }

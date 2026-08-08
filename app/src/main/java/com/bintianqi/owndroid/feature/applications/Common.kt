@@ -39,6 +39,10 @@ import com.bintianqi.owndroid.utils.searchInString
 import com.bintianqi.owndroid.utils.transformAppRestrictionEntryList
 import kotlinx.serialization.Serializable
 
+enum class AppChooserMode {
+    ListView, Choose, SingleChoose
+}
+
 class AppChooserEntry(
     val info: AppInfo,
     val hasMc: Boolean, // Managed configuration
@@ -289,8 +293,8 @@ fun getAppStatus(
 
 fun filterApp(app: AppChooserEntry, filter: AppChooserFilter, query: String): Boolean {
     return (filter.userApps == filter.systemApps ||
-            (filter.userApps && app.info.flags and ApplicationInfo.FLAG_SYSTEM == 0) ||
-            (filter.systemApps && app.info.flags and ApplicationInfo.FLAG_SYSTEM != 0)) &&
+            (filter.userApps && !app.info.isSystem) ||
+            (filter.systemApps && app.info.isSystem)) &&
             (!filter.hasMc || app.hasMc) && (!filter.mcModified || app.mcModified) &&
             (filter.suspended == filter.notSuspended || (filter.suspended && app.suspended)
                     || (filter.notSuspended && !app.suspended)) &&

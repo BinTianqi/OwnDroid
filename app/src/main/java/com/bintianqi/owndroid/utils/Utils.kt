@@ -208,7 +208,9 @@ class AppInfo(
     val label: String,
     val icon: Drawable,
     val flags: Int
-)
+) {
+    val isSystem get() = (flags and ApplicationInfo.FLAG_SYSTEM) != 0
+}
 
 fun getAppInfo(pm: PackageManager, info: ApplicationInfo) =
     AppInfo(info.packageName, info.loadLabel(pm).toString(), info.loadIcon(pm), info.flags)

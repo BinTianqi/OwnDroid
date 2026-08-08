@@ -2,6 +2,7 @@ package com.bintianqi.owndroid.ui.navigation
 
 import androidx.navigation3.runtime.NavKey
 import com.bintianqi.owndroid.feature.applications.AppChooserFilter
+import com.bintianqi.owndroid.feature.applications.AppChooserMode
 import kotlinx.serialization.Serializable
 
 sealed class Destination : NavKey {
@@ -91,7 +92,7 @@ sealed class Destination : NavKey {
     @Serializable class ManagedConfiguration(val packageName: String) : Destination()
 
     @Serializable class ApplicationsList(
-        val canSwitchView: Boolean, val multiSelect: Boolean,
+        val mode: AppChooserMode,
         val defaultFilter: AppChooserFilter = AppChooserFilter()
     ) : Destination()
 

@@ -359,6 +359,7 @@
 
     <!--Applications-->
     <string name="applications">应用程序</string>
+    <string name="applications_state">应用程序状态</string>
     <string name="apps_view">应用视图</string>
     <string name="features_view">功能视图</string>
     <string name="support_mc">支持托管配置</string>
@@ -387,6 +388,8 @@
     <string name="permissions">权限</string>
     <string name="user_apps">用户应用</string>
     <string name="system_apps">系统应用</string>
+    <string name="user_app">用户应用</string>
+    <string name="system_app">系统应用</string>
     <string name="block_uninstall">阻止卸载</string>
     <string name="disable_user_control">禁止用户控制</string>
     <string name="disable_metered_data">禁用计量数据</string>

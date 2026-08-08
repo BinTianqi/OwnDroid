@@ -8,6 +8,7 @@ import androidx.navigation3.runtime.entryProvider
 import com.bintianqi.owndroid.AppContainer
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.feature.applications.AppChooserFilter
+import com.bintianqi.owndroid.feature.applications.AppChooserMode
 import com.bintianqi.owndroid.feature.applications.AppChooserScreen
 import com.bintianqi.owndroid.feature.applications.AppChooserViewModel
 import com.bintianqi.owndroid.feature.applications.AppDetailsViewModel
@@ -129,18 +130,16 @@ fun myEntryProvider(
     }
 
     fun choosePackage() {
-        navigate(Destination.ApplicationsList(false, true))
+        navigate(Destination.ApplicationsList(AppChooserMode.Choose))
     }
 
     fun chooseSinglePackage() {
-        navigate(Destination.ApplicationsList(false, false))
+        navigate(Destination.ApplicationsList(AppChooserMode.SingleChoose))
     }
 
     entry<Destination.Home> {
         HomeScreen(
-            container.privilegeState,
-            { container.settingsRepo.data.applicationsListView },
-            ::navigate
+            container.privilegeState, ::navigate
         )
     }
     entry<Destination.WorkingModes> {
@@ -383,36 +382,25 @@ fun myEntryProvider(
 
     entry<Destination.ApplicationsList> { params ->
         AppChooserScreen(
-            params, appChooserVm, { name ->
-                if (params.canSwitchView) {
-                    if (name == null) {
-                        navigateUp()
-                    } else {
-                        navigate(Destination.ApplicationDetails(name))
-                    }
+            params, appChooserVm
+        ) { name ->
+            if (params.mode == AppChooserMode.ListView) {
+                if (name != null) {
+                    navigate(Destination.ApplicationDetails(name))
                 } else {
-                    if (name != null) container.chosenPackage.trySend(name)
                     navigateUp()
                 }
-            }, {
-                container.settingsRepo.update {
-                    it.applicationsListView = false
-                }
-                navigate(Destination.ApplicationFeatures)
-                backstack.removeAt(backstack.size - 2)
-            })
+            } else {
+                if (name != null) container.chosenPackage.trySend(name)
+                navigateUp()
+            }
+        }
     }
 
     entry<Destination.ApplicationFeatures> {
         ApplicationsFeaturesScreen(
             viewModel(factory = container.viewModelFactory), ::navigateUp, ::navigate
-        ) {
-            container.settingsRepo.update {
-                it.applicationsListView = true
-            }
-            navigate(Destination.ApplicationsList(true, true))
-            backstack.removeAt(backstack.size - 2)
-        }
+        )
     }
     entry<Destination.ApplicationDetails> {
         ApplicationDetailsScreen(
@@ -601,7 +589,7 @@ fun myEntryProvider(
             container.chosenPackage, {
                 navigate(
                     Destination.ApplicationsList(
-                        false, false, AppChooserFilter(
+                        AppChooserMode.SingleChoose, AppChooserFilter(
                             userApps = false, systemApps = true,
                             installed = false, notInstalled = true
                         )

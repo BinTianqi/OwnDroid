@@ -82,6 +82,11 @@ fun ApplicationDetailsScreen(
                     )
                 }
             }
+            Text(
+                stringResource(if (appInfo!!.isSystem) R.string.system_app else R.string.user_app),
+                Modifier.alpha(0.7F),
+                style = typography.bodyMedium
+            )
         }
         FunctionItem(R.string.permissions, icon = R.drawable.shield_fill0) {
             onNavigate(Destination.AppPermissionsManager)

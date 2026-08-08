@@ -96,35 +96,11 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ApplicationsFeaturesScreen(
-    vm: AppFeaturesViewModel, onNavigateUp: () -> Unit, onNavigate: (Destination) -> Unit,
-    onSwitchView: () -> Unit
+    vm: AppFeaturesViewModel, onNavigateUp: () -> Unit, onNavigate: (Destination) -> Unit
 ) {
     val context = LocalContext.current
     MyScaffold(
-        R.string.applications, onNavigateUp, 0.dp,
-        {
-            Box {
-                var dropdown by remember { mutableStateOf(false) }
-                IconButton({ dropdown = true }) {
-                    Icon(Icons.Default.MoreVert, null)
-                }
-                DropdownMenu(dropdown, { dropdown = false }) {
-                    DropdownMenuItem(
-                        { Text(stringResource(R.string.apps_view)) },
-                        {
-                            dropdown = false
-                            onSwitchView()
-                        },
-                        leadingIcon = { RadioButton(false, null) }
-                    )
-                    DropdownMenuItem(
-                        { Text(stringResource(R.string.features_view)) },
-                        {},
-                        leadingIcon = { RadioButton(true, null) }
-                    )
-                }
-            }
-        }
+        R.string.applications_state, onNavigateUp, 0.dp
     ) {
         val privilege by vm.privilegeState.collectAsStateWithLifecycle()
         if (VERSION.SDK_INT >= 24) FunctionItem(

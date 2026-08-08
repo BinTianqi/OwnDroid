@@ -12,7 +12,6 @@ data class MySettings(
     val shortcut: Shortcut = Shortcut(),
     val notifications: MutableList<Int> = mutableListOf(),
     var displayDangerousFeatures: Boolean = false,
-    var applicationsListView: Boolean = true,
     var appFeatureSwitchView: Boolean = true,
     val api: Api = Api()
 ) {
