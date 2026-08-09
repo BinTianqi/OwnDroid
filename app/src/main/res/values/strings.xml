@@ -76,6 +76,7 @@
     <string name="undo">Undo</string>
     <string name="refresh">Refresh</string>
     <string name="filters">Filters</string>
+    <string name="both">Both</string>
 
     <!--Permissions-->
     <string name="profile_owner">Profile owner</string>
@@ -399,23 +400,15 @@
     <string name="support_mc">Support managed configuration</string>
     <string name="mc_modified">Managed configuration modified</string>
     <string name="suspended">Suspended</string>
-    <string name="not_suspended">Not suspended</string>
     <string name="hidden">Hidden</string>
-    <string name="not_hidden">Not hidden</string>
     <string name="uninstall_blocked">Uninstall blocked</string>
-    <string name="uninstall_not_blocked">Uninstall not blocked</string>
     <string name="uc_disabled">User control disabled</string>
-    <string name="uc_not_disabled">User control not disabled</string>
     <string name="uses_internet">Uses Internet</string>
     <string name="md_disabled">Metered data disabled</string>
-    <string name="md_not_disabled">Metered data not disabled</string>
     <string name="installed">Installed</string>
-    <string name="not_installed">Not installed</string>
     <string name="no_matching_apps">No matching apps</string>
     <string name="suspend">Suspend</string>
-    <string name="unsuspend">Unsuspend</string>
     <string name="hide">Hide</string>
-    <string name="unhide">Unhide</string>
     <string name="always_on_vpn">Always-on VPN</string>
     <string name="enable_lockdown">Enable lockdown</string>
     <string name="clear_current_config">Clear current config</string>
@@ -448,7 +441,6 @@
     <string name="switch_view">Switch view</string>
     <string name="list_view">List view</string>
     <string name="loading">Loading</string>
-    <string name="user_apps_only">User apps only</string>
     <string name="app_group">App group</string>
     <string name="manage_app_groups">Manage groups</string>
     <string name="import_str">Import</string>
@@ -657,42 +649,6 @@
     <string name="clear_storage">Clear storage</string>
     
     <string name="api_key">API key</string>
-    <string name="api_key_exist">The API key already exists, setting a new key will overwrite the current key.</string>
-
-    <!--AndroidPermission-->
-    <string name="permission_POST_NOTIFICATIONS">Post notifications</string>
-    <string name="permission_READ_EXTERNAL_STORAGE">Read external storage</string>
-    <string name="permission_WRITE_EXTERNAL_STORAGE">Write external storage</string>
-    <string name="permission_READ_MEDIA_AUDIO">Read media (audio)</string>
-    <string name="permission_READ_MEDIA_VIDEO">Read media (video)</string>
-    <string name="permission_READ_MEDIA_IMAGES">Read media (images)</string>
-    <string name="permission_CAMERA">Camera</string>
-    <string name="permission_RECORD_AUDIO">Microphone</string>
-    <string name="permission_READ_CONTACTS">Read contacts</string>
-    <string name="permission_WRITE_CONTACTS">Write contacts</string>
-    <string name="permission_READ_CALENDAR">Read calendar</string>
-    <string name="permission_WRITE_CALENDAR">Write calendar</string>
-    <string name="permission_ACCESS_COARSE_LOCATION">Access coarse location</string>
-    <string name="permission_ACCESS_FINE_LOCATION">Access fine location</string>
-    <string name="permission_ACCESS_BACKGROUND_LOCATION">Access location in background</string>
-    <string name="permission_BLUETOOTH_CONNECT">Bluetooth connect</string>
-    <string name="permission_BLUETOOTH_SCAN">Bluetooth scan</string>
-    <string name="permission_BLUETOOTH_ADVERTISE">Bluetooth advertise</string>
-    <string name="permission_NEARBY_WIFI_DEVICES">Nearby Wi-Fi devices</string>
-    <string name="permission_CALL_PHONE">Call phone</string>
-    <string name="permission_ANSWER_PHONE_CALLS">Answer phone calls</string>
-    <string name="permission_READ_PHONE_STATE">Read phone state</string>
-    <string name="permission_USE_SIP">Use SIP</string>
-    <string name="permission_UWB_RANGING">UWB ranging</string>
-    <string name="permission_READ_SMS">Read SMS</string>
-    <string name="permission_RECEIVE_SMS">Receive SMS</string>
-    <string name="permission_SEND_SMS">Send SMS</string>
-    <string name="permission_READ_CALL_LOG">Read call log</string>
-    <string name="permission_WRITE_CALL_LOG">Write call log</string>
-    <string name="permission_RECEIVE_WAP_PUSH">Receive WAP push</string>
-    <string name="permission_BODY_SENSORS">Access body sensors</string>
-    <string name="permission_BODY_SENSORS_BACKGROUND">Access body sensors in background</string>
-    <string name="permission_ACTIVITY_RECOGNITION">Activity recognition</string>
 
     <string name="package_chooser">Package chooser</string>
 

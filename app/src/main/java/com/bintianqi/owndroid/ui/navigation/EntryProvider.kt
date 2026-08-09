@@ -13,6 +13,7 @@ import com.bintianqi.owndroid.feature.applications.AppChooserScreen
 import com.bintianqi.owndroid.feature.applications.AppChooserViewModel
 import com.bintianqi.owndroid.feature.applications.AppDetailsViewModel
 import com.bintianqi.owndroid.feature.applications.AppFeaturesViewModel
+import com.bintianqi.owndroid.feature.applications.AppFilterState
 import com.bintianqi.owndroid.feature.applications.AppGroupsScreen
 import com.bintianqi.owndroid.feature.applications.AppPermissionsManagerScreen
 import com.bintianqi.owndroid.feature.applications.ApplicationDetailsScreen
@@ -590,8 +591,7 @@ fun myEntryProvider(
                 navigate(
                     Destination.ApplicationsList(
                         AppChooserMode.SingleChoose, AppChooserFilter(
-                            userApps = false, systemApps = true,
-                            installed = false, notInstalled = true
+                            userApps = AppFilterState.No, installed = AppFilterState.No
                         )
                     )
                 )

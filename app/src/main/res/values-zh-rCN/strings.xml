@@ -71,6 +71,7 @@
     <string name="undo">撤销</string>
     <string name="refresh">刷新</string>
     <string name="filters">过滤器</string>
+    <string name="both">两者</string>
 
     <!--Permissions-->
     <string name="profile_owner">Profile owner</string>
@@ -365,23 +366,15 @@
     <string name="support_mc">支持托管配置</string>
     <string name="mc_modified">托管配置已修改</string>
     <string name="suspended">挂起</string>
-    <string name="not_suspended">未挂起</string>
     <string name="hidden">隐藏</string>
-    <string name="not_hidden">未隐藏</string>
     <string name="uninstall_blocked">阻止卸载</string>
-    <string name="uninstall_not_blocked">未阻值卸载</string>
     <string name="uc_disabled">禁止用户控制</string>
-    <string name="uc_not_disabled">未禁止用户控制</string>
     <string name="uses_internet">使用互联网</string>
     <string name="md_disabled">禁用按量计费流量</string>
-    <string name="md_not_disabled">未禁用按量计费流量</string>
     <string name="installed">已安装</string>
-    <string name="not_installed">未安装</string>
     <string name="no_matching_apps">没有符合条件的应用</string>
     <string name="suspend">挂起</string>
-    <string name="unsuspend">取消挂起</string>
     <string name="hide">隐藏</string>
-    <string name="unhide">取消隐藏</string>
     <string name="always_on_vpn">VPN保持打开</string>
     <string name="enable_lockdown">启用锁定</string>
     <string name="clear_current_config">清除当前配置</string>
@@ -414,7 +407,6 @@
     <string name="switch_view">开关视图</string>
     <string name="list_view">列表视图</string>
     <string name="loading">加载中</string>
-    <string name="user_apps_only">仅用户应用</string>
     <string name="app_group">应用组</string>
     <string name="manage_app_groups">管理组</string>
     <string name="import_str">导入</string>
@@ -621,42 +613,6 @@
     <string name="clear_storage">清除存储</string>
 
     <string name="api_key">API密钥</string>
-    <string name="api_key_exist">API密钥已存在，设置新的密钥将会覆盖当前密钥</string>
-
-    <!--AndroidPermission-->
-    <string name="permission_POST_NOTIFICATIONS">发送通知</string>
-    <string name="permission_READ_EXTERNAL_STORAGE">读取外部存储</string>
-    <string name="permission_WRITE_EXTERNAL_STORAGE">写入外部存储</string>
-    <string name="permission_READ_MEDIA_AUDIO">读取音频</string>
-    <string name="permission_READ_MEDIA_VIDEO">读取视频</string>
-    <string name="permission_READ_MEDIA_IMAGES">读取图片</string>
-    <string name="permission_CAMERA">相机</string>
-    <string name="permission_RECORD_AUDIO">录音</string>
-    <string name="permission_READ_CONTACTS">读取联系人</string>
-    <string name="permission_WRITE_CONTACTS">写入联系人</string>
-    <string name="permission_READ_CALENDAR">读取日历</string>
-    <string name="permission_WRITE_CALENDAR">写入日历</string>
-    <string name="permission_ACCESS_COARSE_LOCATION">粗略位置</string>
-    <string name="permission_ACCESS_FINE_LOCATION">准确位置</string>
-    <string name="permission_ACCESS_BACKGROUND_LOCATION">后台获取位置</string>
-    <string name="permission_BLUETOOTH_CONNECT">蓝牙连接</string>
-    <string name="permission_BLUETOOTH_SCAN">蓝牙扫描</string>
-    <string name="permission_BLUETOOTH_ADVERTISE">使设备可被发现</string>
-    <string name="permission_NEARBY_WIFI_DEVICES">附近的Wi-Fi设备</string>
-    <string name="permission_CALL_PHONE">打电话</string>
-    <string name="permission_ANSWER_PHONE_CALLS">接电话</string>
-    <string name="permission_READ_PHONE_STATE">读取手机状态</string>
-    <string name="permission_USE_SIP">使用SIP</string>
-    <string name="permission_UWB_RANGING">超宽频</string>
-    <string name="permission_READ_SMS">读取短信</string>
-    <string name="permission_RECEIVE_SMS">接收短信</string>
-    <string name="permission_SEND_SMS">发送短信</string>
-    <string name="permission_READ_CALL_LOG">读取通话记录</string>
-    <string name="permission_WRITE_CALL_LOG">写入通话记录</string>
-    <string name="permission_RECEIVE_WAP_PUSH">接收WAP推送</string>
-    <string name="permission_BODY_SENSORS">身体传感器</string>
-    <string name="permission_BODY_SENSORS_BACKGROUND">后台使用身体传感器</string>
-    <string name="permission_ACTIVITY_RECOGNITION">查看使用情况</string>
 
     <string name="package_chooser">包选择器</string>
     <string name="app_installer">App安装器</string>

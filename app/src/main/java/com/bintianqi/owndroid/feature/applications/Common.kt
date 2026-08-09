@@ -23,6 +23,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -55,25 +58,22 @@ class AppChooserEntry(
     val internet: Boolean,
 )
 
+enum class AppFilterState {
+    Yes, No, Both
+}
+
 @Serializable
 data class AppChooserFilter(
-    val userApps: Boolean = true,
-    val systemApps: Boolean = false,
+    val userApps: AppFilterState = AppFilterState.Yes,
     val hasMc: Boolean = false,
     val mcModified: Boolean = false,
-    val suspended: Boolean = true,
-    val notSuspended: Boolean = true,
-    val hidden: Boolean = true,
-    val notHidden: Boolean = true,
-    val ub: Boolean = true,
-    val notUb: Boolean = true,
-    val ucDisabled: Boolean = true,
-    val ucNotDisabled: Boolean = true,
+    val suspended: AppFilterState = AppFilterState.Both,
+    val hidden: AppFilterState = AppFilterState.Both,
+    val ub: AppFilterState = AppFilterState.Both,
+    val ucDisabled: AppFilterState = AppFilterState.Both,
+    val mdDisabled: AppFilterState = AppFilterState.Both,
+    val installed: AppFilterState = AppFilterState.Yes,
     val usesInternet: Boolean = false,
-    val mdDisabled: Boolean = true,
-    val mdNotDisabled: Boolean = true,
-    val installed: Boolean = true,
-    val notInstalled: Boolean = false
 )
 
 class NewPermissionItem(
@@ -137,6 +137,41 @@ fun getIconForPermission(id: String): Int? {
     }
 }
 
+@Composable
+private fun TriStateFilterItem(
+    text: Int, icon: Int, state: AppFilterState, update: (AppFilterState) -> Unit
+) {
+    Row(
+        Modifier.fillMaxWidth().padding(start = 12.dp, end = 4.dp),
+        Arrangement.SpaceBetween, Alignment.CenterVertically
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(painterResource(icon), null, Modifier.padding(end = 8.dp))
+            Text(stringResource(text))
+        }
+        Row {
+            RadioButton(
+                state == AppFilterState.Yes, { update(AppFilterState.Yes) },
+                colors = RadioButtonDefaults.colors(
+                    MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.secondary
+                )
+            )
+            RadioButton(
+                state == AppFilterState.No, { update(AppFilterState.No) },
+                colors = RadioButtonDefaults.colors(
+                    MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.secondary
+                )
+            )
+            RadioButton(
+                state == AppFilterState.Both, { update(AppFilterState.Both) },
+                colors = RadioButtonDefaults.colors(
+                    MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary
+                )
+            )
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppChooserFilterBottomSheet(
@@ -166,13 +201,82 @@ fun AppChooserFilterBottomSheet(
                     Icon(painterResource(R.drawable.restart_alt_fill0), null)
                 }
             }
-            FlowRow {
-                Chip(R.string.user_apps, R.drawable.apps_fill0, filter.userApps) {
-                    update(filter.copy(userApps = it))
+            SingleChoiceSegmentedButtonRow(
+                Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+            ) {
+                SegmentedButton(
+                    filter.userApps == AppFilterState.Yes,
+                    { update(filter.copy(userApps = AppFilterState.Yes)) },
+                    SegmentedButtonDefaults.itemShape(0, 3)
+                ) {
+                    Text(stringResource(R.string.user_apps))
                 }
-                Chip(R.string.system_apps, R.drawable.android_fill0, filter.systemApps) {
-                    update(filter.copy(systemApps = it))
+                SegmentedButton(
+                    filter.userApps == AppFilterState.No,
+                    { update(filter.copy(userApps = AppFilterState.No)) },
+                    SegmentedButtonDefaults.itemShape(1, 3)
+                ) {
+                    Text(stringResource(R.string.system_apps))
                 }
+                SegmentedButton(
+                    filter.userApps == AppFilterState.Both,
+                    { update(filter.copy(userApps = AppFilterState.Both)) },
+                    SegmentedButtonDefaults.itemShape(2, 3)
+                ) {
+                    Text(stringResource(R.string.both))
+                }
+            }
+            Row(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp), Arrangement.End) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(
+                        true, null, Modifier.padding(end = 4.dp),
+                        colors = RadioButtonDefaults.colors(MaterialTheme.colorScheme.secondary)
+                    )
+                    Text(stringResource(R.string.yes))
+                }
+                Row(
+                    Modifier.padding(start = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        true, null, Modifier.padding(end = 4.dp),
+                        colors = RadioButtonDefaults.colors(MaterialTheme.colorScheme.secondary)
+                    )
+                    Text(stringResource(R.string.no))
+                }
+                Row(
+                    Modifier.padding(horizontal = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(true, null, Modifier.padding(end = 4.dp),)
+                    Text(stringResource(R.string.both))
+                }
+            }
+            TriStateFilterItem(R.string.suspended, R.drawable.block_fill0, filter.suspended) {
+                update(filter.copy(suspended = it))
+            }
+            TriStateFilterItem(R.string.hidden, R.drawable.visibility_off_fill0, filter.hidden) {
+                update(filter.copy(hidden = it))
+            }
+            TriStateFilterItem(
+                R.string.uninstall_blocked, R.drawable.delete_forever_fill0, filter.ub
+            ) {
+                update(filter.copy(ub = it))
+            }
+            if (Build.VERSION.SDK_INT >= 30) TriStateFilterItem(
+                R.string.uc_disabled, R.drawable.do_not_touch_fill0, filter.ucDisabled
+            ) {
+                update(filter.copy(ucDisabled = it))
+            }
+            if (Build.VERSION.SDK_INT >= 28) TriStateFilterItem(
+                R.string.md_disabled, R.drawable.money_off_fill0, filter.mdDisabled
+            ) {
+                update(filter.copy(mdDisabled = it))
+            }
+            TriStateFilterItem(
+                R.string.installed, R.drawable.apk_install_fill0, filter.installed
+            ) {
+                update(filter.copy(installed = it))
             }
             FlowRow {
                 Chip(R.string.support_mc, R.drawable.description_fill0, filter.hasMc) {
@@ -182,62 +286,8 @@ fun AppChooserFilterBottomSheet(
                     update(filter.copy(mcModified = it))
                 }
             }
-            FlowRow {
-                Chip(R.string.suspended, R.drawable.block_fill0, filter.suspended) {
-                    update(filter.copy(suspended = it))
-                }
-                Chip(R.string.not_suspended, R.drawable.block_fill0, filter.notSuspended) {
-                    update(filter.copy(notSuspended = it))
-                }
-            }
-            FlowRow {
-                Chip(R.string.hidden, R.drawable.visibility_off_fill0, filter.hidden) {
-                    update(filter.copy(hidden = it))
-                }
-                Chip(R.string.not_hidden, R.drawable.visibility_fill0, filter.notHidden) {
-                    update(filter.copy(notHidden = it))
-                }
-            }
-            FlowRow {
-                Chip(R.string.uninstall_blocked, R.drawable.delete_forever_fill0, filter.ub) {
-                    update(filter.copy(ub = it))
-                }
-                Chip(R.string.uninstall_not_blocked, R.drawable.delete_fill0, filter.notUb) {
-                    update(filter.copy(notUb = it))
-                }
-            }
-            if (Build.VERSION.SDK_INT >= 30) FlowRow {
-                Chip(R.string.uc_disabled, R.drawable.do_not_touch_fill0, filter.ucDisabled) {
-                    update(filter.copy(ucDisabled = true))
-                }
-                Chip(
-                    R.string.uc_not_disabled, R.drawable.do_not_touch_fill0, filter.ucNotDisabled
-                ) {
-                    update(filter.copy(ucNotDisabled = it))
-                }
-            }
-            FlowRow {
-                Chip(R.string.uses_internet, R.drawable.language_fill0, filter.usesInternet) {
-                    update(filter.copy(usesInternet = it))
-                }
-                if (Build.VERSION.SDK_INT >= 28) {
-                    Chip(R.string.md_disabled, R.drawable.money_off_fill0, filter.mdDisabled) {
-                        update(filter.copy(mdDisabled = it))
-                    }
-                    Chip(
-                        R.string.md_not_disabled, R.drawable.money_off_fill0, filter.mdNotDisabled
-                    ) {
-                        update(filter.copy(mdNotDisabled = it))
-                    }
-                }
-            }
-            FlowRow {
-                Chip(R.string.installed, R.drawable.apk_install_fill0, filter.installed) {
-                    update(filter.copy(installed = it))
-                }
-                Chip(R.string.not_installed, R.drawable.delete_fill0, filter.notInstalled) {
-                    update(filter.copy(notInstalled = it))
-                }
+            Chip(R.string.uses_internet, R.drawable.language_fill0, filter.usesInternet) {
+                update(filter.copy(usesInternet = it))
             }
         }
     }
@@ -292,26 +342,21 @@ fun getAppStatus(
 }
 
 fun filterApp(app: AppChooserEntry, filter: AppChooserFilter, query: String): Boolean {
-    return (filter.userApps == filter.systemApps ||
-            (filter.userApps && !app.info.isSystem) ||
-            (filter.systemApps && app.info.isSystem)) &&
+    fun filterItem(state: AppFilterState, item: Boolean): Boolean {
+        return state == AppFilterState.Both ||
+                (state == AppFilterState.Yes && item) ||
+                (state == AppFilterState.No && !item)
+    }
+    return filterItem(filter.userApps, !app.info.isSystem) &&
             (!filter.hasMc || app.hasMc) && (!filter.mcModified || app.mcModified) &&
-            (filter.suspended == filter.notSuspended || (filter.suspended && app.suspended)
-                    || (filter.notSuspended && !app.suspended)) &&
-            (filter.hidden == filter.notHidden || (filter.hidden && app.hidden) ||
-                    (filter.notHidden && !app.hidden)) &&
-            (filter.ub == filter.notUb || (filter.ub && app.ub) || (filter.notUb && !app.ub)) &&
-            (filter.ucDisabled == filter.ucNotDisabled || (filter.ucDisabled && app.ucd) ||
-                    (filter.ucNotDisabled && !app.ucd)) &&
-            (filter.mdDisabled == filter.mdNotDisabled || (filter.mdDisabled && app.mdd) ||
-                    (filter.mdNotDisabled && !app.mdd)) &&
+            filterItem(filter.suspended, app.suspended) &&
+            filterItem(filter.hidden, app.hidden) &&
+            filterItem(filter.ub, app.ub) &&
+            filterItem(filter.ucDisabled, app.ucd) &&
+            filterItem(filter.mdDisabled, app.mdd) &&
             (query.isEmpty() || searchInString(query, app.info.name) ||
                     searchInString(query, app.info.label)) &&
-            (filter.installed == filter.notInstalled ||
-                    (filter.installed &&
-                            app.info.flags and ApplicationInfo.FLAG_INSTALLED != 0) ||
-                    (filter.notInstalled &&
-                            app.info.flags and ApplicationInfo.FLAG_INSTALLED == 0)) &&
+            filterItem(filter.installed, app.info.flags and ApplicationInfo.FLAG_INSTALLED != 0) &&
             (!filter.usesInternet || app.internet)
 }
 
