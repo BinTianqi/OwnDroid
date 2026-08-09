@@ -127,7 +127,6 @@ class AppFeaturesViewModel(
 
     private fun getPermissionPackages() {
         val perm = selectedPermissionItem.value
-        permissionPackagesState.value = emptyList()
         ph.safeDpmCall {
             permissionPackagesState.value = pm.getInstalledPackages(
                 getInstalledAppsFlags or PackageManager.GET_PERMISSIONS
@@ -368,9 +367,14 @@ class AppFeaturesViewModel(
 
     fun getAllPackages() {
         viewModelScope.launch(Dispatchers.IO) {
-            allPackagesState.value = application.packageManager
-                .getInstalledApplications(getInstalledAppsFlags)
-                .map { getAppStatus(application, ph, it.packageName) }
+            allPackagesState.value = emptyList()
+            val apps = application.packageManager.getInstalledApplications(getInstalledAppsFlags)
+            apps.forEach { app ->
+                launch(Dispatchers.IO) {
+                    val entry = getAppStatus(application, ph, app.packageName)
+                    allPackagesState.update { it + entry }
+                }
+            }
         }
     }
 

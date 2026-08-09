@@ -1,5 +1,7 @@
 package com.bintianqi.owndroid.feature.applications
 
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bintianqi.owndroid.MyApplication
@@ -9,20 +11,28 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.concurrent.atomics.AtomicInt
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import kotlin.concurrent.atomics.update
 
 class AppChooserViewModel(val application: MyApplication, val ph: PrivilegeHelper) : ViewModel() {
     val packagesState = MutableStateFlow(emptyList<AppChooserEntry>())
     val progressState = MutableStateFlow(0F)
 
+    @OptIn(ExperimentalAtomicApi::class)
     fun refreshPackageList() {
         viewModelScope.launch(Dispatchers.IO) {
             packagesState.value = emptyList()
+            val loadedCount = AtomicInt(0)
             val apps = application.packageManager.getInstalledApplications(getInstalledAppsFlags)
-            apps.forEachIndexed { index, info ->
-                packagesState.update {
-                    it + getAppStatus(application, ph, info.packageName)
+            apps.sortBy { it.flags and ApplicationInfo.FLAG_SYSTEM }
+            apps.forEach { app ->
+                launch(Dispatchers.IO) {
+                    val entry = getAppStatus(application, ph, app.packageName)
+                    packagesState.update { it + entry }
+                    loadedCount.update { it + 1 }
+                    progressState.value = loadedCount.load().toFloat() / apps.size
                 }
-                progressState.value = (index + 1).toFloat() / apps.size
             }
         }
     }

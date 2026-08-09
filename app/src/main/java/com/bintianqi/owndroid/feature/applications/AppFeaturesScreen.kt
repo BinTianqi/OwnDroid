@@ -103,6 +103,9 @@ fun ApplicationsFeaturesScreen(
         R.string.applications_state, onNavigateUp, 0.dp
     ) {
         val privilege by vm.privilegeState.collectAsStateWithLifecycle()
+        FunctionItem(R.string.permissions, icon = R.drawable.shield_fill0) {
+            onNavigate(Destination.PermissionManager)
+        }
         if (VERSION.SDK_INT >= 24) FunctionItem(
             R.string.suspend, icon = R.drawable.block_fill0
         ) {
@@ -118,9 +121,6 @@ fun ApplicationsFeaturesScreen(
             FunctionItem(R.string.disable_user_control, icon = R.drawable.do_not_touch_fill0) {
                 onNavigate(Destination.DisableUserControl)
             }
-        }
-        FunctionItem(R.string.permissions, icon = R.drawable.shield_fill0) {
-            onNavigate(Destination.PermissionManager)
         }
         if (VERSION.SDK_INT >= 28) {
             FunctionItem(R.string.disable_metered_data, icon = R.drawable.money_off_fill0) {

@@ -215,6 +215,7 @@ fun AppChooserScreen(
                         stringResource(R.string.no_matching_apps),
                         Modifier
                             .fillMaxWidth()
+                            .padding(top = 6.dp)
                             .alpha(0.7F),
                         textAlign = TextAlign.Center
                     )
