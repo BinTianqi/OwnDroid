@@ -409,6 +409,7 @@
     <string name="no_matching_apps">No matching apps</string>
     <string name="suspend">Suspend</string>
     <string name="hide">Hide</string>
+    <string name="unhide">Unhide</string>
     <string name="always_on_vpn">Always-on VPN</string>
     <string name="enable_lockdown">Enable lockdown</string>
     <string name="clear_current_config">Clear current config</string>

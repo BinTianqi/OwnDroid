@@ -73,9 +73,9 @@ fun AppChooserScreen(
     params: Destination.ApplicationsList, vm: AppChooserViewModel,
     onChoosePackage: (String?) -> Unit,
 ) {
-    val packages by vm.packagesState.collectAsStateWithLifecycle()
+    val packages by vm.displayPackagesState.collectAsStateWithLifecycle()
     val hf = LocalHapticFeedback.current
-    val progress by vm.progressState.collectAsStateWithLifecycle()
+    val progress by vm.displayedProgressState.collectAsStateWithLifecycle()
     var query by rememberSaveable { mutableStateOf("") }
     var searchMode by rememberSaveable { mutableStateOf(false) }
     var filter by rememberSaveable(stateSaver = SerializableSaver(AppChooserFilter.serializer())) {

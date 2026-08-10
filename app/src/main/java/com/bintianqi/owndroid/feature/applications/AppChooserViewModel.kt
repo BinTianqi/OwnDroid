@@ -9,6 +9,11 @@ import com.bintianqi.owndroid.PrivilegeHelper
 import com.bintianqi.owndroid.utils.getInstalledAppsFlags
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.WhileSubscribed
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.sample
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.concurrent.atomics.AtomicInt
@@ -16,8 +21,15 @@ import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.concurrent.atomics.update
 
 class AppChooserViewModel(val application: MyApplication, val ph: PrivilegeHelper) : ViewModel() {
-    val packagesState = MutableStateFlow(emptyList<AppChooserEntry>())
-    val progressState = MutableStateFlow(0F)
+    private val packagesState = MutableStateFlow(emptyList<AppChooserEntry>())
+    val displayPackagesState = packagesState
+        .sample(10)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(1000), emptyList())
+
+    private val progressState = MutableStateFlow(0F)
+    val displayedProgressState = progressState
+        .sample(10)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(1000), 0F)
 
     @OptIn(ExperimentalAtomicApi::class)
     fun refreshPackageList() {
