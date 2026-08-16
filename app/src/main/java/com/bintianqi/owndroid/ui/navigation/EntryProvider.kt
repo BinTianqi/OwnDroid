@@ -420,7 +420,7 @@ fun myEntryProvider(
     ) {
         val vm = viewModel<AppFeaturesViewModel>()
         PackageFunctionScreen(
-            R.string.suspend, vm.suspendedPackages, vm::getSuspendedPackaged,
+            R.string.suspend, vm.suspendedPackages, vm::getSuspendedPackages,
             vm::setPackageSuspended, ::navigateUp, container.chosenPackage, ::choosePackage,
             ::navigateToAppGroups, container.appGroupsState, R.string.info_suspend_app,
             vm.allPackagesState, vm::getAllPackages,

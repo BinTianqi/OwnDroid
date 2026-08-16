@@ -84,6 +84,7 @@ fun WorkModesScreen(
                 operationSucceed = true
                 resultText = ""
                 dialog = 3
+                vm.de.value = null
             }
         }
     }
@@ -193,7 +194,7 @@ fun WorkModesScreen(
                 )
                 Text(stringResource(R.string.dhizuku_server), style = typography.titleLarge)
             }
-            Row(
+            if (privilege.device) Row(
                 Modifier
                     .fillMaxWidth()
                     .clickable { onNavigate(Destination.DelegatedAdmins) }

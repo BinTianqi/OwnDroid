@@ -650,7 +650,7 @@ fun SetDefaultDialerScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PackageFunctionScreen(
-    title: Int, packagesState: MutableStateFlow<List<AppInfo>>, onGet: () -> Unit,
+    title: Int, packagesState: MutableStateFlow<List<String>>, onGet: () -> Unit,
     onSet: (List<String>, Boolean) -> Unit, onNavigateUp: () -> Unit,
     chosenPackage: Channel<String>, onChoosePackage: () -> Unit,
     navigateToGroups: () -> Unit, appGroups: StateFlow<List<AppGroup>>, notes: Int? = null,
@@ -686,6 +686,9 @@ fun PackageFunctionScreen(
     } else {
         filteredPackages.sortedByDescending { it.label }
     }
+    val activePackagesInfo = allPackages.filter {
+        it.info.name in packages
+    }.map { it.info }
     LaunchedEffect(Unit) {
         onGet()
         getAllPackages()
@@ -837,12 +840,12 @@ fun PackageFunctionScreen(
                             Text(app.name, Modifier.alpha(0.8F), style = typography.bodyMedium)
                         }
                     }
-                    Switch(packages.any { it.name == app.name }, {
+                    Switch(packages.any { it == app.name }, {
                         onSet(listOf(app.name), it)
                     })
                 }
             }
-            if (listView) items(packages, { it.name }) {
+            if (listView) items(activePackagesInfo, { it.name }) {
                 ApplicationItem(it) {
                     onSet(listOf(it.name), false)
                     coroutine.launch {
@@ -871,7 +874,7 @@ fun PackageFunctionScreen(
                         .fillMaxWidth()
                         .padding(horizontal = HorizontalPadding)
                         .padding(bottom = 10.dp),
-                    packages.none { it.name in inputPackages }
+                    packages.none { it in inputPackages }
                 ) {
                     Text(stringResource(R.string.add))
                 }

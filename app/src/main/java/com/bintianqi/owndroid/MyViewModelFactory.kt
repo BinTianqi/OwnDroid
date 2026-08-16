@@ -81,7 +81,7 @@ class MyViewModelFactory(
             return TransferOwnershipViewModel(app, ph, ps) as T
         }
         if (checkType(WorkingModesViewModel::class)) {
-            return WorkingModesViewModel(app, ph, sr, ps, tc) as T
+            return WorkingModesViewModel(app, ph, sr, ps, tc, de) as T
         }
         if (checkType(DhizukuServerViewModel::class)) {
             return DhizukuServerViewModel(app, dsRepo, sr) as T

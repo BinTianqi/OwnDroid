@@ -29,42 +29,56 @@ class AppFeaturesViewModel(
 ) : ViewModel() {
     val pm = application.packageManager!!
 
-    val suspendedPackages = MutableStateFlow(emptyList<AppInfo>())
+    val suspendedPackages = MutableStateFlow(emptyList<String>())
 
     @RequiresApi(24)
-    fun getSuspendedPackaged() = ph.safeDpmCall {
-        val packages = pm.getInstalledApplications(getInstalledAppsFlags).filter {
-            dpm.isPackageSuspended(dar, it.packageName)
+    fun getSuspendedPackages() {
+        viewModelScope.launch(Dispatchers.IO) {
+            ph.safeDpmCall {
+                val packages = pm.getInstalledApplications(getInstalledAppsFlags).filter {
+                    dpm.isPackageSuspended(dar, it.packageName)
+                }
+                suspendedPackages.value = packages.map { it.packageName }
+            }
         }
-        suspendedPackages.value = packages.map { getAppInfo(pm, it) }
     }
 
     @RequiresApi(24)
     fun setPackageSuspended(packages: List<String>, status: Boolean) = ph.safeDpmCall {
-        dpm.setPackagesSuspended(dar, packages.toTypedArray(), status)
-        getSuspendedPackaged()
+        val failedPackages = dpm.setPackagesSuspended(dar, packages.toTypedArray(), status)
+        suspendedPackages.update { list ->
+            list.plusOrMinus(status, packages.filter { it !in failedPackages })
+        }
     }
 
-    val hiddenPackages = MutableStateFlow(emptyList<AppInfo>())
-    fun getHiddenPackages() = ph.safeDpmCall {
-        hiddenPackages.value = pm.getInstalledApplications(getInstalledAppsFlags).filter {
-            dpm.isApplicationHidden(dar, it.packageName)
-        }.map { getAppInfo(pm, it) }
+    val hiddenPackages = MutableStateFlow(emptyList<String>())
+    fun getHiddenPackages() {
+        viewModelScope.launch(Dispatchers.IO) {
+            ph.safeDpmCall {
+                hiddenPackages.value = pm.getInstalledApplications(getInstalledAppsFlags).filter {
+                    dpm.isApplicationHidden(dar, it.packageName)
+                }.map { it.packageName }
+            }
+        }
     }
 
     fun setPackageHidden(packages: List<String>, status: Boolean) = ph.safeDpmCall {
         for (name in packages) {
-            dpm.setApplicationHidden(dar, name, status)
+            val result = dpm.setApplicationHidden(dar, name, status)
+            if (result) hiddenPackages.update { it.plusOrMinus(status, name) }
         }
-        getHiddenPackages()
     }
 
     // Uninstall blocked packages
-    val ubPackages = MutableStateFlow(emptyList<AppInfo>())
-    fun getUbPackages() = ph.safeDpmCall {
-        ubPackages.value = pm.getInstalledApplications(getInstalledAppsFlags).filter {
-            dpm.isUninstallBlocked(dar, it.packageName)
-        }.map { getAppInfo(pm, it) }
+    val ubPackages = MutableStateFlow(emptyList<String>())
+    fun getUbPackages() {
+        viewModelScope.launch(Dispatchers.IO) {
+            ph.safeDpmCall {
+                ubPackages.value = pm.getInstalledApplications(getInstalledAppsFlags).filter {
+                    dpm.isUninstallBlocked(dar, it.packageName)
+                }.map { it.packageName }
+            }
+        }
     }
 
     fun setPackageUb(packages: List<String>, status: Boolean) = ph.safeDpmCall {
@@ -75,20 +89,18 @@ class AppFeaturesViewModel(
     }
 
     // User control disabled packages
-    val ucdPackages = MutableStateFlow(emptyList<AppInfo>())
+    val ucdPackages = MutableStateFlow(emptyList<String>())
 
     @RequiresApi(30)
     fun getUcdPackages() = ph.safeDpmCall {
-        ucdPackages.value = dpm.getUserControlDisabledPackages(dar).distinct().map {
-            getAppInfo(pm, it)
-        }
+        ucdPackages.value = dpm.getUserControlDisabledPackages(dar).distinct()
     }
 
     @RequiresApi(30)
     fun setPackageUcd(packages: List<String>, status: Boolean) = ph.safeDpmCall {
         dpm.setUserControlDisabledPackages(
             dar,
-            ucdPackages.value.map { it.name }.plusOrMinus(status, packages)
+            ucdPackages.value.plusOrMinus(status, packages)
         )
         getUcdPackages()
     }
@@ -173,64 +185,58 @@ class AppFeaturesViewModel(
     }
 
     // Metered data disabled packages
-    val mddPackages = MutableStateFlow(emptyList<AppInfo>())
+    val mddPackages = MutableStateFlow(emptyList<String>())
 
     @RequiresApi(28)
     fun getMddPackages() = ph.safeDpmCall {
-        mddPackages.value =
-            dpm.getMeteredDataDisabledPackages(dar).distinct().map { getAppInfo(pm, it) }
+        mddPackages.value = dpm.getMeteredDataDisabledPackages(dar).distinct()
     }
 
     @RequiresApi(28)
     fun setPackageMdd(packages: List<String>, status: Boolean) = ph.safeDpmCall {
         dpm.setMeteredDataDisabledPackages(
-            dar, mddPackages.value.map { it.name }.plusOrMinus(status, packages)
+            dar, mddPackages.value.plusOrMinus(status, packages)
         )
         getMddPackages()
     }
 
     // Keep uninstalled packages
-    val kuPackages = MutableStateFlow(emptyList<AppInfo>())
+    val kuPackages = MutableStateFlow(emptyList<String>())
 
     @RequiresApi(28)
     fun getKuPackages() = ph.safeDpmCall {
-        kuPackages.value =
-            dpm.getKeepUninstalledPackages(dar)?.distinct()?.map { getAppInfo(pm, it) }
-                ?: emptyList()
+        kuPackages.value = dpm.getKeepUninstalledPackages(dar)?.distinct() ?: emptyList()
     }
 
     @RequiresApi(28)
     fun setPackageKu(packages: List<String>, status: Boolean) = ph.safeDpmCall {
         dpm.setKeepUninstalledPackages(
-            dar, kuPackages.value.map { it.name }.plusOrMinus(status, packages)
+            dar, kuPackages.value.plusOrMinus(status, packages)
         )
         getKuPackages()
     }
 
     // Cross profile packages
-    val cpPackages = MutableStateFlow(emptyList<AppInfo>())
+    val cpPackages = MutableStateFlow(emptyList<String>())
 
     @RequiresApi(30)
     fun getCpPackages() = ph.safeDpmCall {
-        cpPackages.value = dpm.getCrossProfilePackages(dar).map { getAppInfo(pm, it) }
+        cpPackages.value = dpm.getCrossProfilePackages(dar).toList()
     }
 
     @RequiresApi(30)
     fun setPackageCp(packages: List<String>, status: Boolean) = ph.safeDpmCall {
         dpm.setCrossProfilePackages(
             dar,
-            cpPackages.value.map { it.name }.toSet().run {
-                if (status) plus(packages) else minus(packages)
-            }
+            cpPackages.value.plusOrMinus(status, packages).toSet()
         )
         getCpPackages()
     }
 
     // Cross-profile widget providers
-    val cpwProviders = MutableStateFlow(emptyList<AppInfo>())
+    val cpwProviders = MutableStateFlow(emptyList<String>())
     fun getCpwProviders() = ph.safeDpmCall {
-        cpwProviders.value =
-            dpm.getCrossProfileWidgetProviders(dar).distinct().map { getAppInfo(pm, it) }
+        cpwProviders.value = dpm.getCrossProfileWidgetProviders(dar).distinct()
     }
 
     fun setCpwProvider(packages: List<String>, status: Boolean) = ph.safeDpmCall {
