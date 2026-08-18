@@ -1,6 +1,7 @@
 package com.bintianqi.owndroid.feature.applications
 
 import android.app.admin.PackagePolicy
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.PermissionInfo
 import androidx.annotation.RequiresApi
@@ -81,11 +82,16 @@ class AppFeaturesViewModel(
         }
     }
 
-    fun setPackageUb(packages: List<String>, status: Boolean) = ph.safeDpmCall {
-        for (name in packages) {
-            dpm.setUninstallBlocked(dar, name, status)
+    fun setPackageUb(packages: List<String>, status: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            ph.safeDpmCall {
+                for (name in packages) {
+                    dpm.setUninstallBlocked(dar, name, status)
+                    val succeed = dpm.isUninstallBlocked(dar, name) == status
+                    if (succeed) ubPackages.update { it.plusOrMinus(status, name) }
+                }
+            }
         }
-        getUbPackages()
     }
 
     // User control disabled packages
@@ -375,6 +381,7 @@ class AppFeaturesViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             allPackagesState.value = emptyList()
             val apps = application.packageManager.getInstalledApplications(getInstalledAppsFlags)
+            apps.sortBy { it.flags and ApplicationInfo.FLAG_SYSTEM }
             apps.forEach { app ->
                 launch(Dispatchers.IO) {
                     val entry = getAppStatus(application, ph, app.packageName)
