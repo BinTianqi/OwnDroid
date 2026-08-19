@@ -123,7 +123,7 @@ class MyViewModelFactory(
             return WorkProfileViewModel(ph, ps, tc) as T
         }
         if (checkType(CrossProfileIntentFilterViewModel::class)) {
-            return CrossProfileIntentFilterViewModel(app, ph, cpifRepo, tc) as T
+            return CrossProfileIntentFilterViewModel(app, ph, cpifRepo, tc, sr) as T
         }
 
         if (checkType(UserRestrictionViewModel::class)) {

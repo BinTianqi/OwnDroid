@@ -39,12 +39,12 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 9) {
                 "time INTEGER, type TEXT, host TEXT, count INTEGER, addresses TEXT," +
                 "address TEXT, port INTEGER)"
         const val APP_GROUPS_TABLE = "CREATE TABLE app_groups(" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "id INTEGER PRIMARY KEY," +
                 "name TEXT, apps TEXT)"
         const val CPIF_TABLE = "CREATE TABLE cpif (" +
                 "action_str TEXT, category TEXT, mime_type TEXT, direction INTEGER, time INTEGER)"
         const val DELETE_CPIF = "DROP TABLE cpif"
-        const val CPIF2_TABLE = "CREATE TABLE cpif2 (id INTEGER PRIMARY KEY AUTOINCREMENT," +
+        const val CPIF2_TABLE = "CREATE TABLE cpif2 (id INTEGER PRIMARY KEY," +
                 "action_str TEXT, category TEXT, mime_type TEXT, direction INTEGER," +
                 "created_at INTEGER)"
     }

@@ -2,6 +2,7 @@ package com.bintianqi.owndroid.feature.work_profile
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,11 +12,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AlertDialog
@@ -27,6 +28,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,6 +37,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -65,6 +68,7 @@ fun CrossProfileIntentFilterScreen(
     vm: CrossProfileIntentFilterViewModel, onNavigateUp: () -> Unit, navigate: (Destination) -> Unit
 ) {
     val filterList by vm.filterListState.collectAsState()
+    val filtersChanged by vm.filtersChangedState.collectAsState()
     val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
         if (it != null) vm.importFilters(it)
     }
@@ -76,7 +80,7 @@ fun CrossProfileIntentFilterScreen(
     var confirmDeleteDialog by remember { mutableStateOf(false) }
     MyLazyScaffold(R.string.intent_filter, onNavigateUp, {
         IconButton({
-            navigate(Destination.AddCrossProfileIntentFilter)
+            navigate(Destination.AddCrossProfileIntentFilter(-1))
         }) {
             Icon(Icons.Default.Add, null)
         }
@@ -84,6 +88,9 @@ fun CrossProfileIntentFilterScreen(
             navigate(Destination.CrossProfileIntentFilterPresets)
         }) {
             Icon(Icons.AutoMirrored.Default.List, null)
+        }
+        if (filtersChanged) FilledIconButton(vm::applyFilters) {
+            Icon(Icons.Default.Check, null)
         }
         var menu by remember { mutableStateOf(false) }
         Box {
@@ -128,10 +135,14 @@ fun CrossProfileIntentFilterScreen(
                 Text(stringResource(R.string.none), Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
             }
         }
-        itemsIndexed(filterList, { _, it -> it.id }) { _, it ->
+        items(filterList, { it.id }) {
             Column(Modifier.animateItem()) {
                 Row(
-                    Modifier.padding(16.dp, 4.dp, 8.dp, 4.dp),
+                    Modifier
+                        .clickable {
+                            navigate(Destination.AddCrossProfileIntentFilter(it.id))
+                        }
+                        .padding(16.dp, 4.dp, 8.dp, 4.dp),
                     Arrangement.SpaceBetween, Alignment.CenterVertically
                 ) {
                     Column(Modifier.weight(1F)) {
@@ -192,6 +203,7 @@ fun CrossProfileIntentFilterScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddCrossProfileIntentFilterScreen(
+    params: Destination.AddCrossProfileIntentFilter,
     vm: CrossProfileIntentFilterViewModel, navigateUp: () -> Unit
 ) {
     var action by rememberSaveable { mutableStateOf("") }
@@ -201,7 +213,21 @@ fun AddCrossProfileIntentFilterScreen(
     var mimeType by rememberSaveable { mutableStateOf("") }
     var dropdown by remember { mutableStateOf(false) }
     var direction by rememberSaveable { mutableIntStateOf(3) }
-    MyScaffold(R.string.add_filter, navigateUp) {
+    LaunchedEffect(Unit) {
+        if (params.editingId != -1) {
+            val options = vm.filterListState.value.find { it.id == params.editingId }!!.options
+            action = options.action
+            enableCategory = options.category.isNotEmpty()
+            category = options.category
+            enableMimeType = options.mimeType.isNotEmpty()
+            mimeType = options.mimeType
+            direction = options.direction
+        }
+    }
+    MyScaffold(
+        if (params.editingId == -1) R.string.add_filter else R.string.edit,
+        navigateUp
+    ) {
         OutlinedTextField(
             action, { action = it }, Modifier.fillMaxWidth(),
             label = { Text("Action") },
@@ -249,14 +275,19 @@ fun AddCrossProfileIntentFilterScreen(
         }
         Button(
             {
-                vm.addFilter(IntentFilterOptions(action, category, mimeType, direction))
+                val options = IntentFilterOptions(action, category, mimeType, direction)
+                if (params.editingId == -1) {
+                    vm.addFilter(options)
+                } else {
+                    vm.updateFilter(params.editingId, options)
+                }
                 navigateUp()
             },
             Modifier.fillMaxWidth(),
             enabled = action.isNotBlank() && (!enableCategory || category.isNotBlank()) &&
                     (!enableMimeType || mimeType.isNotBlank())
         ) {
-            Text(stringResource(R.string.add))
+            Text(stringResource(if (params.editingId == -1) R.string.add else R.string.update))
         }
     }
 }

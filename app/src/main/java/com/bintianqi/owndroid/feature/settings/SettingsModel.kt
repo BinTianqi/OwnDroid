@@ -13,6 +13,7 @@ data class MySettings(
     val notifications: MutableList<Int> = mutableListOf(),
     var displayDangerousFeatures: Boolean = false,
     var appFeatureSwitchView: Boolean = true,
+    var cpifChanged: Boolean = false, // Cross profile intent filter
     val api: Api = Api()
 ) {
     @Serializable

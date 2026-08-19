@@ -4,14 +4,24 @@ import android.content.ContentValues
 import com.bintianqi.owndroid.MyDbHelper
 
 class CrossProfileIntentFilterRepository(val dbHelper: MyDbHelper) {
-    fun setCrossProfileIntentFilter(data: IntentFilterOptions) {
+    fun addFilter(data: IntentFilterOptions): Long {
         val cv = ContentValues()
         cv.put("action_str", data.action)
         cv.put("category", data.category)
         cv.put("mime_type", data.mimeType)
         cv.put("direction", data.direction)
         cv.put("created_at", System.currentTimeMillis())
-        dbHelper.writableDatabase.insert("cpif2", null, cv)
+        return dbHelper.writableDatabase.insert("cpif2", null, cv)
+    }
+
+    fun updateFilter(id: Int, data: IntentFilterOptions) {
+        val cv = ContentValues()
+        cv.put("action_str", data.action)
+        cv.put("category", data.category)
+        cv.put("mime_type", data.mimeType)
+        cv.put("direction", data.direction)
+        cv.put("created_at", System.currentTimeMillis())
+        dbHelper.writableDatabase.update("cpif2", cv, "id = ?", arrayOf(id.toString()))
     }
 
     fun getAllFilters(): List<IntentFilterEntry> {

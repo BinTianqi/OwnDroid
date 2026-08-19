@@ -368,7 +368,7 @@ fun myEntryProvider(
     entry<Destination.AddCrossProfileIntentFilter>(
         metadata = navParentKey<Destination.CrossProfileIntentFilter>()
     ) {
-        AddCrossProfileIntentFilterScreen(viewModel(), ::navigateUp)
+        AddCrossProfileIntentFilterScreen(it, viewModel(), ::navigateUp)
     }
     entry<Destination.CrossProfileIntentFilterPresets>(
         metadata = navParentKey<Destination.CrossProfileIntentFilter>()
