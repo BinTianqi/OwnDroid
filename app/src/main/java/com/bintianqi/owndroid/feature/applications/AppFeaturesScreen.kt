@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -677,18 +676,19 @@ fun PackageFunctionScreen(
     }
     var filtersSheet by remember { mutableStateOf(false) }
     val allPackages by allPackagesState.collectAsState()
-    val filteredPackages = allPackages.filter {
-        filterApp(it, filters, query)
-    }.map { it.info }
     var a2zSort by remember { mutableStateOf(true) }
-    val sortedPackages = if (a2zSort) {
-        filteredPackages.sortedBy { it.label }
+    val displayedPackages = if (listView) {
+        packages.mapNotNull { name ->
+            allPackages.find { it.info.name == name }?.info
+        }
     } else {
-        filteredPackages.sortedByDescending { it.label }
+        allPackages.filter {
+            filterApp(it, filters, query)
+        }.let { list ->
+            if (a2zSort) list.sortedBy { it.info.label }
+            else list.sortedByDescending { it.info.label }
+        }.map { it.info }
     }
-    val activePackagesInfo = allPackages.filter {
-        it.info.name in packages
-    }.map { it.info }
     LaunchedEffect(Unit) {
         onGet()
         getAllPackages()
@@ -807,15 +807,15 @@ fun PackageFunctionScreen(
         }
     ) { paddingValues ->
         LazyColumn(Modifier.padding(paddingValues)) {
-            if (!listView) item {
-                if (allPackages.isEmpty()) {
+            item {
+                if (listView && displayedPackages.size != packages.size) {
                     Text(
                         stringResource(R.string.loading), Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center
                     )
                 }
             }
-            if (!listView) itemsIndexed(sortedPackages, { _, it -> it.name }) { _, app ->
+            items(displayedPackages, { it.name }) { app ->
                 Row(
                     Modifier
                         .fillMaxWidth()
@@ -840,23 +840,26 @@ fun PackageFunctionScreen(
                             Text(app.name, Modifier.alpha(0.8F), style = typography.bodyMedium)
                         }
                     }
-                    Switch(packages.any { it == app.name }, {
-                        onSet(listOf(app.name), it)
-                    })
-                }
-            }
-            if (listView) items(activePackagesInfo, { it.name }) {
-                ApplicationItem(it) {
-                    onSet(listOf(it.name), false)
-                    coroutine.launch {
-                        val result = snackbar.showSnackbar(
-                            res.getString(R.string.package_removed, it.name),
-                            res.getString(R.string.undo),
-                            true, SnackbarDuration.Short
-                        )
-                        if (result == SnackbarResult.ActionPerformed) {
-                            onSet(listOf(it.name), true)
+                    if (listView) {
+                        IconButton({
+                            onSet(listOf(app.name), false)
+                            coroutine.launch {
+                                val result = snackbar.showSnackbar(
+                                    res.getString(R.string.package_removed, app.name),
+                                    res.getString(R.string.undo),
+                                    true, SnackbarDuration.Short
+                                )
+                                if (result == SnackbarResult.ActionPerformed) {
+                                    onSet(listOf(app.name), true)
+                                }
+                            }
+                        }) {
+                            Icon(Icons.Default.Clear, null)
                         }
+                    } else {
+                        Switch(packages.any { it == app.name }, {
+                            onSet(listOf(app.name), it)
+                        })
                     }
                 }
             }

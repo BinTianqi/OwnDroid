@@ -2,7 +2,8 @@ package com.bintianqi.owndroid.feature.work_profile
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,11 +30,13 @@ import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -41,6 +44,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -48,6 +52,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -77,24 +84,37 @@ fun CrossProfileIntentFilterScreen(
     ) {
         if (it != null) vm.exportFilters(it)
     }
+    val selectedItems = remember { mutableStateListOf<Int>() }
     var confirmDeleteDialog by remember { mutableStateOf(false) }
+    val hf = LocalHapticFeedback.current
     MyLazyScaffold(R.string.intent_filter, onNavigateUp, {
-        IconButton({
-            navigate(Destination.AddCrossProfileIntentFilter(-1))
-        }) {
-            Icon(Icons.Default.Add, null)
-        }
-        IconButton({
-            navigate(Destination.CrossProfileIntentFilterPresets)
-        }) {
-            Icon(Icons.AutoMirrored.Default.List, null)
-        }
-        if (filtersChanged) FilledIconButton(vm::applyFilters) {
-            Icon(Icons.Default.Check, null)
+        if (selectedItems.isEmpty()) {
+            IconButton({
+                navigate(Destination.AddCrossProfileIntentFilter(-1))
+            }) {
+                Icon(Icons.Default.Add, null)
+            }
+            IconButton({
+                navigate(Destination.CrossProfileIntentFilterPresets)
+            }) {
+                Icon(Icons.AutoMirrored.Default.List, null)
+            }
+            if (filtersChanged) FilledIconButton(vm::applyFilters) {
+                Icon(Icons.Default.Check, null)
+            }
+        } else {
+            IconButton({
+                selectedItems.forEach {
+                    vm.deleteEntry(it)
+                }
+                selectedItems.clear()
+            }) {
+                Icon(Icons.Outlined.Delete, null)
+            }
         }
         var menu by remember { mutableStateOf(false) }
         Box {
-            IconButton({ menu = !menu }) {
+            if (selectedItems.isEmpty()) IconButton({ menu = !menu }) {
                 Icon(Icons.Default.MoreVert, null)
             }
             DropdownMenu(menu, { menu = false }) {
@@ -136,13 +156,29 @@ fun CrossProfileIntentFilterScreen(
             }
         }
         items(filterList, { it.id }) {
+            val mod = Modifier
+                .background(
+                    if (it.id in selectedItems) MaterialTheme.colorScheme.primaryContainer
+                    else Color.Transparent
+                )
+                .combinedClickable(onLongClick = {
+                    if (it.id !in selectedItems) selectedItems += it.id
+                    hf.performHapticFeedback(HapticFeedbackType.LongPress)
+                }) {
+                    if (selectedItems.isEmpty()) {
+                        navigate(Destination.AddCrossProfileIntentFilter(it.id))
+                    } else {
+                        if (it.id in selectedItems) {
+                            selectedItems -= it.id
+                        } else {
+                            selectedItems += it.id
+                        }
+                    }
+                }
+                .padding(16.dp, 4.dp, 8.dp, 4.dp)
             Column(Modifier.animateItem()) {
                 Row(
-                    Modifier
-                        .clickable {
-                            navigate(Destination.AddCrossProfileIntentFilter(it.id))
-                        }
-                        .padding(16.dp, 4.dp, 8.dp, 4.dp),
+                    mod,
                     Arrangement.SpaceBetween, Alignment.CenterVertically
                 ) {
                     Column(Modifier.weight(1F)) {
@@ -168,11 +204,9 @@ fun CrossProfileIntentFilterScreen(
                             Modifier.alpha(0.6F), style = MaterialTheme.typography.bodyMedium
                         )
                     }
-                    IconButton({
-                        vm.deleteEntry(it.id)
-                    }) {
-                        Icon(Icons.Outlined.Delete, null)
-                    }
+                    Switch(it.enabled, { enabled ->
+                        vm.setEnabled(it.id, enabled)
+                    })
                 }
                 HorizontalDivider()
             }
@@ -288,6 +322,13 @@ fun AddCrossProfileIntentFilterScreen(
                     (!enableMimeType || mimeType.isNotBlank())
         ) {
             Text(stringResource(if (params.editingId == -1) R.string.add else R.string.update))
+        }
+        Spacer(Modifier.height(4.dp))
+        if (params.editingId != -1) FilledTonalButton({
+            vm.deleteEntry(params.editingId)
+            navigateUp()
+        }, Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.delete))
         }
     }
 }

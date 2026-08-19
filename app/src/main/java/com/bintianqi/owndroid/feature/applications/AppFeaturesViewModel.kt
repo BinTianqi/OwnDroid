@@ -379,8 +379,9 @@ class AppFeaturesViewModel(
 
     fun getAllPackages() {
         viewModelScope.launch(Dispatchers.IO) {
-            allPackagesState.value = emptyList()
             val apps = application.packageManager.getInstalledApplications(getInstalledAppsFlags)
+            if (apps.size == allPackagesState.value.size) return@launch
+            allPackagesState.value = emptyList()
             apps.sortBy { it.flags and ApplicationInfo.FLAG_SYSTEM }
             apps.forEach { app ->
                 launch(Dispatchers.IO) {

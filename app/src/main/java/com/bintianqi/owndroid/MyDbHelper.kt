@@ -4,7 +4,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
-class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 9) {
+class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 10) {
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(DHIZUKU_CLIENTS_TABLE)
         db.execSQL(SECURITY_LOGS_TABLE)
@@ -29,6 +29,9 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 9) {
             db.execSQL(DELETE_CPIF)
             db.execSQL(CPIF2_TABLE)
         }
+        if (oldVersion < 10) {
+            db.execSQL(CPIF2_ADD_STATUS)
+        }
     }
     companion object {
         const val DHIZUKU_CLIENTS_TABLE = "CREATE TABLE dhizuku_clients (uid INTEGER PRIMARY KEY," +
@@ -47,5 +50,6 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 9) {
         const val CPIF2_TABLE = "CREATE TABLE cpif2 (id INTEGER PRIMARY KEY," +
                 "action_str TEXT, category TEXT, mime_type TEXT, direction INTEGER," +
                 "created_at INTEGER)"
+        const val CPIF2_ADD_STATUS = "ALTER TABLE cpif2 ADD COLUMN enabled INTEGER DEFAULT TRUE"
     }
 }

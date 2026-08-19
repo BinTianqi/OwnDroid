@@ -24,6 +24,12 @@ class CrossProfileIntentFilterRepository(val dbHelper: MyDbHelper) {
         dbHelper.writableDatabase.update("cpif2", cv, "id = ?", arrayOf(id.toString()))
     }
 
+    fun setEnabled(id: Int, enabled: Boolean) {
+        val cv = ContentValues()
+        cv.put("enabled", if (enabled) 1 else 0)
+        dbHelper.writableDatabase.update("cpif2", cv, "id = ?", arrayOf(id.toString()))
+    }
+
     fun getAllFilters(): List<IntentFilterEntry> {
         val list = mutableListOf<IntentFilterEntry>()
         dbHelper.readableDatabase.rawQuery(
@@ -33,7 +39,7 @@ class CrossProfileIntentFilterRepository(val dbHelper: MyDbHelper) {
                 val options = IntentFilterOptions(
                     it.getString(1), it.getString(2), it.getString(3), it.getInt(4)
                 )
-                list += IntentFilterEntry(it.getInt(0), options, it.getLong(5))
+                list += IntentFilterEntry(it.getInt(0), options, it.getLong(5), it.getInt(6) == 1)
             }
         }
         return list

@@ -12,7 +12,7 @@ data class IntentFilterOptions(
 
 /** Represents a row in database table `cpif` */
 class IntentFilterEntry(
-    val id: Int, val options: IntentFilterOptions, val time: Long
+    val id: Int, val options: IntentFilterOptions, val time: Long, val enabled: Boolean = true
 )
 
 val directionTextMap = mapOf(

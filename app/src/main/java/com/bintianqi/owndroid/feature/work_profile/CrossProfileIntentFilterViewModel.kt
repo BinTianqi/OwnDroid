@@ -44,9 +44,24 @@ class CrossProfileIntentFilterViewModel(
         filterListState.update { list ->
             val index = list.indexOfFirst { it.id == id }
             val newList = list.toMutableList()
-            newList[index] = IntentFilterEntry(id, options, System.currentTimeMillis())
+            newList[index] = IntentFilterEntry(
+                id, options, System.currentTimeMillis(), list[index].enabled
+            )
             newList.sortedByDescending { it.time }
         }
+        setFilterChanged(true)
+    }
+
+    fun setEnabled(id: Int, enabled: Boolean) {
+        repo.setEnabled(id, enabled)
+        filterListState.update { list ->
+            val index = list.indexOfFirst { it.id == id }
+            val old = list[index]
+            val newList = list.toMutableList()
+            newList[index] = IntentFilterEntry(id, old.options, old.time, enabled)
+            newList
+        }
+        setFilterChanged(true)
     }
 
     fun addPreset(preset: IntentFilterPreset, direction: Int) {
@@ -73,6 +88,7 @@ class CrossProfileIntentFilterViewModel(
             ph.safeDpmCall {
                 dpm.clearCrossProfileIntentFilters(dar)
                 filterListState.value.forEach {
+                    if (!it.enabled) return@forEach
                     val filter = IntentFilter(it.options.action)
                     if (it.options.category.isNotEmpty()) filter.addCategory(it.options.category)
                     if (it.options.mimeType.isNotEmpty()) filter.addDataType(it.options.mimeType)
