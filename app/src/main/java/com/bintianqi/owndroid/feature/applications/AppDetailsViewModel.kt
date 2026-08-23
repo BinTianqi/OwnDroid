@@ -122,7 +122,7 @@ class AppDetailsViewModel(
         }
     }
 
-    val permissionsState = MutableStateFlow(emptyMap<NewPermissionItem, Int>())
+    val permissionsState = MutableStateFlow(emptyMap<PermissionItem, Int>())
 
     fun getPermissions() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -143,7 +143,7 @@ class AppDetailsViewModel(
             it.protectionLevel and PermissionInfo.PROTECTION_DANGEROUS != 0 &&
                     it.name in requestedPermissions
         }.map {
-            NewPermissionItem(it.name, it.loadLabel(pm).toString(), getIconForPermission(it.name))
+            PermissionItem(it.name, it.loadLabel(pm).toString(), getIconForPermission(it.name))
         }
         ph.safeDpmCall {
             permissionsState.value = actualPermissions.associateWith {

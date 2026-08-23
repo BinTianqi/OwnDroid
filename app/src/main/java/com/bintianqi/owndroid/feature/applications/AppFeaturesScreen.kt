@@ -246,6 +246,7 @@ fun PermissionManagerScreen(
             items(displayedPermissions, { it.id }) {
                 Row(
                     Modifier
+                        .fillMaxWidth()
                         .animateItem()
                         .clickable {
                             vm.setSelectedPermissionItem(it)
@@ -804,10 +805,11 @@ fun PackageFunctionScreen(
         },
         snackbarHost = {
             if (listView) SnackbarHost(snackbar)
-        }
+        },
+        contentWindowInsets = adaptiveInsets()
     ) { paddingValues ->
         LazyColumn(Modifier.padding(paddingValues)) {
-            item {
+            item("#loading-indicator") {
                 if (listView && displayedPackages.size != packages.size) {
                     Text(
                         stringResource(R.string.loading), Modifier.fillMaxWidth(),
@@ -863,7 +865,7 @@ fun PackageFunctionScreen(
                     }
                 }
             }
-            if (listView) item {
+            if (listView) item("#package-name-input") {
                 PackageNameTextField(
                     input, onChoosePackage,
                     Modifier.padding(HorizontalPadding, 8.dp)
@@ -882,7 +884,7 @@ fun PackageFunctionScreen(
                     Text(stringResource(R.string.add))
                 }
             }
-            item {
+            item("#bottom") {
                 Spacer(Modifier.height(8.dp))
                 if (notes != null) Notes(notes, HorizontalPadding)
                 Spacer(Modifier.height(BottomPadding))

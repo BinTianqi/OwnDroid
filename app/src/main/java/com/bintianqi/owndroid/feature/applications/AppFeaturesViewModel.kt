@@ -1,5 +1,6 @@
 package com.bintianqi.owndroid.feature.applications
 
+import android.app.admin.DevicePolicyManager
 import android.app.admin.PackagePolicy
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
@@ -18,6 +19,8 @@ import com.bintianqi.owndroid.utils.getInstalledAppsFlags
 import com.bintianqi.owndroid.utils.plusOrMinus
 import com.bintianqi.owndroid.utils.uninstallPackage
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -111,48 +114,67 @@ class AppFeaturesViewModel(
         getUcdPackages()
     }
 
-    val availablePermissions = MutableStateFlow(emptyList<NewPermissionItem>())
+    val availablePermissions = MutableStateFlow(emptyList<PermissionItem>())
 
     fun getAvailablePermissions() {
-        val pm = application.packageManager
-        val allPermissions = mutableListOf<PermissionInfo>()
-        pm.getAllPermissionGroups(0).forEach {
-            allPermissions += pm.queryPermissionsByGroup(it.name, 0)
-        }
-        var allRequestedPermissions = mutableListOf<String>()
-        pm.getInstalledPackages(PackageManager.GET_PERMISSIONS or getInstalledAppsFlags).forEach {
-            allRequestedPermissions += it.requestedPermissions ?: emptyArray()
-        }
-        allRequestedPermissions = allRequestedPermissions.distinct().toMutableList()
-        availablePermissions.value = allPermissions.filter {
-            it.protectionLevel and PermissionInfo.PROTECTION_DANGEROUS != 0 &&
-                    it.name in allRequestedPermissions
-        }.map {
-            NewPermissionItem(it.name, it.loadLabel(pm).toString(), getIconForPermission(it.name))
+        viewModelScope.launch(Dispatchers.IO) {
+            val pm = application.packageManager
+            val allPermissions = mutableListOf<PermissionInfo>()
+            pm.getAllPermissionGroups(0).forEach {
+                allPermissions += pm.queryPermissionsByGroup(it.name, 0)
+            }
+            var allRequestedPermissions = mutableListOf<String>()
+            pm.getInstalledPackages(
+                PackageManager.GET_PERMISSIONS or getInstalledAppsFlags
+            ).forEach {
+                allRequestedPermissions += it.requestedPermissions ?: emptyArray()
+            }
+            allRequestedPermissions = allRequestedPermissions.distinct().toMutableList()
+            availablePermissions.value = allPermissions.filter {
+                it.protectionLevel and PermissionInfo.PROTECTION_DANGEROUS != 0 &&
+                        it.name in allRequestedPermissions
+            }.map {
+                PermissionItem(
+                    it.name, it.loadLabel(pm).toString(), getIconForPermission(it.name)
+                )
+            }
         }
     }
 
-    val selectedPermissionItem = MutableStateFlow(NewPermissionItem("", "", null))
+    val selectedPermissionItem = MutableStateFlow(PermissionItem("", "", null))
 
-    fun setSelectedPermissionItem(permissionItem: NewPermissionItem) {
+    fun setSelectedPermissionItem(permissionItem: PermissionItem) {
         selectedPermissionItem.value = permissionItem
-        viewModelScope.launch(Dispatchers.IO) {
-            getPermissionPackages()
-        }
+        getPermissionPackages()
     }
 
     val permissionPackagesState = MutableStateFlow(emptyList<Pair<AppChooserEntry, Int>>())
+    var getPermPkgJob: Job? = null
 
     private fun getPermissionPackages() {
+        getPermPkgJob?.cancel()
         val perm = selectedPermissionItem.value
-        ph.safeDpmCall {
-            permissionPackagesState.value = pm.getInstalledPackages(
+        getPermPkgJob = viewModelScope.launch(Dispatchers.IO) {
+            val apps = pm.getInstalledPackages(
                 getInstalledAppsFlags or PackageManager.GET_PERMISSIONS
             ).filter {
                 it.requestedPermissions?.contains(perm.id) ?: false
-            }.map {
-                getAppStatus(application, ph, it.packageName) to
-                        dpm.getPermissionGrantState(dar, it.packageName, perm.id)
+            }
+            apps.forEach { app ->
+                launch(Dispatchers.IO) {
+                    val appStatus = async(Dispatchers.IO) {
+                        getAppStatus(application, ph, app.packageName)
+                    }
+                    val state = async(Dispatchers.IO) {
+                        var result = DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT
+                        ph.safeDpmCall {
+                            result = dpm.getPermissionGrantState(dar, app.packageName, perm.id)
+                        }
+                        return@async result
+                    }
+                    val entry = appStatus.await() to state.await()
+                    permissionPackagesState.update { it + entry }
+                }
             }
         }
     }
@@ -166,7 +188,12 @@ class AppFeaturesViewModel(
                     dar, packageName, selectedPermissionItem.value.id, state
                 )
                 if (result) {
-                    getPermissionPackages()
+                    permissionPackagesState.update { list ->
+                        val muList = list.toMutableList()
+                        val index = list.indexOfFirst { it.first.info.name == packageName }
+                        muList[index] = list[index].first to state
+                        muList
+                    }
                 } else {
                     toastChannel.sendStatus(false)
                 }
@@ -376,9 +403,11 @@ class AppFeaturesViewModel(
     }
 
     val allPackagesState = MutableStateFlow(emptyList<AppChooserEntry>())
+    var getAllPkgJob: Job? = null
 
     fun getAllPackages() {
-        viewModelScope.launch(Dispatchers.IO) {
+        if (getAllPkgJob?.isCompleted == false) return
+        getAllPkgJob = viewModelScope.launch(Dispatchers.IO) {
             val apps = application.packageManager.getInstalledApplications(getInstalledAppsFlags)
             if (apps.size == allPackagesState.value.size) return@launch
             allPackagesState.value = emptyList()

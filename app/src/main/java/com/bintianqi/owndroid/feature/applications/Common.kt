@@ -76,7 +76,7 @@ data class AppChooserFilter(
     val usesInternet: Boolean = false,
 )
 
-class NewPermissionItem(
+class PermissionItem(
     val id: String,
     val label: String,
     val icon: Int?
@@ -93,7 +93,7 @@ val profileOwnerRestrictedPermissions = listOf(
 )
 
 fun getIconForPermission(id: String): Int? {
-    return when (id) {
+    val exactMatch = when (id) {
         Manifest.permission.POST_NOTIFICATIONS -> R.drawable.notifications_fill0
         Manifest.permission.READ_EXTERNAL_STORAGE -> R.drawable.folder_fill0
         Manifest.permission.WRITE_EXTERNAL_STORAGE -> R.drawable.folder_fill0
@@ -134,6 +134,15 @@ fun getIconForPermission(id: String): Int? {
         Manifest.permission.PROCESS_OUTGOING_CALLS -> R.drawable.call_fill0
         Manifest.permission.ACCEPT_HANDOVER -> R.drawable.call_fill0
         else -> null
+    }
+    return if (exactMatch == null) {
+        if (id.startsWith("android.permission.health")) {
+            R.drawable.cardiology_fill0
+        } else {
+            null
+        }
+    } else {
+        exactMatch
     }
 }
 
