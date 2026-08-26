@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
@@ -85,6 +84,7 @@ fun WorkModesScreen(
                 operationSucceed = true
                 resultText = ""
                 dialog = 3
+                vm.de.value = null
             }
         }
     }
@@ -119,18 +119,6 @@ fun WorkModesScreen(
                                     dialog = 4
                                 },
                                 leadingIcon = { Icon(Icons.Default.Close, null) }
-                            )
-                            if (VERSION.SDK_INT >= 26) DropdownMenuItem(
-                                { Text(stringResource(R.string.delegated_admins)) },
-                                {
-                                    expanded = false
-                                    onNavigate(Destination.DelegatedAdmins)
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        painterResource(R.drawable.admin_panel_settings_fill0), null
-                                    )
-                                }
                             )
                             if (!privilege.dhizuku && VERSION.SDK_INT >= 28) DropdownMenuItem(
                                 { Text(stringResource(R.string.transfer_ownership)) },
@@ -197,18 +185,28 @@ fun WorkModesScreen(
                     .padding(top = 20.dp)
                     .fillMaxWidth()
                     .clickable { onNavigate(Destination.DhizukuServerSettings) }
-                    .padding(vertical = 4.dp),
+                    .padding(vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    painterResource(R.drawable.dhizuku_icon), null,
-                    Modifier
-                        .padding(8.dp)
-                        .size(28.dp)
+                    painterResource(R.drawable.m3_dhizuku_icon), null,
+                    Modifier.padding(start = 12.dp, end = 8.dp)
                 )
                 Text(stringResource(R.string.dhizuku_server), style = typography.titleLarge)
             }
-
+            if (privilege.device) Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clickable { onNavigate(Destination.DelegatedAdmins) }
+                    .padding(vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painterResource(R.drawable.admin_panel_settings_fill0), null,
+                    Modifier.padding(start = 12.dp, end = 8.dp)
+                )
+                Text(stringResource(R.string.delegated_admins), style = typography.titleLarge)
+            }
             Column(Modifier.padding(HorizontalPadding, 20.dp)) {
                 Row(
                     Modifier.padding(bottom = 4.dp), verticalAlignment = Alignment.CenterVertically

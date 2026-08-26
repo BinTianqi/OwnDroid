@@ -1,6 +1,5 @@
 package com.bintianqi.owndroid.feature.applications
 
-import android.content.pm.ApplicationInfo
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,12 +18,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Clear
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,7 +31,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -59,46 +55,61 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.AppInfo
 import com.bintianqi.owndroid.utils.BottomPadding
+import com.bintianqi.owndroid.utils.SerializableSaver
 import com.bintianqi.owndroid.utils.adaptiveInsets
-import com.bintianqi.owndroid.utils.searchInString
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun AppChooserScreen(
     params: Destination.ApplicationsList, vm: AppChooserViewModel,
-    onChoosePackage: (String?) -> Unit, onSwitchView: () -> Unit,
+    onChoosePackage: (String?) -> Unit,
 ) {
-    val packages by vm.packagesState.collectAsStateWithLifecycle()
+    val packages by vm.displayPackagesState.collectAsStateWithLifecycle()
     val hf = LocalHapticFeedback.current
-    val progress by vm.progressState.collectAsStateWithLifecycle()
-    var showUserApps by rememberSaveable { mutableStateOf(true) }
-    var showSystemApps by rememberSaveable { mutableStateOf(false) }
+    val progress by vm.displayedProgressState.collectAsStateWithLifecycle()
     var query by rememberSaveable { mutableStateOf("") }
     var searchMode by rememberSaveable { mutableStateOf(false) }
+    var filter by rememberSaveable(stateSaver = SerializableSaver(AppChooserFilter.serializer())) {
+        mutableStateOf(params.defaultFilter)
+    }
+    var filterDrawer by remember { mutableStateOf(false) }
     val filteredPackages = packages.filter {
-        ((showUserApps && it.flags and ApplicationInfo.FLAG_SYSTEM == 0) ||
-                (showSystemApps && it.flags and ApplicationInfo.FLAG_SYSTEM != 0)) &&
-                (!searchMode || query.isBlank() || searchInString(query, it.name) ||
-                        searchInString(query, it.label))
+        filterApp(it, filter, query)
+    }
+    var a2zSort by remember { mutableStateOf(true) }
+    val sortedPackages = if (a2zSort) {
+        filteredPackages.sortedBy { it.info.label }
+    } else {
+        filteredPackages.sortedByDescending { it.info.label }
     }
     val selectedPackages = remember { mutableStateListOf<AppInfo>() }
     val focusMgr = LocalFocusManager.current
+    var enteredApp by rememberSaveable { mutableStateOf("") }
     LaunchedEffect(Unit) {
         if (packages.size <= 1) vm.refreshPackageList()
+        vm.updateAppState(enteredApp)
     }
     Scaffold(
         topBar = {
             TopAppBar(
                 actions = {
                     if (!searchMode) IconButton({ searchMode = true }) {
-                        Icon(painterResource(R.drawable.search_fill0), stringResource(R.string.search))
+                        Icon(
+                            painterResource(R.drawable.search_fill0),
+                            stringResource(R.string.search)
+                        )
+                    }
+                    if (!searchMode) IconButton({ filterDrawer = true }) {
+                        Icon(painterResource(R.drawable.filter_alt_fill0), null)
                     }
                     var dropdown by remember { mutableStateOf(false) }
                     Box {
@@ -109,6 +120,35 @@ fun AppChooserScreen(
                         }
                         DropdownMenu(dropdown, { dropdown = false }) {
                             DropdownMenuItem(
+                                { Text("A-Z") },
+                                {
+                                    a2zSort = true
+                                    dropdown = false
+                                },
+                                leadingIcon = { RadioButton(a2zSort, null) }
+                            )
+                            DropdownMenuItem(
+                                { Text("Z-A") },
+                                {
+                                    a2zSort = false
+                                    dropdown = false
+                                },
+                                leadingIcon = { RadioButton(!a2zSort, null) }
+                            )
+                            HorizontalDivider()
+                            if (searchMode) {
+                                DropdownMenuItem(
+                                    { Text(stringResource(R.string.filters)) },
+                                    {
+                                        filterDrawer = true
+                                        dropdown = false
+                                    },
+                                    leadingIcon = {
+                                        Icon(painterResource(R.drawable.filter_alt_fill0), null)
+                                    }
+                                )
+                            }
+                            DropdownMenuItem(
                                 { Text(stringResource(R.string.refresh)) },
                                 {
                                     vm.refreshPackageList()
@@ -116,42 +156,13 @@ fun AppChooserScreen(
                                 },
                                 leadingIcon = { Icon(Icons.Default.Refresh, null) }
                             )
-                            HorizontalDivider()
-                            DropdownMenuItem(
-                                { Text(stringResource(R.string.user_apps)) },
-                                { showUserApps = !showUserApps },
-                                leadingIcon = { Checkbox(showUserApps, null) }
-                            )
-                            DropdownMenuItem(
-                                { Text(stringResource(R.string.system_apps)) },
-                                { showSystemApps = !showSystemApps },
-                                leadingIcon = { Checkbox(showSystemApps, null) }
-                            )
-                            if (params.canSwitchView) {
-                                HorizontalDivider()
-                                DropdownMenuItem(
-                                    { Text(stringResource(R.string.apps_view)) },
-                                    {},
-                                    leadingIcon = { RadioButton(true, null) }
-                                )
-                                DropdownMenuItem(
-                                    { Text(stringResource(R.string.features_view)) },
-                                    {
-                                        dropdown = false
-                                        onSwitchView()
-                                    },
-                                    leadingIcon = { RadioButton(false, null) }
-                                )
-                            }
                         }
                     }
-                    if (selectedPackages.isNotEmpty()) {
-                        if (!params.canSwitchView) {
-                            FilledIconButton({
-                                onChoosePackage(selectedPackages.joinToString("\n") { it.name })
-                            }) {
-                                Icon(Icons.Default.Check, null)
-                            }
+                    if (selectedPackages.isNotEmpty() && params.mode == AppChooserMode.Choose) {
+                        FilledIconButton({
+                            onChoosePackage(selectedPackages.joinToString("\n") { it.name })
+                        }) {
+                            Icon(Icons.Default.Check, null)
                         }
                     }
                 },
@@ -172,7 +183,7 @@ fun AppChooserScreen(
                                     Icon(Icons.Outlined.Clear, null)
                                 }
                             },
-                            textStyle = typography.bodyLarge,
+                            textStyle = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .focusRequester(fr)
@@ -184,9 +195,7 @@ fun AppChooserScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton({ onChoosePackage(null) }) {
-                        Icon(Icons.AutoMirrored.Default.ArrowBack, null)
-                    }
+                    NavIcon { onChoosePackage(null) }
                 }
             )
         },
@@ -200,45 +209,65 @@ fun AppChooserScreen(
             if (progress < 1F) stickyHeader {
                 LinearProgressIndicator({ progress }, Modifier.fillMaxWidth())
             }
-            items(filteredPackages, { it.name }) {
+            item {
+                if (packages.isNotEmpty() && filteredPackages.isEmpty()) {
+                    Text(
+                        stringResource(R.string.no_matching_apps),
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(top = 6.dp)
+                            .alpha(0.7F),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+            items(sortedPackages, { it.info.name }) { app ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
                         .combinedClickable(onLongClick = {
-                            if (params.multiSelect && it !in selectedPackages) {
-                                selectedPackages += it
+                            if (params.mode == AppChooserMode.Choose &&
+                                app.info !in selectedPackages
+                            ) {
+                                selectedPackages += app.info
                                 hf.performHapticFeedback(HapticFeedbackType.LongPress)
                             }
                         }, onClick = {
                             if (selectedPackages.isEmpty()) {
                                 focusMgr.clearFocus()
-                                onChoosePackage(it.name)
+                                enteredApp = app.info.name
+                                onChoosePackage(app.info.name)
                             } else {
-                                if (it in selectedPackages) selectedPackages -= it
-                                else selectedPackages += it
+                                if (app.info in selectedPackages) selectedPackages -= app.info
+                                else selectedPackages += app.info
                             }
                         })
                         .background(
-                            if (it in selectedPackages) MaterialTheme.colorScheme.primaryContainer
+                            if (app.info in selectedPackages) MaterialTheme.colorScheme.primaryContainer
                             else MaterialTheme.colorScheme.background
                         )
                         .padding(horizontal = 8.dp, vertical = 10.dp)
                         .animateItem()
                 ) {
                     Image(
-                        painter = rememberDrawablePainter(it.icon), contentDescription = null,
-                        modifier = Modifier
+                        rememberDrawablePainter(app.info.icon), null,
+                        Modifier
                             .padding(start = 12.dp, end = 18.dp)
                             .size(40.dp)
                     )
                     Column {
-                        Text(text = it.label, style = typography.titleLarge)
-                        Text(text = it.name, modifier = Modifier.alpha(0.8F))
+                        Text(app.info.label, style = MaterialTheme.typography.titleLarge)
+                        Text(app.info.name, Modifier.alpha(0.8F))
                     }
                 }
             }
             item { Spacer(Modifier.height(BottomPadding)) }
+        }
+        if (filterDrawer) {
+            AppChooserFilterBottomSheet(
+                filter, params.defaultFilter, { filterDrawer = false }
+            ) { filter = it }
         }
     }
 }

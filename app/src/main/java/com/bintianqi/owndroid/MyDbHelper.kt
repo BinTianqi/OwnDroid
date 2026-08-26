@@ -4,13 +4,13 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
-class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 6) {
+class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 10) {
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(DHIZUKU_CLIENTS_TABLE)
         db.execSQL(SECURITY_LOGS_TABLE)
         db.execSQL(NETWORK_LOGS_TABLE)
         db.execSQL(APP_GROUPS_TABLE)
-        db.execSQL(CP_INTENTS_TABLE)
+        db.execSQL(CPIF2_TABLE)
     }
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         if (oldVersion < 2) {
@@ -22,11 +22,15 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 6) {
         if (oldVersion < 4) {
             db.execSQL(APP_GROUPS_TABLE)
         }
-        if (oldVersion < 5) {
-            db.execSQL(CP_INTENTS_TABLE)
+        if (oldVersion < 8) {
+            db.execSQL(CPIF_TABLE)
         }
-        if (oldVersion < 6) {
-            db.execSQL(UPGRADE_CP_INTENTS_TABLE)
+        if (oldVersion < 9) {
+            db.execSQL(DELETE_CPIF)
+            db.execSQL(CPIF2_TABLE)
+        }
+        if (oldVersion < 10) {
+            db.execSQL(CPIF2_ADD_STATUS)
         }
     }
     companion object {
@@ -38,11 +42,14 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 6) {
                 "time INTEGER, type TEXT, host TEXT, count INTEGER, addresses TEXT," +
                 "address TEXT, port INTEGER)"
         const val APP_GROUPS_TABLE = "CREATE TABLE app_groups(" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "id INTEGER PRIMARY KEY," +
                 "name TEXT, apps TEXT)"
-        const val CP_INTENTS_TABLE = "CREATE TABLE cross_profile_intent_filters (" +
+        const val CPIF_TABLE = "CREATE TABLE cpif (" +
                 "action_str TEXT, category TEXT, mime_type TEXT, direction INTEGER, time INTEGER)"
-        const val UPGRADE_CP_INTENTS_TABLE = "ALTER TABLE cross_profile_intent_filters " +
-                "ADD COLUMN created_at INTEGER NOT NULL DEFAULT 0"
+        const val DELETE_CPIF = "DROP TABLE cpif"
+        const val CPIF2_TABLE = "CREATE TABLE cpif2 (id INTEGER PRIMARY KEY," +
+                "action_str TEXT, category TEXT, mime_type TEXT, direction INTEGER," +
+                "created_at INTEGER)"
+        const val CPIF2_ADD_STATUS = "ALTER TABLE cpif2 ADD COLUMN enabled INTEGER DEFAULT TRUE"
     }
 }

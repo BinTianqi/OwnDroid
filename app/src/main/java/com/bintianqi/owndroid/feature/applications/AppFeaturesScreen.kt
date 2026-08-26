@@ -1,7 +1,6 @@
 package com.bintianqi.owndroid.feature.applications
 
 import android.content.Intent
-import android.content.pm.ApplicationInfo
 import android.os.Build.VERSION
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -17,15 +16,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,6 +38,7 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -58,11 +57,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.AppInstallerActivity
@@ -79,10 +79,10 @@ import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.AppInfo
 import com.bintianqi.owndroid.utils.BottomPadding
 import com.bintianqi.owndroid.utils.HorizontalPadding
+import com.bintianqi.owndroid.utils.SerializableSaver
 import com.bintianqi.owndroid.utils.adaptiveInsets
 import com.bintianqi.owndroid.utils.isValidPackageName
 import com.bintianqi.owndroid.utils.parsePackageNames
-import com.bintianqi.owndroid.utils.runtimePermissions
 import com.bintianqi.owndroid.utils.searchInString
 import com.bintianqi.owndroid.utils.showOperationResultToast
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
@@ -95,37 +95,16 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ApplicationsFeaturesScreen(
-    vm: AppFeaturesViewModel, onNavigateUp: () -> Unit, onNavigate: (Destination) -> Unit,
-    onSwitchView: () -> Unit
+    vm: AppFeaturesViewModel, onNavigateUp: () -> Unit, onNavigate: (Destination) -> Unit
 ) {
     val context = LocalContext.current
     MyScaffold(
-        R.string.applications, onNavigateUp, 0.dp,
-        {
-            Box {
-                var dropdown by remember { mutableStateOf(false) }
-                IconButton({ dropdown = true }) {
-                    Icon(Icons.Default.MoreVert, null)
-                }
-                DropdownMenu(dropdown, { dropdown = false }) {
-                    DropdownMenuItem(
-                        { Text(stringResource(R.string.apps_view)) },
-                        {
-                            dropdown = false
-                            onSwitchView()
-                        },
-                        leadingIcon = { RadioButton(false, null) }
-                    )
-                    DropdownMenuItem(
-                        { Text(stringResource(R.string.features_view)) },
-                        {},
-                        leadingIcon = { RadioButton(true, null) }
-                    )
-                }
-            }
-        }
+        R.string.applications_state, onNavigateUp, 0.dp
     ) {
         val privilege by vm.privilegeState.collectAsStateWithLifecycle()
+        FunctionItem(R.string.permissions, icon = R.drawable.shield_fill0) {
+            onNavigate(Destination.PermissionManager)
+        }
         if (VERSION.SDK_INT >= 24) FunctionItem(
             R.string.suspend, icon = R.drawable.block_fill0
         ) {
@@ -141,9 +120,6 @@ fun ApplicationsFeaturesScreen(
             FunctionItem(R.string.disable_user_control, icon = R.drawable.do_not_touch_fill0) {
                 onNavigate(Destination.DisableUserControl)
             }
-        }
-        FunctionItem(R.string.permissions, icon = R.drawable.shield_fill0) {
-            onNavigate(Destination.PermissionManager)
         }
         if (VERSION.SDK_INT >= 28) {
             FunctionItem(R.string.disable_metered_data, icon = R.drawable.money_off_fill0) {
@@ -210,53 +186,23 @@ fun ApplicationsFeaturesScreen(
 }
 
 
-@Composable
-fun PermissionManagerScreen(
-    onNavigate: (Destination.PermissionDetail) -> Unit, onNavigateUp: () -> Unit
-) {
-    MyLazyScaffold(R.string.permissions, onNavigateUp) {
-        items(runtimePermissions) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        onNavigate(Destination.PermissionDetail(it.id))
-                    }
-                    .padding(8.dp, 12.dp)
-            ) {
-                Icon(painterResource(it.icon), null, Modifier.padding(horizontal = 12.dp))
-                Text(stringResource(it.label))
-            }
-        }
-        item {
-            Spacer(Modifier.height(BottomPadding))
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PermissionDetailScreen(
-    param: Destination.PermissionDetail, vm: AppFeaturesViewModel, onNavigateUp: () -> Unit
+fun PermissionManagerScreen(
+    vm: AppFeaturesViewModel,
+    onNavigate: (Destination.PermissionDetail) -> Unit, onNavigateUp: () -> Unit
 ) {
-    val privilege by vm.privilegeState.collectAsStateWithLifecycle()
-    val permissionItem = runtimePermissions.find { it.id == param.permission }!!
-    val packagesList by vm.permissionPackagesState.collectAsState()
-    var selectedPackage by remember { mutableStateOf<Pair<String, Int>?>(null) }
-    var showUserApps by rememberSaveable { mutableStateOf(true) }
-    var showSystemApps by rememberSaveable { mutableStateOf(false) }
+    val permissions by vm.availablePermissions.collectAsState()
     var searchMode by rememberSaveable { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf("") }
-    val displayedPackagesList = packagesList.filter {
-        ((showUserApps && it.first.flags and ApplicationInfo.FLAG_SYSTEM == 0) ||
-                (showSystemApps && it.first.flags and ApplicationInfo.FLAG_SYSTEM != 0)) &&
-                (!searchMode || query.isBlank() || searchInString(query, it.first.name) ||
-                        searchInString(query, it.first.label))
+    val displayedPermissions = permissions.filter {
+        !searchMode || query.isBlank() || searchInString(query, it.id) || searchInString(
+            query, it.label
+        )
     }
-    val fm = LocalFocusManager.current
     LaunchedEffect(Unit) {
-        vm.getPermissionPackages(param.permission)
+        vm.getAvailablePermissions()
+        vm.clearPermissionPackages()
     }
     Scaffold(
         topBar = {
@@ -270,8 +216,7 @@ fun PermissionDetailScreen(
                             Modifier
                                 .fillMaxWidth()
                                 .focusRequester(fr),
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                            keyboardActions = KeyboardActions { fm.clearFocus() },
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             placeholder = { Text(stringResource(R.string.search)) },
                             trailingIcon = {
                                 IconButton({
@@ -284,7 +229,94 @@ fun PermissionDetailScreen(
                             textStyle = typography.bodyLarge
                         )
                     } else {
-                        Text(stringResource(permissionItem.label))
+                        Text(stringResource(R.string.permissions))
+                    }
+                },
+                navigationIcon = { NavIcon(onNavigateUp) },
+                actions = {
+                    if (!searchMode) IconButton({ searchMode = true }) {
+                        Icon(Icons.Default.Search, null)
+                    }
+                }
+            )
+        },
+        contentWindowInsets = adaptiveInsets()
+    ) { paddingValues ->
+        LazyColumn(Modifier.padding(paddingValues)) {
+            items(displayedPermissions, { it.id }) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .animateItem()
+                        .clickable {
+                            vm.setSelectedPermissionItem(it)
+                            onNavigate(Destination.PermissionDetail)
+                        }
+                        .padding(8.dp, 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (it.icon != null) Icon(
+                        painterResource(it.icon), null,
+                        Modifier.padding(horizontal = 12.dp)
+                    )
+                    Column {
+                        Text(it.label)
+                        Text(it.id, Modifier.alpha(0.7F), style = typography.bodySmall)
+                    }
+                }
+            }
+            item {
+                Spacer(Modifier.height(BottomPadding))
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PermissionDetailScreen(
+    vm: AppFeaturesViewModel, onNavigateUp: () -> Unit
+) {
+    val permissionItem by vm.selectedPermissionItem.collectAsState()
+    val privilege by vm.privilegeState.collectAsStateWithLifecycle()
+    val grantRestricted = VERSION.SDK_INT >= 31 &&
+            permissionItem.id in profileOwnerRestrictedPermissions && privilege.profile
+    val packagesList by vm.permissionPackagesState.collectAsState()
+    var searchMode by rememberSaveable { mutableStateOf(false) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var filters by rememberSaveable(stateSaver = SerializableSaver(AppChooserFilter.serializer())) {
+        mutableStateOf(AppChooserFilter())
+    }
+    var filtersDrawer by remember { mutableStateOf(false) }
+    val displayedPackagesList = packagesList.filter {
+        filterApp(it.first, filters, query)
+    }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                {
+                    if (searchMode) {
+                        val fr = remember { FocusRequester() }
+                        LaunchedEffect(Unit) { fr.requestFocus() }
+                        OutlinedTextField(
+                            query, { query = it },
+                            Modifier
+                                .fillMaxWidth()
+                                .focusRequester(fr),
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            placeholder = { Text(stringResource(R.string.search)) },
+                            trailingIcon = {
+                                IconButton({
+                                    query = ""
+                                    searchMode = false
+                                }) {
+                                    Icon(Icons.Outlined.Clear, null)
+                                }
+                            },
+                            textStyle = typography.bodyLarge
+                        )
+                    } else {
+                        Text(permissionItem.label, overflow = TextOverflow.Ellipsis, maxLines = 1)
                     }
                 },
                 navigationIcon = { NavIcon(onNavigateUp) },
@@ -294,23 +326,8 @@ fun PermissionDetailScreen(
                             Icon(Icons.Default.Search, null)
                         }
                     }
-                    var menu by remember { mutableStateOf(false) }
-                    Box {
-                        IconButton({ menu = true }) {
-                            Icon(painterResource(R.drawable.filter_alt_fill0), null)
-                        }
-                        DropdownMenu(menu, { menu = false }) {
-                            DropdownMenuItem(
-                                { Text(stringResource(R.string.user_apps)) },
-                                { showUserApps = !showUserApps },
-                                leadingIcon = { Checkbox(showUserApps, null) }
-                            )
-                            DropdownMenuItem(
-                                { Text(stringResource(R.string.system_apps)) },
-                                { showSystemApps = !showSystemApps },
-                                leadingIcon = { Checkbox(showSystemApps, null) }
-                            )
-                        }
+                    IconButton({ filtersDrawer = true }) {
+                        Icon(painterResource(R.drawable.filter_alt_fill0), null)
                     }
                 }
             )
@@ -318,35 +335,40 @@ fun PermissionDetailScreen(
         contentWindowInsets = adaptiveInsets()
     ) { paddingValues ->
         LazyColumn(Modifier.padding(paddingValues)) {
-            items(displayedPackagesList, { it.first.name }) { (info, grantState) ->
+            item {
+                if (displayedPackagesList.isEmpty()) {
+                    Text(
+                        stringResource(R.string.no_matching_apps), Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                } else {
+                    PermissionRadioButtonHint()
+                }
+            }
+            items(displayedPackagesList, { it.first.info.name }) { (entry, grantState) ->
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .clickable { selectedPackage = info.name to grantState }
                         .padding(horizontal = 8.dp, vertical = 6.dp)
                         .animateItem(),
                     Arrangement.SpaceBetween, Alignment.CenterVertically
                 ) {
                     Row(Modifier.weight(1F), verticalAlignment = Alignment.CenterVertically) {
                         Image(
-                            rememberDrawablePainter(info.icon), null,
+                            rememberDrawablePainter(entry.info.icon), null,
                             Modifier
                                 .padding(start = 12.dp, end = 18.dp)
                                 .size(30.dp)
                         )
                         Column {
-                            Text(info.label)
-                            Text(info.name, Modifier.alpha(0.8F), style = typography.bodyMedium)
+                            Text(entry.info.label)
+                            Text(
+                                entry.info.name, Modifier.alpha(0.8F), style = typography.bodySmall
+                            )
                         }
                     }
-                    if (grantState != 0) {
-                        Icon(
-                            painterResource(
-                                if (grantState == 1) R.drawable.check_circle_fill0
-                                else R.drawable.cancel_fill0
-                            ),
-                            null
-                        )
+                    PermissionRadioButtonRow(grantState, grantRestricted) {
+                        vm.setPackagePermission(entry.info.name, it)
                     }
                 }
             }
@@ -355,13 +377,9 @@ fun PermissionDetailScreen(
             }
         }
     }
-    if (selectedPackage != null) PackagePermissionDialog(
-        permissionItem, selectedPackage!!.second, privilege.profile,
-        {
-            vm.setPackagePermission(selectedPackage!!.first, param.permission, it)
-            selectedPackage = null
-        }
-    ) { selectedPackage = null }
+    if (filtersDrawer) AppChooserFilterBottomSheet(
+        filters, AppChooserFilter(), { filtersDrawer = false }
+    ) { filters = it }
 }
 
 @RequiresApi(28)
@@ -632,10 +650,13 @@ fun SetDefaultDialerScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PackageFunctionScreen(
-    title: Int, packagesState: MutableStateFlow<List<AppInfo>>, onGet: () -> Unit,
+    title: Int, packagesState: MutableStateFlow<List<String>>, onGet: () -> Unit,
     onSet: (List<String>, Boolean) -> Unit, onNavigateUp: () -> Unit,
     chosenPackage: Channel<String>, onChoosePackage: () -> Unit,
-    navigateToGroups: () -> Unit, appGroups: StateFlow<List<AppGroup>>, notes: Int? = null
+    navigateToGroups: () -> Unit, appGroups: StateFlow<List<AppGroup>>, notes: Int? = null,
+    allPackagesState: MutableStateFlow<List<AppChooserEntry>>, getAllPackages: () -> Unit,
+    defaultSwitchView: Boolean, setSwitchView: (Boolean) -> Unit,
+    defaultFilter: AppChooserFilter = AppChooserFilter()
 ) {
     val groups by appGroups.collectAsStateWithLifecycle()
     val packages by packagesState.collectAsStateWithLifecycle()
@@ -646,16 +667,73 @@ fun PackageFunctionScreen(
     val snackbar = remember { SnackbarHostState() }
     val res = LocalResources.current
     val coroutine = rememberCoroutineScope()
+    var listView by rememberSaveable { mutableStateOf(!defaultSwitchView) }
+    var searchMode by rememberSaveable { mutableStateOf(false) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var filters by rememberSaveable(
+        stateSaver = SerializableSaver(AppChooserFilter.serializer())
+    ) {
+        mutableStateOf(defaultFilter)
+    }
+    var filtersSheet by remember { mutableStateOf(false) }
+    val allPackages by allPackagesState.collectAsState()
+    var a2zSort by remember { mutableStateOf(true) }
+    val displayedPackages = if (listView) {
+        packages.mapNotNull { name ->
+            allPackages.find { it.info.name == name }?.info
+        }
+    } else {
+        allPackages.filter {
+            filterApp(it, filters, query)
+        }.let { list ->
+            if (a2zSort) list.sortedBy { it.info.label }
+            else list.sortedByDescending { it.info.label }
+        }.map { it.info }
+    }
     LaunchedEffect(Unit) {
         onGet()
+        getAllPackages()
         input = chosenPackage.receive()
     }
     Scaffold(
         topBar = {
             TopAppBar(
-                { Text(stringResource(title)) },
+                {
+                    if (searchMode) {
+                        val fr = remember { FocusRequester() }
+                        LaunchedEffect(Unit) {
+                            fr.requestFocus()
+                        }
+                        OutlinedTextField(
+                            query, { query = it },
+                            Modifier
+                                .fillMaxWidth()
+                                .focusRequester(fr),
+                            textStyle = typography.bodyLarge,
+                            trailingIcon = {
+                                IconButton({
+                                    searchMode = false
+                                    query = ""
+                                }) {
+                                    Icon(Icons.Default.Clear, null)
+                                }
+                            },
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+                        )
+                    } else {
+                        Text(stringResource(title))
+                    }
+                },
                 navigationIcon = { NavIcon(onNavigateUp) },
                 actions = {
+                    if (!listView && !searchMode) IconButton({
+                        searchMode = true
+                    }) {
+                        Icon(Icons.Default.Search, stringResource(R.string.search))
+                    }
+                    if (!listView) IconButton({ filtersSheet = true }) {
+                        Icon(painterResource(R.drawable.filter_alt_fill0), null)
+                    }
                     var expand by remember { mutableStateOf(false) }
                     Box {
                         IconButton({
@@ -664,6 +742,44 @@ fun PackageFunctionScreen(
                             Icon(Icons.Default.MoreVert, null)
                         }
                         DropdownMenu(expand, { expand = false }) {
+                            if (!listView) {
+                                DropdownMenuItem(
+                                    { Text("A-Z") },
+                                    {
+                                        a2zSort = true
+                                        expand = false
+                                    },
+                                    leadingIcon = { RadioButton(a2zSort, null) }
+                                )
+                                DropdownMenuItem(
+                                    { Text("Z-A") },
+                                    {
+                                        a2zSort = false
+                                        expand = false
+                                    },
+                                    leadingIcon = { RadioButton(!a2zSort, null) }
+                                )
+                                HorizontalDivider()
+                            }
+                            DropdownMenuItem(
+                                { Text(stringResource(R.string.switch_view)) },
+                                {
+                                    listView = false
+                                    expand = false
+                                    setSwitchView(true)
+                                },
+                                leadingIcon = { RadioButton(!listView, null) }
+                            )
+                            DropdownMenuItem(
+                                { Text(stringResource(R.string.list_view)) },
+                                {
+                                    listView = true
+                                    expand = false
+                                    setSwitchView(false)
+                                },
+                                leadingIcon = { RadioButton(listView, null) }
+                            )
+                            HorizontalDivider()
                             groups.forEach {
                                 DropdownMenuItem(
                                     { Text("(${it.apps.size}) ${it.name}") },
@@ -688,26 +804,68 @@ fun PackageFunctionScreen(
             )
         },
         snackbarHost = {
-            SnackbarHost(snackbar)
-        }
+            if (listView) SnackbarHost(snackbar)
+        },
+        contentWindowInsets = adaptiveInsets()
     ) { paddingValues ->
         LazyColumn(Modifier.padding(paddingValues)) {
-            items(packages, { it.name }) {
-                ApplicationItem(it) {
-                    onSet(listOf(it.name), false)
-                    coroutine.launch {
-                        val result = snackbar.showSnackbar(
-                            res.getString(R.string.package_removed, it.name),
-                            res.getString(R.string.undo),
-                            true, SnackbarDuration.Short
+            item("#loading-indicator") {
+                if (listView && displayedPackages.size != packages.size) {
+                    Text(
+                        stringResource(R.string.loading), Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+            items(displayedPackages, { it.name }) { app ->
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp, 6.dp)
+                        .animateItem(),
+                    Arrangement.SpaceBetween, Alignment.CenterVertically
+                ) {
+                    Row(
+                        Modifier
+                            .weight(1F)
+                            .padding(end = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            rememberDrawablePainter(app.icon), null,
+                            Modifier
+                                .padding(start = 12.dp, end = 18.dp)
+                                .size(30.dp)
                         )
-                        if (result == SnackbarResult.ActionPerformed) {
-                            onSet(listOf(it.name), true)
+                        Column {
+                            Text(app.label)
+                            Text(app.name, Modifier.alpha(0.8F), style = typography.bodyMedium)
                         }
+                    }
+                    if (listView) {
+                        IconButton({
+                            onSet(listOf(app.name), false)
+                            coroutine.launch {
+                                val result = snackbar.showSnackbar(
+                                    res.getString(R.string.package_removed, app.name),
+                                    res.getString(R.string.undo),
+                                    true, SnackbarDuration.Short
+                                )
+                                if (result == SnackbarResult.ActionPerformed) {
+                                    onSet(listOf(app.name), true)
+                                }
+                            }
+                        }) {
+                            Icon(Icons.Default.Clear, null)
+                        }
+                    } else {
+                        Switch(packages.any { it == app.name }, {
+                            onSet(listOf(app.name), it)
+                        })
                     }
                 }
             }
-            item {
+            if (listView) item("#package-name-input") {
                 PackageNameTextField(
                     input, onChoosePackage,
                     Modifier.padding(HorizontalPadding, 8.dp)
@@ -721,13 +879,21 @@ fun PackageFunctionScreen(
                         .fillMaxWidth()
                         .padding(horizontal = HorizontalPadding)
                         .padding(bottom = 10.dp),
-                    packages.none { it.name in inputPackages }
+                    packages.none { it in inputPackages }
                 ) {
                     Text(stringResource(R.string.add))
                 }
+            }
+            item("#bottom") {
+                Spacer(Modifier.height(8.dp))
                 if (notes != null) Notes(notes, HorizontalPadding)
                 Spacer(Modifier.height(BottomPadding))
             }
+        }
+        if (filtersSheet) AppChooserFilterBottomSheet(
+            filters, defaultFilter, { filtersSheet = false }
+        ) {
+            filters = it
         }
     }
     if (dialog) AlertDialog(

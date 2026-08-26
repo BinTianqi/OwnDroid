@@ -26,7 +26,7 @@ class SystemOptionsViewModel(
             cameraDisabled = dpm.getCameraDisabled(null),
             screenCaptureDisabled = dpm.getScreenCaptureDisabled(null),
             statusBarDisabled = if (VERSION.SDK_INT >= 34 &&
-                privilege.run { device || (profile && affiliated) }
+                privilege.run { device || (profile && !work && affiliated) }
             )
                 dpm.isStatusBarDisabled else false,
             autoTimeEnabled = if (VERSION.SDK_INT >= 30 && (privilege.device || privilege.org))

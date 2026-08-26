@@ -47,7 +47,7 @@ fun SystemOptionsScreen(vm: SystemOptionsViewModel, onNavigateUp: () -> Unit) {
             R.string.disable_screen_capture, status.screenCaptureDisabled,
             vm::setScreenCaptureDisabled, R.drawable.screenshot_fill0
         )
-        if (VERSION.SDK_INT >= 34 && privilege.run { device || (profile && affiliated) }) {
+        if (VERSION.SDK_INT >= 34 && privilege.run { device || (profile && !work && affiliated) }) {
             SwitchItem(
                 R.string.disable_status_bar, status.statusBarDisabled,
                 vm::setStatusBarDisabled, R.drawable.notifications_fill0
@@ -119,7 +119,7 @@ fun SystemOptionsScreen(vm: SystemOptionsViewModel, onNavigateUp: () -> Unit) {
                 }, it.icon)
             }
         }
-        if (VERSION.SDK_INT < 34) {
+        if (VERSION.SDK_INT < 34 && privilege.run { device || (profile && !work && affiliated) }) {
             Row(
                 Modifier
                     .fillMaxWidth()

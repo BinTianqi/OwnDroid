@@ -1,12 +1,16 @@
 package com.bintianqi.owndroid.feature.applications
 
+import android.app.admin.DevicePolicyManager
 import android.app.admin.PackagePolicy
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.content.pm.PermissionInfo
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.PrivilegeHelper
+import com.bintianqi.owndroid.feature.settings.SettingsRepository
 import com.bintianqi.owndroid.utils.AppInfo
 import com.bintianqi.owndroid.utils.PrivilegeStatus
 import com.bintianqi.owndroid.utils.ToastChannel
@@ -15,6 +19,8 @@ import com.bintianqi.owndroid.utils.getInstalledAppsFlags
 import com.bintianqi.owndroid.utils.plusOrMinus
 import com.bintianqi.owndroid.utils.uninstallPackage
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -23,101 +29,180 @@ import kotlinx.coroutines.launch
 class AppFeaturesViewModel(
     val application: MyApplication, val ph: PrivilegeHelper,
     val privilegeState: StateFlow<PrivilegeStatus>,
-    val toastChannel: ToastChannel
+    val toastChannel: ToastChannel, val settingsRepo: SettingsRepository
 ) : ViewModel() {
     val pm = application.packageManager!!
-    
-    val suspendedPackages = MutableStateFlow(emptyList<AppInfo>())
+
+    val suspendedPackages = MutableStateFlow(emptyList<String>())
 
     @RequiresApi(24)
-    fun getSuspendedPackaged() = ph.safeDpmCall {
-        val packages = pm.getInstalledApplications(getInstalledAppsFlags).filter {
-            dpm.isPackageSuspended(dar, it.packageName)
+    fun getSuspendedPackages() {
+        viewModelScope.launch(Dispatchers.IO) {
+            ph.safeDpmCall {
+                val packages = pm.getInstalledApplications(getInstalledAppsFlags).filter {
+                    dpm.isPackageSuspended(dar, it.packageName)
+                }
+                suspendedPackages.value = packages.map { it.packageName }
+            }
         }
-        suspendedPackages.value = packages.map { getAppInfo(pm, it) }
     }
 
     @RequiresApi(24)
     fun setPackageSuspended(packages: List<String>, status: Boolean) = ph.safeDpmCall {
-        dpm.setPackagesSuspended(dar, packages.toTypedArray(), status)
-        getSuspendedPackaged()
+        val failedPackages = dpm.setPackagesSuspended(dar, packages.toTypedArray(), status)
+        suspendedPackages.update { list ->
+            list.plusOrMinus(status, packages.filter { it !in failedPackages })
+        }
     }
 
-    val hiddenPackages = MutableStateFlow(emptyList<AppInfo>())
-    fun getHiddenPackages() = ph.safeDpmCall {
-        hiddenPackages.value = pm.getInstalledApplications(getInstalledAppsFlags).filter {
-            dpm.isApplicationHidden(dar, it.packageName)
-        }.map { getAppInfo(pm, it) }
+    val hiddenPackages = MutableStateFlow(emptyList<String>())
+    fun getHiddenPackages() {
+        viewModelScope.launch(Dispatchers.IO) {
+            ph.safeDpmCall {
+                hiddenPackages.value = pm.getInstalledApplications(getInstalledAppsFlags).filter {
+                    dpm.isApplicationHidden(dar, it.packageName)
+                }.map { it.packageName }
+            }
+        }
     }
 
     fun setPackageHidden(packages: List<String>, status: Boolean) = ph.safeDpmCall {
         for (name in packages) {
-            dpm.setApplicationHidden(dar, name, status)
+            val result = dpm.setApplicationHidden(dar, name, status)
+            if (result) hiddenPackages.update { it.plusOrMinus(status, name) }
         }
-        getHiddenPackages()
     }
 
     // Uninstall blocked packages
-    val ubPackages = MutableStateFlow(emptyList<AppInfo>())
-    fun getUbPackages() = ph.safeDpmCall {
-        ubPackages.value = pm.getInstalledApplications(getInstalledAppsFlags).filter {
-            dpm.isUninstallBlocked(dar, it.packageName)
-        }.map { getAppInfo(pm, it) }
+    val ubPackages = MutableStateFlow(emptyList<String>())
+    fun getUbPackages() {
+        viewModelScope.launch(Dispatchers.IO) {
+            ph.safeDpmCall {
+                ubPackages.value = pm.getInstalledApplications(getInstalledAppsFlags).filter {
+                    dpm.isUninstallBlocked(dar, it.packageName)
+                }.map { it.packageName }
+            }
+        }
     }
 
-    fun setPackageUb(packages: List<String>, status: Boolean) = ph.safeDpmCall {
-        for (name in packages) {
-            dpm.setUninstallBlocked(dar, name, status)
+    fun setPackageUb(packages: List<String>, status: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            ph.safeDpmCall {
+                for (name in packages) {
+                    dpm.setUninstallBlocked(dar, name, status)
+                    val succeed = dpm.isUninstallBlocked(dar, name) == status
+                    if (succeed) ubPackages.update { it.plusOrMinus(status, name) }
+                }
+            }
         }
-        getUbPackages()
     }
 
     // User control disabled packages
-    val ucdPackages = MutableStateFlow(emptyList<AppInfo>())
+    val ucdPackages = MutableStateFlow(emptyList<String>())
 
     @RequiresApi(30)
     fun getUcdPackages() = ph.safeDpmCall {
-        ucdPackages.value = dpm.getUserControlDisabledPackages(dar).distinct().map {
-            getAppInfo(pm, it)
-        }
+        ucdPackages.value = dpm.getUserControlDisabledPackages(dar).distinct()
     }
 
     @RequiresApi(30)
     fun setPackageUcd(packages: List<String>, status: Boolean) = ph.safeDpmCall {
         dpm.setUserControlDisabledPackages(
             dar,
-            ucdPackages.value.map { it.name }.plusOrMinus(status, packages)
+            ucdPackages.value.plusOrMinus(status, packages)
         )
         getUcdPackages()
     }
 
-    val permissionPackagesState = MutableStateFlow(emptyList<Pair<AppInfo, Int>>())
+    val availablePermissions = MutableStateFlow(emptyList<PermissionItem>())
 
-    fun getPermissionPackages(permission: String) {
+    fun getAvailablePermissions() {
         viewModelScope.launch(Dispatchers.IO) {
-            permissionPackagesState.value = emptyList()
-            ph.safeDpmCall {
-                permissionPackagesState.value = pm.getInstalledPackages(
-                    getInstalledAppsFlags or PackageManager.GET_PERMISSIONS
-                ).filter {
-                    it.requestedPermissions?.contains(permission) ?: false
-                }.map {
-                    getAppInfo(pm, it.packageName) to
-                            dpm.getPermissionGrantState(dar, it.packageName, permission)
+            val pm = application.packageManager
+            val allPermissions = mutableListOf<PermissionInfo>()
+            pm.getAllPermissionGroups(0).forEach {
+                allPermissions += pm.queryPermissionsByGroup(it.name, 0)
+            }
+            var allRequestedPermissions = mutableListOf<String>()
+            pm.getInstalledPackages(
+                PackageManager.GET_PERMISSIONS or getInstalledAppsFlags
+            ).forEach {
+                allRequestedPermissions += it.requestedPermissions ?: emptyArray()
+            }
+            allRequestedPermissions = allRequestedPermissions.distinct().toMutableList()
+            availablePermissions.value = allPermissions.filter {
+                it.protectionLevel and PermissionInfo.PROTECTION_DANGEROUS != 0 &&
+                        it.name in allRequestedPermissions
+            }.map {
+                PermissionItem(
+                    it.name, it.loadLabel(pm).toString(), getIconForPermission(it.name)
+                )
+            }
+        }
+    }
+
+    val selectedPermissionItem = MutableStateFlow(PermissionItem("", "", null))
+
+    fun setSelectedPermissionItem(permissionItem: PermissionItem) {
+        selectedPermissionItem.value = permissionItem
+        getPermissionPackages()
+    }
+
+    val permissionPackagesState = MutableStateFlow(emptyList<Pair<AppChooserEntry, Int>>())
+    var getPermPkgJob: Job? = null
+
+    private fun getPermissionPackages() {
+        getPermPkgJob?.cancel()
+        val perm = selectedPermissionItem.value
+        getPermPkgJob = viewModelScope.launch(Dispatchers.IO) {
+            val apps = pm.getInstalledPackages(
+                getInstalledAppsFlags or PackageManager.GET_PERMISSIONS
+            ).filter {
+                it.requestedPermissions?.contains(perm.id) ?: false
+            }
+            apps.forEach { app ->
+                launch(Dispatchers.IO) {
+                    val appStatus = async(Dispatchers.IO) {
+                        getAppStatus(application, ph, app.packageName)
+                    }
+                    val state = async(Dispatchers.IO) {
+                        var result = DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT
+                        ph.safeDpmCall {
+                            result = dpm.getPermissionGrantState(dar, app.packageName, perm.id)
+                        }
+                        return@async result
+                    }
+                    val entry = appStatus.await() to state.await()
+                    permissionPackagesState.update { it + entry }
                 }
             }
         }
     }
 
     fun setPackagePermission(
-        packageName: String, permission: String, state: Int
-    ) = ph.safeDpmCall {
-        val result = dpm.setPermissionGrantState(dar, packageName, permission, state)
-        if (result) {
-            getPermissionPackages(permission)
-        } else {
-            toastChannel.sendStatus(false)
+        packageName: String, state: Int
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            ph.safeDpmCall {
+                val result = dpm.setPermissionGrantState(
+                    dar, packageName, selectedPermissionItem.value.id, state
+                )
+                if (result) {
+                    permissionPackagesState.update { list ->
+                        val muList = list.toMutableList()
+                        val index = list.indexOfFirst { it.first.info.name == packageName }
+                        muList[index] = list[index].first to state
+                        muList
+                    }
+                } else {
+                    toastChannel.sendStatus(false)
+                }
+            }
         }
+    }
+
+    fun clearPermissionPackages() {
+        permissionPackagesState.value = emptyList()
     }
 
     @RequiresApi(28)
@@ -133,63 +218,58 @@ class AppFeaturesViewModel(
     }
 
     // Metered data disabled packages
-    val mddPackages = MutableStateFlow(emptyList<AppInfo>())
+    val mddPackages = MutableStateFlow(emptyList<String>())
 
     @RequiresApi(28)
     fun getMddPackages() = ph.safeDpmCall {
-        mddPackages.value =
-            dpm.getMeteredDataDisabledPackages(dar).distinct().map { getAppInfo(pm, it) }
+        mddPackages.value = dpm.getMeteredDataDisabledPackages(dar).distinct()
     }
 
     @RequiresApi(28)
     fun setPackageMdd(packages: List<String>, status: Boolean) = ph.safeDpmCall {
         dpm.setMeteredDataDisabledPackages(
-            dar, mddPackages.value.map { it.name }.plusOrMinus(status, packages)
+            dar, mddPackages.value.plusOrMinus(status, packages)
         )
         getMddPackages()
     }
 
     // Keep uninstalled packages
-    val kuPackages = MutableStateFlow(emptyList<AppInfo>())
+    val kuPackages = MutableStateFlow(emptyList<String>())
 
     @RequiresApi(28)
     fun getKuPackages() = ph.safeDpmCall {
-        kuPackages.value =
-            dpm.getKeepUninstalledPackages(dar)?.distinct()?.map { getAppInfo(pm, it) } ?: emptyList()
+        kuPackages.value = dpm.getKeepUninstalledPackages(dar)?.distinct() ?: emptyList()
     }
 
     @RequiresApi(28)
     fun setPackageKu(packages: List<String>, status: Boolean) = ph.safeDpmCall {
         dpm.setKeepUninstalledPackages(
-            dar, kuPackages.value.map { it.name }.plusOrMinus(status, packages)
+            dar, kuPackages.value.plusOrMinus(status, packages)
         )
         getKuPackages()
     }
 
     // Cross profile packages
-    val cpPackages = MutableStateFlow(emptyList<AppInfo>())
+    val cpPackages = MutableStateFlow(emptyList<String>())
 
     @RequiresApi(30)
     fun getCpPackages() = ph.safeDpmCall {
-        cpPackages.value = dpm.getCrossProfilePackages(dar).map { getAppInfo(pm, it) }
+        cpPackages.value = dpm.getCrossProfilePackages(dar).toList()
     }
 
     @RequiresApi(30)
     fun setPackageCp(packages: List<String>, status: Boolean) = ph.safeDpmCall {
         dpm.setCrossProfilePackages(
             dar,
-            cpPackages.value.map { it.name }.toSet().run {
-                if (status) plus(packages) else minus(packages)
-            }
+            cpPackages.value.plusOrMinus(status, packages).toSet()
         )
         getCpPackages()
     }
 
     // Cross-profile widget providers
-    val cpwProviders = MutableStateFlow(emptyList<AppInfo>())
+    val cpwProviders = MutableStateFlow(emptyList<String>())
     fun getCpwProviders() = ph.safeDpmCall {
-        cpwProviders.value =
-            dpm.getCrossProfileWidgetProviders(dar).distinct().map { getAppInfo(pm, it) }
+        cpwProviders.value = dpm.getCrossProfileWidgetProviders(dar).distinct()
     }
 
     fun setCpwProvider(packages: List<String>, status: Boolean) = ph.safeDpmCall {
@@ -245,7 +325,7 @@ class AppFeaturesViewModel(
         origin: List<AppInfo>, input: List<String>, status: Boolean
     ): List<AppInfo> {
         return if (status) {
-            origin + input.map { getAppInfo(pm, it) }
+            (origin + input.map { getAppInfo(pm, it) }).distinctBy { it.name }
         } else {
             origin.filter { it.name !in input }
         }
@@ -320,5 +400,32 @@ class AppFeaturesViewModel(
             false
         }
         toastChannel.sendStatus(result)
+    }
+
+    val allPackagesState = MutableStateFlow(emptyList<AppChooserEntry>())
+    var getAllPkgJob: Job? = null
+
+    fun getAllPackages() {
+        if (getAllPkgJob?.isCompleted == false) return
+        getAllPkgJob = viewModelScope.launch(Dispatchers.IO) {
+            val apps = application.packageManager.getInstalledApplications(getInstalledAppsFlags)
+            if (apps.size == allPackagesState.value.size) return@launch
+            allPackagesState.value = emptyList()
+            apps.sortBy { it.flags and ApplicationInfo.FLAG_SYSTEM }
+            apps.forEach { app ->
+                launch(Dispatchers.IO) {
+                    val entry = getAppStatus(application, ph, app.packageName)
+                    allPackagesState.update { it + entry }
+                }
+            }
+        }
+    }
+
+    fun isDefaultSwitchView(): Boolean {
+        return settingsRepo.data.appFeatureSwitchView
+    }
+
+    fun saveSwitchViewSetting(enabled: Boolean) {
+        settingsRepo.update { it.appFeatureSwitchView = enabled }
     }
 }

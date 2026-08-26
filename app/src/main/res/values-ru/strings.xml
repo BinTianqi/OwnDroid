@@ -314,7 +314,6 @@
     <string name="profile_max_time_out_desc">Личные приложения будут приостановлены после закрытия рабочего профиля на указанное время. 0 означает отсутствие ограничения.</string>
     <string name="personal_app_suspended_because_timeout">Личное приложение приостановлено по причине: %1$s</string>
     <string name="intent_filter">Фильтр намерений</string>
-    <string name="clear_cross_profile_filters">Очистить все фильтры</string>
     <string name="org_id">Идентификатор организации</string>
     <string name="length_6_to_64">Длина должна быть от 6 до 64 символов</string>
     <string name="delete_work_profile">Удалить рабочий профиль</string>
@@ -322,15 +321,12 @@
 
     <!--Управление приложениями-->
     <string name="applications">Приложения</string>
-    <string name="show_user_app">Показывать пользовательские приложения</string>
-    <string name="show_system_app">Показывать системные приложения</string>
     <string name="suspend">Приостановить</string>
     <string name="hide">Скрыть</string>
     <string name="always_on_vpn">Постоянный VPN</string>
     <string name="enable_lockdown">Включить блокировку</string>
     <string name="clear_current_config">Очистить текущую конфигурацию</string>
     <string name="permissions">Разрешение</string>
-    <string name="not_installed">Не установлено</string>
     <string name="block_uninstall">Блокировать удаление</string>
     <string name="enable_system_app">Включить системное приложение</string>
     <!--ucd: управление пользователем отключено-->
@@ -539,43 +535,6 @@
     <string name="clear_storage">Очистить хранилище</string>
     
     <string name="api_key">API ключ</string>
-    <string name="api_key_exist">API ключ уже сущетвует, установка нового перезапишет текущий</string>
-
-    <!--Разрешения Android-->
-    <string name="permission_POST_NOTIFICATIONS">Отправлять уведомления</string>
-    <string name="permission_READ_EXTERNAL_STORAGE">Чтение внешнего хранилища</string>
-    <string name="permission_WRITE_EXTERNAL_STORAGE">Запись во внешнее хранилище</string>
-    <string name="permission_READ_MEDIA_AUDIO">Чтение медиа (аудио)</string>
-    <string name="permission_READ_MEDIA_VIDEO">Чтение медиа (видео)</string>
-    <string name="permission_READ_MEDIA_IMAGES">Чтение медиа (изображения)</string>
-    <string name="permission_CAMERA">Камера</string>
-    <string name="permission_RECORD_AUDIO">Микрофон</string>
-    <string name="permission_READ_CONTACTS">Чтение контактов</string>
-    <string name="permission_WRITE_CONTACTS">Запись контактов</string>
-    <string name="permission_READ_CALENDAR">Чтение календаря</string>
-    <string name="permission_WRITE_CALENDAR">Запись в календарь</string>
-    <string name="permission_ACCESS_COARSE_LOCATION">Доступ к приблизительному местоположению</string>
-    <string name="permission_ACCESS_FINE_LOCATION">Доступ к точному местоположению</string>
-    <string name="permission_ACCESS_BACKGROUND_LOCATION">Доступ к местоположению в фоновом режиме</string>
-    <string name="permission_BLUETOOTH_CONNECT">Подключение Bluetooth</string>
-    <string name="permission_BLUETOOTH_SCAN">Сканирование Bluetooth</string>
-    <string name="permission_BLUETOOTH_ADVERTISE">Реклама Bluetooth</string>
-    <string name="permission_NEARBY_WIFI_DEVICES">Ближайшие устройства Wi-Fi</string>
-    <string name="permission_CALL_PHONE">Вызовы</string>
-    <string name="permission_ANSWER_PHONE_CALLS">Ответ на телефонные звонки</string>
-    <string name="permission_READ_PHONE_STATE">Чтение состояния телефона</string>
-    <string name="permission_USE_SIP">Использовать SIP</string>
-    <string name="permission_UWB_RANGING">UWB-пеленгация</string>
-    <string name="permission_READ_SMS">Чтение SMS</string>
-    <string name="permission_RECEIVE_SMS">Получение SMS</string>
-    <string name="permission_SEND_SMS">Отправка SMS</string>
-    <string name="permission_READ_CALL_LOG">Чтение журнала вызовов</string>
-    <string name="permission_WRITE_CALL_LOG">Запись в журнал вызовов</string>
-    <string name="permission_RECEIVE_WAP_PUSH">Получение WAP Push</string>
-    <string name="permission_BODY_SENSORS">Доступ к датчикам тела</string>
-    <string name="permission_BODY_SENSORS_BACKGROUND">Доступ к датчикам тела в фоновом режиме</string>
-    <string name="permission_ACTIVITY_RECOGNITION">Распознавание активности</string>
-
     <string name="package_chooser">Package chooser</string> <!--TODO-->
 
     <string name="app_installer">Установщик приложений</string>

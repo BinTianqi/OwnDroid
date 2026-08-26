@@ -75,6 +75,8 @@
     <string name="exit">Exit</string>
     <string name="undo">Undo</string>
     <string name="refresh">Refresh</string>
+    <string name="filters">Filters</string>
+    <string name="both">Both</string>
 
     <!--Permissions-->
     <string name="profile_owner">Profile owner</string>
@@ -384,19 +386,28 @@
     <string name="both_direction">Both direction</string>
     <string name="work_to_personal">Work to personal</string>
     <string name="personal_to_work">Personal to work</string>
-    <string name="clear_cross_profile_filters">Clear all filters</string>
+    <string name="delete_all_filters_confirmation">Are you sure to delete all filters?</string>
+    <string name="add_filter">Add filter</string>
     <string name="org_id">Organization ID</string>
     <string name="length_6_to_64">The length should be between 6~64 characters</string>
     <string name="delete_work_profile">Delete work profile</string>
 
     <!--Applications-->
     <string name="applications">Applications</string>
+    <string name="applications_state">Applications state</string>
     <string name="apps_view">Apps view</string>
     <string name="features_view">Features view</string>
-    <string name="show_user_app">Show user apps</string>
-    <string name="show_system_app">Show system apps</string>
+    <string name="support_mc">Support managed configuration</string>
+    <string name="mc_modified">Managed configuration modified</string>
+    <string name="suspended">Suspended</string>
+    <string name="hidden">Hidden</string>
+    <string name="uninstall_blocked">Uninstall blocked</string>
+    <string name="uc_disabled">User control disabled</string>
+    <string name="uses_internet">Uses Internet</string>
+    <string name="md_disabled">Metered data disabled</string>
+    <string name="installed">Installed</string>
+    <string name="no_matching_apps">No matching apps</string>
     <string name="suspend">Suspend</string>
-    <string name="unsuspend">Unsuspend</string>
     <string name="hide">Hide</string>
     <string name="unhide">Unhide</string>
     <string name="always_on_vpn">Always-on VPN</string>
@@ -405,7 +416,8 @@
     <string name="permissions">Permissions</string>
     <string name="user_apps">User apps</string>
     <string name="system_apps">System apps</string>
-    <string name="not_installed">Not installed</string>
+    <string name="user_app">User app</string>
+    <string name="system_app">System app</string>
     <string name="block_uninstall">Block uninstall</string>
     <string name="enable_system_app">Enable system app</string>
     <string name="disable_user_control">Disable user control</string>
@@ -427,6 +439,9 @@
     <string name="install_existing_app">Install existing app</string>
     <string name="keep_after_uninstall">Keep after uninstall</string>
     <string name="search">Search</string>
+    <string name="switch_view">Switch view</string>
+    <string name="list_view">List view</string>
+    <string name="loading">Loading</string>
     <string name="app_group">App group</string>
     <string name="manage_app_groups">Manage groups</string>
     <string name="import_str">Import</string>
@@ -547,6 +562,7 @@
     <string name="user_not_exist">User does not exist</string>
     <string name="serial_number">Serial number</string>
     <string name="logout">Logout</string>
+    <string name="create_shortcut">Create shortcut</string>
     <string name="start_in_background">Start in background</string>
     <string name="user_operation_switch">Switch</string>
     <string name="limit_reached">Limit reached</string>
@@ -634,42 +650,6 @@
     <string name="clear_storage">Clear storage</string>
     
     <string name="api_key">API key</string>
-    <string name="api_key_exist">The API key already exists, setting a new key will overwrite the current key.</string>
-
-    <!--AndroidPermission-->
-    <string name="permission_POST_NOTIFICATIONS">Post notifications</string>
-    <string name="permission_READ_EXTERNAL_STORAGE">Read external storage</string>
-    <string name="permission_WRITE_EXTERNAL_STORAGE">Write external storage</string>
-    <string name="permission_READ_MEDIA_AUDIO">Read media (audio)</string>
-    <string name="permission_READ_MEDIA_VIDEO">Read media (video)</string>
-    <string name="permission_READ_MEDIA_IMAGES">Read media (images)</string>
-    <string name="permission_CAMERA">Camera</string>
-    <string name="permission_RECORD_AUDIO">Microphone</string>
-    <string name="permission_READ_CONTACTS">Read contacts</string>
-    <string name="permission_WRITE_CONTACTS">Write contacts</string>
-    <string name="permission_READ_CALENDAR">Read calendar</string>
-    <string name="permission_WRITE_CALENDAR">Write calendar</string>
-    <string name="permission_ACCESS_COARSE_LOCATION">Access coarse location</string>
-    <string name="permission_ACCESS_FINE_LOCATION">Access fine location</string>
-    <string name="permission_ACCESS_BACKGROUND_LOCATION">Access location in background</string>
-    <string name="permission_BLUETOOTH_CONNECT">Bluetooth connect</string>
-    <string name="permission_BLUETOOTH_SCAN">Bluetooth scan</string>
-    <string name="permission_BLUETOOTH_ADVERTISE">Bluetooth advertise</string>
-    <string name="permission_NEARBY_WIFI_DEVICES">Nearby Wi-Fi devices</string>
-    <string name="permission_CALL_PHONE">Call phone</string>
-    <string name="permission_ANSWER_PHONE_CALLS">Answer phone calls</string>
-    <string name="permission_READ_PHONE_STATE">Read phone state</string>
-    <string name="permission_USE_SIP">Use SIP</string>
-    <string name="permission_UWB_RANGING">UWB ranging</string>
-    <string name="permission_READ_SMS">Read SMS</string>
-    <string name="permission_RECEIVE_SMS">Receive SMS</string>
-    <string name="permission_SEND_SMS">Send SMS</string>
-    <string name="permission_READ_CALL_LOG">Read call log</string>
-    <string name="permission_WRITE_CALL_LOG">Write call log</string>
-    <string name="permission_RECEIVE_WAP_PUSH">Receive WAP push</string>
-    <string name="permission_BODY_SENSORS">Access body sensors</string>
-    <string name="permission_BODY_SENSORS_BACKGROUND">Access body sensors in background</string>
-    <string name="permission_ACTIVITY_RECOGNITION">Activity recognition</string>
 
     <string name="package_chooser">Package chooser</string>
 
@@ -736,7 +716,7 @@
     <string name="info_always_on_vpn">Configure an always-on VPN connection through a specific application for the current user. This connection is automatically granted and persisted after a reboot.\nEnable lockdown: Disallow networking when the VPN is not connected.</string>
     <string name="info_recommended_global_proxy">This proxy is only a recommendation and it is possible that some apps will ignore it.</string>
     <string name="info_network_log">Network logs contain DNS lookup and connect() library call events.\nUse this function in work profile will only retrieve network logs in work profile.\nThere shouldn\'t be unaffiliated user on this device if used by Device owner.</string>
-    <string name="info_profile_maximum_time_off">Set maximum time the profile is allowed to be turned off. If the profile is turned off for longer, personal apps are suspended on the device.\nThe minimum non-zero value corresponds to 72 hours. If an admin sets a smaller non-zero vaulue, 72 hours will be set instead.</string>
+    <string name="info_profile_maximum_time_off">Set maximum time the profile is allowed to be turned off. If the profile is turned off for longer, personal apps are suspended on the device.\nThe minimum non-zero value corresponds to 72 hours. If an admin sets a smaller non-zero value, 72 hours will be set instead.</string>
     <string name="info_cross_profile_intent_filter">Add cross profile intent filters so that some intents sent in the managed profile can also be resolved in the parent, or vice versa. Only activity intents are supported.</string>
     <string name="info_suspend_app">A suspended package will not be able to start activities. Its notifications will be hidden, it will not show up in recent activities, will not be able to show toasts or dialogs or ring the device.\nSome apps cannot be suspended, such as device admins, the active launcher and the default dialer.</string>
     <string name="info_disable_user_control">User will not be able to clear app data or force-stop packages.</string>
@@ -753,9 +733,10 @@
     <string name="info_max_failed_password_system_user">Setting this to a value greater than zero enables a policy that the device will be factory reset after too many incorrect device-unlock passwords have been entered.</string>
     <string name="info_max_failed_password_other_user">Setting this to a value greater than zero enables a policy that will wipe this user after too many incorrect unlock password have been entered.</string>
     <string name="info_password_history_length">After setting this, the user will not be able to enter a new password that is the same as any password in the history. Note that the current password will remain until the user has set a new one, so the change does not take place immediately.\nA value of 0 means there is no restriction.</string>
-    <string name="info_required_strong_auth_timeout">Determine for how long the user will be able to use secondary, non strong auth for authentication, since last strong method authentication (password, pin or pattern) was used. After the returned timeout the user is required to use strong authentication method.\nA value of 0 means the admin is not participating in controlling the timeout. The minimum and maximum timeouts are platform-defined and are typically 1 hour and 72 hours, respectively.</string>
-    <string name="info_deactivate">OwnDroid will lost its privilege</string>
+    <string name="info_required_strong_auth_timeout">Determine for how long the user will be able to use secondary, non-strong auth for authentication, since last strong method authentication (password, pin or pattern) was used. After the returned timeout the user is required to use strong authentication method.\nA value of 0 means the admin is not participating in controlling the timeout. The minimum and maximum timeouts are platform-defined and are typically 1 hour and 72 hours, respectively.</string>
+    <string name="info_deactivate">OwnDroid will lose its privilege</string>
     <string name="info_personal_apps_suspended">Your personal apps is suspended by OwnDroid</string>
+    <string name="info_secret_code">OwnDroid will disappear from your home screen, but you can open it by typing the following secret code in your dialer: *#*#240113#*#*. It is strongly recommended to test whether this code works, or you will be locked out of this app.</string>
 
     <string name="choose_working_mode">Choose a working mode</string>
     <string name="recommended">Recommended</string>

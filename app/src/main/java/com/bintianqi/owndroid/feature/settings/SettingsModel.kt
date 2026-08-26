@@ -12,8 +12,9 @@ data class MySettings(
     val shortcut: Shortcut = Shortcut(),
     val notifications: MutableList<Int> = mutableListOf(),
     var displayDangerousFeatures: Boolean = false,
-    var applicationsListView: Boolean = true,
-    var apiKeyHash: String = "",
+    var appFeatureSwitchView: Boolean = true,
+    var cpifChanged: Boolean = false, // Cross profile intent filter
+    val api: Api = Api()
 ) {
     @Serializable
     data class Privilege(
@@ -47,5 +48,11 @@ data class MySettings(
     data class Shortcut(
         var enabled: Boolean = true,
         var key: String = "",
+    )
+
+    @Serializable
+    data class Api(
+        var enabled: Boolean = false,
+        var key: String = ""
     )
 }

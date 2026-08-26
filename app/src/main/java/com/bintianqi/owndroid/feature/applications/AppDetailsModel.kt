@@ -8,3 +8,8 @@ data class AppDetailsUiState(
     val meteredDataDisabled: Boolean = false,
     val keepUninstalled: Boolean = false
 )
+
+class DetailedAppInfo(
+    val version: String = "",
+    val versionNumber: Int = 0
+)

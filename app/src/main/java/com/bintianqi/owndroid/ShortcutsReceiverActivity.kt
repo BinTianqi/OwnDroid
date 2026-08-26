@@ -1,6 +1,7 @@
 package com.bintianqi.owndroid
 
 import android.app.Activity
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import com.bintianqi.owndroid.feature.users.UserOperationType
@@ -28,12 +29,14 @@ class ShortcutsReceiverActivity : Activity() {
                             val state = dpm.getCameraDisabled(dar)
                             dpm.setCameraDisabled(dar, !state)
                             ShortcutUtils.setShortcut(context, sr, MyShortcut.DisableCamera, state)
+                            context.showOperationResultToast(true)
                         }
 
                         "MUTE" -> {
                             val state = dpm.isMasterVolumeMuted(dar)
                             dpm.setMasterVolumeMuted(dar, !state)
                             ShortcutUtils.setShortcut(context, sr, MyShortcut.Mute, state)
+                            context.showOperationResultToast(true)
                         }
 
                         "USER_RESTRICTION" -> {
@@ -48,6 +51,7 @@ class ShortcutsReceiverActivity : Activity() {
                             ShortcutUtils.updateUserRestrictionShortcut(
                                 context, sr, id, !state, false
                             )
+                            context.showOperationResultToast(true)
                         }
 
                         "USER_OPERATION" -> {
@@ -56,11 +60,18 @@ class ShortcutsReceiverActivity : Activity() {
                             val serial = intent.getIntExtra("serial", -1)
                             if (serial == -1) return@safeDpmCall
                             doUserOperationWithContext(context, ph.dpm, ph.dar, type, serial, false)
+                            context.showOperationResultToast(true)
+                        }
+
+                        "LOGOUT" -> {
+                            if (Build.VERSION.SDK_INT >= 28) {
+                                val result = dpm.logoutUser(dar)
+                                context.showOperationResultToast(result == 0)
+                            }
                         }
                     }
                 }
                 Log.d(TAG, "Received intent: $action")
-                showOperationResultToast(true)
             } else {
                 showOperationResultToast(false)
             }

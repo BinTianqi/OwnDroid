@@ -1,5 +1,8 @@
 package com.bintianqi.owndroid.feature.applications
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
 sealed class AppRestriction(
     open val key: String, open val title: String?, open val description: String?
 ) {
@@ -55,3 +58,12 @@ sealed class AppRestriction(
 }
 
 data class MultiSelectEntry(val value: String, val title: String?, val selected: Boolean)
+
+@Serializable
+class AppRestrictionJson(
+    val id: String,
+    @SerialName("v_int") val vInt: Int? = null,
+    @SerialName("v_str") val vString: String? = null, // for string and choice item
+    @SerialName("v_bool") val vBool: Boolean? = null,
+    @SerialName("v_list") val vList: List<String>? = null
+)

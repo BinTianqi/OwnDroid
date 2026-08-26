@@ -1,6 +1,8 @@
 package com.bintianqi.owndroid.ui.navigation
 
 import androidx.navigation3.runtime.NavKey
+import com.bintianqi.owndroid.feature.applications.AppChooserFilter
+import com.bintianqi.owndroid.feature.applications.AppChooserMode
 import kotlinx.serialization.Serializable
 
 sealed class Destination : NavKey {
@@ -59,8 +61,8 @@ sealed class Destination : NavKey {
     @Serializable object CreateWorkProfile : Destination()
     @Serializable object SuspendPersonalApp : Destination()
     @Serializable object CrossProfileIntentFilter : Destination()
+    @Serializable class AddCrossProfileIntentFilter(val editingId: Int) : Destination()
     @Serializable object CrossProfileIntentFilterPresets: Destination()
-    @Serializable object CrossProfileIntentFilterHistory: Destination()
     @Serializable object DeleteWorkProfile : Destination()
 
     @Serializable object ApplicationFeatures : Destination()
@@ -69,7 +71,7 @@ sealed class Destination : NavKey {
     @Serializable object BlockUninstall : Destination()
     @Serializable object DisableUserControl : Destination()
     @Serializable object PermissionManager : Destination()
-    @Serializable class PermissionDetail(val permission: String) : Destination()
+    @Serializable object PermissionDetail : Destination()
     @Serializable object DisableMeteredData : Destination()
     @Serializable object ClearAppStorage : Destination()
     @Serializable object UninstallApp : Destination()
@@ -90,7 +92,8 @@ sealed class Destination : NavKey {
     @Serializable class ManagedConfiguration(val packageName: String) : Destination()
 
     @Serializable class ApplicationsList(
-        val canSwitchView: Boolean, val multiSelect: Boolean
+        val mode: AppChooserMode,
+        val defaultFilter: AppChooserFilter = AppChooserFilter()
     ) : Destination()
 
     @Serializable object UserRestriction : Destination()

@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -28,7 +29,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,7 +53,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.MyScaffold
-import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.BottomPadding
@@ -73,6 +75,11 @@ fun SettingsScreen(
             if (it != null) vm.exportLogs(it)
         }
     var dropdown by remember { mutableStateOf(false) }
+    val appHidden by vm.hiddenState.collectAsState()
+    var secretCodeDialog by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        vm.getAppHidden()
+    }
     MyScaffold(
         R.string.settings, onNavigateUp, 0.dp,
         {
@@ -93,6 +100,28 @@ fun SettingsScreen(
                         },
                         leadingIcon = {
                             Icon(painterResource(R.drawable.description_fill0), null)
+                        }
+                    )
+                    DropdownMenuItem(
+                        {
+                            Text(stringResource(if (appHidden) R.string.unhide else R.string.hide))
+                        },
+                        {
+                            dropdown = false
+                            if (appHidden) {
+                                vm.unhideApp()
+                            } else {
+                                secretCodeDialog = true
+                            }
+                        },
+                        leadingIcon = {
+                            Icon(
+                                painterResource(
+                                    if (appHidden) R.drawable.visibility_fill0
+                                    else R.drawable.visibility_off_fill0
+                                ),
+                                null
+                            )
                         }
                     )
                     DropdownMenuItem(
@@ -128,6 +157,20 @@ fun SettingsScreen(
         }
         Spacer(Modifier.height(BottomPadding))
     }
+    if (secretCodeDialog) AlertDialog(
+        text = { Text(stringResource(R.string.info_secret_code)) },
+        onDismissRequest = { secretCodeDialog = false },
+        confirmButton = {
+            TextButton(vm::hideApp) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        dismissButton = {
+            TextButton({ secretCodeDialog = false }) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
 }
 
 @Composable
@@ -265,10 +308,9 @@ fun AppLockSettingsScreen(
 fun ApiSettings(
     vm: SettingsViewModel, onNavigateUp: () -> Unit
 ) {
-    var alreadyEnabled by rememberSaveable { mutableStateOf(vm.getApiEnabled()) }
     MyScaffold(R.string.api, onNavigateUp) {
-        var enabled by rememberSaveable { mutableStateOf(alreadyEnabled) }
-        var key by rememberSaveable { mutableStateOf("") }
+        var enabled by rememberSaveable { mutableStateOf(vm.getApiEnabled()) }
+        var key by rememberSaveable { mutableStateOf(vm.getApiKey()) }
         SwitchItem(R.string.enable, state = enabled, onCheckedChange = {
             enabled = it
         }, padding = false)
@@ -288,8 +330,7 @@ fun ApiSettings(
         }
         Button(
             {
-                vm.setApiKey(if (enabled) key else "")
-                alreadyEnabled = enabled
+                vm.setApiEnabled(enabled, key)
             },
             Modifier
                 .fillMaxWidth()
@@ -298,7 +339,6 @@ fun ApiSettings(
         ) {
             Text(stringResource(R.string.apply))
         }
-        if (enabled && alreadyEnabled) Notes(R.string.api_key_exist)
     }
 }
 

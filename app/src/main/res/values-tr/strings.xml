@@ -342,22 +342,18 @@
     <string name="profile_max_time_out_desc">İş profili kapatıldıktan sonra kişisel uygulamalar bu süre boyunca askıya alınacak. 0, sınırsız anlamına gelir.</string>
     <string name="personal_app_suspended_because_timeout">Kişisel uygulama şu nedenle askıya alındı: %1$s</string>
     <string name="intent_filter">Niyet Filtresi</string>
-    <string name="clear_cross_profile_filters">Tüm filtreleri temizle</string>
     <string name="org_id">Kurum Kimliği</string>
     <string name="length_6_to_64">Uzunluk 6 ile 64 karakter arasında olmalıdır</string>
     <string name="delete_work_profile">İş Profilini Sil</string>
 
     <!--Applications-->
     <string name="applications">Uygulamalar</string>
-    <string name="show_user_app">Kullanıcı Uygulamalarını Göster</string>
-    <string name="show_system_app">Sistem Uygulamalarını Göster</string>
     <string name="suspend">Askıya Al</string>
     <string name="hide">Gizle</string>
     <string name="always_on_vpn">Her Zaman Açık VPN</string>
     <string name="enable_lockdown">Kilitlemeyi Etkinleştir</string>
     <string name="clear_current_config">Geçerli Yapılandırmayı Temizle</string>
     <string name="permissions">İzinler</string>
-    <string name="not_installed">Yüklü Değil</string>
     <string name="block_uninstall">Kaldırmayı Engelle</string>
     <string name="enable_system_app">Sistem Uygulamasını Etkinleştir</string>
     <string name="disable_user_control">Kullanıcı Kontrolünü Devre Dışı Bırak</string>
@@ -564,43 +560,6 @@
     <string name="clear_storage">Depolamayı Temizle</string>
     
     <string name="api_key">API Anahtarı</string>
-    <string name="api_key_exist">API anahtarı zaten mevcut, yeni bir anahtar ayarlamak mevcut anahtarı geçersiz kılacaktır.</string>
-
-    <!--AndroidPermission-->
-    <string name="permission_POST_NOTIFICATIONS">Bildirim Gönderme</string>
-    <string name="permission_READ_EXTERNAL_STORAGE">Harici Depolamayı Okuma</string>
-    <string name="permission_WRITE_EXTERNAL_STORAGE">Harici Depolamaya Yazma</string>
-    <string name="permission_READ_MEDIA_AUDIO">Medya Okuma (ses)</string>
-    <string name="permission_READ_MEDIA_VIDEO">Medya Okuma (video)</string>
-    <string name="permission_READ_MEDIA_IMAGES">Medya Okuma (görüntüler)</string>
-    <string name="permission_CAMERA">Kamera</string>
-    <string name="permission_RECORD_AUDIO">Mikrofon</string>
-    <string name="permission_READ_CONTACTS">Kişileri Okuma</string>
-    <string name="permission_WRITE_CONTACTS">Kişilere Yazma</string>
-    <string name="permission_READ_CALENDAR">Takvimi Okuma</string>
-    <string name="permission_WRITE_CALENDAR">Takvime Yazma</string>
-    <string name="permission_ACCESS_COARSE_LOCATION">Yaklaşık Konum Erişimi</string>
-    <string name="permission_ACCESS_FINE_LOCATION">Hassas Konum Erişimi</string>
-    <string name="permission_ACCESS_BACKGROUND_LOCATION">Arka Planda Konum Erişimi</string>
-    <string name="permission_BLUETOOTH_CONNECT">Bluetooth Bağlantısı</string>
-    <string name="permission_BLUETOOTH_SCAN">Bluetooth Tarama</string>
-    <string name="permission_BLUETOOTH_ADVERTISE">Bluetooth Reklamı</string>
-    <string name="permission_NEARBY_WIFI_DEVICES">Yakındaki Wi-Fi Cihazları</string>
-    <string name="permission_CALL_PHONE">Telefon Araması Yapma</string>
-    <string name="permission_ANSWER_PHONE_CALLS">Telefon Aramalarını Yanıtlama</string>
-    <string name="permission_READ_PHONE_STATE">Telefon Durumunu Okuma</string>
-    <string name="permission_USE_SIP">SIP Kullanımı</string>
-    <string name="permission_UWB_RANGING">UWB Mesafe Ölçümü</string>
-    <string name="permission_READ_SMS">SMS Okuma</string>
-    <string name="permission_RECEIVE_SMS">SMS Alma</string>
-    <string name="permission_SEND_SMS">SMS Gönderme</string>
-    <string name="permission_READ_CALL_LOG">Arama Kayıtlarını Okuma</string>
-    <string name="permission_WRITE_CALL_LOG">Arama Kayıtlarına Yazma</string>
-    <string name="permission_RECEIVE_WAP_PUSH">WAP Push Alma</string>
-    <string name="permission_BODY_SENSORS">Vücut Sensörlerine Erişim</string>
-    <string name="permission_BODY_SENSORS_BACKGROUND">Arka Planda Vücut Sensörlerine Erişim</string>
-    <string name="permission_ACTIVITY_RECOGNITION">Aktivite Tanıma</string>
-
     <string name="package_chooser">Paket Seçici</string>
 
     <string name="app_installer">Uygulama Yükleyici</string>

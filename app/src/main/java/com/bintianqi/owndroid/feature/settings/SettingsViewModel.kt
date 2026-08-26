@@ -1,5 +1,7 @@
 package com.bintianqi.owndroid.feature.settings
 
+import android.content.ComponentName
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import androidx.lifecycle.ViewModel
@@ -76,10 +78,12 @@ class SettingsViewModel(
         }
     }
 
-    fun getApiEnabled() = settingsRepo.data.apiKeyHash.isNotEmpty()
-    fun setApiKey(key: String) {
+    fun getApiEnabled() = settingsRepo.data.api.enabled
+    fun getApiKey() = settingsRepo.data.api.key
+    fun setApiEnabled(enabled: Boolean, key: String) {
         settingsRepo.update {
-            it.apiKeyHash = if (key.isEmpty()) "" else key.hash()
+            it.api.enabled = enabled
+            it.api.key = key
         }
         toastChannel.sendStatus(true)
     }
@@ -93,5 +97,37 @@ class SettingsViewModel(
         enabledNotifications.update {
             it.plusOrMinus(enabled, type.id)
         }
+    }
+
+    val hiddenState = MutableStateFlow(false)
+
+    val aliasActivityComponent = ComponentName(
+        application.packageName, "com.bintianqi.owndroid.AliasActivity"
+    )
+
+    fun getAppHidden() {
+        hiddenState.value = application.packageManager.getComponentEnabledSetting(
+            aliasActivityComponent
+        ) != PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+    }
+
+    fun hideApp() {
+        application.packageManager.setComponentEnabledSetting(
+            aliasActivityComponent,
+            PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+            PackageManager.DONT_KILL_APP
+        )
+        hiddenState.value = true
+        toastChannel.sendStatus(true)
+    }
+
+    fun unhideApp() {
+        application.packageManager.setComponentEnabledSetting(
+            aliasActivityComponent,
+            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+            PackageManager.DONT_KILL_APP
+        )
+        hiddenState.value = false
+        toastChannel.sendStatus(true)
     }
 }

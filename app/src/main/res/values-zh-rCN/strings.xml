@@ -70,6 +70,8 @@
     <string name="exit">退出</string>
     <string name="undo">撤销</string>
     <string name="refresh">刷新</string>
+    <string name="filters">过滤器</string>
+    <string name="both">两者</string>
 
     <!--Permissions-->
     <string name="profile_owner">Profile owner</string>
@@ -350,19 +352,28 @@
     <string name="both_direction">双向</string>
     <string name="work_to_personal">工作到个人</string>
     <string name="personal_to_work">个人到工作</string>
-    <string name="clear_cross_profile_filters">清除所有过滤器</string>
+    <string name="delete_all_filters_confirmation">你确定要删除所有过滤器吗？</string>
+    <string name="add_filter">添加过滤器</string>
     <string name="org_id">组织ID</string>
     <string name="length_6_to_64">长度应在6~64个字符之间</string>
     <string name="delete_work_profile">删除工作资料</string>
 
     <!--Applications-->
     <string name="applications">应用程序</string>
+    <string name="applications_state">应用程序状态</string>
     <string name="apps_view">应用视图</string>
     <string name="features_view">功能视图</string>
-    <string name="show_user_app">显示用户应用</string>
-    <string name="show_system_app">显示系统应用</string>
+    <string name="support_mc">支持托管配置</string>
+    <string name="mc_modified">托管配置已修改</string>
+    <string name="suspended">挂起</string>
+    <string name="hidden">隐藏</string>
+    <string name="uninstall_blocked">阻止卸载</string>
+    <string name="uc_disabled">禁止用户控制</string>
+    <string name="uses_internet">使用互联网</string>
+    <string name="md_disabled">禁用按量计费流量</string>
+    <string name="installed">已安装</string>
+    <string name="no_matching_apps">没有符合条件的应用</string>
     <string name="suspend">挂起</string>
-    <string name="unsuspend">取消挂起</string>
     <string name="hide">隐藏</string>
     <string name="unhide">取消隐藏</string>
     <string name="always_on_vpn">VPN保持打开</string>
@@ -371,7 +382,8 @@
     <string name="permissions">权限</string>
     <string name="user_apps">用户应用</string>
     <string name="system_apps">系统应用</string>
-    <string name="not_installed">未安装</string>
+    <string name="user_app">用户应用</string>
+    <string name="system_app">系统应用</string>
     <string name="block_uninstall">阻止卸载</string>
     <string name="disable_user_control">禁止用户控制</string>
     <string name="disable_metered_data">禁用计量数据</string>
@@ -393,6 +405,9 @@
     <string name="enable_system_app">启用系统应用</string>
     <string name="keep_after_uninstall">卸载后保留</string>
     <string name="search">搜索</string>
+    <string name="switch_view">开关视图</string>
+    <string name="list_view">列表视图</string>
+    <string name="loading">加载中</string>
     <string name="app_group">应用组</string>
     <string name="manage_app_groups">管理组</string>
     <string name="import_str">导入</string>
@@ -511,6 +526,7 @@
     <string name="user_not_exist">用户不存在</string>
     <string name="serial_number">序列号</string>
     <string name="logout">登出</string>
+    <string name="create_shortcut">创建快捷方式</string>
     <string name="start_in_background">在后台启动</string>
     <string name="user_operation_switch">切换</string>
     <string name="limit_reached">已达到上限</string>
@@ -595,45 +611,9 @@
     <string name="lock_when_leaving">离开时锁定</string>
     <string name="unlock">解锁</string>
     <string name="security">安全性</string>
-    <string name="clear_storage">清除存储空间</string>
+    <string name="clear_storage">清除存储</string>
 
     <string name="api_key">API密钥</string>
-    <string name="api_key_exist">API密钥已存在，设置新的密钥将会覆盖当前密钥</string>
-
-    <!--AndroidPermission-->
-    <string name="permission_POST_NOTIFICATIONS">发送通知</string>
-    <string name="permission_READ_EXTERNAL_STORAGE">读取外部存储</string>
-    <string name="permission_WRITE_EXTERNAL_STORAGE">写入外部存储</string>
-    <string name="permission_READ_MEDIA_AUDIO">读取音频</string>
-    <string name="permission_READ_MEDIA_VIDEO">读取视频</string>
-    <string name="permission_READ_MEDIA_IMAGES">读取图片</string>
-    <string name="permission_CAMERA">相机</string>
-    <string name="permission_RECORD_AUDIO">录音</string>
-    <string name="permission_READ_CONTACTS">读取联系人</string>
-    <string name="permission_WRITE_CONTACTS">写入联系人</string>
-    <string name="permission_READ_CALENDAR">读取日历</string>
-    <string name="permission_WRITE_CALENDAR">写入日历</string>
-    <string name="permission_ACCESS_COARSE_LOCATION">粗略位置</string>
-    <string name="permission_ACCESS_FINE_LOCATION">准确位置</string>
-    <string name="permission_ACCESS_BACKGROUND_LOCATION">后台获取位置</string>
-    <string name="permission_BLUETOOTH_CONNECT">蓝牙连接</string>
-    <string name="permission_BLUETOOTH_SCAN">蓝牙扫描</string>
-    <string name="permission_BLUETOOTH_ADVERTISE">使设备可被发现</string>
-    <string name="permission_NEARBY_WIFI_DEVICES">附近的Wi-Fi设备</string>
-    <string name="permission_CALL_PHONE">打电话</string>
-    <string name="permission_ANSWER_PHONE_CALLS">接电话</string>
-    <string name="permission_READ_PHONE_STATE">读取手机状态</string>
-    <string name="permission_USE_SIP">使用SIP</string>
-    <string name="permission_UWB_RANGING">超宽频</string>
-    <string name="permission_READ_SMS">读取短信</string>
-    <string name="permission_RECEIVE_SMS">接收短信</string>
-    <string name="permission_SEND_SMS">发送短信</string>
-    <string name="permission_READ_CALL_LOG">读取通话记录</string>
-    <string name="permission_WRITE_CALL_LOG">写入通话记录</string>
-    <string name="permission_RECEIVE_WAP_PUSH">接收WAP推送</string>
-    <string name="permission_BODY_SENSORS">身体传感器</string>
-    <string name="permission_BODY_SENSORS_BACKGROUND">后台使用身体传感器</string>
-    <string name="permission_ACTIVITY_RECOGNITION">查看使用情况</string>
 
     <string name="package_chooser">包选择器</string>
     <string name="app_installer">App安装器</string>
@@ -700,7 +680,7 @@
     <string name="info_recommended_global_proxy">这个代理只是一个建议，一些app有可能忽略它。</string>
     <string name="info_network_log">网络日志包含DNS查询和connect()库调用记录</string>
     <string name="info_profile_maximum_time_off">用户可以关闭工作资料，如果关闭工作资料的时间超过了在这里设置的时间，会挂起个人应用。设置的时间不能小于72小时，如果小于72小时，按72小时算。</string>
-    <string name="info_cross_profile_intent_filter">添加跨资料Intent过滤器，使工作资料中可以发送的指定Intent到主用户，反之亦然。仅支持Activity Intent</string>
+    <string name="info_cross_profile_intent_filter">添加跨资料Intent过滤器，使工作资料中可以发送的指定Intent到主用户，反之亦然。仅支持Activity Intent。</string>
     <string name="info_suspend_app">挂起的应用无法被打开，通知会被隐藏，不会在最近任务中显示，不能弹窗，不能发送Toast。\n有些应用无法被挂起，比如Device admin、启动器和默认拨号应用。</string>
     <string name="info_disable_user_control">用户无法清除这些应用的存储空间，也无法强制停止应用</string>
     <string name="info_keep_uninstalled_apps">这个列表中的应用的APK将会一直保留，即使没有任何用户安装这个应用</string>
@@ -719,6 +699,7 @@
     <string name="info_required_strong_auth_timeout">如果用户在这段时间内没有使用强认证（密码、PIN或图案）解锁设备，则要求使用强认证解锁设备。值为0表示OwnDroid不参与控制超时。一般来说，最少1小时，最多72小时。</string>
     <string name="info_deactivate">OwnDroid将会丢失特权</string>
     <string name="info_personal_apps_suspended">你的个人应用被OwnDroid挂起</string>
+    <string name="info_secret_code">OwnDroid将从主屏幕上消失，但你仍然可以通过以下拨号器暗码打开它：*#*#240113#*#*。强烈建议在隐藏前测试该暗码是否可用，否则你将无法打开这个app。</string>
 
     <string name="choose_working_mode">选择一个工作模式</string>
     <string name="recommended">推荐</string>

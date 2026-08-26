@@ -116,6 +116,13 @@ OwnDroid provides an Intent-based API. You need to set the API key in settings a
 - UNHIDE(package: String)
 - SUSPEND(package: String) (7)
 - UNSUSPEND(package: String) (7)
+- DISABLE_METERED_DATA(package: String) (9)
+- ENABLE_METERED_DATA(package: String) (9)
+- DISABLE_USER_CONTROL(package: String) (11)
+- ENABLE_USER_CONTROL(package: String) (11)
+- BLOCK_UNINSTALL(package: String)
+- UNBLOCK_UNINSTALL(package: String)
+- CLEAR_APP_STORAGE(package: String) () (9)
 - ADD_USER_RESTRICTION(restriction: Boolean)
 - CLEAR_USER_RESTRICTION(restriction: Boolean)
 - SET_PERMISSION_DEFAULT(package: String, permission: String) (6)
@@ -146,22 +153,29 @@ context.sendBroadcast(intent)
 
 [Available user restrictions](https://developer.android.com/reference/android/os/UserManager#constants_1)
 
-## For developers
-
-### Build
+## Build
 
 You can use Gradle in command line to build OwnDroid.
+
 ```shell
 # Use testkey for signing (default)
 ./gradlew build
 # Use your custom .jks key for signing
 ./gradlew build -PStoreFile="/path/to/your/jks/file" -PStorePassword="YOUR_KEYSTORE_PASSWORD" -PKeyPassword="YOUR_KEY_PASSWORD" -PKeyAlias="YOUR_KEY_ALIAS"
 ```
+
 (Use `./gradlew.bat` instead on Windows)
 
-### Contribute
+## Contribute
 
-Please use the `dev` branch.
+Contributions are welcome!
+
+1. [Fork](https://github.com/BinTianqi/OwnDroid/fork) this repository (deselect "Copy the master branch only", which is selected by default)
+2. Clone your own repository using git (please use the `dev` branch)
+3. Make changes (AI-assisted changes is allowed, but you have to ensure the quality)
+4. Run the app on your device or emulator to test your changes (required for code contributions, optional for translation contributions)
+5. Commit and push changes
+6. Open a pull request in this repository
 
 ## License
 

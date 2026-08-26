@@ -1,32 +1,59 @@
 package com.bintianqi.owndroid.feature.applications
 
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.PermissionInfo
+import android.net.Uri
 import android.os.Build.VERSION
+import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.PrivilegeHelper
+import com.bintianqi.owndroid.utils.AppInfo
 import com.bintianqi.owndroid.utils.PrivilegeStatus
 import com.bintianqi.owndroid.utils.ToastChannel
 import com.bintianqi.owndroid.utils.getAppInfo
+import com.bintianqi.owndroid.utils.getInstalledAppsFlags
 import com.bintianqi.owndroid.utils.plusOrMinus
-import com.bintianqi.owndroid.utils.runtimePermissions
 import com.bintianqi.owndroid.utils.uninstallPackage
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class AppDetailsViewModel(
     val packageName: String, val application: MyApplication, val ph: PrivilegeHelper,
     val privilegeState: StateFlow<PrivilegeStatus>, val toastChannel: ToastChannel
 ) : ViewModel() {
-    val appInfo = getAppInfo(application.packageManager, packageName)
+    val appInfo = MutableStateFlow<AppInfo?>(null)
+    val detailedAppInfo = MutableStateFlow(DetailedAppInfo())
     val uiState = MutableStateFlow(AppDetailsUiState())
 
-    init {
-        getStatus()
+    fun getInfo() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val pkgInfo = application.packageManager.getPackageInfo(
+                packageName, getInstalledAppsFlags
+            )
+            appInfo.value = getAppInfo(application.packageManager, packageName)
+            detailedAppInfo.value = DetailedAppInfo(pkgInfo.versionName ?: "", pkgInfo.versionCode)
+            getStatus()
+        }
     }
 
-    fun getStatus() = ph.safeDpmCall {
+    fun viewAppDetails(context: Context) {
+        val intent = Intent()
+        intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+        intent.data = Uri.fromParts("package", packageName, null)
+        try {
+            context.startActivity(intent)
+        } catch (_: Exception) {}
+    }
+
+    private fun getStatus() = ph.safeDpmCall {
         uiState.value = AppDetailsUiState(
             if (VERSION.SDK_INT >= 24) dpm.isPackageSuspended(dar, packageName) else false,
             dpm.isApplicationHidden(dar, packageName),
@@ -95,20 +122,46 @@ class AppDetailsViewModel(
         }
     }
 
-    val permissionsState = MutableStateFlow(emptyMap<String, Int>())
+    val permissionsState = MutableStateFlow(emptyMap<PermissionItem, Int>())
 
-    fun getPermissions() = ph.safeDpmCall {
-        permissionsState.value = runtimePermissions.associate {
-            it.id to dpm.getPermissionGrantState(dar, packageName, it.id)
+    fun getPermissions() {
+        viewModelScope.launch(Dispatchers.IO) {
+            getPermissionsInternal()
         }
     }
 
-    fun setPermission(permission: String, status: Int) = ph.safeDpmCall {
-        val result = dpm.setPermissionGrantState(dar, packageName, permission, status)
-        if (result) {
-            getPermissions()
-        } else {
-            toastChannel.sendStatus(false)
+    private fun getPermissionsInternal() {
+        val pm = application.packageManager
+        val allPermissions = mutableListOf<PermissionInfo>()
+        pm.getAllPermissionGroups(0).forEach {
+            allPermissions += pm.queryPermissionsByGroup(it.name, 0)
+        }
+        val requestedPermissions = application.packageManager.getPackageInfo(
+            packageName, PackageManager.GET_PERMISSIONS or getInstalledAppsFlags
+        ).requestedPermissions ?: emptyArray()
+        val actualPermissions = allPermissions.filter {
+            it.protectionLevel and PermissionInfo.PROTECTION_DANGEROUS != 0 &&
+                    it.name in requestedPermissions
+        }.map {
+            PermissionItem(it.name, it.loadLabel(pm).toString(), getIconForPermission(it.name))
+        }
+        ph.safeDpmCall {
+            permissionsState.value = actualPermissions.associateWith {
+                dpm.getPermissionGrantState(dar, packageName, it.id)
+            }
+        }
+    }
+
+    fun setPermission(permission: String, status: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            ph.safeDpmCall {
+                val result = dpm.setPermissionGrantState(dar, packageName, permission, status)
+                if (result) {
+                    getPermissions()
+                } else {
+                    toastChannel.sendStatus(false)
+                }
+            }
         }
     }
 

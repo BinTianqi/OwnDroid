@@ -79,7 +79,7 @@ class SharedViewModelStoreNavEntryDecorator<T : Any>(
             }
             // If the entry indicates it has a parent, use its parent's ViewModelStore.
             val parentKey = entry.metadata[PARENT_CONTENT_KEY] as String?
-            val contentKey = parentKey ?: (entry.contentKey as String)
+            val contentKey = parentKey ?: ((entry.contentKey as Pair<Any, Any>).first as String)
             val viewModelStore = viewModelStore.getEntryViewModel().viewModelStoreForKey(contentKey)
             val savedStateRegistryOwner = LocalSavedStateRegistryOwner.current
             val childViewModelStoreOwner = remember {

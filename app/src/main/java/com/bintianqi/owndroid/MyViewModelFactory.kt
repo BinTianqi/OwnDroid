@@ -2,7 +2,6 @@ package com.bintianqi.owndroid
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.bintianqi.owndroid.feature.applications.AppChooserViewModel
 import com.bintianqi.owndroid.feature.applications.AppFeaturesViewModel
 import com.bintianqi.owndroid.feature.applications.AppGroup
 import com.bintianqi.owndroid.feature.applications.AppGroupRepository
@@ -82,7 +81,7 @@ class MyViewModelFactory(
             return TransferOwnershipViewModel(app, ph, ps) as T
         }
         if (checkType(WorkingModesViewModel::class)) {
-            return WorkingModesViewModel(app, ph, sr, ps, tc) as T
+            return WorkingModesViewModel(app, ph, sr, ps, tc, de) as T
         }
         if (checkType(DhizukuServerViewModel::class)) {
             return DhizukuServerViewModel(app, dsRepo, sr) as T
@@ -117,17 +116,14 @@ class MyViewModelFactory(
             return AppGroupViewModel(app, agRepo, agState) as T
         }
         if (checkType(AppFeaturesViewModel::class)) {
-            return AppFeaturesViewModel(app, ph, ps, tc) as T
-        }
-        if (checkType(AppChooserViewModel::class)) {
-            return AppChooserViewModel(app) as T
+            return AppFeaturesViewModel(app, ph, ps, tc, sr) as T
         }
 
         if (checkType(WorkProfileViewModel::class)) {
             return WorkProfileViewModel(ph, ps, tc) as T
         }
         if (checkType(CrossProfileIntentFilterViewModel::class)) {
-            return CrossProfileIntentFilterViewModel(app, ph, cpifRepo, tc) as T
+            return CrossProfileIntentFilterViewModel(app, ph, cpifRepo, tc, sr) as T
         }
 
         if (checkType(UserRestrictionViewModel::class)) {

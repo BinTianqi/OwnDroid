@@ -185,4 +185,9 @@ class UsersViewModel(
         val result = dpm.logoutUser(dar)
         if (result != 0) toastChannel.sendStatus(false)
     }
+
+    fun requestPinLogoutShortcut() {
+        val result = ShortcutUtils.requestPinLogoutShortcut(application, settingsRepo)
+        if (!result) toastChannel.sendStatus(false)
+    }
 }

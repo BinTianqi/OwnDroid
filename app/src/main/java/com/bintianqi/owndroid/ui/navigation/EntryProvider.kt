@@ -7,10 +7,13 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import com.bintianqi.owndroid.AppContainer
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.feature.applications.AppChooserFilter
+import com.bintianqi.owndroid.feature.applications.AppChooserMode
 import com.bintianqi.owndroid.feature.applications.AppChooserScreen
 import com.bintianqi.owndroid.feature.applications.AppChooserViewModel
 import com.bintianqi.owndroid.feature.applications.AppDetailsViewModel
 import com.bintianqi.owndroid.feature.applications.AppFeaturesViewModel
+import com.bintianqi.owndroid.feature.applications.AppFilterState
 import com.bintianqi.owndroid.feature.applications.AppGroupsScreen
 import com.bintianqi.owndroid.feature.applications.AppPermissionsManagerScreen
 import com.bintianqi.owndroid.feature.applications.ApplicationDetailsScreen
@@ -94,8 +97,8 @@ import com.bintianqi.owndroid.feature.users.UserOperationScreen
 import com.bintianqi.owndroid.feature.users.UserSessionMessageScreen
 import com.bintianqi.owndroid.feature.users.UsersOptionsScreen
 import com.bintianqi.owndroid.feature.users.UsersScreen
+import com.bintianqi.owndroid.feature.work_profile.AddCrossProfileIntentFilterScreen
 import com.bintianqi.owndroid.feature.work_profile.CreateWorkProfileScreen
-import com.bintianqi.owndroid.feature.work_profile.CrossProfileIntentFilterHistoryScreen
 import com.bintianqi.owndroid.feature.work_profile.CrossProfileIntentFilterPresetsScreen
 import com.bintianqi.owndroid.feature.work_profile.CrossProfileIntentFilterScreen
 import com.bintianqi.owndroid.feature.work_profile.DeleteWorkProfileScreen
@@ -128,18 +131,16 @@ fun myEntryProvider(
     }
 
     fun choosePackage() {
-        navigate(Destination.ApplicationsList(false, true))
+        navigate(Destination.ApplicationsList(AppChooserMode.Choose))
     }
 
     fun chooseSinglePackage() {
-        navigate(Destination.ApplicationsList(false, false))
+        navigate(Destination.ApplicationsList(AppChooserMode.SingleChoose))
     }
 
     entry<Destination.Home> {
         HomeScreen(
-            container.privilegeState,
-            { container.settingsRepo.data.applicationsListView },
-            ::navigate
+            container.privilegeState, ::navigate
         )
     }
     entry<Destination.WorkingModes> {
@@ -364,15 +365,15 @@ fun myEntryProvider(
             viewModel(factory = container.viewModelFactory), ::navigateUp, ::navigate
         )
     }
+    entry<Destination.AddCrossProfileIntentFilter>(
+        metadata = navParentKey<Destination.CrossProfileIntentFilter>()
+    ) {
+        AddCrossProfileIntentFilterScreen(it, viewModel(), ::navigateUp)
+    }
     entry<Destination.CrossProfileIntentFilterPresets>(
         metadata = navParentKey<Destination.CrossProfileIntentFilter>()
     ) {
         CrossProfileIntentFilterPresetsScreen(viewModel(), ::navigateUp)
-    }
-    entry<Destination.CrossProfileIntentFilterHistory>(
-        metadata = navParentKey<Destination.CrossProfileIntentFilter>()
-    ) {
-        CrossProfileIntentFilterHistoryScreen(viewModel(), ::navigateUp)
     }
     entry<Destination.DeleteWorkProfile>(
         metadata = navParentKey<Destination.WorkProfile>()
@@ -382,36 +383,25 @@ fun myEntryProvider(
 
     entry<Destination.ApplicationsList> { params ->
         AppChooserScreen(
-            params, appChooserVm, { name ->
-                if (params.canSwitchView) {
-                    if (name == null) {
-                        navigateUp()
-                    } else {
-                        navigate(Destination.ApplicationDetails(name))
-                    }
+            params, appChooserVm
+        ) { name ->
+            if (params.mode == AppChooserMode.ListView) {
+                if (name != null) {
+                    navigate(Destination.ApplicationDetails(name))
                 } else {
-                    if (name != null) container.chosenPackage.trySend(name)
                     navigateUp()
                 }
-            }, {
-                container.settingsRepo.update {
-                    it.applicationsListView = false
-                }
-                navigate(Destination.ApplicationFeatures)
-                backstack.removeAt(backstack.size - 2)
-            })
+            } else {
+                if (name != null) container.chosenPackage.trySend(name)
+                navigateUp()
+            }
+        }
     }
 
     entry<Destination.ApplicationFeatures> {
         ApplicationsFeaturesScreen(
             viewModel(factory = container.viewModelFactory), ::navigateUp, ::navigate
-        ) {
-            container.settingsRepo.update {
-                it.applicationsListView = true
-            }
-            navigate(Destination.ApplicationsList(true, true))
-            backstack.removeAt(backstack.size - 2)
-        }
+        )
     }
     entry<Destination.ApplicationDetails> {
         ApplicationDetailsScreen(
@@ -430,9 +420,11 @@ fun myEntryProvider(
     ) {
         val vm = viewModel<AppFeaturesViewModel>()
         PackageFunctionScreen(
-            R.string.suspend, vm.suspendedPackages, vm::getSuspendedPackaged,
+            R.string.suspend, vm.suspendedPackages, vm::getSuspendedPackages,
             vm::setPackageSuspended, ::navigateUp, container.chosenPackage, ::choosePackage,
-            ::navigateToAppGroups, container.appGroupsState, R.string.info_suspend_app
+            ::navigateToAppGroups, container.appGroupsState, R.string.info_suspend_app,
+            vm.allPackagesState, vm::getAllPackages,
+            vm.isDefaultSwitchView(), vm::saveSwitchViewSetting
         )
     }
     entry<Destination.Hide>(
@@ -442,7 +434,8 @@ fun myEntryProvider(
         PackageFunctionScreen(
             R.string.hide, vm.hiddenPackages, vm::getHiddenPackages, vm::setPackageHidden,
             ::navigateUp, container.chosenPackage, ::choosePackage, ::navigateToAppGroups,
-            container.appGroupsState
+            container.appGroupsState, null, vm.allPackagesState, vm::getAllPackages,
+            vm.isDefaultSwitchView(), vm::saveSwitchViewSetting
         )
     }
     entry<Destination.BlockUninstall>(
@@ -452,7 +445,8 @@ fun myEntryProvider(
         PackageFunctionScreen(
             R.string.block_uninstall, vm.ubPackages, vm::getUbPackages, vm::setPackageUb,
             ::navigateUp, container.chosenPackage, ::choosePackage, ::navigateToAppGroups,
-            container.appGroupsState
+            container.appGroupsState, null, vm.allPackagesState, vm::getAllPackages,
+            vm.isDefaultSwitchView(), vm::saveSwitchViewSetting
         )
     }
     entry<Destination.DisableUserControl>(
@@ -462,7 +456,9 @@ fun myEntryProvider(
         PackageFunctionScreen(
             R.string.disable_user_control, vm.ucdPackages, vm::getUcdPackages,
             vm::setPackageUcd, ::navigateUp, container.chosenPackage, ::choosePackage,
-            ::navigateToAppGroups, container.appGroupsState, R.string.info_disable_user_control
+            ::navigateToAppGroups, container.appGroupsState, R.string.info_disable_user_control,
+            vm.allPackagesState, vm::getAllPackages,
+            vm.isDefaultSwitchView(), vm::saveSwitchViewSetting
         )
     }
     entry<Destination.AppPermissionsManager>(
@@ -472,14 +468,16 @@ fun myEntryProvider(
             viewModel(), ::navigateUp
         )
     }
-    entry<Destination.PermissionManager> {
-        PermissionManagerScreen(::navigate, ::navigateUp)
+    entry<Destination.PermissionManager>(
+        metadata = navParentKey<Destination.ApplicationFeatures>()
+    ) {
+        PermissionManagerScreen(viewModel(), ::navigate, ::navigateUp)
     }
     entry<Destination.PermissionDetail>(
         metadata = navParentKey<Destination.ApplicationFeatures>()
     ) {
         PermissionDetailScreen(
-            it, viewModel(), ::navigateUp
+            viewModel(), ::navigateUp
         )
     }
     entry<Destination.DisableMeteredData>(
@@ -489,7 +487,10 @@ fun myEntryProvider(
         PackageFunctionScreen(
             R.string.disable_metered_data, vm.mddPackages, vm::getMddPackages,
             vm::setPackageMdd, ::navigateUp, container.chosenPackage, ::choosePackage,
-            ::navigateToAppGroups, container.appGroupsState
+            ::navigateToAppGroups, container.appGroupsState, null,
+            vm.allPackagesState, vm::getAllPackages,
+            vm.isDefaultSwitchView(), vm::saveSwitchViewSetting,
+            AppChooserFilter(usesInternet = true)
         )
     }
     entry<Destination.ClearAppStorage>(
@@ -514,7 +515,9 @@ fun myEntryProvider(
         PackageFunctionScreen(
             R.string.keep_uninstalled_packages, vm.kuPackages, vm::getKuPackages,
             vm::setPackageKu, ::navigateUp, container.chosenPackage, ::choosePackage,
-            ::navigateToAppGroups, container.appGroupsState, R.string.info_keep_uninstalled_apps
+            ::navigateToAppGroups, container.appGroupsState, R.string.info_keep_uninstalled_apps,
+            vm.allPackagesState, vm::getAllPackages,
+            vm.isDefaultSwitchView(), vm::saveSwitchViewSetting
         )
     }
     entry<Destination.InstallExistingApp>(
@@ -532,7 +535,9 @@ fun myEntryProvider(
         PackageFunctionScreen(
             R.string.cross_profile_apps, vm.cpPackages,
             vm::getCpPackages, vm::setPackageCp, ::navigateUp, container.chosenPackage,
-            ::choosePackage, ::navigateToAppGroups, container.appGroupsState
+            ::choosePackage, ::navigateToAppGroups, container.appGroupsState, null,
+            vm.allPackagesState, vm::getAllPackages,
+            vm.isDefaultSwitchView(), vm::saveSwitchViewSetting
         )
     }
     entry<Destination.CrossProfileWidgetProviders>(
@@ -542,7 +547,9 @@ fun myEntryProvider(
         PackageFunctionScreen(
             R.string.cross_profile_widget, vm.cpwProviders,
             vm::getCpwProviders, vm::setCpwProvider, ::navigateUp, container.chosenPackage,
-            ::choosePackage, ::navigateToAppGroups, container.appGroupsState
+            ::choosePackage, ::navigateToAppGroups, container.appGroupsState, null,
+            vm.allPackagesState, vm::getAllPackages,
+            vm.isDefaultSwitchView(), vm::saveSwitchViewSetting
         )
     }
     entry<Destination.CredentialManagerPolicy>(
@@ -580,7 +587,15 @@ fun myEntryProvider(
     ) {
         val vm = viewModel<AppFeaturesViewModel>()
         EnableSystemAppScreen(
-            container.chosenPackage, ::chooseSinglePackage, vm::enableSystemApp, ::navigateUp
+            container.chosenPackage, {
+                navigate(
+                    Destination.ApplicationsList(
+                        AppChooserMode.SingleChoose, AppChooserFilter(
+                            userApps = AppFilterState.No, installed = AppFilterState.No
+                        )
+                    )
+                )
+            }, vm::enableSystemApp, ::navigateUp
         )
     }
     entry<Destination.SetDefaultDialer>(
@@ -595,7 +610,7 @@ fun myEntryProvider(
         ManagedConfigurationScreen(
             viewModel(factory = viewModelFactory {
                 ManagedConfigurationViewModel(
-                    it.packageName, container.app, container.privilegeHelper
+                    it.packageName, container.app, container.privilegeHelper, container.toastChannel
                 )
             }), ::navigateUp
         )

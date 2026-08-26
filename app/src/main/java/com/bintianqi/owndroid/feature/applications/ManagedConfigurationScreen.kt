@@ -1,5 +1,7 @@
 package com.bintianqi.owndroid.feature.applications
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -61,6 +63,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -83,8 +86,16 @@ fun ManagedConfigurationScreen(
     var searchKeyword by rememberSaveable { mutableStateOf("") }
     var showModified by rememberSaveable { mutableStateOf(true) }
     var showUnmodified by rememberSaveable { mutableStateOf(true) }
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) {
+        if (it != null) vm.exportConfiguration(it)
+    }
+    val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
+        if (it != null) vm.importConfiguration(it)
+    }
     val displayRestrictions = restrictions.filter {
-        (showModified && !it.isNull()) || (showUnmodified && it.isNull()) &&
+        ((showModified && !it.isNull()) || (showUnmodified && it.isNull())) &&
                 (!searchMode || searchKeyword.isBlank() ||
                         searchInString(searchKeyword, it.key) ||
                         it.title?.contains(searchKeyword, true) ?: true)
@@ -150,6 +161,27 @@ fun ManagedConfigurationScreen(
                             )
                             HorizontalDivider()
                             DropdownMenuItem(
+                                { Text(stringResource(R.string.export)) },
+                                {
+                                    exportLauncher.launch("mc_${vm.packageName}")
+                                    dropdownMenu = false
+                                },
+                                leadingIcon = {
+                                    Icon(painterResource(R.drawable.file_export_fill0), null)
+                                }
+                            )
+                            DropdownMenuItem(
+                                { Text(stringResource(R.string.import_str)) },
+                                {
+                                    importLauncher.launch("application/json")
+                                    dropdownMenu = false
+                                },
+                                leadingIcon = {
+                                    Icon(painterResource(R.drawable.file_open_fill0), null)
+                                }
+                            )
+                            HorizontalDivider()
+                            DropdownMenuItem(
                                 { Text(stringResource(R.string.clear)) },
                                 {
                                     clearRestrictionDialog = true
@@ -165,6 +197,14 @@ fun ManagedConfigurationScreen(
         contentWindowInsets = adaptiveInsets()
     ) { paddingValues ->
         LazyColumn(Modifier.padding(paddingValues)) {
+            item {
+                if (restrictions.isEmpty()) {
+                    Text(
+                        stringResource(R.string.none), Modifier.fillMaxWidth().padding(top = 4.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
             items(displayRestrictions, { it.key }) { entry ->
                 Row(
                     Modifier

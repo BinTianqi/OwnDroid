@@ -1,8 +1,9 @@
 package com.bintianqi.owndroid
 
 import android.Manifest
+import android.content.BroadcastReceiver
 import android.content.pm.PackageManager
-import android.os.Build.VERSION
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -26,7 +26,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
@@ -49,8 +52,10 @@ import com.bintianqi.owndroid.utils.registerPackageRemovedReceiver
 import com.bintianqi.owndroid.utils.viewModelFactory
 import kotlinx.coroutines.launch
 
-@ExperimentalMaterial3Api
 class MainActivity : FragmentActivity() {
+    lateinit var appChooserVm: AppChooserViewModel
+    lateinit var packageRemoveReceiver: BroadcastReceiver
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -58,7 +63,7 @@ class MainActivity : FragmentActivity() {
         val myApp = (application as MyApplication)
         val settingsRepo = myApp.container.settingsRepo
         if (
-            VERSION.SDK_INT >= 33 &&
+            Build.VERSION.SDK_INT >= 33 &&
             checkSelfPermission(
                 Manifest.permission.POST_NOTIFICATIONS
             ) != PackageManager.PERMISSION_GRANTED
@@ -66,14 +71,11 @@ class MainActivity : FragmentActivity() {
             val launcher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
             launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
-        val appChooserVm: AppChooserViewModel by viewModels(
+        appChooserVm = viewModels<AppChooserViewModel>(
             factoryProducer = {
-                viewModelFactory { AppChooserViewModel(myApp) }
+                viewModelFactory { AppChooserViewModel(myApp, myApp.container.privilegeHelper) }
             }
-        )
-        registerPackageRemovedReceiver(this) {
-            appChooserVm.onPackageRemoved(it)
-        }
+        ).value
         if (
             myApp.container.privilegeState.value.work &&
             !settingsRepo.data.privilege.managedProfileActivated
@@ -109,8 +111,12 @@ class MainActivity : FragmentActivity() {
                         backstack.removeFirstOrNull()
                     }
                 }
+                val blurMod = if (appLockDialog) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Modifier.blur(10.dp)
+                    else Modifier.alpha(0F)
+                } else Modifier
                 NavDisplay(
-                    backstack,
+                    backstack, blurMod,
                     onBack = {
                         backstack.removeLastOrNull()
                     },
@@ -130,6 +136,18 @@ class MainActivity : FragmentActivity() {
                 ) {
                     myEntryProvider(it as Destination, backstack, appChooserVm, myApp.container)
                 }
+                if (dhizukuError != null) DhizukuErrorDialog(
+                    dhizukuError!!, {
+                        myApp.container.dhizukuErrorState.value = null
+                    }, {
+                        myApp.container.dhizukuErrorState.value = null
+                        settingsRepo.update { it.privilege.dhizuku = false }
+                        backstack += Destination.WorkingModes(false)
+                        repeat(backstack.size - 1) {
+                            backstack.removeFirstOrNull()
+                        }
+                    }
+                )
                 val lifecycleOwner = LocalLifecycleOwner.current
                 if (appLockDialog) {
                     AppLockDialog(
@@ -152,22 +170,20 @@ class MainActivity : FragmentActivity() {
                         lifecycleOwner.lifecycle.removeObserver(observer)
                     }
                 }
-                if (dhizukuError != null) {
-                    DhizukuErrorDialog(
-                        dhizukuError!!, {
-                            myApp.container.dhizukuErrorState.value = null
-                        }, {
-                            myApp.container.dhizukuErrorState.value = null
-                            settingsRepo.update { it.privilege.dhizuku = false }
-                            backstack += Destination.WorkingModes(false)
-                            repeat(backstack.size - 1) {
-                                backstack.removeFirstOrNull()
-                            }
-                        }
-                    )
-                }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        packageRemoveReceiver = registerPackageRemovedReceiver(this) {
+            appChooserVm.onPackageRemoved(it)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(packageRemoveReceiver)
     }
 }
 

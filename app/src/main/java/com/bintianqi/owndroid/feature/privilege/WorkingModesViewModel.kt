@@ -13,6 +13,7 @@ import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.feature.settings.SettingsRepository
 import com.bintianqi.owndroid.useShizuku
 import com.bintianqi.owndroid.utils.ACTIVATE_DEVICE_OWNER_COMMAND
+import com.bintianqi.owndroid.utils.DhizukuError
 import com.bintianqi.owndroid.utils.MyAdminComponent
 import com.bintianqi.owndroid.utils.PrivilegeStatus
 import com.bintianqi.owndroid.utils.ToastChannel
@@ -28,7 +29,8 @@ import kotlinx.coroutines.launch
 
 class WorkingModesViewModel(
     val application: MyApplication, val ph: PrivilegeHelper, val sr: SettingsRepository,
-    val ps: MutableStateFlow<PrivilegeStatus>, val toastChannel: ToastChannel
+    val ps: MutableStateFlow<PrivilegeStatus>, val toastChannel: ToastChannel,
+    val de: MutableStateFlow<DhizukuError?>
 ) : ViewModel() {
 
     fun getPrivilegeState() = ph.safeDpmCall {

@@ -31,6 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.feature.applications.AppChooserMode
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.BottomPadding
 import com.bintianqi.owndroid.utils.PrivilegeStatus
@@ -40,8 +41,7 @@ import kotlinx.coroutines.flow.StateFlow
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    privilegeState: StateFlow<PrivilegeStatus>, getAppListViewMode: () -> Boolean,
-    onNavigate: (Destination) -> Unit
+    privilegeState: StateFlow<PrivilegeStatus>, onNavigate: (Destination) -> Unit
 ) {
     val privilege by privilegeState.collectAsState()
     val sb = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -84,10 +84,10 @@ fun HomeScreen(
             }
             if (privilege.device || privilege.profile) {
                 HomePageItem(R.string.applications, R.drawable.apps_fill0) {
-                    onNavigate(
-                        if (getAppListViewMode()) Destination.ApplicationsList(true, true)
-                        else Destination.ApplicationFeatures
-                    )
+                    onNavigate(Destination.ApplicationsList(AppChooserMode.ListView))
+                }
+                HomePageItem(R.string.applications_state, R.drawable.tune_fill0) {
+                    onNavigate(Destination.ApplicationFeatures)
                 }
                 if (VERSION.SDK_INT >= 24) {
                     HomePageItem(R.string.user_restriction, R.drawable.person_off) {
