@@ -25,8 +25,8 @@ android {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 23
         targetSdk = 37
-        versionCode = 46
-        versionName = "8.3"
+        versionCode = 47
+        versionName = "8.3.1"
         multiDexEnabled = false
     }
 
