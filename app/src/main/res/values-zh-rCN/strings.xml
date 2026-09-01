@@ -72,6 +72,8 @@
     <string name="refresh">刷新</string>
     <string name="filters">过滤器</string>
     <string name="both">两者</string>
+    <string name="expand">展开</string>
+    <string name="collapse">折叠</string>
 
     <!--Permissions-->
     <string name="profile_owner">Profile owner</string>
@@ -416,7 +418,12 @@
     <string name="remove_from_list">从列表中移除</string>
     <string name="managed_configuration">托管配置</string>
     <string name="clear_configurations">清除配置</string>
-    <string name="specify_value">指定值</string>
+    <string name="value">值</string>
+    <string name="value_string">字符串</string>
+    <string name="value_int">整数</string>
+    <string name="value_boolean">布尔</string>
+    <string name="value_list">列表</string>
+    <string name="restriction_value_exists">id相同但类型不同的值已存在</string>
     <string name="package_removed">移除了 %1$s</string>
     <string name="modified">已修改</string>
     <string name="unmodified">未修改</string>

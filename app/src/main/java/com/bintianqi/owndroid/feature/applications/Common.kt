@@ -39,7 +39,6 @@ import com.bintianqi.owndroid.utils.AppInfo
 import com.bintianqi.owndroid.utils.getAppInfo
 import com.bintianqi.owndroid.utils.getInstalledAppsFlags
 import com.bintianqi.owndroid.utils.searchInString
-import com.bintianqi.owndroid.utils.transformAppRestrictionEntryList
 import kotlinx.serialization.Serializable
 
 enum class AppChooserMode {
@@ -319,11 +318,8 @@ fun getAppStatus(
         ph.safeDpmCall {
             val bundle = dpm.getApplicationRestrictions(dar, packageName)
             val entries = rm.getManifestRestrictions(packageName)
-            if (entries != null) {
-                hasMc = true
-                val restrictions = transformAppRestrictionEntryList(entries, bundle)
-                if (restrictions.any { !it.isNull() }) mcModified = true
-            }
+            hasMc = !entries.isNullOrEmpty() || bundle.size() > 0
+            mcModified = bundle.size() > 0
         }
     } catch (_: Exception) {}
     try {

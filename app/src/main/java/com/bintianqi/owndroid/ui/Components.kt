@@ -53,6 +53,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -332,7 +333,9 @@ fun MyLazyScaffold(
         Modifier.nestedScroll(sb.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
-                { Text(stringResource(title)) },
+                {
+                    Text(stringResource(title), overflow = TextOverflow.Ellipsis, maxLines = 1)
+                },
                 navigationIcon = { NavIcon(onNavIconClicked) },
                 actions = actions,
                 scrollBehavior = sb

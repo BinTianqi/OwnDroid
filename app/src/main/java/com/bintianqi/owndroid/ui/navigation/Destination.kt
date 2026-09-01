@@ -90,6 +90,11 @@ sealed class Destination : NavKey {
     @Serializable class ApplicationDetails(val packageName: String) : Destination()
     @Serializable object AppPermissionsManager : Destination()
     @Serializable class ManagedConfiguration(val packageName: String) : Destination()
+    @Serializable class ManagedConfigurationValueEditor(
+        val id: String, val isInt: Boolean
+    ) : Destination()
+    @Serializable class ManagedConfigurationBooleanEditor(val id: String) : Destination()
+    @Serializable class ManagedConfigurationListEditor(val id: String) : Destination()
 
     @Serializable class ApplicationsList(
         val mode: AppChooserMode,

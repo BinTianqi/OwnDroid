@@ -3,64 +3,21 @@ package com.bintianqi.owndroid.feature.applications
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-sealed class AppRestriction(
-    open val key: String, open val title: String?, open val description: String?
-) {
-    abstract fun isNull(): Boolean
-    data class IntItem(
-        override val key: String,
-        override val title: String?,
-        override val description: String?,
-        var value: Int?,
-    ) : AppRestriction(key, title, description) {
-        override fun isNull(): Boolean = value == null
-    }
-
-    data class StringItem(
-        override val key: String,
-        override val title: String?,
-        override val description: String?,
-        var value: String?
-    ) : AppRestriction(key, title, description) {
-        override fun isNull(): Boolean = value == null
-    }
-
-    data class BooleanItem(
-        override val key: String,
-        override val title: String?,
-        override val description: String?,
-        var value: Boolean?
-    ) : AppRestriction(key, title, description) {
-        override fun isNull(): Boolean = value == null
-    }
-
-    data class ChoiceItem(
-        override val key: String,
-        override val title: String?,
-        override val description: String?,
-        val entries: Array<String>,
-        val entryValues: Array<String>,
-        var value: String?
-    ) : AppRestriction(key, title, description) {
-        override fun isNull(): Boolean = value == null
-    }
-
-    data class MultiSelectItem(
-        override val key: String,
-        override val title: String?,
-        override val description: String?,
-        val entries: Array<String>,
-        val entryValues: Array<String>,
-        var value: Array<String>?
-    ) : AppRestriction(key, title, description) {
-        override fun isNull(): Boolean = value == null
-    }
+/**
+ * Don't modify their names because they're used for serialization
+ */
+enum class AppRestrictionType {
+    Int, String, Boolean, Choice, MultiSelect
 }
 
-data class MultiSelectEntry(val value: String, val title: String?, val selected: Boolean)
+class AppRestrictionManifest(
+    val key: String, val type: AppRestrictionType,
+    val title: String?, val description: String?,
+    val entries: Array<String>? = null, val entryValues: Array<String>? = null
+)
 
 @Serializable
-class AppRestrictionJson(
+class AppRestrictionValue(
     val id: String,
     @SerialName("v_int") val vInt: Int? = null,
     @SerialName("v_str") val vString: String? = null, // for string and choice item

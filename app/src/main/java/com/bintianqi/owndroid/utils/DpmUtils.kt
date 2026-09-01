@@ -8,12 +8,10 @@ import android.app.admin.IDevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.RestrictionEntry
 import android.content.pm.IPackageInstaller
 import android.content.pm.PackageInstaller
 import android.os.Binder
 import android.os.Build.VERSION
-import android.os.Bundle
 import android.os.UserHandle
 import android.os.UserManager
 import android.util.Log
@@ -21,7 +19,6 @@ import androidx.annotation.RequiresApi
 import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.PrivilegeHelper
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.feature.applications.AppRestriction
 import com.bintianqi.owndroid.feature.network.NetworkLog
 import com.bintianqi.owndroid.feature.settings.SettingsRepository
 import com.bintianqi.owndroid.feature.users.UserOperationType
@@ -240,45 +237,4 @@ class DhizukuException: Exception {
 
 enum class DhizukuError {
     Init, Permission, Binder
-}
-
-fun transformAppRestrictionEntryList(
-    list: List<RestrictionEntry>, bundle: Bundle
-): List<AppRestriction> {
-    return list.mapNotNull {
-        when (it.type) {
-            RestrictionEntry.TYPE_INTEGER ->
-                AppRestriction.IntItem(it.key, it.title, it.description, null)
-
-            RestrictionEntry.TYPE_STRING ->
-                AppRestriction.StringItem(it.key, it.title, it.description, null)
-
-            RestrictionEntry.TYPE_BOOLEAN ->
-                AppRestriction.BooleanItem(it.key, it.title, it.description, null)
-
-            RestrictionEntry.TYPE_CHOICE -> AppRestriction.ChoiceItem(
-                it.key, it.title,
-                it.description, it.choiceEntries, it.choiceValues, null
-            )
-
-            RestrictionEntry.TYPE_MULTI_SELECT -> AppRestriction.MultiSelectItem(
-                it.key, it.title,
-                it.description, it.choiceEntries, it.choiceValues, null
-            )
-
-            else -> null
-        }
-    }.map {
-        if (bundle.containsKey(it.key)) {
-            when (it) {
-                is AppRestriction.BooleanItem -> it.value = bundle.getBoolean(it.key)
-                is AppRestriction.StringItem -> it.value = bundle.getString(it.key)
-                is AppRestriction.IntItem -> it.value = bundle.getInt(it.key)
-                is AppRestriction.ChoiceItem -> it.value = bundle.getString(it.key)
-                is AppRestriction.MultiSelectItem -> it.value =
-                    bundle.getStringArray(it.key)
-            }
-        }
-        it
-    }
 }

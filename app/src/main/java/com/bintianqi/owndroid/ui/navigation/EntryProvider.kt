@@ -23,7 +23,10 @@ import com.bintianqi.owndroid.feature.applications.CredentialManagerPolicyScreen
 import com.bintianqi.owndroid.feature.applications.EditAppGroupScreen
 import com.bintianqi.owndroid.feature.applications.EnableSystemAppScreen
 import com.bintianqi.owndroid.feature.applications.InstallExistingAppScreen
+import com.bintianqi.owndroid.feature.applications.ManagedConfigurationBooleanEditorScreen
+import com.bintianqi.owndroid.feature.applications.ManagedConfigurationListEditorScreen
 import com.bintianqi.owndroid.feature.applications.ManagedConfigurationScreen
+import com.bintianqi.owndroid.feature.applications.ManagedConfigurationValueEditorScreen
 import com.bintianqi.owndroid.feature.applications.ManagedConfigurationViewModel
 import com.bintianqi.owndroid.feature.applications.PackageFunctionScreen
 import com.bintianqi.owndroid.feature.applications.PermissionDetailScreen
@@ -612,8 +615,23 @@ fun myEntryProvider(
                 ManagedConfigurationViewModel(
                     it.packageName, container.app, container.privilegeHelper, container.toastChannel
                 )
-            }), ::navigateUp
+            }), ::navigateUp, ::navigate
         )
+    }
+    entry<Destination.ManagedConfigurationValueEditor>(
+        metadata = navParentKey<Destination.ManagedConfiguration>()
+    ) {
+        ManagedConfigurationValueEditorScreen(viewModel(), it.id, it.isInt, ::navigateUp)
+    }
+    entry<Destination.ManagedConfigurationBooleanEditor>(
+        metadata = navParentKey<Destination.ManagedConfiguration>()
+    ) {
+        ManagedConfigurationBooleanEditorScreen(viewModel(), it.id, ::navigateUp)
+    }
+    entry<Destination.ManagedConfigurationListEditor>(
+        metadata = navParentKey<Destination.ManagedConfiguration>()
+    ) {
+        ManagedConfigurationListEditorScreen(viewModel(), it.id, ::navigateUp)
     }
     entry<Destination.AppGroups> {
         AppGroupsScreen(

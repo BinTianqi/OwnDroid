@@ -2,6 +2,7 @@ package com.bintianqi.owndroid.feature.applications
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,7 +13,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -20,35 +20,39 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,11 +68,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.MySmallTitleScaffold
 import com.bintianqi.owndroid.ui.NavIcon
+import com.bintianqi.owndroid.ui.SwitchItem
+import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.BottomPadding
 import com.bintianqi.owndroid.utils.HorizontalPadding
 import com.bintianqi.owndroid.utils.adaptiveInsets
@@ -79,9 +85,10 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManagedConfigurationScreen(
-    vm: ManagedConfigurationViewModel, navigateUp: () -> Unit
+    vm: ManagedConfigurationViewModel, navigateUp: () -> Unit, navigate: (Destination) -> Unit
 ) {
-    val restrictions by vm.restrictionsState.collectAsStateWithLifecycle()
+    val manifests by vm.manifestsState.collectAsState()
+    val values by vm.valuesState.collectAsState()
     var searchMode by rememberSaveable { mutableStateOf(false) }
     var searchKeyword by rememberSaveable { mutableStateOf("") }
     var showModified by rememberSaveable { mutableStateOf(true) }
@@ -94,13 +101,18 @@ fun ManagedConfigurationScreen(
     val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
         if (it != null) vm.importConfiguration(it)
     }
-    val displayRestrictions = restrictions.filter {
-        ((showModified && !it.isNull()) || (showUnmodified && it.isNull())) &&
+    val allIds = (manifests.map { it.key } + values.map { it.id }).distinct()
+    val displayRestrictions = allIds.filter { id ->
+        val manifest = manifests.find { it.key == id }
+        val value = values.find { it.id == id }
+        ((showModified && value != null) || (showUnmodified && value == null)) &&
                 (!searchMode || searchKeyword.isBlank() ||
-                        searchInString(searchKeyword, it.key) ||
-                        it.title?.contains(searchKeyword, true) ?: true)
+                        searchInString(searchKeyword, id) ||
+                        searchInString(searchKeyword, manifest?.title ?: "") ||
+                        searchInString(searchKeyword, manifest?.description ?: "") ||
+                        searchInString(searchKeyword, value?.vString ?: "") ||
+                        value?.vList?.any { searchInString(searchKeyword, it) } ?: false)
     }
-    var dialog by remember { mutableStateOf<AppRestriction?>(null) }
     var clearRestrictionDialog by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
@@ -116,7 +128,7 @@ fun ManagedConfigurationScreen(
                             Modifier
                                 .fillMaxWidth()
                                 .focusRequester(fr),
-                            textStyle = typography.bodyLarge,
+                            textStyle = MaterialTheme.typography.bodyLarge,
                             placeholder = { Text(stringResource(R.string.search)) },
                             trailingIcon = {
                                 IconButton({
@@ -129,7 +141,10 @@ fun ManagedConfigurationScreen(
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
                         )
                     } else {
-                        Text(stringResource(R.string.managed_configuration))
+                        Text(
+                            stringResource(R.string.managed_configuration),
+                            overflow = TextOverflow.Ellipsis, maxLines = 1
+                        )
                     }
                 },
                 navigationIcon = { NavIcon(navigateUp) },
@@ -140,6 +155,7 @@ fun ManagedConfigurationScreen(
                         }) {
                             Icon(Icons.Outlined.Search, null)
                         }
+                        CreateRestrictionMenu(navigate)
                     }
                     Box {
                         var dropdownMenu by remember { mutableStateOf(false) }
@@ -198,78 +214,52 @@ fun ManagedConfigurationScreen(
     ) { paddingValues ->
         LazyColumn(Modifier.padding(paddingValues)) {
             item {
-                if (restrictions.isEmpty()) {
+                if (displayRestrictions.isEmpty()) {
                     Text(
-                        stringResource(R.string.none), Modifier.fillMaxWidth().padding(top = 4.dp),
+                        stringResource(R.string.none), Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
                         textAlign = TextAlign.Center
                     )
                 }
             }
-            items(displayRestrictions, { it.key }) { entry ->
+            items(displayRestrictions, { it }) { id ->
+                val manifest = manifests.find { it.key == id }
+                val value = values.find { it.id == id }
+                val iconId = getRestrictionIcon(manifest, value)
+                val valueText = value?.run {
+                    vString ?: vInt?.toString() ?: vBool?.toString() ?: vList?.joinToString()
+                }
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .clickable {
-                            dialog = entry
-                        }
+                        .clickable { navigateToEditor(manifest, value, id, navigate) }
                         .background(
-                            if (entry.isNull()) MaterialTheme.colorScheme.background
+                            if (value == null) MaterialTheme.colorScheme.background
                             else MaterialTheme.colorScheme.surfaceVariant
                         )
                         .padding(HorizontalPadding, 8.dp)
                         .animateItem(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val iconId = when (entry) {
-                        is AppRestriction.IntItem -> R.drawable.number_123_fill0
-                        is AppRestriction.StringItem -> R.drawable.abc_fill0
-                        is AppRestriction.BooleanItem -> R.drawable.toggle_off_fill0
-                        is AppRestriction.ChoiceItem -> R.drawable.radio_button_checked_fill0
-                        is AppRestriction.MultiSelectItem -> R.drawable.check_box_fill0
-                    }
                     Icon(painterResource(iconId), null, Modifier.padding(end = 12.dp))
                     Column {
-                        if (entry.title != null) {
-                            Text(entry.title!!, style = typography.labelLarge)
-                            Text(entry.key, style = typography.bodyMedium)
-                        } else {
-                            Text(entry.key, style = typography.labelLarge)
-                        }
-                        val text = when (entry) {
-                            is AppRestriction.IntItem -> entry.value?.toString()
-                            is AppRestriction.StringItem -> entry.value?.take(30)
-                            is AppRestriction.BooleanItem -> entry.value?.toString()
-                            is AppRestriction.ChoiceItem -> entry.value
-                            is AppRestriction.MultiSelectItem -> entry.value?.joinToString(
-                                limit = 30
-                            )
-                        }
+                        if (manifest?.title != null) Text(
+                            manifest.title, style = MaterialTheme.typography.labelLarge
+                        )
+                        Text(id, style = MaterialTheme.typography.labelMedium)
                         Text(
-                            text ?: "null", Modifier.alpha(0.7F),
-                            fontStyle = if (text == null) FontStyle.Italic else null,
-                            style = typography.bodyMedium
+                            valueText ?: "null", Modifier.alpha(0.7F),
+                            fontStyle = if (valueText == null) FontStyle.Italic else null,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 2,
+                            style = MaterialTheme.typography.bodyMedium
                         )
                     }
                 }
             }
             item {
                 Spacer(Modifier.height(BottomPadding))
-            }
-        }
-    }
-    if (dialog != null) Dialog({
-        dialog = null
-    }) {
-        Surface(
-            color = AlertDialogDefaults.containerColor,
-            shape = AlertDialogDefaults.shape,
-            tonalElevation = AlertDialogDefaults.TonalElevation,
-        ) {
-            ManagedConfigurationDialogContent(dialog!!) {
-                if (it != null) {
-                    vm.setRestriction(it)
-                }
-                dialog = null
             }
         }
     }
@@ -298,220 +288,477 @@ fun ManagedConfigurationScreen(
     )
 }
 
-@Composable
-fun ManagedConfigurationDialogContent(
-    restriction: AppRestriction, setRestriction: (AppRestriction?) -> Unit
-) {
-    var specifyValue by remember { mutableStateOf(false) }
-    var input by remember { mutableStateOf("") }
-    var inputState by remember { mutableStateOf(false) }
-    val multiSelectList = remember {
-        mutableStateListOf(
-            *(if (restriction is AppRestriction.MultiSelectItem) {
-                restriction.entryValues.mapIndexed { index, value ->
-                    MultiSelectEntry(
-                        value, restriction.entries.getOrNull(index),
-                        restriction.value?.contains(value) ?: false
-                    )
-                }.sortedBy { entry ->
-                    val index = restriction.value?.indexOf(entry.value)
-                    if (index == null || index == -1) Int.MAX_VALUE else index
-                }
-            } else emptyList()).toTypedArray()
-        )
+private fun getRestrictionIcon(
+    manifest: AppRestrictionManifest?, value: AppRestrictionValue?
+): Int {
+    val fallbackIcon = if (value?.vString != null) {
+        R.drawable.abc_fill0
+    } else if (value?.vInt != null) {
+        R.drawable.number_123_fill0
+    } else if (value?.vBool != null) {
+        R.drawable.toggle_off_fill0
+    } else if (value?.vList != null) {
+        R.drawable.list_fill0
+    } else {
+        null
     }
+    return when (manifest?.type) {
+        AppRestrictionType.Int -> R.drawable.number_123_fill0
+        AppRestrictionType.String -> R.drawable.abc_fill0
+        AppRestrictionType.Boolean -> R.drawable.toggle_off_fill0
+        AppRestrictionType.Choice -> R.drawable.radio_button_checked_fill0
+        AppRestrictionType.MultiSelect -> R.drawable.check_box_fill0
+        null -> null
+    } ?: fallbackIcon!!
+}
+
+private fun navigateToEditor(
+    manifest: AppRestrictionManifest?, value: AppRestrictionValue?,
+    id: String, navigate: (Destination) -> Unit
+) {
+    if (
+        manifest?.type == AppRestrictionType.String ||
+        manifest?.type == AppRestrictionType.Choice ||
+        value?.vString != null
+    ) {
+        navigate(Destination.ManagedConfigurationValueEditor(id, false))
+    } else if (
+        manifest?.type == AppRestrictionType.Int || value?.vInt != null
+    ) {
+        navigate(Destination.ManagedConfigurationValueEditor(id, true))
+    } else if (
+        manifest?.type == AppRestrictionType.Boolean ||
+        value?.vBool != null
+    ) {
+        navigate(Destination.ManagedConfigurationBooleanEditor(id))
+    } else if (
+        manifest?.type == AppRestrictionType.MultiSelect ||
+        value?.vList != null
+    ) {
+        navigate(Destination.ManagedConfigurationListEditor(id))
+    }
+}
+
+@Composable
+private fun CreateRestrictionMenu(navigate: (Destination) -> Unit) {
+    var expand by remember { mutableStateOf(false) }
+    Box {
+        IconButton({ expand = true }) {
+            Icon(Icons.Default.Add, null)
+        }
+        DropdownMenu(expand, { expand = false }) {
+            DropdownMenuItem(
+                { Text(stringResource(R.string.value_string)) },
+                {
+                    expand = false
+                    navigate(Destination.ManagedConfigurationValueEditor("", false))
+                },
+                leadingIcon = { Icon(painterResource(R.drawable.abc_fill0), null) }
+            )
+            DropdownMenuItem(
+                { Text(stringResource(R.string.value_int)) },
+                {
+                    expand = false
+                    navigate(Destination.ManagedConfigurationValueEditor("", true))
+                },
+                leadingIcon = { Icon(painterResource(R.drawable.number_123_fill0), null) }
+            )
+            DropdownMenuItem(
+                { Text(stringResource(R.string.value_boolean)) },
+                {
+                    expand = false
+                    navigate(Destination.ManagedConfigurationBooleanEditor(""))
+                },
+                leadingIcon = { Icon(painterResource(R.drawable.toggle_off_fill0), null) }
+            )
+            DropdownMenuItem(
+                { Text(stringResource(R.string.value_list)) },
+                {
+                    expand = false
+                    navigate(Destination.ManagedConfigurationListEditor(""))
+                },
+                leadingIcon = { Icon(painterResource(R.drawable.list_fill0), null) }
+            )
+        }
+    }
+}
+
+@Composable
+fun ManagedConfigurationBooleanEditorScreen(
+    vm: ManagedConfigurationViewModel, defaultId: String, navigateUp: () -> Unit
+) {
+    var idInput by rememberSaveable { mutableStateOf(defaultId) }
+    val manifestList by vm.manifestsState.collectAsState()
+    val valuesList by vm.valuesState.collectAsState()
+    val manifest = manifestList.find { it.key == idInput }
+    var status by rememberSaveable { mutableStateOf(true) }
+    var enabled by rememberSaveable { mutableStateOf(true) }
+    // We don't check for conflict values in `vm.valuesState`,
+    // because `vm.setRestriction()` will silently override the old value
+    val conflictValue = manifest != null && manifest.type != AppRestrictionType.Boolean
     LaunchedEffect(Unit) {
-        when (restriction) {
-            is AppRestriction.IntItem -> restriction.value?.let {
-                input = it.toString()
-                specifyValue = true
+        if (defaultId.isNotEmpty()) {
+            val value = vm.valuesState.value.find { it.id == defaultId }
+            if (manifest != null) enabled = value?.vBool != null
+            status = value?.vBool ?: true
+        }
+    }
+    MySmallTitleScaffold(R.string.place_holder, navigateUp, actions = {
+        if (manifest == null && valuesList.find { it.id == idInput } != null) {
+            IconButton({
+                vm.setRestriction(AppRestrictionValue(idInput))
+                navigateUp()
+            }) {
+                Icon(Icons.Outlined.Delete, null)
             }
-
-            is AppRestriction.StringItem -> restriction.value?.let {
-                input = it
-                specifyValue = true
+        }
+        FilledIconButton({
+            val value = if (enabled) status else null
+            vm.setRestriction(AppRestrictionValue(idInput, vBool = value))
+            navigateUp()
+        }, enabled = !conflictValue) {
+            Icon(Icons.Default.Check, null)
+        }
+    }) {
+        if (manifest != null) RestrictionMetadataBlock(manifest)
+        OutlinedTextField(
+            idInput, { idInput = it },
+            Modifier.fillMaxWidth(),
+            readOnly = defaultId.isNotEmpty(),
+            label = { Text("id") },
+            supportingText = {
+                if (conflictValue) Text(
+                    stringResource(R.string.restriction_value_exists),
+                    color = MaterialTheme.colorScheme.error
+                )
             }
-
-            is AppRestriction.BooleanItem -> restriction.value?.let {
-                inputState = it
-                specifyValue = true
+        )
+        if (manifest != null) SwitchItem(
+            R.string.enable, icon = null, enabled, { enabled = it }, padding = false
+        )
+        Spacer(Modifier.height(8.dp))
+        if (enabled) SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+            SegmentedButton(
+                status, { status = true },
+                SegmentedButtonDefaults.itemShape(0, 2)
+            ) {
+                Text("true")
             }
-
-            is AppRestriction.ChoiceItem -> restriction.value?.let {
-                input = it
-                specifyValue = true
-            }
-
-            is AppRestriction.MultiSelectItem -> restriction.value?.let {
-                specifyValue = true
+            SegmentedButton(
+                !status, { status = false },
+                SegmentedButtonDefaults.itemShape(1, 2)
+            ) {
+                Text("false")
             }
         }
     }
-    val listState = rememberLazyListState()
-    val reorderableListState = rememberReorderableLazyListState(listState) { from, to ->
-        // `-1` because there's an `item` before items
-        multiSelectList.add(from.index - 1, multiSelectList.removeAt(to.index - 1))
-    }
-    LazyColumn(Modifier.padding(12.dp), listState) {
-        item {
-            SelectionContainer {
-                Column {
-                    restriction.title?.let {
-                        Text(it, style = typography.titleLarge)
-                    }
-                    Text(
-                        restriction.key, Modifier.padding(vertical = 4.dp),
-                        style = typography.labelLarge
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    restriction.description?.let {
-                        Text(it, Modifier.alpha(0.8F), style = typography.bodyMedium)
-                    }
-                    Spacer(Modifier.height(8.dp))
-                }
+}
+
+@Composable
+fun ManagedConfigurationValueEditorScreen(
+    vm: ManagedConfigurationViewModel, defaultId: String, isInt: Boolean, navigateUp: () -> Unit
+) {
+    var idInput by rememberSaveable { mutableStateOf(defaultId) }
+    val manifestList by vm.manifestsState.collectAsState()
+    val valuesList by vm.valuesState.collectAsState()
+    val manifest = manifestList.find { it.key == idInput }
+    var valueInput by rememberSaveable { mutableStateOf("") }
+    var enabled by rememberSaveable { mutableStateOf(true) }
+    val conflictValue = manifest != null && ((isInt && manifest.type != AppRestrictionType.Int) ||
+            (!isInt && (manifest.type != AppRestrictionType.String &&
+                    manifest.type != AppRestrictionType.Choice)))
+    LaunchedEffect(Unit) {
+        if (defaultId.isNotEmpty()) {
+            val value = vm.valuesState.value.find { it.id == defaultId }
+            if (manifest != null) {
+                enabled = if (isInt) value?.vInt != null
+                else value?.vString != null
             }
+            valueInput = (if (isInt) value?.vInt?.toString() else value?.vString) ?: ""
+        }
+    }
+    MySmallTitleScaffold(R.string.place_holder, navigateUp, 0.dp, {
+        if (manifest == null && valuesList.find { it.id == idInput } != null) {
+            IconButton({
+                vm.setRestriction(AppRestrictionValue(idInput))
+                navigateUp()
+            }) {
+                Icon(Icons.Outlined.Delete, null)
+            }
+        }
+        FilledIconButton({
+            val value = if (enabled) valueInput else null
+            val item = if (isInt) {
+                AppRestrictionValue(idInput, vInt = value?.toInt())
+            } else {
+                AppRestrictionValue(idInput, vString = value)
+            }
+            vm.setRestriction(item)
+            navigateUp()
+        }, enabled = !conflictValue && (!enabled || !isInt || valueInput.toIntOrNull() != null)) {
+            Icon(Icons.Default.Check, null)
+        }
+    }) {
+        Column(Modifier.padding(horizontal = HorizontalPadding)) {
+            if (manifest != null) RestrictionMetadataBlock(manifest)
+            OutlinedTextField(
+                idInput, { idInput = it },
+                Modifier.fillMaxWidth(),
+                readOnly = defaultId.isNotEmpty(),
+                label = { Text("id") },
+                supportingText = {
+                    if (conflictValue) Text(
+                        stringResource(R.string.restriction_value_exists),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            )
+            if (manifest != null) SwitchItem(
+                R.string.enable, icon = null, enabled, { enabled = it }, padding = false
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        if (enabled && manifest != null) manifest.entryValues?.forEachIndexed { index, value ->
+            val title = manifest.entries?.getOrNull(index)
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 4.dp),
-                Arrangement.SpaceBetween, Alignment.CenterVertically
+                    .clickable { valueInput = value }
+                    .padding(HorizontalPadding, 8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(stringResource(R.string.specify_value))
-                Switch(specifyValue, { specifyValue = it })
-            }
-        }
-        if (specifyValue) when (restriction) {
-            is AppRestriction.IntItem -> item {
-                OutlinedTextField(
-                    input, { input = it }, Modifier.fillMaxWidth(),
-                    isError = input.toIntOrNull() == null
-                )
-            }
-
-            is AppRestriction.StringItem -> item {
-                OutlinedTextField(
-                    input, { input = it }, Modifier.fillMaxWidth()
-                )
-            }
-
-            is AppRestriction.BooleanItem -> item {
-                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                    SegmentedButton(
-                        inputState, { inputState = true },
-                        SegmentedButtonDefaults.itemShape(0, 2)
-                    ) {
-                        Text("true")
-                    }
-                    SegmentedButton(
-                        !inputState, { inputState = false },
-                        SegmentedButtonDefaults.itemShape(1, 2)
-                    ) {
-                        Text("false")
-                    }
+                RadioButton(value == valueInput, null)
+                Column(Modifier.padding(start = 8.dp)) {
+                    if (title != null) Text(title, style = MaterialTheme.typography.labelLarge)
+                    Text(value, style = MaterialTheme.typography.bodyMedium)
                 }
             }
+        }
+        if (enabled) OutlinedTextField(
+            valueInput, { valueInput = it },
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = HorizontalPadding),
+            label = { Text(stringResource(R.string.value)) },
+            isError = valueInput.isNotEmpty() && isInt && valueInput.toIntOrNull() == null,
+            minLines = if (isInt) 1 else 2
+        )
+    }
+}
 
-            is AppRestriction.ChoiceItem -> itemsIndexed(restriction.entryValues) { index, value ->
-                val label = restriction.entries.getOrNull(index)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ManagedConfigurationListEditorScreen(
+    vm: ManagedConfigurationViewModel, defaultId: String, navigateUp: () -> Unit
+) {
+    var idInput by rememberSaveable { mutableStateOf(defaultId) }
+    val manifestList by vm.manifestsState.collectAsState()
+    val valuesList by vm.valuesState.collectAsState()
+    val manifest = manifestList.find { it.key == idInput }
+    // Reorderable requires a stable `key` for each item,
+    // so not using list index since it will change after reordering.
+    // And `list` may contain duplicate items, so not using their content as key.
+    var assignedId by rememberSaveable { mutableIntStateOf(0) }
+    val list = rememberSaveable { mutableStateListOf<Pair<Int, String>>() }
+    var valueInput by rememberSaveable { mutableStateOf("") }
+    var enabled by rememberSaveable { mutableStateOf(true) }
+    val listState = rememberLazyListState()
+    val itemsBeforeList = 1 + (manifest?.entryValues?.size ?: 0)
+    val reorderableListState = rememberReorderableLazyListState(listState) { from, to ->
+        list.add(from.index - itemsBeforeList, list.removeAt(to.index - itemsBeforeList))
+    }
+    val conflictValue = manifest != null && manifest.type != AppRestrictionType.MultiSelect
+    var editingItem by rememberSaveable { mutableIntStateOf(-1) }
+    LaunchedEffect(Unit) {
+        if (defaultId.isNotEmpty()) { // Edit an item
+            val value = vm.valuesState.value.find { it.id == defaultId }
+            if (value != null) { // Has a previously set value
+                if (value.vList != null) {
+                    list.clear()
+                    value.vList.forEach {
+                        list += assignedId++ to it
+                    }
+                }
+                enabled = value.vList != null
+            }
+        }
+    }
+    Scaffold(
+        topBar = {
+            TopAppBar({}, navigationIcon = {
+                IconButton(navigateUp) {
+                    Icon(Icons.AutoMirrored.Default.ArrowBack, null)
+                }
+            }, actions = {
+                if (manifest == null && valuesList.find { it.id == idInput } != null) {
+                    IconButton({
+                        vm.setRestriction(AppRestrictionValue(idInput))
+                        navigateUp()
+                    }) {
+                        Icon(Icons.Outlined.Delete, null)
+                    }
+                }
+                FilledIconButton({
+                    val value = if (enabled) list.map { it.second } else null
+                    vm.setRestriction(AppRestrictionValue(idInput, vList = value))
+                    navigateUp()
+                }, enabled = !conflictValue) {
+                    Icon(Icons.Default.Check, null)
+                }
+            })
+        },
+        contentWindowInsets = adaptiveInsets()
+    ) { paddingValues ->
+        LazyColumn(
+            Modifier.padding(paddingValues), listState
+        ) {
+            item {
+                Column(Modifier.padding(horizontal = HorizontalPadding)) {
+                    if (manifest != null) RestrictionMetadataBlock(manifest)
+                    OutlinedTextField(
+                        idInput, { idInput = it },
+                        Modifier.fillMaxWidth(),
+                        readOnly = defaultId.isNotEmpty(),
+                        label = { Text("id") },
+                        supportingText = {
+                            if (conflictValue) Text(
+                                stringResource(R.string.restriction_value_exists),
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    )
+                }
+                if (manifest != null) SwitchItem(R.string.enable, enabled, { enabled = it })
+            }
+            if (enabled && manifest != null) itemsIndexed(
+                manifest.entryValues ?: emptyArray()
+            ) { index, value ->
+                val title = manifest.entries?.getOrNull(index)
                 Row(
                     Modifier
                         .fillMaxWidth()
                         .clickable {
-                            input = value
+                            val indexInList = list.indexOfFirst { it.second == value }
+                            if (indexInList == -1) {
+                                list += assignedId++ to value
+                            } else {
+                                list.removeAt(indexInList)
+                            }
                         }
-                        .padding(8.dp, 4.dp)
+                        .padding(HorizontalPadding, 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    RadioButton(input == value, { input = value })
-                    Spacer(Modifier.width(8.dp))
-                    if (label == null) {
-                        Text(value)
-                    } else {
-                        Column {
-                            Text(label)
-                            Text(value, Modifier.alpha(0.7F), style = typography.bodyMedium)
-                        }
+                    Checkbox(list.find { it.second == value } != null, null)
+                    Column(Modifier.padding(start = 8.dp)) {
+                        if (title != null) Text(title, style = MaterialTheme.typography.labelLarge)
+                        Text(value, style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }
-
-            is AppRestriction.MultiSelectItem -> itemsIndexed(
-                multiSelectList, { _, v -> v.value }
-            ) { index, entry ->
-                ReorderableItem(reorderableListState, entry.value) {
+            if (enabled) itemsIndexed(list, { _, v -> v.first }) { index, value ->
+                ReorderableItem(reorderableListState, value.first) {
                     Row(
                         Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                val old = multiSelectList[index]
-                                multiSelectList[index] = old.copy(selected = !old.selected)
-                            }
-                            .padding(8.dp, 4.dp),
+                            .clickable { editingItem = index }
+                            .padding(HorizontalPadding, 4.dp),
                         Arrangement.SpaceBetween, Alignment.CenterVertically
                     ) {
-                        Row(Modifier.weight(1F), verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(entry.selected, null)
-                            Spacer(Modifier.width(8.dp))
-                            if (entry.title == null) {
-                                Text(entry.value)
-                            } else {
-                                Column {
-                                    Text(entry.title)
-                                    Text(
-                                        entry.value, Modifier.alpha(0.7F),
-                                        style = typography.bodyMedium
-                                    )
-                                }
+                        Text(value.second, Modifier.weight(1F))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            IconButton({ list.removeAt(index) }) {
+                                Icon(Icons.Outlined.Clear, null)
                             }
+                            Icon(
+                                painterResource(R.drawable.drag_indicator_fill0), null,
+                                Modifier.draggableHandle()
+                            )
                         }
-                        Icon(
-                            painterResource(R.drawable.drag_indicator_fill0), null,
-                            Modifier.draggableHandle()
-                        )
                     }
                 }
             }
-        }
-        item {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp), Arrangement.End
-            ) {
-                TextButton({
-                    setRestriction(null)
-                }, Modifier.padding(end = 4.dp)) {
-                    Text(stringResource(R.string.cancel))
-                }
-                TextButton({
-                    val newRestriction = when (restriction) {
-                        is AppRestriction.IntItem -> restriction.copy(
-                            value = if (specifyValue) input.toIntOrNull() else null
-                        )
-
-                        is AppRestriction.StringItem -> restriction.copy(
-                            value = if (specifyValue) input else null
-                        )
-
-                        is AppRestriction.BooleanItem -> restriction.copy(
-                            value = if (specifyValue) inputState else null
-                        )
-
-                        is AppRestriction.ChoiceItem -> restriction.copy(
-                            value = if (specifyValue) input else null
-                        )
-
-                        is AppRestriction.MultiSelectItem -> restriction.copy(
-                            value = if (specifyValue)
-                                multiSelectList.filter { it.selected }
-                                    .map { it.value }.toTypedArray()
-                            else null
-                        )
-                    }
-                    setRestriction(newRestriction)
-                }) {
-                    Text(stringResource(R.string.confirm))
-                }
+            if (enabled) item {
+                OutlinedTextField(
+                    valueInput, { valueInput = it },
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = HorizontalPadding),
+                    label = { Text(stringResource(R.string.value)) },
+                    trailingIcon = {
+                        IconButton({
+                            list += assignedId++ to valueInput
+                            valueInput = ""
+                        }) {
+                            Icon(Icons.Default.Add, null)
+                        }
+                    },
+                    minLines = 2
+                )
+            }
+            item {
+                Spacer(Modifier.height(BottomPadding))
             }
         }
     }
+    if (editingItem != -1) {
+        var input by rememberSaveable { mutableStateOf(list[editingItem].second) }
+        AlertDialog(
+            text = {
+                OutlinedTextField(
+                    input, { input = it },
+                    Modifier.fillMaxWidth(),
+                    textStyle = MaterialTheme.typography.bodyLarge
+                )
+            },
+            dismissButton = {
+                TextButton({ editingItem = -1 }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+            confirmButton = {
+                TextButton({
+                    list[editingItem] = list[editingItem].copy(second = input)
+                    editingItem = -1
+                }) {
+                    Text(stringResource(R.string.confirm))
+                }
+            },
+            onDismissRequest = { editingItem = -1 }
+        )
+    }
+}
+
+@Composable
+private fun RestrictionMetadataBlock(manifest: AppRestrictionManifest) {
+    var needExpand by rememberSaveable { mutableStateOf(false) }
+    var expand by rememberSaveable { mutableStateOf(false) }
+    SelectionContainer {
+        Column(Modifier.padding(top = 8.dp)) {
+            if (manifest.title != null) Text(
+                manifest.title, style = MaterialTheme.typography.titleLarge
+            )
+            if (manifest.description != null) {
+                Text(
+                    manifest.description,
+                    Modifier
+                        .alpha(0.8F)
+                        .animateContentSize(),
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = if (expand) Int.MAX_VALUE else 6,
+                    onTextLayout = { if (!needExpand) needExpand = it.didOverflowHeight }
+                )
+            }
+        }
+    }
+    if (needExpand) TextButton({
+        expand = !expand
+    }) {
+        if (expand) {
+            Icon(Icons.Default.KeyboardArrowUp, null)
+            Text(stringResource(R.string.collapse))
+        } else {
+            Icon(Icons.Default.KeyboardArrowDown, null)
+            Text(stringResource(R.string.expand))
+        }
+    }
+    Spacer(Modifier.height(8.dp))
 }
