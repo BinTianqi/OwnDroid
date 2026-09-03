@@ -16,12 +16,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -31,7 +29,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -54,13 +51,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -75,6 +69,7 @@ import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.PackageNameTextField
 import com.bintianqi.owndroid.ui.SwitchItem
+import com.bintianqi.owndroid.ui.TopBarSearchTextField
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.AppInfo
 import com.bintianqi.owndroid.utils.BottomPadding
@@ -209,25 +204,10 @@ fun PermissionManagerScreen(
             TopAppBar(
                 {
                     if (searchMode) {
-                        val fr = remember { FocusRequester() }
-                        LaunchedEffect(Unit) { fr.requestFocus() }
-                        OutlinedTextField(
-                            query, { query = it },
-                            Modifier
-                                .fillMaxWidth()
-                                .focusRequester(fr),
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                            placeholder = { Text(stringResource(R.string.search)) },
-                            trailingIcon = {
-                                IconButton({
-                                    query = ""
-                                    searchMode = false
-                                }) {
-                                    Icon(Icons.Outlined.Clear, null)
-                                }
-                            },
-                            textStyle = typography.bodyLarge
-                        )
+                        TopBarSearchTextField(query, { query = it }) {
+                            query = ""
+                            searchMode = false
+                        }
                     } else {
                         Text(stringResource(R.string.permissions))
                     }
@@ -296,25 +276,10 @@ fun PermissionDetailScreen(
             TopAppBar(
                 {
                     if (searchMode) {
-                        val fr = remember { FocusRequester() }
-                        LaunchedEffect(Unit) { fr.requestFocus() }
-                        OutlinedTextField(
-                            query, { query = it },
-                            Modifier
-                                .fillMaxWidth()
-                                .focusRequester(fr),
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                            placeholder = { Text(stringResource(R.string.search)) },
-                            trailingIcon = {
-                                IconButton({
-                                    query = ""
-                                    searchMode = false
-                                }) {
-                                    Icon(Icons.Outlined.Clear, null)
-                                }
-                            },
-                            textStyle = typography.bodyLarge
-                        )
+                        TopBarSearchTextField(query, { query = it }) {
+                            query = ""
+                            searchMode = false
+                        }
                     } else {
                         Text(permissionItem.label, overflow = TextOverflow.Ellipsis, maxLines = 1)
                     }
@@ -700,28 +665,12 @@ fun PackageFunctionScreen(
             TopAppBar(
                 {
                     if (searchMode) {
-                        val fr = remember { FocusRequester() }
-                        LaunchedEffect(Unit) {
-                            fr.requestFocus()
+                        TopBarSearchTextField(query, { query = it }) {
+                            query = ""
+                            searchMode = false
                         }
-                        OutlinedTextField(
-                            query, { query = it },
-                            Modifier
-                                .fillMaxWidth()
-                                .focusRequester(fr),
-                            textStyle = typography.bodyLarge,
-                            trailingIcon = {
-                                IconButton({
-                                    searchMode = false
-                                    query = ""
-                                }) {
-                                    Icon(Icons.Default.Clear, null)
-                                }
-                            },
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
-                        )
                     } else {
-                        Text(stringResource(title))
+                        Text(stringResource(title), overflow = TextOverflow.Ellipsis, maxLines = 1)
                     }
                 },
                 navigationIcon = { NavIcon(onNavigateUp) },

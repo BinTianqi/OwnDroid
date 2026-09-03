@@ -111,7 +111,7 @@ fun UsersScreen(vm: UsersViewModel, onNavigateUp: () -> Unit, onNavigate: (Desti
         }
         var changeUserIconDialog by remember { mutableStateOf(false) }
         var bitmap: Bitmap? by remember { mutableStateOf(null) }
-        val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
+        val launcher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
             if (it != null) uriToStream(context, it) { stream ->
                 bitmap = BitmapFactory.decodeStream(stream)
                 if (bitmap != null) {
@@ -123,7 +123,7 @@ fun UsersScreen(vm: UsersViewModel, onNavigateUp: () -> Unit, onNavigate: (Desti
         }
         FunctionItem(R.string.change_user_icon, icon = R.drawable.account_circle_fill0) {
             context.popToast(R.string.select_an_image)
-            launcher.launch("image/*")
+            launcher.launch(arrayOf("image/*"))
         }
         if (changeUserIconDialog) ChangeUserIconDialog(
             bitmap!!, {

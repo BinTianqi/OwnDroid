@@ -15,13 +15,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,7 +28,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -47,19 +43,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.NavIcon
+import com.bintianqi.owndroid.ui.TopBarSearchTextField
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.AppInfo
 import com.bintianqi.owndroid.utils.BottomPadding
@@ -168,26 +162,10 @@ fun AppChooserScreen(
                 },
                 title = {
                     if (searchMode) {
-                        val fr = remember { FocusRequester() }
-                        LaunchedEffect(Unit) { fr.requestFocus() }
-                        OutlinedTextField(
-                            query, { query = it },
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                            keyboardActions = KeyboardActions { focusMgr.clearFocus() },
-                            placeholder = { Text(stringResource(R.string.search)) },
-                            trailingIcon = {
-                                IconButton({
-                                    query = ""
-                                    searchMode = false
-                                }) {
-                                    Icon(Icons.Outlined.Clear, null)
-                                }
-                            },
-                            textStyle = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .focusRequester(fr)
-                        )
+                        TopBarSearchTextField(query, { query = it }) {
+                            query = ""
+                            searchMode = false
+                        }
                     } else {
                         if (selectedPackages.isNotEmpty()) {
                             Text(selectedPackages.size.toString())

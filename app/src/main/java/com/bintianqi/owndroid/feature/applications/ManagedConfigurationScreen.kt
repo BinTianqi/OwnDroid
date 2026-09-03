@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -61,12 +60,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -74,6 +70,7 @@ import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.MySmallTitleScaffold
 import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.SwitchItem
+import com.bintianqi.owndroid.ui.TopBarSearchTextField
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.BottomPadding
 import com.bintianqi.owndroid.utils.HorizontalPadding
@@ -98,7 +95,9 @@ fun ManagedConfigurationScreen(
     ) {
         if (it != null) vm.exportConfiguration(it)
     }
-    val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
+    val importLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) {
         if (it != null) vm.importConfiguration(it)
     }
     val allIds = (manifests.map { it.key } + values.map { it.id }).distinct()
@@ -119,27 +118,10 @@ fun ManagedConfigurationScreen(
             TopAppBar(
                 {
                     if (searchMode) {
-                        val fr = remember { FocusRequester() }
-                        LaunchedEffect(Unit) {
-                            fr.requestFocus()
+                        TopBarSearchTextField(searchKeyword, { searchKeyword = it }) {
+                            searchKeyword = ""
+                            searchMode = false
                         }
-                        OutlinedTextField(
-                            searchKeyword, { searchKeyword = it },
-                            Modifier
-                                .fillMaxWidth()
-                                .focusRequester(fr),
-                            textStyle = MaterialTheme.typography.bodyLarge,
-                            placeholder = { Text(stringResource(R.string.search)) },
-                            trailingIcon = {
-                                IconButton({
-                                    searchKeyword = ""
-                                    searchMode = false
-                                }) {
-                                    Icon(Icons.Outlined.Clear, null)
-                                }
-                            },
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
-                        )
                     } else {
                         Text(
                             stringResource(R.string.managed_configuration),
@@ -189,7 +171,7 @@ fun ManagedConfigurationScreen(
                             DropdownMenuItem(
                                 { Text(stringResource(R.string.import_str)) },
                                 {
-                                    importLauncher.launch("application/json")
+                                    importLauncher.launch(arrayOf("application/json"))
                                     dropdownMenu = false
                                 },
                                 leadingIcon = {
