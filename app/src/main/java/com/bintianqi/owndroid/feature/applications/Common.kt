@@ -7,6 +7,8 @@ import android.content.RestrictionsManager
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -15,11 +17,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
@@ -28,6 +37,7 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -55,6 +65,8 @@ class AppChooserEntry(
     val ucd: Boolean, // User control disabled
     val mdd: Boolean, // Metered data disabled
     val internet: Boolean,
+    val installTime: Long,
+    val updateTime: Long,
 )
 
 enum class AppFilterState {
@@ -342,7 +354,8 @@ fun getAppStatus(
     )
     return AppChooserEntry(
         appInfo, hasMc, mcModified, suspended, hidden, ub, ucd, mdd,
-        Manifest.permission.INTERNET in (pkgInfo.requestedPermissions ?: emptyArray())
+        Manifest.permission.INTERNET in (pkgInfo.requestedPermissions ?: emptyArray()),
+        pkgInfo.firstInstallTime, pkgInfo.lastUpdateTime
     )
 }
 
@@ -417,5 +430,83 @@ fun PermissionRadioButtonRow(state: Int?, grantRestricted: Boolean, onSet: (Int)
                 MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary
             )
         )
+    }
+}
+
+enum class AppSortingMode(val strRes: Int, val icon: Int?) {
+    None(R.string.none, null),
+    Name(R.string.name, R.drawable.sort_by_alpha_fill0),
+    PackageName(R.string.package_name, R.drawable.sort_by_alpha_fill0),
+    InstallTime(R.string.install_time, R.drawable.calendar_month_fill0),
+    UpdateTime(R.string.update_time, R.drawable.calendar_month_fill0)
+}
+
+@Serializable
+data class AppSortingOptions(
+    val mode: AppSortingMode = AppSortingMode.None,
+    val reversed: Boolean = false
+)
+
+@Composable
+fun AppSortingMenuContent(options: AppSortingOptions, onChange: (AppSortingOptions) -> Unit) {
+    @Composable
+    fun itemColors(active: Boolean): MenuItemColors {
+        return if (active) MenuDefaults.itemColors(
+            textColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            leadingIconColor = MaterialTheme.colorScheme.onSecondaryContainer
+        )
+        else MenuDefaults.itemColors()
+    }
+    Text(
+        stringResource(R.string.sorting),
+        Modifier.padding(start = 8.dp, bottom = 4.dp),
+        color = MaterialTheme.colorScheme.primary,
+        style = MaterialTheme.typography.labelLarge
+    )
+    AppSortingMode.entries.forEach {
+        val bgAlpha by animateFloatAsState(if (options.mode == it) 1.0F else 0.0F)
+        DropdownMenuItem(
+            { Text(stringResource(it.strRes)) },
+            { onChange(options.copy(mode = it)) },
+            Modifier.background(
+                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = bgAlpha)
+            ),
+            if (options.mode == it || it.icon != null) ({
+                if (options.mode == it) {
+                    Icon(Icons.Default.Check, null)
+                } else {
+                    if (it.icon != null) Icon(painterResource(it.icon), null)
+                }
+            }) else null,
+            colors = itemColors(options.mode == it)
+        )
+    }
+    HorizontalDivider()
+    DropdownMenuItem(
+        { Text(stringResource(R.string.reverse)) },
+        { onChange(options.copy(reversed = !options.reversed)) },
+        leadingIcon = { Checkbox(options.reversed, null) }
+    )
+}
+
+fun sortAppList(list: List<AppChooserEntry>, options: AppSortingOptions): List<AppChooserEntry> {
+    fun getFactor(entry: AppChooserEntry): Comparable<Any> {
+        return when (options.mode) {
+            AppSortingMode.Name -> entry.info.label
+            AppSortingMode.PackageName -> entry.info.name
+            AppSortingMode.InstallTime -> entry.installTime
+            AppSortingMode.UpdateTime -> entry.updateTime
+            else -> null
+        } as Comparable<Any>
+    }
+    return if (options.mode != AppSortingMode.None) {
+        if (options.reversed) {
+            list.sortedByDescending(::getFactor)
+        } else {
+            list.sortedBy(::getFactor)
+        }
+    } else {
+        if (options.reversed) list.reversed()
+        else list
     }
 }

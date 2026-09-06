@@ -23,12 +23,10 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -79,12 +77,12 @@ fun AppChooserScreen(
     val filteredPackages = packages.filter {
         filterApp(it, filter, query)
     }
-    var a2zSort by remember { mutableStateOf(true) }
-    val sortedPackages = if (a2zSort) {
-        filteredPackages.sortedBy { it.info.label }
-    } else {
-        filteredPackages.sortedByDescending { it.info.label }
+    var sortingOptions by rememberSaveable(
+        stateSaver = SerializableSaver(AppSortingOptions.serializer())
+    ) {
+        mutableStateOf(AppSortingOptions())
     }
+    val sortedPackages = sortAppList(filteredPackages, sortingOptions)
     val selectedPackages = remember { mutableStateListOf<AppInfo>() }
     val focusMgr = LocalFocusManager.current
     var enteredApp by rememberSaveable { mutableStateOf("") }
@@ -92,73 +90,78 @@ fun AppChooserScreen(
         if (packages.size <= 1) vm.refreshPackageList()
         vm.updateAppState(enteredApp)
     }
+    @Composable
+    fun TopBarActions() {
+        if (!searchMode) IconButton({ searchMode = true }) {
+            Icon(
+                painterResource(R.drawable.search_fill0),
+                stringResource(R.string.search)
+            )
+        }
+        if (!searchMode) {
+            IconButton({ filterDrawer = true }) {
+                Icon(painterResource(R.drawable.filter_alt_fill0), null)
+            }
+            var sortingMenu by remember { mutableStateOf(false) }
+            Box {
+                IconButton({ sortingMenu = true }) {
+                    Icon(painterResource(R.drawable.sort_fill0), null)
+                }
+                DropdownMenu(sortingMenu, { sortingMenu = false }) {
+                    AppSortingMenuContent(sortingOptions) { sortingOptions = it }
+                }
+            }
+        }
+        var menuExpanded by remember { mutableStateOf(false) }
+        Box {
+            IconButton({
+                menuExpanded = !menuExpanded
+            }) {
+                Icon(Icons.Default.MoreVert, null)
+            }
+            DropdownMenu(menuExpanded, { menuExpanded = false }) {
+                if (searchMode) {
+                    DropdownMenuItem(
+                        { Text(stringResource(R.string.filters)) },
+                        {
+                            filterDrawer = true
+                            menuExpanded = false
+                        },
+                        leadingIcon = {
+                            Icon(painterResource(R.drawable.filter_alt_fill0), null)
+                        }
+                    )
+                }
+                DropdownMenuItem(
+                    { Text(stringResource(R.string.refresh)) },
+                    {
+                        vm.refreshPackageList()
+                        menuExpanded = false
+                    },
+                    leadingIcon = { Icon(Icons.Default.Refresh, null) }
+                )
+                // Though cascading menu appears in Material 3 design specs,
+                // Compose doesn't support it officially.
+                // I can't find out a way to lay out the submenu on the left side of the main menu.
+                // So I decided to append the submenu's content to the main menu.
+                if (searchMode) {
+                    AppSortingMenuContent(sortingOptions) { sortingOptions = it }
+                }
+            }
+        }
+        if (selectedPackages.isNotEmpty() && params.mode == AppChooserMode.Choose) {
+            FilledIconButton({
+                onChoosePackage(selectedPackages.joinToString("\n") { it.name })
+            }) {
+                Icon(Icons.Default.Check, null)
+            }
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
                 actions = {
-                    if (!searchMode) IconButton({ searchMode = true }) {
-                        Icon(
-                            painterResource(R.drawable.search_fill0),
-                            stringResource(R.string.search)
-                        )
-                    }
-                    if (!searchMode) IconButton({ filterDrawer = true }) {
-                        Icon(painterResource(R.drawable.filter_alt_fill0), null)
-                    }
-                    var dropdown by remember { mutableStateOf(false) }
-                    Box {
-                        IconButton({
-                            dropdown = !dropdown
-                        }) {
-                            Icon(Icons.Default.MoreVert, null)
-                        }
-                        DropdownMenu(dropdown, { dropdown = false }) {
-                            DropdownMenuItem(
-                                { Text("A-Z") },
-                                {
-                                    a2zSort = true
-                                    dropdown = false
-                                },
-                                leadingIcon = { RadioButton(a2zSort, null) }
-                            )
-                            DropdownMenuItem(
-                                { Text("Z-A") },
-                                {
-                                    a2zSort = false
-                                    dropdown = false
-                                },
-                                leadingIcon = { RadioButton(!a2zSort, null) }
-                            )
-                            HorizontalDivider()
-                            if (searchMode) {
-                                DropdownMenuItem(
-                                    { Text(stringResource(R.string.filters)) },
-                                    {
-                                        filterDrawer = true
-                                        dropdown = false
-                                    },
-                                    leadingIcon = {
-                                        Icon(painterResource(R.drawable.filter_alt_fill0), null)
-                                    }
-                                )
-                            }
-                            DropdownMenuItem(
-                                { Text(stringResource(R.string.refresh)) },
-                                {
-                                    vm.refreshPackageList()
-                                    dropdown = false
-                                },
-                                leadingIcon = { Icon(Icons.Default.Refresh, null) }
-                            )
-                        }
-                    }
-                    if (selectedPackages.isNotEmpty() && params.mode == AppChooserMode.Choose) {
-                        FilledIconButton({
-                            onChoosePackage(selectedPackages.joinToString("\n") { it.name })
-                        }) {
-                            Icon(Icons.Default.Check, null)
-                        }
-                    }
+                    TopBarActions()
                 },
                 title = {
                     if (searchMode) {

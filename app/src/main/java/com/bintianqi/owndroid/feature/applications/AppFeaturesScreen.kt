@@ -28,7 +28,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -51,6 +51,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
@@ -58,6 +60,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.AppInstallerActivity
 import com.bintianqi.owndroid.R
@@ -241,7 +244,10 @@ fun PermissionManagerScreen(
                     )
                     Column {
                         Text(it.label)
-                        Text(it.id, Modifier.alpha(0.7F), style = typography.bodySmall)
+                        Text(
+                            it.id, Modifier.alpha(0.7F),
+                            style = MaterialTheme.typography.bodySmall
+                        )
                     }
                 }
             }
@@ -328,7 +334,8 @@ fun PermissionDetailScreen(
                         Column {
                             Text(entry.info.label)
                             Text(
-                                entry.info.name, Modifier.alpha(0.8F), style = typography.bodySmall
+                                entry.info.name, Modifier.alpha(0.8F),
+                                style = MaterialTheme.typography.bodySmall
                             )
                         }
                     }
@@ -642,23 +649,105 @@ fun PackageFunctionScreen(
     }
     var filtersSheet by remember { mutableStateOf(false) }
     val allPackages by allPackagesState.collectAsState()
-    var a2zSort by remember { mutableStateOf(true) }
+    var sortingOptions by rememberSaveable(
+        stateSaver = SerializableSaver(AppSortingOptions.serializer())
+    ) {
+        mutableStateOf(AppSortingOptions())
+    }
     val displayedPackages = if (listView) {
-        packages.mapNotNull { name ->
+        packages.map { name ->
             allPackages.find { it.info.name == name }?.info
+                ?: AppInfo(name, "???", Color.Transparent.toArgb().toDrawable(), 0)
+            // We can't get the app's info if it's already uninstalled.
+            // And before Android 7, we can't get a full app list including hidden apps.
+            // So providing a fallback here.
         }
     } else {
-        allPackages.filter {
-            filterApp(it, filters, query)
-        }.let { list ->
-            if (a2zSort) list.sortedBy { it.info.label }
-            else list.sortedByDescending { it.info.label }
-        }.map { it.info }
+        sortAppList(
+            allPackages.filter { filterApp(it, filters, query) },
+            sortingOptions
+        ).map { it.info }
     }
     LaunchedEffect(Unit) {
         onGet()
         getAllPackages()
         input = chosenPackage.receive()
+    }
+    @Composable
+    fun TopBarActions() {
+        if (!listView && !searchMode) {
+            IconButton({
+                searchMode = true
+            }) {
+                Icon(Icons.Default.Search, stringResource(R.string.search))
+            }
+            IconButton({ filtersSheet = true }) {
+                Icon(painterResource(R.drawable.filter_alt_fill0), null)
+            }
+            Box {
+                var sortingMenu by remember { mutableStateOf(false) }
+                IconButton({ sortingMenu = !sortingMenu }) {
+                    Icon(painterResource(R.drawable.sort_fill0), null)
+                }
+                DropdownMenu(sortingMenu, { sortingMenu = false }) {
+                    AppSortingMenuContent(sortingOptions) { sortingOptions = it }
+                }
+            }
+        }
+        var expand by remember { mutableStateOf(false) }
+        Box {
+            IconButton({
+                expand = true
+            }) {
+                Icon(Icons.Default.MoreVert, null)
+            }
+            DropdownMenu(expand, { expand = false }) {
+                DropdownMenuItem(
+                    { Text(stringResource(R.string.switch_view)) },
+                    {
+                        listView = false
+                        expand = false
+                        setSwitchView(true)
+                    },
+                    leadingIcon = { RadioButton(!listView, null) }
+                )
+                DropdownMenuItem(
+                    { Text(stringResource(R.string.list_view)) },
+                    {
+                        searchMode = false
+                        listView = true
+                        expand = false
+                        setSwitchView(false)
+                    },
+                    leadingIcon = { RadioButton(listView, null) }
+                )
+                if (searchMode) AppSortingMenuContent(sortingOptions) { sortingOptions = it }
+                Text(
+                    stringResource(R.string.app_group),
+                    Modifier.padding(start = 8.dp, bottom = 4.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.labelLarge
+                )
+                groups.forEach {
+                    DropdownMenuItem(
+                        { Text("(${it.apps.size}) ${it.name}") },
+                        {
+                            selectedGroup = it
+                            dialog = true
+                            expand = false
+                        }
+                    )
+                }
+                if (groups.isNotEmpty()) HorizontalDivider()
+                DropdownMenuItem(
+                    { Text(stringResource(R.string.manage_app_groups)) },
+                    {
+                        navigateToGroups()
+                        expand = false
+                    }
+                )
+            }
+        }
     }
     Scaffold(
         topBar = {
@@ -675,80 +764,7 @@ fun PackageFunctionScreen(
                 },
                 navigationIcon = { NavIcon(onNavigateUp) },
                 actions = {
-                    if (!listView && !searchMode) IconButton({
-                        searchMode = true
-                    }) {
-                        Icon(Icons.Default.Search, stringResource(R.string.search))
-                    }
-                    if (!listView) IconButton({ filtersSheet = true }) {
-                        Icon(painterResource(R.drawable.filter_alt_fill0), null)
-                    }
-                    var expand by remember { mutableStateOf(false) }
-                    Box {
-                        IconButton({
-                            expand = true
-                        }) {
-                            Icon(Icons.Default.MoreVert, null)
-                        }
-                        DropdownMenu(expand, { expand = false }) {
-                            if (!listView) {
-                                DropdownMenuItem(
-                                    { Text("A-Z") },
-                                    {
-                                        a2zSort = true
-                                        expand = false
-                                    },
-                                    leadingIcon = { RadioButton(a2zSort, null) }
-                                )
-                                DropdownMenuItem(
-                                    { Text("Z-A") },
-                                    {
-                                        a2zSort = false
-                                        expand = false
-                                    },
-                                    leadingIcon = { RadioButton(!a2zSort, null) }
-                                )
-                                HorizontalDivider()
-                            }
-                            DropdownMenuItem(
-                                { Text(stringResource(R.string.switch_view)) },
-                                {
-                                    listView = false
-                                    expand = false
-                                    setSwitchView(true)
-                                },
-                                leadingIcon = { RadioButton(!listView, null) }
-                            )
-                            DropdownMenuItem(
-                                { Text(stringResource(R.string.list_view)) },
-                                {
-                                    listView = true
-                                    expand = false
-                                    setSwitchView(false)
-                                },
-                                leadingIcon = { RadioButton(listView, null) }
-                            )
-                            HorizontalDivider()
-                            groups.forEach {
-                                DropdownMenuItem(
-                                    { Text("(${it.apps.size}) ${it.name}") },
-                                    {
-                                        selectedGroup = it
-                                        dialog = true
-                                        expand = false
-                                    }
-                                )
-                            }
-                            if (groups.isNotEmpty()) HorizontalDivider()
-                            DropdownMenuItem(
-                                { Text(stringResource(R.string.manage_app_groups)) },
-                                {
-                                    navigateToGroups()
-                                    expand = false
-                                }
-                            )
-                        }
-                    }
+                    TopBarActions()
                 }
             )
         },
@@ -788,7 +804,10 @@ fun PackageFunctionScreen(
                         )
                         Column {
                             Text(app.label)
-                            Text(app.name, Modifier.alpha(0.8F), style = typography.bodyMedium)
+                            Text(
+                                app.name, Modifier.alpha(0.8F),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                         }
                     }
                     if (listView) {
@@ -848,7 +867,7 @@ fun PackageFunctionScreen(
     if (dialog) AlertDialog(
         text = {
             Column {
-                Text(selectedGroup!!.name, style = typography.titleLarge)
+                Text(selectedGroup!!.name, style = MaterialTheme.typography.titleLarge)
                 Spacer(Modifier.height(6.dp))
                 Button({
                     onSet(selectedGroup!!.apps, true)

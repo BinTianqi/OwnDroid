@@ -74,6 +74,7 @@
     <string name="both">两者</string>
     <string name="expand">展开</string>
     <string name="collapse">折叠</string>
+    <string name="reverse">反转</string>
 
     <!--Permissions-->
     <string name="profile_owner">Profile owner</string>
@@ -362,6 +363,9 @@
 
     <!--Applications-->
     <string name="applications">应用程序</string>
+    <string name="sorting">排序</string>
+    <string name="install_time">安装时间</string>
+    <string name="update_time">更新时间</string>
     <string name="applications_state">应用程序状态</string>
     <string name="apps_view">应用视图</string>
     <string name="features_view">功能视图</string>

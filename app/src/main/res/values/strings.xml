@@ -79,6 +79,7 @@
     <string name="both">Both</string>
     <string name="expand">Expand</string>
     <string name="collapse">Collapse</string>
+    <string name="reverse">Reverse</string>
 
     <!--Permissions-->
     <string name="profile_owner">Profile owner</string>
@@ -396,6 +397,9 @@
 
     <!--Applications-->
     <string name="applications">Applications</string>
+    <string name="sorting">Sorting</string>
+    <string name="install_time">Install time</string>
+    <string name="update_time">Update time</string>
     <string name="applications_state">Applications state</string>
     <string name="apps_view">Apps view</string>
     <string name="features_view">Features view</string>
