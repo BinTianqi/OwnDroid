@@ -194,7 +194,7 @@ fun WorkModesScreen(
                 )
                 Text(stringResource(R.string.dhizuku_server), style = typography.titleLarge)
             }
-            if (privilege.device) Row(
+            if (privilege.device || privilege.profile) Row(
                 Modifier
                     .fillMaxWidth()
                     .clickable { onNavigate(Destination.DelegatedAdmins) }
