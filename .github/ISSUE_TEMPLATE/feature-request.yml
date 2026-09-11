@@ -1,0 +1,18 @@
+name: "Feature Request / 功能请求"
+description: "Suggest a new feature or improvement / 提出新功能或改进建议"
+labels: ["enhancement"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please describe the feature you would like to see added or improved.
+        请描述你希望添加或改进的功能。
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description / 描述"
+    validations:
+      required: true
+
