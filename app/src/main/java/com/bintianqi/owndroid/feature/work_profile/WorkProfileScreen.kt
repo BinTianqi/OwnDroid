@@ -169,7 +169,7 @@ fun DeleteWorkProfileScreen(
                     { confirmation = it },
                     Modifier.fillMaxWidth(),
                     label = { Text("Enter DELETE to continue") },
-                    placeholder = { Text("DELETE") }
+                    placeholder = { Text("...") }
                 )
             },
             onDismissRequest = { warning = false },
