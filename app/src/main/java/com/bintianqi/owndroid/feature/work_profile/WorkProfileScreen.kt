@@ -5,6 +5,7 @@ import android.app.admin.DevicePolicyManager.WIPE_EUICC
 import android.app.admin.DevicePolicyManager.WIPE_EXTERNAL_STORAGE
 import android.os.Build.VERSION
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -164,13 +165,16 @@ fun DeleteWorkProfileScreen(
                 Text(stringResource(R.string.warning))
             },
             text = {
-                OutlinedTextField(
-                    confirmation,
-                    { confirmation = it },
-                    Modifier.fillMaxWidth(),
-                    label = { Text("Enter DELETE to continue") },
-                    placeholder = { Text("...") }
-                )
+                Column {
+                    Text(stringResource(R.string.wipe_work_profile_warning))
+                    OutlinedTextField(
+                        confirmation,
+                        { confirmation = it },
+                        Modifier.fillMaxWidth(),
+                        label = { Text("Enter DELETE to continue") },
+                        placeholder = { Text("...") }
+                    )
+                }
             },
             onDismissRequest = { warning = false },
             confirmButton = {
