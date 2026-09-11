@@ -5,16 +5,18 @@ import android.app.admin.DevicePolicyManager.WIPE_EUICC
 import android.app.admin.DevicePolicyManager.WIPE_EXTERNAL_STORAGE
 import android.os.Build.VERSION
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,7 +42,6 @@ import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.HorizontalPadding
 import com.bintianqi.owndroid.utils.yesOrNo
-import kotlinx.coroutines.delay
 
 @Composable
 fun WorkProfileScreen(
@@ -81,7 +82,8 @@ fun SuspendPersonalAppScreen(
         Spacer(Modifier.padding(HorizontalPadding, 10.dp))
         Text(
             stringResource(R.string.profile_max_time_off),
-            Modifier.padding(horizontal = HorizontalPadding), style = typography.titleLarge
+            Modifier.padding(horizontal = HorizontalPadding),
+            style = MaterialTheme.typography.titleLarge
         )
         Text(
             stringResource(R.string.profile_max_time_out_desc),
@@ -157,31 +159,33 @@ fun DeleteWorkProfileScreen(
         }
     }
     if (warning) {
+        var confirmation by remember { mutableStateOf("") }
         AlertDialog(
             title = {
                 Text(stringResource(R.string.warning))
             },
             text = {
-                Text(stringResource(R.string.wipe_work_profile_warning))
+                Column {
+                    Text(stringResource(R.string.wipe_work_profile_warning))
+                    Spacer(Modifier.height(6.dp))
+                    OutlinedTextField(
+                        confirmation,
+                        { confirmation = it },
+                        Modifier.fillMaxWidth(),
+                        textStyle = MaterialTheme.typography.bodyLarge
+                    )
+                }
             },
             onDismissRequest = { warning = false },
             confirmButton = {
-                var timer by remember { mutableIntStateOf(3) }
-                LaunchedEffect(Unit) {
-                    repeat(3) {
-                        delay(1000)
-                        timer -= 1
-                    }
-                }
-                val timerText = if (timer > 0) " (${timer}s)" else ""
                 TextButton(
                     {
                         vm.deleteProfile(flags, reason)
                     },
-                    enabled = timer == 0,
+                    enabled = confirmation == "DELETE",
                     colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
                 ) {
-                    Text(stringResource(R.string.confirm) + timerText)
+                    Text(stringResource(R.string.confirm))
                 }
             },
             dismissButton = {

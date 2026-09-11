@@ -215,7 +215,7 @@
     <string name="wipe_euicc">清除eUICC(eSIM)</string>
     <string name="wipe_silently">静默清除</string>
     <string name="wipe_data_warning">你的设备上的所有数据将会被清除</string>
-    <string name="wipe_work_profile_warning">你的工作资料将会被删除</string>
+    <string name="wipe_work_profile_warning">你的工作资料和其中的所有数据将会被删除。\n输入\"DELETE\"以继续。</string>
     <string name="encryption_status">加密状态</string>
     <string name="frp_policy">FRP策略</string>
     <string name="frp_not_supported">你的设备不支持FRP策略</string>

@@ -217,7 +217,7 @@
     <string name="wipe_euicc">eUICC (eSIM) Verilerini Sil</string>
     <string name="wipe_silently">Sessizce Sil</string>
     <string name="wipe_data_warning">Cihazınızdaki tüm veriler SİLİNECEK</string>
-    <string name="wipe_work_profile_warning">İş profiliniz SİLİNECEK</string>
+    <!--<string name="wipe_work_profile_warning">İş profiliniz SİLİNECEK</string>-->
     <string name="encryption_status">Şifreleme Durumu</string>
     <string name="frp_policy">FRP Politikası</string>
     <string name="frp_not_supported">Cihazınız FRP\'yi desteklemiyor</string>
