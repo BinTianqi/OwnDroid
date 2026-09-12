@@ -4,6 +4,7 @@ import android.app.admin.DevicePolicyManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.UserManager
 import android.util.Log
 
 class ApiReceiver : BroadcastReceiver() {
@@ -18,6 +19,7 @@ class ApiReceiver : BroadcastReceiver() {
             val restriction = intent.getStringExtra("restriction")
             if (!app.isNullOrEmpty()) log += "\npackage: $app"
             if (!permission.isNullOrEmpty()) log += "\npermission: $permission"
+            if (!restriction.isNullOrEmpty()) log += "\nrestriction: $restriction"
             try {
                 myApp.container.privilegeHelper.safeDpmCall {
                     @SuppressWarnings("NewApi")
@@ -61,11 +63,11 @@ class ApiReceiver : BroadcastReceiver() {
                         }
 
                         "ADD_USER_RESTRICTION" -> {
-                            dpm.addUserRestriction(dar, restriction)
+                            dpm.addUserRestriction(dar, resolveUserRestriction(restriction))
                         }
 
                         "CLEAR_USER_RESTRICTION" -> {
-                            dpm.clearUserRestriction(dar, restriction)
+                            dpm.clearUserRestriction(dar, resolveUserRestriction(restriction))
                         }
 
                         "SET_PERMISSION_DEFAULT" -> {
@@ -135,6 +137,29 @@ class ApiReceiver : BroadcastReceiver() {
             log += "\nUnauthorized"
         }
         Log.d(TAG, log)
+    }
+
+    private fun resolveUserRestriction(value: String?): String {
+        if (value.isNullOrBlank()) {
+            throw IllegalArgumentException("Missing restriction")
+        }
+        return try {
+            val field = UserManager::class.java.getField(value)
+            val resolved = field.get(null)
+            if (resolved !is String) {
+                throw IllegalArgumentException("UserManager.$value is not a restriction key")
+            }
+            resolved
+        } catch (e: NoSuchFieldException) {
+            if (value.indexOfAny(charArrayOf(' ', '\n', '\r', '\t')) >= 0) {
+                throw IllegalArgumentException("Invalid restriction: $value")
+            }
+            value
+        } catch (e: IllegalAccessException) {
+            throw IllegalArgumentException("Unable to resolve UserManager.$value", e)
+        } catch (e: SecurityException) {
+            throw IllegalArgumentException("Unable to access UserManager.$value", e)
+        }
     }
 
     companion object {
