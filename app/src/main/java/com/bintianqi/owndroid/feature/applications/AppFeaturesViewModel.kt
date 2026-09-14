@@ -5,6 +5,7 @@ import android.app.admin.PackagePolicy
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.PermissionInfo
+import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -67,9 +68,23 @@ class AppFeaturesViewModel(
     }
 
     fun setPackageHidden(packages: List<String>, status: Boolean) = ph.safeDpmCall {
+        var noControlPackages = emptyList<String>()
+        if (Build.VERSION.SDK_INT >= 30) {
+            // Remove them from user control disabled packages,
+            // or setting package hidden status will fail
+            noControlPackages = dpm.getUserControlDisabledPackages(dar)
+            dpm.setUserControlDisabledPackages(dar, noControlPackages.filter { it !in packages })
+        }
         for (name in packages) {
+            // After enabling ucd, we can't hide that package directly.
+            // We have to unhide that package even if it's currently not hidden.
+            // This might be a system bug, but we provide a workaround here.
+            if (status) dpm.setApplicationHidden(dar, name, false)
             val result = dpm.setApplicationHidden(dar, name, status)
             if (result) hiddenPackages.update { it.plusOrMinus(status, name) }
+        }
+        if (Build.VERSION.SDK_INT >= 30) {
+            dpm.setUserControlDisabledPackages(dar, noControlPackages) // Restore
         }
     }
 
