@@ -4,7 +4,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
-class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 10) {
+class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 11) {
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(DHIZUKU_CLIENTS_TABLE)
         db.execSQL(SECURITY_LOGS_TABLE)
@@ -27,10 +27,18 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 10) 
         }
         if (oldVersion < 9) {
             db.execSQL(DELETE_CPIF)
-            db.execSQL(CPIF2_TABLE)
+            db.execSQL(CPIF2_TABLE_OLD)
         }
         if (oldVersion < 10) {
             db.execSQL(CPIF2_ADD_STATUS)
+        }
+        if (oldVersion < 11) {
+            // Table `cpif2` won't have column `enabled` if the table is created at version 10
+            // It will only have that column if it's upgraded from a previous version
+            // At this point, we don't know whether that table has that column
+            // So, re-create that table to ensure it has that column
+            db.execSQL("DROP TABLE cpif2")
+            db.execSQL(CPIF2_TABLE)
         }
     }
     companion object {
@@ -47,9 +55,12 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 10) 
         const val CPIF_TABLE = "CREATE TABLE cpif (" +
                 "action_str TEXT, category TEXT, mime_type TEXT, direction INTEGER, time INTEGER)"
         const val DELETE_CPIF = "DROP TABLE cpif"
-        const val CPIF2_TABLE = "CREATE TABLE cpif2 (id INTEGER PRIMARY KEY," +
+        const val CPIF2_TABLE_OLD = "CREATE TABLE cpif2 (id INTEGER PRIMARY KEY," +
                 "action_str TEXT, category TEXT, mime_type TEXT, direction INTEGER," +
                 "created_at INTEGER)"
         const val CPIF2_ADD_STATUS = "ALTER TABLE cpif2 ADD COLUMN enabled INTEGER DEFAULT TRUE"
+        const val CPIF2_TABLE = "CREATE TABLE cpif2 (id INTEGER PRIMARY KEY," +
+                "action_str TEXT, category TEXT, mime_type TEXT, direction INTEGER," +
+                "created_at INTEGER, enabled INTEGER DEFAULT TRUE)"
     }
 }
