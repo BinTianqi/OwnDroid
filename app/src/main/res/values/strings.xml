@@ -768,6 +768,12 @@
     <string name="time_blocker_allowed_windows">Allowed windows</string>
     <string name="time_blocker_add_blocked_window">Add blocked window</string>
     <string name="time_blocker_add_allowed_window">Add allowed window</string>
+    <string name="time_blocker_select_application">Select application</string>
+    <string name="time_blocker_tap_to_choose">Tap to choose</string>
+    <string name="time_blocker_no_windows">No windows</string>
+    <string name="time_blocker_discard_changes_title">Discard changes?</string>
+    <string name="time_blocker_discard_changes_message">You have unsaved changes that will be lost.</string>
+    <string name="discard">Discard</string>
     <string name="time_blocker_windows_hint">App is blocked inside blocked windows. If allowed windows exist, the app is only usable inside them.</string>
     <string name="time_blocker_window_format">%1$s – %2$s</string>
     <string name="time_blocker_days">Days</string>
