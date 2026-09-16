@@ -208,24 +208,31 @@ class TimeBlockerService : Service() {
 
     private fun getUsageTodayBatch(packageNames: Set<String>, dayStart: Long, now: Long): Map<String, Long> {
         if (packageNames.isEmpty()) return emptyMap()
+        val usm = getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+            ?: return emptyMap()
+
+        // Two independent methods — take the higher per package.
+        // Method 1 (events) is precise and handles the current foreground session,
+        // but fails on devices whose usage-stats timeline is shifted into the
+        // future (all event timestamps land outside [dayStart, now]).
+        // Method 2 (stats with a ±30-day window) catches those shifted buckets by
+        // finding the newest daily bucket regardless of absolute timestamp, but may
+        // lag for the currently-open session.
+        val eventTotals = getUsageFromEvents(usm, dayStart, now, packageNames)
+        val statsTotals = getUsageFromStats(usm, now, packageNames)
+
+        val merged = mutableMapOf<String, Long>()
+        for (pkg in packageNames) {
+            merged[pkg] = maxOf(eventTotals[pkg] ?: 0L, statsTotals[pkg] ?: 0L)
+        }
+        return merged
+    }
+
+    /** Reconstruct usage from raw RESUMED/PAUSED events (precise, real-time). */
+    private fun getUsageFromEvents(
+        usm: UsageStatsManager, dayStart: Long, now: Long, packageNames: Set<String>
+    ): Map<String, Long> {
         return try {
-            val usm = getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
-                ?: return emptyMap()
-            // We reconstruct usage from raw events instead of queryUsageStats():
-            // the aggregated stats buckets are aligned to the service's internal
-            // rollover points, which drift away from calendar midnight after clock
-            // changes — and buckets for the currently-foreground app are often
-            // missing entirely. Both make queryUsageStats unreliable on real devices.
-            //
-            // Robustness rules for the reconstruction:
-            //  - A PAUSED without a preceding RESUMED is ignored (e.g. app was
-            //    already running before our query window or process died).
-            //  - A RESUMED while one is already open restarts the clock (overlap
-            //    from config changes / multi-activity flows) — we keep the EARLIER
-            //    start to avoid undercounting.
-            //  - Sessions are clipped to [dayStart, now]: a session that started
-            //    before today only counts from dayStart; one still open counts
-            //    until now.
             val events = usm.queryEvents(dayStart, now)
             val event = android.app.usage.UsageEvents.Event()
             val totals = mutableMapOf<String, Long>()
@@ -238,7 +245,6 @@ class TimeBlockerService : Service() {
                 when (event.eventType) {
                     android.app.usage.UsageEvents.Event.ACTIVITY_RESUMED,
                     @Suppress("DEPRECATION") android.app.usage.UsageEvents.Event.MOVE_TO_FOREGROUND -> {
-                        // Keep the earlier start on overlapping resumes.
                         val existing = resumeSince[pkg]
                         if (existing == null || event.timeStamp < existing) {
                             resumeSince[pkg] = event.timeStamp
@@ -255,7 +261,6 @@ class TimeBlockerService : Service() {
                     }
                 }
             }
-            // Sessions still open at query time count up to now.
             for ((pkg, start) in resumeSince) {
                 val from = maxOf(start, dayStart)
                 val delta = now - from
@@ -263,7 +268,44 @@ class TimeBlockerService : Service() {
             }
             totals
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to get batch usage", e)
+            Log.e(TAG, "Failed to get event-based usage", e)
+            emptyMap()
+        }
+    }
+
+    /**
+     * Query aggregated stats over a ±30-day window and take the newest daily
+     * bucket per package. This catches devices whose usage-stats rollover
+     * timestamps have drifted days into the future after clock changes —
+     * [queryUsageStats] with a narrow [dayStart, now] window would miss them.
+     */
+    private fun getUsageFromStats(
+        usm: UsageStatsManager, now: Long, packageNames: Set<String>
+    ): Map<String, Long> {
+        return try {
+            val thirtyDays = 30L * 24 * 3600_000
+            val stats = usm.queryUsageStats(
+                UsageStatsManager.INTERVAL_DAILY,
+                now - thirtyDays,
+                now + thirtyDays
+            )
+            val newestBucket = mutableMapOf<String, Long>()
+            val totals = mutableMapOf<String, Long>()
+            if (stats != null) {
+                for (stat in stats) {
+                    val pkg = stat.packageName
+                    if (pkg !in packageNames) continue
+                    if (stat.totalTimeInForeground <= 0L) continue
+                    val prev = newestBucket[pkg]
+                    if (prev == null || stat.firstTimeStamp > prev) {
+                        newestBucket[pkg] = stat.firstTimeStamp
+                        totals[pkg] = stat.totalTimeInForeground
+                    }
+                }
+            }
+            totals
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get stats-based usage", e)
             emptyMap()
         }
     }
