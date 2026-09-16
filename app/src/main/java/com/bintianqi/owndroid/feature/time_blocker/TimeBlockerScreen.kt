@@ -35,15 +35,21 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.BottomPadding
@@ -87,16 +93,28 @@ fun TimeBlockerScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Usage permission card
+            // Usage permission warning (only shown while permission is missing;
+            // re-checked on resume so it disappears right after granting)
             item {
-                val hasPermission = vm.hasUsageStatsPermission()
-                StatusCard(
-                    title = if (hasPermission) stringResource(R.string.time_blocker_usage_permission_granted)
-                            else stringResource(R.string.time_blocker_usage_permission),
-                    subtitle = if (!hasPermission) stringResource(R.string.time_blocker_usage_permission_needed) else null,
-                    isPositive = hasPermission,
-                    onClick = { if (!hasPermission) vm.openUsageAccessSettings() }
-                )
+                val lifecycleOwner = LocalLifecycleOwner.current
+                var hasPermission by remember { mutableStateOf(vm.hasUsageStatsPermission()) }
+                DisposableEffect(lifecycleOwner) {
+                    val observer = LifecycleEventObserver { _, event ->
+                        if (event == Lifecycle.Event.ON_RESUME) {
+                            hasPermission = vm.hasUsageStatsPermission()
+                        }
+                    }
+                    lifecycleOwner.lifecycle.addObserver(observer)
+                    onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+                }
+                if (!hasPermission) {
+                    StatusCard(
+                        title = stringResource(R.string.time_blocker_usage_permission),
+                        subtitle = stringResource(R.string.time_blocker_usage_permission_needed),
+                        isPositive = false,
+                        onClick = { vm.openUsageAccessSettings() }
+                    )
+                }
             }
 
             // Service status card with real toggle

@@ -780,7 +780,6 @@
     <string name="time_blocker_remove_totp">Remove TOTP</string>
     <string name="time_blocker_usage_permission">Usage access permission</string>
     <string name="time_blocker_usage_permission_needed">Usage access permission is needed for daily limits. Tap to grant.</string>
-    <string name="time_blocker_usage_permission_granted">Usage access granted</string>
     <string name="time_blocker_service_running">Service running</string>
     <string name="time_blocker_service_running_sub">Blocking is active. Turn off to stop the blocker until restarted.</string>
     <string name="time_blocker_service_stopped">Service stopped</string>
