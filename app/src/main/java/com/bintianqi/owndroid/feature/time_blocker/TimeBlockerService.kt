@@ -53,6 +53,7 @@ class TimeBlockerService : Service() {
             currentlySuspended.addAll(repo.getSuspendedByUs())
 
             while (true) {
+                var nextDelayMs = MAX_POLL_MS
                 try {
                     val rules = repo.getEnabledRules()
                     val shouldSuspend = mutableSetOf<String>()
@@ -135,11 +136,27 @@ class TimeBlockerService : Service() {
                     val nm = getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
                     nm.notify(NotificationType.TimeBlocker.id, notif)
 
+                    // Adaptive polling: sleep until the next moment a blocking state
+                    // can change — a daily limit being reached (usage only grows in
+                    // real time, so remaining-limit time is the earliest possible
+                    // flip) or a time-window edge — bounded to [MIN_POLL_MS, MAX_POLL_MS].
+                    for (rule in rules) {
+                        if (rule.dailyLimitMinutes > 0) {
+                            val usedMs = usageMap[rule.packageName] ?: 0L
+                            val remainingMs = rule.dailyLimitMinutes * 60_000L - usedMs
+                            if (remainingMs > 0) nextDelayMs = minOf(nextDelayMs, remainingMs)
+                        }
+                        val untilFlip = minutesUntilWindowChange(rule, currentMinutes, dayOfWeek)
+                        if (untilFlip != null) nextDelayMs = minOf(nextDelayMs, untilFlip * 60_000L)
+                    }
                 } catch (e: Exception) {
                     Log.e(TAG, "Error in time blocker check", e)
+                    nextDelayMs = MIN_POLL_MS // retry soon after transient errors
                 }
 
-                delay(30_000) // Check every 30 seconds
+                nextDelayMs = nextDelayMs.coerceIn(MIN_POLL_MS, MAX_POLL_MS)
+                Log.d(TAG, "Next check in ${nextDelayMs / 1000}s")
+                delay(nextDelayMs)
             }
         }
 
@@ -163,6 +180,30 @@ class TimeBlockerService : Service() {
             if (inWindow) return true
         }
         return false
+    }
+
+    /**
+     * Minutes until the window-based blocking state of [rule] flips, or null when
+     * no flip happens within the next 24h (or no windows configured). The scan
+     * horizon covers a full day; distant flips are picked up by later poll cycles
+     * once they enter the horizon.
+     */
+    private fun minutesUntilWindowChange(rule: BlockRule, currentMinutes: Int, dayOfWeek: Int): Int? {
+        if (rule.blockedWindows.isEmpty() && rule.allowedWindows.isEmpty()) return null
+
+        fun windowBlocked(minutes: Int, day: Int): Boolean {
+            if (isInAnyWindow(rule.blockedWindows, minutes, day)) return true
+            if (rule.allowedWindows.isNotEmpty() && !isInAnyWindow(rule.allowedWindows, minutes, day)) return true
+            return false
+        }
+
+        val nowBlocked = windowBlocked(currentMinutes, dayOfWeek)
+        for (t in 1..1440) {
+            val total = currentMinutes + t
+            val futureDay = ((dayOfWeek - 1 + total / 1440) % 7) + 1
+            if (windowBlocked(total % 1440, futureDay) != nowBlocked) return t
+        }
+        return null
     }
 
     private fun getUsageTodayBatch(packageNames: Set<String>, dayStart: Long, now: Long): Map<String, Long> {
@@ -246,6 +287,10 @@ class TimeBlockerService : Service() {
 
     companion object {
         private const val TAG = "TimeBlockerService"
+        // Adaptive polling bounds: never poll faster than MIN, never sleep longer
+        // than MAX (so rule changes and near-limit foreground sessions stay timely).
+        private const val MIN_POLL_MS = 30_000L
+        private const val MAX_POLL_MS = 5 * 60_000L
         @Volatile var isRunning = false
             private set
         /** Observable running state for the UI (isRunning stays for sync checks). */

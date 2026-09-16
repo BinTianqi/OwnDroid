@@ -73,11 +73,13 @@ class TimeBlockerViewModel(
     /**
      * The blocker is meant to be always-on: whenever enabled rules exist and the
      * user has not explicitly stopped the service, make sure it is running.
+     * start() doubles as a poke: onStartCommand relaunches the check loop, so
+     * rule changes are picked up immediately even when the service is running.
      */
     private fun ensureServiceRunning() {
         val hasEnabledRules = rulesState.value.any { it.enabled }
         val enabledByUser = application.container.settingsRepo.data.timeBlockerServiceEnabled
-        if (hasEnabledRules && enabledByUser && !TimeBlockerService.isRunning) {
+        if (hasEnabledRules && enabledByUser) {
             TimeBlockerService.start(application)
         }
     }
