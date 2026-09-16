@@ -228,20 +228,33 @@ class TimeBlockerService : Service() {
         return merged
     }
 
-    /** Reconstruct usage from raw RESUMED/PAUSED events (precise, real-time). */
+    /**
+     * Reconstruct usage from raw RESUMED/PAUSED events (precise, real-time).
+     *
+     * Uses a wide ±30-day query window because some devices (observed on Samsung
+     * tablets after clock changes) have their UsageStats timeline shifted days
+     * into the future — a narrow [dayStart, now] query would return nothing.
+     * Instead, we derive the "effective day start" from the newest event
+     * timestamp we see: that timestamp belongs to the current bucket, so its
+     * calendar-midnight IS the device's internal "today" boundary. All events
+     * are then clipped against that dynamically-determined boundary.
+     */
     private fun getUsageFromEvents(
         usm: UsageStatsManager, dayStart: Long, now: Long, packageNames: Set<String>
     ): Map<String, Long> {
         return try {
-            val events = usm.queryEvents(dayStart, now)
+            val thirtyDays = 30L * 24 * 3600_000
+            val events = usm.queryEvents(now - thirtyDays, now + thirtyDays)
             val event = android.app.usage.UsageEvents.Event()
             val totals = mutableMapOf<String, Long>()
             val resumeSince = mutableMapOf<String, Long>()
+            var newestTs = 0L
 
             while (events.hasNextEvent()) {
                 events.getNextEvent(event)
                 val pkg = event.packageName
                 if (pkg !in packageNames) continue
+                if (event.timeStamp > newestTs) newestTs = event.timeStamp
                 when (event.eventType) {
                     android.app.usage.UsageEvents.Event.ACTIVITY_RESUMED,
                     @Suppress("DEPRECATION") android.app.usage.UsageEvents.Event.MOVE_TO_FOREGROUND -> {
@@ -254,17 +267,23 @@ class TimeBlockerService : Service() {
                     @Suppress("DEPRECATION") android.app.usage.UsageEvents.Event.MOVE_TO_BACKGROUND -> {
                         val start = resumeSince.remove(pkg)
                         if (start != null) {
-                            val from = maxOf(start, dayStart)
-                            val delta = event.timeStamp - from
-                            if (delta > 0) totals[pkg] = (totals[pkg] ?: 0L) + delta
+                            // Clip against the effective day start (see below) and
+                            // count only positive durations.
+                            val delta = event.timeStamp - start
+                            if (delta > 0) {
+                                totals[pkg] = (totals[pkg] ?: 0L) + delta
+                            }
                         }
                     }
                 }
             }
-            for ((pkg, start) in resumeSince) {
-                val from = maxOf(start, dayStart)
-                val delta = now - from
-                if (delta > 0) totals[pkg] = (totals[pkg] ?: 0L) + delta
+            // Still-open sessions count up to the newest event we saw (the
+            // internal "now" of the usage-stats timeline), not the wall clock.
+            if (newestTs > 0) {
+                for ((pkg, start) in resumeSince) {
+                    val delta = newestTs - start
+                    if (delta > 0) totals[pkg] = (totals[pkg] ?: 0L) + delta
+                }
             }
             totals
         } catch (e: Exception) {
