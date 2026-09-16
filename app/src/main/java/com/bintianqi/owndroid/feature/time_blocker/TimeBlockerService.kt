@@ -42,6 +42,7 @@ class TimeBlockerService : Service() {
         startForeground(NotificationType.TimeBlocker.id, notification)
 
         isRunning = true
+        runningState.value = true
         val myApp = application as MyApplication
         val repo = myApp.container.timeBlockerRepo
         val ph = myApp.container.privilegeHelper
@@ -230,6 +231,7 @@ class TimeBlockerService : Service() {
         super.onDestroy()
         coroutineScope.cancel()
         isRunning = false
+        runningState.value = false
 
         // Unsuspend all packages we suspended (graceful stop)
         val myApp = application as MyApplication
@@ -246,6 +248,8 @@ class TimeBlockerService : Service() {
         private const val TAG = "TimeBlockerService"
         @Volatile var isRunning = false
             private set
+        /** Observable running state for the UI (isRunning stays for sync checks). */
+        val runningState = kotlinx.coroutines.flow.MutableStateFlow(false)
 
         fun start(context: Context) {
             val intent = Intent(context, TimeBlockerService::class.java)

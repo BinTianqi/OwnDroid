@@ -782,7 +782,9 @@
     <string name="time_blocker_usage_permission_needed">Usage access permission is needed for daily limits. Tap to grant.</string>
     <string name="time_blocker_usage_permission_granted">Usage access granted</string>
     <string name="time_blocker_service_running">Service running</string>
+    <string name="time_blocker_service_running_sub">Blocking is active. Turn off to stop the blocker until restarted.</string>
     <string name="time_blocker_service_stopped">Service stopped</string>
+    <string name="time_blocker_service_stopped_sub">Blocking is inactive. Turn on to enforce rules and auto-start on boot.</string>
     <string name="time_blocker_no_rules">No blocking rules configured</string>
     <string name="time_blocker_delete_rule">Delete rule</string>
     <string name="time_blocker_used_today">Used today: %1$s</string>

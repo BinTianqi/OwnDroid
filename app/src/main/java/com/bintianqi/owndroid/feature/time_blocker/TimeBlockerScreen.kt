@@ -99,16 +99,40 @@ fun TimeBlockerScreen(
                 )
             }
 
-            // Service status card
+            // Service status card with real toggle
             item {
-                val running = vm.isServiceRunning()
-                StatusCard(
-                    title = if (running) stringResource(R.string.time_blocker_service_running)
-                            else stringResource(R.string.time_blocker_service_stopped),
-                    subtitle = null,
-                    isPositive = running,
-                    onClick = { if (running) vm.stopService() else vm.startService() }
-                )
+                val running by vm.serviceRunning.collectAsState()
+                Card(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (running) colorScheme.primaryContainer else colorScheme.errorContainer
+                    )
+                ) {
+                    Row(
+                        Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                if (running) stringResource(R.string.time_blocker_service_running)
+                                else stringResource(R.string.time_blocker_service_stopped),
+                                style = MaterialTheme.typography.titleSmall
+                            )
+                            Text(
+                                if (running) stringResource(R.string.time_blocker_service_running_sub)
+                                else stringResource(R.string.time_blocker_service_stopped_sub),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = running,
+                            onCheckedChange = { if (running) vm.stopService() else vm.startService() }
+                        )
+                    }
+                }
             }
 
             // Rules

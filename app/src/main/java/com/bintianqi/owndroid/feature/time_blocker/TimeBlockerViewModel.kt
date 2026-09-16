@@ -26,6 +26,9 @@ class TimeBlockerViewModel(
 
     val rulesState = MutableStateFlow(emptyList<BlockRule>())
 
+    /** Live service running state for the UI toggle. */
+    val serviceRunning: StateFlow<Boolean> = TimeBlockerService.runningState
+
     init {
         refreshRules()
     }
