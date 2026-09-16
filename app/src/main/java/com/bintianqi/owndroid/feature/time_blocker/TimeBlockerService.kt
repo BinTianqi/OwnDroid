@@ -115,7 +115,8 @@ class TimeBlockerService : Service() {
             }
             lastPollWallClock = now
 
-            var lastSaveWallClock = 0L
+            // Last persisted totals — used to skip DB writes when nothing changed.
+            var lastPersistedTotals: Map<String, Long> = emptyMap()
 
             while (true) {
                 var nextDelayMs = MAX_POLL_MS
@@ -191,12 +192,13 @@ class TimeBlockerService : Service() {
                         }
                     }
 
-                    // Persist the merged total every 5 minutes so it survives
-                    // service restarts (it becomes the next start's baseline).
-                    val persistNow = System.currentTimeMillis()
-                    if (persistNow - lastSaveWallClock > 5 * 60_000L) {
-                        repo.saveUsageToday(usageDayEpoch, mergedTotals())
-                        lastSaveWallClock = persistNow
+                    // Persist the merged total whenever it changed, so a hard
+                    // kill or reboot loses at most one poll interval of usage
+                    // (onDestroy is not guaranteed to run in those cases).
+                    val currentTotals = mergedTotals()
+                    if (currentTotals != lastPersistedTotals) {
+                        repo.saveUsageToday(usageDayEpoch, currentTotals)
+                        lastPersistedTotals = currentTotals
                     }
 
                     // Update notification
@@ -304,6 +306,10 @@ class TimeBlockerService : Service() {
             baselineMs.clear()
             val fresh = getSystemUsageToday(usm, dayStart, now, packageNames)
             baselineMs.putAll(fresh)
+            // Persist the reset immediately so the old day's values are gone.
+            try {
+                (application as MyApplication).container.timeBlockerRepo.saveUsageToday(todayEpoch, emptyMap())
+            } catch (_: Exception) { }
         }
 
         // Determine which monitored app is currently in the foreground by
