@@ -76,6 +76,39 @@ class TimeBlockerRepository(private val dbHelper: MyDbHelper) {
 
     fun getEnabledRules(): List<BlockRule> = getRules().filter { it.enabled }
 
+    // Persisted daily usage (survives service restarts)
+    fun getUsageToday(dayEpoch: Long): Map<String, Long> {
+        val map = mutableMapOf<String, Long>()
+        dbHelper.readableDatabase.rawQuery(
+            "SELECT package_name, used_ms FROM time_block_usage WHERE day_epoch = ?",
+            arrayOf(dayEpoch.toString())
+        ).use {
+            while (it.moveToNext()) {
+                map[it.getString(0)] = it.getLong(1)
+            }
+        }
+        return map
+    }
+
+    fun saveUsageToday(dayEpoch: Long, usage: Map<String, Long>) {
+        val db = dbHelper.writableDatabase
+        db.beginTransaction()
+        try {
+            // Remove stale entries from previous days.
+            db.delete("time_block_usage", "day_epoch != ?", arrayOf(dayEpoch.toString()))
+            for ((pkg, ms) in usage) {
+                val cv = ContentValues()
+                cv.put("package_name", pkg)
+                cv.put("used_ms", ms)
+                cv.put("day_epoch", dayEpoch)
+                db.insertWithOnConflict("time_block_usage", null, cv, android.database.sqlite.SQLiteDatabase.CONFLICT_REPLACE)
+            }
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+    }
+
     // Track which packages we suspended (for crash recovery)
     fun getSuspendedByUs(): Set<String> {
         val packages = mutableSetOf<String>()

@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 
-class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 12) {
+class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 13) {
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(DHIZUKU_CLIENTS_TABLE)
         db.execSQL(SECURITY_LOGS_TABLE)
@@ -14,6 +14,7 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 12) 
         db.execSQL(CPIF2_TABLE)
         db.execSQL(TIME_BLOCK_RULES_TABLE)
         db.execSQL(TIME_BLOCK_SUSPENDED_TABLE)
+        db.execSQL(TIME_BLOCK_USAGE_TABLE)
     }
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         if (oldVersion < 2) {
@@ -46,6 +47,9 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 12) 
         if (oldVersion < 12) {
             db.execSQL(TIME_BLOCK_RULES_TABLE)
             db.execSQL(TIME_BLOCK_SUSPENDED_TABLE)
+        }
+        if (oldVersion < 13) {
+            db.execSQL(TIME_BLOCK_USAGE_TABLE)
         }
     }
 
@@ -92,5 +96,8 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 12) 
                 "blocked_windows TEXT, allowed_windows TEXT, enabled INTEGER)"
         const val TIME_BLOCK_SUSPENDED_TABLE = "CREATE TABLE time_block_suspended (" +
                 "package_name TEXT PRIMARY KEY)"
+        const val TIME_BLOCK_USAGE_TABLE = "CREATE TABLE time_block_usage (" +
+                "package_name TEXT PRIMARY KEY," +
+                "used_ms INTEGER, day_epoch INTEGER)"
     }
 }

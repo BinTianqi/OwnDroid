@@ -28,6 +28,35 @@ class TimeBlockerService : Service() {
     private var pollingJob: Job? = null
     private val currentlySuspended = Collections.synchronizedSet(mutableSetOf<String>())
 
+    // Self-managed foreground tracking. On devices with corrupted UsageStats
+    // (clock was time-traveled, buckets shifted into the future), the system
+    // stats are unreliable. We track foreground state directly by querying
+    // events with a forward-extended window — event timestamps are correct,
+    // only the bucket indexing is shifted.
+    //
+    // At each poll we:
+    //   1. Query the last few minutes of events with a forward-extended end
+    //      to catch the current foreground transition.
+    //   2. Determine which monitored app was last resumed (i.e. is currently
+    //      in the foreground).
+    //   3. Accumulate wall-clock time for that app since the last poll.
+    private val foregroundWallClockStart = Collections.synchronizedMap(mutableMapOf<String, Long>())
+    // Self-accumulated usage per package since service start, in milliseconds.
+    private val usageTodayMs = Collections.synchronizedMap(mutableMapOf<String, Long>())
+    // Frozen baseline per package: usage that happened BEFORE this service
+    // started. Total usage = baselineMs + usageTodayMs. The baseline is read
+    // once at service start (max of system stats and persisted value) and
+    // never updated afterwards — updating it would double-count time that the
+    // self-managed tracker already covered once the system flushes its stats.
+    private val baselineMs = Collections.synchronizedMap(mutableMapOf<String, Long>())
+    // The calendar day (epochDay) the tracking state belongs to.
+    @Volatile private var usageDayEpoch: Long = -1L
+    @Volatile private var lastPollWallClock: Long = 0L
+
+    // Previous cycle's usage values — used to detect apps that are actively
+    // being used (usage growing) so we can poll them more frequently.
+    private val prevUsageMs = Collections.synchronizedMap(mutableMapOf<String, Long>())
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -51,6 +80,42 @@ class TimeBlockerService : Service() {
         pollingJob?.cancel()
         pollingJob = coroutineScope.launch {
             currentlySuspended.addAll(repo.getSuspendedByUs())
+            // Initialize the usage baseline: everything that happened before
+            // this service started. We take the max of the system's persisted
+            // stats and our own persisted merged value — whichever is fresher.
+            // Self-managed counting (usageTodayMs) starts at 0 from here.
+            val todayEpoch = java.time.LocalDate.now().toEpochDay()
+            usageDayEpoch = todayEpoch
+            usageTodayMs.clear()
+            baselineMs.clear()
+            foregroundWallClockStart.clear()
+            val usm = getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+            val now = System.currentTimeMillis()
+            val dayStartCal = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+            }
+            val pkgs = repo.getEnabledRules().map { it.packageName }.toSet()
+            if (usm != null && pkgs.isNotEmpty()) {
+                val sys = getSystemUsageToday(usm, dayStartCal.timeInMillis, now, pkgs)
+                val persisted = repo.getUsageToday(todayEpoch)
+                for (pkg in pkgs) {
+                    baselineMs[pkg] = maxOf(sys[pkg] ?: 0L, persisted[pkg] ?: 0L)
+                }
+            }
+
+            // Immediately seed the foreground tracker: if a monitored app is
+            // already in the foreground right now (e.g. user opened it while
+            // the service was down), we start counting from service start.
+            val currentFg = try {
+                usm?.let { getForegroundFromEvents(it, pkgs) }
+            } catch (_: Exception) { null }
+            if (currentFg != null) {
+                foregroundWallClockStart[currentFg] = now
+            }
+            lastPollWallClock = now
+
+            var lastSaveWallClock = 0L
 
             while (true) {
                 var nextDelayMs = MAX_POLL_MS
@@ -126,6 +191,14 @@ class TimeBlockerService : Service() {
                         }
                     }
 
+                    // Persist the merged total every 5 minutes so it survives
+                    // service restarts (it becomes the next start's baseline).
+                    val persistNow = System.currentTimeMillis()
+                    if (persistNow - lastSaveWallClock > 5 * 60_000L) {
+                        repo.saveUsageToday(usageDayEpoch, mergedTotals())
+                        lastSaveWallClock = persistNow
+                    }
+
                     // Update notification
                     val notif = NotificationCompat.Builder(this@TimeBlockerService, MyNotificationChannel.TimeBlocker.id)
                         .setContentTitle(getString(R.string.time_blocker))
@@ -145,6 +218,15 @@ class TimeBlockerService : Service() {
                             val usedMs = usageMap[rule.packageName] ?: 0L
                             val remainingMs = rule.dailyLimitMinutes * 60_000L - usedMs
                             if (remainingMs > 0) nextDelayMs = minOf(nextDelayMs, remainingMs)
+
+                            // If this app's usage grew since the last check, the app
+                            // is actively in the foreground right now. Poll it at the
+                            // minimum interval so we catch the limit as soon as it's hit.
+                            val prevUsed = prevUsageMs[rule.packageName] ?: 0L
+                            if (usedMs > prevUsed) {
+                                nextDelayMs = minOf(nextDelayMs, MIN_POLL_MS)
+                            }
+                            prevUsageMs[rule.packageName] = usedMs
                         }
                         val untilFlip = minutesUntilWindowChange(rule, currentMinutes, dayOfWeek)
                         if (untilFlip != null) nextDelayMs = minOf(nextDelayMs, untilFlip * 60_000L)
@@ -211,126 +293,155 @@ class TimeBlockerService : Service() {
         val usm = getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
             ?: return emptyMap()
 
-        // Two independent methods — take the higher per package.
-        // Method 1 (events) is precise and handles the current foreground session,
-        // but fails on devices whose usage-stats timeline is shifted into the
-        // future (all event timestamps land outside [dayStart, now]).
-        // Method 2 (stats with a ±30-day window) catches those shifted buckets by
-        // finding the newest daily bucket regardless of absolute timestamp, but may
-        // lag for the currently-open session.
-        val eventTotals = getUsageFromEvents(usm, dayStart, now, packageNames)
-        val statsTotals = getUsageFromStats(usm, now, packageNames)
+        // Reset tracking state at day rollover: new day, new baseline.
+        val todayEpoch = java.time.LocalDate.now().toEpochDay()
+        if (usageDayEpoch != todayEpoch) {
+            usageDayEpoch = todayEpoch
+            usageTodayMs.clear()
+            foregroundWallClockStart.clear()
+            lastPollWallClock = 0L
+            // Fresh baseline for the new day (system stats for the new day).
+            baselineMs.clear()
+            val fresh = getSystemUsageToday(usm, dayStart, now, packageNames)
+            baselineMs.putAll(fresh)
+        }
 
+        // Determine which monitored app is currently in the foreground by
+        // querying recent events with a forward-extended end. Event timestamps
+        // are real-time even on devices with corrupted bucket indexing.
+        val wallClockNow = System.currentTimeMillis()
+        val currentForeground = getForegroundFromEvents(usm, packageNames)
+
+        // Accumulate wall-clock time for the app that was in the foreground
+        // during the last poll interval.
+        if (lastPollWallClock > 0) {
+            val elapsed = wallClockNow - lastPollWallClock
+            if (elapsed > 0) {
+                synchronized(foregroundWallClockStart) {
+                    for ((pkg, startTime) in foregroundWallClockStart) {
+                        usageTodayMs[pkg] = (usageTodayMs[pkg] ?: 0L) + (wallClockNow - startTime)
+                    }
+                    foregroundWallClockStart.clear()
+                }
+            }
+        }
+        lastPollWallClock = wallClockNow
+
+        // Mark the currently-foreground app for the next poll.
+        if (currentForeground != null) {
+            foregroundWallClockStart[currentForeground] = wallClockNow
+        }
+
+        // Total usage = frozen baseline (before service start) + self-managed
+        // accumulation (since service start). The baseline is intentionally NOT
+        // re-read here: the system flushes its stats lazily, so re-reading
+        // would double-count time our own tracker already covered.
         val merged = mutableMapOf<String, Long>()
         for (pkg in packageNames) {
-            merged[pkg] = maxOf(eventTotals[pkg] ?: 0L, statsTotals[pkg] ?: 0L)
+            merged[pkg] = (baselineMs[pkg] ?: 0L) + (usageTodayMs[pkg] ?: 0L)
+        }
+        return merged
+    }
+
+    /** Current merged totals (baseline + self-managed) for all tracked packages. */
+    private fun mergedTotals(): Map<String, Long> {
+        val merged = mutableMapOf<String, Long>()
+        val pkgs = baselineMs.keys + usageTodayMs.keys
+        for (pkg in pkgs) {
+            merged[pkg] = (baselineMs[pkg] ?: 0L) + (usageTodayMs[pkg] ?: 0L)
         }
         return merged
     }
 
     /**
-     * Reconstruct usage from raw RESUMED/PAUSED events (precise, real-time).
+     * Determine which monitored package is currently in the foreground by
+     * querying recent usage events. The events come back chronologically
+     * ordered; we track the last RESUMED/PAUSED transition per package to
+     * know which app is currently active.
      *
-     * Uses a wide ±30-day query window because some devices (observed on Samsung
-     * tablets after clock changes) have their UsageStats timeline shifted days
-     * into the future — a narrow [dayStart, now] query would return nothing.
-     * Instead, we derive the "effective day start" from the newest event
-     * timestamp we see: that timestamp belongs to the current bucket, so its
-     * calendar-midnight IS the device's internal "today" boundary. All events
-     * are then clipped against that dynamically-determined boundary.
+     * On devices with corrupted UsageStats (clock was time-traveled), the
+     * query window extends into the future to catch events whose timestamps
+     * were written with a shifted clock. The FUTURE-dated events are only
+     * system junk (config changes, broadcasts), not RESUMED/PAUSED for the
+     * monitored apps, so the chronological ordering still yields the right
+     * answer.
      */
-    private fun getUsageFromEvents(
-        usm: UsageStatsManager, dayStart: Long, now: Long, packageNames: Set<String>
-    ): Map<String, Long> {
+    private fun getForegroundFromEvents(
+        usm: UsageStatsManager, packageNames: Set<String>
+    ): String? {
         return try {
-            val thirtyDays = 30L * 24 * 3600_000
-            val events = usm.queryEvents(now - thirtyDays, now + thirtyDays)
+            val now = System.currentTimeMillis()
+            val events = usm.queryEvents(now - 24L * 3600_000, now + 14L * 24 * 3600_000)
             val event = android.app.usage.UsageEvents.Event()
-            val totals = mutableMapOf<String, Long>()
-            val resumeSince = mutableMapOf<String, Long>()
-            var newestTs = 0L
+            var lastResumed: String? = null
 
             while (events.hasNextEvent()) {
                 events.getNextEvent(event)
                 val pkg = event.packageName
                 if (pkg !in packageNames) continue
-                if (event.timeStamp > newestTs) newestTs = event.timeStamp
                 when (event.eventType) {
                     android.app.usage.UsageEvents.Event.ACTIVITY_RESUMED,
                     @Suppress("DEPRECATION") android.app.usage.UsageEvents.Event.MOVE_TO_FOREGROUND -> {
-                        val existing = resumeSince[pkg]
-                        if (existing == null || event.timeStamp < existing) {
-                            resumeSince[pkg] = event.timeStamp
-                        }
+                        lastResumed = pkg
                     }
                     android.app.usage.UsageEvents.Event.ACTIVITY_PAUSED,
                     @Suppress("DEPRECATION") android.app.usage.UsageEvents.Event.MOVE_TO_BACKGROUND -> {
-                        val start = resumeSince.remove(pkg)
-                        if (start != null) {
-                            // Clip against the effective day start (see below) and
-                            // count only positive durations.
-                            val delta = event.timeStamp - start
-                            if (delta > 0) {
-                                totals[pkg] = (totals[pkg] ?: 0L) + delta
-                            }
+                        if (pkg == lastResumed) {
+                            lastResumed = null
                         }
                     }
                 }
             }
-            // Still-open sessions count up to the newest event we saw (the
-            // internal "now" of the usage-stats timeline), not the wall clock.
-            if (newestTs > 0) {
-                for ((pkg, start) in resumeSince) {
-                    val delta = newestTs - start
-                    if (delta > 0) totals[pkg] = (totals[pkg] ?: 0L) + delta
-                }
-            }
-            totals
+            lastResumed
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to get event-based usage", e)
-            emptyMap()
+            Log.e(TAG, "Failed to get foreground from events", e)
+            null
         }
     }
 
     /**
-     * Query aggregated stats over a ±30-day window and take the newest daily
-     * bucket per package. This catches devices whose usage-stats rollover
-     * timestamps have drifted days into the future after clock changes —
-     * [queryUsageStats] with a narrow [dayStart, now] window would miss them.
+     * Read the system's persisted usage for today. Uses a wide window (24h back,
+     * 14 days forward) to catch corrupted timelines where bucket dates are
+     * shifted into the future.
      */
-    private fun getUsageFromStats(
-        usm: UsageStatsManager, now: Long, packageNames: Set<String>
+    private fun getSystemUsageToday(
+        usm: UsageStatsManager, dayStart: Long, now: Long, packageNames: Set<String>
     ): Map<String, Long> {
         return try {
-            val thirtyDays = 30L * 24 * 3600_000
             val stats = usm.queryUsageStats(
                 UsageStatsManager.INTERVAL_DAILY,
-                now - thirtyDays,
-                now + thirtyDays
+                now - 24L * 3600_000,
+                now + 14L * 24 * 3600_000
             )
-            val newestBucket = mutableMapOf<String, Long>()
             val totals = mutableMapOf<String, Long>()
             if (stats != null) {
                 for (stat in stats) {
-                    val pkg = stat.packageName
-                    if (pkg !in packageNames) continue
-                    if (stat.totalTimeInForeground <= 0L) continue
-                    val prev = newestBucket[pkg]
-                    if (prev == null || stat.firstTimeStamp > prev) {
-                        newestBucket[pkg] = stat.firstTimeStamp
-                        totals[pkg] = stat.totalTimeInForeground
+                    if (stat.packageName in packageNames && stat.totalTimeInForeground > 0) {
+                        // Take the newest bucket (corrupted devices may have
+                        // multiple future-dated buckets).
+                        val existing = totals[stat.packageName] ?: 0L
+                        if (stat.totalTimeInForeground > existing) {
+                            totals[stat.packageName] = stat.totalTimeInForeground
+                        }
                     }
                 }
             }
             totals
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to get stats-based usage", e)
+            Log.e(TAG, "Failed to get system usage", e)
             emptyMap()
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        // Persist the merged total before shutdown (becomes next baseline).
+        try {
+            val repo = (application as MyApplication).container.timeBlockerRepo
+            repo.saveUsageToday(usageDayEpoch, mergedTotals())
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to persist usage on destroy", e)
+        }
         coroutineScope.cancel()
         isRunning = false
         runningState.value = false
