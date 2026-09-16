@@ -137,7 +137,7 @@ class DhizukuActivity : ComponentActivity() {
                             }
                         }
                         TextButton({
-                            if (settingsRepo.data.appLock.passwordHash.isEmpty()) {
+                            if (!settingsRepo.data.appLock.isActive) {
                                 close(true)
                             } else {
                                 appLockDialog = true
@@ -156,7 +156,14 @@ class DhizukuActivity : ComponentActivity() {
                     },
                     onDismissRequest = { close(false) }
                 )
-                else AppLockDialog(settingsRepo.data.appLock, { close(true) }) { close(false) }
+                else AppLockDialog(
+                    settingsRepo.data.appLock,
+                    onSucceed = { close(true) },
+                    onDismiss = { close(false) },
+                    verifyTotp = { code ->
+                        (application as MyApplication).container.unlockManager.verifyCode(code)
+                    }
+                )
             }
         }
     }

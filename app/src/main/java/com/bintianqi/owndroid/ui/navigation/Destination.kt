@@ -122,6 +122,9 @@ sealed class Destination : NavKey {
     @Serializable object KeyguardDisabledFeatures : Destination()
     @Serializable object RequiredPasswordQuality : Destination()
 
+    @Serializable object TimeBlocker : Destination()
+    @Serializable class TimeBlockerEdit(val ruleId: Int = -1) : Destination()
+
     @Serializable object Settings : Destination()
     @Serializable object SettingsOptions : Destination()
     @Serializable object AppearanceSettings : Destination()

@@ -19,6 +19,9 @@ import com.bintianqi.owndroid.feature.privilege.DhizukuServerRepository
 import com.bintianqi.owndroid.feature.privilege.DhizukuServerViewModel
 import com.bintianqi.owndroid.feature.privilege.TransferOwnershipViewModel
 import com.bintianqi.owndroid.feature.privilege.WorkingModesViewModel
+import com.bintianqi.owndroid.feature.time_blocker.TimeBlockerRepository
+import com.bintianqi.owndroid.feature.time_blocker.TimeBlockerViewModel
+import com.bintianqi.owndroid.feature.time_blocker.UnlockManager
 import com.bintianqi.owndroid.feature.settings.MySettings
 import com.bintianqi.owndroid.feature.settings.SettingsRepository
 import com.bintianqi.owndroid.feature.settings.SettingsViewModel
@@ -47,6 +50,7 @@ class MyViewModelFactory(
     val sr: SettingsRepository, val nlRepo: NetworkLoggingRepository,
     val dsRepo: DhizukuServerRepository, val slRepo: SecurityLoggingRepository,
     val agRepo: AppGroupRepository, val cpifRepo: CrossProfileIntentFilterRepository,
+    val tbRepo: TimeBlockerRepository, val um: UnlockManager,
     val agState: MutableStateFlow<List<AppGroup>>,
     val de: MutableStateFlow<DhizukuError?>, val ps: MutableStateFlow<PrivilegeStatus>,
     val ts: MutableStateFlow<MySettings.Theme>, val tc: ToastChannel
@@ -138,8 +142,12 @@ class MyViewModelFactory(
             return PasswordViewModel(app, ph, sr, ps, tc) as T
         }
 
+        if (checkType(TimeBlockerViewModel::class)) {
+            return TimeBlockerViewModel(app, ph, tbRepo, tc, ps) as T
+        }
+
         if (checkType(SettingsViewModel::class)) {
-            return SettingsViewModel(app, sr, ph, ps, tc, ts) as T
+            return SettingsViewModel(app, sr, ph, ps, tc, ts, um) as T
         }
         throw Exception("Unknown ViewModel")
     }

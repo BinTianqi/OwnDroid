@@ -151,13 +151,16 @@ class MainActivity : FragmentActivity() {
                 val lifecycleOwner = LocalLifecycleOwner.current
                 if (appLockDialog) {
                     AppLockDialog(
-                        myApp.container.settingsRepo.data.appLock, { appLockDialog = false }
-                    ) { moveTaskToBack(true) }
+                        myApp.container.settingsRepo.data.appLock,
+                        onSucceed = { appLockDialog = false },
+                        onDismiss = { moveTaskToBack(true) },
+                        verifyTotp = { code -> myApp.container.unlockManager.verifyCode(code) }
+                    )
                 }
                 DisposableEffect(lifecycleOwner) {
                     val observer = LifecycleEventObserver { _, event ->
                         if (
-                            settingsRepo.data.appLock.passwordHash.isNotEmpty() &&
+                            settingsRepo.data.appLock.isActive &&
                             (event == Lifecycle.Event.ON_CREATE ||
                                     (event == Lifecycle.Event.ON_RESUME &&
                                             settingsRepo.data.appLock.lockWhenLeaving))

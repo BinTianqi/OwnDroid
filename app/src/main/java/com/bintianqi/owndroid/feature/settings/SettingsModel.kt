@@ -42,7 +42,11 @@ data class MySettings(
         var passwordHash: String = "",
         var biometrics: Boolean = false,
         var lockWhenLeaving: Boolean = false,
-    )
+        var totp: Boolean = false,
+    ) {
+        val isActive: Boolean
+            get() = passwordHash.isNotEmpty() || totp
+    }
 
     @Serializable
     data class Shortcut(

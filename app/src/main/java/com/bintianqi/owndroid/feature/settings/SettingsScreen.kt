@@ -9,12 +9,14 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
@@ -26,6 +28,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -43,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -237,8 +241,14 @@ fun AppLockSettingsScreen(
     var confirmPassword by rememberSaveable { mutableStateOf("") }
     var allowBiometrics by rememberSaveable { mutableStateOf(config.biometrics) }
     var lockWhenLeaving by rememberSaveable { mutableStateOf(config.lockWhenLeaving) }
+    var allowTotp by rememberSaveable { mutableStateOf(config.totp) }
     var alreadySet by rememberSaveable { mutableStateOf(config.passwordHash.isNotEmpty()) }
-    val isInputLegal = password.length !in 1..3 && (alreadySet || password.isNotBlank())
+    val totpAvailable = vm.isTotpConfigured()
+    val isInputLegal = password.length !in 1..3 &&
+            (alreadySet || password.isNotBlank() || (allowTotp && totpAvailable))
+    var showSecret by rememberSaveable { mutableStateOf(false) }
+    var generatedSecret by rememberSaveable { mutableStateOf("") }
+    var showRemoveConfirm by rememberSaveable { mutableStateOf(false) }
     OutlinedTextField(
         password, { password = it }, Modifier
             .fillMaxWidth()
@@ -248,6 +258,7 @@ fun AppLockSettingsScreen(
             Text(
                 stringResource(
                     if (alreadySet) R.string.leave_empty_to_remain_unchanged
+                    else if (allowTotp && totpAvailable) R.string.password_optional_with_totp
                     else R.string.minimum_length_4
                 )
             )
@@ -283,9 +294,50 @@ fun AppLockSettingsScreen(
         Text(stringResource(R.string.lock_when_leaving))
         Switch(lockWhenLeaving, { lockWhenLeaving = it })
     }
+    if (!totpAvailable) {
+        Row(
+            Modifier.fillMaxWidth().padding(bottom = 6.dp),
+            Arrangement.SpaceBetween, Alignment.CenterVertically
+        ) {
+            Text(
+                stringResource(R.string.totp_not_configured_hint),
+                Modifier.weight(1f),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Button({
+                generatedSecret = vm.setupTotp()
+                showSecret = true
+            }) {
+                Text(stringResource(R.string.time_blocker_setup_totp))
+            }
+        }
+    } else {
+        Row(
+            Modifier.fillMaxWidth(),
+            Arrangement.SpaceBetween, Alignment.CenterVertically
+        ) {
+            Text(stringResource(R.string.allow_totp_unlock))
+            Switch(allowTotp, { allowTotp = it })
+        }
+        Row(Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
+            TextButton({
+                generatedSecret = vm.getTotpSecret()
+                showSecret = true
+            }) {
+                Text(stringResource(R.string.time_blocker_totp_secret))
+            }
+            TextButton({ showRemoveConfirm = true }) {
+                Text(
+                    stringResource(R.string.time_blocker_remove_totp),
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        }
+    }
     Button(
         {
-            vm.setAppLockConfig(password, allowBiometrics, lockWhenLeaving)
+            vm.setAppLockConfig(password, allowBiometrics, lockWhenLeaving, allowTotp)
             onNavigateUp()
         },
         Modifier.fillMaxWidth(),
@@ -301,6 +353,58 @@ fun AppLockSettingsScreen(
         Modifier.fillMaxWidth()
     ) {
         Text(stringResource(R.string.disable))
+    }
+    if (showSecret && generatedSecret.isNotEmpty()) {
+        AlertDialog(
+            onDismissRequest = { showSecret = false },
+            title = { Text(stringResource(R.string.time_blocker_totp_secret)) },
+            text = {
+                Column {
+                    Text(stringResource(R.string.time_blocker_scan_qr))
+                    Spacer(Modifier.height(8.dp))
+                    SelectionContainer {
+                        Text(
+                            generatedSecret,
+                            fontFamily = FontFamily.Monospace,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    SelectionContainer {
+                        Text(
+                            vm.getOtpAuthUri(),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showSecret = false }) {
+                    Text(stringResource(R.string.confirm))
+                }
+            }
+        )
+    }
+    if (showRemoveConfirm) {
+        AlertDialog(
+            onDismissRequest = { showRemoveConfirm = false },
+            title = { Text(stringResource(R.string.time_blocker_remove_totp)) },
+            confirmButton = {
+                TextButton({
+                    vm.removeTotp()
+                    allowTotp = false
+                    showRemoveConfirm = false
+                }) {
+                    Text(stringResource(R.string.confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRemoveConfirm = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
     }
 }
 

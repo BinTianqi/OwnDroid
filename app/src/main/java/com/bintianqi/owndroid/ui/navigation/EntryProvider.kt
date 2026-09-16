@@ -107,6 +107,9 @@ import com.bintianqi.owndroid.feature.work_profile.CrossProfileIntentFilterScree
 import com.bintianqi.owndroid.feature.work_profile.DeleteWorkProfileScreen
 import com.bintianqi.owndroid.feature.work_profile.SuspendPersonalAppScreen
 import com.bintianqi.owndroid.feature.work_profile.WorkProfileScreen
+import com.bintianqi.owndroid.feature.time_blocker.TimeBlockerEditScreen
+import com.bintianqi.owndroid.feature.time_blocker.TimeBlockerScreen
+import com.bintianqi.owndroid.feature.time_blocker.TimeBlockerViewModel
 import com.bintianqi.owndroid.ui.screen.HomeScreen
 import com.bintianqi.owndroid.utils.viewModelFactory
 
@@ -737,6 +740,17 @@ fun myEntryProvider(
         metadata = navParentKey<Destination.Password>()
     ) {
         RequiredPasswordQualityScreen(viewModel(), ::navigateUp)
+    }
+
+    entry<Destination.TimeBlocker> {
+        TimeBlockerScreen(viewModel(factory = container.viewModelFactory), ::navigate, ::navigateUp)
+    }
+    entry<Destination.TimeBlockerEdit>(
+        metadata = navParentKey<Destination.TimeBlocker>()
+    ) { params ->
+        TimeBlockerEditScreen(
+            params.ruleId, viewModel(), container.chosenPackage, ::chooseSinglePackage, ::navigateUp
+        )
     }
 
     entry<Destination.Settings> {

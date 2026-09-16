@@ -17,6 +17,7 @@ android {
     }
     namespace = "com.bintianqi.owndroid"
     compileSdk = 37
+    buildToolsVersion = "37.0.0"
 
     lint.checkReleaseBuilds = false
     lint.disable += "All"

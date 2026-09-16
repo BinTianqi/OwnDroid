@@ -53,7 +53,8 @@ import com.bintianqi.owndroid.utils.showOperationResultToast
 
 @Composable
 fun AppLockDialog(
-    config: MySettings.AppLock, onSucceed: () -> Unit, onDismiss: () -> Unit
+    config: MySettings.AppLock, onSucceed: () -> Unit, onDismiss: () -> Unit,
+    verifyTotp: ((String) -> Boolean)? = null
 ) = Dialog(onDismiss, DialogProperties(true, false)) {
     val context = LocalContext.current
     val fm = LocalFocusManager.current
@@ -61,12 +62,28 @@ fun AppLockDialog(
     var input by rememberSaveable { mutableStateOf("") }
     var isError by rememberSaveable { mutableStateOf(false) }
     var showPassword by remember { mutableStateOf(false) }
-    fun unlock() {
-        if (input.hash() == config.passwordHash) {
+    var totpInput by rememberSaveable { mutableStateOf("") }
+    var totpError by rememberSaveable { mutableStateOf(false) }
+    val hasPassword = config.passwordHash.isNotEmpty()
+    val showTotp = config.totp && verifyTotp != null
+    fun unlockTotp() {
+        if (verifyTotp?.invoke(totpInput) == true) {
             fm.clearFocus()
             onSucceed()
         } else {
-            isError = true
+            totpError = true
+        }
+    }
+    fun unlock() {
+        if (hasPassword && input.isNotEmpty()) {
+            if (input.hash() == config.passwordHash) {
+                fm.clearFocus()
+                onSucceed()
+            } else {
+                isError = true
+            }
+        } else if (showTotp) {
+            unlockTotp()
         }
     }
     LaunchedEffect(Unit) {
@@ -79,29 +96,53 @@ fun AppLockDialog(
     BackHandler(onBack = onDismiss)
     Card(Modifier.pointerInput(Unit) { detectTapGestures(onTap = { fm.clearFocus() }) }, shape = RoundedCornerShape(16.dp)) {
         Column(Modifier.padding(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                OutlinedTextField(
-                    input, { input = it; isError = false }, Modifier.width(200.dp).focusRequester(fr),
-                    label = { Text(stringResource(R.string.password)) }, isError = isError,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password, imeAction = if(input.length >= 4) ImeAction.Go else ImeAction.Done
-                    ),
-                    keyboardActions = KeyboardActions({ fm.clearFocus() }, { unlock() }),
-                    visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-                    trailingIcon = {
-                        IconButton(onClick = { showPassword = !showPassword }) {
-                            Icon(
-                                painter = painterResource(
-                                    id = if (showPassword) R.drawable.visibility_fill0 else R.drawable.visibility_off_fill0
-                                ),
-                                contentDescription = if (showPassword) "Hide password" else "Show password"
-                            )
+            if (hasPassword) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    OutlinedTextField(
+                        input, { input = it; isError = false }, Modifier.width(200.dp).focusRequester(fr),
+                        label = { Text(stringResource(R.string.password)) }, isError = isError,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password, imeAction = if(input.length >= 4) ImeAction.Go else ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions({ fm.clearFocus() }, { unlock() }),
+                        visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { showPassword = !showPassword }) {
+                                Icon(
+                                    painter = painterResource(
+                                        id = if (showPassword) R.drawable.visibility_fill0 else R.drawable.visibility_off_fill0
+                                    ),
+                                    contentDescription = if (showPassword) "Hide password" else "Show password"
+                                )
+                            }
+                        }
+                    )
+                    if (Build.VERSION.SDK_INT >= 28 && config.biometrics && !showTotp) {
+                        FilledTonalIconButton({ startBiometricsUnlock(context, onSucceed) }, Modifier.padding(start = 4.dp)) {
+                            Icon(painterResource(R.drawable.fingerprint_fill0), null)
                         }
                     }
-                )
-                if (Build.VERSION.SDK_INT >= 28 && config.biometrics) {
-                    FilledTonalIconButton({ startBiometricsUnlock(context, onSucceed) }, Modifier.padding(start = 4.dp)) {
-                        Icon(painterResource(R.drawable.fingerprint_fill0), null)
+                }
+            }
+            if (showTotp) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(top = if (hasPassword) 8.dp else 0.dp)
+                ) {
+                    OutlinedTextField(
+                        totpInput,
+                        { totpInput = it.filter { c -> c.isDigit() }.take(6); totpError = false },
+                        Modifier.width(200.dp).focusRequester(if (hasPassword) remember { FocusRequester() } else fr),
+                        label = { Text("TOTP") },
+                        isError = totpError,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Go),
+                        keyboardActions = KeyboardActions(onGo = { unlockTotp() }),
+                        singleLine = true
+                    )
+                    if (Build.VERSION.SDK_INT >= 28 && config.biometrics) {
+                        FilledTonalIconButton({ startBiometricsUnlock(context, onSucceed) }, Modifier.padding(start = 4.dp)) {
+                            Icon(painterResource(R.drawable.fingerprint_fill0), null)
+                        }
                     }
                 }
             }

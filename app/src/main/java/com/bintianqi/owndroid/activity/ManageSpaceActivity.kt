@@ -32,10 +32,15 @@ class ManageSpaceActivity: FragmentActivity() {
             val theme by myApp.container.themeState.collectAsStateWithLifecycle()
             OwnDroidTheme(theme) {
                 var appLockDialog by remember {
-                    mutableStateOf(settingsRepo.data.appLock.passwordHash.isNotEmpty())
+                    mutableStateOf(settingsRepo.data.appLock.isActive)
                 }
                 if (appLockDialog) {
-                    AppLockDialog(settingsRepo.data.appLock, { appLockDialog = false }, ::finish)
+                    AppLockDialog(
+                        settingsRepo.data.appLock,
+                        onSucceed = { appLockDialog = false },
+                        onDismiss = ::finish,
+                        verifyTotp = { code -> myApp.container.unlockManager.verifyCode(code) }
+                    )
                 } else {
                     AlertDialog(
                         text = {

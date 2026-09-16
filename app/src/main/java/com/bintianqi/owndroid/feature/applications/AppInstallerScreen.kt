@@ -52,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
@@ -89,7 +90,7 @@ fun AppInstaller(
                     else Icon(Icons.Default.PlayArrow, null)
                 },
                 onClick = {
-                    if (vm.getAppLockConfig().passwordHash.isEmpty()) vm.startInstall(options)
+                    if (!vm.getAppLockConfig().isActive) vm.startInstall(options)
                     else appLockDialog = true
                 },
                 expanded = !uiState.installing
@@ -125,10 +126,18 @@ fun AppInstaller(
         ResultDialog(uiState.result, vm::closeResultDialog)
     }
     if (appLockDialog) {
-        AppLockDialog(vm.getAppLockConfig(), {
-            appLockDialog = false
-            vm.startInstall(options)
-        }) { appLockDialog = false }
+        val context = LocalContext.current
+        AppLockDialog(
+            vm.getAppLockConfig(),
+            onSucceed = {
+                appLockDialog = false
+                vm.startInstall(options)
+            },
+            onDismiss = { appLockDialog = false },
+            verifyTotp = { code ->
+                (context.applicationContext as MyApplication).container.unlockManager.verifyCode(code)
+            }
+        )
     }
 }
 

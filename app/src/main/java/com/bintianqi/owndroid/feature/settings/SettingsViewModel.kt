@@ -7,6 +7,7 @@ import android.os.Build
 import androidx.lifecycle.ViewModel
 import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.PrivilegeHelper
+import com.bintianqi.owndroid.feature.time_blocker.UnlockManager
 import com.bintianqi.owndroid.utils.NotificationType
 import com.bintianqi.owndroid.utils.PrivilegeStatus
 import com.bintianqi.owndroid.utils.ShortcutUtils
@@ -21,7 +22,8 @@ import java.util.concurrent.TimeUnit
 class SettingsViewModel(
     val application: MyApplication, val settingsRepo: SettingsRepository,
     val ph: PrivilegeHelper, val privilegeState: StateFlow<PrivilegeStatus>,
-    val toastChannel: ToastChannel, val themeState: MutableStateFlow<MySettings.Theme>
+    val toastChannel: ToastChannel, val themeState: MutableStateFlow<MySettings.Theme>,
+    val um: UnlockManager
 ) : ViewModel() {
     fun exportLogs(uri: Uri) {
         application.contentResolver.openOutputStream(uri)?.use { output ->
@@ -64,19 +66,35 @@ class SettingsViewModel(
 
     fun getAppLockConfig() = settingsRepo.data.appLock
 
-    fun setAppLockConfig(password: String, biometrics: Boolean, lockWhenLeaving: Boolean) {
+    fun setAppLockConfig(password: String, biometrics: Boolean, lockWhenLeaving: Boolean, totp: Boolean) {
         settingsRepo.update {
             if (password.isNotEmpty()) it.appLock.passwordHash = password.hash()
             it.appLock.biometrics = biometrics
             it.appLock.lockWhenLeaving = lockWhenLeaving
+            it.appLock.totp = totp
         }
     }
 
     fun disableAppLock() {
         settingsRepo.update {
             it.appLock.passwordHash = ""
+            it.appLock.totp = false
         }
     }
+
+    fun isTotpConfigured() = um.isConfigured
+
+    fun setupTotp(): String = um.setupTotp()
+
+    fun removeTotp() {
+        um.removeTotp()
+        // Safety: if TOTP secret is removed, disable TOTP app lock so user isn't locked out
+        settingsRepo.update { it.appLock.totp = false }
+    }
+
+    fun getTotpSecret(): String = um.config.totpSecret
+
+    fun getOtpAuthUri(): String = um.getOtpAuthUri()
 
     fun getApiEnabled() = settingsRepo.data.api.enabled
     fun getApiKey() = settingsRepo.data.api.key
