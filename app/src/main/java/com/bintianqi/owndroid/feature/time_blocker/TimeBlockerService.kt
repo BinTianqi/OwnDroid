@@ -1,7 +1,6 @@
 package com.bintianqi.owndroid.feature.time_blocker
 
 import android.app.Service
-import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
@@ -93,6 +92,7 @@ class TimeBlockerService : Service() {
                         // Check daily limit
                         if (!blocked && rule.dailyLimitMinutes > 0) {
                             val usedMinutes = (usageMap[rule.packageName] ?: 0L) / 60_000
+                            Log.d(TAG, "Usage ${rule.packageName}: ${usedMinutes}min used / ${rule.dailyLimitMinutes}min limit")
                             if (usedMinutes >= rule.dailyLimitMinutes) {
                                 blocked = true
                             }
@@ -169,30 +169,55 @@ class TimeBlockerService : Service() {
         return try {
             val usm = getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
                 ?: return emptyMap()
+            // We reconstruct usage from raw events instead of queryUsageStats():
+            // the aggregated stats buckets are aligned to the service's internal
+            // rollover points, which drift away from calendar midnight after clock
+            // changes — and buckets for the currently-foreground app are often
+            // missing entirely. Both make queryUsageStats unreliable on real devices.
+            //
+            // Robustness rules for the reconstruction:
+            //  - A PAUSED without a preceding RESUMED is ignored (e.g. app was
+            //    already running before our query window or process died).
+            //  - A RESUMED while one is already open restarts the clock (overlap
+            //    from config changes / multi-activity flows) — we keep the EARLIER
+            //    start to avoid undercounting.
+            //  - Sessions are clipped to [dayStart, now]: a session that started
+            //    before today only counts from dayStart; one still open counts
+            //    until now.
             val events = usm.queryEvents(dayStart, now)
-            val event = UsageEvents.Event()
+            val event = android.app.usage.UsageEvents.Event()
             val totals = mutableMapOf<String, Long>()
-            val lastResume = mutableMapOf<String, Long>()
+            val resumeSince = mutableMapOf<String, Long>()
 
             while (events.hasNextEvent()) {
                 events.getNextEvent(event)
-                if (event.packageName !in packageNames) continue
+                val pkg = event.packageName
+                if (pkg !in packageNames) continue
                 when (event.eventType) {
-                    UsageEvents.Event.ACTIVITY_RESUMED,
-                    UsageEvents.Event.MOVE_TO_FOREGROUND -> {
-                        lastResume[event.packageName] = event.timeStamp
+                    android.app.usage.UsageEvents.Event.ACTIVITY_RESUMED,
+                    @Suppress("DEPRECATION") android.app.usage.UsageEvents.Event.MOVE_TO_FOREGROUND -> {
+                        // Keep the earlier start on overlapping resumes.
+                        val existing = resumeSince[pkg]
+                        if (existing == null || event.timeStamp < existing) {
+                            resumeSince[pkg] = event.timeStamp
+                        }
                     }
-                    UsageEvents.Event.ACTIVITY_PAUSED,
-                    UsageEvents.Event.MOVE_TO_BACKGROUND -> {
-                        lastResume.remove(event.packageName)?.let { start ->
-                            totals[event.packageName] = (totals[event.packageName] ?: 0L) + (event.timeStamp - start)
+                    android.app.usage.UsageEvents.Event.ACTIVITY_PAUSED,
+                    @Suppress("DEPRECATION") android.app.usage.UsageEvents.Event.MOVE_TO_BACKGROUND -> {
+                        val start = resumeSince.remove(pkg)
+                        if (start != null) {
+                            val from = maxOf(start, dayStart)
+                            val delta = event.timeStamp - from
+                            if (delta > 0) totals[pkg] = (totals[pkg] ?: 0L) + delta
                         }
                     }
                 }
             }
-            // Apps still in foreground
-            for ((pkg, start) in lastResume) {
-                totals[pkg] = (totals[pkg] ?: 0L) + (now - start)
+            // Sessions still open at query time count up to now.
+            for ((pkg, start) in resumeSince) {
+                val from = maxOf(start, dayStart)
+                val delta = now - from
+                if (delta > 0) totals[pkg] = (totals[pkg] ?: 0L) + delta
             }
             totals
         } catch (e: Exception) {

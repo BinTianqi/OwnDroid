@@ -3,6 +3,7 @@ package com.bintianqi.owndroid
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
 
 class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 12) {
     override fun onCreate(db: SQLiteDatabase) {
@@ -46,6 +47,23 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 12) 
             db.execSQL(TIME_BLOCK_RULES_TABLE)
             db.execSQL(TIME_BLOCK_SUSPENDED_TABLE)
         }
+    }
+
+    override fun onDowngrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        // Debug builds are often installed over newer builds (branch switching).
+        // SQLiteOpenHelper crashes by default on downgrade; reset the DB instead.
+        Log.w("MyDbHelper", "DB downgrade $oldVersion -> $newVersion, resetting all tables")
+        val tables = mutableListOf<String>()
+        db.rawQuery(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'android_%'",
+            null
+        ).use { c ->
+            while (c.moveToNext()) tables += c.getString(0)
+        }
+        for (table in tables) {
+            db.execSQL("DROP TABLE IF EXISTS `$table`")
+        }
+        onCreate(db)
     }
     companion object {
         const val DHIZUKU_CLIENTS_TABLE = "CREATE TABLE dhizuku_clients (uid INTEGER PRIMARY KEY," +

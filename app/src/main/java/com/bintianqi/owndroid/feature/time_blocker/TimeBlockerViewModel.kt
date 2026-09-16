@@ -40,6 +40,7 @@ class TimeBlockerViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             repo.addRule(rule)
             refreshRules()
+            ensureServiceRunning()
         }
     }
 
@@ -47,6 +48,7 @@ class TimeBlockerViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             repo.updateRule(rule)
             refreshRules()
+            ensureServiceRunning()
         }
     }
 
@@ -61,6 +63,19 @@ class TimeBlockerViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             repo.updateRule(rule.copy(enabled = !rule.enabled))
             refreshRules()
+            ensureServiceRunning()
+        }
+    }
+
+    /**
+     * The blocker is meant to be always-on: whenever enabled rules exist and the
+     * user has not explicitly stopped the service, make sure it is running.
+     */
+    private fun ensureServiceRunning() {
+        val hasEnabledRules = rulesState.value.any { it.enabled }
+        val enabledByUser = application.container.settingsRepo.data.timeBlockerServiceEnabled
+        if (hasEnabledRules && enabledByUser && !TimeBlockerService.isRunning) {
+            TimeBlockerService.start(application)
         }
     }
 
@@ -86,10 +101,13 @@ class TimeBlockerViewModel(
     }
 
     fun startService() {
+        application.container.settingsRepo.update { it.timeBlockerServiceEnabled = true }
         TimeBlockerService.start(application)
     }
 
     fun stopService() {
+        // Explicit user stop: remember it so boot/app-start auto-restart stays off.
+        application.container.settingsRepo.update { it.timeBlockerServiceEnabled = false }
         TimeBlockerService.stop(application)
     }
 }

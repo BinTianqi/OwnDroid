@@ -14,7 +14,10 @@ data class MySettings(
     var displayDangerousFeatures: Boolean = false,
     var appFeatureSwitchView: Boolean = true,
     var cpifChanged: Boolean = false, // Cross profile intent filter
-    val api: Api = Api()
+    val api: Api = Api(),
+    // Whether the time blocker service should run. Default true: the service is
+    // meant to be always-on once rules exist, unless the user explicitly stops it.
+    var timeBlockerServiceEnabled: Boolean = true
 ) {
     @Serializable
     data class Privilege(

@@ -16,7 +16,8 @@ class TimeBlockerBootReceiver : BroadcastReceiver() {
             try {
                 val myApp = context.applicationContext as MyApplication
                 val repo = myApp.container.timeBlockerRepo
-                if (repo.getEnabledRules().isNotEmpty()) {
+                val serviceEnabled = myApp.container.settingsRepo.data.timeBlockerServiceEnabled
+                if (serviceEnabled && repo.getEnabledRules().isNotEmpty()) {
                     TimeBlockerService.start(context)
                 }
             } finally {
