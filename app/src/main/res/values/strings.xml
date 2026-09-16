@@ -809,4 +809,24 @@
     <string name="allow_totp_unlock">Allow TOTP code unlock</string>
     <string name="totp_not_configured_hint">TOTP is not configured yet</string>
     <string name="password_optional_with_totp">Leave empty to unlock with TOTP only</string>
+    <string name="sync_transfer">Sync / transfer</string>
+    <string name="sync_export_title">Show QR code</string>
+    <string name="sync_export_desc">Display a QR code with time blocker rules and TOTP secret</string>
+    <string name="sync_export_generating">Generating QR code…</string>
+    <string name="sync_export_summary">%1$d rules, %2$s</string>
+    <string name="sync_export_warning">Do not share this QR code — it contains your TOTP secret.</string>
+    <string name="sync_import_title">Scan QR code</string>
+    <string name="sync_import_desc">Import time blocker rules and TOTP secret from another device</string>
+    <string name="sync_import_hint">Point the camera at the QR code shown on the other device</string>
+    <string name="sync_import_confirm_title">Import settings?</string>
+    <string name="sync_import_confirm_msg">%1$d rules, %2$s.</string>
+    <string name="sync_import_replace_warning">All existing time blocker rules on this device will be replaced.</string>
+    <string name="sync_import_skipped">%1$d invalid entries will be skipped.</string>
+    <string name="sync_import_invalid">Not an OwnDroid sync QR code</string>
+    <string name="sync_import_too_large">Too much data for a QR code</string>
+    <string name="sync_import_result">Imported %1$d rules (%2$s). %3$d invalid entries skipped.</string>
+    <string name="sync_camera_permission_needed">Camera permission is needed to scan the QR code</string>
+    <string name="sync_grant_camera">Grant camera permission</string>
+    <string name="sync_totp_included">TOTP secret included</string>
+    <string name="sync_totp_not_included">no TOTP secret</string>
 </resources>

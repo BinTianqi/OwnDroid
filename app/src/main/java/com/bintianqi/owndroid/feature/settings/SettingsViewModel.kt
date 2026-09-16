@@ -5,8 +5,12 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.PrivilegeHelper
+import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.feature.time_blocker.TimeBlockerRepository
+import com.bintianqi.owndroid.feature.time_blocker.TimeBlockerService
 import com.bintianqi.owndroid.feature.time_blocker.UnlockManager
 import com.bintianqi.owndroid.utils.NotificationType
 import com.bintianqi.owndroid.utils.PrivilegeStatus
@@ -14,16 +18,18 @@ import com.bintianqi.owndroid.utils.ShortcutUtils
 import com.bintianqi.owndroid.utils.ToastChannel
 import com.bintianqi.owndroid.utils.hash
 import com.bintianqi.owndroid.utils.plusOrMinus
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 class SettingsViewModel(
     val application: MyApplication, val settingsRepo: SettingsRepository,
     val ph: PrivilegeHelper, val privilegeState: StateFlow<PrivilegeStatus>,
     val toastChannel: ToastChannel, val themeState: MutableStateFlow<MySettings.Theme>,
-    val um: UnlockManager
+    val um: UnlockManager, val tbRepo: TimeBlockerRepository
 ) : ViewModel() {
     fun exportLogs(uri: Uri) {
         application.contentResolver.openOutputStream(uri)?.use { output ->
@@ -147,5 +153,74 @@ class SettingsViewModel(
         )
         hiddenState.value = false
         toastChannel.sendStatus(true)
+    }
+
+    // --- Settings sync (QR transfer) ---
+
+    val syncQrBitmap = MutableStateFlow<android.graphics.Bitmap?>(null)
+    val syncExportSummary = MutableStateFlow<Pair<Int, Boolean>?>(null) // rules count, totp included
+    val syncImportResult = MutableStateFlow<ImportResult?>(null)
+
+    data class ImportResult(
+        val rulesImported: Int, val rulesSkipped: Int, val totpImported: Boolean
+    )
+
+    /** Build QR for export. Sets syncQrBitmap or reports failure via toast. */
+    fun buildSyncQr(sizePx: Int = 900) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val payload = SyncPayload(
+                    totpSecret = um.config.totpSecret,
+                    rules = tbRepo.getRules().map { SyncRule.fromBlockRule(it) }
+                )
+                val bytes = SyncCodec.encode(payload)
+                syncQrBitmap.value = QrUtils.encodeToBitmap(bytes, sizePx)
+                syncExportSummary.value = payload.rules.size to payload.totpSecret.isNotEmpty()
+            } catch (_: SyncCodec.PayloadTooLargeException) {
+                syncQrBitmap.value = null
+                syncExportSummary.value = null
+                toastChannel.sendText(application.getString(R.string.sync_import_too_large))
+            } catch (_: Exception) {
+                syncQrBitmap.value = null
+                syncExportSummary.value = null
+                toastChannel.sendStatus(false)
+            }
+        }
+    }
+
+    /**
+     * Import a scanned payload: replaces ALL rules, sets TOTP if present.
+     * Password hash is never touched (stays local).
+     */
+    fun importSyncPayload(payload: SyncPayload) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val (validRules, skipped) = SyncCodec.validate(payload)
+            // Full replace, atomic
+            tbRepo.replaceAllRules(validRules.map { it.toBlockRule() })
+
+            val totpImported = payload.totpSecret.isNotEmpty() &&
+                    SyncCodec.isValidTotpSecret(payload.totpSecret)
+            if (totpImported) {
+                um.setupTotp(payload.totpSecret)
+                settingsRepo.update { it.appLock.totp = true }
+            }
+
+            // Start blocker service if rules are now active and it's not running
+            if (validRules.any { it.enabled } && !TimeBlockerService.isRunning) {
+                TimeBlockerService.start(application)
+            }
+
+            syncImportResult.value = ImportResult(validRules.size, skipped, totpImported)
+            toastChannel.sendStatus(true)
+        }
+    }
+
+    fun clearSyncImportResult() {
+        syncImportResult.value = null
+    }
+
+    fun clearSyncExport() {
+        syncQrBitmap.value = null
+        syncExportSummary.value = null
     }
 }

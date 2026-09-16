@@ -69,6 +69,7 @@ import com.bintianqi.owndroid.feature.settings.AppearanceScreen
 import com.bintianqi.owndroid.feature.settings.NotificationsScreen
 import com.bintianqi.owndroid.feature.settings.SettingsOptionsScreen
 import com.bintianqi.owndroid.feature.settings.SettingsScreen
+import com.bintianqi.owndroid.feature.settings.SettingsSyncScreen
 import com.bintianqi.owndroid.feature.system.CaCertScreen
 import com.bintianqi.owndroid.feature.system.ContentProtectionPolicyScreen
 import com.bintianqi.owndroid.feature.system.DefaultInputMethodScreen
@@ -770,6 +771,11 @@ fun myEntryProvider(
         metadata = navParentKey<Destination.Settings>()
     ) {
         AppLockSettingsScreen(viewModel(), ::navigateUp)
+    }
+    entry<Destination.SettingsSync>(
+        metadata = navParentKey<Destination.Settings>()
+    ) {
+        SettingsSyncScreen(viewModel(), ::navigateUp)
     }
     entry<Destination.ApiSettings>(
         metadata = navParentKey<Destination.Settings>()

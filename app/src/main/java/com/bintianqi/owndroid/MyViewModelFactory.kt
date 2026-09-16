@@ -147,7 +147,7 @@ class MyViewModelFactory(
         }
 
         if (checkType(SettingsViewModel::class)) {
-            return SettingsViewModel(app, sr, ph, ps, tc, ts, um) as T
+            return SettingsViewModel(app, sr, ph, ps, tc, ts, um, tbRepo) as T
         }
         throw Exception("Unknown ViewModel")
     }
