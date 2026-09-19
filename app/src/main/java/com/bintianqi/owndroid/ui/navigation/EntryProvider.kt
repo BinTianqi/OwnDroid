@@ -1,5 +1,7 @@
 package com.bintianqi.owndroid.ui.navigation
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
@@ -66,10 +68,13 @@ import com.bintianqi.owndroid.feature.settings.AboutScreen
 import com.bintianqi.owndroid.feature.settings.ApiSettings
 import com.bintianqi.owndroid.feature.settings.AppLockSettingsScreen
 import com.bintianqi.owndroid.feature.settings.AppearanceScreen
+import com.bintianqi.owndroid.feature.settings.ExportSettingsScreen
+import com.bintianqi.owndroid.feature.settings.ImportSettingsScreen
 import com.bintianqi.owndroid.feature.settings.NotificationsScreen
 import com.bintianqi.owndroid.feature.settings.SettingsOptionsScreen
 import com.bintianqi.owndroid.feature.settings.SettingsScreen
 import com.bintianqi.owndroid.feature.settings.SettingsSyncScreen
+import com.bintianqi.owndroid.feature.settings.SettingsViewModel
 import com.bintianqi.owndroid.feature.system.CaCertScreen
 import com.bintianqi.owndroid.feature.system.ContentProtectionPolicyScreen
 import com.bintianqi.owndroid.feature.system.DefaultInputMethodScreen
@@ -110,7 +115,6 @@ import com.bintianqi.owndroid.feature.work_profile.SuspendPersonalAppScreen
 import com.bintianqi.owndroid.feature.work_profile.WorkProfileScreen
 import com.bintianqi.owndroid.feature.time_blocker.TimeBlockerEditScreen
 import com.bintianqi.owndroid.feature.time_blocker.TimeBlockerScreen
-import com.bintianqi.owndroid.feature.time_blocker.TimeBlockerViewModel
 import com.bintianqi.owndroid.ui.screen.HomeScreen
 import com.bintianqi.owndroid.utils.viewModelFactory
 
@@ -775,12 +779,25 @@ fun myEntryProvider(
     entry<Destination.SettingsSync>(
         metadata = navParentKey<Destination.Settings>()
     ) {
-        SettingsSyncScreen(viewModel(), ::navigateUp)
+        SettingsSyncScreen(viewModel(), ::navigate, ::navigateUp)
     }
     entry<Destination.ApiSettings>(
         metadata = navParentKey<Destination.Settings>()
     ) {
         ApiSettings(viewModel(), ::navigateUp)
+    }
+    entry<Destination.ExportSettings>(
+        metadata = navParentKey<Destination.Settings>()
+    ) {
+        val vm = viewModel<SettingsViewModel>()
+        val qrBitmap by vm.syncQrBitmap.collectAsState()
+        val exportSummary by vm.syncExportSummary.collectAsState()
+        ExportSettingsScreen(qrBitmap, exportSummary, ::navigateUp)
+    }
+    entry<Destination.ImportSettings>(
+        metadata = navParentKey<Destination.Settings>()
+    ) {
+        ImportSettingsScreen(viewModel(), ::navigateUp)
     }
     entry<Destination.NotificationSettings>(
         metadata = navParentKey<Destination.Settings>()

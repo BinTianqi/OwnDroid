@@ -44,126 +44,86 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.MyScaffold
+import com.bintianqi.owndroid.ui.MySmallTitleScaffold
+import com.bintianqi.owndroid.ui.navigation.Destination
 
 import java.util.concurrent.Executors
 
-private enum class SyncMode { None, Export, Import }
-
 @Composable
-fun SettingsSyncScreen(vm: SettingsViewModel, onNavigateUp: () -> Unit) {
-    var mode by remember { mutableStateOf(SyncMode.None) }
-    val qrBitmap by vm.syncQrBitmap.collectAsState()
-    val exportSummary by vm.syncExportSummary.collectAsState()
-    val importResult by vm.syncImportResult.collectAsState()
-
-    // The VM is parent-scoped and survives this screen; drop stale one-shot results
-    LaunchedEffect(Unit) { vm.clearSyncImportResult() }
-    DisposableEffect(Unit) { onDispose { vm.clearSyncImportResult() } }
-
+fun SettingsSyncScreen(
+    vm: SettingsViewModel, navigate: (Destination) -> Unit, onNavigateUp: () -> Unit
+) {
     MyScaffold(R.string.sync_transfer, onNavigateUp, 0.dp) {
-        if (mode == SyncMode.None) {
-            FunctionItem(
-                R.string.sync_export_title,
-                stringResource(R.string.sync_export_desc),
-                R.drawable.qr_code_fill0
-            ) {
-                vm.clearSyncExport()
-                vm.buildSyncQr()
-                mode = SyncMode.Export
-            }
-            FunctionItem(
-                R.string.sync_import_title,
-                stringResource(R.string.sync_import_desc),
-                R.drawable.qr_code_scanner_fill0
-            ) {
-                mode = SyncMode.Import
-            }
-        } else if (mode == SyncMode.Export) {
-            ExportView(qrBitmap, exportSummary) { mode = SyncMode.None }
-        } else {
-            ImportView(vm) { mode = SyncMode.None }
+        FunctionItem(
+            R.string.sync_export_title,
+            stringResource(R.string.sync_export_desc),
+            R.drawable.qr_code_fill0
+        ) {
+            vm.clearSyncExport()
+            vm.buildSyncQr()
+            navigate(Destination.ExportSettings)
         }
-    }
-
-    // Import result confirmation
-    importResult?.let { result ->
-        AlertDialog(
-            onDismissRequest = { vm.clearSyncImportResult() },
-            title = { Text(stringResource(R.string.sync_import_title)) },
-            text = {
-                Text(
-                    stringResource(
-                        R.string.sync_import_result,
-                        result.rulesImported,
-                        stringResource(
-                            if (result.totpImported) R.string.sync_totp_included
-                            else R.string.sync_totp_not_included
-                        ),
-                        result.rulesSkipped
-                    )
-                )
-            },
-            confirmButton = {
-                TextButton({ vm.clearSyncImportResult(); mode = SyncMode.None }) {
-                    Text(stringResource(R.string.confirm))
-                }
-            }
-        )
+        FunctionItem(
+            R.string.sync_import_title,
+            stringResource(R.string.sync_import_desc),
+            R.drawable.qr_code_scanner_fill0
+        ) {
+            navigate(Destination.ImportSettings)
+        }
     }
 }
 
 @Composable
-private fun ExportView(
+fun ExportSettingsScreen(
     qrBitmap: android.graphics.Bitmap?,
     summary: Pair<Int, Boolean>?,
-    onBack: () -> Unit
+    onNavigateUp: () -> Unit
 ) {
-    Column(
-        Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        if (qrBitmap != null && summary != null) {
-            Image(
-                bitmap = qrBitmap.asImageBitmap(),
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-                    .padding(16.dp),
-                filterQuality = FilterQuality.None // QR codes need crisp module edges
-            )
-            Text(
-                stringResource(
-                    R.string.sync_export_summary,
-                    summary.first,
+    MySmallTitleScaffold(R.string.export, onNavigateUp) {
+        Column(
+            Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (qrBitmap != null && summary != null) {
+                Image(
+                    bitmap = qrBitmap.asImageBitmap(),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .padding(16.dp),
+                    filterQuality = FilterQuality.None // QR codes need crisp module edges
+                )
+                Text(
                     stringResource(
-                        if (summary.second) R.string.sync_totp_included
-                        else R.string.sync_totp_not_included
-                    )
-                ),
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(
-                stringResource(R.string.sync_export_warning),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error
-            )
-        } else {
-            Spacer(Modifier.height(48.dp))
-            CircularProgressIndicator()
-            Spacer(Modifier.height(16.dp))
-            Text(stringResource(R.string.sync_export_generating))
-        }
-        Spacer(Modifier.height(24.dp))
-        OutlinedButton(onBack) {
-            Text(stringResource(R.string.cancel))
+                        R.string.sync_export_summary,
+                        summary.first,
+                        stringResource(
+                            if (summary.second) R.string.sync_totp_included
+                            else R.string.sync_totp_not_included
+                        )
+                    ),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    stringResource(R.string.sync_export_warning),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            } else {
+                Spacer(Modifier.height(48.dp))
+                CircularProgressIndicator()
+                Spacer(Modifier.height(16.dp))
+                Text(stringResource(R.string.sync_export_generating))
+            }
+            Spacer(Modifier.height(24.dp))
         }
     }
 }
 
 @Composable
-private fun ImportView(vm: SettingsViewModel, onBack: () -> Unit) {
+fun ImportSettingsScreen(vm: SettingsViewModel, onNavigateUp: () -> Unit) {
     val context = LocalContext.current
     var hasCameraPermission by remember {
         mutableStateOf(
@@ -178,41 +138,45 @@ private fun ImportView(vm: SettingsViewModel, onBack: () -> Unit) {
     // Pending scanned payload waiting for user confirmation
     var pendingPayload by remember { mutableStateOf<SyncPayload?>(null) }
     var invalidQrShown by remember { mutableStateOf(false) }
+    val importResult by vm.syncImportResult.collectAsState()
 
     LaunchedEffect(Unit) {
         if (!hasCameraPermission) {
             permissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
+    DisposableEffect(Unit) { onDispose { vm.clearSyncImportResult() } }
 
-    Column(
-        Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        if (hasCameraPermission) {
-            CameraScanner(
-                onPayload = { payload -> pendingPayload = payload },
-                onInvalid = { invalidQrShown = true }
-            )
-            Spacer(Modifier.height(12.dp))
-            Text(
-                stringResource(R.string.sync_import_hint),
-                style = MaterialTheme.typography.bodyMedium
-            )
-        } else {
-            Spacer(Modifier.height(24.dp))
-            Text(
-                stringResource(R.string.sync_camera_permission_needed),
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(Modifier.height(12.dp))
-            Button({ permissionLauncher.launch(Manifest.permission.CAMERA) }) {
-                Text(stringResource(R.string.sync_grant_camera))
+    MySmallTitleScaffold(R.string.import_str, onNavigateUp) {
+        Column(
+            Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (hasCameraPermission) {
+                CameraScanner(
+                    onPayload = { payload -> pendingPayload = payload },
+                    onInvalid = { invalidQrShown = true }
+                )
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    stringResource(R.string.sync_import_hint),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            } else {
+                Spacer(Modifier.height(24.dp))
+                Text(
+                    stringResource(R.string.sync_camera_permission_needed),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(Modifier.height(12.dp))
+                Button({ permissionLauncher.launch(Manifest.permission.CAMERA) }) {
+                    Text(stringResource(R.string.sync_grant_camera))
+                }
             }
-        }
-        Spacer(Modifier.height(24.dp))
-        OutlinedButton(onBack) {
-            Text(stringResource(R.string.cancel))
+            Spacer(Modifier.height(24.dp))
+            OutlinedButton(onNavigateUp) {
+                Text(stringResource(R.string.cancel))
+            }
         }
     }
 
@@ -266,10 +230,36 @@ private fun ImportView(vm: SettingsViewModel, onBack: () -> Unit) {
         )
     }
 
+    // Import result confirmation
+    importResult?.let { result ->
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text(stringResource(R.string.sync_import_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.sync_import_result,
+                        result.rulesImported,
+                        stringResource(
+                            if (result.totpImported) R.string.sync_totp_included
+                            else R.string.sync_totp_not_included
+                        ),
+                        result.rulesSkipped
+                    )
+                )
+            },
+            confirmButton = {
+                TextButton(onNavigateUp) {
+                    Text(stringResource(R.string.confirm))
+                }
+            }
+        )
+    }
+
     if (invalidQrShown) {
         AlertDialog(
             onDismissRequest = { invalidQrShown = false },
-            title = { Text(stringResource(R.string.sync_import_title)) },
+            title = { Text(stringResource(R.string.error)) },
             text = { Text(stringResource(R.string.sync_import_invalid)) },
             confirmButton = {
                 TextButton({ invalidQrShown = false }) {
@@ -285,7 +275,6 @@ private fun CameraScanner(
     onPayload: (SyncPayload) -> Unit,
     onInvalid: () -> Unit
 ) {
-    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val executor = remember { Executors.newSingleThreadExecutor() }
     val cameraProviderState = remember { mutableStateOf<ProcessCameraProvider?>(null) }
@@ -321,9 +310,9 @@ private fun CameraScanner(
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
                 analysis.setAnalyzer(executor) { imageProxy ->
-                    try {
+                    imageProxy.use {
                         if (scanning) {
-                            val bytes = QrUtils.decodeImageProxy(imageProxy)
+                            val bytes = QrUtils.decodeImageProxy(it)
                             if (bytes != null) {
                                 try {
                                     val payload = SyncCodec.decode(bytes)
@@ -337,8 +326,6 @@ private fun CameraScanner(
                                 }
                             }
                         }
-                    } finally {
-                        imageProxy.close()
                     }
                 }
                 try {

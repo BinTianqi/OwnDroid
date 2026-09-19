@@ -1,6 +1,6 @@
 package com.bintianqi.owndroid.feature.settings
 
-import com.bintianqi.owndroid.feature.time_blocker.TotpUtils
+import com.bintianqi.owndroid.utils.TotpUtils
 import kotlinx.serialization.json.Json
 import java.util.zip.Deflater
 import java.util.zip.Inflater

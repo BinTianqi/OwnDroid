@@ -89,5 +89,5 @@ enum class MyNotificationChannel(val id: String, val text: Int, val importance: 
     Events("Events", R.string.events, NotificationManagerCompat.IMPORTANCE_LOW),
     SecurityLogging("SecurityLogging", R.string.security_logging, NotificationManagerCompat.IMPORTANCE_MIN),
     NetworkLogging("NetworkLogging", R.string.network_logging, NotificationManagerCompat.IMPORTANCE_MIN),
-    TimeBlocker("TimeBlocker", R.string.time_blocker, NotificationManagerCompat.IMPORTANCE_LOW),
+    TimeBlocker("TimeBlocker", R.string.time_blocker, NotificationManagerCompat.IMPORTANCE_MIN),
 }

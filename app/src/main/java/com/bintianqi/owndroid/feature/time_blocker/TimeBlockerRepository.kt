@@ -2,7 +2,6 @@ package com.bintianqi.owndroid.feature.time_blocker
 
 import android.content.ContentValues
 import com.bintianqi.owndroid.MyDbHelper
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 class TimeBlockerRepository(private val dbHelper: MyDbHelper) {

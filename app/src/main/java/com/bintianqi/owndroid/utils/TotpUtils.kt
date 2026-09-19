@@ -1,8 +1,11 @@
-package com.bintianqi.owndroid.feature.time_blocker
+package com.bintianqi.owndroid.utils
 
+import android.net.Uri
+import java.security.SecureRandom
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import kotlin.math.pow
+import kotlin.text.iterator
 
 /**
  * Minimal TOTP implementation (RFC 6238).
@@ -45,7 +48,7 @@ object TotpUtils {
      */
     fun generateSecret(): String {
         val bytes = ByteArray(20)
-        java.security.SecureRandom().nextBytes(bytes)
+        SecureRandom().nextBytes(bytes)
         return encodeBase32(bytes)
     }
 
@@ -53,8 +56,8 @@ object TotpUtils {
      * Build a standard otpauth:// URI for QR code generation.
      */
     fun buildOtpAuthUri(secret: String, accountName: String = "OwnDroid TimeBlocker", issuer: String = "OwnDroid"): String {
-        return "otpauth://totp/${android.net.Uri.encode(issuer)}:${android.net.Uri.encode(accountName)}" +
-                "?secret=$secret&issuer=${android.net.Uri.encode(issuer)}&algorithm=SHA1&digits=$DIGITS&period=$PERIOD"
+        return "otpauth://totp/${Uri.encode(issuer)}:${Uri.encode(accountName)}" +
+                "?secret=$secret&issuer=${Uri.encode(issuer)}&algorithm=SHA1&digits=$DIGITS&period=$PERIOD"
     }
 
     private fun hmacSha1(key: ByteArray, data: ByteArray): ByteArray {

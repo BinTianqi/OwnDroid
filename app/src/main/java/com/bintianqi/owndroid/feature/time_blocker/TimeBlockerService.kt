@@ -18,7 +18,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.util.Calendar
 import java.util.Collections
 
@@ -84,7 +86,7 @@ class TimeBlockerService : Service() {
             // this service started. We take the max of the system's persisted
             // stats and our own persisted merged value — whichever is fresher.
             // Self-managed counting (usageTodayMs) starts at 0 from here.
-            val todayEpoch = java.time.LocalDate.now().toEpochDay()
+            val todayEpoch = LocalDate.now().toEpochDay()
             usageDayEpoch = todayEpoch
             usageTodayMs.clear()
             baselineMs.clear()
@@ -472,7 +474,7 @@ class TimeBlockerService : Service() {
         @Volatile var isRunning = false
             private set
         /** Observable running state for the UI (isRunning stays for sync checks). */
-        val runningState = kotlinx.coroutines.flow.MutableStateFlow(false)
+        val runningState = MutableStateFlow(false)
 
         fun start(context: Context) {
             val intent = Intent(context, TimeBlockerService::class.java)

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -50,6 +51,7 @@ import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.PackageNameTextField
 import com.bintianqi.owndroid.utils.BottomPadding
 import com.bintianqi.owndroid.utils.HorizontalPadding
+import com.bintianqi.owndroid.utils.adaptiveInsets
 import com.bintianqi.owndroid.utils.parsePackageNames
 import kotlinx.coroutines.channels.Channel
 
@@ -111,10 +113,11 @@ fun AppGroupsScreen(
             FloatingActionButton({
                 vm.selectAppGroup(-1)
                 navigateToEditScreen()
-            }) {
+            }, Modifier.navigationBarsPadding()) {
                 Icon(Icons.Default.Add, null)
             }
-        }
+        },
+        contentWindowInsets = adaptiveInsets()
     ) { paddingValues ->
         LazyColumn(Modifier.padding(paddingValues)) {
             itemsIndexed(groups, { _, it -> it.id }) { index, it ->

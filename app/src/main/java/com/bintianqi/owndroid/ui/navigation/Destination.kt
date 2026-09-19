@@ -132,5 +132,7 @@ sealed class Destination : NavKey {
     @Serializable object ApiSettings : Destination()
     @Serializable object NotificationSettings : Destination()
     @Serializable object SettingsSync : Destination()
+    @Serializable object ExportSettings: Destination()
+    @Serializable object ImportSettings: Destination()
     @Serializable object About : Destination()
 }

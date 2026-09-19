@@ -15,10 +15,12 @@ hiddenApiBypass = "6.1"
 libsu = "6.0.0"
 reoderable = "3.1.0"
 serialization = "1.11.0"
-zxing = "3.5.3"
+zxing = "3.5.4"
 camerax = "1.6.2"
+desugar = "2.1.5"
 
 [libraries]
+android-desugar = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugar" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }

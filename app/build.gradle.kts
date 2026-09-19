@@ -28,7 +28,6 @@ android {
         targetSdk = 37
         versionCode = 47
         versionName = "8.3.1"
-        multiDexEnabled = false
     }
 
     buildTypes {
@@ -50,8 +49,10 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        isCoreLibraryDesugaringEnabled = true
+        // Some library require version 11, so we have to set it to 11 or newer
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     buildFeatures {
         compose = true
@@ -72,7 +73,7 @@ composeCompiler {
 
 kotlin {
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_21
+        jvmTarget = JvmTarget.JVM_11
     }
     sourceSets {
         all {
@@ -88,6 +89,7 @@ gradle.taskGraph.whenReady {
 }
 
 dependencies {
+    coreLibraryDesugaring(libs.android.desugar)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.lifecycle.viewmodel)

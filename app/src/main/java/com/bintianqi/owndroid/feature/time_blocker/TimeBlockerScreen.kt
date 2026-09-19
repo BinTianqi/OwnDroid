@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -54,6 +55,7 @@ import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.BottomPadding
 import com.bintianqi.owndroid.utils.adaptiveInsets
+import com.bintianqi.owndroid.utils.formatTimeRange
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,9 +83,10 @@ fun TimeBlockerScreen(
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = { onNavigate(Destination.TimeBlockerEdit()) },
+                text = { Text(stringResource(R.string.time_blocker_add_rule)) },
                 icon = { Icon(Icons.Default.Add, null) },
-                text = { Text(stringResource(R.string.time_blocker_add_rule)) }
+                onClick = { onNavigate(Destination.TimeBlockerEdit()) },
+                Modifier.navigationBarsPadding()
             )
         },
         contentWindowInsets = adaptiveInsets()
@@ -247,7 +250,7 @@ fun RuleItem(rule: BlockRule, onToggle: () -> Unit, onClick: () -> Unit) {
                                 onClick = {},
                                 label = {
                                     Text(
-                                        stringResource(R.string.time_blocker_window_format, formatMinutes(window.startMinutes), formatMinutes(window.endMinutes)),
+                                        formatTimeRange(window.startMinutes, window.endMinutes),
                                         style = MaterialTheme.typography.labelSmall
                                     )
                                 }
@@ -267,7 +270,7 @@ fun RuleItem(rule: BlockRule, onToggle: () -> Unit, onClick: () -> Unit) {
                                 onClick = {},
                                 label = {
                                     Text(
-                                        stringResource(R.string.time_blocker_window_format, formatMinutes(window.startMinutes), formatMinutes(window.endMinutes)),
+                                        formatTimeRange(window.startMinutes, window.endMinutes),
                                         style = MaterialTheme.typography.labelSmall
                                     )
                                 }
@@ -276,16 +279,7 @@ fun RuleItem(rule: BlockRule, onToggle: () -> Unit, onClick: () -> Unit) {
                     }
                 }
             }
-            Switch(
-                checked = rule.enabled,
-                onCheckedChange = { onToggle() }
-            )
+            Switch(rule.enabled, { onToggle() })
         }
     }
-}
-
-fun formatMinutes(totalMinutes: Int): String {
-    val h = totalMinutes / 60
-    val m = totalMinutes % 60
-    return "%02d:%02d".format(h, m)
 }
