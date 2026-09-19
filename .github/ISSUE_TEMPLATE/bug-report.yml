@@ -1,0 +1,23 @@
+name: Bug report
+description: Report a bug in the app
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please use the [latest CI version](https://github.com/BinTianqi/OwnDroid/actions).
+        Please describe the steps to reproduce the issue as clearly as possible.
+        If the app crashes, please attach logs. Logs can be exported in OwnDroid settings.
+        If it's a UI issue, it is recommended to provide screenshots or screen recording.
+        
+        请使用[最新的CI版](https://github.com/BinTianqi/OwnDroid/actions)
+        请尽量清晰地描述复现过程。
+        如果app崩溃了，请附上日志。日志可在OwnDroid设置中导出。
+        如果是UI bug，建议上传截图或屏幕录制。
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description / 描述"
+    validations:
+      required: true
+
