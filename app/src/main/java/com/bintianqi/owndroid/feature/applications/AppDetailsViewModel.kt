@@ -77,9 +77,21 @@ class AppDetailsViewModel(
         }
     }
 
+    /** @see [AppFeaturesViewModel.setPackageHidden] */
     fun setHidden(status: Boolean) = ph.safeDpmCall {
-        dpm.setApplicationHidden(dar, packageName, status)
-        uiState.update { it.copy(hide = dpm.isApplicationHidden(dar, packageName)) }
+        var ucdList = emptyList<String>()
+        if (VERSION.SDK_INT >= 30) {
+            ucdList = dpm.getUserControlDisabledPackages(dar)
+            if (packageName in ucdList) {
+                dpm.setUserControlDisabledPackages(dar, ucdList.filter { it != packageName })
+            }
+        }
+        if (status) dpm.setApplicationHidden(dar, packageName, false)
+        val result = dpm.setApplicationHidden(dar, packageName, status)
+        if (result) uiState.update { it.copy(hide = status) }
+        if (VERSION.SDK_INT >= 30 && packageName in ucdList) {
+            dpm.setUserControlDisabledPackages(dar, ucdList)
+        }
     }
 
     fun setUninstallBlocked(status: Boolean) = ph.safeDpmCall {

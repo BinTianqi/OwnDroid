@@ -26,8 +26,8 @@ android {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 23
         targetSdk = 37
-        versionCode = 47
-        versionName = "8.3.1"
+        versionCode = 48
+        versionName = "8.4"
     }
 
     buildTypes {

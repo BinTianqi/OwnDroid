@@ -158,7 +158,7 @@ class SettingsViewModel(
     // --- Settings sync (QR transfer) ---
 
     val syncQrBitmap = MutableStateFlow<android.graphics.Bitmap?>(null)
-    val syncExportSummary = MutableStateFlow<Pair<Int, Boolean>?>(null) // rules count, totp included
+    val syncExportSummary = MutableStateFlow<QrCodeSummary?>(null)
     val syncImportResult = MutableStateFlow<ImportResult?>(null)
 
     data class ImportResult(
@@ -175,7 +175,9 @@ class SettingsViewModel(
                 )
                 val bytes = SyncCodec.encode(payload)
                 syncQrBitmap.value = QrUtils.encodeToBitmap(bytes, sizePx)
-                syncExportSummary.value = payload.rules.size to payload.totpSecret.isNotEmpty()
+                syncExportSummary.value = QrCodeSummary(
+                    payload.rules.size, payload.totpSecret.isNotEmpty()
+                )
             } catch (_: SyncCodec.PayloadTooLargeException) {
                 syncQrBitmap.value = null
                 syncExportSummary.value = null

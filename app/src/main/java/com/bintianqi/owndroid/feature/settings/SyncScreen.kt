@@ -15,12 +15,10 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -46,7 +44,6 @@ import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.MySmallTitleScaffold
 import com.bintianqi.owndroid.ui.navigation.Destination
-
 import java.util.concurrent.Executors
 
 @Composable
@@ -76,7 +73,7 @@ fun SettingsSyncScreen(
 @Composable
 fun ExportSettingsScreen(
     qrBitmap: android.graphics.Bitmap?,
-    summary: Pair<Int, Boolean>?,
+    summary: QrCodeSummary?,
     onNavigateUp: () -> Unit
 ) {
     MySmallTitleScaffold(R.string.export, onNavigateUp) {
@@ -97,9 +94,9 @@ fun ExportSettingsScreen(
                 Text(
                     stringResource(
                         R.string.sync_export_summary,
-                        summary.first,
+                        summary.rules,
                         stringResource(
-                            if (summary.second) R.string.sync_totp_included
+                            if (summary.totp) R.string.sync_totp_included
                             else R.string.sync_totp_not_included
                         )
                     ),
@@ -174,9 +171,6 @@ fun ImportSettingsScreen(vm: SettingsViewModel, onNavigateUp: () -> Unit) {
                 }
             }
             Spacer(Modifier.height(24.dp))
-            OutlinedButton(onNavigateUp) {
-                Text(stringResource(R.string.cancel))
-            }
         }
     }
 

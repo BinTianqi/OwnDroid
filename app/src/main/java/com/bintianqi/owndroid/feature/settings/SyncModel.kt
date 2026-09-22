@@ -68,3 +68,5 @@ data class SyncWindow(
         )
     }
 }
+
+data class QrCodeSummary(val rules: Int, val totp: Boolean)
