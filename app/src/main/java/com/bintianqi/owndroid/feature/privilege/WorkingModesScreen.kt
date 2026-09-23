@@ -38,6 +38,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -285,7 +286,16 @@ fun WorkModesScreen(
         )
         if (dialog == 4) AlertDialog(
             title = { Text(stringResource(R.string.deactivate)) },
-            text = { Text(stringResource(R.string.info_deactivate)) },
+            text = {
+                val frpNotice by vm.frpNoticeState.collectAsState()
+                LaunchedEffect(Unit) {
+                    // Dhizuku mode is checked inside that function
+                    vm.getFrpState()
+                }
+                val noticeText =
+                    if (frpNotice) ("" + stringResource(R.string.info_frp_policy_exists)) else ""
+                Text(stringResource(R.string.info_deactivate) + noticeText)
+            },
             confirmButton = {
                 var time by remember { mutableIntStateOf(if (privilege.dhizuku) 0 else 3) }
                 if (!privilege.dhizuku) LaunchedEffect(Unit) {

@@ -2,7 +2,7 @@ package com.bintianqi.owndroid.feature.privilege
 
 import android.app.admin.DevicePolicyManager
 import android.content.pm.PackageManager
-import android.os.Build.VERSION
+import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -140,6 +140,20 @@ class WorkingModesViewModel(
         }
     }
 
+    val frpNoticeState = MutableStateFlow(false)
+
+    fun getFrpState() {
+        if (Build.VERSION.SDK_INT >= 30 && ps.value.device && !ps.value.dhizuku) {
+            ph.safeDpmCall {
+                try {
+                    frpNoticeState.value = dpm.getFactoryResetProtectionPolicy(dar) != null
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+
     fun deactivate() {
         if (ps.value.dhizuku) {
             sr.update { it.privilege.dhizuku = false }
@@ -147,7 +161,7 @@ class WorkingModesViewModel(
         } else {
             if (ps.value.device) {
                 ph.myDpm.clearDeviceOwnerApp(application.packageName)
-            } else if (VERSION.SDK_INT >= 24) {
+            } else if (Build.VERSION.SDK_INT >= 24) {
                 ph.myDpm.clearProfileOwner(MyAdminComponent)
             }
         }
