@@ -22,6 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -35,6 +36,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
@@ -115,6 +118,9 @@ class MainActivity : FragmentActivity() {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Modifier.blur(10.dp)
                     else Modifier.alpha(0F)
                 } else Modifier
+                val getEntry = remember {
+                    myEntryProvider(backstack, appChooserVm, myApp.container)
+                }
                 NavDisplay(
                     backstack, blurMod,
                     onBack = {
@@ -134,7 +140,7 @@ class MainActivity : FragmentActivity() {
                         NavTransition.popTransition
                     }
                 ) {
-                    myEntryProvider(it as Destination, backstack, appChooserVm, myApp.container)
+                    getEntry(it as Destination) as NavEntry<NavKey>
                 }
                 if (dhizukuError != null) DhizukuErrorDialog(
                     dhizukuError!!, {

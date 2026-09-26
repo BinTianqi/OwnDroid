@@ -122,7 +122,7 @@ class SharedViewModelStoreNavEntryDecorator<T : Any>(
 }
 
 inline fun <reified T: Destination> navParentKey() =
-    mapOf(SharedViewModelStoreNavEntryDecorator.PARENT_CONTENT_KEY to T::class.simpleName!!)
+    mapOf(SharedViewModelStoreNavEntryDecorator.PARENT_CONTENT_KEY to T::class.qualifiedName!!)
 
 private class EntryViewModel : ViewModel() {
     private val owners = mutableMapOf<String, ViewModelStore>()
