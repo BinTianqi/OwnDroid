@@ -32,7 +32,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerDialog
 import androidx.compose.material3.TopAppBar
@@ -53,7 +52,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
 import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.Notes
@@ -200,9 +201,7 @@ private fun ChangeTimeScreenContent(setTime: (Long, Boolean) -> Unit) {
     }
     if (picker == 1) DatePickerDialog(
         confirmButton = {
-            TextButton({ picker = 0 }) {
-                Text(stringResource(R.string.confirm))
-            }
+            ConfirmTextButton { picker = 0 }
         },
         onDismissRequest = { picker = 0 }
     ) {
@@ -213,9 +212,7 @@ private fun ChangeTimeScreenContent(setTime: (Long, Boolean) -> Unit) {
     if (picker == 2) TimePickerDialog(
         title = {},
         confirmButton = {
-            TextButton({ picker = 0 }) {
-                Text(stringResource(R.string.confirm))
-            }
+            ConfirmTextButton { picker = 0 }
         },
         onDismissRequest = { picker = 0 }
     ) {
@@ -280,9 +277,7 @@ private fun ChangeTimeZoneScreenContent(setTimeZone: (String) -> Unit) {
             }
         },
         confirmButton = {
-            TextButton(onClick = { dialog = false }) {
-                Text(stringResource(R.string.cancel))
-            }
+            CancelTextButton { dialog = false }
         },
         onDismissRequest = { dialog = false }
     )

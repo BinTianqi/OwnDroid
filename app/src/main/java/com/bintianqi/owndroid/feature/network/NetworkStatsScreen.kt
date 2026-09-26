@@ -27,7 +27,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,7 +47,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.CircularProgressDialog
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.ErrorDialog
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.MySmallTitleScaffold
@@ -378,23 +379,16 @@ fun NetworkStatsScreen(
             DatePickerDialog(
                 onDismissRequest = { menu = NetworkStatsMenu.None },
                 dismissButton = {
-                    TextButton(onClick = { menu = NetworkStatsMenu.None }) {
-                        Text(stringResource(R.string.cancel))
-                    }
+                    CancelTextButton { menu = NetworkStatsMenu.None }
                 },
                 confirmButton = {
-                    TextButton(
-                        onClick = {
-                            if (menu == NetworkStatsMenu.StartTime) {
-                                startTime = datePickerState.selectedDateMillis!!
-                            } else {
-                                endTime = datePickerState.selectedDateMillis!!
-                            }
-                            menu = NetworkStatsMenu.None
-                        },
-                        enabled = datePickerState.selectedDateMillis != null
-                    ) {
-                        Text(stringResource(R.string.confirm))
+                    ConfirmTextButton(datePickerState.selectedDateMillis != null) {
+                        if (menu == NetworkStatsMenu.StartTime) {
+                            startTime = datePickerState.selectedDateMillis!!
+                        } else {
+                            endTime = datePickerState.selectedDateMillis!!
+                        }
+                        menu = NetworkStatsMenu.None
                     }
                 }
             ) {

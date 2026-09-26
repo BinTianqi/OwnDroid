@@ -58,6 +58,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -393,7 +394,7 @@ fun ErrorDialog(message: String?, onDismiss: () -> Unit) {
         title = { Text(stringResource(R.string.error)) },
         text = { Text(message) },
         confirmButton = {
-            TextButton(onDismiss) { Text(stringResource(R.string.confirm)) }
+            ConfirmTextButton(onClick = onDismiss)
         },
         onDismissRequest = onDismiss
     )
@@ -471,4 +472,30 @@ fun TopBarSearchTextField(
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         maxLines = 1
     )
+}
+
+@Composable
+fun NoneText() {
+    Text(
+        stringResource(R.string.none),
+        Modifier
+            .fillMaxWidth()
+            .padding(top = 5.dp)
+            .alpha(0.7F),
+        textAlign = TextAlign.Center
+    )
+}
+
+@Composable
+fun CancelTextButton(onClick: () -> Unit) {
+    TextButton(onClick) {
+        Text(stringResource(R.string.cancel))
+    }
+}
+
+@Composable
+fun ConfirmTextButton(enabled: Boolean = true, onClick: () -> Unit) {
+    TextButton(onClick, enabled = enabled) {
+        Text(stringResource(R.string.confirm))
+    }
 }

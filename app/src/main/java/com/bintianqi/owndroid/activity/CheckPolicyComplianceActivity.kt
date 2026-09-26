@@ -6,12 +6,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 
 class CheckPolicyComplianceActivity: ComponentActivity() {
@@ -27,9 +27,7 @@ class CheckPolicyComplianceActivity: ComponentActivity() {
                         Text(stringResource(R.string.info_personal_apps_suspended))
                     },
                     confirmButton = {
-                        TextButton(::finish) {
-                            Text(stringResource(R.string.confirm))
-                        }
+                        ConfirmTextButton(onClick = ::finish)
                     },
                     onDismissRequest = {
                         finish()

@@ -40,6 +40,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.CancelTextButton
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.MySmallTitleScaffold
@@ -217,9 +219,7 @@ fun ImportSettingsScreen(vm: SettingsViewModel, onNavigateUp: () -> Unit) {
                 }
             },
             dismissButton = {
-                TextButton({ pendingPayload = null }) {
-                    Text(stringResource(R.string.cancel))
-                }
+                CancelTextButton { pendingPayload = null }
             }
         )
     }
@@ -243,9 +243,7 @@ fun ImportSettingsScreen(vm: SettingsViewModel, onNavigateUp: () -> Unit) {
                 )
             },
             confirmButton = {
-                TextButton(onNavigateUp) {
-                    Text(stringResource(R.string.confirm))
-                }
+                ConfirmTextButton(onClick = onNavigateUp)
             }
         )
     }
@@ -256,9 +254,7 @@ fun ImportSettingsScreen(vm: SettingsViewModel, onNavigateUp: () -> Unit) {
             title = { Text(stringResource(R.string.error)) },
             text = { Text(stringResource(R.string.sync_import_invalid)) },
             confirmButton = {
-                TextButton({ invalidQrShown = false }) {
-                    Text(stringResource(R.string.confirm))
-                }
+                ConfirmTextButton { invalidQrShown = false }
             }
         )
     }

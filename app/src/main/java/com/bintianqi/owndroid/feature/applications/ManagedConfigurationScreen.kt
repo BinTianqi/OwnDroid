@@ -63,12 +63,14 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.CancelTextButton
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.MySmallTitleScaffold
 import com.bintianqi.owndroid.ui.NavIcon
+import com.bintianqi.owndroid.ui.NoneText
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.TopBarSearchTextField
 import com.bintianqi.owndroid.ui.navigation.Destination
@@ -195,15 +197,8 @@ fun ManagedConfigurationScreen(
         contentWindowInsets = adaptiveInsets()
     ) { paddingValues ->
         LazyColumn(Modifier.padding(paddingValues)) {
-            item {
-                if (displayRestrictions.isEmpty()) {
-                    Text(
-                        stringResource(R.string.none), Modifier
-                            .fillMaxWidth()
-                            .padding(top = 4.dp),
-                        textAlign = TextAlign.Center
-                    )
-                }
+            if (displayRestrictions.isEmpty()) item {
+                NoneText()
             }
             items(displayRestrictions, { it }) { id ->
                 val manifest = manifests.find { it.key == id }
@@ -250,19 +245,13 @@ fun ManagedConfigurationScreen(
             Text(stringResource(R.string.clear_configurations))
         },
         confirmButton = {
-            TextButton({
+            ConfirmTextButton {
                 vm.clearRestrictions()
                 clearRestrictionDialog = false
-            }) {
-                Text(stringResource(R.string.confirm))
             }
         },
         dismissButton = {
-            TextButton({
-                clearRestrictionDialog = false
-            }) {
-                Text(stringResource(R.string.cancel))
-            }
+            CancelTextButton { clearRestrictionDialog = false }
         },
         onDismissRequest = {
             clearRestrictionDialog = false
@@ -692,16 +681,12 @@ fun ManagedConfigurationListEditorScreen(
                 )
             },
             dismissButton = {
-                TextButton({ editingItem = -1 }) {
-                    Text(stringResource(R.string.cancel))
-                }
+                CancelTextButton { editingItem = -1 }
             },
             confirmButton = {
-                TextButton({
+                ConfirmTextButton {
                     list[editingItem] = list[editingItem].copy(second = input)
                     editingItem = -1
-                }) {
-                    Text(stringResource(R.string.confirm))
                 }
             },
             onDismissRequest = { editingItem = -1 }

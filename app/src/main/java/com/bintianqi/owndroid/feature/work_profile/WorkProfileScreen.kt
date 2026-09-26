@@ -34,6 +34,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.MyScaffold
@@ -189,9 +190,7 @@ fun DeleteWorkProfileScreen(
                 }
             },
             dismissButton = {
-                TextButton({ warning = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
+                CancelTextButton { warning = false }
             }
         )
     }

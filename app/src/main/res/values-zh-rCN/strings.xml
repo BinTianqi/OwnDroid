@@ -419,6 +419,7 @@
     <string name="manage_app_groups">管理组</string>
     <string name="import_str">导入</string>
     <string name="edit_app_group">编辑组</string>
+    <string name="add_app_group">添加组</string>
     <string name="add_to_list">添加到列表</string>
     <string name="remove_from_list">从列表中移除</string>
     <string name="managed_configuration">托管配置</string>

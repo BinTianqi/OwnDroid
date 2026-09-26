@@ -5,6 +5,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,11 +19,11 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,6 +40,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
@@ -48,6 +50,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.MyLazyScaffold
 import com.bintianqi.owndroid.ui.NavIcon
+import com.bintianqi.owndroid.ui.NoneText
 import com.bintianqi.owndroid.ui.PackageNameTextField
 import com.bintianqi.owndroid.utils.BottomPadding
 import com.bintianqi.owndroid.utils.HorizontalPadding
@@ -120,6 +123,9 @@ fun AppGroupsScreen(
         contentWindowInsets = adaptiveInsets()
     ) { paddingValues ->
         LazyColumn(Modifier.padding(paddingValues)) {
+            if (groups.isEmpty()) item {
+                NoneText()
+            }
             itemsIndexed(groups, { _, it -> it.id }) { index, it ->
                 Column(
                     Modifier
@@ -156,7 +162,8 @@ fun EditAppGroupScreen(
         }
     }
     MyLazyScaffold(
-        R.string.place_holder, navigateUp,
+        if (uiState.id == null) R.string.add_app_group else R.string.edit_app_group,
+        navigateUp,
         {
             if (uiState.id != null) IconButton({
                 vm.deleteGroup()
@@ -190,22 +197,21 @@ fun EditAppGroupScreen(
             }
         }
         item {
-            PackageNameTextField(input, onChoosePackage,
-                Modifier.padding(HorizontalPadding, 8.dp)) { input = it }
-            Button(
-                {
+            Row(
+                Modifier.padding(horizontal = HorizontalPadding),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                PackageNameTextField(
+                    input, onChoosePackage, Modifier.weight(1F)
+                ) { input = it }
+                FilledTonalIconButton({
                     inputPackages.forEach {
                         vm.setGroupApp(it, true)
                     }
                     input = ""
-                },
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = HorizontalPadding)
-                    .padding(bottom = 10.dp),
-                inputPackages.all { pkg -> pkg !in uiState.apps.map { it.name } }
-            ) {
-                Text(stringResource(R.string.add))
+                }) {
+                    Icon(Icons.Default.Add, stringResource(R.string.add))
+                }
             }
             Spacer(Modifier.height(BottomPadding))
         }

@@ -53,7 +53,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
 import com.bintianqi.owndroid.ui.FunctionItem
@@ -218,9 +220,7 @@ fun PasswordScreen(
                 }
             },
             dismissButton = {
-                TextButton({ dialog = 0 }) {
-                    Text(stringResource(R.string.cancel))
-                }
+                CancelTextButton { dialog = 0 }
             },
             onDismissRequest = {
                 dialog = 0
@@ -263,9 +263,7 @@ fun PasswordInfoScreen(
     if (dialog != 0) AlertDialog(
         text = { Text(stringResource(R.string.info_password_complexity)) },
         confirmButton = {
-            TextButton({ dialog = 0 }) {
-                Text(stringResource(R.string.confirm))
-            }
+            ConfirmTextButton { dialog = 0 }
         },
         onDismissRequest = { dialog = 0 }
     )

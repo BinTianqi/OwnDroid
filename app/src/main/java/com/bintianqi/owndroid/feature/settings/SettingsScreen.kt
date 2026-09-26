@@ -59,6 +59,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.CancelTextButton
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.SwitchItem
@@ -172,14 +174,10 @@ fun SettingsScreen(
         text = { Text(stringResource(R.string.info_secret_code)) },
         onDismissRequest = { secretCodeDialog = false },
         confirmButton = {
-            TextButton(vm::hideApp) {
-                Text(stringResource(R.string.confirm))
-            }
+            ConfirmTextButton(onClick = vm::hideApp)
         },
         dismissButton = {
-            TextButton({ secretCodeDialog = false }) {
-                Text(stringResource(R.string.cancel))
-            }
+            CancelTextButton { secretCodeDialog = false }
         }
     )
 }
@@ -400,9 +398,7 @@ fun AppLockSettingsScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showSecret = false }) {
-                    Text(stringResource(R.string.confirm))
-                }
+                ConfirmTextButton { showSecret = false }
             }
         )
     }
@@ -411,18 +407,14 @@ fun AppLockSettingsScreen(
             onDismissRequest = { showRemoveConfirm = false },
             title = { Text(stringResource(R.string.time_blocker_remove_totp)) },
             confirmButton = {
-                TextButton({
+                ConfirmTextButton {
                     vm.removeTotp()
                     allowTotp = false
                     showRemoveConfirm = false
-                }) {
-                    Text(stringResource(R.string.confirm))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showRemoveConfirm = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
+                CancelTextButton { showRemoveConfirm = false }
             }
         )
     }

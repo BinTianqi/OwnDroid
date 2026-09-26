@@ -51,7 +51,6 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -76,6 +75,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.ListItem
@@ -218,9 +218,7 @@ private fun WifiOverviewScreen(
             },
             onDismissRequest = { macDialog = false },
             confirmButton = {
-                TextButton({ macDialog = false }) {
-                    Text(stringResource(R.string.confirm))
-                }
+                ConfirmTextButton { macDialog = false }
             }
         )
     }
@@ -337,9 +335,7 @@ private fun SavedNetworks(
             }
         },
         confirmButton = {
-            TextButton({ dialog = -1 }) {
-                Text(stringResource(R.string.confirm))
-            }
+            ConfirmTextButton { dialog = -1 }
         },
         onDismissRequest = { dialog = -1 }
     )

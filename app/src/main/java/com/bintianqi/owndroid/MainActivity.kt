@@ -16,7 +16,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -40,6 +39,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.bintianqi.owndroid.feature.applications.AppChooserViewModel
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.NavTransition
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.ui.navigation.myEntryProvider
@@ -200,9 +200,7 @@ private fun DhizukuErrorDialog(error: DhizukuError, onClose: () -> Unit, onDisab
             }
         },
         dismissButton = {
-            TextButton(onClose) {
-                Text(stringResource(R.string.confirm))
-            }
+            ConfirmTextButton(onClick = onClose)
         },
         title = { Text(stringResource(R.string.error)) },
         text = {

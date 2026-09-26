@@ -32,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.utils.AppInfo
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
@@ -110,21 +111,16 @@ internal fun UninstallAppDialog(
             if (uninstalling) LinearProgressIndicator(Modifier.fillMaxWidth())
         },
         confirmButton = {
-            TextButton(
-                {
-                    if (errorMessage == null) {
-                        uninstalling = true
-                        onUninstall {
-                            uninstalling = false
-                            if (it == null) onClose(true) else errorMessage = it
-                        }
-                    } else {
-                        onClose(false)
+            ConfirmTextButton(!uninstalling) {
+                if (errorMessage == null) {
+                    uninstalling = true
+                    onUninstall {
+                        uninstalling = false
+                        if (it == null) onClose(true) else errorMessage = it
                     }
-                },
-                enabled = !uninstalling
-            ) {
-                Text(stringResource(R.string.confirm))
+                } else {
+                    onClose(false)
+                }
             }
         },
         dismissButton = {

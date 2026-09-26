@@ -66,22 +66,20 @@ class SharedViewModelStoreNavEntryDecorator<T : Any>(
 ) :
     NavEntryDecorator<T>(
         onPop = ({ key ->
-            val keyId = (key as Pair<*, *>).first
-            Log.d(TAG, "Popping $keyId")
+            Log.d(TAG, "Popping $key")
             if (removeViewModelStoreOnPop()) {
-                viewModelStore.getEntryViewModel().clearViewModelStoreOwnerForKey(keyId.toString())
+                viewModelStore.getEntryViewModel().clearViewModelStoreOwnerForKey(key.toString())
             }
         }),
         decorate = { entry ->
-            val keyId = (entry.contentKey as Pair<*, *>).first as String
             LaunchedEffect(Unit) {
                 Log.d(
-                    TAG, "Decorating entry, key: ${keyId}, metadata: ${entry.metadata}"
+                    TAG, "Decorating entry, key: ${entry.contentKey}, metadata: ${entry.metadata}"
                 )
             }
             // If the entry indicates it has a parent, use its parent's ViewModelStore.
             val parentKey = entry.metadata[PARENT_CONTENT_KEY] as String?
-            val contentKey = parentKey ?: keyId
+            val contentKey = parentKey ?: (entry.contentKey as String)
             val viewModelStore = viewModelStore.getEntryViewModel().viewModelStoreForKey(contentKey)
             val savedStateRegistryOwner = LocalSavedStateRegistryOwner.current
             val childViewModelStoreOwner = remember {

@@ -40,6 +40,7 @@ class AppGroupViewModel(
             val newList = uiState.apps.let { list ->
                 if (state) {
                     list.plus(getAppInfo(application.packageManager, name))
+                        .distinctBy { it.name }
                 } else {
                     list.filter { it.name != name }
                 }

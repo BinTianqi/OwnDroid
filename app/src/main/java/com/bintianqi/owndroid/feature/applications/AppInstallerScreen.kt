@@ -38,7 +38,6 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -54,6 +53,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
 import com.bintianqi.owndroid.ui.screen.AppLockDialog
@@ -292,9 +292,7 @@ private fun ResultDialog(result: Intent?, onDialogClose: () -> Unit) {
                 Text(parsePackageInstallerMessage(context, result))
             },
             confirmButton = {
-                TextButton(onDialogClose) {
-                    Text(stringResource(R.string.confirm))
-                }
+                ConfirmTextButton(onClick = onDialogClose)
             },
             onDismissRequest = onDialogClose
         )

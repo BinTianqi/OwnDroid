@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
@@ -37,7 +38,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -64,6 +64,7 @@ import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.AppInstallerActivity
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.MyLazyScaffold
@@ -728,11 +729,20 @@ fun PackageFunctionScreen(
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.labelLarge
                 )
-                groups.forEach {
+                groups.forEach { group ->
                     DropdownMenuItem(
-                        { Text("(${it.apps.size}) ${it.name}") },
                         {
-                            selectedGroup = it
+                            val activeApps = group.apps.filter { it in packages }.size
+                            Row {
+                                Text(
+                                    "($activeApps/${group.apps.size})".padEnd(7, ' '),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(group.name)
+                            }
+                        },
+                        {
+                            selectedGroup = group
                             dialog = true
                             expand = false
                         }
@@ -873,20 +883,23 @@ fun PackageFunctionScreen(
                     onSet(selectedGroup!!.apps, true)
                     dialog = false
                 }) {
+                    Icon(Icons.Default.Add, null, Modifier.padding(end = 6.dp))
                     Text(stringResource(R.string.add_to_list))
                 }
                 Button({
                     onSet(selectedGroup!!.apps, false)
                     dialog = false
                 }) {
+                    Icon(
+                        painterResource(R.drawable.remove_fill0), null,
+                        Modifier.padding(end = 6.dp)
+                    )
                     Text(stringResource(R.string.remove_from_list))
                 }
             }
         },
         confirmButton = {
-            TextButton({ dialog = false }) {
-                Text(stringResource(R.string.cancel))
-            }
+            CancelTextButton { dialog = false }
         },
         onDismissRequest = { dialog = false }
     )

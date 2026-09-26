@@ -54,7 +54,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.CircularProgressDialog
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.ACTIVATE_DEVICE_OWNER_COMMAND
@@ -254,7 +256,7 @@ fun WorkModesScreen(
                 }
             },
             confirmButton = {
-                TextButton({ dialog = 0 }) { Text(stringResource(R.string.cancel)) }
+                CancelTextButton { dialog = 0 }
             },
             onDismissRequest = { dialog = 0 }
         )
@@ -275,11 +277,9 @@ fun WorkModesScreen(
                 }
             },
             confirmButton = {
-                TextButton({
+                ConfirmTextButton {
                     dialog = 0
                     if (operationSucceed && !params.canNavigateUp) onActivate()
-                }) {
-                    Text(stringResource(R.string.confirm))
                 }
             },
             onDismissRequest = {}
@@ -318,7 +318,7 @@ fun WorkModesScreen(
                 }
             },
             dismissButton = {
-                TextButton({ dialog = 0 }) { Text(stringResource(R.string.cancel)) }
+                CancelTextButton { dialog = 0 }
             },
             onDismissRequest = { dialog = 0 }
         )
@@ -329,7 +329,7 @@ fun WorkModesScreen(
                 }
             },
             confirmButton = {
-                TextButton({ dialog = 0 }) { Text(stringResource(R.string.confirm)) }
+                ConfirmTextButton { dialog = 0 }
             },
             onDismissRequest = { dialog = 0 }
         )
@@ -348,7 +348,7 @@ fun WorkModesScreen(
                 }
             },
             confirmButton = {
-                TextButton({ dialog = 0 }) { Text(stringResource(R.string.cancel)) }
+                CancelTextButton { dialog = 0 }
             },
             onDismissRequest = { dialog = 0 }
         )
@@ -359,9 +359,7 @@ fun WorkModesScreen(
                 }
             },
             confirmButton = {
-                TextButton({ dialog = 0 }) {
-                    Text(stringResource(R.string.confirm))
-                }
+                ConfirmTextButton { dialog = 0 }
             },
             onDismissRequest = { dialog = 0 }
         )

@@ -59,7 +59,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.CircularProgressDialog
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.MySmallTitleScaffold
 import com.bintianqi.owndroid.utils.BottomPadding
 import com.bintianqi.owndroid.utils.HorizontalPadding
@@ -236,16 +238,14 @@ fun TimeBlockerEditScreen(
             title = { Text(stringResource(R.string.start_time)) },
             text = { TimePicker(tps) },
             confirmButton = {
-                TextButton({
+                ConfirmTextButton {
                     pendingStartMinutes = tps.hour * 60 + tps.minute
                     showStartPicker = false
                     showEndPicker = true
-                }) { Text(stringResource(R.string.confirm)) }
+                }
             },
             dismissButton = {
-                TextButton({ showStartPicker = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
+                CancelTextButton { showStartPicker = false }
             }
         )
     }
@@ -260,7 +260,7 @@ fun TimeBlockerEditScreen(
             title = { Text(stringResource(R.string.end_time)) },
             text = { TimePicker(tpe) },
             confirmButton = {
-                TextButton({
+                ConfirmTextButton {
                     val endMinutes = tpe.hour * 60 + tpe.minute
                     if (windowEditIndex in targetList().indices) {
                         targetList()[windowEditIndex] = targetList()[windowEditIndex].copy(
@@ -271,12 +271,10 @@ fun TimeBlockerEditScreen(
                     }
                     showEndPicker = false
                     windowEditIndex = -1
-                }) { Text(stringResource(R.string.confirm)) }
+                }
             },
             dismissButton = {
-                TextButton({ showEndPicker = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
+                CancelTextButton { showEndPicker = false }
             }
         )
     }
@@ -303,15 +301,13 @@ fun TimeBlockerEditScreen(
                 }
             },
             confirmButton = {
-                TextButton({
+                ConfirmTextButton {
                     targetList()[windowEditIndex] = window.copy(daysOfWeek = selectedDays.toSet())
                     showDaysDialog = false
-                }) { Text(stringResource(R.string.confirm)) }
+                }
             },
             dismissButton = {
-                TextButton({ showDaysDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
+                CancelTextButton { showDaysDialog = false }
             }
         )
     }
@@ -329,9 +325,7 @@ fun TimeBlockerEditScreen(
                 }) { Text(stringResource(R.string.discard)) }
             },
             dismissButton = {
-                TextButton({ showDiscardConfirm = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
+                CancelTextButton { showDiscardConfirm = false }
             }
         )
     }
@@ -342,16 +336,14 @@ fun TimeBlockerEditScreen(
             onDismissRequest = { showDeleteConfirm = false },
             text = { Text(stringResource(R.string.time_blocker_delete_rule)) },
             confirmButton = {
-                TextButton({
+                ConfirmTextButton {
                     vm.deleteRule(existingRule!!.id)
                     showDeleteConfirm = false
                     onNavigateUp()
-                }) { Text(stringResource(R.string.confirm)) }
+                }
             },
             dismissButton = {
-                TextButton({ showDeleteConfirm = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
+                CancelTextButton { showDeleteConfirm = false }
             }
         )
     }
