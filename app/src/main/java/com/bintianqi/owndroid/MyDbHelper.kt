@@ -4,13 +4,15 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
+import com.bintianqi.owndroid.feature.applications.AppGroupRepository
 
-class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 13) {
+class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 14) {
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(DHIZUKU_CLIENTS_TABLE)
         db.execSQL(SECURITY_LOGS_TABLE)
         db.execSQL(NETWORK_LOGS_TABLE)
-        db.execSQL(APP_GROUPS_TABLE)
+        db.execSQL(APP_GROUPS_TABLE_V2)
+        db.execSQL(APP_GROUP_APPS_TABLE)
         db.execSQL(CPIF2_TABLE)
         db.execSQL(TIME_BLOCK_RULES_TABLE)
         db.execSQL(TIME_BLOCK_SUSPENDED_TABLE)
@@ -51,6 +53,14 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 13) 
         if (oldVersion < 13) {
             db.execSQL(TIME_BLOCK_USAGE_TABLE)
         }
+        if (oldVersion < 14) {
+            val groups = AppGroupRepository.getAppGroupsV1(db)
+            db.execSQL("ALTER TABLE app_groups DROP COLUMN apps")
+            db.execSQL(APP_GROUP_APPS_TABLE)
+            groups.forEach {
+                AppGroupRepository.setGroupApps(db, it.id.toLong(), it.apps)
+            }
+        }
     }
 
     override fun onDowngrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -78,8 +88,13 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 13) 
                 "time INTEGER, type TEXT, host TEXT, count INTEGER, addresses TEXT," +
                 "address TEXT, port INTEGER)"
         const val APP_GROUPS_TABLE = "CREATE TABLE app_groups(" +
-                "id INTEGER PRIMARY KEY," +
-                "name TEXT, apps TEXT)"
+                "id INTEGER PRIMARY KEY, name TEXT, apps TEXT)"
+        const val APP_GROUPS_TABLE_V2 = "CREATE TABLE app_groups(" +
+                "id INTEGER PRIMARY KEY, name TEXT NOT NULL)"
+        const val APP_GROUP_APPS_TABLE = "CREATE TABLE app_group_apps(" +
+                "group_id INTEGER REFERENCES app_groups (id) ON DELETE CASCADE," +
+                "package_name TEXT NOT NULL," +
+                "UNIQUE(group_id, package_name) ON CONFLICT IGNORE)"
         const val CPIF_TABLE = "CREATE TABLE cpif (" +
                 "action_str TEXT, category TEXT, mime_type TEXT, direction INTEGER, time INTEGER)"
         const val DELETE_CPIF = "DROP TABLE cpif"
