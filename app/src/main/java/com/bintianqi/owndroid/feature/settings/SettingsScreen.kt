@@ -7,6 +7,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,10 +17,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
@@ -28,14 +35,19 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -45,8 +57,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -57,17 +71,25 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.FunctionItem
+import com.bintianqi.owndroid.ui.MasterSwitch
 import com.bintianqi.owndroid.ui.MyScaffold
+import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.BottomPadding
+import com.bintianqi.owndroid.utils.HorizontalPadding
 import com.bintianqi.owndroid.utils.MyNotificationChannel
 import com.bintianqi.owndroid.utils.NotificationType
+import com.bintianqi.owndroid.utils.ShortcutSystemOption
+import com.bintianqi.owndroid.utils.adaptiveInsets
 import com.bintianqi.owndroid.utils.generateBase64Key
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -149,6 +171,9 @@ fun SettingsScreen(
         FunctionItem(R.string.appearance, icon = R.drawable.format_paint_fill0) {
             onNavigate(Destination.AppearanceSettings)
         }
+        FunctionItem(R.string.shortcuts, icon = R.drawable.open_in_new) {
+            onNavigate(Destination.ShortcutSettings)
+        }
         FunctionItem(R.string.app_lock, icon = R.drawable.lock_fill0) {
             onNavigate(Destination.AppLockSettings)
         }
@@ -187,14 +212,10 @@ fun SettingsOptionsScreen(
     vm: SettingsViewModel, onNavigateUp: () -> Unit
 ) {
     val dangerousFeatures by vm.dangerousFeaturesState.collectAsState()
-    val shortcuts by vm.shortcutsState.collectAsState()
     MyScaffold(R.string.options, onNavigateUp, 0.dp) {
         SwitchItem(
             R.string.show_dangerous_features, dangerousFeatures, vm::setDisplayDangerousFeatures,
             R.drawable.warning_fill0
-        )
-        SwitchItem(
-            R.string.shortcuts, shortcuts, vm::setShortcutsEnabled, R.drawable.open_in_new
         )
     }
 }
@@ -235,6 +256,104 @@ fun AppearanceScreen(
             SwitchItem(R.string.black_theme, uiState.black, vm::setBlackTheme)
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ShortcutSettingsScreen(vm: SettingsViewModel, onNavigateUp: () -> Unit) {
+    val sb = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    var addShortcutDialog by remember { mutableStateOf(false) }
+    val shortcutEnabled by vm.shortcutEnabledState.collectAsState()
+    val shortcuts by vm.shortcutsState.collectAsState()
+    val lo = LocalLifecycleOwner.current
+    DisposableEffect(lo) {
+        val ob = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) vm.getShortcuts()
+        }
+        lo.lifecycle.addObserver(ob)
+        onDispose { lo.lifecycle.removeObserver(ob) }
+    }
+    Scaffold(
+        Modifier.nestedScroll(sb.nestedScrollConnection),
+        topBar = {
+            LargeTopAppBar(
+                { Text(stringResource(R.string.shortcuts)) },
+                navigationIcon = { NavIcon(onNavigateUp) },
+                scrollBehavior = sb
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                { addShortcutDialog = true },
+                Modifier.navigationBarsPadding()
+            ) {
+                Icon(Icons.Default.Add, stringResource(R.string.create_shortcut))
+            }
+        },
+        contentWindowInsets = adaptiveInsets()
+    ) { paddingValues ->
+        LazyColumn(
+            Modifier.padding(paddingValues)
+        ) {
+            item {
+                MasterSwitch(R.string.enable, shortcutEnabled, vm::setShortcutsEnabled)
+            }
+            items(shortcuts, { it.id }) { shortcut ->
+                Row(
+                    Modifier
+                        .animateItem()
+                        .fillMaxWidth()
+                        .padding(HorizontalPadding, 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(Modifier.weight(1F), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(painterResource(shortcut.getIcon()), null)
+                        Spacer(Modifier.width(8.dp))
+                        Text(shortcut.label)
+                    }
+                    Switch(shortcut.enabled, { vm.setSingleShortcutEnabled(shortcut.id, it) })
+                }
+            }
+        }
+    }
+    @Composable
+    fun NewShortcutItem(text: Int, icon: Int, onClick: () -> Unit) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 2.dp)
+                .clip(RoundedCornerShape(6.dp))
+                .clickable {
+                    onClick()
+                    addShortcutDialog = false
+                }
+                .padding(4.dp, 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(painterResource(icon), null)
+            Spacer(Modifier.width(4.dp))
+            Text(stringResource(text), style = MaterialTheme.typography.bodyLarge)
+        }
+    }
+    if (addShortcutDialog) AlertDialog(
+        text = {
+            Column(Modifier.fillMaxWidth()) {
+                NewShortcutItem(R.string.disable_cam, R.drawable.no_photography_fill0) {
+                    vm.pinSystemOptionShortcut(ShortcutSystemOption.Camera)
+                }
+                NewShortcutItem(R.string.mute, R.drawable.volume_off_fill0) {
+                    vm.pinSystemOptionShortcut(ShortcutSystemOption.Mute)
+                }
+                NewShortcutItem(R.string.lock_screen, R.drawable.screen_lock_portrait_fill0) {
+                    vm.pinLockScreenShortcut()
+                }
+            }
+        },
+        confirmButton = {
+            CancelTextButton { addShortcutDialog = false }
+        },
+        onDismissRequest = { addShortcutDialog = false }
+    )
 }
 
 @Composable

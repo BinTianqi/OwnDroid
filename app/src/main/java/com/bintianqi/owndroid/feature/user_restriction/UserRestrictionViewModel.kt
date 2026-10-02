@@ -35,8 +35,8 @@ class UserRestrictionViewModel(
             }
             restrictionsState.update { it.plus(name to state) }
             getRestrictions()
-            ShortcutUtils.updateUserRestrictionShortcut(
-                application, settingsRepo, name, !state, true
+            ShortcutUtils.updateUserRestrictionShortcuts(
+                application, settingsRepo, name, state
             )
             true
         } catch (_: SecurityException) {
@@ -46,7 +46,7 @@ class UserRestrictionViewModel(
     }
 
     fun createShortcut(id: String) {
-        val result = ShortcutUtils.setUserRestrictionShortcut(
+        val result = ShortcutUtils.pinUserRestrictionShortcut(
             application, settingsRepo, id, restrictionsState.value[id] ?: true
         )
         if (!result) toastChannel.sendText(R.string.unsupported)

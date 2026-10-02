@@ -158,7 +158,6 @@ fun handlePrivilegeChange(
     context: Context, ps: PrivilegeStatus, ph: PrivilegeHelper, sr: SettingsRepository
 ) {
     if (ps.activated) {
-        ShortcutUtils.setAllShortcuts(context, sr, ph, true)
         if (!ps.dhizuku) {
             setDefaultAffiliationID(ph, sr)
         }
@@ -167,7 +166,6 @@ fun handlePrivilegeChange(
             it.privilege.defaultAffiliationIdSet = false
             it.api.enabled = false
         }
-        ShortcutUtils.setAllShortcuts(context, sr, ph, false)
     }
 }
 

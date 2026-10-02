@@ -14,6 +14,8 @@ import com.bintianqi.owndroid.feature.time_blocker.TimeBlockerService
 import com.bintianqi.owndroid.feature.time_blocker.UnlockManager
 import com.bintianqi.owndroid.utils.NotificationType
 import com.bintianqi.owndroid.utils.PrivilegeStatus
+import com.bintianqi.owndroid.utils.Shortcut
+import com.bintianqi.owndroid.utils.ShortcutSystemOption
 import com.bintianqi.owndroid.utils.ShortcutUtils
 import com.bintianqi.owndroid.utils.ToastChannel
 import com.bintianqi.owndroid.utils.hash
@@ -57,17 +59,43 @@ class SettingsViewModel(
     }
 
     val dangerousFeaturesState = MutableStateFlow(settingsRepo.data.displayDangerousFeatures)
-    val shortcutsState = MutableStateFlow(settingsRepo.data.shortcut.enabled)
 
     fun setDisplayDangerousFeatures(state: Boolean) {
         settingsRepo.update { it.displayDangerousFeatures = state }
         dangerousFeaturesState.value = state
     }
 
+    val shortcutEnabledState = MutableStateFlow(false)
+    val shortcutsState = MutableStateFlow(emptyList<Shortcut>())
+
+    fun getShortcuts() {
+        shortcutEnabledState.value = settingsRepo.data.shortcut.enabled
+        shortcutsState.value = ShortcutUtils.getShortcuts(application)
+    }
+
     fun setShortcutsEnabled(enabled: Boolean) {
         settingsRepo.update { it.shortcut.enabled = enabled }
-        ShortcutUtils.setAllShortcuts(application, settingsRepo, ph, enabled)
-        shortcutsState.value = enabled
+        shortcutEnabledState.value = enabled
+    }
+
+    fun setSingleShortcutEnabled(id: String, enabled: Boolean) {
+        ShortcutUtils.setSingleShortcutEnabled(application, id, enabled)
+        shortcutsState.value = ShortcutUtils.getShortcuts(application)
+    }
+
+    fun pinSystemOptionShortcut(option: ShortcutSystemOption) {
+        var state = false
+        ph.safeDpmCall {
+            state = when (option) {
+                ShortcutSystemOption.Camera -> !dpm.getCameraDisabled(dar)
+                ShortcutSystemOption.Mute -> dpm.isMasterVolumeMuted(dar)
+            }
+        }
+        ShortcutUtils.pinSystemOptionShortcut(application, settingsRepo, option, state)
+    }
+
+    fun pinLockScreenShortcut() {
+        ShortcutUtils.pinLockScreenShortcut(application, settingsRepo)
     }
 
     fun getAppLockConfig() = settingsRepo.data.appLock

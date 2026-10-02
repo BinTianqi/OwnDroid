@@ -128,6 +128,7 @@ sealed class Destination : NavKey {
     @Serializable object Settings : Destination()
     @Serializable object SettingsOptions : Destination()
     @Serializable object AppearanceSettings : Destination()
+    @Serializable object ShortcutSettings : Destination()
     @Serializable object AppLockSettings : Destination()
     @Serializable object ApiSettings : Destination()
     @Serializable object NotificationSettings : Destination()

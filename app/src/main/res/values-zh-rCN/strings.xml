@@ -126,6 +126,7 @@
 
     <!--System-->
     <string name="system">系统</string>
+    <string name="camera">Camera</string>
     <string name="disable_cam">禁用相机</string>
     <string name="enable_camera">启用相机</string>
     <string name="disable_screen_capture">禁止屏幕捕获</string>
@@ -617,6 +618,7 @@
     <string name="appearance">外观</string>
 
     <string name="shortcuts">快捷方式</string>
+    <string name="shortcuts_disabled">快捷方式已禁用</string>
     <string name="app_lock">应用锁</string>
     <string name="minimum_length_4">长度不得小于4</string>
     <string name="leave_empty_to_remain_unchanged">留空以保持未更改</string>

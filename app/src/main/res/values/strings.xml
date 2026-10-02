@@ -135,6 +135,7 @@
 
     <!--System-->
     <string name="system">System</string>
+    <string name="camera">Camera</string>
     <string name="disable_cam">Disable camera</string>
     <string name="enable_camera">Enable camera</string>
     <string name="disable_screen_capture">Disable screen capture</string>
@@ -653,6 +654,7 @@
     <string name="appearance">Appearance</string>
 
     <string name="shortcuts">Shortcuts</string>
+    <string name="shortcuts_disabled">Shortcuts are disabled</string>
     <string name="app_lock">App lock</string>
     <string name="minimum_length_4">The length must not be less than 4</string>
     <string name="leave_empty_to_remain_unchanged">Leave empty to remain unchanged</string>

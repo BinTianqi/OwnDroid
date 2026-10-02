@@ -55,6 +55,7 @@ data class MySettings(
     data class Shortcut(
         var enabled: Boolean = true,
         var key: String = "",
+        var id: Int = 0
     )
 
     @Serializable
