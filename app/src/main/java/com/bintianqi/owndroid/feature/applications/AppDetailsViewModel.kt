@@ -166,13 +166,18 @@ class AppDetailsViewModel(
 
     fun setPermission(permission: String, status: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            ph.safeDpmCall {
-                val result = dpm.setPermissionGrantState(dar, packageName, permission, status)
-                if (result) {
-                    getPermissions()
-                } else {
-                    toastChannel.sendStatus(false)
+            try {
+                ph.safeDpmCall {
+                    val result = dpm.setPermissionGrantState(dar, packageName, permission, status)
+                    if (result) {
+                        getPermissions()
+                    } else {
+                        toastChannel.sendStatus(false)
+                    }
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                toastChannel.sendStatus(false)
             }
         }
     }

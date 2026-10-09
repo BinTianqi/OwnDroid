@@ -200,20 +200,25 @@ class AppFeaturesViewModel(
         packageName: String, state: Int
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            ph.safeDpmCall {
-                val result = dpm.setPermissionGrantState(
-                    dar, packageName, selectedPermissionItem.value.id, state
-                )
-                if (result) {
-                    permissionPackagesState.update { list ->
-                        val muList = list.toMutableList()
-                        val index = list.indexOfFirst { it.first.info.name == packageName }
-                        muList[index] = list[index].first to state
-                        muList
-                    }
-                } else {
-                    toastChannel.sendStatus(false)
+            var result = false
+            try {
+                ph.safeDpmCall {
+                    result = dpm.setPermissionGrantState(
+                        dar, packageName, selectedPermissionItem.value.id, state
+                    )
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            if (result) {
+                permissionPackagesState.update { list ->
+                    val muList = list.toMutableList()
+                    val index = list.indexOfFirst { it.first.info.name == packageName }
+                    muList[index] = list[index].first to state
+                    muList
+                }
+            } else {
+                toastChannel.sendStatus(false)
             }
         }
     }
