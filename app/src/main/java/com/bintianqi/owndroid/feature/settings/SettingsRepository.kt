@@ -1,10 +1,12 @@
 package com.bintianqi.owndroid.feature.settings
 
 import kotlinx.serialization.json.Json
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.File
 
 class SettingsRepository(val file: File) {
     var data: MySettings
+    val hideDestructiveOptionsState = MutableStateFlow(false)
 
     val json = Json {
         ignoreUnknownKeys = true
@@ -18,6 +20,7 @@ class SettingsRepository(val file: File) {
             data = MySettings()
             write()
         }
+        hideDestructiveOptionsState.value = data.hideDestructiveOptions
     }
 
     fun readData(): MySettings {
@@ -27,6 +30,7 @@ class SettingsRepository(val file: File) {
     fun update(block: (MySettings) -> Unit) {
         block(data)
         write()
+        hideDestructiveOptionsState.value = data.hideDestructiveOptions
     }
 
     fun write() {

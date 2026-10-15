@@ -75,6 +75,7 @@ fun PasswordScreen(
 ) {
     val context = LocalContext.current
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
+    val hideDestructiveOptions by vm.settingsRepo.hideDestructiveOptionsState.collectAsStateWithLifecycle()
     var dialog by rememberSaveable { mutableIntStateOf(0) }
     MyScaffold(R.string.password_and_keyguard, onNavigateUp, 0.dp) {
         FunctionItem(R.string.password_info, icon = R.drawable.info_fill0) {
@@ -86,8 +87,10 @@ fun PasswordScreen(
                     onNavigate(Destination.ResetPasswordToken)
                 }
             }
-            FunctionItem(R.string.reset_password, icon = R.drawable.lock_reset_fill0) {
-                onNavigate(Destination.ResetPassword)
+            if (!hideDestructiveOptions) {
+                FunctionItem(R.string.reset_password, icon = R.drawable.lock_reset_fill0) {
+                    onNavigate(Destination.ResetPassword)
+                }
             }
         }
         if (VERSION.SDK_INT >= 31) {
@@ -327,11 +330,13 @@ fun ResetPasswordTokenScreen(
 
 @Composable
 fun ResetPasswordScreen(vm: PasswordViewModel, onNavigateUp: () -> Unit) {
+    val hideDestructiveOptions by vm.settingsRepo.hideDestructiveOptionsState.collectAsStateWithLifecycle()
     var password by rememberSaveable { mutableStateOf("") }
     var token by rememberSaveable { mutableStateOf("") }
     var flags by rememberSaveable { mutableIntStateOf(0) }
     var confirmPassword by rememberSaveable { mutableStateOf("") }
     MyScaffold(R.string.reset_password, onNavigateUp) {
+        if (!hideDestructiveOptions) {
         if (VERSION.SDK_INT >= 26) {
             OutlinedTextField(
                 token, { token = it }, Modifier
@@ -382,6 +387,7 @@ fun ResetPasswordScreen(vm: PasswordViewModel, onNavigateUp: () -> Unit) {
             Text(stringResource(R.string.reset_password))
         }
         Notes(R.string.info_reset_password)
+        }
     }
 }
 

@@ -43,6 +43,7 @@ fun TransferOwnershipScreen(
     vm: TransferOwnershipViewModel, onNavigateUp: () -> Unit, onTransferred: () -> Unit
 ) {
     val privilege by vm.ps.collectAsState()
+    val hideDestructiveOptions by vm.application.container.settingsRepo.hideDestructiveOptionsState.collectAsState()
     var selectedIndex by rememberSaveable { mutableIntStateOf(-1) }
     var dialog by rememberSaveable { mutableStateOf(false) }
     val receivers by vm.deviceAdminReceivers.collectAsState()
@@ -65,6 +66,7 @@ fun TransferOwnershipScreen(
             }
         }
         item {
+            if (!hideDestructiveOptions) {
             Button(
                 { dialog = true },
                 Modifier
@@ -74,10 +76,11 @@ fun TransferOwnershipScreen(
             ) {
                 Text(stringResource(R.string.transfer))
             }
+            }
             Notes(R.string.info_transfer_ownership, HorizontalPadding)
         }
     }
-    if (dialog) AlertDialog(
+    if (dialog && !hideDestructiveOptions) AlertDialog(
         text = {
             Text(
                 stringResource(

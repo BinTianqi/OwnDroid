@@ -540,6 +540,7 @@
     <!--Settings&About-->
     <string name="settings">Ayarlar</string>
     <string name="show_dangerous_features">Tehlikeli Özellikleri Göster</string>
+    <string name="hide_destructive_options">Yıkıcı seçenekleri gizle</string>
     <string name="material_you_color">Material You Rengi</string>
     <string name="dark_theme">Koyu Tema</string>
     <string name="follow_system">Sistemi Takip Et</string>

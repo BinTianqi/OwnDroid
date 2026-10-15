@@ -212,10 +212,15 @@ fun SettingsOptionsScreen(
     vm: SettingsViewModel, onNavigateUp: () -> Unit
 ) {
     val dangerousFeatures by vm.dangerousFeaturesState.collectAsState()
+    val hideDestructiveOptions by vm.hideDestructiveOptionsState.collectAsState()
     MyScaffold(R.string.options, onNavigateUp, 0.dp) {
         SwitchItem(
             R.string.show_dangerous_features, dangerousFeatures, vm::setDisplayDangerousFeatures,
             R.drawable.warning_fill0
+        )
+        SwitchItem(
+            R.string.hide_destructive_options, hideDestructiveOptions, vm::setHideDestructiveOptions,
+            R.drawable.delete_forever_fill0
         )
     }
 }
@@ -361,6 +366,7 @@ fun AppLockSettingsScreen(
     vm: SettingsViewModel, onNavigateUp: () -> Unit
 ) = MyScaffold(R.string.app_lock, onNavigateUp) {
     val config = vm.getAppLockConfig()
+    val hideDestructiveOptions by vm.settingsRepo.hideDestructiveOptionsState.collectAsState()
     var password by rememberSaveable { mutableStateOf("") }
     var confirmPassword by rememberSaveable { mutableStateOf("") }
     var allowBiometrics by rememberSaveable { mutableStateOf(config.biometrics) }
@@ -451,11 +457,13 @@ fun AppLockSettingsScreen(
             }) {
                 Text(stringResource(R.string.time_blocker_totp_secret))
             }
+            if (!hideDestructiveOptions) {
             TextButton({ showRemoveConfirm = true }) {
                 Text(
                     stringResource(R.string.time_blocker_remove_totp),
                     color = MaterialTheme.colorScheme.error
                 )
+            }
             }
         }
     }
@@ -469,7 +477,7 @@ fun AppLockSettingsScreen(
     ) {
         Text(stringResource(if (alreadySet) R.string.update else R.string.set))
     }
-    if (alreadySet) FilledTonalButton(
+    if (alreadySet && !hideDestructiveOptions) FilledTonalButton(
         {
             vm.disableAppLock()
             onNavigateUp()
@@ -521,7 +529,7 @@ fun AppLockSettingsScreen(
             }
         )
     }
-    if (showRemoveConfirm) {
+    if (showRemoveConfirm && !hideDestructiveOptions) {
         AlertDialog(
             onDismissRequest = { showRemoveConfirm = false },
             title = { Text(stringResource(R.string.time_blocker_remove_totp)) },

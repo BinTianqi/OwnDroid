@@ -72,6 +72,7 @@ fun WorkModesScreen(
     onActivate: () -> Unit, onDeactivate: () -> Unit, onNavigate: (Destination) -> Unit
 ) {
     val privilege by vm.ps.collectAsStateWithLifecycle()
+    val hideDestructiveOptions by vm.sr.hideDestructiveOptionsState.collectAsStateWithLifecycle()
     // 0: none, 1: device owner, 2: circular progress indicator, 3: result, 4: deactivate
     // 5: command, 6: org profile, 7: org profile command
     var dialog by rememberSaveable { mutableIntStateOf(0) }
@@ -115,7 +116,7 @@ fun WorkModesScreen(
                             Icon(Icons.Default.MoreVert, null)
                         }
                         DropdownMenu(expanded, { expanded = false }) {
-                            DropdownMenuItem(
+                            if (!hideDestructiveOptions) DropdownMenuItem(
                                 { Text(stringResource(R.string.deactivate)) },
                                 {
                                     expanded = false
@@ -123,7 +124,7 @@ fun WorkModesScreen(
                                 },
                                 leadingIcon = { Icon(Icons.Default.Close, null) }
                             )
-                            if (!privilege.dhizuku && VERSION.SDK_INT >= 28) DropdownMenuItem(
+                            if (!hideDestructiveOptions && !privilege.dhizuku && VERSION.SDK_INT >= 28) DropdownMenuItem(
                                 { Text(stringResource(R.string.transfer_ownership)) },
                                 {
                                     expanded = false
@@ -284,7 +285,7 @@ fun WorkModesScreen(
             },
             onDismissRequest = {}
         )
-        if (dialog == 4) AlertDialog(
+        if (dialog == 4 && !hideDestructiveOptions) AlertDialog(
             title = { Text(stringResource(R.string.deactivate)) },
             text = {
                 val frpNotice by vm.frpNoticeState.collectAsState()

@@ -124,7 +124,7 @@ class MyViewModelFactory(
         }
 
         if (checkType(WorkProfileViewModel::class)) {
-            return WorkProfileViewModel(ph, ps, tc) as T
+            return WorkProfileViewModel(ph, ps, tc, sr) as T
         }
         if (checkType(CrossProfileIntentFilterViewModel::class)) {
             return CrossProfileIntentFilterViewModel(app, ph, cpifRepo, tc, sr) as T
