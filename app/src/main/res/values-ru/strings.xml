@@ -517,6 +517,7 @@
     <!--Настройки и о программе-->
     <string name="settings">Настройки</string>
     <string name="show_dangerous_features">Показывать опасные функции</string>
+    <string name="hide_destructive_options">Скрывать деструктивные действия</string>
     <string name="material_you_color">Цвет Material You</string>
     <string name="dark_theme">Тёмная тема</string> 
     <string name="follow_system">Следовать за системой</string> 

@@ -65,6 +65,12 @@ class SettingsViewModel(
         dangerousFeaturesState.value = state
     }
 
+    val hideDestructiveOptionsState = settingsRepo.hideDestructiveOptionsState
+
+    fun setHideDestructiveOptions(state: Boolean) {
+        settingsRepo.update { it.hideDestructiveOptions = state }
+    }
+
     val shortcutEnabledState = MutableStateFlow(false)
     val shortcutsState = MutableStateFlow(emptyList<Shortcut>())
 

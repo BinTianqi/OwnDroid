@@ -84,6 +84,7 @@ fun SystemScreen(
     vm: SystemViewModel, onNavigateUp: () -> Unit, onNavigate: (Destination) -> Unit
 ) {
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
+    val hideDestructiveOptions by vm.settingsRepo.hideDestructiveOptionsState.collectAsStateWithLifecycle()
     // 1: reboot, 2: bug report, 3: org name, 4: org id, 5: enrollment specific id
     var dialog by rememberSaveable { mutableIntStateOf(0) }
     MyScaffold(R.string.system, onNavigateUp, 0.dp) {
@@ -178,7 +179,7 @@ fun SystemScreen(
                 onNavigate(Destination.FrpPolicy)
             }
         }
-        if (vm.getDisplayDangerousFeatures() && !privilege.work) {
+        if (!hideDestructiveOptions && vm.getDisplayDangerousFeatures() && !privilege.work) {
             FunctionItem(R.string.wipe_data, icon = R.drawable.device_reset_fill0) {
                 onNavigate(Destination.WipeData)
             }
@@ -676,11 +677,13 @@ fun WipeDataScreen(
     val context = LocalContext.current
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
+    val hideDestructiveOptions by vm.settingsRepo.hideDestructiveOptionsState.collectAsStateWithLifecycle()
     val focusMgr = LocalFocusManager.current
     var flag by rememberSaveable { mutableIntStateOf(0) }
     var dialog by rememberSaveable { mutableIntStateOf(0) } // 0: none, 1: wipe data, 2: wipe device
     var reason by rememberSaveable { mutableStateOf("") }
     MyScaffold(R.string.wipe_data, onNavigateUp, 0.dp) {
+        if (!hideDestructiveOptions) {
         FullWidthCheckBoxItem(R.string.wipe_external_storage, flag and WIPE_EXTERNAL_STORAGE != 0) {
             flag = flag xor WIPE_EXTERNAL_STORAGE
         }
@@ -742,8 +745,9 @@ fun WipeDataScreen(
                 Text("WipeDevice")
             }
         }
+        }
     }
-    if (dialog != 0) {
+    if (dialog != 0 && !hideDestructiveOptions) {
         AlertDialog(
             title = {
                 Text(stringResource(R.string.warning), color = colorScheme.error)

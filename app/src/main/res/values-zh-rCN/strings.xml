@@ -608,6 +608,7 @@
     <!--Settings&About-->
     <string name="settings">设置</string>
     <string name="show_dangerous_features">显示危险功能</string>
+    <string name="hide_destructive_options">隐藏破坏性选项</string>
     <string name="material_you_color">Material You 颜色</string>
     <string name="dark_theme">深色主题</string>
     <string name="follow_system">跟随系统</string>

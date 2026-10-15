@@ -3,6 +3,7 @@ package com.bintianqi.owndroid.feature.work_profile
 import android.os.Build.VERSION
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
+import com.bintianqi.owndroid.feature.settings.SettingsRepository
 import com.bintianqi.owndroid.PrivilegeHelper
 import com.bintianqi.owndroid.utils.PrivilegeStatus
 import com.bintianqi.owndroid.utils.ToastChannel
@@ -11,7 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 class WorkProfileViewModel(
     val ph: PrivilegeHelper, val privilegeState: StateFlow<PrivilegeStatus>,
-    val toastChannel: ToastChannel
+    val toastChannel: ToastChannel, val settingsRepo: SettingsRepository
 ) : ViewModel() {
     val personalAppSuspendedState = MutableStateFlow(0)
 

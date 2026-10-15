@@ -49,6 +49,7 @@ fun WorkProfileScreen(
     vm: WorkProfileViewModel, onNavigateUp: () -> Unit, onNavigate: (Destination) -> Unit
 ) {
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
+    val hideDestructiveOptions by vm.settingsRepo.hideDestructiveOptionsState.collectAsState()
     MyScaffold(R.string.work_profile, onNavigateUp, 0.dp) {
         if (privilege.org) {
             FunctionItem(R.string.suspend_personal_app, icon = R.drawable.block_fill0) {
@@ -58,8 +59,10 @@ fun WorkProfileScreen(
         FunctionItem(R.string.intent_filter, icon = R.drawable.filter_alt_fill0) {
             onNavigate(Destination.CrossProfileIntentFilter)
         }
+        if (!hideDestructiveOptions) {
         FunctionItem(R.string.delete_work_profile, icon = R.drawable.delete_forever_fill0) {
             onNavigate(Destination.DeleteWorkProfile)
+        }
         }
     }
 }
@@ -124,10 +127,12 @@ fun SuspendPersonalAppScreen(
 fun DeleteWorkProfileScreen(
     vm: WorkProfileViewModel, onNavigateUp: () -> Unit
 ) {
+    val hideDestructiveOptions by vm.settingsRepo.hideDestructiveOptionsState.collectAsState()
     var flags by remember { mutableIntStateOf(0) }
     var warning by remember { mutableStateOf(false) }
     var reason by remember { mutableStateOf("") }
     MyScaffold(R.string.delete_work_profile, onNavigateUp) {
+        if (!hideDestructiveOptions) {
         CheckBoxItem(R.string.wipe_external_storage, flags and WIPE_EXTERNAL_STORAGE != 0) {
             flags = flags xor WIPE_EXTERNAL_STORAGE
         }
@@ -158,8 +163,9 @@ fun DeleteWorkProfileScreen(
         ) {
             Text(stringResource(R.string.delete))
         }
+        }
     }
-    if (warning) {
+    if (warning && !hideDestructiveOptions) {
         var confirmation by remember { mutableStateOf("") }
         AlertDialog(
             title = {
