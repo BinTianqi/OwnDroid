@@ -650,4 +650,6 @@
     <string name="activate_method">Etkinleştirme Yöntemi</string>
     <string name="adb_command">ADB Komutu</string>
     <string name="owndroid_warning">Bu uygulama, Cihaz Sahibi veya Profil Sahibi yetkilerini kullanır. Bu yetkiler son derece tehlikelidir, lütfen dikkatle kullanın. Yanlış kullanım ciddi kayıplara yol açabilir. Geliştiriciler bundan sorumlu olmayacaktır.</string>
+    <string name="delete_app_group">Uygulama grubunu sil</string>
+    <string name="delete_app_group_confirmation">%1$s adlı uygulama grubunu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</string>
 </resources>

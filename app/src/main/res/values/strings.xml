@@ -832,4 +832,6 @@
     <string name="sync_grant_camera">Grant camera permission</string>
     <string name="sync_totp_included">TOTP secret included</string>
     <string name="sync_totp_not_included">no TOTP secret</string>
+    <string name="delete_app_group">Delete app group</string>
+    <string name="delete_app_group_confirmation">Are you sure you want to delete the app group %1$s? This action cannot be undone.</string>
 </resources>
