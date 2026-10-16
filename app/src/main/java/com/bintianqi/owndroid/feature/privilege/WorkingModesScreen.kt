@@ -32,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -75,6 +76,7 @@ fun WorkModesScreen(
     // 0: none, 1: device owner, 2: circular progress indicator, 3: result, 4: deactivate
     // 5: command, 6: org profile, 7: org profile command
     var dialog by rememberSaveable { mutableIntStateOf(0) }
+    var deactivateConfirmation by rememberSaveable { mutableStateOf("") }
     var operationSucceed by rememberSaveable { mutableStateOf(false) }
     var resultText by rememberSaveable { mutableStateOf("") }
     LaunchedEffect(Unit) {
@@ -119,6 +121,7 @@ fun WorkModesScreen(
                                 { Text(stringResource(R.string.deactivate)) },
                                 {
                                     expanded = false
+                                    deactivateConfirmation = ""
                                     dialog = 4
                                 },
                                 leadingIcon = { Icon(Icons.Default.Close, null) }
@@ -294,7 +297,17 @@ fun WorkModesScreen(
                 }
                 val noticeText =
                     if (frpNotice) ("" + stringResource(R.string.info_frp_policy_exists)) else ""
-                Text(stringResource(R.string.info_deactivate) + noticeText)
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.info_deactivate) + noticeText)
+                    Text(stringResource(R.string.enter_confirm_to_deactivate))
+                    OutlinedTextField(
+                        value = deactivateConfirmation,
+                        onValueChange = { deactivateConfirmation = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        textStyle = typography.bodyLarge
+                    )
+                }
             },
             confirmButton = {
                 var time by remember { mutableIntStateOf(if (privilege.dhizuku) 0 else 3) }
@@ -311,7 +324,7 @@ fun WorkModesScreen(
                         dialog = 0
                         onDeactivate()
                     },
-                    enabled = time == 0,
+                    enabled = time == 0 && deactivateConfirmation == "CONFIRM",
                     colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
                 ) {
                     Text(stringResource(R.string.confirm) + timeText)
