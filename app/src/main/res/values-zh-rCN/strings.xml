@@ -795,4 +795,5 @@
     <string name="sync_grant_camera">授予相机权限</string>
     <string name="sync_totp_included">包含TOTP密钥</string>
     <string name="sync_totp_not_included">不含TOTP密钥</string>
+    <string name="enter_confirm_to_deactivate">输入“CONFIRM”以继续。</string>
 </resources>
