@@ -16,7 +16,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.MoreVert
@@ -70,6 +73,7 @@ import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.MyLazyScaffold
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.NavIcon
+import com.bintianqi.owndroid.ui.NoneText
 import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.PackageNameTextField
 import com.bintianqi.owndroid.ui.SwitchItem
@@ -636,7 +640,6 @@ fun PackageFunctionScreen(
     var input by rememberSaveable { mutableStateOf("") }
     val inputPackages = parsePackageNames(input)
     var dialog by remember { mutableStateOf(false) }
-    var selectedGroup by remember { mutableStateOf<AppGroup?>(null) }
     val snackbar = remember { SnackbarHostState() }
     val res = LocalResources.current
     val coroutine = rememberCoroutineScope()
@@ -688,11 +691,16 @@ fun PackageFunctionScreen(
             Box {
                 var sortingMenu by remember { mutableStateOf(false) }
                 IconButton({ sortingMenu = !sortingMenu }) {
-                    Icon(painterResource(R.drawable.sort_fill0), null)
+                    Icon(painterResource(R.drawable.list_arrow_fill0), null)
                 }
                 DropdownMenu(sortingMenu, { sortingMenu = false }) {
                     AppSortingMenuContent(sortingOptions) { sortingOptions = it }
                 }
+            }
+        }
+        if (!searchMode) {
+            IconButton({ dialog = true }) {
+                Icon(Icons.AutoMirrored.Default.List, stringResource(R.string.app_group))
             }
         }
         var expand by remember { mutableStateOf(false) }
@@ -703,6 +711,16 @@ fun PackageFunctionScreen(
                 Icon(Icons.Default.MoreVert, null)
             }
             DropdownMenu(expand, { expand = false }) {
+                if (searchMode) {
+                    DropdownMenuItem(
+                        { Text(stringResource(R.string.app_group)) },
+                        {
+                            expand = false
+                            dialog = true
+                        }
+                    )
+                    HorizontalDivider()
+                }
                 DropdownMenuItem(
                     { Text(stringResource(R.string.switch_view)) },
                     {
@@ -723,39 +741,6 @@ fun PackageFunctionScreen(
                     leadingIcon = { RadioButton(listView, null) }
                 )
                 if (searchMode) AppSortingMenuContent(sortingOptions) { sortingOptions = it }
-                Text(
-                    stringResource(R.string.app_group),
-                    Modifier.padding(start = 8.dp, bottom = 4.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.labelLarge
-                )
-                groups.forEach { group ->
-                    DropdownMenuItem(
-                        {
-                            val activeApps = group.apps.filter { it in packages }.size
-                            Row {
-                                Text(
-                                    "($activeApps/${group.apps.size})".padEnd(7, ' '),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(group.name)
-                            }
-                        },
-                        {
-                            selectedGroup = group
-                            dialog = true
-                            expand = false
-                        }
-                    )
-                }
-                if (groups.isNotEmpty()) HorizontalDivider()
-                DropdownMenuItem(
-                    { Text(stringResource(R.string.manage_app_groups)) },
-                    {
-                        navigateToGroups()
-                        expand = false
-                    }
-                )
             }
         }
     }
@@ -875,26 +860,45 @@ fun PackageFunctionScreen(
         }
     }
     if (dialog) AlertDialog(
+        title = { Text(stringResource(R.string.app_group)) },
         text = {
-            Column {
-                Text(selectedGroup!!.name, style = MaterialTheme.typography.titleLarge)
-                Spacer(Modifier.height(6.dp))
-                Button({
-                    onSet(selectedGroup!!.apps, true)
-                    dialog = false
-                }) {
-                    Icon(Icons.Default.Add, null, Modifier.padding(end = 6.dp))
-                    Text(stringResource(R.string.add_to_list))
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                if (groups.isEmpty()) NoneText()
+                groups.forEach { group ->
+                    val activeApps = group.apps.filter { it in packages }.size
+                    Row(
+                        Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1F)) {
+                            Text(group.name, style = MaterialTheme.typography.bodyLarge)
+                            Text("$activeApps/${group.apps.size}", Modifier.alpha(0.7F))
+                        }
+                        Row {
+                            IconButton({
+                                onSet(group.apps, true)
+                            }, enabled = activeApps < group.apps.size) {
+                                Icon(Icons.Default.Add, stringResource(R.string.add))
+                            }
+                            IconButton({
+                                onSet(group.apps, false)
+                            }, enabled = activeApps > 0) {
+                                Icon(
+                                    painterResource(R.drawable.remove_fill0),
+                                    stringResource(R.string.remove)
+                                )
+                            }
+                        }
+                    }
                 }
-                Button({
-                    onSet(selectedGroup!!.apps, false)
-                    dialog = false
-                }) {
-                    Icon(
-                        painterResource(R.drawable.remove_fill0), null,
-                        Modifier.padding(end = 6.dp)
-                    )
-                    Text(stringResource(R.string.remove_from_list))
+                Button(
+                    {
+                        dialog = false
+                        navigateToGroups()
+                    },
+                    Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.manage_app_groups))
                 }
             }
         },
