@@ -19,6 +19,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,10 +29,12 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -154,6 +158,7 @@ fun EditAppGroupScreen(
     onChoosePackage: () -> Unit, chosenPackage: Channel<String>
 ) {
     val uiState by vm.editorUiState.collectAsState()
+    var showDeleteConfirmation by rememberSaveable { mutableStateOf(false) }
     var input by rememberSaveable { mutableStateOf("") }
     val inputPackages = parsePackageNames(input)
     LaunchedEffect(Unit) {
@@ -166,10 +171,9 @@ fun EditAppGroupScreen(
         navigateUp,
         {
             if (uiState.id != null) IconButton({
-                vm.deleteGroup()
-                navigateUp()
+                showDeleteConfirmation = true
             }) {
-                Icon(Icons.Outlined.Delete, null)
+                Icon(Icons.Outlined.Delete, stringResource(R.string.delete_app_group))
             }
             FilledIconButton(
                 {
@@ -216,4 +220,32 @@ fun EditAppGroupScreen(
             Spacer(Modifier.height(BottomPadding))
         }
     }
+
+    if (showDeleteConfirmation && uiState.id != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text(stringResource(R.string.delete_app_group)) },
+            text = {
+                Text(stringResource(R.string.delete_app_group_confirmation, uiState.name))
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirmation = false
+                        vm.deleteGroup()
+                        navigateUp()
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
+                ) {
+                    Text(stringResource(R.string.delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
 }
