@@ -41,7 +41,9 @@ Use Android's DevicePolicyManager API to manage your device.
 java.lang.IllegalStateException: Not allowed to set the device owner because there are already some accounts on the device
 ```
 
-Solutions: freeze the accounts' holder apps, or delete those accounts.
+Since v8.4, OwnDroid will try to bypass this restriction automatically when activating device owner using Shizuku or root.
+
+If you still see this error, you can try to freeze the accounts' holder apps, or delete those accounts.
 
 ### Already several users on the device
 

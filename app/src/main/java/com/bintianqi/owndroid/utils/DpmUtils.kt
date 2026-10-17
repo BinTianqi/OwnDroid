@@ -12,10 +12,13 @@ import android.content.pm.IPackageInstaller
 import android.content.pm.PackageInstaller
 import android.os.Binder
 import android.os.Build.VERSION
+import android.os.IBinder
 import android.os.UserHandle
 import android.os.UserManager
 import android.util.Log
+import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
+import com.bintianqi.owndroid.ActivationService
 import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.PrivilegeHelper
 import com.bintianqi.owndroid.R
@@ -24,6 +27,7 @@ import com.bintianqi.owndroid.feature.settings.SettingsRepository
 import com.bintianqi.owndroid.feature.users.UserOperationType
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuBinderWrapper
+import com.topjohnwu.superuser.ipc.RootService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -235,4 +239,12 @@ class DhizukuException: Exception {
 
 enum class DhizukuError {
     Init, Permission, Binder
+}
+
+@Keep
+class MyRootService : RootService() {
+    override fun onBind(p0: Intent): IBinder {
+        val ss = ActivationService()
+        return ss
+    }
 }

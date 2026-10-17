@@ -273,7 +273,9 @@ fun WorkModesScreen(
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
                 ) {
-                    Text(resultText)
+                    SelectionContainer {
+                        Text(resultText)
+                    }
                 }
             },
             confirmButton = {
@@ -338,7 +340,7 @@ fun WorkModesScreen(
                 Column {
                     Button({
                         dialog = 2
-                        vm.activateOrgProfileByShizuku { dialog = 0 }
+                        vm.activateOrgProfileByShizuku(::handleResult)
                     }) {
                         Text(stringResource(R.string.shizuku))
                     }

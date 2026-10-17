@@ -1,20 +1,25 @@
 package com.bintianqi.owndroid.feature.privilege
 
 import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
+import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.Bundle
+import android.os.IBinder
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bintianqi.owndroid.IUserService
+import com.bintianqi.owndroid.ActivationService
+import com.bintianqi.owndroid.IActivationService
 import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.PrivilegeHelper
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.feature.settings.SettingsRepository
-import com.bintianqi.owndroid.useShizuku
-import com.bintianqi.owndroid.utils.ACTIVATE_DEVICE_OWNER_COMMAND
 import com.bintianqi.owndroid.utils.DhizukuError
 import com.bintianqi.owndroid.utils.MyAdminComponent
+import com.bintianqi.owndroid.utils.MyRootService
 import com.bintianqi.owndroid.utils.PrivilegeStatus
 import com.bintianqi.owndroid.utils.ToastChannel
 import com.bintianqi.owndroid.utils.activateOrgProfileCommand
@@ -22,10 +27,11 @@ import com.bintianqi.owndroid.utils.getPrivilegeStatus
 import com.bintianqi.owndroid.utils.handlePrivilegeChange
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
-import com.topjohnwu.superuser.Shell
+import com.topjohnwu.superuser.ipc.RootService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import rikka.shizuku.Shizuku
 
 class WorkingModesViewModel(
     val application: MyApplication, val ph: PrivilegeHelper, val sr: SettingsRepository,
@@ -44,45 +50,40 @@ class WorkingModesViewModel(
 
     fun activateDoByShizuku(callback: (Boolean, String?) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
-            useShizuku(application) { service ->
-                if (service == null) {
-                    callback(false, null)
-                    return@useShizuku
-                }
-                try {
-                    val result = IUserService.Stub.asInterface(service)
-                        .execute(ACTIVATE_DEVICE_OWNER_COMMAND)
-                    if (result == null) {
-                        callback(false, null)
-                    } else if (result.getInt("code", -1) != 0) {
-                        callback(
-                            false, result.getString("output") + "\n" + result.getString("error")
-                        )
-                    } else {
-                        updateStatus()
-                        callback(
-                            true, result.getString("output") + "\n" + result.getString("error")
-                        )
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    callback(false, null)
-                }
-            }
+            useShizuku({ it.activateDeviceOwner() }, callback)
         }
     }
 
     fun activateDoByRoot(callback: (Boolean, String?) -> Unit) {
-        Shell.getShell { shell ->
-            if (shell.isRoot) {
-                val result = Shell.cmd(ACTIVATE_DEVICE_OWNER_COMMAND).exec()
-                val output = result.out.joinToString("\n") + "\n" + result.err.joinToString("\n")
-                if (result.isSuccess) updateStatus()
-                callback(result.isSuccess, output)
-            } else {
-                callback(false, application.getString(R.string.permission_denied))
-            }
+        val intent = Intent(application, MyRootService::class.java)
+        val conn = ActivationServiceConnection({ it.activateDeviceOwner() }, callback) {
+            RootService.stop(intent)
         }
+        RootService.bind(intent, conn)
+    }
+
+    inner class ActivationServiceConnection(
+        val callback: (IActivationService) -> Bundle?,
+        val resultCallback: (Boolean, String?) -> Unit,
+        val stopCallback: (ActivationServiceConnection) -> Unit
+    ) : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val service = IActivationService.Stub.asInterface(service)
+            val result = callback(service)
+            if (result == null) {
+                resultCallback(false, application.getString(R.string.permission_denied))
+            } else {
+                val stdout = result.getString("output", "")
+                val text = (if (stdout.isEmpty()) "" else stdout + "\n") +
+                        result.getString("error", "")
+                val succeed = result.getInt("code", -1) == 0
+                if (succeed) updateStatus()
+                resultCallback(succeed, text)
+            }
+            stopCallback(this)
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {}
     }
 
     @RequiresApi(28)
@@ -119,24 +120,9 @@ class WorkingModesViewModel(
         }
     }
 
-    fun activateOrgProfileByShizuku(callback: (Boolean) -> Unit) {
+    fun activateOrgProfileByShizuku(callback: (Boolean, String?) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
-            useShizuku(application) { service ->
-                if (service == null) {
-                    callback(false)
-                    toastChannel.sendStatus(false)
-                    return@useShizuku
-                }
-                val result =
-                    IUserService.Stub.asInterface(service).execute(activateOrgProfileCommand)
-                val succeed = result?.getInt("code", -1) == 0
-                callback(succeed)
-                if (succeed) {
-                    updateStatus()
-                } else {
-                    toastChannel.sendStatus(false)
-                }
-            }
+            useShizuku({ it.execute(activateOrgProfileCommand) }, callback)
         }
     }
 
@@ -171,5 +157,40 @@ class WorkingModesViewModel(
     private fun updateStatus() = ph.safeDpmCall {
         ps.value = getPrivilegeStatus(dpm, dar, ph.dhizuku)
         handlePrivilegeChange(application, ps.value, ph, sr)
+    }
+
+    private fun useShizuku(
+        callback: (IActivationService) -> Bundle?, resultCallback: (Boolean, String?) -> Unit
+    ) {
+        val cn = ComponentName(application, ActivationService::class.java)
+        val shizukuArgs = Shizuku.UserServiceArgs(cn)
+            .daemon(false)
+            .processNameSuffix("shizuku-service")
+            .debuggable(false)
+            .version(1)
+        val connection = ActivationServiceConnection(callback, resultCallback) {
+            Shizuku.unbindUserService(shizukuArgs, it, true)
+        }
+        try {
+            if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+                Shizuku.bindUserService(shizukuArgs, connection)
+            } else if (Shizuku.shouldShowRequestPermissionRationale()) {
+                resultCallback(false, application.getString(R.string.permission_denied))
+            } else {
+                fun requestPermissionResultListener(requestCode: Int, grantResult: Int) {
+                    if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                        Shizuku.bindUserService(shizukuArgs, connection)
+                    } else {
+                        resultCallback(false, application.getString(R.string.permission_denied))
+                    }
+                    Shizuku.removeRequestPermissionResultListener(::requestPermissionResultListener)
+                }
+                Shizuku.addRequestPermissionResultListener(::requestPermissionResultListener)
+                Shizuku.requestPermission(0)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            resultCallback(false, application.getString(R.string.failed))
+        }
     }
 }

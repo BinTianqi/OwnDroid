@@ -41,7 +41,8 @@
 java.lang.IllegalStateException: Not allowed to set the device owner because there are already some accounts on the device
 ```
 
-解决办法：冻结持有这些账号的 app ，或删除这些账号。
+从 v8.4 起，OwnDroid 在使用 Shizuku 或 root 激活 device owner 时，会自动尝试绕过这些限制。
+如果仍然出现此错误，你可以尝试冻结持有这些账号的 app ，或删除这些账号。
 
 ### 设备上已有多个用户
 
