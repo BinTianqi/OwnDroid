@@ -76,7 +76,6 @@ fun WorkModesScreen(
     // 0: none, 1: device owner, 2: circular progress indicator, 3: result, 4: deactivate
     // 5: command, 6: org profile, 7: org profile command
     var dialog by rememberSaveable { mutableIntStateOf(0) }
-    var deactivateConfirmation by rememberSaveable { mutableStateOf("") }
     var operationSucceed by rememberSaveable { mutableStateOf(false) }
     var resultText by rememberSaveable { mutableStateOf("") }
     LaunchedEffect(Unit) {
@@ -121,7 +120,6 @@ fun WorkModesScreen(
                                 { Text(stringResource(R.string.deactivate)) },
                                 {
                                     expanded = false
-                                    deactivateConfirmation = ""
                                     dialog = 4
                                 },
                                 leadingIcon = { Icon(Icons.Default.Close, null) }
@@ -287,54 +285,49 @@ fun WorkModesScreen(
             },
             onDismissRequest = {}
         )
-        if (dialog == 4) AlertDialog(
-            title = { Text(stringResource(R.string.deactivate)) },
-            text = {
-                val frpNotice by vm.frpNoticeState.collectAsState()
-                LaunchedEffect(Unit) {
-                    // Dhizuku mode is checked inside that function
-                    vm.getFrpState()
-                }
-                val noticeText =
-                    if (frpNotice) ("" + stringResource(R.string.info_frp_policy_exists)) else ""
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(stringResource(R.string.info_deactivate) + noticeText)
-                    Text(stringResource(R.string.enter_confirm_to_deactivate))
-                    OutlinedTextField(
-                        value = deactivateConfirmation,
-                        onValueChange = { deactivateConfirmation = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        textStyle = typography.bodyLarge
-                    )
-                }
-            },
-            confirmButton = {
-                var time by remember { mutableIntStateOf(if (privilege.dhizuku) 0 else 3) }
-                if (!privilege.dhizuku) LaunchedEffect(Unit) {
-                    for (i in (0..2).reversed()) {
-                        delay(1000)
-                        time = i
+        if (dialog == 4) {
+            var confirmation by rememberSaveable { mutableStateOf("") }
+            AlertDialog(
+                title = { Text(stringResource(R.string.deactivate)) },
+                text = {
+                    val frpNotice by vm.frpNoticeState.collectAsState()
+                    LaunchedEffect(Unit) {
+                        // Dhizuku mode is checked inside that function
+                        vm.getFrpState()
                     }
-                }
-                val timeText = if (time != 0) " (${time}s)" else ""
-                TextButton(
-                    {
-                        vm.deactivate()
-                        dialog = 0
-                        onDeactivate()
-                    },
-                    enabled = time == 0 && deactivateConfirmation == "CONFIRM",
-                    colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
-                ) {
-                    Text(stringResource(R.string.confirm) + timeText)
-                }
-            },
-            dismissButton = {
-                CancelTextButton { dialog = 0 }
-            },
-            onDismissRequest = { dialog = 0 }
-        )
+                    val noticeText =
+                        if (frpNotice) ("\n" + stringResource(R.string.info_frp_policy_exists))
+                        else ""
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(stringResource(R.string.info_deactivate) + noticeText)
+                        Text(stringResource(R.string.enter_confirm_to_deactivate))
+                        OutlinedTextField(
+                            confirmation, { confirmation = it },
+                            Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            textStyle = typography.bodyLarge
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        {
+                            vm.deactivate()
+                            dialog = 0
+                            onDeactivate()
+                        },
+                        enabled = confirmation == "CONFIRM",
+                        colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
+                    ) {
+                        Text(stringResource(R.string.confirm))
+                    }
+                },
+                dismissButton = {
+                    CancelTextButton { dialog = 0 }
+                },
+                onDismissRequest = { dialog = 0 }
+            )
+        }
         if (dialog == 5) AlertDialog(
             text = {
                 SelectionContainer {
