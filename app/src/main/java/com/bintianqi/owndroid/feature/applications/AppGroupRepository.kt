@@ -8,7 +8,9 @@ class AppGroupRepository(val dbHelper: MyDbHelper) {
     fun getAppGroups(): List<AppGroup> {
         val groupApps = getGroupApps()
         val list = mutableListOf<AppGroup>()
-        dbHelper.readableDatabase.rawQuery("SELECT * FROM app_groups", null).use { cursor ->
+        dbHelper.readableDatabase.rawQuery(
+            "SELECT * FROM app_groups ORDER BY position", null
+        ).use { cursor ->
             while (cursor.moveToNext()) {
                 val id = cursor.getInt(0)
                 list += AppGroup(
@@ -38,6 +40,13 @@ class AppGroupRepository(val dbHelper: MyDbHelper) {
         cv.put("name", name)
         val groupId: Long
         if (id == null) {
+            var maxPosition = -1
+            dbHelper.readableDatabase.rawQuery(
+                "SELECT position FROM app_groups ORDER BY position DESC LIMIT 1", null
+            ).use {
+                if (it.moveToNext()) maxPosition = it.getInt(0)
+            }
+            cv.put("position", maxPosition + 1)
             groupId = dbHelper.writableDatabase.insert("app_groups", null, cv)
         } else {
             dbHelper.writableDatabase.update("app_groups", cv, "id = ?", arrayOf(id.toString()))
@@ -46,6 +55,11 @@ class AppGroupRepository(val dbHelper: MyDbHelper) {
         setGroupApps(dbHelper.writableDatabase, groupId, apps)
     }
 
+    fun setGroupPosition(id: Int, place: Int) {
+        val cv = ContentValues()
+        cv.put("position", place)
+        dbHelper.writableDatabase.update("app_groups", cv, "id = ?", arrayOf(id.toString()))
+    }
 
     fun deleteAppGroup(id: Int) {
         dbHelper.writableDatabase.delete("app_groups", "id = ?", arrayOf(id.toString()))

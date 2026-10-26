@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
@@ -62,6 +63,8 @@ import com.bintianqi.owndroid.utils.HorizontalPadding
 import com.bintianqi.owndroid.utils.adaptiveInsets
 import com.bintianqi.owndroid.utils.parsePackageNames
 import kotlinx.coroutines.channels.Channel
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -127,25 +130,45 @@ fun AppGroupsScreen(
         },
         contentWindowInsets = adaptiveInsets()
     ) { paddingValues ->
-        LazyColumn(Modifier.padding(paddingValues)) {
-            if (groups.isEmpty()) item {
-                NoneText()
+        val listState = rememberLazyListState()
+        val reorderableState = rememberReorderableLazyListState(listState) { from, to ->
+            vm.setGroupPosition(from.index - 1, to.index - 1)
+            // -1 because there's a header (loading indicator)
+        }
+        LazyColumn(Modifier.padding(paddingValues), listState) {
+            item {
+                if (groups.isEmpty()) NoneText()
             }
-            itemsIndexed(groups, { _, it -> it.id }) { index, it ->
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            vm.selectAppGroup(index)
-                            navigateToEditScreen()
+            itemsIndexed(groups, { _, it -> it.id }) { index, group ->
+                ReorderableItem(reorderableState, group.id) {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                vm.selectAppGroup(index)
+                                navigateToEditScreen()
+                            }
+                            .padding(HorizontalPadding, 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(
+                            Modifier.weight(1F)
+                        ) {
+                            Text(group.name)
+                            Text(
+                                group.apps.size.toString() + " apps", Modifier.alpha(0.7F),
+                                style = typography.bodyMedium
+                            )
                         }
-                        .padding(HorizontalPadding, 8.dp)
-                ) {
-                    Text(it.name)
-                    Text(
-                        it.apps.size.toString() + " apps", Modifier.alpha(0.7F),
-                        style = typography.bodyMedium
-                    )
+                        Icon(
+                            painterResource(R.drawable.drag_indicator_fill0), null,
+                            Modifier.draggableHandle(
+                                onDragStopped = {
+                                    vm.writeGroupPosition()
+                                }
+                            )
+                        )
+                    }
                 }
             }
         }

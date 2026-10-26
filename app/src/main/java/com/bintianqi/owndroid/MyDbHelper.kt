@@ -6,12 +6,12 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 import com.bintianqi.owndroid.feature.applications.AppGroupRepository
 
-class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 14) {
+class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 15) {
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(DHIZUKU_CLIENTS_TABLE)
         db.execSQL(SECURITY_LOGS_TABLE)
         db.execSQL(NETWORK_LOGS_TABLE)
-        db.execSQL(APP_GROUPS_TABLE_V2)
+        db.execSQL(APP_GROUPS_TABLE_V3)
         db.execSQL(APP_GROUP_APPS_TABLE)
         db.execSQL(CPIF2_TABLE)
         db.execSQL(TIME_BLOCK_RULES_TABLE)
@@ -61,6 +61,9 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 14) 
                 AppGroupRepository.setGroupApps(db, it.id.toLong(), it.apps)
             }
         }
+        if (oldVersion < 15) {
+            db.execSQL("ALTER TABLE app_groups ADD COLUMN position INTEGER")
+        }
     }
 
     override fun onDowngrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -89,8 +92,8 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 14) 
                 "address TEXT, port INTEGER)"
         const val APP_GROUPS_TABLE = "CREATE TABLE app_groups(" +
                 "id INTEGER PRIMARY KEY, name TEXT, apps TEXT)"
-        const val APP_GROUPS_TABLE_V2 = "CREATE TABLE app_groups(" +
-                "id INTEGER PRIMARY KEY, name TEXT NOT NULL)"
+        const val APP_GROUPS_TABLE_V3 = "CREATE TABLE app_groups(" +
+                "id INTEGER PRIMARY KEY, name TEXT NOT NULL, position INTEGER)"
         const val APP_GROUP_APPS_TABLE = "CREATE TABLE app_group_apps(" +
                 "group_id INTEGER REFERENCES app_groups (id) ON DELETE CASCADE," +
                 "package_name TEXT NOT NULL," +
