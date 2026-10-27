@@ -656,7 +656,11 @@
     <string name="shortcuts">Shortcuts</string>
     <string name="shortcuts_disabled">Shortcuts are disabled</string>
     <string name="app_lock">App lock</string>
-    <string name="minimum_length_4">The length must not be less than 4</string>
+    <string name="minimum_length_4">The password length must be of 4 digits or more.</string>
+    <string name="password_set_success">Password set success.</string>
+    <string name="disable_app_lock_confirmation_title">Disable app lock?</string>
+    <string name="disable_app_lock_confirmation_message">Are you sure you want to disable app lock? The password protection will be removed.</string>
+    <string name="allow_biometric_unlock">Allow unlock by biometric</string>
     <string name="leave_empty_to_remain_unchanged">Leave empty to remain unchanged</string>
     <string name="allow_biometrics">Allow biometrics</string>
     <string name="lock_when_leaving">Lock when leaving</string>
