@@ -380,14 +380,13 @@ fun AppLockSettingsScreen(
             .padding(vertical = 4.dp),
         label = { Text(stringResource(R.string.password)) },
         supportingText = {
-            when {
-                password.length < 4 && (!alreadySet || password.isNotEmpty()) ->
-                    Text(stringResource(R.string.minimum_length_4))
-                alreadySet && password.isEmpty() ->
-                    Text(stringResource(R.string.leave_empty_to_remain_unchanged))
-                password.isEmpty() && allowTotp && totpAvailable ->
-                    Text(stringResource(R.string.password_optional_with_totp))
-            }
+            Text(
+                stringResource(
+                    if (alreadySet) R.string.leave_empty_to_remain_unchanged
+                    else if (allowTotp && totpAvailable) R.string.password_optional_with_totp
+                    else R.string.minimum_length_4
+                )
+            )
         },
         visualTransformation = PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(
@@ -465,7 +464,6 @@ fun AppLockSettingsScreen(
         Button(
             {
                 vm.setAppLockConfig(password, allowBiometrics, lockWhenLeaving, allowTotp)
-                vm.toastChannel.sendText(R.string.password_set_success)
                 onNavigateUp()
             },
             if (alreadySet) Modifier.weight(1f) else Modifier.fillMaxWidth(),
@@ -500,9 +498,7 @@ fun AppLockSettingsScreen(
             }
         },
         dismissButton = {
-            TextButton({ showDisableConfirm = false }) {
-                Text(stringResource(R.string.cancel))
-            }
+            CancelTextButton { showDisableConfirm = false }
         }
     )
     if (showSecret && generatedSecret.isNotEmpty()) {

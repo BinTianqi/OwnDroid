@@ -620,7 +620,11 @@
     <string name="shortcuts">快捷方式</string>
     <string name="shortcuts_disabled">快捷方式已禁用</string>
     <string name="app_lock">应用锁</string>
-    <string name="minimum_length_4">长度不得小于4</string>
+    <string name="minimum_length_4">长度需要在4位或以上</string>
+    <string name="password_set_success">设置密码成功</string>
+    <string name="disable_app_lock_confirmation_title">停用应用锁</string>
+    <string name="disable_app_lock_confirmation_message">确定要停用应用锁吗？密码保护将会被移除。</string>
+    <string name="allow_biometric_unlock">允许生物识别解锁</string>
     <string name="leave_empty_to_remain_unchanged">留空以保持未更改</string>
     <string name="allow_biometrics">允许生物识别</string>
     <string name="lock_when_leaving">离开时锁定</string>

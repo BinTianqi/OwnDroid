@@ -170,7 +170,7 @@ context.sendBroadcast(intent)
 
 1. [Fork](https://github.com/BinTianqi/OwnDroid/fork) 此仓库（取消勾选 Copy the master branch only）
 2. 克隆你的仓库到本地（请使用`dev`分支）
-3. 做出修改（允许使用 AI ，但是你需要保证质量）
+3. 做出修改
 4. 在你的设备或模拟器上测试（如果是贡献翻译，可以跳过此步）
 5. 使用 git 提交并推送修改
 6. 打开 Pull request

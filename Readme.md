@@ -174,7 +174,7 @@ Contributions are welcome!
 
 1. [Fork](https://github.com/BinTianqi/OwnDroid/fork) this repository (deselect "Copy the master branch only", which is selected by default)
 2. Clone your own repository using git (please use the `dev` branch)
-3. Make changes (AI-assisted changes is allowed, but you have to ensure the quality)
+3. Make changes
 4. Run the app on your device or emulator to test your changes (required for code contributions, optional for translation contributions)
 5. Commit and push changes
 6. Open a pull request in this repository
