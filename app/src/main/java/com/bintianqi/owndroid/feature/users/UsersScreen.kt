@@ -63,7 +63,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.CircularProgressDialog
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.InfoItem
@@ -111,7 +113,7 @@ fun UsersScreen(vm: UsersViewModel, onNavigateUp: () -> Unit, onNavigate: (Desti
         }
         var changeUserIconDialog by remember { mutableStateOf(false) }
         var bitmap: Bitmap? by remember { mutableStateOf(null) }
-        val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
+        val launcher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
             if (it != null) uriToStream(context, it) { stream ->
                 bitmap = BitmapFactory.decodeStream(stream)
                 if (bitmap != null) {
@@ -123,7 +125,7 @@ fun UsersScreen(vm: UsersViewModel, onNavigateUp: () -> Unit, onNavigate: (Desti
         }
         FunctionItem(R.string.change_user_icon, icon = R.drawable.account_circle_fill0) {
             context.popToast(R.string.select_an_image)
-            launcher.launch("image/*")
+            launcher.launch(arrayOf("image/*"))
         }
         if (changeUserIconDialog) ChangeUserIconDialog(
             bitmap!!, {
@@ -152,17 +154,13 @@ fun UsersScreen(vm: UsersViewModel, onNavigateUp: () -> Unit, onNavigate: (Desti
             }
         },
         confirmButton = {
-            TextButton({
+            ConfirmTextButton {
                 vm.logout()
                 dialog = 0
-            }) {
-                Text(stringResource(R.string.confirm))
             }
         },
         dismissButton = {
-            TextButton({ dialog = 0 }) {
-                Text(stringResource(R.string.cancel))
-            }
+            CancelTextButton { dialog = 0 }
         },
         onDismissRequest = { dialog = 0 }
     )
@@ -212,9 +210,7 @@ fun UserInfoScreen(vm: UsersViewModel, onNavigateUp: () -> Unit) {
     if (infoDialog != 0) AlertDialog(
         text = { Text(stringResource(R.string.info_headless_system_user_mode)) },
         confirmButton = {
-            TextButton(onClick = { infoDialog = 0 }) {
-                Text(stringResource(R.string.confirm))
-            }
+            ConfirmTextButton { infoDialog = 0 }
         },
         onDismissRequest = { infoDialog = 0 }
     )
@@ -363,15 +359,13 @@ fun UserOperationScreen(
             Text(stringResource(R.string.delete_user_confirmation, input))
         },
         confirmButton = {
-            TextButton({
+            ConfirmTextButton {
                 vm.doUserOperation(UserOperationType.Delete, input.toInt(), useUserId)
                 dialog = false
-            }) {
-                Text(stringResource(R.string.confirm))
             }
         },
         dismissButton = {
-            TextButton({ dialog = false }) { Text(stringResource(R.string.cancel)) }
+            CancelTextButton { dialog = false }
         },
         onDismissRequest = { dialog = false }
     )
@@ -438,7 +432,7 @@ fun CreateUserScreen(
                 }
             },
             confirmButton = {
-                TextButton({ result = null }) { Text(stringResource(R.string.confirm)) }
+                ConfirmTextButton { result = null }
             },
             onDismissRequest = { result = null }
         )
@@ -560,14 +554,10 @@ private fun ChangeUserIconDialog(bitmap: Bitmap, onSet: () -> Unit, onClose: () 
             }
         },
         confirmButton = {
-            TextButton(onSet) {
-                Text(stringResource(R.string.confirm))
-            }
+            ConfirmTextButton(onClick = onSet)
         },
         dismissButton = {
-            TextButton(onClose) {
-                Text(stringResource(R.string.cancel))
-            }
+            CancelTextButton(onClose)
         },
         onDismissRequest = onClose
     )

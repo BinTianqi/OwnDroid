@@ -16,12 +16,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -30,8 +32,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -40,7 +41,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -54,27 +54,30 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.AppInstallerActivity
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.MyLazyScaffold
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.NavIcon
+import com.bintianqi.owndroid.ui.NoneText
 import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.PackageNameTextField
 import com.bintianqi.owndroid.ui.SwitchItem
+import com.bintianqi.owndroid.ui.TopBarSearchTextField
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.AppInfo
 import com.bintianqi.owndroid.utils.BottomPadding
@@ -209,25 +212,10 @@ fun PermissionManagerScreen(
             TopAppBar(
                 {
                     if (searchMode) {
-                        val fr = remember { FocusRequester() }
-                        LaunchedEffect(Unit) { fr.requestFocus() }
-                        OutlinedTextField(
-                            query, { query = it },
-                            Modifier
-                                .fillMaxWidth()
-                                .focusRequester(fr),
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                            placeholder = { Text(stringResource(R.string.search)) },
-                            trailingIcon = {
-                                IconButton({
-                                    query = ""
-                                    searchMode = false
-                                }) {
-                                    Icon(Icons.Outlined.Clear, null)
-                                }
-                            },
-                            textStyle = typography.bodyLarge
-                        )
+                        TopBarSearchTextField(query, { query = it }) {
+                            query = ""
+                            searchMode = false
+                        }
                     } else {
                         Text(stringResource(R.string.permissions))
                     }
@@ -261,7 +249,10 @@ fun PermissionManagerScreen(
                     )
                     Column {
                         Text(it.label)
-                        Text(it.id, Modifier.alpha(0.7F), style = typography.bodySmall)
+                        Text(
+                            it.id, Modifier.alpha(0.7F),
+                            style = MaterialTheme.typography.bodySmall
+                        )
                     }
                 }
             }
@@ -296,25 +287,10 @@ fun PermissionDetailScreen(
             TopAppBar(
                 {
                     if (searchMode) {
-                        val fr = remember { FocusRequester() }
-                        LaunchedEffect(Unit) { fr.requestFocus() }
-                        OutlinedTextField(
-                            query, { query = it },
-                            Modifier
-                                .fillMaxWidth()
-                                .focusRequester(fr),
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                            placeholder = { Text(stringResource(R.string.search)) },
-                            trailingIcon = {
-                                IconButton({
-                                    query = ""
-                                    searchMode = false
-                                }) {
-                                    Icon(Icons.Outlined.Clear, null)
-                                }
-                            },
-                            textStyle = typography.bodyLarge
-                        )
+                        TopBarSearchTextField(query, { query = it }) {
+                            query = ""
+                            searchMode = false
+                        }
                     } else {
                         Text(permissionItem.label, overflow = TextOverflow.Ellipsis, maxLines = 1)
                     }
@@ -363,7 +339,8 @@ fun PermissionDetailScreen(
                         Column {
                             Text(entry.info.label)
                             Text(
-                                entry.info.name, Modifier.alpha(0.8F), style = typography.bodySmall
+                                entry.info.name, Modifier.alpha(0.8F),
+                                style = MaterialTheme.typography.bodySmall
                             )
                         }
                     }
@@ -663,7 +640,6 @@ fun PackageFunctionScreen(
     var input by rememberSaveable { mutableStateOf("") }
     val inputPackages = parsePackageNames(input)
     var dialog by remember { mutableStateOf(false) }
-    var selectedGroup by remember { mutableStateOf<AppGroup?>(null) }
     val snackbar = remember { SnackbarHostState() }
     val res = LocalResources.current
     val coroutine = rememberCoroutineScope()
@@ -677,129 +653,113 @@ fun PackageFunctionScreen(
     }
     var filtersSheet by remember { mutableStateOf(false) }
     val allPackages by allPackagesState.collectAsState()
-    var a2zSort by remember { mutableStateOf(true) }
+    var sortingOptions by rememberSaveable(
+        stateSaver = SerializableSaver(AppSortingOptions.serializer())
+    ) {
+        mutableStateOf(AppSortingOptions())
+    }
     val displayedPackages = if (listView) {
-        packages.mapNotNull { name ->
+        packages.map { name ->
             allPackages.find { it.info.name == name }?.info
+                ?: AppInfo(name, "???", Color.Transparent.toArgb().toDrawable(), 0)
+            // We can't get the app's info if it's already uninstalled.
+            // And before Android 7, we can't get a full app list including hidden apps.
+            // So providing a fallback here.
         }
     } else {
-        allPackages.filter {
-            filterApp(it, filters, query)
-        }.let { list ->
-            if (a2zSort) list.sortedBy { it.info.label }
-            else list.sortedByDescending { it.info.label }
-        }.map { it.info }
+        sortAppList(
+            allPackages.filter { filterApp(it, filters, query) },
+            sortingOptions
+        ).map { it.info }
     }
     LaunchedEffect(Unit) {
         onGet()
         getAllPackages()
         input = chosenPackage.receive()
     }
+    @Composable
+    fun TopBarActions() {
+        if (!listView && !searchMode) {
+            IconButton({
+                searchMode = true
+            }) {
+                Icon(Icons.Default.Search, stringResource(R.string.search))
+            }
+            IconButton({ filtersSheet = true }) {
+                Icon(painterResource(R.drawable.filter_alt_fill0), null)
+            }
+            Box {
+                var sortingMenu by remember { mutableStateOf(false) }
+                IconButton({ sortingMenu = !sortingMenu }) {
+                    Icon(painterResource(R.drawable.list_arrow_fill0), null)
+                }
+                DropdownMenu(sortingMenu, { sortingMenu = false }) {
+                    AppSortingMenuContent(sortingOptions) { sortingOptions = it }
+                }
+            }
+        }
+        if (!searchMode) {
+            IconButton({ dialog = true }) {
+                Icon(Icons.AutoMirrored.Default.List, stringResource(R.string.app_group))
+            }
+        }
+        var expand by remember { mutableStateOf(false) }
+        Box {
+            IconButton({
+                expand = true
+            }) {
+                Icon(Icons.Default.MoreVert, null)
+            }
+            DropdownMenu(expand, { expand = false }) {
+                if (searchMode) {
+                    DropdownMenuItem(
+                        { Text(stringResource(R.string.app_group)) },
+                        {
+                            expand = false
+                            dialog = true
+                        }
+                    )
+                    HorizontalDivider()
+                }
+                DropdownMenuItem(
+                    { Text(stringResource(R.string.switch_view)) },
+                    {
+                        listView = false
+                        expand = false
+                        setSwitchView(true)
+                    },
+                    leadingIcon = { RadioButton(!listView, null) }
+                )
+                DropdownMenuItem(
+                    { Text(stringResource(R.string.list_view)) },
+                    {
+                        searchMode = false
+                        listView = true
+                        expand = false
+                        setSwitchView(false)
+                    },
+                    leadingIcon = { RadioButton(listView, null) }
+                )
+                if (searchMode) AppSortingMenuContent(sortingOptions) { sortingOptions = it }
+            }
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
                 {
                     if (searchMode) {
-                        val fr = remember { FocusRequester() }
-                        LaunchedEffect(Unit) {
-                            fr.requestFocus()
+                        TopBarSearchTextField(query, { query = it }) {
+                            query = ""
+                            searchMode = false
                         }
-                        OutlinedTextField(
-                            query, { query = it },
-                            Modifier
-                                .fillMaxWidth()
-                                .focusRequester(fr),
-                            textStyle = typography.bodyLarge,
-                            trailingIcon = {
-                                IconButton({
-                                    searchMode = false
-                                    query = ""
-                                }) {
-                                    Icon(Icons.Default.Clear, null)
-                                }
-                            },
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
-                        )
                     } else {
-                        Text(stringResource(title))
+                        Text(stringResource(title), overflow = TextOverflow.Ellipsis, maxLines = 1)
                     }
                 },
                 navigationIcon = { NavIcon(onNavigateUp) },
                 actions = {
-                    if (!listView && !searchMode) IconButton({
-                        searchMode = true
-                    }) {
-                        Icon(Icons.Default.Search, stringResource(R.string.search))
-                    }
-                    if (!listView) IconButton({ filtersSheet = true }) {
-                        Icon(painterResource(R.drawable.filter_alt_fill0), null)
-                    }
-                    var expand by remember { mutableStateOf(false) }
-                    Box {
-                        IconButton({
-                            expand = true
-                        }) {
-                            Icon(Icons.Default.MoreVert, null)
-                        }
-                        DropdownMenu(expand, { expand = false }) {
-                            if (!listView) {
-                                DropdownMenuItem(
-                                    { Text("A-Z") },
-                                    {
-                                        a2zSort = true
-                                        expand = false
-                                    },
-                                    leadingIcon = { RadioButton(a2zSort, null) }
-                                )
-                                DropdownMenuItem(
-                                    { Text("Z-A") },
-                                    {
-                                        a2zSort = false
-                                        expand = false
-                                    },
-                                    leadingIcon = { RadioButton(!a2zSort, null) }
-                                )
-                                HorizontalDivider()
-                            }
-                            DropdownMenuItem(
-                                { Text(stringResource(R.string.switch_view)) },
-                                {
-                                    listView = false
-                                    expand = false
-                                    setSwitchView(true)
-                                },
-                                leadingIcon = { RadioButton(!listView, null) }
-                            )
-                            DropdownMenuItem(
-                                { Text(stringResource(R.string.list_view)) },
-                                {
-                                    listView = true
-                                    expand = false
-                                    setSwitchView(false)
-                                },
-                                leadingIcon = { RadioButton(listView, null) }
-                            )
-                            HorizontalDivider()
-                            groups.forEach {
-                                DropdownMenuItem(
-                                    { Text("(${it.apps.size}) ${it.name}") },
-                                    {
-                                        selectedGroup = it
-                                        dialog = true
-                                        expand = false
-                                    }
-                                )
-                            }
-                            if (groups.isNotEmpty()) HorizontalDivider()
-                            DropdownMenuItem(
-                                { Text(stringResource(R.string.manage_app_groups)) },
-                                {
-                                    navigateToGroups()
-                                    expand = false
-                                }
-                            )
-                        }
-                    }
+                    TopBarActions()
                 }
             )
         },
@@ -839,7 +799,10 @@ fun PackageFunctionScreen(
                         )
                         Column {
                             Text(app.label)
-                            Text(app.name, Modifier.alpha(0.8F), style = typography.bodyMedium)
+                            Text(
+                                app.name, Modifier.alpha(0.8F),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                         }
                     }
                     if (listView) {
@@ -897,28 +860,50 @@ fun PackageFunctionScreen(
         }
     }
     if (dialog) AlertDialog(
+        title = { Text(stringResource(R.string.app_group)) },
         text = {
-            Column {
-                Text(selectedGroup!!.name, style = typography.titleLarge)
-                Spacer(Modifier.height(6.dp))
-                Button({
-                    onSet(selectedGroup!!.apps, true)
-                    dialog = false
-                }) {
-                    Text(stringResource(R.string.add_to_list))
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                if (groups.isEmpty()) NoneText()
+                groups.forEach { group ->
+                    val activeApps = group.apps.filter { it in packages }.size
+                    Row(
+                        Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1F)) {
+                            Text(group.name, style = MaterialTheme.typography.bodyLarge)
+                            Text("$activeApps/${group.apps.size}", Modifier.alpha(0.7F))
+                        }
+                        Row {
+                            IconButton({
+                                onSet(group.apps, true)
+                            }, enabled = activeApps < group.apps.size) {
+                                Icon(Icons.Default.Add, stringResource(R.string.add))
+                            }
+                            IconButton({
+                                onSet(group.apps, false)
+                            }, enabled = activeApps > 0) {
+                                Icon(
+                                    painterResource(R.drawable.remove_fill0),
+                                    stringResource(R.string.remove)
+                                )
+                            }
+                        }
+                    }
                 }
-                Button({
-                    onSet(selectedGroup!!.apps, false)
-                    dialog = false
-                }) {
-                    Text(stringResource(R.string.remove_from_list))
+                Button(
+                    {
+                        dialog = false
+                        navigateToGroups()
+                    },
+                    Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.manage_app_groups))
                 }
             }
         },
         confirmButton = {
-            TextButton({ dialog = false }) {
-                Text(stringResource(R.string.cancel))
-            }
+            CancelTextButton { dialog = false }
         },
         onDismissRequest = { dialog = false }
     )

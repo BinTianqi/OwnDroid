@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -44,6 +45,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.CancelTextButton
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.utils.BottomPadding
 import com.bintianqi.owndroid.utils.adaptiveInsets
@@ -92,7 +95,7 @@ fun CaCertScreen(
             FloatingActionButton({
                 context.popToast(R.string.select_ca_cert)
                 getCertLauncher.launch(arrayOf("*/*"))
-            }) {
+            }, Modifier.navigationBarsPadding()) {
                 Icon(Icons.Default.Add, stringResource(R.string.install))
             }
         },
@@ -175,21 +178,11 @@ fun CaCertScreen(
                         Text(stringResource(R.string.install))
                     }
                 } else {
-                    TextButton({
-                        dialog = 0
-                    }) {
-                        Text(stringResource(R.string.confirm))
-                    }
+                    ConfirmTextButton { dialog = 0 }
                 }
             },
             dismissButton = {
-                if (dialog == 1) {
-                    TextButton({
-                        dialog = 0
-                    }) {
-                        Text(stringResource(R.string.cancel))
-                    }
-                }
+                if (dialog == 1) CancelTextButton { dialog = 0 }
             },
             onDismissRequest = { dialog = 0 }
         )
@@ -200,19 +193,13 @@ fun CaCertScreen(
                 Text(stringResource(R.string.uninstall_all_user_ca_cert))
             },
             confirmButton = {
-                TextButton({
+                ConfirmTextButton {
                     vm.uninstallAll()
                     dialog = 0
-                }) {
-                    Text(stringResource(R.string.confirm))
                 }
             },
             dismissButton = {
-                TextButton({
-                    dialog = 0
-                }) {
-                    Text(stringResource(R.string.cancel))
-                }
+                CancelTextButton { dialog = 0 }
             },
             onDismissRequest = { dialog = 0 }
         )

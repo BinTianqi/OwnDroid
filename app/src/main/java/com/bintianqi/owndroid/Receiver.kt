@@ -65,7 +65,7 @@ class Receiver : DeviceAdminReceiver() {
         super.onUserRemoved(context, intent, removedUser)
         sendUserRelatedNotification(context, removedUser, NotificationType.UserRemoved)
         val um = context.getSystemService(Context.USER_SERVICE) as UserManager
-        ShortcutUtils.disableUserOperationShortcut(
+        ShortcutUtils.disableUserOperationShortcuts(
             context, um.getSerialNumberForUser(removedUser).toInt()
         )
     }

@@ -77,6 +77,10 @@
     <string name="refresh">Refresh</string>
     <string name="filters">Filters</string>
     <string name="both">Both</string>
+    <string name="expand">Expand</string>
+    <string name="collapse">Collapse</string>
+    <string name="reverse">Reverse</string>
+    <string name="unsaved_changes_warning">Unsaved changes will be lost</string>
 
     <!--Permissions-->
     <string name="profile_owner">Profile owner</string>
@@ -131,6 +135,7 @@
 
     <!--System-->
     <string name="system">System</string>
+    <string name="camera">Camera</string>
     <string name="disable_cam">Disable camera</string>
     <string name="enable_camera">Enable camera</string>
     <string name="disable_screen_capture">Disable screen capture</string>
@@ -239,7 +244,7 @@
     <string name="wipe_euicc">Wipe eUICC(eSIM)</string>
     <string name="wipe_silently">Wipe silently</string>
     <string name="wipe_data_warning">All data on your device will be ERASED</string>
-    <string name="wipe_work_profile_warning">Your work profile will be DELETED</string>
+    <string name="wipe_work_profile_warning">Your work profile will be DELETED with all associated data.\nPlease enter \"DELETE\" to continue.</string>
     <string name="encryption_status">Encryption status</string>
     <string name="frp_policy">FRP policy</string>
     <string name="frp_not_supported">Your device does not support FRP</string>
@@ -394,6 +399,9 @@
 
     <!--Applications-->
     <string name="applications">Applications</string>
+    <string name="sorting">Sorting</string>
+    <string name="install_time">Install time</string>
+    <string name="update_time">Update time</string>
     <string name="applications_state">Applications state</string>
     <string name="apps_view">Apps view</string>
     <string name="features_view">Features view</string>
@@ -446,11 +454,17 @@
     <string name="manage_app_groups">Manage groups</string>
     <string name="import_str">Import</string>
     <string name="edit_app_group">Edit group</string>
+    <string name="add_app_group">Add group</string>
     <string name="add_to_list">Add to list</string>
     <string name="remove_from_list">Remove from list</string>
     <string name="managed_configuration">Managed configuration</string>
     <string name="clear_configurations">Clear configurations</string>
-    <string name="specify_value">Specify value</string>
+    <string name="value">Value</string>
+    <string name="value_string">String</string>
+    <string name="value_int">Integer</string>
+    <string name="value_boolean">Boolean</string>
+    <string name="value_list">List</string>
+    <string name="restriction_value_exists">Value with same id but different type exists</string>
     <string name="package_removed">Removed %1$s</string>
     <string name="modified">Modified</string>
     <string name="unmodified">Unmodified</string>
@@ -640,8 +654,13 @@
     <string name="appearance">Appearance</string>
 
     <string name="shortcuts">Shortcuts</string>
+    <string name="shortcuts_disabled">Shortcuts are disabled</string>
     <string name="app_lock">App lock</string>
-    <string name="minimum_length_4">The length must not be less than 4</string>
+    <string name="minimum_length_4">The password length must be of 4 digits or more.</string>
+    <string name="password_set_success">Password set success.</string>
+    <string name="disable_app_lock_confirmation_title">Disable app lock</string>
+    <string name="disable_app_lock_confirmation_message">Are you sure you want to disable app lock? The password protection will be removed.</string>
+    <string name="allow_biometric_unlock">Allow unlock by biometric</string>
     <string name="leave_empty_to_remain_unchanged">Leave empty to remain unchanged</string>
     <string name="allow_biometrics">Allow biometrics</string>
     <string name="lock_when_leaving">Lock when leaving</string>
@@ -710,11 +729,12 @@
     <string name="info_pre_reboot_security_log">Not all devices support pre-reboot security logs.</string>
     <string name="info_disable_account_management">When account management is disabled for an account type, adding or removing an account of that type will not be possible.</string>
     <string name="info_frp_policy">The factory reset protection policy determines which accounts can unlock a device that has gone through untrusted factory reset (fastboot or recovery).\nTo enable this feature, the device must support persistent data block service.\nFactory reset protection is disabled if OEM unlocking is enabled in Developer Options.</string>
+    <string name="info_frp_policy_exists">FRP policy won\'t be disabled automatically. You may want to disable it before deactivating.</string>
     <string name="info_wipe_data_in_managed_user">All data of this user will be wiped, but that user won\'t be removed.</string>
     <string name="info_lockdown_admin_configured_network">Control whether the user can change networks configured by the admin.\nWhen this lockdown is enabled, the user can still configure and connect to other Wi-Fi networks, or use other Wi-Fi capabilities such as tethering.</string>
     <string name="info_minimum_wifi_security_level">Specify the minimum security level required for Wi-Fi networks. The device may not connect to networks that do not meet the minimum security level. If the current network does not meet the minimum security level set, it will be disconnected.</string>
     <string name="info_always_on_vpn">Configure an always-on VPN connection through a specific application for the current user. This connection is automatically granted and persisted after a reboot.\nEnable lockdown: Disallow networking when the VPN is not connected.</string>
-    <string name="info_recommended_global_proxy">This proxy is only a recommendation and it is possible that some apps will ignore it.</string>
+    <string name="info_recommended_global_proxy">This proxy is only a recommendation, and it is possible that some apps will ignore it.</string>
     <string name="info_network_log">Network logs contain DNS lookup and connect() library call events.\nUse this function in work profile will only retrieve network logs in work profile.\nThere shouldn\'t be unaffiliated user on this device if used by Device owner.</string>
     <string name="info_profile_maximum_time_off">Set maximum time the profile is allowed to be turned off. If the profile is turned off for longer, personal apps are suspended on the device.\nThe minimum non-zero value corresponds to 72 hours. If an admin sets a smaller non-zero value, 72 hours will be set instead.</string>
     <string name="info_cross_profile_intent_filter">Add cross profile intent filters so that some intents sent in the managed profile can also be resolved in the parent, or vice versa. Only activity intents are supported.</string>
@@ -743,4 +763,80 @@
     <string name="activate_method">Activate method</string>
     <string name="adb_command">ADB command</string>
     <string name="owndroid_warning">This app uses Device owner or Profile owner privileges. These privileges are extremely dangerous, please use them with caution. If used improperly, they may result in severe losses. The developers will not be responsible for this.</string>
+
+    <!--Time Blocker-->
+    <string name="time_blocker">Time blocker</string>
+    <string name="time_blocker_active">Time blocker active — %1$d apps monitored</string>
+    <string name="time_blocker_rules">Blocking rules</string>
+    <string name="time_blocker_add_rule">Add rule</string>
+    <string name="time_blocker_edit_rule">Edit rule</string>
+    <string name="time_blocker_daily_limit">Daily limit</string>
+    <string name="time_blocker_daily_limit_minutes">%1$d minutes</string>
+    <string name="time_blocker_no_limit">No limit</string>
+    <string name="time_blocker_blocked_windows">Blocked windows</string>
+    <string name="time_blocker_allowed_windows">Allowed windows</string>
+    <string name="time_blocker_add_blocked_window">Add blocked window</string>
+    <string name="time_blocker_add_allowed_window">Add allowed window</string>
+    <string name="time_blocker_select_application">Select application</string>
+    <string name="time_blocker_tap_to_choose">Tap to choose</string>
+    <string name="time_blocker_no_windows">No windows</string>
+    <string name="time_blocker_discard_changes_title">Discard changes?</string>
+    <string name="discard">Discard</string>
+    <string name="time_blocker_windows_hint">App is blocked inside blocked windows. If allowed windows exist, the app is only usable inside them.</string>
+    <string name="time_blocker_days">Days</string>
+    <string name="time_blocker_suspended">Suspended</string>
+    <string name="time_blocker_setup_totp">Set up TOTP</string>
+    <string name="time_blocker_totp_secret">TOTP secret</string>
+    <string name="time_blocker_totp_configured">TOTP configured</string>
+    <string name="time_blocker_totp_not_configured">TOTP not configured</string>
+    <string name="time_blocker_scan_qr">Scan this QR code with your authenticator app</string>
+    <string name="time_blocker_remove_totp">Remove TOTP</string>
+    <string name="time_blocker_usage_permission">Usage access permission</string>
+    <string name="time_blocker_usage_permission_needed">Usage access permission is needed for daily limits. Tap to grant.</string>
+    <string name="time_blocker_service_running">Service running</string>
+    <string name="time_blocker_service_running_sub">Blocking is active. Turn off to stop the blocker until restarted.</string>
+    <string name="time_blocker_service_stopped">Service stopped</string>
+    <string name="time_blocker_service_stopped_sub">Blocking is inactive. Turn on to enforce rules and auto-start on boot.</string>
+    <string name="time_blocker_no_rules">No blocking rules configured</string>
+    <string name="time_blocker_delete_rule">Delete rule</string>
+    <string name="time_blocker_used_today">Used today: %1$s</string>
+    <string name="time_blocker_remaining">Remaining: %1$s</string>
+    <string name="time_blocker_blocked_in_window">Outside allowed time window</string>
+    <string name="time_blocker_blocked_by_limit">Daily limit exceeded</string>
+    <string name="time_blocker_start_service">Start service</string>
+    <string name="time_blocker_stop_service">Stop service</string>
+    <string name="time_blocker_mon">Mon</string>
+    <string name="time_blocker_tue">Tue</string>
+    <string name="time_blocker_wed">Wed</string>
+    <string name="time_blocker_thu">Thu</string>
+    <string name="time_blocker_fri">Fri</string>
+    <string name="time_blocker_sat">Sat</string>
+    <string name="time_blocker_sun">Sun</string>
+    <string name="time_blocker_tap_to_edit">Tap time to edit</string>
+    <string name="allow_totp_unlock">Allow TOTP code unlock</string>
+    <string name="totp_not_configured_hint">TOTP is not configured yet</string>
+    <string name="password_optional_with_totp">Leave empty to unlock with TOTP only</string>
+    <string name="sync_transfer">Sync / transfer</string>
+    <string name="sync_export_title">Show QR code</string>
+    <string name="sync_export_desc">Display a QR code with time blocker rules and TOTP secret</string>
+    <string name="sync_export_generating">Generating QR code…</string>
+    <string name="sync_export_summary">%1$d rules, %2$s</string>
+    <string name="sync_export_warning">Do not share this QR code — it contains your TOTP secret.</string>
+    <string name="sync_import_title">Scan QR code</string>
+    <string name="sync_import_desc">Import time blocker rules and TOTP secret from another device</string>
+    <string name="sync_import_hint">Point the camera at the QR code shown on the other device</string>
+    <string name="sync_import_confirm_title">Import settings?</string>
+    <string name="sync_import_confirm_msg">%1$d rules, %2$s.</string>
+    <string name="sync_import_replace_warning">All existing time blocker rules on this device will be replaced.</string>
+    <string name="sync_import_skipped">%1$d invalid entries will be skipped.</string>
+    <string name="sync_import_invalid">Not an OwnDroid sync QR code</string>
+    <string name="sync_import_too_large">Too much data for a QR code</string>
+    <string name="sync_import_result">Imported %1$d rules (%2$s). %3$d invalid entries skipped.</string>
+    <string name="sync_camera_permission_needed">Camera permission is needed to scan the QR code</string>
+    <string name="sync_grant_camera">Grant camera permission</string>
+    <string name="sync_totp_included">TOTP secret included</string>
+    <string name="sync_totp_not_included">no TOTP secret</string>
+    <string name="enter_confirm_to_deactivate">Please enter "CONFIRM" to continue.</string>
+    <string name="delete_app_group">Delete app group</string>
+    <string name="delete_app_group_confirmation">Are you sure you want to delete the app group %1$s? This action cannot be undone.</string>
 </resources>

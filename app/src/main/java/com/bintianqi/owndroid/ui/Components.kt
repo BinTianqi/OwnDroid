@@ -23,6 +23,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -32,8 +33,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -43,16 +44,22 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -84,7 +91,7 @@ fun FunctionItem(
                 .offset(x = (-2).dp)
         )
         Column {
-            Text(stringResource(title), style = typography.titleLarge)
+            Text(stringResource(title), style = MaterialTheme.typography.titleLarge)
             if (desc != null) {
                 Text(desc, color = colorScheme.onBackground.copy(alpha = 0.8F))
             }
@@ -205,7 +212,7 @@ fun SwitchItem(
     ) {
         Row(Modifier.weight(1F), verticalAlignment = Alignment.CenterVertically) {
             if (icon != null) Icon(painterResource(icon), null, Modifier.padding(end = 20.dp))
-            Text(stringResource(title), style = typography.titleLarge)
+            Text(stringResource(title), style = MaterialTheme.typography.titleLarge)
         }
         Switch(state, onCheckedChange, Modifier.padding(start = 10.dp))
     }
@@ -223,7 +230,7 @@ fun SwitchItem(
     ) {
         Row(Modifier.weight(1F), verticalAlignment = Alignment.CenterVertically) {
             if (icon != null) Icon(painterResource(icon), null, Modifier.padding(end = 20.dp))
-            Text(stringResource(title), style = typography.titleLarge)
+            Text(stringResource(title), style = MaterialTheme.typography.titleLarge)
         }
         Switch(state, onCheckedChange, Modifier.padding(start = 10.dp))
     }
@@ -243,7 +250,7 @@ fun InfoItem(title: Int, text: String, withInfo: Boolean = false, onClick: () ->
         Arrangement.SpaceBetween, Alignment.CenterVertically
     ) {
         Column(Modifier.weight(1F)) {
-            Text(stringResource(title), style = typography.titleLarge)
+            Text(stringResource(title), style = MaterialTheme.typography.titleLarge)
             Text(text, Modifier.alpha(0.8F))
         }
         if (withInfo) IconButton(onClick) { Icon(Icons.Outlined.Info, null) }
@@ -280,7 +287,7 @@ fun Notes(@StringRes strID: Int, horizonPadding: Dp = 0.dp) {
     )
     Text(
         stringResource(strID), Modifier.padding(horizontal = horizonPadding),
-        color = colorScheme.onSurfaceVariant, style = typography.bodyMedium
+        color = colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium
     )
 }
 
@@ -361,7 +368,7 @@ fun MySmallTitleScaffold(
     Scaffold(
         topBar = {
             TopAppBar(
-                { Text(stringResource(title)) },
+                { Text(stringResource(title), overflow = TextOverflow.Ellipsis, maxLines = 1) },
                 navigationIcon = { NavIcon(onNavIconClicked) },
                 actions = actions
             )
@@ -387,7 +394,7 @@ fun ErrorDialog(message: String?, onDismiss: () -> Unit) {
         title = { Text(stringResource(R.string.error)) },
         text = { Text(message) },
         confirmButton = {
-            TextButton(onDismiss) { Text(stringResource(R.string.confirm)) }
+            ConfirmTextButton(onClick = onDismiss)
         },
         onDismissRequest = onDismiss
     )
@@ -437,7 +444,58 @@ fun MasterSwitch(label: Int, state: Boolean, onStateChange: (Boolean) -> Unit) {
             .padding(20.dp, 10.dp),
         Arrangement.SpaceBetween, Alignment.CenterVertically
     ) {
-        Text(stringResource(label), style = typography.titleLarge)
+        Text(stringResource(label), style = MaterialTheme.typography.titleLarge)
         Switch(state, onStateChange)
+    }
+}
+
+@Composable
+fun TopBarSearchTextField(
+    keyword: String, onChange: (String) -> Unit, onClose: () -> Unit
+) {
+    val fr = remember { FocusRequester() }
+    LaunchedEffect(Unit) {
+        fr.requestFocus()
+    }
+    OutlinedTextField(
+        keyword, onChange,
+        Modifier
+            .fillMaxWidth()
+            .focusRequester(fr),
+        textStyle = MaterialTheme.typography.bodyLarge,
+        placeholder = { Text(stringResource(R.string.search)) },
+        trailingIcon = {
+            IconButton(onClose) {
+                Icon(Icons.Outlined.Clear, null)
+            }
+        },
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        maxLines = 1
+    )
+}
+
+@Composable
+fun NoneText() {
+    Text(
+        stringResource(R.string.none),
+        Modifier
+            .fillMaxWidth()
+            .padding(top = 5.dp)
+            .alpha(0.7F),
+        textAlign = TextAlign.Center
+    )
+}
+
+@Composable
+fun CancelTextButton(onClick: () -> Unit) {
+    TextButton(onClick) {
+        Text(stringResource(R.string.cancel))
+    }
+}
+
+@Composable
+fun ConfirmTextButton(enabled: Boolean = true, onClick: () -> Unit) {
+    TextButton(onClick, enabled = enabled) {
+        Text(stringResource(R.string.confirm))
     }
 }

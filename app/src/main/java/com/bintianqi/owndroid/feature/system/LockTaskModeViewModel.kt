@@ -22,7 +22,7 @@ class LockTaskModeViewModel(
     @RequiresApi(26)
     fun getPackages() = ph.safeDpmCall {
         val pm = application.packageManager
-        packagesState.value = dpm.getLockTaskPackages(dar).map { getAppInfo(pm, it) }
+        packagesState.value = dpm.getLockTaskPackages(dar).distinct().map { getAppInfo(pm, it) }
     }
 
     @RequiresApi(26)

@@ -15,24 +15,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -47,19 +41,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.NavIcon
+import com.bintianqi.owndroid.ui.TopBarSearchTextField
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.AppInfo
 import com.bintianqi.owndroid.utils.BottomPadding
@@ -85,12 +77,12 @@ fun AppChooserScreen(
     val filteredPackages = packages.filter {
         filterApp(it, filter, query)
     }
-    var a2zSort by remember { mutableStateOf(true) }
-    val sortedPackages = if (a2zSort) {
-        filteredPackages.sortedBy { it.info.label }
-    } else {
-        filteredPackages.sortedByDescending { it.info.label }
+    var sortingOptions by rememberSaveable(
+        stateSaver = SerializableSaver(AppSortingOptions.serializer())
+    ) {
+        mutableStateOf(AppSortingOptions())
     }
+    val sortedPackages = sortAppList(filteredPackages, sortingOptions)
     val selectedPackages = remember { mutableStateListOf<AppInfo>() }
     val focusMgr = LocalFocusManager.current
     var enteredApp by rememberSaveable { mutableStateOf("") }
@@ -98,96 +90,85 @@ fun AppChooserScreen(
         if (packages.size <= 1) vm.refreshPackageList()
         vm.updateAppState(enteredApp)
     }
+    @Composable
+    fun TopBarActions() {
+        if (!searchMode) IconButton({ searchMode = true }) {
+            Icon(
+                painterResource(R.drawable.search_fill0),
+                stringResource(R.string.search)
+            )
+        }
+        if (!searchMode) {
+            IconButton({ filterDrawer = true }) {
+                Icon(painterResource(R.drawable.filter_alt_fill0), null)
+            }
+            var sortingMenu by remember { mutableStateOf(false) }
+            Box {
+                IconButton({ sortingMenu = true }) {
+                    Icon(painterResource(R.drawable.sort_fill0), null)
+                }
+                DropdownMenu(sortingMenu, { sortingMenu = false }) {
+                    AppSortingMenuContent(sortingOptions) { sortingOptions = it }
+                }
+            }
+        }
+        var menuExpanded by remember { mutableStateOf(false) }
+        Box {
+            IconButton({
+                menuExpanded = !menuExpanded
+            }) {
+                Icon(Icons.Default.MoreVert, null)
+            }
+            DropdownMenu(menuExpanded, { menuExpanded = false }) {
+                if (searchMode) {
+                    DropdownMenuItem(
+                        { Text(stringResource(R.string.filters)) },
+                        {
+                            filterDrawer = true
+                            menuExpanded = false
+                        },
+                        leadingIcon = {
+                            Icon(painterResource(R.drawable.filter_alt_fill0), null)
+                        }
+                    )
+                }
+                DropdownMenuItem(
+                    { Text(stringResource(R.string.refresh)) },
+                    {
+                        vm.refreshPackageList()
+                        menuExpanded = false
+                    },
+                    leadingIcon = { Icon(Icons.Default.Refresh, null) }
+                )
+                // Though cascading menu appears in Material 3 design specs,
+                // Compose doesn't support it officially.
+                // I can't find out a way to lay out the submenu on the left side of the main menu.
+                // So I decided to append the submenu's content to the main menu.
+                if (searchMode) {
+                    AppSortingMenuContent(sortingOptions) { sortingOptions = it }
+                }
+            }
+        }
+        if (selectedPackages.isNotEmpty() && params.mode == AppChooserMode.Choose) {
+            FilledIconButton({
+                onChoosePackage(selectedPackages.joinToString("\n") { it.name })
+            }) {
+                Icon(Icons.Default.Check, null)
+            }
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
                 actions = {
-                    if (!searchMode) IconButton({ searchMode = true }) {
-                        Icon(
-                            painterResource(R.drawable.search_fill0),
-                            stringResource(R.string.search)
-                        )
-                    }
-                    if (!searchMode) IconButton({ filterDrawer = true }) {
-                        Icon(painterResource(R.drawable.filter_alt_fill0), null)
-                    }
-                    var dropdown by remember { mutableStateOf(false) }
-                    Box {
-                        IconButton({
-                            dropdown = !dropdown
-                        }) {
-                            Icon(Icons.Default.MoreVert, null)
-                        }
-                        DropdownMenu(dropdown, { dropdown = false }) {
-                            DropdownMenuItem(
-                                { Text("A-Z") },
-                                {
-                                    a2zSort = true
-                                    dropdown = false
-                                },
-                                leadingIcon = { RadioButton(a2zSort, null) }
-                            )
-                            DropdownMenuItem(
-                                { Text("Z-A") },
-                                {
-                                    a2zSort = false
-                                    dropdown = false
-                                },
-                                leadingIcon = { RadioButton(!a2zSort, null) }
-                            )
-                            HorizontalDivider()
-                            if (searchMode) {
-                                DropdownMenuItem(
-                                    { Text(stringResource(R.string.filters)) },
-                                    {
-                                        filterDrawer = true
-                                        dropdown = false
-                                    },
-                                    leadingIcon = {
-                                        Icon(painterResource(R.drawable.filter_alt_fill0), null)
-                                    }
-                                )
-                            }
-                            DropdownMenuItem(
-                                { Text(stringResource(R.string.refresh)) },
-                                {
-                                    vm.refreshPackageList()
-                                    dropdown = false
-                                },
-                                leadingIcon = { Icon(Icons.Default.Refresh, null) }
-                            )
-                        }
-                    }
-                    if (selectedPackages.isNotEmpty() && params.mode == AppChooserMode.Choose) {
-                        FilledIconButton({
-                            onChoosePackage(selectedPackages.joinToString("\n") { it.name })
-                        }) {
-                            Icon(Icons.Default.Check, null)
-                        }
-                    }
+                    TopBarActions()
                 },
                 title = {
                     if (searchMode) {
-                        val fr = remember { FocusRequester() }
-                        LaunchedEffect(Unit) { fr.requestFocus() }
-                        OutlinedTextField(
-                            query, { query = it },
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                            keyboardActions = KeyboardActions { focusMgr.clearFocus() },
-                            placeholder = { Text(stringResource(R.string.search)) },
-                            trailingIcon = {
-                                IconButton({
-                                    query = ""
-                                    searchMode = false
-                                }) {
-                                    Icon(Icons.Outlined.Clear, null)
-                                }
-                            },
-                            textStyle = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .focusRequester(fr)
-                        )
+                        TopBarSearchTextField(query, { query = it }) {
+                            query = ""
+                            searchMode = false
+                        }
                     } else {
                         if (selectedPackages.isNotEmpty()) {
                             Text(selectedPackages.size.toString())

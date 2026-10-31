@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -17,6 +16,8 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.CancelTextButton
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.screen.AppLockDialog
 import com.bintianqi.owndroid.ui.theme.OwnDroidTheme
 import com.bintianqi.owndroid.utils.showOperationResultToast
@@ -32,10 +33,15 @@ class ManageSpaceActivity: FragmentActivity() {
             val theme by myApp.container.themeState.collectAsStateWithLifecycle()
             OwnDroidTheme(theme) {
                 var appLockDialog by remember {
-                    mutableStateOf(settingsRepo.data.appLock.passwordHash.isNotEmpty())
+                    mutableStateOf(settingsRepo.data.appLock.isActive)
                 }
                 if (appLockDialog) {
-                    AppLockDialog(settingsRepo.data.appLock, { appLockDialog = false }, ::finish)
+                    AppLockDialog(
+                        settingsRepo.data.appLock,
+                        onSucceed = { appLockDialog = false },
+                        onDismiss = ::finish,
+                        verifyTotp = { code -> myApp.container.unlockManager.verifyCode(code) }
+                    )
                 } else {
                     AlertDialog(
                         text = {
@@ -43,14 +49,10 @@ class ManageSpaceActivity: FragmentActivity() {
                         },
                         onDismissRequest = ::finish,
                         dismissButton = {
-                            TextButton(::finish) {
-                                Text(stringResource(R.string.cancel))
-                            }
+                            CancelTextButton(::finish)
                         },
                         confirmButton = {
-                            TextButton(::clearStorage) {
-                                Text(stringResource(R.string.confirm))
-                            }
+                            ConfirmTextButton(onClick = ::clearStorage)
                         }
                     )
                 }

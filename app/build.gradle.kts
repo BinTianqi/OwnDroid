@@ -17,6 +17,7 @@ android {
     }
     namespace = "com.bintianqi.owndroid"
     compileSdk = 37
+    buildToolsVersion = "37.0.0"
 
     lint.checkReleaseBuilds = false
     lint.disable += "All"
@@ -25,9 +26,8 @@ android {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 23
         targetSdk = 37
-        versionCode = 47
-        versionName = "8.3.1"
-        multiDexEnabled = false
+        versionCode = 48
+        versionName = "8.4"
     }
 
     buildTypes {
@@ -49,8 +49,10 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        isCoreLibraryDesugaringEnabled = true
+        // Some library require version 11, so we have to set it to 11 or newer
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     buildFeatures {
         compose = true
@@ -71,7 +73,7 @@ composeCompiler {
 
 kotlin {
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_21
+        jvmTarget = JvmTarget.JVM_11
     }
     sourceSets {
         all {
@@ -87,6 +89,7 @@ gradle.taskGraph.whenReady {
 }
 
 dependencies {
+    coreLibraryDesugaring(libs.android.desugar)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.lifecycle.viewmodel)
@@ -104,8 +107,13 @@ dependencies {
     implementation(libs.dhizuku.server.api)
     implementation(libs.androidx.fragment)
     implementation(libs.hiddenApiBypass)
-    implementation(libs.libsu)
+    implementation(libs.libsu.core)
+    implementation(libs.libsu.service)
     implementation(libs.reoderable)
     implementation(libs.serialization)
+    implementation(libs.zxing.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
     implementation(kotlin("reflect"))
 }

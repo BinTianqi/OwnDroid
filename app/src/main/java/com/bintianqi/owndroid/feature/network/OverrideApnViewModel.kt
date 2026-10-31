@@ -37,7 +37,7 @@ class OverrideApnViewModel(
                 else it.mmsProxyAddress.hostName
             ApnConfig(
                 it.isEnabled, it.entryName, it.apnName, proxy, it.proxyPort,
-                it.user, it.password, it.apnTypeBitmask, it.mmsc.toString(),
+                it.user, it.password, it.apnTypeBitmask, it.mmsc?.toString() ?: "",
                 mmsProxy, it.mmsProxyPort,
                 it.authType,
                 it.protocol,
@@ -70,7 +70,7 @@ class OverrideApnViewModel(
         builder.setUser(config.username)
         builder.setPassword(config.password)
         builder.setApnTypeBitmask(config.apnType)
-        builder.setMmsc(config.mmsc.toUri())
+        if (config.mmsc.isNotEmpty()) builder.setMmsc(config.mmsc.toUri())
         if (VERSION.SDK_INT >= 29) builder.setMmsProxyAddress(config.mmsProxy)
         else builder.setMmsProxyAddress(InetAddress.getByName(config.mmsProxy))
         builder.setAuthType(config.authType)

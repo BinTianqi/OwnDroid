@@ -32,12 +32,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -53,7 +55,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.CircularProgressDialog
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.ACTIVATE_DEVICE_OWNER_COMMAND
@@ -194,7 +198,7 @@ fun WorkModesScreen(
                 )
                 Text(stringResource(R.string.dhizuku_server), style = typography.titleLarge)
             }
-            if (privilege.device) Row(
+            if (privilege.device || privilege.profile) Row(
                 Modifier
                     .fillMaxWidth()
                     .clickable { onNavigate(Destination.DelegatedAdmins) }
@@ -253,7 +257,7 @@ fun WorkModesScreen(
                 }
             },
             confirmButton = {
-                TextButton({ dialog = 0 }) { Text(stringResource(R.string.cancel)) }
+                CancelTextButton { dialog = 0 }
             },
             onDismissRequest = { dialog = 0 }
         )
@@ -270,48 +274,62 @@ fun WorkModesScreen(
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
                 ) {
-                    Text(resultText)
+                    SelectionContainer {
+                        Text(resultText)
+                    }
                 }
             },
             confirmButton = {
-                TextButton({
+                ConfirmTextButton {
                     dialog = 0
                     if (operationSucceed && !params.canNavigateUp) onActivate()
-                }) {
-                    Text(stringResource(R.string.confirm))
                 }
             },
             onDismissRequest = {}
         )
-        if (dialog == 4) AlertDialog(
-            title = { Text(stringResource(R.string.deactivate)) },
-            text = { Text(stringResource(R.string.info_deactivate)) },
-            confirmButton = {
-                var time by remember { mutableIntStateOf(if (privilege.dhizuku) 0 else 3) }
-                if (!privilege.dhizuku) LaunchedEffect(Unit) {
-                    for (i in (0..2).reversed()) {
-                        delay(1000)
-                        time = i
+        if (dialog == 4) {
+            var confirmation by rememberSaveable { mutableStateOf("") }
+            AlertDialog(
+                title = { Text(stringResource(R.string.deactivate)) },
+                text = {
+                    val frpNotice by vm.frpNoticeState.collectAsState()
+                    LaunchedEffect(Unit) {
+                        // Dhizuku mode is checked inside that function
+                        vm.getFrpState()
                     }
-                }
-                val timeText = if (time != 0) " (${time}s)" else ""
-                TextButton(
-                    {
-                        vm.deactivate()
-                        dialog = 0
-                        onDeactivate()
-                    },
-                    enabled = time == 0,
-                    colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
-                ) {
-                    Text(stringResource(R.string.confirm) + timeText)
-                }
-            },
-            dismissButton = {
-                TextButton({ dialog = 0 }) { Text(stringResource(R.string.cancel)) }
-            },
-            onDismissRequest = { dialog = 0 }
-        )
+                    val noticeText =
+                        if (frpNotice) ("\n" + stringResource(R.string.info_frp_policy_exists))
+                        else ""
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(stringResource(R.string.info_deactivate) + noticeText)
+                        Text(stringResource(R.string.enter_confirm_to_deactivate))
+                        OutlinedTextField(
+                            confirmation, { confirmation = it },
+                            Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            textStyle = typography.bodyLarge
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        {
+                            vm.deactivate()
+                            dialog = 0
+                            onDeactivate()
+                        },
+                        enabled = confirmation == "CONFIRM",
+                        colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
+                    ) {
+                        Text(stringResource(R.string.confirm))
+                    }
+                },
+                dismissButton = {
+                    CancelTextButton { dialog = 0 }
+                },
+                onDismissRequest = { dialog = 0 }
+            )
+        }
         if (dialog == 5) AlertDialog(
             text = {
                 SelectionContainer {
@@ -319,7 +337,7 @@ fun WorkModesScreen(
                 }
             },
             confirmButton = {
-                TextButton({ dialog = 0 }) { Text(stringResource(R.string.confirm)) }
+                ConfirmTextButton { dialog = 0 }
             },
             onDismissRequest = { dialog = 0 }
         )
@@ -328,7 +346,7 @@ fun WorkModesScreen(
                 Column {
                     Button({
                         dialog = 2
-                        vm.activateOrgProfileByShizuku { dialog = 0 }
+                        vm.activateOrgProfileByShizuku(::handleResult)
                     }) {
                         Text(stringResource(R.string.shizuku))
                     }
@@ -338,7 +356,7 @@ fun WorkModesScreen(
                 }
             },
             confirmButton = {
-                TextButton({ dialog = 0 }) { Text(stringResource(R.string.cancel)) }
+                CancelTextButton { dialog = 0 }
             },
             onDismissRequest = { dialog = 0 }
         )
@@ -349,9 +367,7 @@ fun WorkModesScreen(
                 }
             },
             confirmButton = {
-                TextButton({ dialog = 0 }) {
-                    Text(stringResource(R.string.confirm))
-                }
+                ConfirmTextButton { dialog = 0 }
             },
             onDismissRequest = { dialog = 0 }
         )

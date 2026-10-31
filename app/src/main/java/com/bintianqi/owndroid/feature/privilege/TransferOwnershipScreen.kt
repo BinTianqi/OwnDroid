@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.MyLazyScaffold
 import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.utils.HorizontalPadding
@@ -101,9 +102,7 @@ fun TransferOwnershipScreen(
             }
         },
         dismissButton = {
-            TextButton({ dialog = false }) {
-                Text(stringResource(R.string.cancel))
-            }
+            CancelTextButton { dialog = false }
         },
         onDismissRequest = { dialog = false }
     )

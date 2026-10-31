@@ -5,30 +5,37 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material3.Button
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,6 +45,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
@@ -45,13 +53,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.MyLazyScaffold
 import com.bintianqi.owndroid.ui.NavIcon
+import com.bintianqi.owndroid.ui.NoneText
 import com.bintianqi.owndroid.ui.PackageNameTextField
 import com.bintianqi.owndroid.utils.BottomPadding
 import com.bintianqi.owndroid.utils.HorizontalPadding
+import com.bintianqi.owndroid.utils.adaptiveInsets
 import com.bintianqi.owndroid.utils.parsePackageNames
 import kotlinx.coroutines.channels.Channel
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -111,27 +124,51 @@ fun AppGroupsScreen(
             FloatingActionButton({
                 vm.selectAppGroup(-1)
                 navigateToEditScreen()
-            }) {
+            }, Modifier.navigationBarsPadding()) {
                 Icon(Icons.Default.Add, null)
             }
-        }
+        },
+        contentWindowInsets = adaptiveInsets()
     ) { paddingValues ->
-        LazyColumn(Modifier.padding(paddingValues)) {
-            itemsIndexed(groups, { _, it -> it.id }) { index, it ->
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            vm.selectAppGroup(index)
-                            navigateToEditScreen()
+        val listState = rememberLazyListState()
+        val reorderableState = rememberReorderableLazyListState(listState) { from, to ->
+            vm.setGroupPosition(from.index - 1, to.index - 1)
+            // -1 because there's a header (loading indicator)
+        }
+        LazyColumn(Modifier.padding(paddingValues), listState) {
+            item {
+                if (groups.isEmpty()) NoneText()
+            }
+            itemsIndexed(groups, { _, it -> it.id }) { index, group ->
+                ReorderableItem(reorderableState, group.id) {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                vm.selectAppGroup(index)
+                                navigateToEditScreen()
+                            }
+                            .padding(HorizontalPadding, 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(
+                            Modifier.weight(1F)
+                        ) {
+                            Text(group.name)
+                            Text(
+                                group.apps.size.toString() + " apps", Modifier.alpha(0.7F),
+                                style = typography.bodyMedium
+                            )
                         }
-                        .padding(HorizontalPadding, 8.dp)
-                ) {
-                    Text(it.name)
-                    Text(
-                        it.apps.size.toString() + " apps", Modifier.alpha(0.7F),
-                        style = typography.bodyMedium
-                    )
+                        Icon(
+                            painterResource(R.drawable.drag_indicator_fill0), null,
+                            Modifier.draggableHandle(
+                                onDragStopped = {
+                                    vm.writeGroupPosition()
+                                }
+                            )
+                        )
+                    }
                 }
             }
         }
@@ -145,6 +182,7 @@ fun EditAppGroupScreen(
     onChoosePackage: () -> Unit, chosenPackage: Channel<String>
 ) {
     val uiState by vm.editorUiState.collectAsState()
+    var showDeleteConfirmation by rememberSaveable { mutableStateOf(false) }
     var input by rememberSaveable { mutableStateOf("") }
     val inputPackages = parsePackageNames(input)
     LaunchedEffect(Unit) {
@@ -153,13 +191,13 @@ fun EditAppGroupScreen(
         }
     }
     MyLazyScaffold(
-        R.string.place_holder, navigateUp,
+        if (uiState.id == null) R.string.add_app_group else R.string.edit_app_group,
+        navigateUp,
         {
             if (uiState.id != null) IconButton({
-                vm.deleteGroup()
-                navigateUp()
+                showDeleteConfirmation = true
             }) {
-                Icon(Icons.Outlined.Delete, null)
+                Icon(Icons.Outlined.Delete, stringResource(R.string.delete_app_group))
             }
             FilledIconButton(
                 {
@@ -187,24 +225,49 @@ fun EditAppGroupScreen(
             }
         }
         item {
-            PackageNameTextField(input, onChoosePackage,
-                Modifier.padding(HorizontalPadding, 8.dp)) { input = it }
-            Button(
-                {
+            Row(
+                Modifier.padding(horizontal = HorizontalPadding),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                PackageNameTextField(
+                    input, onChoosePackage, Modifier.weight(1F)
+                ) { input = it }
+                FilledTonalIconButton({
                     inputPackages.forEach {
                         vm.setGroupApp(it, true)
                     }
                     input = ""
-                },
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = HorizontalPadding)
-                    .padding(bottom = 10.dp),
-                inputPackages.all { pkg -> pkg !in uiState.apps.map { it.name } }
-            ) {
-                Text(stringResource(R.string.add))
+                }) {
+                    Icon(Icons.Default.Add, stringResource(R.string.add))
+                }
             }
             Spacer(Modifier.height(BottomPadding))
         }
     }
+
+    if (showDeleteConfirmation && uiState.id != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text(stringResource(R.string.delete_app_group)) },
+            text = {
+                Text(stringResource(R.string.delete_app_group_confirmation, uiState.name))
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirmation = false
+                        vm.deleteGroup()
+                        navigateUp()
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
+                ) {
+                    Text(stringResource(R.string.delete))
+                }
+            },
+            dismissButton = {
+                CancelTextButton { showDeleteConfirmation = false }
+            }
+        )
+    }
+
 }

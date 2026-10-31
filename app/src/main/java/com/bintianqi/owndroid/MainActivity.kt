@@ -16,13 +16,13 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -36,10 +36,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.bintianqi.owndroid.feature.applications.AppChooserViewModel
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.NavTransition
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.ui.navigation.myEntryProvider
@@ -115,6 +118,9 @@ class MainActivity : FragmentActivity() {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Modifier.blur(10.dp)
                     else Modifier.alpha(0F)
                 } else Modifier
+                val getEntry = remember {
+                    myEntryProvider(backstack, appChooserVm, myApp.container)
+                }
                 NavDisplay(
                     backstack, blurMod,
                     onBack = {
@@ -134,7 +140,7 @@ class MainActivity : FragmentActivity() {
                         NavTransition.popTransition
                     }
                 ) {
-                    myEntryProvider(it as Destination, backstack, appChooserVm, myApp.container)
+                    getEntry(it as Destination) as NavEntry<NavKey>
                 }
                 if (dhizukuError != null) DhizukuErrorDialog(
                     dhizukuError!!, {
@@ -151,13 +157,16 @@ class MainActivity : FragmentActivity() {
                 val lifecycleOwner = LocalLifecycleOwner.current
                 if (appLockDialog) {
                     AppLockDialog(
-                        myApp.container.settingsRepo.data.appLock, { appLockDialog = false }
-                    ) { moveTaskToBack(true) }
+                        myApp.container.settingsRepo.data.appLock,
+                        onSucceed = { appLockDialog = false },
+                        onDismiss = { moveTaskToBack(true) },
+                        verifyTotp = { code -> myApp.container.unlockManager.verifyCode(code) }
+                    )
                 }
                 DisposableEffect(lifecycleOwner) {
                     val observer = LifecycleEventObserver { _, event ->
                         if (
-                            settingsRepo.data.appLock.passwordHash.isNotEmpty() &&
+                            settingsRepo.data.appLock.isActive &&
                             (event == Lifecycle.Event.ON_CREATE ||
                                     (event == Lifecycle.Event.ON_RESUME &&
                                             settingsRepo.data.appLock.lockWhenLeaving))
@@ -197,9 +206,7 @@ private fun DhizukuErrorDialog(error: DhizukuError, onClose: () -> Unit, onDisab
             }
         },
         dismissButton = {
-            TextButton(onClose) {
-                Text(stringResource(R.string.confirm))
-            }
+            ConfirmTextButton(onClick = onClose)
         },
         title = { Text(stringResource(R.string.error)) },
         text = {

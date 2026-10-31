@@ -29,6 +29,20 @@ class AppGroupViewModel(
         }
     }
 
+    fun setGroupPosition(from: Int, to: Int) {
+        appGroupsState.update {
+            it.toMutableList().apply {
+                add(to, removeAt(from))
+            }
+        }
+    }
+
+    fun writeGroupPosition() {
+        appGroupsState.value.forEachIndexed { index, group ->
+            repo.setGroupPosition(group.id, index)
+        }
+    }
+
     val editorUiState = MutableStateFlow(AppGroupEditorUiState())
 
     fun setGroupName(name: String) {
@@ -40,6 +54,7 @@ class AppGroupViewModel(
             val newList = uiState.apps.let { list ->
                 if (state) {
                     list.plus(getAppInfo(application.packageManager, name))
+                        .distinctBy { it.name }
                 } else {
                     list.filter { it.name != name }
                 }

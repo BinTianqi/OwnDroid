@@ -59,7 +59,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
 import com.bintianqi.owndroid.ui.FunctionItem
@@ -195,22 +197,16 @@ fun SystemScreen(
             )
         },
         dismissButton = {
-            TextButton(onClick = { dialog = 0 }) {
-                Text(stringResource(R.string.cancel))
-            }
+            CancelTextButton { dialog = 0 }
         },
         confirmButton = {
-            TextButton(
-                onClick = {
-                    if (dialog == 1) {
-                        vm.reboot()
-                    } else {
-                        vm.requestBugReport()
-                    }
-                    dialog = 0
+            ConfirmTextButton {
+                if (dialog == 1) {
+                    vm.reboot()
+                } else {
+                    vm.requestBugReport()
                 }
-            ) {
-                Text(stringResource(R.string.confirm))
+                dialog = 0
             }
         }
     )
@@ -261,11 +257,7 @@ fun SystemScreen(
             },
             onDismissRequest = { dialog = 0 },
             dismissButton = {
-                if (dialog != 5) TextButton({ dialog = 0 }) {
-                    Text(
-                        stringResource(R.string.cancel)
-                    )
-                }
+                if (dialog != 5) CancelTextButton { dialog = 0 }
             },
             confirmButton = {
                 TextButton(
@@ -508,7 +500,7 @@ fun DeviceInfoScreen(
             )
         },
         confirmButton = {
-            TextButton({ dialog = 0 }) { Text(stringResource(R.string.confirm)) }
+            ConfirmTextButton { dialog = 0 }
         },
         onDismissRequest = { dialog = 0 }
     )
@@ -787,9 +779,7 @@ fun WipeDataScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { dialog = 0 }) {
-                    Text(stringResource(R.string.cancel))
-                }
+                CancelTextButton { dialog = 0 }
             }
         )
     }

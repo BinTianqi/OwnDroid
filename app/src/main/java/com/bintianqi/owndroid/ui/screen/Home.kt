@@ -100,6 +100,9 @@ fun HomeScreen(
                 HomePageItem(
                     R.string.password_and_keyguard, R.drawable.password_fill0
                 ) { onNavigate(Destination.Password) }
+                HomePageItem(R.string.time_blocker, R.drawable.timer_fill0) {
+                    onNavigate(Destination.TimeBlocker)
+                }
             }
             Spacer(Modifier.height(BottomPadding))
         }

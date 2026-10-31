@@ -90,6 +90,11 @@ sealed class Destination : NavKey {
     @Serializable class ApplicationDetails(val packageName: String) : Destination()
     @Serializable object AppPermissionsManager : Destination()
     @Serializable class ManagedConfiguration(val packageName: String) : Destination()
+    @Serializable class ManagedConfigurationValueEditor(
+        val id: String, val isInt: Boolean
+    ) : Destination()
+    @Serializable class ManagedConfigurationBooleanEditor(val id: String) : Destination()
+    @Serializable class ManagedConfigurationListEditor(val id: String) : Destination()
 
     @Serializable class ApplicationsList(
         val mode: AppChooserMode,
@@ -117,11 +122,18 @@ sealed class Destination : NavKey {
     @Serializable object KeyguardDisabledFeatures : Destination()
     @Serializable object RequiredPasswordQuality : Destination()
 
+    @Serializable object TimeBlocker : Destination()
+    @Serializable class TimeBlockerEdit(val ruleId: Int = -1) : Destination()
+
     @Serializable object Settings : Destination()
     @Serializable object SettingsOptions : Destination()
     @Serializable object AppearanceSettings : Destination()
+    @Serializable object ShortcutSettings : Destination()
     @Serializable object AppLockSettings : Destination()
     @Serializable object ApiSettings : Destination()
     @Serializable object NotificationSettings : Destination()
+    @Serializable object SettingsSync : Destination()
+    @Serializable object ExportSettings: Destination()
+    @Serializable object ImportSettings: Destination()
     @Serializable object About : Destination()
 }

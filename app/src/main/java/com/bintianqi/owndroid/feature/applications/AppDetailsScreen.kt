@@ -32,13 +32,13 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.MyLazyScaffold
 import com.bintianqi.owndroid.ui.MySmallTitleScaffold
+import com.bintianqi.owndroid.ui.NoneText
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.BottomPadding
@@ -154,13 +154,7 @@ fun AppPermissionsManagerScreen(
     MyLazyScaffold(R.string.permissions, onNavigateUp) {
         item {
             if (permissions.isEmpty()) {
-                Text(
-                    stringResource(R.string.none),
-                    Modifier
-                        .fillMaxWidth()
-                        .alpha(0.7F),
-                    textAlign = TextAlign.Center
-                )
+                NoneText()
             } else {
                 PermissionRadioButtonHint()
             }

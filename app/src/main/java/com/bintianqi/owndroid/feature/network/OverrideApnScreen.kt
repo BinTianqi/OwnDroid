@@ -30,7 +30,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -48,6 +47,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.MasterSwitch
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.MySmallTitleScaffold
@@ -422,7 +422,7 @@ fun AddApnSettingScreen(
             title = { Text(stringResource(R.string.error)) },
             text = { Text(errorMessage ?: "") },
             confirmButton = {
-                TextButton({ errorMessage = null }) { Text(stringResource(R.string.confirm)) }
+                ConfirmTextButton { errorMessage = null }
             },
             onDismissRequest = { errorMessage = null }
         )
@@ -453,9 +453,7 @@ fun AddApnSettingScreen(
             }
         },
         confirmButton = {
-            TextButton({ menu = ApnMenu.None }) {
-                Text(stringResource(R.string.confirm))
-            }
+            ConfirmTextButton { menu = ApnMenu.None }
         },
         onDismissRequest = { menu = ApnMenu.None }
     )
@@ -485,9 +483,7 @@ fun AddApnSettingScreen(
             }
         },
         confirmButton = {
-            TextButton({ menu = ApnMenu.None }) {
-                Text(stringResource(R.string.confirm))
-            }
+            ConfirmTextButton { menu = ApnMenu.None }
         },
         onDismissRequest = {
             menu = ApnMenu.None

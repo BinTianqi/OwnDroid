@@ -15,5 +15,10 @@ public interface IDevicePolicyManager extends IInterface {
             throw new UnsupportedOperationException();
         }
     }
+
+    void forceUpdateUserSetupComplete();
+
+    void forceUpdateUserSetupComplete(int userId); // A12 and above
+
     int setGlobalPrivateDns(ComponentName who, int mode, String privateDnsHost);
 }

@@ -1,22 +1,26 @@
 [versions]
 agp = "9.2.1"
-kotlin = "2.4.10"
+kotlin = "2.4.21"
 
-nav3 = "1.1.6"
-composeBom = "2026.08.00"
+nav3 = "1.2.0"
+composeBom = "2026.09.00"
 lifecycle = "2.11.0"
 accompanist-drawablepainter = "0.37.3"
 accompanist-permissions = "0.37.3"
 shizuku = "13.1.5"
-fragment = "1.9.0"
+fragment = "1.9.1"
 dhizuku = "2.6.0"
 dhizuku-server = "0.0.10"
-hiddenApiBypass = "6.1"
+hiddenApiBypass = "6.2"
 libsu = "6.0.0"
 reoderable = "3.1.0"
-serialization = "1.11.0"
+serialization = "1.12.0"
+zxing = "3.5.4"
+camerax = "1.6.2"
+desugar = "2.1.5"
 
 [libraries]
+android-desugar = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugar" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
@@ -37,10 +41,16 @@ shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
 dhizuku-api = { module = "io.github.iamr0s:Dhizuku-API", version.ref = "dhizuku" }
 dhizuku-server-api = { group = "io.github.iamr0s", name = "Dhizuku-SERVER_API", version.ref = "dhizuku-server" }
 hiddenApiBypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version.ref = "hiddenApiBypass" }
-libsu = { module = "com.github.topjohnwu.libsu:core", version.ref = "libsu" }
+libsu-core = { group = "com.github.topjohnwu.libsu", name = "core", version.ref = "libsu" }
+libsu-service = { group = "com.github.topjohnwu.libsu", name = "service", version.ref = "libsu" }
 reoderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reoderable" }
 
 serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
+
+zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
+androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax" }
+androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camerax" }
+androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
 
 kgp = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 

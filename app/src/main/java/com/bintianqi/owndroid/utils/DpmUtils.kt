@@ -8,25 +8,26 @@ import android.app.admin.IDevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.RestrictionEntry
 import android.content.pm.IPackageInstaller
 import android.content.pm.PackageInstaller
 import android.os.Binder
 import android.os.Build.VERSION
-import android.os.Bundle
+import android.os.IBinder
 import android.os.UserHandle
 import android.os.UserManager
 import android.util.Log
+import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
+import com.bintianqi.owndroid.ActivationService
 import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.PrivilegeHelper
 import com.bintianqi.owndroid.R
-import com.bintianqi.owndroid.feature.applications.AppRestriction
 import com.bintianqi.owndroid.feature.network.NetworkLog
 import com.bintianqi.owndroid.feature.settings.SettingsRepository
 import com.bintianqi.owndroid.feature.users.UserOperationType
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuBinderWrapper
+import com.topjohnwu.superuser.ipc.RootService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -161,7 +162,6 @@ fun handlePrivilegeChange(
     context: Context, ps: PrivilegeStatus, ph: PrivilegeHelper, sr: SettingsRepository
 ) {
     if (ps.activated) {
-        ShortcutUtils.setAllShortcuts(context, sr, ph, true)
         if (!ps.dhizuku) {
             setDefaultAffiliationID(ph, sr)
         }
@@ -170,7 +170,6 @@ fun handlePrivilegeChange(
             it.privilege.defaultAffiliationIdSet = false
             it.api.enabled = false
         }
-        ShortcutUtils.setAllShortcuts(context, sr, ph, false)
     }
 }
 
@@ -242,43 +241,10 @@ enum class DhizukuError {
     Init, Permission, Binder
 }
 
-fun transformAppRestrictionEntryList(
-    list: List<RestrictionEntry>, bundle: Bundle
-): List<AppRestriction> {
-    return list.mapNotNull {
-        when (it.type) {
-            RestrictionEntry.TYPE_INTEGER ->
-                AppRestriction.IntItem(it.key, it.title, it.description, null)
-
-            RestrictionEntry.TYPE_STRING ->
-                AppRestriction.StringItem(it.key, it.title, it.description, null)
-
-            RestrictionEntry.TYPE_BOOLEAN ->
-                AppRestriction.BooleanItem(it.key, it.title, it.description, null)
-
-            RestrictionEntry.TYPE_CHOICE -> AppRestriction.ChoiceItem(
-                it.key, it.title,
-                it.description, it.choiceEntries, it.choiceValues, null
-            )
-
-            RestrictionEntry.TYPE_MULTI_SELECT -> AppRestriction.MultiSelectItem(
-                it.key, it.title,
-                it.description, it.choiceEntries, it.choiceValues, null
-            )
-
-            else -> null
-        }
-    }.map {
-        if (bundle.containsKey(it.key)) {
-            when (it) {
-                is AppRestriction.BooleanItem -> it.value = bundle.getBoolean(it.key)
-                is AppRestriction.StringItem -> it.value = bundle.getString(it.key)
-                is AppRestriction.IntItem -> it.value = bundle.getInt(it.key)
-                is AppRestriction.ChoiceItem -> it.value = bundle.getString(it.key)
-                is AppRestriction.MultiSelectItem -> it.value =
-                    bundle.getStringArray(it.key)
-            }
-        }
-        it
+@Keep
+class MyRootService : RootService() {
+    override fun onBind(p0: Intent): IBinder {
+        val ss = ActivationService()
+        return ss
     }
 }

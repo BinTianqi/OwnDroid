@@ -50,7 +50,9 @@ fun SystemUpdateScreen(
     var uri by remember { mutableStateOf<Uri?>(null) }
     var installing by rememberSaveable { mutableStateOf(false) }
     var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
-    val getFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
+    val getFileLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) {
         uri = it
     }
     LaunchedEffect(Unit) {
@@ -139,7 +141,7 @@ fun SystemUpdateScreen(
             Spacer(Modifier.height(10.dp))
             Button(
                 {
-                    getFileLauncher.launch("application/zip")
+                    getFileLauncher.launch(arrayOf("application/zip"))
                 },
                 Modifier.fillMaxWidth().padding(horizontal = HorizontalPadding)
             ) {

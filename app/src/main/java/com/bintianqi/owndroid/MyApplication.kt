@@ -28,5 +28,22 @@ class MyApplication : Application() {
             }
         }
         NotificationUtils.createChannels(this)
+
+        // The time blocker is meant to be always-on: restart its service if enabled
+        // rules exist and the user never explicitly stopped it (e.g. after the system
+        // killed the process). Boot is handled separately by TimeBlockerBootReceiver.
+        if (VERSION.SDK_INT >= 24) {
+            try {
+                val repo = container.timeBlockerRepo
+                val enabledByUser = container.settingsRepo.data.timeBlockerServiceEnabled
+                if (enabledByUser && repo.getEnabledRules().isNotEmpty() &&
+                    !com.bintianqi.owndroid.feature.time_blocker.TimeBlockerService.isRunning
+                ) {
+                    com.bintianqi.owndroid.feature.time_blocker.TimeBlockerService.start(this)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("MyApplication", "Failed to auto-start time blocker", e)
+            }
+        }
     }
 }

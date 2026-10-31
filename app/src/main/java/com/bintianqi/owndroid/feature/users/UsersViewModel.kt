@@ -81,13 +81,14 @@ class UsersViewModel(
         toastChannel.sendStatus(result)
     }
 
-    fun createUserOperationShortcut(type: UserOperationType, id: Int, isUserId: Boolean): Boolean {
+    fun createUserOperationShortcut(type: UserOperationType, id: Int, isUserId: Boolean) {
         val serial = if (isUserId && VERSION.SDK_INT >= 24) {
             um.getSerialNumberForUser(UserHandle.getUserHandleForUid(id * 100000))
         } else id
-        return ShortcutUtils.setUserOperationShortcut(
+        val result = ShortcutUtils.pinUserOperationShortcut(
             application, settingsRepo, type, serial.toInt()
         )
+        if (!result) toastChannel.sendText(R.string.unsupported)
     }
 
     fun getUserOperationResultText(code: Int): Int {
@@ -187,7 +188,7 @@ class UsersViewModel(
     }
 
     fun requestPinLogoutShortcut() {
-        val result = ShortcutUtils.requestPinLogoutShortcut(application, settingsRepo)
+        val result = ShortcutUtils.pinLogoutShortcut(application, settingsRepo)
         if (!result) toastChannel.sendStatus(false)
     }
 }

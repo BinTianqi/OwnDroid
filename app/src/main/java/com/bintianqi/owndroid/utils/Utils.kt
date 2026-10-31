@@ -275,3 +275,13 @@ fun viewModelFactory(build: () -> ViewModel) =
 
 val String.isValidPackageName
     get() = Regex("""^(?:[a-zA-Z]\w*\.)+[a-zA-Z]\w*$""").matches(this)
+
+fun formatMinutes(totalMinutes: Int): String {
+    val h = totalMinutes / 60
+    val m = totalMinutes % 60
+    return "%02d:%02d".format(h, m)
+}
+
+fun formatTimeRange(start: Int, end: Int): String {
+    return formatMinutes(start) + " - " + formatMinutes(end)
+}

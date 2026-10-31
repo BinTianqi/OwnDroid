@@ -38,7 +38,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -59,11 +58,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.CancelTextButton
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.MyLazyScaffold
 import com.bintianqi.owndroid.ui.MyScaffold
+import com.bintianqi.owndroid.ui.NoneText
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.BottomPadding
 import com.bintianqi.owndroid.utils.HorizontalPadding
@@ -150,10 +151,8 @@ fun CrossProfileIntentFilterScreen(
             }
         }
     }) {
-        item {
-            if (filterList.isEmpty()) {
-                Text(stringResource(R.string.none), Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
-            }
+        if (filterList.isEmpty()) item {
+            NoneText()
         }
         items(filterList, { it.id }) {
             val mod = Modifier
@@ -219,17 +218,13 @@ fun CrossProfileIntentFilterScreen(
         text = { Text(stringResource(R.string.delete_all_filters_confirmation)) },
         onDismissRequest = { confirmDeleteDialog = false },
         confirmButton = {
-            TextButton({
+            ConfirmTextButton {
                 confirmDeleteDialog = false
                 vm.deleteAllFilters()
-            }) {
-                Text(stringResource(R.string.confirm))
             }
         },
         dismissButton = {
-            TextButton({ confirmDeleteDialog = false }) {
-                Text(stringResource(R.string.cancel))
-            }
+            CancelTextButton { confirmDeleteDialog = false }
         }
     )
 }
@@ -393,17 +388,13 @@ fun CrossProfileIntentFilterPresetsScreen(
                 }
             },
             confirmButton = {
-                TextButton({
+                ConfirmTextButton {
                     vm.addPreset(dialog!!, direction)
                     dialog = null
-                }) {
-                    Text(stringResource(R.string.confirm))
                 }
             },
             dismissButton = {
-                TextButton({ dialog = null }) {
-                    Text(stringResource(R.string.cancel))
-                }
+                CancelTextButton { dialog = null }
             },
             onDismissRequest = { dialog = null }
         )

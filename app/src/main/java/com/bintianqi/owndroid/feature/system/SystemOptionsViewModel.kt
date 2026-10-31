@@ -7,8 +7,8 @@ import androidx.lifecycle.ViewModel
 import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.PrivilegeHelper
 import com.bintianqi.owndroid.feature.settings.SettingsRepository
-import com.bintianqi.owndroid.utils.MyShortcut
 import com.bintianqi.owndroid.utils.PrivilegeStatus
+import com.bintianqi.owndroid.utils.ShortcutSystemOption
 import com.bintianqi.owndroid.utils.ShortcutUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -55,7 +55,9 @@ class SystemOptionsViewModel(
 
     fun setCameraDisabled(disabled: Boolean) = ph.safeDpmCall {
         dpm.setCameraDisabled(dar, disabled)
-        ShortcutUtils.setShortcut(application, settingsRepo, MyShortcut.DisableCamera, !disabled)
+        ShortcutUtils.updateSystemOptionShortcuts(
+            application, settingsRepo, ShortcutSystemOption.Camera, !disabled
+        )
         optionsState.update { it.copy(cameraDisabled = dpm.getCameraDisabled(null)) }
     }
 
@@ -93,7 +95,9 @@ class SystemOptionsViewModel(
 
     fun setMasterVolumeMuted(muted: Boolean) = ph.safeDpmCall {
         dpm.setMasterVolumeMuted(dar, muted)
-        ShortcutUtils.setShortcut(application, settingsRepo, MyShortcut.Mute, !muted)
+        ShortcutUtils.updateSystemOptionShortcuts(
+            application, settingsRepo, ShortcutSystemOption.Mute, muted
+        )
         optionsState.update { it.copy(masterVolumeMuted = dpm.isMasterVolumeMuted(dar)) }
     }
 

@@ -6,31 +6,48 @@ import android.os.Build.VERSION
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -40,24 +57,39 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.ui.CancelTextButton
+import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.FunctionItem
+import com.bintianqi.owndroid.ui.MasterSwitch
 import com.bintianqi.owndroid.ui.MyScaffold
+import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.BottomPadding
+import com.bintianqi.owndroid.utils.HorizontalPadding
 import com.bintianqi.owndroid.utils.MyNotificationChannel
 import com.bintianqi.owndroid.utils.NotificationType
+import com.bintianqi.owndroid.utils.ShortcutSystemOption
+import com.bintianqi.owndroid.utils.adaptiveInsets
 import com.bintianqi.owndroid.utils.generateBase64Key
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -139,8 +171,14 @@ fun SettingsScreen(
         FunctionItem(R.string.appearance, icon = R.drawable.format_paint_fill0) {
             onNavigate(Destination.AppearanceSettings)
         }
+        FunctionItem(R.string.shortcuts, icon = R.drawable.open_in_new) {
+            onNavigate(Destination.ShortcutSettings)
+        }
         FunctionItem(R.string.app_lock, icon = R.drawable.lock_fill0) {
             onNavigate(Destination.AppLockSettings)
+        }
+        FunctionItem(R.string.sync_transfer, icon = R.drawable.sync_alt_fill0) {
+            onNavigate(Destination.SettingsSync)
         }
         if (privilege.device || privilege.profile) {
             FunctionItem(R.string.api, icon = R.drawable.code_fill0) {
@@ -161,14 +199,10 @@ fun SettingsScreen(
         text = { Text(stringResource(R.string.info_secret_code)) },
         onDismissRequest = { secretCodeDialog = false },
         confirmButton = {
-            TextButton(vm::hideApp) {
-                Text(stringResource(R.string.confirm))
-            }
+            ConfirmTextButton(onClick = vm::hideApp)
         },
         dismissButton = {
-            TextButton({ secretCodeDialog = false }) {
-                Text(stringResource(R.string.cancel))
-            }
+            CancelTextButton { secretCodeDialog = false }
         }
     )
 }
@@ -178,14 +212,10 @@ fun SettingsOptionsScreen(
     vm: SettingsViewModel, onNavigateUp: () -> Unit
 ) {
     val dangerousFeatures by vm.dangerousFeaturesState.collectAsState()
-    val shortcuts by vm.shortcutsState.collectAsState()
     MyScaffold(R.string.options, onNavigateUp, 0.dp) {
         SwitchItem(
             R.string.show_dangerous_features, dangerousFeatures, vm::setDisplayDangerousFeatures,
             R.drawable.warning_fill0
-        )
-        SwitchItem(
-            R.string.shortcuts, shortcuts, vm::setShortcutsEnabled, R.drawable.open_in_new
         )
     }
 }
@@ -228,6 +258,104 @@ fun AppearanceScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ShortcutSettingsScreen(vm: SettingsViewModel, onNavigateUp: () -> Unit) {
+    val sb = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    var addShortcutDialog by remember { mutableStateOf(false) }
+    val shortcutEnabled by vm.shortcutEnabledState.collectAsState()
+    val shortcuts by vm.shortcutsState.collectAsState()
+    val lo = LocalLifecycleOwner.current
+    DisposableEffect(lo) {
+        val ob = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) vm.getShortcuts()
+        }
+        lo.lifecycle.addObserver(ob)
+        onDispose { lo.lifecycle.removeObserver(ob) }
+    }
+    Scaffold(
+        Modifier.nestedScroll(sb.nestedScrollConnection),
+        topBar = {
+            LargeTopAppBar(
+                { Text(stringResource(R.string.shortcuts)) },
+                navigationIcon = { NavIcon(onNavigateUp) },
+                scrollBehavior = sb
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                { addShortcutDialog = true },
+                Modifier.navigationBarsPadding()
+            ) {
+                Icon(Icons.Default.Add, stringResource(R.string.create_shortcut))
+            }
+        },
+        contentWindowInsets = adaptiveInsets()
+    ) { paddingValues ->
+        LazyColumn(
+            Modifier.padding(paddingValues)
+        ) {
+            item {
+                MasterSwitch(R.string.enable, shortcutEnabled, vm::setShortcutsEnabled)
+            }
+            items(shortcuts, { it.id }) { shortcut ->
+                Row(
+                    Modifier
+                        .animateItem()
+                        .fillMaxWidth()
+                        .padding(HorizontalPadding, 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(Modifier.weight(1F), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(painterResource(shortcut.getIcon()), null)
+                        Spacer(Modifier.width(8.dp))
+                        Text(shortcut.label)
+                    }
+                    Switch(shortcut.enabled, { vm.setSingleShortcutEnabled(shortcut.id, it) })
+                }
+            }
+        }
+    }
+    @Composable
+    fun NewShortcutItem(text: Int, icon: Int, onClick: () -> Unit) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 2.dp)
+                .clip(RoundedCornerShape(6.dp))
+                .clickable {
+                    onClick()
+                    addShortcutDialog = false
+                }
+                .padding(4.dp, 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(painterResource(icon), null)
+            Spacer(Modifier.width(4.dp))
+            Text(stringResource(text), style = MaterialTheme.typography.bodyLarge)
+        }
+    }
+    if (addShortcutDialog) AlertDialog(
+        text = {
+            Column(Modifier.fillMaxWidth()) {
+                NewShortcutItem(R.string.disable_cam, R.drawable.no_photography_fill0) {
+                    vm.pinSystemOptionShortcut(ShortcutSystemOption.Camera)
+                }
+                NewShortcutItem(R.string.mute, R.drawable.volume_off_fill0) {
+                    vm.pinSystemOptionShortcut(ShortcutSystemOption.Mute)
+                }
+                NewShortcutItem(R.string.lock_screen, R.drawable.screen_lock_portrait_fill0) {
+                    vm.pinLockScreenShortcut()
+                }
+            }
+        },
+        confirmButton = {
+            CancelTextButton { addShortcutDialog = false }
+        },
+        onDismissRequest = { addShortcutDialog = false }
+    )
+}
+
 @Composable
 fun AppLockSettingsScreen(
     vm: SettingsViewModel, onNavigateUp: () -> Unit
@@ -237,8 +365,15 @@ fun AppLockSettingsScreen(
     var confirmPassword by rememberSaveable { mutableStateOf("") }
     var allowBiometrics by rememberSaveable { mutableStateOf(config.biometrics) }
     var lockWhenLeaving by rememberSaveable { mutableStateOf(config.lockWhenLeaving) }
+    var allowTotp by rememberSaveable { mutableStateOf(config.totp) }
     var alreadySet by rememberSaveable { mutableStateOf(config.passwordHash.isNotEmpty()) }
-    val isInputLegal = password.length !in 1..3 && (alreadySet || password.isNotBlank())
+    val totpAvailable = vm.isTotpConfigured()
+    val isInputLegal = password.length !in 1..3 &&
+            (alreadySet || password.isNotBlank() || (allowTotp && totpAvailable))
+    var showSecret by rememberSaveable { mutableStateOf(false) }
+    var generatedSecret by rememberSaveable { mutableStateOf("") }
+    var showRemoveConfirm by rememberSaveable { mutableStateOf(false) }
+    var showDisableConfirm by rememberSaveable { mutableStateOf(false) }
     OutlinedTextField(
         password, { password = it }, Modifier
             .fillMaxWidth()
@@ -248,6 +383,7 @@ fun AppLockSettingsScreen(
             Text(
                 stringResource(
                     if (alreadySet) R.string.leave_empty_to_remain_unchanged
+                    else if (allowTotp && totpAvailable) R.string.password_optional_with_totp
                     else R.string.minimum_length_4
                 )
             )
@@ -271,7 +407,7 @@ fun AppLockSettingsScreen(
             .padding(vertical = 6.dp),
         Arrangement.SpaceBetween, Alignment.CenterVertically
     ) {
-        Text(stringResource(R.string.allow_biometrics))
+        Text(stringResource(R.string.allow_biometric_unlock))
         Switch(allowBiometrics, { allowBiometrics = it })
     }
     Row(
@@ -283,24 +419,146 @@ fun AppLockSettingsScreen(
         Text(stringResource(R.string.lock_when_leaving))
         Switch(lockWhenLeaving, { lockWhenLeaving = it })
     }
-    Button(
-        {
-            vm.setAppLockConfig(password, allowBiometrics, lockWhenLeaving)
-            onNavigateUp()
-        },
-        Modifier.fillMaxWidth(),
-        isInputLegal && confirmPassword == password
-    ) {
-        Text(stringResource(if (alreadySet) R.string.update else R.string.set))
+    if (!totpAvailable) {
+        Row(
+            Modifier.fillMaxWidth().padding(bottom = 6.dp),
+            Arrangement.SpaceBetween, Alignment.CenterVertically
+        ) {
+            Text(
+                stringResource(R.string.totp_not_configured_hint),
+                Modifier.weight(1f),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Button({
+                generatedSecret = vm.setupTotp()
+                showSecret = true
+            }) {
+                Text(stringResource(R.string.time_blocker_setup_totp))
+            }
+        }
+    } else {
+        Row(
+            Modifier.fillMaxWidth(),
+            Arrangement.SpaceBetween, Alignment.CenterVertically
+        ) {
+            Text(stringResource(R.string.allow_totp_unlock))
+            Switch(allowTotp, { allowTotp = it })
+        }
+        Row(Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
+            TextButton({
+                generatedSecret = vm.getTotpSecret()
+                showSecret = true
+            }) {
+                Text(stringResource(R.string.time_blocker_totp_secret))
+            }
+            TextButton({ showRemoveConfirm = true }) {
+                Text(
+                    stringResource(R.string.time_blocker_remove_totp),
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        }
     }
-    if (alreadySet) FilledTonalButton(
-        {
-            vm.disableAppLock()
-            onNavigateUp()
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Button(
+            {
+                vm.setAppLockConfig(password, allowBiometrics, lockWhenLeaving, allowTotp)
+                onNavigateUp()
+            },
+            if (alreadySet) Modifier.weight(1f) else Modifier.fillMaxWidth(),
+            isInputLegal && confirmPassword == password
+        ) {
+            Text(stringResource(if (alreadySet) R.string.update else R.string.set))
+        }
+        if (alreadySet) {
+            Button(
+                { showDisableConfirm = true },
+                Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError
+                )
+            ) {
+                Text(stringResource(R.string.disable))
+            }
+        }
+    }
+    if (showDisableConfirm) AlertDialog(
+        onDismissRequest = { showDisableConfirm = false },
+        title = { Text(stringResource(R.string.disable_app_lock_confirmation_title)) },
+        text = { Text(stringResource(R.string.disable_app_lock_confirmation_message)) },
+        confirmButton = {
+            TextButton({
+                showDisableConfirm = false
+                vm.disableAppLock()
+                onNavigateUp()
+            }) {
+                Text(stringResource(R.string.disable), color = MaterialTheme.colorScheme.error)
+            }
         },
-        Modifier.fillMaxWidth()
-    ) {
-        Text(stringResource(R.string.disable))
+        dismissButton = {
+            CancelTextButton { showDisableConfirm = false }
+        }
+    )
+    if (showSecret && generatedSecret.isNotEmpty()) {
+        // otpauth URI is ASCII; byte-mode QR via ISO-8859-1 roundtrips it exactly
+        val totpQr = remember(generatedSecret) {
+            QrUtils.encodeToBitmap(vm.getOtpAuthUri().toByteArray(Charsets.ISO_8859_1), 600)
+        }
+        AlertDialog(
+            onDismissRequest = { showSecret = false },
+            title = { Text(stringResource(R.string.time_blocker_totp_secret)) },
+            text = {
+                Column {
+                    Text(stringResource(R.string.time_blocker_scan_qr))
+                    Spacer(Modifier.height(8.dp))
+                    Image(
+                        bitmap = totpQr.asImageBitmap(),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f),
+                        filterQuality = FilterQuality.None
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    SelectionContainer {
+                        Text(
+                            generatedSecret,
+                            fontFamily = FontFamily.Monospace,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    SelectionContainer {
+                        Text(
+                            vm.getOtpAuthUri(),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                ConfirmTextButton { showSecret = false }
+            }
+        )
+    }
+    if (showRemoveConfirm) {
+        AlertDialog(
+            onDismissRequest = { showRemoveConfirm = false },
+            title = { Text(stringResource(R.string.time_blocker_remove_totp)) },
+            confirmButton = {
+                ConfirmTextButton {
+                    vm.removeTotp()
+                    allowTotp = false
+                    showRemoveConfirm = false
+                }
+            },
+            dismissButton = {
+                CancelTextButton { showRemoveConfirm = false }
+            }
+        )
     }
 }
 

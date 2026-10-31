@@ -5,6 +5,7 @@ import android.app.admin.PackagePolicy
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.PermissionInfo
+import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -67,9 +68,25 @@ class AppFeaturesViewModel(
     }
 
     fun setPackageHidden(packages: List<String>, status: Boolean) = ph.safeDpmCall {
+        var ucdPackages = emptyList<String>()
+        if (Build.VERSION.SDK_INT >= 30) {
+            // Remove them from user control disabled packages,
+            // or setting package hidden status will fail
+            ucdPackages = dpm.getUserControlDisabledPackages(dar)
+            if (packages.any { it in ucdPackages }) {
+                dpm.setUserControlDisabledPackages(dar, ucdPackages.filter { it !in packages })
+            }
+        }
         for (name in packages) {
+            // After enabling ucd, we can't hide that package directly, even ucd is disabled.
+            // We have to unhide that package even if it's currently not hidden.
+            // This might be a system bug, but we provide a workaround here.
+            if (status) dpm.setApplicationHidden(dar, name, false)
             val result = dpm.setApplicationHidden(dar, name, status)
             if (result) hiddenPackages.update { it.plusOrMinus(status, name) }
+        }
+        if (Build.VERSION.SDK_INT >= 30 && packages.any { it in ucdPackages }) {
+            dpm.setUserControlDisabledPackages(dar, ucdPackages) // Restore
         }
     }
 
@@ -183,20 +200,25 @@ class AppFeaturesViewModel(
         packageName: String, state: Int
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            ph.safeDpmCall {
-                val result = dpm.setPermissionGrantState(
-                    dar, packageName, selectedPermissionItem.value.id, state
-                )
-                if (result) {
-                    permissionPackagesState.update { list ->
-                        val muList = list.toMutableList()
-                        val index = list.indexOfFirst { it.first.info.name == packageName }
-                        muList[index] = list[index].first to state
-                        muList
-                    }
-                } else {
-                    toastChannel.sendStatus(false)
+            var result = false
+            try {
+                ph.safeDpmCall {
+                    result = dpm.setPermissionGrantState(
+                        dar, packageName, selectedPermissionItem.value.id, state
+                    )
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            if (result) {
+                permissionPackagesState.update { list ->
+                    val muList = list.toMutableList()
+                    val index = list.indexOfFirst { it.first.info.name == packageName }
+                    muList[index] = list[index].first to state
+                    muList
+                }
+            } else {
+                toastChannel.sendStatus(false)
             }
         }
     }
