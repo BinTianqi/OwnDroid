@@ -2,29 +2,30 @@ package com.bintianqi.owndroid.feature.system
 
 import android.app.admin.SecurityLog
 import android.database.DatabaseUtils
+import android.database.sqlite.SQLiteDatabase
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.database.getStringOrNull
-import com.bintianqi.owndroid.MyDbHelper
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.ClassDiscriminatorMode
 import kotlinx.serialization.json.Json
 import java.io.OutputStream
 
-class SecurityLoggingRepository(val dbHelper: MyDbHelper) {
+class SecurityLoggingRepository(val database: SQLiteDatabase) {
     fun getSecurityLogsCount(): Long {
-        return DatabaseUtils.queryNumEntries(dbHelper.readableDatabase, "security_logs")
+        return DatabaseUtils.queryNumEntries(database, "security_logs")
     }
 
     @OptIn(ExperimentalSerializationApi::class)
     @RequiresApi(24)
     fun writeSecurityLogs(events: List<SecurityLog.SecurityEvent>) {
-        val db = dbHelper.writableDatabase
         val json = Json {
             classDiscriminatorMode = ClassDiscriminatorMode.NONE
         }
-        val statement = db.compileStatement("INSERT INTO security_logs VALUES (?, ?, ?, ?, ?)")
-        db.beginTransaction()
+        val statement = database.compileStatement(
+            "INSERT INTO security_logs VALUES (?, ?, ?, ?, ?)"
+        )
+        database.beginTransaction()
         events.forEach { event ->
             try {
                 if (Build.VERSION.SDK_INT >= 28) {
@@ -49,8 +50,8 @@ class SecurityLoggingRepository(val dbHelper: MyDbHelper) {
                 statement.clearBindings()
             }
         }
-        db.setTransactionSuccessful()
-        db.endTransaction()
+        database.setTransactionSuccessful()
+        database.endTransaction()
         statement.close()
     }
 
@@ -63,7 +64,7 @@ class SecurityLoggingRepository(val dbHelper: MyDbHelper) {
         val bw = stream.bufferedWriter()
         bw.write("[")
         while (true) {
-            dbHelper.readableDatabase.rawQuery(
+            database.rawQuery(
                 "SELECT * FROM security_logs LIMIT ? OFFSET ?",
                 arrayOf(100.toString(), offset.toString())
             ).use { cursor ->
@@ -116,7 +117,7 @@ class SecurityLoggingRepository(val dbHelper: MyDbHelper) {
     }
 
     fun deleteSecurityLogs() {
-        dbHelper.writableDatabase.execSQL("DELETE FROM security_logs")
+        database.execSQL("DELETE FROM security_logs")
     }
 
     companion object {

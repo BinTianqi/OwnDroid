@@ -1,25 +1,24 @@
 package com.bintianqi.owndroid.feature.network
 
 import android.database.DatabaseUtils
+import android.database.sqlite.SQLiteDatabase
 import androidx.core.database.getIntOrNull
 import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
-import com.bintianqi.owndroid.MyDbHelper
 import kotlinx.serialization.json.Json
 import java.io.OutputStream
 
-class NetworkLoggingRepository(val dbHelper: MyDbHelper) {
+class NetworkLoggingRepository(val database: SQLiteDatabase) {
 
     fun getNetworkLogsCount(): Long {
-        return DatabaseUtils.queryNumEntries(dbHelper.readableDatabase, "network_logs")
+        return DatabaseUtils.queryNumEntries(database, "network_logs")
     }
 
     fun writeNetworkLogs(logs: List<NetworkLog>) {
-        val db = dbHelper.writableDatabase
-        val statement = db.compileStatement(
+        val statement = database.compileStatement(
             "INSERT INTO network_logs VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         )
-        db.beginTransaction()
+        database.beginTransaction()
         logs.forEach { event ->
             if (event.id == null) statement.bindNull(1)
             else statement.bindLong(1, event.id)
@@ -54,8 +53,8 @@ class NetworkLoggingRepository(val dbHelper: MyDbHelper) {
             statement.executeInsert()
             statement.clearBindings()
         }
-        db.setTransactionSuccessful()
-        db.endTransaction()
+        database.setTransactionSuccessful()
+        database.endTransaction()
         statement.close()
     }
 
@@ -68,7 +67,7 @@ class NetworkLoggingRepository(val dbHelper: MyDbHelper) {
         var addComma = false
         bw.write("[")
         while (true) {
-            val cursor = dbHelper.readableDatabase.rawQuery(
+            val cursor = database.rawQuery(
                 "SELECT * FROM network_logs LIMIT ? OFFSET ?",
                 arrayOf(100.toString(), offset.toString())
             )
@@ -92,6 +91,6 @@ class NetworkLoggingRepository(val dbHelper: MyDbHelper) {
     }
 
     fun deleteNetworkLogs() {
-        dbHelper.writableDatabase.execSQL("DELETE FROM network_logs")
+        database.execSQL("DELETE FROM network_logs")
     }
 }

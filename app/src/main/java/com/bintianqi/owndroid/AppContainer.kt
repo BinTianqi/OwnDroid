@@ -17,12 +17,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 class AppContainer(val app: MyApplication) {
     val dbHelper = MyDbHelper(app)
-    val networkLoggingRepo = NetworkLoggingRepository(dbHelper)
-    val securityLoggingRepo = SecurityLoggingRepository(dbHelper)
-    val appGroupRepo = AppGroupRepository(dbHelper)
-    val dhizukuServerRepo = DhizukuServerRepository(dbHelper)
-    val cpifRepo = CrossProfileIntentFilterRepository(dbHelper)
-    val timeBlockerRepo = TimeBlockerRepository(dbHelper)
+    val networkLoggingRepo = NetworkLoggingRepository(dbHelper.writableDatabase)
+    val securityLoggingRepo = SecurityLoggingRepository(dbHelper.writableDatabase)
+    val appGroupRepo = AppGroupRepository(dbHelper.writableDatabase)
+    val dhizukuServerRepo = DhizukuServerRepository(dbHelper.writableDatabase)
+    val cpifRepo = CrossProfileIntentFilterRepository(dbHelper.writableDatabase)
+    val timeBlockerRepo = TimeBlockerRepository(dbHelper.writableDatabase)
     val unlockManager = UnlockManager(app.filesDir.resolve("time_blocker_unlock.json"))
     val settingsRepo = SettingsRepository(app.filesDir.resolve("settings.json"))
     val dhizukuErrorState = MutableStateFlow<DhizukuError?>(null)

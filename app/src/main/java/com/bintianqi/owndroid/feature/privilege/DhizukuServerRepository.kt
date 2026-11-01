@@ -2,13 +2,12 @@ package com.bintianqi.owndroid.feature.privilege
 
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
-import com.bintianqi.owndroid.MyDbHelper
 
-class DhizukuServerRepository(val dbHelper: MyDbHelper) {
+class DhizukuServerRepository(val database: SQLiteDatabase) {
 
     fun getDhizukuClients(): List<DhizukuClientInfo> {
         val list = mutableListOf<DhizukuClientInfo>()
-        dbHelper.readableDatabase.rawQuery("SELECT * FROM dhizuku_clients", null).use { cursor ->
+        database.rawQuery("SELECT * FROM dhizuku_clients", null).use { cursor ->
             while (cursor.moveToNext()) {
                 list += DhizukuClientInfo(
                     cursor.getInt(0), cursor.getString(1),
@@ -21,12 +20,12 @@ class DhizukuServerRepository(val dbHelper: MyDbHelper) {
 
     fun checkDhizukuClientPermission(uid: Int, signature: String?, permission: String): Boolean {
         val cursor = if (signature == null) {
-            dbHelper.readableDatabase.rawQuery(
+            database.rawQuery(
                 "SELECT permissions FROM dhizuku_clients WHERE uid = $uid AND signature IS NULL",
                 null
             )
         } else {
-            dbHelper.readableDatabase.rawQuery(
+            database.rawQuery(
                 "SELECT permissions FROM dhizuku_clients WHERE uid = $uid AND signature = ?",
                 arrayOf(signature)
             )
@@ -41,13 +40,13 @@ class DhizukuServerRepository(val dbHelper: MyDbHelper) {
         cv.put("uid", info.uid)
         cv.put("signature", info.signature)
         cv.put("permissions", info.permissions.joinToString(","))
-        dbHelper.writableDatabase.insertWithOnConflict(
+        database.insertWithOnConflict(
             "dhizuku_clients", null, cv,
             SQLiteDatabase.CONFLICT_REPLACE
         )
     }
 
     fun deleteDhizukuClient(info: DhizukuClientInfo) {
-        dbHelper.writableDatabase.delete("dhizuku_clients", "uid = ${info.uid}", null)
+        database.delete("dhizuku_clients", "uid = ${info.uid}", null)
     }
 }

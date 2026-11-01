@@ -54,11 +54,12 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 15) 
             db.execSQL(TIME_BLOCK_USAGE_TABLE)
         }
         if (oldVersion < 14) {
-            val groups = AppGroupRepository.getAppGroupsV1(db)
+            val repo = AppGroupRepository(db)
+            val groups = repo.getAppGroupsV1()
             db.execSQL("ALTER TABLE app_groups DROP COLUMN apps")
             db.execSQL(APP_GROUP_APPS_TABLE)
             groups.forEach {
-                AppGroupRepository.setGroupApps(db, it.id.toLong(), it.apps)
+                repo.setGroupApps(it.id.toLong(), it.apps)
             }
         }
         if (oldVersion < 15) {

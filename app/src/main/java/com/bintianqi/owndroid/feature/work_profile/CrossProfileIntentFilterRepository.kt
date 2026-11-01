@@ -1,9 +1,9 @@
 package com.bintianqi.owndroid.feature.work_profile
 
 import android.content.ContentValues
-import com.bintianqi.owndroid.MyDbHelper
+import android.database.sqlite.SQLiteDatabase
 
-class CrossProfileIntentFilterRepository(val dbHelper: MyDbHelper) {
+class CrossProfileIntentFilterRepository(val database: SQLiteDatabase) {
     fun addFilter(data: IntentFilterOptions): Long {
         val cv = ContentValues()
         cv.put("action_str", data.action)
@@ -11,7 +11,7 @@ class CrossProfileIntentFilterRepository(val dbHelper: MyDbHelper) {
         cv.put("mime_type", data.mimeType)
         cv.put("direction", data.direction)
         cv.put("created_at", System.currentTimeMillis())
-        return dbHelper.writableDatabase.insert("cpif2", null, cv)
+        return database.insert("cpif2", null, cv)
     }
 
     fun updateFilter(id: Int, data: IntentFilterOptions) {
@@ -21,18 +21,18 @@ class CrossProfileIntentFilterRepository(val dbHelper: MyDbHelper) {
         cv.put("mime_type", data.mimeType)
         cv.put("direction", data.direction)
         cv.put("created_at", System.currentTimeMillis())
-        dbHelper.writableDatabase.update("cpif2", cv, "id = ?", arrayOf(id.toString()))
+        database.update("cpif2", cv, "id = ?", arrayOf(id.toString()))
     }
 
     fun setEnabled(id: Int, enabled: Boolean) {
         val cv = ContentValues()
         cv.put("enabled", if (enabled) 1 else 0)
-        dbHelper.writableDatabase.update("cpif2", cv, "id = ?", arrayOf(id.toString()))
+        database.update("cpif2", cv, "id = ?", arrayOf(id.toString()))
     }
 
     fun getAllFilters(): List<IntentFilterEntry> {
         val list = mutableListOf<IntentFilterEntry>()
-        dbHelper.readableDatabase.rawQuery(
+        database.rawQuery(
             "SELECT * FROM cpif2 ORDER BY created_at DESC", null
         ).use {
             while (it.moveToNext()) {
@@ -46,10 +46,10 @@ class CrossProfileIntentFilterRepository(val dbHelper: MyDbHelper) {
     }
 
     fun deleteById(id: Int) {
-        dbHelper.writableDatabase.delete("cpif2", "id = ?", arrayOf("$id"))
+        database.delete("cpif2", "id = ?", arrayOf("$id"))
     }
 
     fun deleteAllCrossProfileIntentFilters() {
-        dbHelper.writableDatabase.delete("cpif2", null, null)
+        database.delete("cpif2", null, null)
     }
 }
