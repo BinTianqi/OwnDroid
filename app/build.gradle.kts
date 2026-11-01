@@ -27,7 +27,9 @@ android {
         minSdk = 23
         targetSdk = 37
         versionCode = 48
-        versionName = "8.4"
+        val versionSha = project.findProperty("VersionSha")
+        val versionSuffix = if (versionSha == null) "" else "-${versionSha}"
+        versionName = "8.4${versionSuffix}"
     }
 
     buildTypes {

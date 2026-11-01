@@ -34,7 +34,7 @@ jobs:
         run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
       - name: Build APK (testkey)
-        run: ./gradlew build
+        run: ./gradlew build -PVersionSha="${{ env.SHORT_SHA }}"
 
       - name: Upload Debug APK (testkey)
         uses: actions/upload-artifact@v6
@@ -51,7 +51,7 @@ jobs:
       - name: Build APK
         run: |
           echo "${{ secrets.KEY_BASE64 }}" | base64 --decode - > app/release.jks
-          ./gradlew build -PStoreFile="$(pwd)/app/release.jks" -PStorePassword="${{ secrets.KEYSTORE_PASSWORD }}" -PKeyPassword="${{ secrets.KEY_PASSWORD }}" -PKeyAlias="${{ secrets.KEY_ALIAS }}"
+          ./gradlew build -PVersionSha="${{ env.SHORT_SHA }}" -PStoreFile="$(pwd)/app/release.jks" -PStorePassword="${{ secrets.KEYSTORE_PASSWORD }}" -PKeyPassword="${{ secrets.KEY_PASSWORD }}" -PKeyAlias="${{ secrets.KEY_ALIAS }}"
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v6
