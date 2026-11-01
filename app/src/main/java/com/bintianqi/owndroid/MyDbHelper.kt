@@ -56,7 +56,9 @@ class MyDbHelper(context: Context): SQLiteOpenHelper(context, "data", null, 15) 
         if (oldVersion < 14) {
             val repo = AppGroupRepository(db)
             val groups = repo.getAppGroupsV1()
-            db.execSQL("ALTER TABLE app_groups DROP COLUMN apps")
+            // Dropping column leads to crashes on older Android versions, see issue #382
+            // So we simply keep that column
+            //db.execSQL("ALTER TABLE app_groups DROP COLUMN apps")
             db.execSQL(APP_GROUP_APPS_TABLE)
             groups.forEach {
                 repo.setGroupApps(it.id.toLong(), it.apps)

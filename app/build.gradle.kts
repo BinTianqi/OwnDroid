@@ -26,10 +26,10 @@ android {
         applicationId = "com.bintianqi.owndroid"
         minSdk = 23
         targetSdk = 37
-        versionCode = 48
+        versionCode = 49
         val versionSha = project.findProperty("VersionSha")
         val versionSuffix = if (versionSha == null) "" else "-${versionSha}"
-        versionName = "8.4${versionSuffix}"
+        versionName = "8.4.1${versionSuffix}"
     }
 
     buildTypes {
