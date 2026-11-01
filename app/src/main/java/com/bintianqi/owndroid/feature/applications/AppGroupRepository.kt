@@ -4,12 +4,17 @@ import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import com.bintianqi.owndroid.MyDbHelper
 
+/**
+ * Because of compatibility issues, the `apps` column may or may not exist,
+ * so we have to specify column names explicitly.
+ * Also see comments in [MyDbHelper.onUpgrade].
+ */
 class AppGroupRepository(val dbHelper: MyDbHelper) {
     fun getAppGroups(): List<AppGroup> {
         val groupApps = getGroupApps()
         val list = mutableListOf<AppGroup>()
         dbHelper.readableDatabase.rawQuery(
-            "SELECT * FROM app_groups ORDER BY position", null
+            "SELECT id, name FROM app_groups ORDER BY position", null
         ).use { cursor ->
             while (cursor.moveToNext()) {
                 val id = cursor.getInt(0)
@@ -74,7 +79,7 @@ class AppGroupRepository(val dbHelper: MyDbHelper) {
         @Deprecated("Only use it for migrating purpose")
         fun getAppGroupsV1(db: SQLiteDatabase): List<AppGroup> {
             val list = mutableListOf<AppGroup>()
-            db.rawQuery("SELECT * FROM app_groups", null).use {
+            db.rawQuery("SELECT id, name, apps FROM app_groups", null).use {
                 while (it.moveToNext()) {
                     list += AppGroup(it.getInt(0), it.getString(1), it.getString(2).split(','))
                 }
