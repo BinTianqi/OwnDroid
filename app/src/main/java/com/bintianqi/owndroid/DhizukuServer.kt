@@ -31,10 +31,13 @@ import com.bintianqi.owndroid.utils.MyAdminComponent
 import com.bintianqi.owndroid.utils.getPackageSignature
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.rosan.dhizuku.aidl.IDhizukuClient
+import com.rosan.dhizuku.aidl.IDhizukuLockTaskModeListener
 import com.rosan.dhizuku.aidl.IDhizukuRequestPermissionListener
 import com.rosan.dhizuku.server_api.DhizukuProvider
 import com.rosan.dhizuku.server_api.DhizukuService
 import com.rosan.dhizuku.shared.DhizukuVariables
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 
 private const val TAG = "DhizukuServer"
@@ -48,8 +51,9 @@ class MyDhizukuProvider : DhizukuProvider() {
     }
 }
 
-class MyDhizukuService(context: Context, admin: ComponentName, client: IDhizukuClient) :
-    DhizukuService(context, admin, client) {
+class MyDhizukuService(
+    context: Context, admin: ComponentName, client: IDhizukuClient
+) : DhizukuService(context, admin, client) {
     override fun checkCallingPermission(func: String?, callingUid: Int, callingPid: Int): Boolean {
         val settingsRepo = (mContext.applicationContext as MyApplication).container.settingsRepo
         if (!settingsRepo.data.privilege.dhizukuServer) return false
@@ -77,6 +81,32 @@ class MyDhizukuService(context: Context, admin: ComponentName, client: IDhizukuC
     }
 
     override fun getVersionName() = "1.0"
+
+    override fun addLockTaskModeListener(listener: IDhizukuLockTaskModeListener?) {
+        if (listener != null) lockTaskListeners.add(listener)
+    }
+
+    override fun removeLockTaskModeListener(listener: IDhizukuLockTaskModeListener?) {
+        if (listener != null) lockTaskListeners.remove(listener)
+    }
+
+    companion object {
+        val lockTaskListeners = mutableListOf<IDhizukuLockTaskModeListener>()
+
+        fun notifyLockTask(state: Boolean, pkg: String?) {
+            lockTaskListeners.forEach {
+                try {
+                    if (it.asBinder().pingBinder()) {
+                        it.onLockTaskModeChanged(state, pkg)
+                    } else {
+                        lockTaskListeners.remove(it)
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed to notify lock task mode change", e)
+                }
+            }
+        }
+    }
 }
 
 class DhizukuActivity : ComponentActivity() {

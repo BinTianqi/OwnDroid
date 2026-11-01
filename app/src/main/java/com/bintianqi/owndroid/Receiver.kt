@@ -111,6 +111,17 @@ class Receiver : DeviceAdminReceiver() {
         NotificationUtils.notifyEvent(context, getSr(context), type, text)
     }
 
+    override fun onLockTaskModeEntering(context: Context, intent: Intent, pkg: String) {
+        super.onLockTaskModeEntering(context, intent, pkg)
+        MyDhizukuService.notifyLockTask(true, pkg)
+    }
+
+    override fun onLockTaskModeExiting(context: Context, intent: Intent) {
+        super.onLockTaskModeExiting(context, intent)
+        MyDhizukuService.notifyLockTask(false, null)
+        LockTaskService.exitEventChannel.trySend(true)
+    }
+
     companion object {
         fun getSr(context: Context) =
             (context.applicationContext as MyApplication).container.settingsRepo

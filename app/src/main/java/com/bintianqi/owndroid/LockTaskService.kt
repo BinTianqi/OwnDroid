@@ -8,18 +8,21 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.IBinder
-import androidx.annotation.RequiresApi
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.bintianqi.owndroid.utils.MyNotificationChannel
 import com.bintianqi.owndroid.utils.NotificationType
+import com.rosan.dhizuku.api.Dhizuku
+import com.rosan.dhizuku.api.DhizukuLockTaskModeListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@RequiresApi(28)
 class LockTaskService: Service() {
     val coroutineScope = CoroutineScope(Dispatchers.IO)
 
@@ -58,14 +61,37 @@ class LockTaskService: Service() {
             }
             stop()
         }
+        coroutineScope.launch {
+            exitEventChannel.receive()
+            stop()
+        }
+        val ph = (application as MyApplication).container.privilegeHelper
+        if (ph.dhizuku) {
+            try {
+                Dhizuku.addLockTaskModeListener(dhizukuLockTaskListener)
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to register Dhizuku lock task mode listener", e)
+            }
+        }
         return START_NOT_STICKY
     }
 
+    val dhizukuLockTaskListener = object : DhizukuLockTaskModeListener() {
+        override fun onLockTaskModeChanged(entering: Boolean, pkg: String?) {
+            if (!entering) {
+                Dhizuku.removeLockTaskModeListener(this)
+                stop()
+            }
+        }
+    }
+
     fun stop() {
+        coroutineScope.cancel()
         unregisterReceiver(stopReceiver)
         stopSelf()
     }
 
+    @Suppress("NewApi")
     fun stopLockTask() {
         val ph = (application as MyApplication).container.privilegeHelper
         ph.safeDpmCall {
@@ -78,6 +104,10 @@ class LockTaskService: Service() {
     }
 
     companion object {
+        const val TAG = "LockTaskService"
         const val STOP_ACTION = "com.bintianqi.owndroid.action.STOP_LOCK_TASK_MODE"
+
+        /** Receive events from [Receiver] */
+        val exitEventChannel = Channel<Boolean>(0, BufferOverflow.DROP_LATEST)
     }
 }
