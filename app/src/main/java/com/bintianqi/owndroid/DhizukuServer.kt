@@ -96,7 +96,7 @@ class MyDhizukuService(
         fun notifyLockTask(state: Boolean, pkg: String?) {
             lockTaskListeners.forEach {
                 try {
-                    if (it.asBinder().pingBinder()) {
+                    if (it.asBinder().isBinderAlive) {
                         it.onLockTaskModeChanged(state, pkg)
                     } else {
                         lockTaskListeners.remove(it)

@@ -89,10 +89,16 @@ class WorkingModesViewModel(
     @RequiresApi(28)
     fun activateDoByDhizuku(callback: (Boolean, String?) -> Unit) = ph.safeDpmCall {
         dpm.transferOwnership(dar, MyAdminComponent, null)
-        sr.update { it.privilege.dhizuku = false }
-        ph.dhizuku = false
-        updateStatus()
-        callback(true, null)
+        // Users can block ownership transferring in newer versions of Dhizuku app.
+        // So check if the privilege is successfully transferred.
+        if (ph.myDpm.isDeviceOwnerApp(application.packageName)) {
+            sr.update { it.privilege.dhizuku = false }
+            ph.dhizuku = false
+            updateStatus()
+            callback(true, null)
+        } else {
+            callback(false, null)
+        }
     }
 
     fun activateDhizukuMode(callback: (Boolean, String?) -> Unit) {
