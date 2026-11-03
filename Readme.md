@@ -136,6 +136,8 @@ OwnDroid provides an Intent-based API. You need to set the API key in settings a
 - SET_CAMERA_ENABLED()
 - SET_USB_DISABLED() (12)
 - SET_USB_ENABLED() (12)
+- SET_ALWAYS_ON_VPN(package: String, lockdown: Boolean = false) (7)
+- CLEAR_ALWAYS_ON_VPN() (7)
 - LOCK()
 - REBOOT() (7)
 
@@ -151,6 +153,11 @@ val intent = Intent("com.bintianqi.owndroid.action.HIDE")
     .putExtra("key", "abcdefg")
     .putExtra("package", "com.example.app")
 context.sendBroadcast(intent)
+```
+
+```shell
+# An example of setting an always-on VPN in ADB shell (works with any VPN app that supports it)
+am broadcast -a com.bintianqi.owndroid.action.SET_ALWAYS_ON_VPN -n com.bintianqi.owndroid/.ApiReceiver --es key abcdefg --es package com.example.vpn --ez lockdown false
 ```
 
 [Available user restrictions](https://developer.android.com/reference/android/os/UserManager#constants_1)
