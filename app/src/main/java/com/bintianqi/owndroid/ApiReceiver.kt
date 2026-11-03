@@ -16,6 +16,7 @@ class ApiReceiver : BroadcastReceiver() {
             val app = intent.getStringExtra("package")
             val permission = intent.getStringExtra("permission")
             val restriction = intent.getStringExtra("restriction")
+            val lockdown = intent.getBooleanExtra("lockdown", false)
             if (!app.isNullOrEmpty()) log += "\npackage: $app"
             if (!permission.isNullOrEmpty()) log += "\npermission: $permission"
             try {
@@ -119,6 +120,14 @@ class ApiReceiver : BroadcastReceiver() {
 
                         "SET_SCREEN_CAPTURE_ENABLED" -> {
                             dpm.setScreenCaptureDisabled(dar, false)
+                        }
+                        
+                        "SET_ALWAYS_ON_VPN" -> {
+                            dpm.setAlwaysOnVpnPackage(dar, app!!, lockdown)
+                        }
+
+                        "CLEAR_ALWAYS_ON_VPN" -> {
+                            dpm.setAlwaysOnVpnPackage(dar, null, false)
                         }
 
                         else -> {
