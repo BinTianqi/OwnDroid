@@ -792,7 +792,7 @@ fun myEntryProvider(
     myEntry<Destination.AppLockSettings>(
         metadata = navParentKey<Destination.Settings>()
     ) {
-        AppLockSettingsScreen(viewModel(), ::navigateUp)
+        AppLockSettingsScreen(viewModel(factory = container.viewModelFactory), ::navigateUp)
     }
     myEntry<Destination.SettingsSync>(
         metadata = navParentKey<Destination.Settings>()

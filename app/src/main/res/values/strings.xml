@@ -656,6 +656,15 @@
     <string name="shortcuts">Shortcuts</string>
     <string name="shortcuts_disabled">Shortcuts are disabled</string>
     <string name="app_lock">App lock</string>
+    <string name="configured">Configured</string>
+    <string name="not_configured">Not configured</string>
+    <string name="set_up">Set up</string>
+    <string name="change">Change</string>
+    <string name="show_secret">Show secret</string>
+    <string name="password_removed">Password removed</string>
+    <string name="totp_removed">TOTP removed</string>
+    <string name="restore">Restore</string>
+    <string name="use_biometrics">Use biometrics</string>
     <string name="minimum_length_4">The password length must be of 4 digits or more.</string>
     <string name="password_set_success">Password set success.</string>
     <string name="disable_app_lock_confirmation_title">Disable app lock</string>
@@ -757,6 +766,7 @@
     <string name="info_deactivate">OwnDroid will lose its privilege</string>
     <string name="info_personal_apps_suspended">Your personal apps is suspended by OwnDroid</string>
     <string name="info_secret_code">OwnDroid will disappear from your home screen, but you can open it by typing the following secret code in your dialer: *#*#240113#*#*. It is strongly recommended to test whether this code works, or you will be locked out of this app.</string>
+    <string name="info_app_lock">Set up at least on of the unlock methods to enable app lock.</string>
 
     <string name="choose_working_mode">Choose a working mode</string>
     <string name="recommended">Recommended</string>

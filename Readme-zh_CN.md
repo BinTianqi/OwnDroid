@@ -132,6 +132,8 @@ OwnDroid 提供了一个基于 Intent 的 API 。你需要在设置中设置密�
 - SET_CAMERA_ENABLED()
 - SET_USB_DISABLED() (12)
 - SET_USB_ENABLED() (12)
+- SET_ALWAYS_ON_VPN(package: String, lockdown: Boolean = false) (7)
+- CLEAR_ALWAYS_ON_VPN() (7)
 - LOCK()
 - REBOOT() (7)
 

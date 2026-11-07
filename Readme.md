@@ -155,11 +155,6 @@ val intent = Intent("com.bintianqi.owndroid.action.HIDE")
 context.sendBroadcast(intent)
 ```
 
-```shell
-# An example of setting an always-on VPN in ADB shell (works with any VPN app that supports it)
-am broadcast -a com.bintianqi.owndroid.action.SET_ALWAYS_ON_VPN -n com.bintianqi.owndroid/.ApiReceiver --es key abcdefg --es package com.example.vpn --ez lockdown false
-```
-
 [Available user restrictions](https://developer.android.com/reference/android/os/UserManager#constants_1)
 
 ## Build

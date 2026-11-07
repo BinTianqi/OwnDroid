@@ -620,6 +620,15 @@
     <string name="shortcuts">快捷方式</string>
     <string name="shortcuts_disabled">快捷方式已禁用</string>
     <string name="app_lock">应用锁</string>
+    <string name="configured">已配置</string>
+    <string name="not_configured">未配置</string>
+    <string name="set_up">配置</string>
+    <string name="change">修改</string>
+    <string name="show_secret">显示密钥</string>
+    <string name="password_removed">密码已移除</string>
+    <string name="totp_removed">TOTP已移除</string>
+    <string name="restore">恢复</string>
+    <string name="use_biometrics">使用生物识别</string>
     <string name="minimum_length_4">长度需要在4位或以上</string>
     <string name="password_set_success">设置密码成功</string>
     <string name="disable_app_lock_confirmation_title">停用应用锁</string>
@@ -720,6 +729,7 @@
     <string name="info_deactivate">OwnDroid将会丢失特权</string>
     <string name="info_personal_apps_suspended">你的个人应用被OwnDroid挂起</string>
     <string name="info_secret_code">OwnDroid将从主屏幕上消失，但你仍然可以通过以下拨号器暗码打开它：*#*#240113#*#*。强烈建议在隐藏前测试该暗码是否可用，否则你将无法打开这个app。</string>
+    <string name="info_app_lock">配置至少一个解锁方式以启用应用锁。</string>
 
     <string name="choose_working_mode">选择一个工作模式</string>
     <string name="recommended">推荐</string>

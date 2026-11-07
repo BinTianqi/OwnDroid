@@ -19,9 +19,7 @@ import com.bintianqi.owndroid.feature.privilege.DhizukuServerRepository
 import com.bintianqi.owndroid.feature.privilege.DhizukuServerViewModel
 import com.bintianqi.owndroid.feature.privilege.TransferOwnershipViewModel
 import com.bintianqi.owndroid.feature.privilege.WorkingModesViewModel
-import com.bintianqi.owndroid.feature.time_blocker.TimeBlockerRepository
-import com.bintianqi.owndroid.feature.time_blocker.TimeBlockerViewModel
-import com.bintianqi.owndroid.feature.time_blocker.UnlockManager
+import com.bintianqi.owndroid.feature.settings.AppLockViewModel
 import com.bintianqi.owndroid.feature.settings.MySettings
 import com.bintianqi.owndroid.feature.settings.SettingsRepository
 import com.bintianqi.owndroid.feature.settings.SettingsViewModel
@@ -34,6 +32,8 @@ import com.bintianqi.owndroid.feature.system.SystemOptionsViewModel
 import com.bintianqi.owndroid.feature.system.SystemUpdateViewModel
 import com.bintianqi.owndroid.feature.system.SystemViewModel
 import com.bintianqi.owndroid.feature.system.TimeViewModel
+import com.bintianqi.owndroid.feature.time_blocker.TimeBlockerRepository
+import com.bintianqi.owndroid.feature.time_blocker.TimeBlockerViewModel
 import com.bintianqi.owndroid.feature.user_restriction.UserRestrictionViewModel
 import com.bintianqi.owndroid.feature.users.UsersViewModel
 import com.bintianqi.owndroid.feature.work_profile.CrossProfileIntentFilterRepository
@@ -50,7 +50,7 @@ class MyViewModelFactory(
     val sr: SettingsRepository, val nlRepo: NetworkLoggingRepository,
     val dsRepo: DhizukuServerRepository, val slRepo: SecurityLoggingRepository,
     val agRepo: AppGroupRepository, val cpifRepo: CrossProfileIntentFilterRepository,
-    val tbRepo: TimeBlockerRepository, val um: UnlockManager,
+    val tbRepo: TimeBlockerRepository,
     val agState: MutableStateFlow<List<AppGroup>>,
     val de: MutableStateFlow<DhizukuError?>, val ps: MutableStateFlow<PrivilegeStatus>,
     val ts: MutableStateFlow<MySettings.Theme>, val tc: ToastChannel
@@ -147,7 +147,10 @@ class MyViewModelFactory(
         }
 
         if (checkType(SettingsViewModel::class)) {
-            return SettingsViewModel(app, sr, ph, ps, tc, ts, um, tbRepo) as T
+            return SettingsViewModel(app, sr, ph, ps, tc, ts, tbRepo) as T
+        }
+        if (checkType(AppLockViewModel::class)) {
+            return AppLockViewModel(sr) as T
         }
         throw Exception("Unknown ViewModel")
     }

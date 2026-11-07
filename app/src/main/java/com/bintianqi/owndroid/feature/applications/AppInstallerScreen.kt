@@ -51,7 +51,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
@@ -90,8 +89,8 @@ fun AppInstaller(
                     else Icon(Icons.Default.PlayArrow, null)
                 },
                 onClick = {
-                    if (!vm.getAppLockConfig().isActive) vm.startInstall(options)
-                    else appLockDialog = true
+                    if (vm.getAppLockConfig().isActive()) appLockDialog = true
+                    else vm.startInstall(options)
                 },
                 expanded = !uiState.installing
             )
@@ -126,17 +125,13 @@ fun AppInstaller(
         ResultDialog(uiState.result, vm::closeResultDialog)
     }
     if (appLockDialog) {
-        val context = LocalContext.current
         AppLockDialog(
             vm.getAppLockConfig(),
             onSucceed = {
                 appLockDialog = false
                 vm.startInstall(options)
             },
-            onDismiss = { appLockDialog = false },
-            verifyTotp = { code ->
-                (context.applicationContext as MyApplication).container.unlockManager.verifyCode(code)
-            }
+            onDismiss = { appLockDialog = false }
         )
     }
 }

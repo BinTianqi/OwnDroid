@@ -6,7 +6,6 @@ import com.bintianqi.owndroid.feature.privilege.DhizukuServerRepository
 import com.bintianqi.owndroid.feature.settings.SettingsRepository
 import com.bintianqi.owndroid.feature.system.SecurityLoggingRepository
 import com.bintianqi.owndroid.feature.time_blocker.TimeBlockerRepository
-import com.bintianqi.owndroid.feature.time_blocker.UnlockManager
 import com.bintianqi.owndroid.feature.work_profile.CrossProfileIntentFilterRepository
 import com.bintianqi.owndroid.utils.DhizukuError
 import com.bintianqi.owndroid.utils.PrivilegeStatus
@@ -23,7 +22,6 @@ class AppContainer(val app: MyApplication) {
     val dhizukuServerRepo = DhizukuServerRepository(dbHelper.writableDatabase)
     val cpifRepo = CrossProfileIntentFilterRepository(dbHelper.writableDatabase)
     val timeBlockerRepo = TimeBlockerRepository(dbHelper.writableDatabase)
-    val unlockManager = UnlockManager(app.filesDir.resolve("time_blocker_unlock.json"))
     val settingsRepo = SettingsRepository(app.filesDir.resolve("settings.json"))
     val dhizukuErrorState = MutableStateFlow<DhizukuError?>(null)
     val privilegeHelper = PrivilegeHelper(
@@ -36,7 +34,7 @@ class AppContainer(val app: MyApplication) {
     val toastChannel = ToastChannel(app)
     val viewModelFactory = MyViewModelFactory(
         app, privilegeHelper, settingsRepo, networkLoggingRepo, dhizukuServerRepo,
-        securityLoggingRepo, appGroupRepo, cpifRepo, timeBlockerRepo, unlockManager,
+        securityLoggingRepo, appGroupRepo, cpifRepo, timeBlockerRepo,
         appGroupsState, dhizukuErrorState, privilegeState, themeState, toastChannel
     )
 }

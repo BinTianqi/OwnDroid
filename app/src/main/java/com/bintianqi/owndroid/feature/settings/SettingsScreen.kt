@@ -6,15 +6,12 @@ import android.os.Build.VERSION
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -23,15 +20,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,7 +38,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -58,16 +51,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -354,212 +341,6 @@ fun ShortcutSettingsScreen(vm: SettingsViewModel, onNavigateUp: () -> Unit) {
         },
         onDismissRequest = { addShortcutDialog = false }
     )
-}
-
-@Composable
-fun AppLockSettingsScreen(
-    vm: SettingsViewModel, onNavigateUp: () -> Unit
-) = MyScaffold(R.string.app_lock, onNavigateUp) {
-    val config = vm.getAppLockConfig()
-    var password by rememberSaveable { mutableStateOf("") }
-    var confirmPassword by rememberSaveable { mutableStateOf("") }
-    var allowBiometrics by rememberSaveable { mutableStateOf(config.biometrics) }
-    var lockWhenLeaving by rememberSaveable { mutableStateOf(config.lockWhenLeaving) }
-    var allowTotp by rememberSaveable { mutableStateOf(config.totp) }
-    var alreadySet by rememberSaveable { mutableStateOf(config.passwordHash.isNotEmpty()) }
-    val totpAvailable = vm.isTotpConfigured()
-    val isInputLegal = password.length !in 1..3 &&
-            (alreadySet || password.isNotBlank() || (allowTotp && totpAvailable))
-    var showSecret by rememberSaveable { mutableStateOf(false) }
-    var generatedSecret by rememberSaveable { mutableStateOf("") }
-    var showRemoveConfirm by rememberSaveable { mutableStateOf(false) }
-    var showDisableConfirm by rememberSaveable { mutableStateOf(false) }
-    OutlinedTextField(
-        password, { password = it }, Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        label = { Text(stringResource(R.string.password)) },
-        supportingText = {
-            Text(
-                stringResource(
-                    if (alreadySet) R.string.leave_empty_to_remain_unchanged
-                    else if (allowTotp && totpAvailable) R.string.password_optional_with_totp
-                    else R.string.minimum_length_4
-                )
-            )
-        },
-        visualTransformation = PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Password, imeAction = ImeAction.Next
-        )
-    )
-    OutlinedTextField(
-        confirmPassword, { confirmPassword = it }, Modifier.fillMaxWidth(),
-        label = { Text(stringResource(R.string.confirm_password)) },
-        visualTransformation = PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Password, imeAction = ImeAction.Done
-        )
-    )
-    if (VERSION.SDK_INT >= 28) Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp),
-        Arrangement.SpaceBetween, Alignment.CenterVertically
-    ) {
-        Text(stringResource(R.string.allow_biometric_unlock))
-        Switch(allowBiometrics, { allowBiometrics = it })
-    }
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(bottom = 6.dp),
-        Arrangement.SpaceBetween, Alignment.CenterVertically
-    ) {
-        Text(stringResource(R.string.lock_when_leaving))
-        Switch(lockWhenLeaving, { lockWhenLeaving = it })
-    }
-    if (!totpAvailable) {
-        Row(
-            Modifier.fillMaxWidth().padding(bottom = 6.dp),
-            Arrangement.SpaceBetween, Alignment.CenterVertically
-        ) {
-            Text(
-                stringResource(R.string.totp_not_configured_hint),
-                Modifier.weight(1f),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Button({
-                generatedSecret = vm.setupTotp()
-                showSecret = true
-            }) {
-                Text(stringResource(R.string.time_blocker_setup_totp))
-            }
-        }
-    } else {
-        Row(
-            Modifier.fillMaxWidth(),
-            Arrangement.SpaceBetween, Alignment.CenterVertically
-        ) {
-            Text(stringResource(R.string.allow_totp_unlock))
-            Switch(allowTotp, { allowTotp = it })
-        }
-        Row(Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
-            TextButton({
-                generatedSecret = vm.getTotpSecret()
-                showSecret = true
-            }) {
-                Text(stringResource(R.string.time_blocker_totp_secret))
-            }
-            TextButton({ showRemoveConfirm = true }) {
-                Text(
-                    stringResource(R.string.time_blocker_remove_totp),
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
-        }
-    }
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Button(
-            {
-                vm.setAppLockConfig(password, allowBiometrics, lockWhenLeaving, allowTotp)
-                onNavigateUp()
-            },
-            if (alreadySet) Modifier.weight(1f) else Modifier.fillMaxWidth(),
-            isInputLegal && confirmPassword == password
-        ) {
-            Text(stringResource(if (alreadySet) R.string.update else R.string.set))
-        }
-        if (alreadySet) {
-            Button(
-                { showDisableConfirm = true },
-                Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error,
-                    contentColor = MaterialTheme.colorScheme.onError
-                )
-            ) {
-                Text(stringResource(R.string.disable))
-            }
-        }
-    }
-    if (showDisableConfirm) AlertDialog(
-        onDismissRequest = { showDisableConfirm = false },
-        title = { Text(stringResource(R.string.disable_app_lock_confirmation_title)) },
-        text = { Text(stringResource(R.string.disable_app_lock_confirmation_message)) },
-        confirmButton = {
-            TextButton({
-                showDisableConfirm = false
-                vm.disableAppLock()
-                onNavigateUp()
-            }) {
-                Text(stringResource(R.string.disable), color = MaterialTheme.colorScheme.error)
-            }
-        },
-        dismissButton = {
-            CancelTextButton { showDisableConfirm = false }
-        }
-    )
-    if (showSecret && generatedSecret.isNotEmpty()) {
-        // otpauth URI is ASCII; byte-mode QR via ISO-8859-1 roundtrips it exactly
-        val totpQr = remember(generatedSecret) {
-            QrUtils.encodeToBitmap(vm.getOtpAuthUri().toByteArray(Charsets.ISO_8859_1), 600)
-        }
-        AlertDialog(
-            onDismissRequest = { showSecret = false },
-            title = { Text(stringResource(R.string.time_blocker_totp_secret)) },
-            text = {
-                Column {
-                    Text(stringResource(R.string.time_blocker_scan_qr))
-                    Spacer(Modifier.height(8.dp))
-                    Image(
-                        bitmap = totpQr.asImageBitmap(),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f),
-                        filterQuality = FilterQuality.None
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    SelectionContainer {
-                        Text(
-                            generatedSecret,
-                            fontFamily = FontFamily.Monospace,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    SelectionContainer {
-                        Text(
-                            vm.getOtpAuthUri(),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            },
-            confirmButton = {
-                ConfirmTextButton { showSecret = false }
-            }
-        )
-    }
-    if (showRemoveConfirm) {
-        AlertDialog(
-            onDismissRequest = { showRemoveConfirm = false },
-            title = { Text(stringResource(R.string.time_blocker_remove_totp)) },
-            confirmButton = {
-                ConfirmTextButton {
-                    vm.removeTotp()
-                    allowTotp = false
-                    showRemoveConfirm = false
-                }
-            },
-            dismissButton = {
-                CancelTextButton { showRemoveConfirm = false }
-            }
-        )
-    }
 }
 
 @Composable

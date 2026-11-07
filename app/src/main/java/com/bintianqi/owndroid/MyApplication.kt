@@ -2,9 +2,14 @@ package com.bintianqi.owndroid
 
 import android.app.Application
 import android.os.Build.VERSION
+import android.util.Log
+import com.bintianqi.owndroid.feature.time_blocker.TimeBlockerService
 import com.bintianqi.owndroid.utils.DhizukuException
 import com.bintianqi.owndroid.utils.NotificationUtils
 import com.bintianqi.owndroid.utils.getPrivilegeStatus
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 
 class MyApplication : Application() {
@@ -29,6 +34,19 @@ class MyApplication : Application() {
         }
         NotificationUtils.createChannels(this)
 
+        // Move TOTP secret to settings.json
+        try {
+            val file = filesDir.resolve("time_blocker_unlock.json")
+            if (file.exists()) {
+                val json = Json.decodeFromString<JsonObject>(file.readText())
+                val secret = json["totpSecret"]!!.jsonPrimitive.content
+                container.settingsRepo.update { it.appLock.totpSecret = secret }
+                file.delete()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
         // The time blocker is meant to be always-on: restart its service if enabled
         // rules exist and the user never explicitly stopped it (e.g. after the system
         // killed the process). Boot is handled separately by TimeBlockerBootReceiver.
@@ -37,12 +55,12 @@ class MyApplication : Application() {
                 val repo = container.timeBlockerRepo
                 val enabledByUser = container.settingsRepo.data.timeBlockerServiceEnabled
                 if (enabledByUser && repo.getEnabledRules().isNotEmpty() &&
-                    !com.bintianqi.owndroid.feature.time_blocker.TimeBlockerService.isRunning
+                    !TimeBlockerService.isRunning
                 ) {
-                    com.bintianqi.owndroid.feature.time_blocker.TimeBlockerService.start(this)
+                    TimeBlockerService.start(this)
                 }
             } catch (e: Exception) {
-                android.util.Log.e("MyApplication", "Failed to auto-start time blocker", e)
+                Log.e("MyApplication", "Failed to auto-start time blocker", e)
             }
         }
     }

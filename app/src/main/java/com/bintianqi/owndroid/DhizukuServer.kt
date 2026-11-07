@@ -36,8 +36,6 @@ import com.rosan.dhizuku.aidl.IDhizukuRequestPermissionListener
 import com.rosan.dhizuku.server_api.DhizukuProvider
 import com.rosan.dhizuku.server_api.DhizukuService
 import com.rosan.dhizuku.shared.DhizukuVariables
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 
 private const val TAG = "DhizukuServer"
@@ -167,10 +165,10 @@ class DhizukuActivity : ComponentActivity() {
                             }
                         }
                         TextButton({
-                            if (!settingsRepo.data.appLock.isActive) {
-                                close(true)
-                            } else {
+                            if (settingsRepo.data.appLock.isActive()) {
                                 appLockDialog = true
+                            } else {
+                                close(true)
                             }
                         }, enabled = time == 0) {
                             val append = if (time > 0) " (${time}s)" else ""
@@ -190,9 +188,6 @@ class DhizukuActivity : ComponentActivity() {
                     settingsRepo.data.appLock,
                     onSucceed = { close(true) },
                     onDismiss = { close(false) },
-                    verifyTotp = { code ->
-                        (application as MyApplication).container.unlockManager.verifyCode(code)
-                    }
                 )
             }
         }

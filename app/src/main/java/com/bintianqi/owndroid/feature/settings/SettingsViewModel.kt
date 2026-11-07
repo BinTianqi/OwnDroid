@@ -11,14 +11,12 @@ import com.bintianqi.owndroid.PrivilegeHelper
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.feature.time_blocker.TimeBlockerRepository
 import com.bintianqi.owndroid.feature.time_blocker.TimeBlockerService
-import com.bintianqi.owndroid.feature.time_blocker.UnlockManager
 import com.bintianqi.owndroid.utils.NotificationType
 import com.bintianqi.owndroid.utils.PrivilegeStatus
 import com.bintianqi.owndroid.utils.Shortcut
 import com.bintianqi.owndroid.utils.ShortcutSystemOption
 import com.bintianqi.owndroid.utils.ShortcutUtils
 import com.bintianqi.owndroid.utils.ToastChannel
-import com.bintianqi.owndroid.utils.hash
 import com.bintianqi.owndroid.utils.plusOrMinus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,7 +29,7 @@ class SettingsViewModel(
     val application: MyApplication, val settingsRepo: SettingsRepository,
     val ph: PrivilegeHelper, val privilegeState: StateFlow<PrivilegeStatus>,
     val toastChannel: ToastChannel, val themeState: MutableStateFlow<MySettings.Theme>,
-    val um: UnlockManager, val tbRepo: TimeBlockerRepository
+    val tbRepo: TimeBlockerRepository
 ) : ViewModel() {
     fun exportLogs(uri: Uri) {
         application.contentResolver.openOutputStream(uri)?.use { output ->
@@ -98,38 +96,6 @@ class SettingsViewModel(
         ShortcutUtils.pinLockScreenShortcut(application, settingsRepo)
     }
 
-    fun getAppLockConfig() = settingsRepo.data.appLock
-
-    fun setAppLockConfig(password: String, biometrics: Boolean, lockWhenLeaving: Boolean, totp: Boolean) {
-        settingsRepo.update {
-            if (password.isNotEmpty()) it.appLock.passwordHash = password.hash()
-            it.appLock.biometrics = biometrics
-            it.appLock.lockWhenLeaving = lockWhenLeaving
-            it.appLock.totp = totp
-        }
-        if (password.isNotEmpty()) toastChannel.sendText(R.string.password_set_success)
-    }
-
-    fun disableAppLock() {
-        settingsRepo.update {
-            it.appLock.passwordHash = ""
-            it.appLock.totp = false
-        }
-    }
-
-    fun isTotpConfigured() = um.isConfigured
-
-    fun setupTotp(): String = um.setupTotp()
-
-    fun removeTotp() {
-        um.removeTotp()
-        // Safety: if TOTP secret is removed, disable TOTP app lock so user isn't locked out
-        settingsRepo.update { it.appLock.totp = false }
-    }
-
-    fun getTotpSecret(): String = um.config.totpSecret
-
-    fun getOtpAuthUri(): String = um.getOtpAuthUri()
 
     fun getApiEnabled() = settingsRepo.data.api.enabled
     fun getApiKey() = settingsRepo.data.api.key
@@ -199,7 +165,7 @@ class SettingsViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val payload = SyncPayload(
-                    totpSecret = um.config.totpSecret,
+                    totpSecret = settingsRepo.data.appLock.totpSecret,
                     rules = tbRepo.getRules().map { SyncRule.fromBlockRule(it) }
                 )
                 val bytes = SyncCodec.encode(payload)
@@ -232,8 +198,7 @@ class SettingsViewModel(
             val totpImported = payload.totpSecret.isNotEmpty() &&
                     SyncCodec.isValidTotpSecret(payload.totpSecret)
             if (totpImported) {
-                um.setupTotp(payload.totpSecret)
-                settingsRepo.update { it.appLock.totp = true }
+                settingsRepo.update { it.appLock.totpSecret = payload.totpSecret }
             }
 
             // Start blocker service if rules are now active and it's not running

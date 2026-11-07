@@ -11,16 +11,21 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Card
-import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,42 +53,36 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.feature.settings.MySettings
+import com.bintianqi.owndroid.utils.TotpUtils
 import com.bintianqi.owndroid.utils.hash
 import com.bintianqi.owndroid.utils.showOperationResultToast
 
 @Composable
 fun AppLockDialog(
-    config: MySettings.AppLock, onSucceed: () -> Unit, onDismiss: () -> Unit,
-    verifyTotp: ((String) -> Boolean)? = null
+    config: MySettings.AppLock, onSucceed: () -> Unit, onDismiss: () -> Unit
 ) = Dialog(onDismiss, DialogProperties(true, false)) {
     val context = LocalContext.current
     val fm = LocalFocusManager.current
     val fr = remember { FocusRequester() }
-    var input by rememberSaveable { mutableStateOf("") }
-    var isError by rememberSaveable { mutableStateOf(false) }
+    var passwordInput by rememberSaveable { mutableStateOf("") }
+    var passwordError by rememberSaveable { mutableStateOf(false) }
     var showPassword by remember { mutableStateOf(false) }
     var totpInput by rememberSaveable { mutableStateOf("") }
     var totpError by rememberSaveable { mutableStateOf(false) }
-    val hasPassword = config.passwordHash.isNotEmpty()
-    val showTotp = config.totp && verifyTotp != null
-    fun unlockTotp() {
-        if (verifyTotp?.invoke(totpInput) == true) {
+    fun unlockUsingTotp() {
+        if (TotpUtils.verifyCode(config.totpSecret, totpInput)) {
             fm.clearFocus()
             onSucceed()
         } else {
             totpError = true
         }
     }
-    fun unlock() {
-        if (hasPassword && input.isNotEmpty()) {
-            if (input.hash() == config.passwordHash) {
-                fm.clearFocus()
-                onSucceed()
-            } else {
-                isError = true
-            }
-        } else if (showTotp) {
-            unlockTotp()
+    fun unlockUsingPassword() {
+        if (passwordInput.hash() == config.passwordHash) {
+            fm.clearFocus()
+            onSucceed()
+        } else {
+            passwordError = true
         }
     }
     LaunchedEffect(Unit) {
@@ -98,19 +97,28 @@ fun AppLockDialog(
         Modifier.pointerInput(Unit) { detectTapGestures(onTap = { fm.clearFocus() }) },
         shape = RoundedCornerShape(16.dp)
     ) {
-        Column(Modifier.padding(12.dp)) {
-            if (hasPassword) {
+        Column(Modifier.padding(12.dp, 16.dp).width(250.dp)) {
+            if (config.passwordHash.isNotEmpty()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     OutlinedTextField(
-                        input, { input = it; isError = false }, Modifier.width(200.dp).focusRequester(fr),
-                        label = { Text(stringResource(R.string.password)) }, isError = isError,
+                        passwordInput,
+                        {
+                            passwordInput = it
+                            passwordError = false
+                        },
+                        Modifier
+                            .weight(1F)
+                            .padding(vertical = 4.dp)
+                            .focusRequester(fr),
+                        label = { Text(stringResource(R.string.password)) },
+                        isError = passwordError,
                         keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Password,
-                            imeAction = if(input.length >= 4) ImeAction.Go else ImeAction.Done
+                            keyboardType = KeyboardType.Password, imeAction = ImeAction.Go
                         ),
-                        keyboardActions = KeyboardActions({ fm.clearFocus() }, { unlock() }),
+                        keyboardActions = KeyboardActions { unlockUsingPassword() },
                         visualTransformation = if (showPassword) VisualTransformation.None
                         else PasswordVisualTransformation(),
+                        singleLine = true,
                         trailingIcon = {
                             IconButton({ showPassword = !showPassword }) {
                                 Icon(
@@ -123,43 +131,45 @@ fun AppLockDialog(
                             }
                         }
                     )
-                    if (Build.VERSION.SDK_INT >= 28 && config.biometrics && !showTotp) {
-                        FilledTonalIconButton({ startBiometricsUnlock(context, onSucceed) }, Modifier.padding(start = 4.dp)) {
-                            Icon(painterResource(R.drawable.fingerprint_fill0), null)
-                        }
+                    FilledIconButton(::unlockUsingPassword) {
+                        Icon(Icons.AutoMirrored.Default.ArrowForward, null)
                     }
                 }
             }
-            if (showTotp) {
+            if (config.totpSecret.isNotEmpty()) {
                 Row(
+                    modifier = Modifier.padding(vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(top = if (hasPassword) 8.dp else 0.dp)
                 ) {
                     OutlinedTextField(
                         totpInput,
-                        { totpInput = it.filter { c -> c.isDigit() }.take(6); totpError = false },
-                        Modifier
-                            .width(200.dp)
-                            .focusRequester(if (hasPassword) remember { FocusRequester() } else fr),
+                        {
+                            totpInput = it.filter { c -> c.isDigit() }.take(6)
+                            totpError = false
+                        },
+                        Modifier.weight(1F).then(
+                            if (config.passwordHash.isEmpty()) Modifier.focusRequester(fr)
+                            else Modifier
+                        ),
                         label = { Text("TOTP") },
                         isError = totpError,
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number, imeAction = ImeAction.Go
                         ),
-                        keyboardActions = KeyboardActions(onGo = { unlockTotp() }),
+                        keyboardActions = KeyboardActions { unlockUsingTotp() },
                         singleLine = true
                     )
-                    if (Build.VERSION.SDK_INT >= 28 && config.biometrics) {
-                        FilledTonalIconButton({
-                            startBiometricsUnlock(context, onSucceed)
-                        }, Modifier.padding(start = 4.dp)) {
-                            Icon(painterResource(R.drawable.fingerprint_fill0), null)
-                        }
+                    FilledIconButton(::unlockUsingTotp) {
+                        Icon(Icons.AutoMirrored.Default.ArrowForward, null)
                     }
                 }
             }
-            Button(::unlock, Modifier.align(Alignment.End).padding(top = 8.dp)) {
-                Text(stringResource(R.string.unlock))
+            Spacer(Modifier.height(4.dp))
+            if (Build.VERSION.SDK_INT >= 28 && config.biometrics) OutlinedButton({
+                startBiometricsUnlock(context, onSucceed)
+            }, Modifier.fillMaxWidth()) {
+                Icon(painterResource(R.drawable.fingerprint_fill0), null)
+                Text(stringResource(R.string.use_biometrics))
             }
         }
     }

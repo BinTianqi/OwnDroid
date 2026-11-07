@@ -43,12 +43,13 @@ data class MySettings(
     @Serializable
     data class AppLock(
         var passwordHash: String = "",
+        var totpSecret: String = "",
         var biometrics: Boolean = false,
         var lockWhenLeaving: Boolean = false,
-        var totp: Boolean = false,
     ) {
-        val isActive: Boolean
-            get() = passwordHash.isNotEmpty() || totp
+        fun isActive(): Boolean {
+            return passwordHash.isNotEmpty() || totpSecret.isNotEmpty()
+        }
     }
 
     @Serializable
