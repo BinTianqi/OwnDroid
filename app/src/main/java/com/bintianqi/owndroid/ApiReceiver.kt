@@ -68,6 +68,16 @@ class ApiReceiver : BroadcastReceiver() {
                             dpm.clearUserRestriction(dar, restriction)
                         }
 
+                        "SET_ALWAYS_ON_VPN" -> {
+                            dpm.setAlwaysOnVpnPackage(
+                                dar, app!!, intent.getStringExtra("lockdown") == "true"
+                            )
+                        }
+
+                        "CLEAR_ALWAYS_ON_VPN" -> {
+                            dpm.setAlwaysOnVpnPackage(dar, null, false)
+                        }
+
                         "SET_PERMISSION_DEFAULT" -> {
                             dpm.setPermissionGrantState(
                                 dar, app!!, permission!!,

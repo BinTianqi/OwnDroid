@@ -138,6 +138,11 @@ OwnDroid provides an Intent-based API. You need to set the API key in settings a
 - SET_USB_ENABLED() (12)
 - LOCK()
 - REBOOT() (7)
+- SET_ALWAYS_ON_VPN(package: String, lockdown: String) (24)
+- CLEAR_ALWAYS_ON_VPN() (24)
+
+`lockdown` is the string `"true"` or `"false"`: when true, the system
+blocks ALL network connections outside the enforced VPN (lockdown).
 
 ```shell
 # An example of hiding app in ADB shell
