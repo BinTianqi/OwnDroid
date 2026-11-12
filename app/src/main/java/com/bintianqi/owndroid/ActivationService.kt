@@ -8,7 +8,6 @@ import android.os.Process
 import android.os.ServiceManager
 import android.util.Log
 import androidx.annotation.Keep
-import com.bintianqi.owndroid.utils.ACTIVATE_DEVICE_OWNER_COMMAND
 import kotlin.system.exitProcess
 
 @Keep
@@ -29,8 +28,15 @@ class ActivationService : IActivationService.Stub() {
         }
     }
 
-    override fun activateDeviceOwner(): Bundle? {
+    override fun executeWithBypass(command: String): Bundle? {
         if (!checkUid()) return null
+        val bypassed = bypassRestriction()
+        val setOwnerResult = execute(command)
+        if (bypassed) restoreRestriction()
+        return setOwnerResult
+    }
+
+    fun bypassRestriction(): Boolean {
         var bypassed = false
         Log.d(TAG, "Trying to bypass restriction")
         val getProc = Runtime.getRuntime().exec("settings get secure user_setup_complete")
@@ -43,19 +49,15 @@ class ActivationService : IActivationService.Stub() {
         } else {
             Log.w(TAG, "Get user_setup_complete, expected 1, actual $getOutput")
         }
-
         if (bypassed) forceUpdateSetupComplete()
+        return bypassed
+    }
 
-        Log.d(TAG, "Setting device owner")
-        val setOwnerResult = execute(ACTIVATE_DEVICE_OWNER_COMMAND)
-
-        if (bypassed) {
-            Log.d(TAG, "Restoring user_setup_complete")
-            val putProc = Runtime.getRuntime().exec("settings put secure user_setup_complete 1")
-            putProc.waitFor()
-            forceUpdateSetupComplete()
-        }
-        return setOwnerResult
+    fun restoreRestriction() {
+        Log.d(TAG, "Restoring user_setup_complete")
+        val putProc = Runtime.getRuntime().exec("settings put secure user_setup_complete 1")
+        putProc.waitFor()
+        forceUpdateSetupComplete()
     }
 
     private fun forceUpdateSetupComplete() {

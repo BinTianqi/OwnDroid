@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.os.Process
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,6 +18,7 @@ import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.PrivilegeHelper
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.feature.settings.SettingsRepository
+import com.bintianqi.owndroid.utils.ACTIVATE_DEVICE_OWNER_COMMAND
 import com.bintianqi.owndroid.utils.DhizukuError
 import com.bintianqi.owndroid.utils.MyAdminComponent
 import com.bintianqi.owndroid.utils.MyRootService
@@ -50,16 +52,24 @@ class WorkingModesViewModel(
 
     fun activateDoByShizuku(callback: (Boolean, String?) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
-            useShizuku({ it.activateDeviceOwner() }, callback)
+            useShizuku({ it.executeWithBypass(ACTIVATE_DEVICE_OWNER_COMMAND) }, callback)
         }
     }
 
     fun activateDoByRoot(callback: (Boolean, String?) -> Unit) {
         val intent = Intent(application, MyRootService::class.java)
-        val conn = ActivationServiceConnection({ it.activateDeviceOwner() }, callback) {
+        val conn = ActivationServiceConnection(
+            { it.executeWithBypass(ACTIVATE_DEVICE_OWNER_COMMAND) }, callback
+        ) {
             RootService.stop(intent)
         }
         RootService.bind(intent, conn)
+    }
+
+    fun activatePoByShizuku(callback: (Boolean, String?) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            useShizuku({ it.executeWithBypass(getProfileOwnerCommand()) }, callback)
+        }
     }
 
     inner class ActivationServiceConnection(
@@ -198,5 +208,10 @@ class WorkingModesViewModel(
             e.printStackTrace()
             resultCallback(false, application.getString(R.string.failed))
         }
+    }
+
+    fun getProfileOwnerCommand(): String {
+        val userId = Process.myUid() / 100000
+        return "dpm set-profile-owner --user $userId com.bintianqi.owndroid/.Receiver"
     }
 }

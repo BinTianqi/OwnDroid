@@ -2,7 +2,7 @@
 agp = "9.2.1"
 kotlin = "2.4.21"
 
-nav3 = "1.2.0"
+nav3 = "1.2.1"
 composeBom = "2026.09.00"
 lifecycle = "2.11.0"
 accompanist-drawablepainter = "0.37.3"

@@ -41,7 +41,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -66,6 +65,14 @@ import com.bintianqi.owndroid.utils.activateOrgProfileCommand
 import com.bintianqi.owndroid.utils.adaptiveInsets
 import kotlinx.coroutines.delay
 
+private enum class WorkingModeDialog {
+    None,
+    DeviceOwner, ProfileOwner, OrgProfile,
+    DeviceOwnerCommand, ProfileOwnerCommand, OrgProfileCommand,
+    ProgressIndicator, Result,
+    Deactivate
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun WorkModesScreen(
@@ -73,21 +80,24 @@ fun WorkModesScreen(
     onActivate: () -> Unit, onDeactivate: () -> Unit, onNavigate: (Destination) -> Unit
 ) {
     val privilege by vm.ps.collectAsStateWithLifecycle()
-    // 0: none, 1: device owner, 2: circular progress indicator, 3: result, 4: deactivate
-    // 5: command, 6: org profile, 7: org profile command
-    var dialog by rememberSaveable { mutableIntStateOf(0) }
+    var dialog by rememberSaveable { mutableStateOf(WorkingModeDialog.None) }
     var operationSucceed by rememberSaveable { mutableStateOf(false) }
     var resultText by rememberSaveable { mutableStateOf("") }
+    fun handleResult(succeeded: Boolean, output: String?) {
+        operationSucceed = succeeded
+        resultText = output ?: ""
+        dialog = WorkingModeDialog.Result
+    }
     LaunchedEffect(Unit) {
         vm.getPrivilegeState()
     }
     LaunchedEffect(privilege) {
         if (!params.canNavigateUp && privilege.device) {
             delay(1000)
-            if (dialog != 3) { // Activated by ADB command
+            if (dialog != WorkingModeDialog.Result) { // Activated by ADB command
                 operationSucceed = true
                 resultText = ""
-                dialog = 3
+                dialog = WorkingModeDialog.Result
                 vm.de.value = null
             }
         }
@@ -120,7 +130,7 @@ fun WorkModesScreen(
                                 { Text(stringResource(R.string.deactivate)) },
                                 {
                                     expanded = false
-                                    dialog = 4
+                                    dialog = WorkingModeDialog.Deactivate
                                 },
                                 leadingIcon = { Icon(Icons.Default.Close, null) }
                             )
@@ -146,11 +156,6 @@ fun WorkModesScreen(
         },
         contentWindowInsets = adaptiveInsets()
     ) { paddingValues ->
-        fun handleResult(succeeded: Boolean, output: String?) {
-            operationSucceed = succeeded
-            resultText = output ?: ""
-            dialog = 3
-        }
         Column(
             Modifier
                 .fillMaxSize()
@@ -159,15 +164,21 @@ fun WorkModesScreen(
             if (!privilege.profile) {
                 WorkingModeItem(R.string.device_owner, privilege.device) {
                     if (!privilege.device || (VERSION.SDK_INT >= 28 && privilege.dhizuku)) {
-                        dialog = 1
+                        dialog = WorkingModeDialog.DeviceOwner
                     }
                 }
             }
-            if (privilege.profile) WorkingModeItem(R.string.profile_owner, true) { }
+            if (!privilege.device) {
+                WorkingModeItem(R.string.profile_owner, privilege.profile) {
+                    if (!privilege.profile) {
+                        dialog = WorkingModeDialog.ProfileOwner
+                    }
+                }
+            }
             if (privilege.dhizuku || !privilege.activated) {
                 WorkingModeItem(R.string.dhizuku, privilege.dhizuku) {
                     if (!privilege.dhizuku) {
-                        dialog = 2
+                        dialog = WorkingModeDialog.ProgressIndicator
                         vm.activateDhizukuMode(::handleResult)
                     }
                 }
@@ -181,7 +192,7 @@ fun WorkModesScreen(
             }
             if (privilege.work) {
                 WorkingModeItem(R.string.org_owned_work_profile, privilege.org) {
-                    if (!privilege.org) dialog = 6
+                    if (!privilege.org) dialog = WorkingModeDialog.OrgProfile
                 }
             }
             if (privilege.activated && !privilege.dhizuku) Row(
@@ -227,149 +238,167 @@ fun WorkModesScreen(
                 Text(stringResource(R.string.owndroid_warning))
             }
         }
-        if (dialog == 1) AlertDialog(
-            title = { Text(stringResource(R.string.activate_method)) },
-            text = {
-                FlowRow(Modifier.fillMaxWidth()) {
-                    if (!privilege.dhizuku) {
-                        Button({ dialog = 5 }, Modifier.padding(end = 8.dp)) {
-                            Text(stringResource(R.string.adb_command))
-                        }
-                        Button({
-                            dialog = 2
-                            vm.activateDoByShizuku(::handleResult)
-                        }, Modifier.padding(end = 8.dp)) {
-                            Text(stringResource(R.string.shizuku))
-                        }
-                        Button({
-                            dialog = 2
-                            vm.activateDoByRoot(::handleResult)
-                        }, Modifier.padding(end = 8.dp)) {
-                            Text("Root")
-                        }
-                    }
-                    if (VERSION.SDK_INT >= 28 && privilege.dhizuku) Button({
-                        dialog = 2
-                        vm.activateDoByDhizuku(::handleResult)
-                    }, Modifier.padding(end = 8.dp)) {
-                        Text(stringResource(R.string.dhizuku))
-                    }
-                }
-            },
-            confirmButton = {
-                CancelTextButton { dialog = 0 }
-            },
-            onDismissRequest = { dialog = 0 }
-        )
-        if (dialog == 2) CircularProgressDialog { }
-        if (dialog == 3) AlertDialog(
-            title = {
-                Text(
-                    stringResource(if (operationSucceed) R.string.succeeded else R.string.failed)
-                )
-            },
-            text = {
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    SelectionContainer {
-                        Text(resultText)
-                    }
-                }
-            },
-            confirmButton = {
-                ConfirmTextButton {
-                    dialog = 0
-                    if (operationSucceed && !params.canNavigateUp) onActivate()
-                }
-            },
-            onDismissRequest = {}
-        )
-        if (dialog == 4) {
-            var confirmation by rememberSaveable { mutableStateOf("") }
-            AlertDialog(
-                title = { Text(stringResource(R.string.deactivate)) },
-                text = {
-                    val frpNotice by vm.frpNoticeState.collectAsState()
-                    LaunchedEffect(Unit) {
-                        // Dhizuku mode is checked inside that function
-                        vm.getFrpState()
-                    }
-                    val noticeText =
-                        if (frpNotice) ("\n" + stringResource(R.string.info_frp_policy_exists))
-                        else ""
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(stringResource(R.string.info_deactivate) + noticeText)
-                        Text(stringResource(R.string.enter_confirm_to_deactivate))
-                        OutlinedTextField(
-                            confirmation, { confirmation = it },
-                            Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            textStyle = typography.bodyLarge
-                        )
-                    }
-                },
-                confirmButton = {
-                    TextButton(
-                        {
-                            vm.deactivate()
-                            dialog = 0
-                            onDeactivate()
-                        },
-                        enabled = confirmation == "CONFIRM",
-                        colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
+    }
+    if (dialog == WorkingModeDialog.DeviceOwner) AlertDialog(
+        title = { Text(stringResource(R.string.activate_method)) },
+        text = {
+            FlowRow(Modifier.fillMaxWidth()) {
+                if (!privilege.dhizuku) {
+                    Button(
+                        { dialog = WorkingModeDialog.DeviceOwnerCommand },
+                        Modifier.padding(end = 8.dp)
                     ) {
-                        Text(stringResource(R.string.confirm))
-                    }
-                },
-                dismissButton = {
-                    CancelTextButton { dialog = 0 }
-                },
-                onDismissRequest = { dialog = 0 }
-            )
-        }
-        if (dialog == 5) AlertDialog(
-            text = {
-                SelectionContainer {
-                    Text(ACTIVATE_DEVICE_OWNER_COMMAND)
-                }
-            },
-            confirmButton = {
-                ConfirmTextButton { dialog = 0 }
-            },
-            onDismissRequest = { dialog = 0 }
-        )
-        if (dialog == 6) AlertDialog(
-            text = {
-                Column {
-                    Button({
-                        dialog = 2
-                        vm.activateOrgProfileByShizuku(::handleResult)
-                    }) {
-                        Text(stringResource(R.string.shizuku))
-                    }
-                    Button({ dialog = 7 }) {
                         Text(stringResource(R.string.adb_command))
                     }
+                    Button({
+                        dialog = WorkingModeDialog.ProgressIndicator
+                        vm.activateDoByShizuku(::handleResult)
+                    }, Modifier.padding(end = 8.dp)) {
+                        Text(stringResource(R.string.shizuku))
+                    }
+                    Button({
+                        dialog = WorkingModeDialog.ProgressIndicator
+                        vm.activateDoByRoot(::handleResult)
+                    }, Modifier.padding(end = 8.dp)) {
+                        Text("Root")
+                    }
+                }
+                if (VERSION.SDK_INT >= 28 && privilege.dhizuku) Button({
+                    dialog = WorkingModeDialog.ProgressIndicator
+                    vm.activateDoByDhizuku(::handleResult)
+                }, Modifier.padding(end = 8.dp)) {
+                    Text(stringResource(R.string.dhizuku))
+                }
+            }
+        },
+        confirmButton = {
+            CancelTextButton { dialog = WorkingModeDialog.None }
+        },
+        onDismissRequest = { dialog = WorkingModeDialog.None }
+    )
+    if (dialog == WorkingModeDialog.ProfileOwner) AlertDialog(
+        text = {
+            Column {
+                Button({
+                    dialog = WorkingModeDialog.ProgressIndicator
+                    vm.activatePoByShizuku(::handleResult)
+                }) {
+                    Text(stringResource(R.string.shizuku))
+                }
+                Button({ dialog = WorkingModeDialog.ProfileOwnerCommand }) {
+                    Text(stringResource(R.string.adb_command))
+                }
+            }
+        },
+        confirmButton = {
+            CancelTextButton { dialog = WorkingModeDialog.None }
+        },
+        onDismissRequest = { dialog = WorkingModeDialog.None }
+    )
+    if (dialog == WorkingModeDialog.OrgProfile) AlertDialog(
+        text = {
+            Column {
+                Button({
+                    dialog = WorkingModeDialog.ProgressIndicator
+                    vm.activateOrgProfileByShizuku(::handleResult)
+                }) {
+                    Text(stringResource(R.string.shizuku))
+                }
+                Button({ dialog = WorkingModeDialog.OrgProfileCommand }) {
+                    Text(stringResource(R.string.adb_command))
+                }
+            }
+        },
+        confirmButton = {
+            CancelTextButton { dialog = WorkingModeDialog.None }
+        },
+        onDismissRequest = { dialog = WorkingModeDialog.None }
+    )
+    if (dialog == WorkingModeDialog.ProgressIndicator) CircularProgressDialog { }
+    if (dialog == WorkingModeDialog.Result) AlertDialog(
+        title = {
+            Text(stringResource(if (operationSucceed) R.string.succeeded else R.string.failed))
+        },
+        text = {
+            SelectionContainer(
+                Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Text(resultText)
+            }
+        },
+        confirmButton = {
+            ConfirmTextButton {
+                dialog = WorkingModeDialog.None
+                if (operationSucceed && !params.canNavigateUp) onActivate()
+            }
+        },
+        onDismissRequest = {}
+    )
+    if (dialog == WorkingModeDialog.Deactivate) {
+        var confirmation by rememberSaveable { mutableStateOf("") }
+        AlertDialog(
+            title = { Text(stringResource(R.string.deactivate)) },
+            text = {
+                val frpNotice by vm.frpNoticeState.collectAsState()
+                LaunchedEffect(Unit) {
+                    // Dhizuku mode is checked inside that function
+                    vm.getFrpState()
+                }
+                val noticeText =
+                    if (frpNotice) ("\n" + stringResource(R.string.info_frp_policy_exists))
+                    else ""
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.info_deactivate) + noticeText)
+                    Text(stringResource(R.string.enter_confirm_to_deactivate))
+                    OutlinedTextField(
+                        confirmation, { confirmation = it },
+                        Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        textStyle = typography.bodyLarge
+                    )
                 }
             },
             confirmButton = {
-                CancelTextButton { dialog = 0 }
+                TextButton(
+                    {
+                        vm.deactivate()
+                        dialog = WorkingModeDialog.None
+                        onDeactivate()
+                    },
+                    enabled = confirmation == "CONFIRM",
+                    colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
+                ) {
+                    Text(stringResource(R.string.confirm))
+                }
             },
-            onDismissRequest = { dialog = 0 }
+            dismissButton = {
+                CancelTextButton { dialog = WorkingModeDialog.None }
+            },
+            onDismissRequest = { dialog = WorkingModeDialog.None }
         )
-        if (dialog == 7) AlertDialog(
+    }
+    if (
+        dialog == WorkingModeDialog.DeviceOwnerCommand ||
+        dialog == WorkingModeDialog.ProfileOwnerCommand ||
+        dialog == WorkingModeDialog.OrgProfileCommand
+    ) {
+        AlertDialog(
             text = {
                 SelectionContainer {
-                    Text(activateOrgProfileCommand)
+                    val text = when (dialog) {
+                        WorkingModeDialog.DeviceOwnerCommand -> ACTIVATE_DEVICE_OWNER_COMMAND
+                        WorkingModeDialog.ProfileOwnerCommand -> vm.getProfileOwnerCommand()
+                        else -> activateOrgProfileCommand
+                    }
+                    Text(text)
                 }
             },
             confirmButton = {
-                ConfirmTextButton { dialog = 0 }
+                ConfirmTextButton { dialog = WorkingModeDialog.None }
             },
-            onDismissRequest = { dialog = 0 }
+            onDismissRequest = { dialog = WorkingModeDialog.None }
         )
     }
 }

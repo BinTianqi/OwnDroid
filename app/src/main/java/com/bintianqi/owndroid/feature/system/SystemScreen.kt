@@ -128,7 +128,7 @@ fun SystemScreen(
                 onNavigate(Destination.NearbyStreamingPolicy)
             }
         }
-        if (VERSION.SDK_INT >= 28 && privilege.device) {
+        if (VERSION.SDK_INT >= 28 && (privilege.device || privilege.profile)) {
             FunctionItem(R.string.lock_task_mode, icon = R.drawable.lock_fill0) {
                 onNavigate(Destination.LockTaskMode)
             }
