@@ -1,4 +1,4 @@
-[English](Readme.md) | [简体中文](Readme-zh_CN.md)
+[English](Readme.md) | [简体中文](Readme-zh_CN.md) | [繁體中文](Readme-zh_TW.md)
 
 > [!important]
 > The Japanese readme is outdated
