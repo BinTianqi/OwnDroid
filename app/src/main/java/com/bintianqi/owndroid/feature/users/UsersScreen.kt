@@ -84,11 +84,11 @@ import com.bintianqi.owndroid.utils.yesOrNo
 fun UsersScreen(vm: UsersViewModel, onNavigateUp: () -> Unit, onNavigate: (Destination) -> Unit) {
     val context = LocalContext.current
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
-    // 1: logout
-    var dialog by rememberSaveable { mutableIntStateOf(0) }
     MyScaffold(R.string.users, onNavigateUp, 0.dp) {
         if (VERSION.SDK_INT >= 28 && privilege.profile && privilege.affiliated) {
-            FunctionItem(R.string.logout, icon = R.drawable.logout_fill0) { dialog = 1 }
+            FunctionItem(R.string.logout, icon = R.drawable.logout_fill0) {
+                onNavigate(Destination.Logout)
+            }
         }
         FunctionItem(R.string.user_info, icon = R.drawable.person_fill0) {
             onNavigate(Destination.UserInfo)
@@ -143,7 +143,12 @@ fun UsersScreen(vm: UsersViewModel, onNavigateUp: () -> Unit, onNavigate: (Desti
             }
         }
     }
-    if (VERSION.SDK_INT >= 28 && dialog == 1) AlertDialog(
+}
+
+@RequiresApi(28)
+@Composable
+fun LogoutDialog(vm: UsersViewModel, navigateUp: () -> Unit) {
+    AlertDialog(
         title = { Text(stringResource(R.string.logout)) },
         text = {
             Column {
@@ -156,13 +161,13 @@ fun UsersScreen(vm: UsersViewModel, onNavigateUp: () -> Unit, onNavigate: (Desti
         confirmButton = {
             ConfirmTextButton {
                 vm.logout()
-                dialog = 0
+                navigateUp()
             }
         },
         dismissButton = {
-            CancelTextButton { dialog = 0 }
+            CancelTextButton(navigateUp)
         },
-        onDismissRequest = { dialog = 0 }
+        onDismissRequest = navigateUp
     )
 }
 

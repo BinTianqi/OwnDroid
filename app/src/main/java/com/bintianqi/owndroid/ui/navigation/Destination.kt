@@ -3,6 +3,7 @@ package com.bintianqi.owndroid.ui.navigation
 import androidx.navigation3.runtime.NavKey
 import com.bintianqi.owndroid.feature.applications.AppChooserFilter
 import com.bintianqi.owndroid.feature.applications.AppChooserMode
+import com.bintianqi.owndroid.feature.password.PasswordDialogType
 import kotlinx.serialization.Serializable
 
 sealed class Destination : NavKey {
@@ -20,6 +21,11 @@ sealed class Destination : NavKey {
     @Serializable object TransferOwnership : Destination()
 
     @Serializable object System : Destination()
+    @Serializable object Reboot : Destination()
+    @Serializable object BugReport : Destination()
+    @Serializable object OrgName : Destination()
+    @Serializable object OrgId : Destination()
+    @Serializable object EnrollmentId : Destination()
     @Serializable object SystemOptions : Destination()
     @Serializable object Keyguard : Destination()
     @Serializable object HardwareMonitor : Destination()
@@ -106,6 +112,7 @@ sealed class Destination : NavKey {
     @Serializable object UserRestrictionEditor : Destination()
 
     @Serializable object Users : Destination()
+    @Serializable object Logout : Destination()
     @Serializable object UsersOptions : Destination()
     @Serializable object UserInfo : Destination()
     @Serializable object UserOperation : Destination()
@@ -115,6 +122,7 @@ sealed class Destination : NavKey {
     @Serializable object UserSessionMessage : Destination()
 
     @Serializable object Password : Destination()
+    @Serializable class PasswordConfig(val type: PasswordDialogType) : Destination()
     @Serializable object PasswordInfo : Destination()
     @Serializable object ResetPasswordToken : Destination()
     @Serializable object ResetPassword : Destination()

@@ -106,9 +106,9 @@
     <string name="account_type">账号类型</string>
     <string name="transfer_ownership">转移所有权</string>
     <string name="lock_screen_info">锁屏提示信息</string>
-    <string name="support_messages">提供支持的消息</string>
-    <string name="short_support_msg">提供支持的短消息</string>
-    <string name="long_support_msg">提供支持的长消息</string>
+    <string name="support_messages">支持消息</string>
+    <string name="short_support_msg">支持短消息</string>
+    <string name="long_support_msg">支持长消息</string>
     <string name="transfer">转移</string>
     <string name="transfer_ownership_warning">%1$s 特权将被转移至 %2$s</string>
 

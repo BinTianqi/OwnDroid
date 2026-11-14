@@ -45,6 +45,7 @@ import com.bintianqi.owndroid.feature.applications.AppChooserViewModel
 import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.NavTransition
 import com.bintianqi.owndroid.ui.navigation.Destination
+import com.bintianqi.owndroid.ui.navigation.OverlaySceneStrategy
 import com.bintianqi.owndroid.ui.navigation.myEntryProvider
 import com.bintianqi.owndroid.ui.navigation.rememberSharedViewModelStoreNavEntryDecorator
 import com.bintianqi.owndroid.ui.screen.AppLockDialog
@@ -126,6 +127,7 @@ class MainActivity : FragmentActivity() {
                     onBack = {
                         backstack.removeLastOrNull()
                     },
+                    sceneStrategies = listOf(OverlaySceneStrategy()),
                     entryDecorators = listOf(
                         rememberSaveableStateHolderNavEntryDecorator(),
                         rememberSharedViewModelStoreNavEntryDecorator()

@@ -1,13 +1,23 @@
 package com.bintianqi.owndroid.ui.navigation
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.metadata
+import androidx.navigation3.scene.OverlayScene
+import androidx.navigation3.scene.Scene
+import androidx.navigation3.scene.SceneStrategy
+import androidx.navigation3.scene.SceneStrategyScope
+import androidx.navigation3.ui.NavDisplay
 import com.bintianqi.owndroid.AppContainer
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.feature.applications.AppChooserFilter
@@ -54,6 +64,7 @@ import com.bintianqi.owndroid.feature.network.WifiScreen
 import com.bintianqi.owndroid.feature.network.WifiSecurityLevelScreen
 import com.bintianqi.owndroid.feature.network.WifiSsidPolicyScreen
 import com.bintianqi.owndroid.feature.password.KeyguardDisabledFeaturesScreen
+import com.bintianqi.owndroid.feature.password.PasswordConfigurationDialog
 import com.bintianqi.owndroid.feature.password.PasswordInfoScreen
 import com.bintianqi.owndroid.feature.password.PasswordScreen
 import com.bintianqi.owndroid.feature.password.RequiredPasswordComplexityScreen
@@ -77,11 +88,13 @@ import com.bintianqi.owndroid.feature.settings.SettingsScreen
 import com.bintianqi.owndroid.feature.settings.SettingsSyncScreen
 import com.bintianqi.owndroid.feature.settings.SettingsViewModel
 import com.bintianqi.owndroid.feature.settings.ShortcutSettingsScreen
+import com.bintianqi.owndroid.feature.system.BugReportDialog
 import com.bintianqi.owndroid.feature.system.CaCertScreen
 import com.bintianqi.owndroid.feature.system.ContentProtectionPolicyScreen
 import com.bintianqi.owndroid.feature.system.DefaultInputMethodScreen
 import com.bintianqi.owndroid.feature.system.DeviceInfoScreen
 import com.bintianqi.owndroid.feature.system.DisableAccountManagementScreen
+import com.bintianqi.owndroid.feature.system.EnrollmentIdDialog
 import com.bintianqi.owndroid.feature.system.FrpPolicyScreen
 import com.bintianqi.owndroid.feature.system.HardwareMonitorScreen
 import com.bintianqi.owndroid.feature.system.KeyguardScreen
@@ -89,7 +102,10 @@ import com.bintianqi.owndroid.feature.system.LockScreenInfoScreen
 import com.bintianqi.owndroid.feature.system.LockTaskModeScreen
 import com.bintianqi.owndroid.feature.system.MtePolicyScreen
 import com.bintianqi.owndroid.feature.system.NearbyStreamingPolicyScreen
+import com.bintianqi.owndroid.feature.system.OrgIdDialog
+import com.bintianqi.owndroid.feature.system.OrgNameDialog
 import com.bintianqi.owndroid.feature.system.PermissionPolicyScreen
+import com.bintianqi.owndroid.feature.system.RebootDialog
 import com.bintianqi.owndroid.feature.system.SecurityLoggingScreen
 import com.bintianqi.owndroid.feature.system.SupportMessageScreen
 import com.bintianqi.owndroid.feature.system.SystemOptionsScreen
@@ -105,6 +121,7 @@ import com.bintianqi.owndroid.feature.user_restriction.UserRestrictionScreen
 import com.bintianqi.owndroid.feature.users.AffiliationIdScreen
 import com.bintianqi.owndroid.feature.users.ChangeUsernameScreen
 import com.bintianqi.owndroid.feature.users.CreateUserScreen
+import com.bintianqi.owndroid.feature.users.LogoutDialog
 import com.bintianqi.owndroid.feature.users.UserInfoScreen
 import com.bintianqi.owndroid.feature.users.UserOperationScreen
 import com.bintianqi.owndroid.feature.users.UserSessionMessageScreen
@@ -128,6 +145,67 @@ inline fun <reified K: Destination> EntryProviderScope<Destination>.myEntry(
     metadata: Map<String, Any> = emptyMap(), noinline content: @Composable ((K) -> Unit)
 ) {
     entry({ it::class.qualifiedName!! }, metadata, content)
+}
+
+/** Constructing metadata using [mapOf] won't work */
+private val dialogAnimationMetadata = metadata {
+    // Disable the default animation
+    put(NavDisplay.TransitionKey) {
+        EnterTransition.None togetherWith ExitTransition.None
+    }
+    put(NavDisplay.PopTransitionKey) {
+        EnterTransition.None togetherWith ExitTransition.None
+    }
+    put(NavDisplay.PredictivePopTransitionKey) {
+        EnterTransition.None togetherWith ExitTransition.None
+    }
+}
+
+data class MyOverlayScene<T: Any>(
+    override val key: Any,
+    override val previousEntries: List<NavEntry<T>>,
+    override val overlaidEntries: List<NavEntry<T>>,
+    private val entry: NavEntry<T>,
+) : OverlayScene<T> {
+
+    override val entries: List<NavEntry<T>> = listOf(entry)
+
+    override val content: @Composable (() -> Unit) = {
+        entry.Content()
+    }
+}
+
+class OverlaySceneStrategy<T: Any> : SceneStrategy<T> {
+    override fun SceneStrategyScope<T>.calculateScene(entries: List<NavEntry<T>>): Scene<T>? {
+        val entry = entries.lastOrNull()
+        return if (entry?.metadata?.get(METADATA_KEY) == true) {
+            MyOverlayScene(
+                entry.contentKey as T, entries.dropLast(1), entries.dropLast(1), entry
+            )
+        } else {
+            null
+        }
+    }
+
+    companion object {
+        const val METADATA_KEY = "transparent_background"
+
+        fun transparentBackground(): Map<String, Any> {
+            return mapOf(METADATA_KEY to true)
+        }
+    }
+}
+
+private inline fun <reified K: Destination> EntryProviderScope<Destination>.myDialogEntry(
+    metadata: Map<String, Any> = emptyMap(), noinline content: @Composable ((K) -> Unit)
+) {
+    // By default, it will display a white background behind the dialog.
+    // By using a custom scene strategy, we can make the background transparent.
+    entry(
+        { it::class.qualifiedName!! },
+        metadata + dialogAnimationMetadata + OverlaySceneStrategy.transparentBackground(),
+        content
+    )
 }
 
 @Suppress("NewApi")
@@ -218,6 +296,21 @@ fun myEntryProvider(
 
     myEntry<Destination.System> {
         SystemScreen(viewModel(factory = container.viewModelFactory), ::navigateUp, ::navigate)
+    }
+    myDialogEntry<Destination.Reboot>(navParentKey<Destination.System>()) {
+        RebootDialog(viewModel(), ::navigateUp)
+    }
+    myDialogEntry<Destination.BugReport>(navParentKey<Destination.System>()) {
+        BugReportDialog(viewModel(), ::navigateUp)
+    }
+    myDialogEntry<Destination.OrgName>(navParentKey<Destination.System>()) {
+        OrgNameDialog(viewModel(), ::navigateUp)
+    }
+    myDialogEntry<Destination.OrgId>(navParentKey<Destination.System>()) {
+        OrgIdDialog(viewModel(), ::navigateUp)
+    }
+    myDialogEntry<Destination.EnrollmentId>(navParentKey<Destination.System>()) {
+        EnrollmentIdDialog(viewModel(), ::navigateUp)
     }
     myEntry<Destination.SystemOptions> {
         SystemOptionsScreen(viewModel(factory = container.viewModelFactory), ::navigateUp)
@@ -688,6 +781,9 @@ fun myEntryProvider(
     myEntry<Destination.Users> {
         UsersScreen(viewModel(factory = container.viewModelFactory), ::navigateUp, ::navigate)
     }
+    myDialogEntry<Destination.Logout>(navParentKey<Destination.Users>()) {
+        LogoutDialog(viewModel(), ::navigateUp)
+    }
     myEntry<Destination.UserInfo>(
         metadata = navParentKey<Destination.Users>()
     ) {
@@ -726,6 +822,9 @@ fun myEntryProvider(
 
     myEntry<Destination.Password> {
         PasswordScreen(viewModel(factory = container.viewModelFactory), ::navigateUp, ::navigate)
+    }
+    myDialogEntry<Destination.PasswordConfig>(navParentKey<Destination.Password>()) {
+        PasswordConfigurationDialog(viewModel(), it.type, ::navigateUp)
     }
     myEntry<Destination.PasswordInfo>(
         metadata = navParentKey<Destination.Password>()

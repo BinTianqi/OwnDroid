@@ -2,8 +2,10 @@ package com.bintianqi.owndroid.feature.password
 
 import android.app.KeyguardManager
 import android.app.admin.DevicePolicyManager
+import android.content.Context
 import android.content.Intent
 import android.os.Build.VERSION
+import android.os.UserManager
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import com.bintianqi.owndroid.MyApplication
@@ -184,8 +186,13 @@ class PasswordViewModel(
         maxFailedForWipeState.value = times
     }
 
-    fun applyMaxFiledForWipe() = ph.safeDpmCall {
+    fun applyMaxFailedForWipe() = ph.safeDpmCall {
         dpm.setMaximumFailedPasswordsForWipe(dar, maxFailedForWipeState.value.toInt())
+    }
+
+    fun isSystemUser(): Boolean {
+        val um = application.getSystemService(Context.USER_SERVICE) as UserManager
+        return um.isSystemUser
     }
 
     val historyLengthState = MutableStateFlow("")

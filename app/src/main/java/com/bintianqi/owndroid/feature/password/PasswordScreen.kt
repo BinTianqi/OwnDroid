@@ -12,9 +12,7 @@ import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_SOMETHING
 import android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED
 import android.app.admin.DevicePolicyManager.RESET_PASSWORD_DO_NOT_ASK_CREDENTIALS_ON_BOOT
 import android.app.admin.DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY
-import android.content.Context
 import android.os.Build.VERSION
-import android.os.UserManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -44,7 +42,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -73,9 +70,7 @@ import com.bintianqi.owndroid.utils.yesOrNo
 fun PasswordScreen(
     vm: PasswordViewModel, onNavigateUp: () -> Unit, onNavigate: (Destination) -> Unit
 ) {
-    val context = LocalContext.current
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
-    var dialog by rememberSaveable { mutableIntStateOf(0) }
     MyScaffold(R.string.password_and_keyguard, onNavigateUp, 0.dp) {
         FunctionItem(R.string.password_info, icon = R.drawable.info_fill0) {
             onNavigate(Destination.PasswordInfo)
@@ -101,132 +96,139 @@ fun PasswordScreen(
             onNavigate(Destination.KeyguardDisabledFeatures)
         }
         if (privilege.device) {
-            FunctionItem(R.string.max_time_to_lock, icon = R.drawable.schedule_fill0) { dialog = 1 }
+            FunctionItem(R.string.max_time_to_lock, icon = R.drawable.schedule_fill0) {
+                onNavigate(Destination.PasswordConfig(PasswordDialogType.MaxTimeToLock))
+            }
             FunctionItem(
                 R.string.pwd_expiration_timeout, icon = R.drawable.lock_clock_fill0
-            ) { dialog = 3 }
+            ) {
+                onNavigate(Destination.PasswordConfig(PasswordDialogType.ExpirationTimeout))
+            }
             if (vm.getDisplayDangerousFeatures()) {
                 FunctionItem(
                     R.string.max_pwd_fail, icon = R.drawable.no_encryption_fill0
-                ) { dialog = 4 }
+                ) {
+                    onNavigate(Destination.PasswordConfig(PasswordDialogType.MaxFailedForWipe))
+                }
             }
         }
         if (VERSION.SDK_INT >= 26) {
             FunctionItem(
                 R.string.required_strong_auth_timeout, icon = R.drawable.fingerprint_off_fill0
-            ) { dialog = 2 }
+            ) {
+                onNavigate(Destination.PasswordConfig(PasswordDialogType.StrongAuthTimeout))
+            }
         }
-        FunctionItem(R.string.pwd_history, icon = R.drawable.history_fill0) { dialog = 5 }
+        FunctionItem(R.string.pwd_history, icon = R.drawable.history_fill0) {
+            onNavigate(Destination.PasswordConfig(PasswordDialogType.HistoryLength))
+        }
         if (VERSION.SDK_INT < 31) {
             FunctionItem(R.string.required_password_quality, icon = R.drawable.password_fill0) {
                 onNavigate(Destination.RequiredPasswordQuality)
             }
         }
     }
-    if (dialog != 0) {
-        val input by when (dialog) {
-            1 -> vm.maxTimeToLockState
-            2 -> vm.strongAutoTimeoutState
-            3 -> vm.expirationTimeoutState
-            4 -> vm.maxFailedForWipeState
-            else -> vm.historyLengthState
-        }.collectAsState()
-        LaunchedEffect(Unit) {
-            when (dialog) {
-                1 -> vm.getMaxTimeToLock()
-                2 -> vm.getStrongAuthTimeout()
-                3 -> vm.getExpirationTimeout()
-                4 -> vm.getMaxFailedForWipe()
-                5 -> vm.getHistoryLength()
-            }
+}
+
+enum class PasswordDialogType {
+    MaxTimeToLock, StrongAuthTimeout, ExpirationTimeout, MaxFailedForWipe, HistoryLength
+}
+
+@Suppress("NewApi")
+@Composable
+fun PasswordConfigurationDialog(
+    vm: PasswordViewModel, dialogType: PasswordDialogType, navigateUp: () -> Unit
+) {
+    val input by when (dialogType) {
+        PasswordDialogType.MaxTimeToLock -> vm.maxTimeToLockState
+        PasswordDialogType.StrongAuthTimeout -> vm.strongAutoTimeoutState
+        PasswordDialogType.ExpirationTimeout -> vm.expirationTimeoutState
+        PasswordDialogType.MaxFailedForWipe -> vm.maxFailedForWipeState
+        PasswordDialogType.HistoryLength -> vm.historyLengthState
+    }.collectAsState()
+    LaunchedEffect(Unit) {
+        when (dialogType) {
+            PasswordDialogType.MaxTimeToLock -> vm.getMaxTimeToLock()
+            PasswordDialogType.StrongAuthTimeout -> vm.getStrongAuthTimeout()
+            PasswordDialogType.ExpirationTimeout -> vm.getExpirationTimeout()
+            PasswordDialogType.MaxFailedForWipe -> vm.getMaxFailedForWipe()
+            PasswordDialogType.HistoryLength -> vm.getHistoryLength()
         }
-        AlertDialog(
-            title = {
-                Text(
-                    stringResource(
-                        when (dialog) {
-                            1 -> R.string.max_time_to_lock
-                            2 -> R.string.required_strong_auth_timeout
-                            3 -> R.string.pwd_expiration_timeout
-                            4 -> R.string.max_pwd_fail
-                            5 -> R.string.pwd_history
-                            else -> R.string.password
-                        }
-                    )
-                )
-            },
-            text = {
-                val um = context.getSystemService(Context.USER_SERVICE) as UserManager
-                Column {
-                    OutlinedTextField(
-                        input, {
-                            when (dialog) {
-                                1 -> vm.setMaxTimeToLock(it)
-                                2 -> vm.setStrongAuthTimeout(it)
-                                3 -> vm.setExpirationTimeout(it)
-                                4 -> vm.setMaxFailedForWipe(it)
-                                5 -> vm.setHistoryLength(it)
-                            }
-                        },
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp),
-                        label = {
-                            Text(
-                                stringResource(
-                                    when (dialog) {
-                                        1, 2, 3 -> R.string.time_unit_ms
-                                        4 -> R.string.max_pwd_fail_textfield
-                                        5 -> R.string.length
-                                        else -> R.string.password
-                                    }
-                                )
-                            )
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number, imeAction = ImeAction.Done
-                        ),
-                        textStyle = typography.bodyLarge
-                    )
-                    Text(
-                        stringResource(
-                            when (dialog) {
-                                1 -> R.string.info_screen_timeout
-                                2 -> R.string.info_required_strong_auth_timeout
-                                3 -> R.string.info_password_expiration_timeout
-                                4 -> if (um.isSystemUser) R.string.info_max_failed_password_system_user else R.string.info_max_failed_password_other_user
-                                5 -> R.string.info_password_history_length
-                                else -> R.string.password
-                            }
-                        )
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    {
-                        when (dialog) {
-                            1 -> vm.applyMaxTimeToLock()
-                            2 -> vm.applyStrongAuthTimeout()
-                            3 -> vm.applyExpirationTimeout()
-                            4 -> vm.applyMaxFiledForWipe()
-                            5 -> vm.applyHistoryLength()
-                        }
-                        dialog = 0
-                    },
-                    enabled = input.toLongOrNull() != null
-                ) {
-                    Text(stringResource(R.string.apply))
-                }
-            },
-            dismissButton = {
-                CancelTextButton { dialog = 0 }
-            },
-            onDismissRequest = {
-                dialog = 0
-            }
-        )
     }
+    val titleText = when (dialogType) {
+        PasswordDialogType.MaxTimeToLock -> R.string.max_time_to_lock
+        PasswordDialogType.StrongAuthTimeout -> R.string.required_strong_auth_timeout
+        PasswordDialogType.ExpirationTimeout -> R.string.pwd_expiration_timeout
+        PasswordDialogType.MaxFailedForWipe -> R.string.max_pwd_fail
+        PasswordDialogType.HistoryLength -> R.string.pwd_history
+    }
+    val fieldLabel = when (dialogType) {
+        PasswordDialogType.HistoryLength -> R.string.length
+        PasswordDialogType.MaxFailedForWipe -> R.string.max_pwd_fail_textfield
+        else -> R.string.time_unit_ms
+    }
+    val helpingText = when (dialogType) {
+        PasswordDialogType.MaxTimeToLock -> R.string.info_screen_timeout
+        PasswordDialogType.StrongAuthTimeout -> R.string.info_required_strong_auth_timeout
+        PasswordDialogType.ExpirationTimeout -> R.string.info_password_expiration_timeout
+        PasswordDialogType.MaxFailedForWipe -> {
+            if (vm.isSystemUser()) R.string.info_max_failed_password_system_user
+            else R.string.info_max_failed_password_other_user
+        }
+        PasswordDialogType.HistoryLength -> R.string.info_password_history_length
+    }
+    fun setInputValue(input: String) {
+        when (dialogType) {
+            PasswordDialogType.MaxTimeToLock -> vm.setMaxTimeToLock(input)
+            PasswordDialogType.StrongAuthTimeout -> vm.setStrongAuthTimeout(input)
+            PasswordDialogType.ExpirationTimeout -> vm.setExpirationTimeout(input)
+            PasswordDialogType.MaxFailedForWipe -> vm.setMaxFailedForWipe(input)
+            PasswordDialogType.HistoryLength -> vm.setHistoryLength(input)
+        }
+    }
+    fun applyConfig() {
+        when (dialogType) {
+            PasswordDialogType.MaxTimeToLock -> vm.applyMaxTimeToLock()
+            PasswordDialogType.StrongAuthTimeout -> vm.applyStrongAuthTimeout()
+            PasswordDialogType.ExpirationTimeout -> vm.applyExpirationTimeout()
+            PasswordDialogType.MaxFailedForWipe -> vm.applyMaxFailedForWipe()
+            PasswordDialogType.HistoryLength -> vm.applyHistoryLength()
+        }
+    }
+    AlertDialog(
+        title = { Text(stringResource(titleText)) },
+        text = {
+            Column {
+                OutlinedTextField(
+                    input, ::setInputValue,
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    label = { Text(stringResource(fieldLabel)) },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number, imeAction = ImeAction.Done
+                    ),
+                    textStyle = typography.bodyLarge
+                )
+                Text(stringResource(helpingText))
+            }
+        },
+        confirmButton = {
+            TextButton(
+                {
+                    applyConfig()
+                    navigateUp()
+                },
+                enabled = input.toLongOrNull() != null
+            ) {
+                Text(stringResource(R.string.apply))
+            }
+        },
+        dismissButton = {
+            CancelTextButton(navigateUp)
+        },
+        onDismissRequest = navigateUp
+    )
 }
 
 fun getComplexityText(complexity: Int): Int {

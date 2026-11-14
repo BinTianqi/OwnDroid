@@ -84,8 +84,6 @@ fun SystemScreen(
     vm: SystemViewModel, onNavigateUp: () -> Unit, onNavigate: (Destination) -> Unit
 ) {
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
-    // 1: reboot, 2: bug report, 3: org name, 4: org id, 5: enrollment specific id
-    var dialog by rememberSaveable { mutableIntStateOf(0) }
     MyScaffold(R.string.system, onNavigateUp, 0.dp) {
         FunctionItem(R.string.options, icon = R.drawable.tune_fill0) {
             onNavigate(Destination.SystemOptions)
@@ -101,10 +99,14 @@ fun SystemScreen(
             onNavigate(Destination.DefaultInputMethod)
         }
         if (VERSION.SDK_INT >= 24 && privilege.device) {
-            FunctionItem(R.string.reboot, icon = R.drawable.restart_alt_fill0) { dialog = 1 }
+            FunctionItem(R.string.reboot, icon = R.drawable.restart_alt_fill0) {
+                onNavigate(Destination.Reboot)
+            }
         }
         if (VERSION.SDK_INT >= 24 && privilege.device && (VERSION.SDK_INT < 28 || privilege.affiliated)) {
-            FunctionItem(R.string.bug_report, icon = R.drawable.bug_report_fill0) { dialog = 2 }
+            FunctionItem(R.string.bug_report, icon = R.drawable.bug_report_fill0) {
+                onNavigate(Destination.BugReport)
+            }
         }
         if (VERSION.SDK_INT >= 28 && (privilege.device || privilege.org)) {
             FunctionItem(R.string.time, icon = R.drawable.schedule_fill0) {
@@ -145,15 +147,21 @@ fun SystemScreen(
             onNavigate(Destination.DeviceInfo)
         }
         if (VERSION.SDK_INT >= 24 && (privilege.profile || (VERSION.SDK_INT >= 26 && privilege.device))) {
-            FunctionItem(R.string.org_name, icon = R.drawable.corporate_fare_fill0) { dialog = 3 }
+            FunctionItem(R.string.org_name, icon = R.drawable.corporate_fare_fill0) {
+                onNavigate(Destination.OrgName)
+            }
         }
         if (VERSION.SDK_INT >= 31) {
-            FunctionItem(R.string.org_id, icon = R.drawable.corporate_fare_fill0) { dialog = 4 }
+            FunctionItem(R.string.org_id, icon = R.drawable.corporate_fare_fill0) {
+                onNavigate(Destination.OrgId)
+            }
         }
         if (VERSION.SDK_INT >= 31) {
             FunctionItem(
                 R.string.enrollment_specific_id, icon = R.drawable.id_card_fill0
-            ) { dialog = 5 }
+            ) {
+                onNavigate(Destination.EnrollmentId)
+            }
         }
         if (VERSION.SDK_INT >= 24 && (privilege.device || privilege.org)) {
             FunctionItem(R.string.lock_screen_info, icon = R.drawable.screen_lock_portrait_fill0) {
@@ -184,95 +192,128 @@ fun SystemScreen(
             }
         }
     }
-    if ((dialog == 1 || dialog == 2) && VERSION.SDK_INT >= 24) AlertDialog(
-        onDismissRequest = { dialog = 0 },
-        title = {
-            Text(stringResource(if (dialog == 1) R.string.reboot else R.string.bug_report))
-        },
-        text = {
-            Text(
-                stringResource(
-                    if (dialog == 1) R.string.info_reboot else R.string.confirm_bug_report
-                )
-            )
-        },
+}
+
+@RequiresApi(24)
+@Composable
+fun RebootDialog(vm: SystemViewModel, navigateUp: () -> Unit) {
+    AlertDialog(
+        title = { Text(stringResource(R.string.reboot)) },
+        text = { Text(stringResource(R.string.info_reboot)) },
         dismissButton = {
-            CancelTextButton { dialog = 0 }
+            CancelTextButton(navigateUp)
+        },
+        confirmButton = {
+            TextButton({ vm.reboot() }) {
+                Text(stringResource(R.string.reboot))
+            }
+        },
+        onDismissRequest = navigateUp
+    )
+}
+
+@RequiresApi(24)
+@Composable
+fun BugReportDialog(vm: SystemViewModel, navigateUp: () -> Unit) {
+    AlertDialog(
+        title = { Text(stringResource(R.string.bug_report)) },
+        text = { Text(stringResource(R.string.confirm_bug_report)) },
+        dismissButton = {
+            CancelTextButton(navigateUp)
         },
         confirmButton = {
             ConfirmTextButton {
-                if (dialog == 1) {
-                    vm.reboot()
-                } else {
-                    vm.requestBugReport()
-                }
-                dialog = 0
+                vm.requestBugReport()
+                navigateUp()
             }
-        }
+        },
+        onDismissRequest = navigateUp
     )
-    if (dialog in 3..5) {
-        val input by when (dialog) {
-            3 -> vm.orgNameState.collectAsState()
-            4 -> vm.orgIdState.collectAsState()
-            else -> vm.enrollmentSpecificIdState.collectAsState()
-        }
-        AlertDialog(
-            text = {
-                LaunchedEffect(Unit) {
-                    if (dialog == 5 && VERSION.SDK_INT >= 31) vm.getEnrollmentSpecificId()
-                    if (dialog == 3 && VERSION.SDK_INT >= 24) vm.getOrgName()
-                }
-                Column {
-                    OutlinedTextField(
-                        input, {
-                            when (dialog) {
-                                3 -> vm.setOrgName(it)
-                                4 -> vm.setOrgId(it)
-                            }
-                        },
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = if (dialog != 3) 8.dp else 0.dp),
-                        readOnly = dialog == 5,
-                        label = {
-                            Text(
-                                stringResource(
-                                    when (dialog) {
-                                        3 -> R.string.org_name
-                                        4 -> R.string.org_id
-                                        else -> R.string.enrollment_specific_id
-                                    }
-                                )
-                            )
-                        },
-                        supportingText = {
-                            if (dialog == 4) Text(stringResource(R.string.length_6_to_64))
-                        },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        textStyle = typography.bodyLarge
-                    )
-                    if (dialog == 5) Text(stringResource(R.string.info_enrollment_specific_id))
-                    if (dialog == 4) Text(stringResource(R.string.info_org_id))
-                }
-            },
-            onDismissRequest = { dialog = 0 },
-            dismissButton = {
-                if (dialog != 5) CancelTextButton { dialog = 0 }
-            },
-            confirmButton = {
-                TextButton(
-                    {
-                        if (dialog == 3 && VERSION.SDK_INT >= 24) vm.applyOrgName()
-                        if (dialog == 4 && VERSION.SDK_INT >= 31) vm.applyOrgId()
-                        dialog = 0
-                    },
-                    enabled = dialog != 4 || input.length in 6..64
-                ) {
-                    Text(stringResource(R.string.confirm))
-                }
-            }
-        )
+}
+
+@RequiresApi(24)
+@Composable
+fun OrgNameDialog(vm: SystemViewModel, navigateUp: () -> Unit) {
+    val input by vm.orgNameState.collectAsState()
+    LaunchedEffect(Unit) {
+        vm.getOrgName()
     }
+    AlertDialog(
+        text = {
+            OutlinedTextField(
+                input, vm::setOrgName, Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.org_name)) },
+                textStyle = typography.bodyLarge
+            )
+        },
+        dismissButton = {
+            CancelTextButton(navigateUp)
+        },
+        confirmButton = {
+            ConfirmTextButton {
+                vm.applyOrgName()
+                navigateUp()
+            }
+        },
+        onDismissRequest = navigateUp
+    )
+}
+
+@RequiresApi(31)
+@Composable
+fun OrgIdDialog(vm: SystemViewModel, navigateUp: () -> Unit) {
+    val input by vm.orgIdState.collectAsState()
+    AlertDialog(
+        text = {
+            Column {
+                OutlinedTextField(
+                    input, vm::setOrgId, Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.org_id)) },
+                    supportingText = { Text(stringResource(R.string.length_6_to_64)) },
+                    textStyle = typography.bodyLarge
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(stringResource(R.string.info_org_id))
+            }
+        },
+        dismissButton = {
+            CancelTextButton(navigateUp)
+        },
+        confirmButton = {
+            ConfirmTextButton(input.length in 6..64) {
+                vm.applyOrgId()
+                navigateUp()
+            }
+        },
+        onDismissRequest = navigateUp
+    )
+}
+
+@RequiresApi(31)
+@Composable
+fun EnrollmentIdDialog(vm: SystemViewModel, navigateUp: () -> Unit) {
+    val id by vm.enrollmentSpecificIdState.collectAsState()
+    LaunchedEffect(Unit) {
+        vm.getEnrollmentSpecificId()
+    }
+    AlertDialog(
+        text = {
+            Column {
+                OutlinedTextField(
+                    id, {}, Modifier.fillMaxWidth(),
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.enrollment_specific_id)) },
+                    textStyle = typography.bodyLarge
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(stringResource(R.string.info_enrollment_specific_id))
+            }
+        },
+        confirmButton = {
+            ConfirmTextButton { navigateUp() }
+        },
+        onDismissRequest = navigateUp
+    )
 }
 
 @Composable
