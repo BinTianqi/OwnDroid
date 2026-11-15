@@ -55,7 +55,7 @@ sealed class Destination : NavKey {
     @Serializable object NetworkStats : Destination()
     @Serializable object NetworkStatsViewer : Destination()
     @Serializable object PrivateDns : Destination()
-    @Serializable object AlwaysOnVpnPackage : Destination()
+    @Serializable object AlwaysOnVpn : Destination()
     @Serializable object RecommendedGlobalProxy : Destination()
     @Serializable object NetworkLogging : Destination()
     @Serializable object PreferentialNetworkService : Destination()
@@ -113,6 +113,7 @@ sealed class Destination : NavKey {
 
     @Serializable object Users : Destination()
     @Serializable object Logout : Destination()
+    @Serializable object ChangeUserIcon : Destination()
     @Serializable object UsersOptions : Destination()
     @Serializable object UserInfo : Destination()
     @Serializable object UserOperation : Destination()

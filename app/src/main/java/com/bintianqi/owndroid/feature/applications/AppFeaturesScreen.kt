@@ -1,6 +1,5 @@
 package com.bintianqi.owndroid.feature.applications
 
-import android.content.Intent
 import android.os.Build.VERSION
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -65,11 +64,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bintianqi.owndroid.AppInstallerActivity
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.feature.ApplicationStateFeatures
 import com.bintianqi.owndroid.ui.CancelTextButton
+import com.bintianqi.owndroid.ui.FeatureEntryItem
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
-import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.MyLazyScaffold
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.NavIcon
@@ -95,95 +94,20 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ApplicationsFeaturesScreen(
     vm: AppFeaturesViewModel, onNavigateUp: () -> Unit, onNavigate: (Destination) -> Unit
 ) {
-    val context = LocalContext.current
     MyScaffold(
         R.string.applications_state, onNavigateUp, 0.dp
     ) {
         val privilege by vm.privilegeState.collectAsStateWithLifecycle()
-        FunctionItem(R.string.permissions, icon = R.drawable.shield_fill0) {
-            onNavigate(Destination.PermissionManager)
+        ApplicationStateFeatures.forEach {
+            FeatureEntryItem(it, privilege, onNavigate)
         }
-        if (VERSION.SDK_INT >= 24) FunctionItem(
-            R.string.suspend, icon = R.drawable.block_fill0
-        ) {
-            onNavigate(Destination.Suspend)
-        }
-        FunctionItem(R.string.hide, icon = R.drawable.visibility_off_fill0) {
-            onNavigate(Destination.Hide)
-        }
-        FunctionItem(R.string.block_uninstall, icon = R.drawable.delete_forever_fill0) {
-            onNavigate(Destination.BlockUninstall)
-        }
-        if (VERSION.SDK_INT >= 30 && (privilege.device || (VERSION.SDK_INT >= 33 && privilege.profile))) {
-            FunctionItem(R.string.disable_user_control, icon = R.drawable.do_not_touch_fill0) {
-                onNavigate(Destination.DisableUserControl)
-            }
-        }
-        if (VERSION.SDK_INT >= 28) {
-            FunctionItem(R.string.disable_metered_data, icon = R.drawable.money_off_fill0) {
-                onNavigate(Destination.DisableMeteredData)
-            }
-        }
-        if (VERSION.SDK_INT >= 28) {
-            FunctionItem(R.string.clear_app_storage, icon = R.drawable.mop_fill0) {
-                onNavigate(Destination.ClearAppStorage)
-            }
-        }
-        FunctionItem(R.string.install_app, icon = R.drawable.install_mobile_fill0) {
+        /*FunctionItem(R.string.install_app, icon = R.drawable.install_mobile_fill0) {
             context.startActivity(Intent(context, AppInstallerActivity::class.java))
-        }
-        FunctionItem(R.string.uninstall_app, icon = R.drawable.delete_fill0) {
-            onNavigate(Destination.UninstallApp)
-        }
-        if (VERSION.SDK_INT >= 28 && privilege.device) {
-            FunctionItem(R.string.keep_uninstalled_packages, icon = R.drawable.delete_fill0) {
-                onNavigate(Destination.KeepUninstalledPackages)
-            }
-        }
-        if (VERSION.SDK_INT >= 28 && (privilege.device || (privilege.profile && privilege.affiliated))) {
-            FunctionItem(
-                R.string.install_existing_app, icon = R.drawable.install_mobile_fill0
-            ) {
-                onNavigate(Destination.InstallExistingApp)
-            }
-        }
-        if (VERSION.SDK_INT >= 30 && privilege.work) {
-            FunctionItem(R.string.cross_profile_apps, icon = R.drawable.work_fill0) {
-                onNavigate(Destination.CrossProfilePackages)
-            }
-        }
-        if (privilege.work) {
-            FunctionItem(R.string.cross_profile_widget, icon = R.drawable.widgets_fill0) {
-                onNavigate(Destination.CrossProfileWidgetProviders)
-            }
-        }
-        if (VERSION.SDK_INT >= 34 && privilege.device) {
-            FunctionItem(R.string.credential_manager_policy, icon = R.drawable.license_fill0) {
-                onNavigate(Destination.CredentialManagerPolicy)
-            }
-        }
-        FunctionItem(
-            R.string.permitted_accessibility_services,
-            icon = R.drawable.settings_accessibility_fill0
-        ) {
-            onNavigate(Destination.PermittedAccessibilityServices)
-        }
-        FunctionItem(R.string.permitted_ime, icon = R.drawable.keyboard_fill0) {
-            onNavigate(Destination.PermittedInputMethods)
-        }
-        FunctionItem(R.string.enable_system_app, icon = R.drawable.enable_fill0) {
-            onNavigate(Destination.EnableSystemApp)
-        }
-        if (VERSION.SDK_INT >= 34 && (privilege.device || privilege.work)) {
-            FunctionItem(R.string.set_default_dialer, icon = R.drawable.call_fill0) {
-                onNavigate(Destination.SetDefaultDialer)
-            }
-        }
+        }*/
         Spacer(Modifier.height(BottomPadding))
     }
 }

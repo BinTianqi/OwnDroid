@@ -65,6 +65,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.bintianqi.owndroid.utils.HorizontalPadding
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.feature.FeatureEntry
+import com.bintianqi.owndroid.ui.navigation.Destination
+import com.bintianqi.owndroid.utils.PrivilegeStatus
 import com.bintianqi.owndroid.utils.adaptiveInsets
 import com.bintianqi.owndroid.utils.isValidPackageName
 import com.bintianqi.owndroid.utils.parsePackageNames
@@ -497,5 +500,16 @@ fun CancelTextButton(onClick: () -> Unit) {
 fun ConfirmTextButton(enabled: Boolean = true, onClick: () -> Unit) {
     TextButton(onClick, enabled = enabled) {
         Text(stringResource(R.string.confirm))
+    }
+}
+
+@Composable
+fun FeatureEntryItem(
+    feature: FeatureEntry, privilege: PrivilegeStatus, navigate: (Destination) -> Unit
+) {
+    if (feature.checkAvailable(privilege)) {
+        FunctionItem(feature.name, icon = feature.icon) {
+            navigate(feature.destination)
+        }
     }
 }

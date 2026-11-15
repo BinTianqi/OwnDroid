@@ -50,12 +50,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.feature.PasswordFeatures
 import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.ConfirmTextButton
+import com.bintianqi.owndroid.ui.FeatureEntryItem
 import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
-import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.InfoItem
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.Notes
@@ -72,60 +73,8 @@ fun PasswordScreen(
 ) {
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
     MyScaffold(R.string.password_and_keyguard, onNavigateUp, 0.dp) {
-        FunctionItem(R.string.password_info, icon = R.drawable.info_fill0) {
-            onNavigate(Destination.PasswordInfo)
-        }
-        if (vm.getDisplayDangerousFeatures()) {
-            if (VERSION.SDK_INT >= 26) {
-                FunctionItem(R.string.reset_password_token, icon = R.drawable.key_vertical_fill0) {
-                    onNavigate(Destination.ResetPasswordToken)
-                }
-            }
-            FunctionItem(R.string.reset_password, icon = R.drawable.lock_reset_fill0) {
-                onNavigate(Destination.ResetPassword)
-            }
-        }
-        if (VERSION.SDK_INT >= 31) {
-            FunctionItem(R.string.required_password_complexity, icon = R.drawable.password_fill0) {
-                onNavigate(Destination.RequiredPasswordComplexity)
-            }
-        }
-        FunctionItem(
-            R.string.disable_keyguard_features, icon = R.drawable.screen_lock_portrait_fill0
-        ) {
-            onNavigate(Destination.KeyguardDisabledFeatures)
-        }
-        if (privilege.device) {
-            FunctionItem(R.string.max_time_to_lock, icon = R.drawable.schedule_fill0) {
-                onNavigate(Destination.PasswordConfig(PasswordDialogType.MaxTimeToLock))
-            }
-            FunctionItem(
-                R.string.pwd_expiration_timeout, icon = R.drawable.lock_clock_fill0
-            ) {
-                onNavigate(Destination.PasswordConfig(PasswordDialogType.ExpirationTimeout))
-            }
-            if (vm.getDisplayDangerousFeatures()) {
-                FunctionItem(
-                    R.string.max_pwd_fail, icon = R.drawable.no_encryption_fill0
-                ) {
-                    onNavigate(Destination.PasswordConfig(PasswordDialogType.MaxFailedForWipe))
-                }
-            }
-        }
-        if (VERSION.SDK_INT >= 26) {
-            FunctionItem(
-                R.string.required_strong_auth_timeout, icon = R.drawable.fingerprint_off_fill0
-            ) {
-                onNavigate(Destination.PasswordConfig(PasswordDialogType.StrongAuthTimeout))
-            }
-        }
-        FunctionItem(R.string.pwd_history, icon = R.drawable.history_fill0) {
-            onNavigate(Destination.PasswordConfig(PasswordDialogType.HistoryLength))
-        }
-        if (VERSION.SDK_INT < 31) {
-            FunctionItem(R.string.required_password_quality, icon = R.drawable.password_fill0) {
-                onNavigate(Destination.RequiredPasswordQuality)
-            }
+        PasswordFeatures.forEach {
+            FeatureEntryItem(it, privilege, onNavigate)
         }
     }
 }

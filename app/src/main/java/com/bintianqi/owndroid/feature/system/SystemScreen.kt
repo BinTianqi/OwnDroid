@@ -59,12 +59,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.feature.SystemFeatures
 import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.CheckBoxItem
 import com.bintianqi.owndroid.ui.ConfirmTextButton
+import com.bintianqi.owndroid.ui.FeatureEntryItem
 import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
-import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.InfoItem
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.MyLazyScaffold
@@ -85,111 +86,8 @@ fun SystemScreen(
 ) {
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
     MyScaffold(R.string.system, onNavigateUp, 0.dp) {
-        FunctionItem(R.string.options, icon = R.drawable.tune_fill0) {
-            onNavigate(Destination.SystemOptions)
-        }
-        FunctionItem(R.string.keyguard, icon = R.drawable.screen_lock_portrait_fill0) {
-            onNavigate(Destination.Keyguard)
-        }
-        if (VERSION.SDK_INT >= 24 && privilege.device && !privilege.dhizuku)
-            FunctionItem(R.string.hardware_monitor, icon = R.drawable.memory_fill0) {
-                onNavigate(Destination.HardwareMonitor)
-            }
-        FunctionItem(R.string.default_input_method, icon = R.drawable.keyboard_fill0) {
-            onNavigate(Destination.DefaultInputMethod)
-        }
-        if (VERSION.SDK_INT >= 24 && privilege.device) {
-            FunctionItem(R.string.reboot, icon = R.drawable.restart_alt_fill0) {
-                onNavigate(Destination.Reboot)
-            }
-        }
-        if (VERSION.SDK_INT >= 24 && privilege.device && (VERSION.SDK_INT < 28 || privilege.affiliated)) {
-            FunctionItem(R.string.bug_report, icon = R.drawable.bug_report_fill0) {
-                onNavigate(Destination.BugReport)
-            }
-        }
-        if (VERSION.SDK_INT >= 28 && (privilege.device || privilege.org)) {
-            FunctionItem(R.string.time, icon = R.drawable.schedule_fill0) {
-                onNavigate(Destination.Time)
-            }
-        }
-        if (VERSION.SDK_INT >= 35 && (privilege.device || (privilege.profile && privilege.affiliated)))
-            FunctionItem(R.string.content_protection_policy, icon = R.drawable.search_fill0) {
-                onNavigate(Destination.ContentProtectionPolicy)
-            }
-        FunctionItem(R.string.permission_policy, icon = R.drawable.key_fill0) {
-            onNavigate(Destination.PermissionPolicy)
-        }
-        if (VERSION.SDK_INT >= 34 && privilege.device) {
-            FunctionItem(R.string.mte_policy, icon = R.drawable.memory_fill0) {
-                onNavigate(Destination.MtePolicy)
-            }
-        }
-        if (VERSION.SDK_INT >= 31) {
-            FunctionItem(R.string.nearby_streaming_policy, icon = R.drawable.share_fill0) {
-                onNavigate(Destination.NearbyStreamingPolicy)
-            }
-        }
-        if (VERSION.SDK_INT >= 28 && (privilege.device || privilege.profile)) {
-            FunctionItem(R.string.lock_task_mode, icon = R.drawable.lock_fill0) {
-                onNavigate(Destination.LockTaskMode)
-            }
-        }
-        FunctionItem(R.string.ca_cert, icon = R.drawable.license_fill0) {
-            onNavigate(Destination.CaCert)
-        }
-        if (VERSION.SDK_INT >= 26 && !privilege.dhizuku && (privilege.device || privilege.org)) {
-            FunctionItem(R.string.security_logging, icon = R.drawable.description_fill0) {
-                onNavigate(Destination.SecurityLogging)
-            }
-        }
-        FunctionItem(R.string.device_info, icon = R.drawable.perm_device_information_fill0) {
-            onNavigate(Destination.DeviceInfo)
-        }
-        if (VERSION.SDK_INT >= 24 && (privilege.profile || (VERSION.SDK_INT >= 26 && privilege.device))) {
-            FunctionItem(R.string.org_name, icon = R.drawable.corporate_fare_fill0) {
-                onNavigate(Destination.OrgName)
-            }
-        }
-        if (VERSION.SDK_INT >= 31) {
-            FunctionItem(R.string.org_id, icon = R.drawable.corporate_fare_fill0) {
-                onNavigate(Destination.OrgId)
-            }
-        }
-        if (VERSION.SDK_INT >= 31) {
-            FunctionItem(
-                R.string.enrollment_specific_id, icon = R.drawable.id_card_fill0
-            ) {
-                onNavigate(Destination.EnrollmentId)
-            }
-        }
-        if (VERSION.SDK_INT >= 24 && (privilege.device || privilege.org)) {
-            FunctionItem(R.string.lock_screen_info, icon = R.drawable.screen_lock_portrait_fill0) {
-                onNavigate(Destination.LockScreenInfo)
-            }
-        }
-        if (VERSION.SDK_INT >= 24) {
-            FunctionItem(R.string.support_messages, icon = R.drawable.chat_fill0) {
-                onNavigate(Destination.SupportMessage)
-            }
-        }
-        FunctionItem(R.string.disable_account_management, icon = R.drawable.account_circle_fill0) {
-            onNavigate(Destination.DisableAccountManagement)
-        }
-        if (privilege.device || privilege.org) {
-            FunctionItem(R.string.system_update, icon = R.drawable.system_update_fill0) {
-                onNavigate(Destination.SystemUpdate)
-            }
-        }
-        if (VERSION.SDK_INT >= 30 && (privilege.device || privilege.org)) {
-            FunctionItem(R.string.frp_policy, icon = R.drawable.device_reset_fill0) {
-                onNavigate(Destination.FrpPolicy)
-            }
-        }
-        if (vm.getDisplayDangerousFeatures() && !privilege.work) {
-            FunctionItem(R.string.wipe_data, icon = R.drawable.device_reset_fill0) {
-                onNavigate(Destination.WipeData)
-            }
+        SystemFeatures.forEach {
+            FeatureEntryItem(it, privilege, onNavigate)
         }
     }
 }

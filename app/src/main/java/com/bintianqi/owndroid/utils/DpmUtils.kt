@@ -13,6 +13,7 @@ import android.content.pm.PackageInstaller
 import android.os.Binder
 import android.os.Build.VERSION
 import android.os.IBinder
+import android.os.Process
 import android.os.UserHandle
 import android.os.UserManager
 import android.util.Log
@@ -211,6 +212,9 @@ class PrivilegeStatus(
     val affiliated: Boolean = false
 ) {
     val activated = device || profile
+    val userId = Process.myUid() / 100000
+    val mainUser = userId == 0
+    val version = VERSION.SDK_INT
 }
 
 fun getPrivilegeStatus(dpm: DevicePolicyManager, dar: ComponentName, dhizuku: Boolean): PrivilegeStatus {

@@ -119,6 +119,7 @@ import com.bintianqi.owndroid.feature.user_restriction.UserRestrictionEditorScre
 import com.bintianqi.owndroid.feature.user_restriction.UserRestrictionOptionsScreen
 import com.bintianqi.owndroid.feature.user_restriction.UserRestrictionScreen
 import com.bintianqi.owndroid.feature.users.AffiliationIdScreen
+import com.bintianqi.owndroid.feature.users.ChangeUserIconDialog
 import com.bintianqi.owndroid.feature.users.ChangeUsernameScreen
 import com.bintianqi.owndroid.feature.users.CreateUserScreen
 import com.bintianqi.owndroid.feature.users.LogoutDialog
@@ -427,7 +428,7 @@ fun myEntryProvider(
     ) {
         PrivateDnsScreen(viewModel(), ::navigateUp)
     }
-    myEntry<Destination.AlwaysOnVpnPackage>(
+    myEntry<Destination.AlwaysOnVpn>(
         metadata = navParentKey<Destination.Network>()
     ) {
         AlwaysOnVpnPackageScreen(
@@ -808,6 +809,9 @@ fun myEntryProvider(
         metadata = navParentKey<Destination.Users>()
     ) {
         ChangeUsernameScreen(viewModel(), ::navigateUp)
+    }
+    myDialogEntry<Destination.ChangeUserIcon>(navParentKey<Destination.Users>()) {
+        ChangeUserIconDialog(viewModel(), ::navigateUp)
     }
     myEntry<Destination.UserSessionMessage>(
         metadata = navParentKey<Destination.Users>()

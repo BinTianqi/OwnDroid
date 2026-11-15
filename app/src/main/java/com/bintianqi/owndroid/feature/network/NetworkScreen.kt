@@ -23,9 +23,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.feature.NetworkFeatures
+import com.bintianqi.owndroid.ui.FeatureEntryItem
 import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
 import com.bintianqi.owndroid.ui.FullWidthRadioButtonItem
-import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.PackageNameTextField
@@ -40,51 +41,12 @@ fun NetworkScreen(
 ) {
     val privilege by vm.ps.collectAsStateWithLifecycle()
     MyScaffold(R.string.network, onNavigateUp, 0.dp) {
-        if (!privilege.dhizuku) FunctionItem(R.string.wifi, icon = R.drawable.wifi_fill0) {
-            onNavigate(Destination.WiFi)
-        }
-        if (VERSION.SDK_INT >= 30) {
-            FunctionItem(R.string.options, icon = R.drawable.tune_fill0) {
-                onNavigate(Destination.NetworkOptions)
-            }
-        }
-        if (!privilege.dhizuku)
-            FunctionItem(R.string.network_stats, icon = R.drawable.query_stats_fill0) {
-                onNavigate(Destination.NetworkStats)
-            }
-        if (VERSION.SDK_INT >= 29 && privilege.device) {
-            FunctionItem(R.string.private_dns, icon = R.drawable.dns_fill0) {
-                onNavigate(Destination.PrivateDns)
-            }
-        }
-        if (VERSION.SDK_INT >= 24) {
-            FunctionItem(R.string.always_on_vpn, icon = R.drawable.vpn_key_fill0) {
-                onNavigate(Destination.AlwaysOnVpnPackage)
-            }
-        }
-        if (privilege.device) {
-            FunctionItem(R.string.recommended_global_proxy, icon = R.drawable.vpn_key_fill0) {
-                onNavigate(Destination.RecommendedGlobalProxy)
-            }
-        }
-        if (VERSION.SDK_INT >= 26 && !privilege.dhizuku && (privilege.device || privilege.work)) {
-            FunctionItem(R.string.network_logging, icon = R.drawable.description_fill0) {
-                onNavigate(Destination.NetworkLogging)
-            }
+        NetworkFeatures.forEach {
+            FeatureEntryItem(it, privilege, onNavigate)
         }
         /*if(VERSION.SDK_INT >= 31) {
             FunctionItem(R.string.wifi_auth_keypair, icon = R.drawable.key_fill0) { onNavigate(Destination.WifiAuthKeypair) }
         }*/
-        if (VERSION.SDK_INT >= 33 && (privilege.work || privilege.device)) {
-            FunctionItem(R.string.preferential_network_service, icon = R.drawable.globe_fill0) {
-                onNavigate(Destination.PreferentialNetworkService)
-            }
-        }
-        if (VERSION.SDK_INT >= 28 && privilege.device) {
-            FunctionItem(R.string.override_apn, icon = R.drawable.cell_tower_fill0) {
-                onNavigate(Destination.OverrideApn)
-            }
-        }
     }
 }
 

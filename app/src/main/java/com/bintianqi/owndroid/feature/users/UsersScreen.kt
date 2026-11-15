@@ -63,11 +63,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.feature.UserFeatures
 import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.CircularProgressDialog
 import com.bintianqi.owndroid.ui.ConfirmTextButton
+import com.bintianqi.owndroid.ui.FeatureEntryItem
 import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
-import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.InfoItem
 import com.bintianqi.owndroid.ui.ListItem
 import com.bintianqi.owndroid.ui.MyScaffold
@@ -82,65 +83,10 @@ import com.bintianqi.owndroid.utils.yesOrNo
 
 @Composable
 fun UsersScreen(vm: UsersViewModel, onNavigateUp: () -> Unit, onNavigate: (Destination) -> Unit) {
-    val context = LocalContext.current
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
     MyScaffold(R.string.users, onNavigateUp, 0.dp) {
-        if (VERSION.SDK_INT >= 28 && privilege.profile && privilege.affiliated) {
-            FunctionItem(R.string.logout, icon = R.drawable.logout_fill0) {
-                onNavigate(Destination.Logout)
-            }
-        }
-        FunctionItem(R.string.user_info, icon = R.drawable.person_fill0) {
-            onNavigate(Destination.UserInfo)
-        }
-        if (VERSION.SDK_INT >= 28 && privilege.device) {
-            FunctionItem(R.string.options, icon = R.drawable.tune_fill0) {
-                onNavigate(Destination.UsersOptions)
-            }
-        }
-        if (privilege.device) {
-            FunctionItem(R.string.user_operation, icon = R.drawable.sync_alt_fill0) {
-                onNavigate(Destination.UserOperation)
-            }
-        }
-        if (VERSION.SDK_INT >= 24 && privilege.device) {
-            FunctionItem(R.string.create_user, icon = R.drawable.person_add_fill0) {
-                onNavigate(Destination.CreateUser)
-            }
-        }
-        FunctionItem(R.string.change_username, icon = R.drawable.edit_fill0) {
-            onNavigate(Destination.ChangeUsername)
-        }
-        var changeUserIconDialog by remember { mutableStateOf(false) }
-        var bitmap: Bitmap? by remember { mutableStateOf(null) }
-        val launcher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
-            if (it != null) uriToStream(context, it) { stream ->
-                bitmap = BitmapFactory.decodeStream(stream)
-                if (bitmap != null) {
-                    changeUserIconDialog = true
-                } else {
-                    vm.toastChannel.sendStatus(false)
-                }
-            }
-        }
-        FunctionItem(R.string.change_user_icon, icon = R.drawable.account_circle_fill0) {
-            context.popToast(R.string.select_an_image)
-            launcher.launch(arrayOf("image/*"))
-        }
-        if (changeUserIconDialog) ChangeUserIconDialog(
-            bitmap!!, {
-                vm.setUserIcon(bitmap!!)
-                changeUserIconDialog = false
-            }) { changeUserIconDialog = false }
-        if (VERSION.SDK_INT >= 28 && privilege.device) {
-            FunctionItem(R.string.user_session_msg, icon = R.drawable.notifications_fill0) {
-                onNavigate(Destination.UserSessionMessage)
-            }
-        }
-        if (VERSION.SDK_INT >= 26) {
-            FunctionItem(R.string.affiliation_id, icon = R.drawable.id_card_fill0) {
-                onNavigate(Destination.AffiliationId)
-            }
+        UserFeatures.forEach {
+            FeatureEntryItem(it, privilege, onNavigate)
         }
     }
 }
@@ -161,6 +107,52 @@ fun LogoutDialog(vm: UsersViewModel, navigateUp: () -> Unit) {
         confirmButton = {
             ConfirmTextButton {
                 vm.logout()
+                navigateUp()
+            }
+        },
+        dismissButton = {
+            CancelTextButton(navigateUp)
+        },
+        onDismissRequest = navigateUp
+    )
+}
+
+@Composable
+fun ChangeUserIconDialog(vm: UsersViewModel, navigateUp: () -> Unit) {
+    val context = LocalContext.current
+    var bitmap: Bitmap? by remember { mutableStateOf(null) }
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
+        if (it != null) {
+            uriToStream(context, it) { stream ->
+                bitmap = BitmapFactory.decodeStream(stream)
+                if (bitmap == null) {
+                    vm.toastChannel.sendStatus(false)
+                    navigateUp()
+                }
+            }
+        } else {
+            navigateUp()
+        }
+    }
+    LaunchedEffect(Unit) {
+        context.popToast(R.string.select_an_image)
+        launcher.launch(arrayOf("image/*"))
+    }
+    AlertDialog(
+        title = { Text(stringResource(R.string.change_user_icon)) },
+        text = {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                if (bitmap != null) Image(
+                    bitmap!!.asImageBitmap(), null,
+                    Modifier
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(50))
+                )
+            }
+        },
+        confirmButton = {
+            ConfirmTextButton(bitmap != null) {
+                vm.setUserIcon(bitmap!!)
                 navigateUp()
             }
         },
@@ -542,28 +534,4 @@ fun UserSessionMessageScreen(
             Text(stringResource(R.string.apply))
         }
     }
-}
-
-@Composable
-private fun ChangeUserIconDialog(bitmap: Bitmap, onSet: () -> Unit, onClose: () -> Unit) {
-    AlertDialog(
-        title = { Text(stringResource(R.string.change_user_icon)) },
-        text = {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                Image(
-                    bitmap.asImageBitmap(), null,
-                    Modifier
-                        .size(80.dp)
-                        .clip(RoundedCornerShape(50))
-                )
-            }
-        },
-        confirmButton = {
-            ConfirmTextButton(onClick = onSet)
-        },
-        dismissButton = {
-            CancelTextButton(onClose)
-        },
-        onDismissRequest = onClose
-    )
 }
