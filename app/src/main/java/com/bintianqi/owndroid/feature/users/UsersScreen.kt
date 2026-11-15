@@ -86,7 +86,7 @@ fun UsersScreen(vm: UsersViewModel, onNavigateUp: () -> Unit, onNavigate: (Desti
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
     MyScaffold(R.string.users, onNavigateUp, 0.dp) {
         UserFeatures.forEach {
-            FeatureEntryItem(it, privilege, onNavigate)
+            FeatureEntryItem(it, privilege, vm.getShowUnavailableFeatures(), onNavigate)
         }
     }
 }

@@ -112,7 +112,6 @@ val HorizontalPadding = 16.dp
 
 val BottomPadding = 60.dp
 
-@OptIn(ExperimentalStdlibApi::class)
 fun String.hash(): String {
     val md = MessageDigest.getInstance("SHA-256")
     return md.digest(this.encodeToByteArray()).toHexString()
@@ -121,7 +120,6 @@ fun String.hash(): String {
 val MyAdminComponent = ComponentName.unflattenFromString("com.bintianqi.owndroid/.Receiver")!!
 
 
-@OptIn(ExperimentalStdlibApi::class)
 fun getPackageSignature(info: PackageInfo): String? {
     val signatures = if (VERSION.SDK_INT >= 28) info.signingInfo?.apkContentsSigners else info.signatures
     return signatures?.firstOrNull()?.toByteArray()

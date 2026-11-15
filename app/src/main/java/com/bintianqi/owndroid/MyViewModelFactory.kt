@@ -61,7 +61,7 @@ class MyViewModelFactory(
             return cls.java.isAssignableFrom(modelClass)
         }
         if (checkType(SearchViewModel::class)) {
-            return SearchViewModel(app, ps) as T
+            return SearchViewModel(app, ps, sr) as T
         }
         if (checkType(NetworkStatsViewModel::class)) {
             return NetworkStatsViewModel(app, ps) as T
@@ -79,7 +79,7 @@ class MyViewModelFactory(
             return NetworkLoggingViewModel(app, ph, tc, nlRepo) as T
         }
         if (checkType(NetworkViewModel::class)) {
-            return NetworkViewModel(ph, tc, ps) as T
+            return NetworkViewModel(ph, tc, sr, ps) as T
         }
 
         if (checkType(DelegatedAdminsViewModel::class)) {
@@ -128,7 +128,7 @@ class MyViewModelFactory(
         }
 
         if (checkType(WorkProfileViewModel::class)) {
-            return WorkProfileViewModel(ph, ps, tc) as T
+            return WorkProfileViewModel(ph, ps, tc, sr) as T
         }
         if (checkType(CrossProfileIntentFilterViewModel::class)) {
             return CrossProfileIntentFilterViewModel(app, ph, cpifRepo, tc, sr) as T

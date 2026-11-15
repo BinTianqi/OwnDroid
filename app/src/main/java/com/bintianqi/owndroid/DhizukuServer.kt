@@ -109,7 +109,6 @@ class MyDhizukuService(
 
 class DhizukuActivity : ComponentActivity() {
 
-    @OptIn(ExperimentalStdlibApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val settingsRepo = (application as MyApplication).container.settingsRepo

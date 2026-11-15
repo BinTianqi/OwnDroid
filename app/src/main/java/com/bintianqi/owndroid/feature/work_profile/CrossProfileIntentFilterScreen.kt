@@ -70,7 +70,6 @@ import com.bintianqi.owndroid.utils.BottomPadding
 import com.bintianqi.owndroid.utils.HorizontalPadding
 import com.bintianqi.owndroid.utils.formatDate
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrossProfileIntentFilterScreen(
     vm: CrossProfileIntentFilterViewModel, onNavigateUp: () -> Unit, navigate: (Destination) -> Unit

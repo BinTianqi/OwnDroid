@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bintianqi.owndroid.MyApplication
 import com.bintianqi.owndroid.feature.FeatureEntries
+import com.bintianqi.owndroid.feature.settings.SettingsRepository
 import com.bintianqi.owndroid.utils.PrivilegeStatus
 import com.bintianqi.owndroid.utils.searchInString
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,8 +13,14 @@ import kotlinx.coroutines.launch
 
 class SearchViewModel(
     val application: MyApplication,
-    val privilegeState: StateFlow<PrivilegeStatus>
+    val privilegeState: StateFlow<PrivilegeStatus>,
+    val settingsRepo: SettingsRepository,
 ) : ViewModel() {
+
+    fun getShowUnavailableFeatures(): Boolean {
+        return settingsRepo.data.showUnavailableFeatures
+    }
+
     val queryState = MutableStateFlow("")
 
     fun setQuery(query: String) {
@@ -34,7 +41,9 @@ class SearchViewModel(
         if (query.isNotBlank()) {
             resultsState.value = FeatureEntries.mapNotNull { category ->
                 val features = category.second.filter { feature ->
-                    (feature.keywords + feature.name).any {
+                    (feature.checkAvailable(privilegeState.value) ||
+                            getShowUnavailableFeatures()) &&
+                            (feature.keywords + feature.name).any {
                         searchInString(query, application.getString(it))
                     }
                 }

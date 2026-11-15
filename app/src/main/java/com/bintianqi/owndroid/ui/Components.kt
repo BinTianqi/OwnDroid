@@ -77,12 +77,14 @@ fun FunctionItem(
     @StringRes title: Int,
     desc: String? = null,
     @DrawableRes icon: Int? = null,
+    enabled: Boolean = true,
     operation: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = operation)
+            .alpha(if (enabled) 1.0f else 0.5f)
+            .clickable(enabled, onClick = operation)
             .padding(start = 25.dp, end = 15.dp)
             .padding(vertical = 12.dp + (if (desc != "") 0 else 3).dp),
         verticalAlignment = Alignment.CenterVertically
@@ -505,10 +507,12 @@ fun ConfirmTextButton(enabled: Boolean = true, onClick: () -> Unit) {
 
 @Composable
 fun FeatureEntryItem(
-    feature: FeatureEntry, privilege: PrivilegeStatus, navigate: (Destination) -> Unit
+    feature: FeatureEntry, privilege: PrivilegeStatus, showUnavailable: Boolean,
+    navigate: (Destination) -> Unit
 ) {
-    if (feature.checkAvailable(privilege)) {
-        FunctionItem(feature.name, icon = feature.icon) {
+    val available = feature.checkAvailable(privilege)
+    if (available || showUnavailable) {
+        FunctionItem(feature.name, icon = feature.icon, enabled = available) {
             navigate(feature.destination)
         }
     }

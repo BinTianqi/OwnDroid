@@ -113,7 +113,6 @@ fun TimeScreen(vm: TimeViewModel, onNavigateUp: () -> Unit) {
 }
 
 @RequiresApi(28)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ChangeTimeScreen(vm: TimeViewModel) {
     val pagerState = rememberPagerState { 2 }

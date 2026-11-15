@@ -42,7 +42,7 @@ fun NetworkScreen(
     val privilege by vm.ps.collectAsStateWithLifecycle()
     MyScaffold(R.string.network, onNavigateUp, 0.dp) {
         NetworkFeatures.forEach {
-            FeatureEntryItem(it, privilege, onNavigate)
+            FeatureEntryItem(it, privilege, vm.getShowUnavailableFeatures(), onNavigate)
         }
         /*if(VERSION.SDK_INT >= 31) {
             FunctionItem(R.string.wifi_auth_keypair, icon = R.drawable.key_fill0) { onNavigate(Destination.WifiAuthKeypair) }

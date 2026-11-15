@@ -1,6 +1,5 @@
 package com.bintianqi.owndroid.feature.applications
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -59,7 +58,7 @@ import com.bintianqi.owndroid.utils.SerializableSaver
 import com.bintianqi.owndroid.utils.adaptiveInsets
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppChooserScreen(
     params: Destination.ApplicationsList, vm: AppChooserViewModel,

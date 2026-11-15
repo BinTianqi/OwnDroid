@@ -11,7 +11,7 @@ data class MySettings(
     val appLock: AppLock = AppLock(),
     val shortcut: Shortcut = Shortcut(),
     val notifications: MutableList<Int> = mutableListOf(),
-    var displayDangerousFeatures: Boolean = false,
+    var showUnavailableFeatures: Boolean = false,
     var appFeatureSwitchView: Boolean = true,
     var cpifChanged: Boolean = false, // Cross profile intent filter
     val api: Api = Api(),

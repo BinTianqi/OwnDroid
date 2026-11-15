@@ -51,7 +51,6 @@ import com.bintianqi.owndroid.ui.SwitchItem
 import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.HorizontalPadding
 
-@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(33)
 @Composable
 fun PreferentialNetworkServiceScreen(

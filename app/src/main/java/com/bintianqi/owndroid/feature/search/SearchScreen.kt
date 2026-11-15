@@ -71,7 +71,9 @@ fun SearchScreen(vm: SearchViewModel, navigateUp: () -> Unit, navigate: (Destina
                 }
                 items(category.second, { it.hashCode() }) { feature ->
                     Box(Modifier.animateItem()) {
-                        FeatureEntryItem(feature, privilege, navigate)
+                        FeatureEntryItem(
+                            feature, privilege, vm.getShowUnavailableFeatures(), navigate
+                        )
                     }
                 }
             }

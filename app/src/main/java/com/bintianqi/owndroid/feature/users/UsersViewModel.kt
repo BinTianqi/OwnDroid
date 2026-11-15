@@ -28,6 +28,11 @@ class UsersViewModel(
     val application: MyApplication, val ph: PrivilegeHelper, val toastChannel: ToastChannel,
     val settingsRepo: SettingsRepository, val privilegeState: StateFlow<PrivilegeStatus>
 ) : ViewModel() {
+
+    fun getShowUnavailableFeatures(): Boolean {
+        return settingsRepo.data.showUnavailableFeatures
+    }
+
     val um = application.getSystemService(Context.USER_SERVICE) as UserManager
     val logoutEnabledState = MutableStateFlow(false)
 

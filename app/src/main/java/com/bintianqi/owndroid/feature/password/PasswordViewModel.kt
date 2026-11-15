@@ -21,7 +21,10 @@ class PasswordViewModel(
     val application: MyApplication, val ph: PrivilegeHelper, val settingsRepo: SettingsRepository,
     val privilegeState: StateFlow<PrivilegeStatus>, val toastChannel: ToastChannel
 ) : ViewModel() {
-    fun getDisplayDangerousFeatures() = settingsRepo.data.displayDangerousFeatures
+
+    fun getShowUnavailableFeatures(): Boolean {
+        return settingsRepo.data.showUnavailableFeatures
+    }
 
     val passwordInfoState = MutableStateFlow(PasswordInfo())
 

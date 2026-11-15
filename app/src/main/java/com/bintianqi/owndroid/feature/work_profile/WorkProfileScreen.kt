@@ -52,7 +52,7 @@ fun WorkProfileScreen(
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
     MyScaffold(R.string.work_profile, onNavigateUp, 0.dp) {
         WorkProfileFeatures.forEach {
-            FeatureEntryItem(it, privilege, onNavigate)
+            FeatureEntryItem(it, privilege, vm.getShowUnavailableFeatures(), onNavigate)
         }
     }
 }

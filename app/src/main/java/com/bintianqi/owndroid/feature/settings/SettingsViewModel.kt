@@ -31,6 +31,10 @@ class SettingsViewModel(
     val toastChannel: ToastChannel, val themeState: MutableStateFlow<MySettings.Theme>,
     val tbRepo: TimeBlockerRepository
 ) : ViewModel() {
+    fun getShowUnavailableFeatures(): Boolean {
+        return settingsRepo.data.showUnavailableFeatures
+    }
+
     fun exportLogs(uri: Uri) {
         application.contentResolver.openOutputStream(uri)?.use { output ->
             val proc = Runtime.getRuntime().exec("logcat -d")
@@ -56,11 +60,11 @@ class SettingsViewModel(
         settingsRepo.update { it.theme = it.theme.copy(black = enabled) }
     }
 
-    val dangerousFeaturesState = MutableStateFlow(settingsRepo.data.displayDangerousFeatures)
+    val unavailableFeaturesState = MutableStateFlow(settingsRepo.data.showUnavailableFeatures)
 
-    fun setDisplayDangerousFeatures(state: Boolean) {
-        settingsRepo.update { it.displayDangerousFeatures = state }
-        dangerousFeaturesState.value = state
+    fun setShowUnavailableFeatures(state: Boolean) {
+        settingsRepo.update { it.showUnavailableFeatures = state }
+        unavailableFeaturesState.value = state
     }
 
     val shortcutEnabledState = MutableStateFlow(false)

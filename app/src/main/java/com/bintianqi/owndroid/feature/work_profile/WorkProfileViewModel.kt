@@ -4,6 +4,7 @@ import android.os.Build.VERSION
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import com.bintianqi.owndroid.PrivilegeHelper
+import com.bintianqi.owndroid.feature.settings.SettingsRepository
 import com.bintianqi.owndroid.utils.PrivilegeStatus
 import com.bintianqi.owndroid.utils.ToastChannel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,8 +12,13 @@ import kotlinx.coroutines.flow.StateFlow
 
 class WorkProfileViewModel(
     val ph: PrivilegeHelper, val privilegeState: StateFlow<PrivilegeStatus>,
-    val toastChannel: ToastChannel
+    val toastChannel: ToastChannel, val settingsRepo: SettingsRepository,
 ) : ViewModel() {
+
+    fun getShowUnavailableFeatures(): Boolean {
+        return settingsRepo.data.showUnavailableFeatures
+    }
+
     val personalAppSuspendedState = MutableStateFlow(0)
 
     @RequiresApi(30)

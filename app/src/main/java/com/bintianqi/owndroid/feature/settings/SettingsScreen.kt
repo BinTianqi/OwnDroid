@@ -85,7 +85,6 @@ import java.util.Date
 import java.util.Locale
 import kotlin.system.exitProcess
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     vm: SettingsViewModel, onNavigate: (Destination) -> Unit, onNavigateUp: () -> Unit
@@ -155,7 +154,7 @@ fun SettingsScreen(
         }
     ) {
         SettingsFeatures.forEach {
-            FeatureEntryItem(it, privilege, onNavigate)
+            FeatureEntryItem(it, privilege, vm.getShowUnavailableFeatures(), onNavigate)
         }
         Spacer(Modifier.height(BottomPadding))
     }
@@ -175,11 +174,11 @@ fun SettingsScreen(
 fun SettingsOptionsScreen(
     vm: SettingsViewModel, onNavigateUp: () -> Unit
 ) {
-    val dangerousFeatures by vm.dangerousFeaturesState.collectAsState()
+    val unavailableFeatures by vm.unavailableFeaturesState.collectAsState()
     MyScaffold(R.string.options, onNavigateUp, 0.dp) {
         SwitchItem(
-            R.string.show_dangerous_features, dangerousFeatures, vm::setDisplayDangerousFeatures,
-            R.drawable.warning_fill0
+            R.string.show_unavailable_features, unavailableFeatures, vm::setShowUnavailableFeatures,
+            R.drawable.visibility_fill0
         )
     }
 }

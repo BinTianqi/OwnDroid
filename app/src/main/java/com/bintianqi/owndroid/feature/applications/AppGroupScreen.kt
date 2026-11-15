@@ -175,7 +175,6 @@ fun AppGroupsScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditAppGroupScreen(
     vm: AppGroupViewModel, navigateUp: () -> Unit,

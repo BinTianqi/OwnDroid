@@ -87,7 +87,7 @@ fun SystemScreen(
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
     MyScaffold(R.string.system, onNavigateUp, 0.dp) {
         SystemFeatures.forEach {
-            FeatureEntryItem(it, privilege, onNavigate)
+            FeatureEntryItem(it, privilege, vm.getShowUnavailableFeatures(), onNavigate)
         }
     }
 }

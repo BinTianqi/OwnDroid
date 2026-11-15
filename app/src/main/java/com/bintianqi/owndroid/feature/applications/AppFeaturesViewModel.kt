@@ -34,6 +34,10 @@ class AppFeaturesViewModel(
 ) : ViewModel() {
     val pm = application.packageManager!!
 
+    fun getShowUnavailableFeatures(): Boolean {
+        return settingsRepo.data.showUnavailableFeatures
+    }
+
     val suspendedPackages = MutableStateFlow(emptyList<String>())
 
     @RequiresApi(24)

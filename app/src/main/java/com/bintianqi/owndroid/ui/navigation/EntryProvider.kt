@@ -297,7 +297,7 @@ fun myEntryProvider(
         )
     }
     myEntry<Destination.TransferOwnership> {
-        TransferOwnershipScreen(getVm(), ::navigateUp) {
+        TransferOwnershipScreen(getVm(vmf), ::navigateUp) {
             navigate(Destination.WorkingModes(false))
             while (backstack.size > 1) {
                 backstack.removeFirstOrNull()

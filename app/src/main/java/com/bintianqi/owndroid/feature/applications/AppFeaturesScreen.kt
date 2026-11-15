@@ -103,7 +103,7 @@ fun ApplicationsFeaturesScreen(
     ) {
         val privilege by vm.privilegeState.collectAsStateWithLifecycle()
         ApplicationStateFeatures.forEach {
-            FeatureEntryItem(it, privilege, onNavigate)
+            FeatureEntryItem(it, privilege, vm.getShowUnavailableFeatures(), onNavigate)
         }
         /*FunctionItem(R.string.install_app, icon = R.drawable.install_mobile_fill0) {
             context.startActivity(Intent(context, AppInstallerActivity::class.java))

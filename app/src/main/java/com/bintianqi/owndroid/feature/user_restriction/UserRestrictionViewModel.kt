@@ -18,6 +18,11 @@ class UserRestrictionViewModel(
     val application: MyApplication, val ph: PrivilegeHelper, val settingsRepo: SettingsRepository,
     val privilegeState: StateFlow<PrivilegeStatus>, val toastChannel: ToastChannel
 ) : ViewModel() {
+
+    fun getShowUnavailableFeatures(): Boolean {
+        return settingsRepo.data.showUnavailableFeatures
+    }
+
     val restrictionsState = MutableStateFlow(emptyMap<String, Boolean>())
 
     fun getRestrictions() {

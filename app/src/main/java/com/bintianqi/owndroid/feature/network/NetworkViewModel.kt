@@ -8,14 +8,20 @@ import androidx.annotation.RequiresApi
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import com.bintianqi.owndroid.PrivilegeHelper
+import com.bintianqi.owndroid.feature.settings.SettingsRepository
 import com.bintianqi.owndroid.utils.PrivilegeStatus
 import com.bintianqi.owndroid.utils.ToastChannel
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class NetworkViewModel(
-    val ph: PrivilegeHelper, val toastChannel: ToastChannel,
+    val ph: PrivilegeHelper, val toastChannel: ToastChannel, val settingsRepo: SettingsRepository,
     val ps: MutableStateFlow<PrivilegeStatus>
 ) : ViewModel() {
+
+    fun getShowUnavailableFeatures(): Boolean {
+        return settingsRepo.data.showUnavailableFeatures
+    }
+
     // Lockdown admin configured networks
     val lanEnabledState = MutableStateFlow(false)
 

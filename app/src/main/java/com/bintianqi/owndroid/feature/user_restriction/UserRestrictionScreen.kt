@@ -1,5 +1,6 @@
 package com.bintianqi.owndroid.feature.user_restriction
 
+import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -19,7 +20,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -35,6 +35,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -49,7 +50,6 @@ import com.bintianqi.owndroid.ui.navigation.Destination
 import com.bintianqi.owndroid.utils.BottomPadding
 import com.bintianqi.owndroid.utils.HorizontalPadding
 
-@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(24)
 @Composable
 fun UserRestrictionScreen(
@@ -102,18 +102,28 @@ fun UserRestrictionOptionsScreen(
 ) {
     val status by vm.restrictionsState.collectAsStateWithLifecycle()
     val (title, items) = UserRestrictionsRepository.getData(args.id)
+    val displayedItems = items.let { list ->
+        if (vm.getShowUnavailableFeatures()) list
+        else list.filter { Build.VERSION.SDK_INT >= it.requiresApi }
+    }
     MyLazyScaffold(title, onNavigateUp) {
-        items(items) { restriction ->
+        items(displayedItems) { restriction ->
+            val available = Build.VERSION.SDK_INT >= restriction.requiresApi
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .combinedClickable(onClick = {}, onLongClick = {
+                    .combinedClickable(available, onClick = {}, onLongClick = {
                         vm.createShortcut(restriction.id)
                     })
                     .padding(15.dp, 6.dp),
                 Arrangement.SpaceBetween, Alignment.CenterVertically
             ) {
-                Row(Modifier.weight(1F), verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    Modifier
+                        .weight(1F)
+                        .alpha(if (available) 1.0F else 0.5F),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Icon(
                         painterResource(restriction.icon), null,
                         Modifier.padding(start = 6.dp, end = 16.dp)
@@ -131,7 +141,8 @@ fun UserRestrictionOptionsScreen(
                     {
                         vm.setRestriction(restriction.id, it)
                     },
-                    Modifier.padding(start = 8.dp)
+                    Modifier.padding(start = 8.dp),
+                    enabled = available
                 )
             }
         }
@@ -158,7 +169,6 @@ fun UserRestrictionOptionsScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(24)
 @Composable
 fun UserRestrictionEditorScreen(

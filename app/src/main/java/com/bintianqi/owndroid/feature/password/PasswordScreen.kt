@@ -74,7 +74,7 @@ fun PasswordScreen(
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
     MyScaffold(R.string.password_and_keyguard, onNavigateUp, 0.dp) {
         PasswordFeatures.forEach {
-            FeatureEntryItem(it, privilege, onNavigate)
+            FeatureEntryItem(it, privilege, vm.getShowUnavailableFeatures(), onNavigate)
         }
     }
 }

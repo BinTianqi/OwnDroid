@@ -53,7 +53,7 @@ import com.bintianqi.owndroid.utils.adaptiveInsets
 import com.bintianqi.owndroid.utils.formatDate
 import com.bintianqi.owndroid.utils.popToast
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalStdlibApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CaCertScreen(
     vm: CaCertViewModel, onNavigateUp: () -> Unit

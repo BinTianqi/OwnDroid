@@ -1,6 +1,5 @@
 package com.bintianqi.owndroid.feature.user_restriction
 
-import android.os.Build
 import android.os.UserManager
 import com.bintianqi.owndroid.R
 
@@ -97,7 +96,7 @@ object UserRestrictionsRepository {
             UserRestrictionCategory.Media -> media
             UserRestrictionCategory.Users -> users
             UserRestrictionCategory.Other -> other
-        }.filter { Build.VERSION.SDK_INT >= it.requiresApi }
+        }
     }
     fun findRestrictionById(id: String): Restriction {
         listOf(network, connectivity, applications, media, users, other).forEach { list ->
