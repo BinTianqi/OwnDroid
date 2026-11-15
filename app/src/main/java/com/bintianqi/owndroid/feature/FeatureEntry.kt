@@ -8,6 +8,7 @@ import com.bintianqi.owndroid.feature.system.secureSettings
 import com.bintianqi.owndroid.feature.user_restriction.UserRestrictionCategory
 import com.bintianqi.owndroid.feature.user_restriction.UserRestrictionsRepository
 import com.bintianqi.owndroid.ui.navigation.Destination
+import com.bintianqi.owndroid.utils.NotificationType
 import com.bintianqi.owndroid.utils.PrivilegeStatus
 
 class FeatureEntry(
@@ -241,6 +242,24 @@ val NetworkFeatures = listOf(
     ),
 )
 
+val WorkProfileFeatures = listOf(
+    FeatureEntry(
+        Destination.SuspendPersonalApp,
+        R.string.suspend_personal_app, R.drawable.block_fill0,
+        { version >= 30 && work && org }
+    ),
+    FeatureEntry(
+        Destination.CrossProfileIntentFilter,
+        R.string.intent_filter, R.drawable.filter_alt_fill0,
+        { work }
+    ),
+    FeatureEntry(
+        Destination.DeleteWorkProfile,
+        R.string.delete_work_profile, R.drawable.delete_forever_fill0,
+        { work }
+    )
+)
+
 val ApplicationStateFeatures = listOf(
     FeatureEntry(
         Destination.PermissionManager,
@@ -303,6 +322,11 @@ val ApplicationStateFeatures = listOf(
         { work }
     ),
     FeatureEntry(
+        Destination.CredentialManagerPolicy,
+        R.string.credential_manager_policy, R.drawable.license_fill0,
+        { version >= 34 && (device || work) }
+    ),
+    FeatureEntry(
         Destination.PermittedAccessibilityServices,
         R.string.permitted_accessibility_services, R.drawable.settings_accessibility_fill0
     ),
@@ -340,6 +364,15 @@ val UserFeatures = listOf(
     FeatureEntry(
         Destination.UserInfo,
         R.string.user_info, R.drawable.person_fill0
+    ),
+    FeatureEntry(
+        Destination.UserOperation,
+        R.string.user_operation, R.drawable.sync_alt_fill0,
+        { device },
+        setOf(
+            R.string.start_in_background, R.string.user_operation_switch, R.string.stop,
+            R.string.delete
+        )
     ),
     FeatureEntry(
         Destination.UsersOptions,
@@ -444,4 +477,54 @@ val PasswordFeatures = listOf(
             R.string.password_quality_numeric_complex
         )
     )
+)
+
+val SettingsFeatures = listOf(
+    FeatureEntry(
+        Destination.SettingsOptions,
+        R.string.options, R.drawable.tune_fill0,
+    ),
+    FeatureEntry(
+        Destination.AppearanceSettings,
+        R.string.appearance, R.drawable.format_paint_fill0,
+        keywords = setOf(R.string.material_you_color, R.string.dark_theme, R.string.black_theme)
+    ),
+    FeatureEntry(
+        Destination.ShortcutSettings,
+        R.string.shortcuts, R.drawable.open_in_new
+    ),
+    FeatureEntry(
+        Destination.AppLockSettings,
+        R.string.app_lock, R.drawable.lock_fill0
+    ),
+    FeatureEntry(
+        Destination.SettingsSync,
+        R.string.sync_transfer, R.drawable.sync_alt_fill0
+    ),
+    FeatureEntry(
+        Destination.ApiSettings,
+        R.string.api, R.drawable.code_fill0,
+        { activated }
+    ),
+    FeatureEntry(
+        Destination.NotificationSettings,
+        R.string.notifications, R.drawable.notifications_fill0,
+        { activated },
+        NotificationType.entries.map { it.text }.toSet()
+    ),
+    FeatureEntry(
+        Destination.About,
+        R.string.about, R.drawable.info_fill0
+    )
+)
+
+val FeatureEntries = listOf(
+    R.string.system to SystemFeatures,
+    R.string.network to NetworkFeatures,
+    R.string.work_profile to WorkProfileFeatures,
+    R.string.applications_state to ApplicationStateFeatures,
+    R.string.user_restriction to UserRestrictionFeatures,
+    R.string.users to UserFeatures,
+    R.string.password to PasswordFeatures,
+    R.string.settings to SettingsFeatures,
 )

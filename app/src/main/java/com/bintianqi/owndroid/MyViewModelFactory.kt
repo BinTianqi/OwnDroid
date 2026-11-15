@@ -19,6 +19,7 @@ import com.bintianqi.owndroid.feature.privilege.DhizukuServerRepository
 import com.bintianqi.owndroid.feature.privilege.DhizukuServerViewModel
 import com.bintianqi.owndroid.feature.privilege.TransferOwnershipViewModel
 import com.bintianqi.owndroid.feature.privilege.WorkingModesViewModel
+import com.bintianqi.owndroid.feature.search.SearchViewModel
 import com.bintianqi.owndroid.feature.settings.AppLockViewModel
 import com.bintianqi.owndroid.feature.settings.MySettings
 import com.bintianqi.owndroid.feature.settings.SettingsRepository
@@ -58,6 +59,9 @@ class MyViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         fun checkType(cls: KClass<*>): Boolean {
             return cls.java.isAssignableFrom(modelClass)
+        }
+        if (checkType(SearchViewModel::class)) {
+            return SearchViewModel(app, ps) as T
         }
         if (checkType(NetworkStatsViewModel::class)) {
             return NetworkStatsViewModel(app, ps) as T

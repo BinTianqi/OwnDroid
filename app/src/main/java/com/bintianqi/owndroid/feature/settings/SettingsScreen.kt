@@ -63,8 +63,10 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.feature.SettingsFeatures
 import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.ConfirmTextButton
+import com.bintianqi.owndroid.ui.FeatureEntryItem
 import com.bintianqi.owndroid.ui.FunctionItem
 import com.bintianqi.owndroid.ui.MasterSwitch
 import com.bintianqi.owndroid.ui.MyScaffold
@@ -152,33 +154,8 @@ fun SettingsScreen(
             }
         }
     ) {
-        FunctionItem(R.string.options, icon = R.drawable.tune_fill0) {
-            onNavigate(Destination.SettingsOptions)
-        }
-        FunctionItem(R.string.appearance, icon = R.drawable.format_paint_fill0) {
-            onNavigate(Destination.AppearanceSettings)
-        }
-        FunctionItem(R.string.shortcuts, icon = R.drawable.open_in_new) {
-            onNavigate(Destination.ShortcutSettings)
-        }
-        FunctionItem(R.string.app_lock, icon = R.drawable.lock_fill0) {
-            onNavigate(Destination.AppLockSettings)
-        }
-        FunctionItem(R.string.sync_transfer, icon = R.drawable.sync_alt_fill0) {
-            onNavigate(Destination.SettingsSync)
-        }
-        if (privilege.device || privilege.profile) {
-            FunctionItem(R.string.api, icon = R.drawable.code_fill0) {
-                onNavigate(Destination.ApiSettings)
-            }
-        }
-        if (privilege.device && !privilege.dhizuku) {
-            FunctionItem(R.string.notifications, icon = R.drawable.notifications_fill0) {
-                onNavigate(Destination.NotificationSettings)
-            }
-        }
-        FunctionItem(R.string.about, icon = R.drawable.info_fill0) {
-            onNavigate(Destination.About)
+        SettingsFeatures.forEach {
+            FeatureEntryItem(it, privilege, onNavigate)
         }
         Spacer(Modifier.height(BottomPadding))
     }

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -51,6 +52,9 @@ fun HomeScreen(
             LargeTopAppBar(
                 { Text(stringResource(R.string.app_name)) },
                 actions = {
+                    IconButton({ onNavigate(Destination.Search) }) {
+                        Icon(Icons.Default.Search, stringResource(R.string.search))
+                    }
                     IconButton({ onNavigate(Destination.WorkingModes(true)) }) {
                         Icon(
                             painterResource(R.drawable.security_fill0), null

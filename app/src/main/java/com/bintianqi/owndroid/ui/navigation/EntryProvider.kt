@@ -6,6 +6,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavBackStack
@@ -19,6 +20,7 @@ import androidx.navigation3.scene.SceneStrategy
 import androidx.navigation3.scene.SceneStrategyScope
 import androidx.navigation3.ui.NavDisplay
 import com.bintianqi.owndroid.AppContainer
+import com.bintianqi.owndroid.MyViewModelFactory
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.feature.applications.AppChooserFilter
 import com.bintianqi.owndroid.feature.applications.AppChooserMode
@@ -76,6 +78,7 @@ import com.bintianqi.owndroid.feature.privilege.DelegatedAdminsScreen
 import com.bintianqi.owndroid.feature.privilege.DhizukuServerSettingsScreen
 import com.bintianqi.owndroid.feature.privilege.TransferOwnershipScreen
 import com.bintianqi.owndroid.feature.privilege.WorkModesScreen
+import com.bintianqi.owndroid.feature.search.SearchScreen
 import com.bintianqi.owndroid.feature.settings.AboutScreen
 import com.bintianqi.owndroid.feature.settings.ApiSettings
 import com.bintianqi.owndroid.feature.settings.AppLockSettingsScreen
@@ -148,6 +151,13 @@ inline fun <reified K: Destination> EntryProviderScope<Destination>.myEntry(
     entry({ it::class.qualifiedName!! }, metadata, content)
 }
 
+/** @param P parent destination to share ViewModel with */
+inline fun <reified K: Destination, reified P: Destination> EntryProviderScope<Destination>.myEntry(
+    noinline content: @Composable ((K) -> Unit)
+) {
+    entry({ it::class.qualifiedName!! }, navParentKey<P>(), content)
+}
+
 /** Constructing metadata using [mapOf] won't work */
 private val dialogAnimationMetadata = metadata {
     // Disable the default animation
@@ -197,6 +207,12 @@ class OverlaySceneStrategy<T: Any> : SceneStrategy<T> {
     }
 }
 
+/** An alias of [viewModel], but with short name and only one argument to simplify code */
+@Composable
+private inline fun <reified VM: ViewModel> getVm(factory: MyViewModelFactory? = null): VM {
+    return viewModel<VM>(factory = factory)
+}
+
 private inline fun <reified K: Destination> EntryProviderScope<Destination>.myDialogEntry(
     metadata: Map<String, Any> = emptyMap(), noinline content: @Composable ((K) -> Unit)
 ) {
@@ -205,6 +221,16 @@ private inline fun <reified K: Destination> EntryProviderScope<Destination>.myDi
     entry(
         { it::class.qualifiedName!! },
         metadata + dialogAnimationMetadata + OverlaySceneStrategy.transparentBackground(),
+        content
+    )
+}
+
+private inline fun <reified K: Destination, reified P: Destination> EntryProviderScope<Destination>.myDialogEntry(
+    noinline content: @Composable ((K) -> Unit)
+) {
+    entry(
+        { it::class.qualifiedName!! },
+        navParentKey<P>() + dialogAnimationMetadata + OverlaySceneStrategy.transparentBackground(),
         content
     )
 }
@@ -240,54 +266,38 @@ fun myEntryProvider(
     fun chooseSinglePackage() {
         navigate(Destination.ApplicationsList(AppChooserMode.SingleChoose))
     }
+    
+    val vmf = container.viewModelFactory
 
     myEntry<Destination.Home> {
         HomeScreen(
             container.privilegeState, ::navigate
         )
     }
+    myEntry<Destination.Search> {
+        SearchScreen(getVm(vmf), ::navigateUp, ::navigate)
+    }
     myEntry<Destination.WorkingModes> {
-        WorkModesScreen(viewModel(factory = container.viewModelFactory), it, ::navigateUp, {
+        WorkModesScreen(getVm(vmf), it, ::navigateUp, {
             navigateAndPopAll(Destination.Home)
         }, {
             navigateAndPopAll(Destination.WorkingModes(false))
         }, ::navigate)
     }
     myEntry<Destination.DhizukuServerSettings> {
-        DhizukuServerSettingsScreen(viewModel(factory = container.viewModelFactory), ::navigateUp)
+        DhizukuServerSettingsScreen(getVm(), ::navigateUp)
     }
 
     myEntry<Destination.DelegatedAdmins> {
-        DelegatedAdminsScreen(
-            viewModel(factory = container.viewModelFactory), ::navigateUp, ::navigate
-        )
+        DelegatedAdminsScreen(getVm(), ::navigateUp, ::navigate)
     }
-    myEntry<Destination.DelegatedAdminDetails>(
-        metadata = navParentKey<Destination.DelegatedAdmins>()
-    ) {
+    myEntry<Destination.DelegatedAdminDetails, Destination.DelegatedAdmins> {
         AddDelegatedAdminScreen(
-            viewModel(), container.chosenPackage, ::chooseSinglePackage, ::navigateUp
+            getVm(), container.chosenPackage, ::chooseSinglePackage, ::navigateUp
         )
-    }
-    myEntry<Destination.DeviceInfo>(
-        metadata = navParentKey<Destination.System>()
-    ) {
-        DeviceInfoScreen(viewModel(), ::navigateUp)
-    }
-    myEntry<Destination.LockScreenInfo>(
-        metadata = navParentKey<Destination.System>()
-    ) {
-        LockScreenInfoScreen(viewModel(), ::navigateUp)
-    }
-    myEntry<Destination.SupportMessage>(
-        metadata = navParentKey<Destination.System>()
-    ) {
-        SupportMessageScreen(viewModel(), ::navigateUp)
     }
     myEntry<Destination.TransferOwnership> {
-        TransferOwnershipScreen(
-            viewModel(factory = container.viewModelFactory), ::navigateUp
-        ) {
+        TransferOwnershipScreen(getVm(), ::navigateUp) {
             navigate(Destination.WorkingModes(false))
             while (backstack.size > 1) {
                 backstack.removeFirstOrNull()
@@ -296,207 +306,163 @@ fun myEntryProvider(
     }
 
     myEntry<Destination.System> {
-        SystemScreen(viewModel(factory = container.viewModelFactory), ::navigateUp, ::navigate)
+        SystemScreen(getVm(vmf), ::navigateUp, ::navigate)
     }
-    myDialogEntry<Destination.Reboot>(navParentKey<Destination.System>()) {
-        RebootDialog(viewModel(), ::navigateUp)
+    myDialogEntry<Destination.Reboot, Destination.System> {
+        RebootDialog(getVm(vmf), ::navigateUp)
     }
-    myDialogEntry<Destination.BugReport>(navParentKey<Destination.System>()) {
-        BugReportDialog(viewModel(), ::navigateUp)
+    myDialogEntry<Destination.BugReport, Destination.System> {
+        BugReportDialog(getVm(vmf), ::navigateUp)
     }
-    myDialogEntry<Destination.OrgName>(navParentKey<Destination.System>()) {
-        OrgNameDialog(viewModel(), ::navigateUp)
+    myDialogEntry<Destination.OrgName, Destination.System> {
+        OrgNameDialog(getVm(vmf), ::navigateUp)
     }
-    myDialogEntry<Destination.OrgId>(navParentKey<Destination.System>()) {
-        OrgIdDialog(viewModel(), ::navigateUp)
+    myDialogEntry<Destination.OrgId, Destination.System> {
+        OrgIdDialog(getVm(vmf), ::navigateUp)
     }
-    myDialogEntry<Destination.EnrollmentId>(navParentKey<Destination.System>()) {
-        EnrollmentIdDialog(viewModel(), ::navigateUp)
+    myDialogEntry<Destination.EnrollmentId, Destination.System> {
+        EnrollmentIdDialog(getVm(vmf), ::navigateUp)
+    }
+    myEntry<Destination.DeviceInfo, Destination.System> {
+        DeviceInfoScreen(getVm(vmf), ::navigateUp)
+    }
+    myEntry<Destination.LockScreenInfo, Destination.System> {
+        LockScreenInfoScreen(getVm(vmf), ::navigateUp)
+    }
+    myEntry<Destination.SupportMessage, Destination.System> {
+        SupportMessageScreen(getVm(vmf), ::navigateUp)
     }
     myEntry<Destination.SystemOptions> {
-        SystemOptionsScreen(viewModel(factory = container.viewModelFactory), ::navigateUp)
+        SystemOptionsScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.Keyguard>(
-        metadata = navParentKey<Destination.System>()
-    ) {
-        KeyguardScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.Keyguard, Destination.System> {
+        KeyguardScreen(getVm(vmf), ::navigateUp)
     }
     myEntry<Destination.HardwareMonitor> {
-        HardwareMonitorScreen(viewModel(factory = container.viewModelFactory), ::navigateUp)
+        HardwareMonitorScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.DefaultInputMethod>(
-        metadata = navParentKey<Destination.System>()
-    ) {
-        DefaultInputMethodScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.DefaultInputMethod, Destination.System> {
+        DefaultInputMethodScreen(getVm(vmf), ::navigateUp)
     }
     myEntry<Destination.Time> {
-        TimeScreen(viewModel(factory = container.viewModelFactory), ::navigateUp)
+        TimeScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.ContentProtectionPolicy>(
-        metadata = navParentKey<Destination.System>()
-    ) {
-        ContentProtectionPolicyScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.ContentProtectionPolicy, Destination.System> {
+        ContentProtectionPolicyScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.PermissionPolicy>(
-        metadata = navParentKey<Destination.System>()
-    ) {
-        PermissionPolicyScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.PermissionPolicy, Destination.System> {
+        PermissionPolicyScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.MtePolicy>(
-        metadata = navParentKey<Destination.System>()
-    ) {
-        MtePolicyScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.MtePolicy, Destination.System> {
+        MtePolicyScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.NearbyStreamingPolicy>(
-        metadata = navParentKey<Destination.System>()
-    ) {
-        NearbyStreamingPolicyScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.NearbyStreamingPolicy, Destination.System> {
+        NearbyStreamingPolicyScreen(getVm(vmf), ::navigateUp)
     }
     myEntry<Destination.LockTaskMode> {
         LockTaskModeScreen(
-            viewModel(factory = container.viewModelFactory),
+            getVm(vmf),
             container.chosenPackage, ::chooseSinglePackage, ::choosePackage, ::navigateUp
         )
     }
     myEntry<Destination.CaCert> {
-        CaCertScreen(viewModel(factory = container.viewModelFactory), ::navigateUp)
+        CaCertScreen(getVm(vmf), ::navigateUp)
     }
     myEntry<Destination.SecurityLogging> {
-        SecurityLoggingScreen(viewModel(factory = container.viewModelFactory), ::navigateUp)
+        SecurityLoggingScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.DisableAccountManagement>(
-        metadata = navParentKey<Destination.System>()
-    ) {
-        DisableAccountManagementScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.DisableAccountManagement, Destination.System> {
+        DisableAccountManagementScreen(getVm(vmf), ::navigateUp)
     }
     myEntry<Destination.SystemUpdate> {
-        SystemUpdateScreen(viewModel(factory = container.viewModelFactory), ::navigateUp)
+        SystemUpdateScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.FrpPolicy>(
-        metadata = navParentKey<Destination.System>()
-    ) {
-        FrpPolicyScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.FrpPolicy, Destination.System> {
+        FrpPolicyScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.WipeData>(
-        metadata = navParentKey<Destination.System>()
-    ) { WipeDataScreen(viewModel(), ::navigateUp) }
+    myEntry<Destination.WipeData, Destination.System> { WipeDataScreen(getVm(vmf), ::navigateUp) }
 
     myEntry<Destination.Network> {
-        NetworkScreen(viewModel(factory = container.viewModelFactory), ::navigateUp, ::navigate)
+        NetworkScreen(getVm(vmf), ::navigateUp, ::navigate)
     }
     myEntry<Destination.WiFi> {
-        WifiScreen(
-            viewModel(factory = container.viewModelFactory),
-            ::navigate, ::navigateUp
-        )
+        WifiScreen(getVm(vmf), ::navigate, ::navigateUp)
     }
-    myEntry<Destination.UpdateNetwork>(
-        metadata = navParentKey<Destination.WiFi>()
-    ) {
-        UpdateNetworkScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.UpdateNetwork, Destination.WiFi> {
+        UpdateNetworkScreen(getVm(), ::navigateUp)
     }
-    myEntry<Destination.WifiSecurityLevel>(
-        metadata = navParentKey<Destination.WiFi>()
-    ) {
-        WifiSecurityLevelScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.WifiSecurityLevel, Destination.WiFi> {
+        WifiSecurityLevelScreen(getVm(), ::navigateUp)
     }
-    myEntry<Destination.WifiSsidPolicy>(
-        metadata = navParentKey<Destination.WiFi>()
-    ) {
-        WifiSsidPolicyScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.WifiSsidPolicy, Destination.WiFi> {
+        WifiSsidPolicyScreen(getVm(), ::navigateUp)
     }
-    myEntry<Destination.NetworkOptions>(
-        metadata = navParentKey<Destination.Network>()
-    ) {
-        NetworkOptionsScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.NetworkOptions, Destination.Network> {
+        NetworkOptionsScreen(getVm(vmf), ::navigateUp)
     }
     myEntry<Destination.NetworkStats> {
         NetworkStatsScreen(
-            viewModel(factory = container.viewModelFactory),
+            getVm(vmf),
             ::chooseSinglePackage, container.chosenPackage, ::navigateUp
         ) {
             navigate(Destination.NetworkStatsViewer)
         }
     }
-    myEntry<Destination.NetworkStatsViewer>(
-        metadata = navParentKey<Destination.NetworkStats>()
-    ) {
-        NetworkStatsViewerScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.NetworkStatsViewer, Destination.NetworkStats> {
+        NetworkStatsViewerScreen(getVm(), ::navigateUp)
     }
-    myEntry<Destination.PrivateDns>(
-        metadata = navParentKey<Destination.Network>()
-    ) {
-        PrivateDnsScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.PrivateDns, Destination.Network> {
+        PrivateDnsScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.AlwaysOnVpn>(
-        metadata = navParentKey<Destination.Network>()
-    ) {
+    myEntry<Destination.AlwaysOnVpn, Destination.Network> {
         AlwaysOnVpnPackageScreen(
-            viewModel(), container.chosenPackage, ::chooseSinglePackage, ::navigateUp
+            getVm(vmf), container.chosenPackage, ::chooseSinglePackage, ::navigateUp
         )
     }
-    myEntry<Destination.RecommendedGlobalProxy>(
-        metadata = navParentKey<Destination.Network>()
-    ) {
-        RecommendedGlobalProxyScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.RecommendedGlobalProxy, Destination.Network> {
+        RecommendedGlobalProxyScreen(getVm(vmf), ::navigateUp)
     }
     myEntry<Destination.NetworkLogging> {
-        NetworkLoggingScreen(viewModel(factory = container.viewModelFactory), ::navigateUp)
+        NetworkLoggingScreen(getVm(vmf), ::navigateUp)
     }
     //entry<Destination.WifiAuthKeypair> { WifiAuthKeypairScreen(::navigateUp) }
     myEntry<Destination.PreferentialNetworkService> {
-        PreferentialNetworkServiceScreen(
-            viewModel(factory = container.viewModelFactory), ::navigateUp, ::navigate
-        )
+        PreferentialNetworkServiceScreen(getVm(vmf), ::navigateUp, ::navigate)
     }
-    myEntry<Destination.AddPreferentialNetworkServiceConfig>(
-        metadata = navParentKey<Destination.PreferentialNetworkService>()
-    ) {
-        AddPreferentialNetworkServiceConfigScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.AddPreferentialNetworkServiceConfig, Destination.PreferentialNetworkService> {
+        AddPreferentialNetworkServiceConfigScreen(getVm(), ::navigateUp)
     }
     myEntry<Destination.OverrideApn> {
         OverrideApnScreen(
-            viewModel(factory = container.viewModelFactory), ::navigateUp
+            getVm(vmf), ::navigateUp
         ) { navigate(Destination.AddApnSetting) }
     }
-    myEntry<Destination.AddApnSetting>(
-        metadata = navParentKey<Destination.OverrideApn>()
-    ) {
-        AddApnSettingScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.AddApnSetting, Destination.OverrideApn> {
+        AddApnSettingScreen(getVm(), ::navigateUp)
     }
 
     myEntry<Destination.WorkProfile> {
-        WorkProfileScreen(viewModel(factory = container.viewModelFactory), ::navigateUp, ::navigate)
+        WorkProfileScreen(getVm(vmf), ::navigateUp, ::navigate)
     }
     myEntry<Destination.CreateWorkProfile> {
-        CreateWorkProfileScreen(viewModel(), ::navigateUp)
+        CreateWorkProfileScreen(getVm(), ::navigateUp)
     }
-    myEntry<Destination.SuspendPersonalApp>(
-        metadata = navParentKey<Destination.WorkProfile>()
-    ) {
+    myEntry<Destination.SuspendPersonalApp, Destination.WorkProfile> {
         SuspendPersonalAppScreen(
-            viewModel(), ::navigateUp
+            getVm(vmf), ::navigateUp
         )
     }
     myEntry<Destination.CrossProfileIntentFilter> {
-        CrossProfileIntentFilterScreen(
-            viewModel(factory = container.viewModelFactory), ::navigateUp, ::navigate
-        )
+        CrossProfileIntentFilterScreen(getVm(vmf), ::navigateUp, ::navigate)
     }
-    myEntry<Destination.AddCrossProfileIntentFilter>(
-        metadata = navParentKey<Destination.CrossProfileIntentFilter>()
-    ) {
-        AddCrossProfileIntentFilterScreen(it, viewModel(), ::navigateUp)
+    myEntry<Destination.AddCrossProfileIntentFilter, Destination.CrossProfileIntentFilter> {
+        AddCrossProfileIntentFilterScreen(it, getVm(), ::navigateUp)
     }
-    myEntry<Destination.CrossProfileIntentFilterPresets>(
-        metadata = navParentKey<Destination.CrossProfileIntentFilter>()
-    ) {
-        CrossProfileIntentFilterPresetsScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.CrossProfileIntentFilterPresets, Destination.CrossProfileIntentFilter> {
+        CrossProfileIntentFilterPresetsScreen(getVm(), ::navigateUp)
     }
-    myEntry<Destination.DeleteWorkProfile>(
-        metadata = navParentKey<Destination.WorkProfile>()
-    ) {
-        DeleteWorkProfileScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.DeleteWorkProfile, Destination.WorkProfile> {
+        DeleteWorkProfileScreen(getVm(vmf), ::navigateUp)
     }
 
     myEntry<Destination.ApplicationsList> { params ->
@@ -517,9 +483,7 @@ fun myEntryProvider(
     }
 
     myEntry<Destination.ApplicationFeatures> {
-        ApplicationsFeaturesScreen(
-            viewModel(factory = container.viewModelFactory), ::navigateUp, ::navigate
-        )
+        ApplicationsFeaturesScreen(getVm(vmf), ::navigateUp, ::navigate)
     }
     myEntry<Destination.ApplicationDetails> {
         ApplicationDetailsScreen(
@@ -533,10 +497,8 @@ fun myEntryProvider(
             ), ::navigateUp, ::navigate
         )
     }
-    myEntry<Destination.Suspend>(
-        metadata = navParentKey<Destination.ApplicationFeatures>()
-    ) {
-        val vm = viewModel<AppFeaturesViewModel>()
+    myEntry<Destination.Suspend, Destination.ApplicationFeatures> {
+        val vm = getVm<AppFeaturesViewModel>(vmf)
         PackageFunctionScreen(
             R.string.suspend, vm.suspendedPackages, vm::getSuspendedPackages,
             vm::setPackageSuspended, ::navigateUp, container.chosenPackage, ::choosePackage,
@@ -545,10 +507,8 @@ fun myEntryProvider(
             vm.isDefaultSwitchView(), vm::saveSwitchViewSetting
         )
     }
-    myEntry<Destination.Hide>(
-        metadata = navParentKey<Destination.ApplicationFeatures>()
-    ) {
-        val vm = viewModel<AppFeaturesViewModel>()
+    myEntry<Destination.Hide, Destination.ApplicationFeatures> {
+        val vm = getVm<AppFeaturesViewModel>(vmf)
         PackageFunctionScreen(
             R.string.hide, vm.hiddenPackages, vm::getHiddenPackages, vm::setPackageHidden,
             ::navigateUp, container.chosenPackage, ::choosePackage, ::navigateToAppGroups,
@@ -556,10 +516,8 @@ fun myEntryProvider(
             vm.isDefaultSwitchView(), vm::saveSwitchViewSetting
         )
     }
-    myEntry<Destination.BlockUninstall>(
-        metadata = navParentKey<Destination.ApplicationFeatures>()
-    ) {
-        val vm = viewModel<AppFeaturesViewModel>()
+    myEntry<Destination.BlockUninstall, Destination.ApplicationFeatures> {
+        val vm = getVm<AppFeaturesViewModel>(vmf)
         PackageFunctionScreen(
             R.string.block_uninstall, vm.ubPackages, vm::getUbPackages, vm::setPackageUb,
             ::navigateUp, container.chosenPackage, ::choosePackage, ::navigateToAppGroups,
@@ -567,10 +525,8 @@ fun myEntryProvider(
             vm.isDefaultSwitchView(), vm::saveSwitchViewSetting
         )
     }
-    myEntry<Destination.DisableUserControl>(
-        metadata = navParentKey<Destination.ApplicationFeatures>()
-    ) {
-        val vm = viewModel<AppFeaturesViewModel>()
+    myEntry<Destination.DisableUserControl, Destination.ApplicationFeatures> {
+        val vm = getVm<AppFeaturesViewModel>(vmf)
         PackageFunctionScreen(
             R.string.disable_user_control, vm.ucdPackages, vm::getUcdPackages,
             vm::setPackageUcd, ::navigateUp, container.chosenPackage, ::choosePackage,
@@ -579,29 +535,17 @@ fun myEntryProvider(
             vm.isDefaultSwitchView(), vm::saveSwitchViewSetting
         )
     }
-    myEntry<Destination.AppPermissionsManager>(
-        metadata = navParentKey<Destination.ApplicationDetails>()
-    ) {
-        AppPermissionsManagerScreen(
-            viewModel(), ::navigateUp
-        )
+    myEntry<Destination.AppPermissionsManager, Destination.ApplicationDetails> {
+        AppPermissionsManagerScreen(getVm(), ::navigateUp)
     }
-    myEntry<Destination.PermissionManager>(
-        metadata = navParentKey<Destination.ApplicationFeatures>()
-    ) {
-        PermissionManagerScreen(viewModel(), ::navigate, ::navigateUp)
+    myEntry<Destination.PermissionManager, Destination.ApplicationFeatures> {
+        PermissionManagerScreen(getVm(vmf), ::navigate, ::navigateUp)
     }
-    myEntry<Destination.PermissionDetail>(
-        metadata = navParentKey<Destination.ApplicationFeatures>()
-    ) {
-        PermissionDetailScreen(
-            viewModel(), ::navigateUp
-        )
+    myEntry<Destination.PermissionDetail, Destination.ApplicationFeatures> {
+        PermissionDetailScreen(getVm(), ::navigateUp)
     }
-    myEntry<Destination.DisableMeteredData>(
-        metadata = navParentKey<Destination.ApplicationFeatures>()
-    ) {
-        val vm = viewModel<AppFeaturesViewModel>()
+    myEntry<Destination.DisableMeteredData, Destination.ApplicationFeatures> {
+        val vm = getVm<AppFeaturesViewModel>(vmf)
         PackageFunctionScreen(
             R.string.disable_metered_data, vm.mddPackages, vm::getMddPackages,
             vm::setPackageMdd, ::navigateUp, container.chosenPackage, ::choosePackage,
@@ -611,25 +555,19 @@ fun myEntryProvider(
             AppChooserFilter(usesInternet = true)
         )
     }
-    myEntry<Destination.ClearAppStorage>(
-        metadata = navParentKey<Destination.ApplicationFeatures>()
-    ) {
+    myEntry<Destination.ClearAppStorage, Destination.ApplicationFeatures> {
         ClearAppStorageScreen(
-            viewModel(), container.chosenPackage, ::chooseSinglePackage, ::navigateUp
+            getVm(vmf), container.chosenPackage, ::chooseSinglePackage, ::navigateUp
         )
     }
-    myEntry<Destination.UninstallApp>(
-        metadata = navParentKey<Destination.ApplicationFeatures>()
-    ) {
-        val vm = viewModel<AppFeaturesViewModel>()
+    myEntry<Destination.UninstallApp, Destination.ApplicationFeatures> {
+        val vm = getVm<AppFeaturesViewModel>(vmf)
         UninstallAppScreen(
             vm, container.chosenPackage, ::chooseSinglePackage, ::navigateUp
         )
     }
-    myEntry<Destination.KeepUninstalledPackages>(
-        metadata = navParentKey<Destination.ApplicationFeatures>()
-    ) {
-        val vm = viewModel<AppFeaturesViewModel>()
+    myEntry<Destination.KeepUninstalledPackages, Destination.ApplicationFeatures> {
+        val vm = getVm<AppFeaturesViewModel>(vmf)
         PackageFunctionScreen(
             R.string.keep_uninstalled_packages, vm.kuPackages, vm::getKuPackages,
             vm::setPackageKu, ::navigateUp, container.chosenPackage, ::choosePackage,
@@ -638,18 +576,14 @@ fun myEntryProvider(
             vm.isDefaultSwitchView(), vm::saveSwitchViewSetting
         )
     }
-    myEntry<Destination.InstallExistingApp>(
-        metadata = navParentKey<Destination.ApplicationFeatures>()
-    ) {
-        val vm = viewModel<AppFeaturesViewModel>()
+    myEntry<Destination.InstallExistingApp, Destination.ApplicationFeatures> {
+        val vm = getVm<AppFeaturesViewModel>(vmf)
         InstallExistingAppScreen(
             vm, container.chosenPackage, ::chooseSinglePackage, ::navigateUp
         )
     }
-    myEntry<Destination.CrossProfilePackages>(
-        metadata = navParentKey<Destination.ApplicationFeatures>()
-    ) {
-        val vm = viewModel<AppFeaturesViewModel>()
+    myEntry<Destination.CrossProfilePackages, Destination.ApplicationFeatures> {
+        val vm = getVm<AppFeaturesViewModel>(vmf)
         PackageFunctionScreen(
             R.string.cross_profile_apps, vm.cpPackages,
             vm::getCpPackages, vm::setPackageCp, ::navigateUp, container.chosenPackage,
@@ -658,10 +592,8 @@ fun myEntryProvider(
             vm.isDefaultSwitchView(), vm::saveSwitchViewSetting
         )
     }
-    myEntry<Destination.CrossProfileWidgetProviders>(
-        metadata = navParentKey<Destination.ApplicationFeatures>()
-    ) {
-        val vm = viewModel<AppFeaturesViewModel>()
+    myEntry<Destination.CrossProfileWidgetProviders, Destination.ApplicationFeatures> {
+        val vm = getVm<AppFeaturesViewModel>(vmf)
         PackageFunctionScreen(
             R.string.cross_profile_widget, vm.cpwProviders,
             vm::getCpwProviders, vm::setCpwProvider, ::navigateUp, container.chosenPackage,
@@ -670,18 +602,14 @@ fun myEntryProvider(
             vm.isDefaultSwitchView(), vm::saveSwitchViewSetting
         )
     }
-    myEntry<Destination.CredentialManagerPolicy>(
-        metadata = navParentKey<Destination.ApplicationFeatures>()
-    ) {
-        val vm = viewModel<AppFeaturesViewModel>()
+    myEntry<Destination.CredentialManagerPolicy, Destination.ApplicationFeatures> {
+        val vm = getVm<AppFeaturesViewModel>(vmf)
         CredentialManagerPolicyScreen(
             vm, container.chosenPackage, ::choosePackage, ::navigateUp
         )
     }
-    myEntry<Destination.PermittedAccessibilityServices>(
-        metadata = navParentKey<Destination.ApplicationFeatures>()
-    ) {
-        val vm = viewModel<AppFeaturesViewModel>()
+    myEntry<Destination.PermittedAccessibilityServices, Destination.ApplicationFeatures> {
+        val vm = getVm<AppFeaturesViewModel>(vmf)
         PermittedAsAndImPackagesScreen(
             R.string.permitted_accessibility_services,
             R.string.system_accessibility_always_allowed, container.chosenPackage, ::choosePackage,
@@ -689,10 +617,8 @@ fun myEntryProvider(
             vm::applyPasPolicy, ::navigateUp
         )
     }
-    myEntry<Destination.PermittedInputMethods>(
-        metadata = navParentKey<Destination.ApplicationFeatures>()
-    ) {
-        val vm = viewModel<AppFeaturesViewModel>()
+    myEntry<Destination.PermittedInputMethods, Destination.ApplicationFeatures> {
+        val vm = getVm<AppFeaturesViewModel>(vmf)
         PermittedAsAndImPackagesScreen(
             R.string.permitted_ime, R.string.system_ime_always_allowed,
             container.chosenPackage, ::choosePackage, vm.pimAllowAll, vm.pimPackages,
@@ -700,10 +626,8 @@ fun myEntryProvider(
             vm::setPimPackage, vm::applyPimPolicy, ::navigateUp
         )
     }
-    myEntry<Destination.EnableSystemApp>(
-        metadata = navParentKey<Destination.ApplicationFeatures>()
-    ) {
-        val vm = viewModel<AppFeaturesViewModel>()
+    myEntry<Destination.EnableSystemApp, Destination.ApplicationFeatures> {
+        val vm = getVm<AppFeaturesViewModel>(vmf)
         EnableSystemAppScreen(
             container.chosenPackage, {
                 navigate(
@@ -716,10 +640,8 @@ fun myEntryProvider(
             }, vm::enableSystemApp, ::navigateUp
         )
     }
-    myEntry<Destination.SetDefaultDialer>(
-        metadata = navParentKey<Destination.ApplicationFeatures>()
-    ) {
-        val vm = viewModel<AppFeaturesViewModel>()
+    myEntry<Destination.SetDefaultDialer, Destination.ApplicationFeatures> {
+        val vm = getVm<AppFeaturesViewModel>(vmf)
         SetDefaultDialerScreen(
             container.chosenPackage, ::chooseSinglePackage, vm::setDefaultDialer, ::navigateUp
         )
@@ -733,197 +655,135 @@ fun myEntryProvider(
             }), ::navigateUp, ::navigate
         )
     }
-    myEntry<Destination.ManagedConfigurationValueEditor>(
-        metadata = navParentKey<Destination.ManagedConfiguration>()
-    ) {
-        ManagedConfigurationValueEditorScreen(viewModel(), it.id, it.isInt, ::navigateUp)
+    myEntry<Destination.ManagedConfigurationValueEditor, Destination.ManagedConfiguration> {
+        ManagedConfigurationValueEditorScreen(getVm(), it.id, it.isInt, ::navigateUp)
     }
-    myEntry<Destination.ManagedConfigurationBooleanEditor>(
-        metadata = navParentKey<Destination.ManagedConfiguration>()
-    ) {
-        ManagedConfigurationBooleanEditorScreen(viewModel(), it.id, ::navigateUp)
+    myEntry<Destination.ManagedConfigurationBooleanEditor, Destination.ManagedConfiguration> {
+        ManagedConfigurationBooleanEditorScreen(getVm(), it.id, ::navigateUp)
     }
-    myEntry<Destination.ManagedConfigurationListEditor>(
-        metadata = navParentKey<Destination.ManagedConfiguration>()
-    ) {
-        ManagedConfigurationListEditorScreen(viewModel(), it.id, ::navigateUp)
+    myEntry<Destination.ManagedConfigurationListEditor, Destination.ManagedConfiguration> {
+        ManagedConfigurationListEditorScreen(getVm(), it.id, ::navigateUp)
     }
     myEntry<Destination.AppGroups> {
         AppGroupsScreen(
-            viewModel(factory = container.viewModelFactory),
+            getVm(vmf),
             { navigate(Destination.EditAppGroup) },
             ::navigateUp
         )
     }
-    myEntry<Destination.EditAppGroup>(
-        metadata = navParentKey<Destination.AppGroups>()
-    ) {
+    myEntry<Destination.EditAppGroup, Destination.AppGroups> {
         EditAppGroupScreen(
-            viewModel(), ::navigateUp, ::choosePackage, container.chosenPackage
+            getVm(), ::navigateUp, ::choosePackage, container.chosenPackage
         )
     }
 
     myEntry<Destination.UserRestriction> {
-        UserRestrictionScreen(
-            viewModel(factory = container.viewModelFactory), ::navigateUp, ::navigate
-        )
+        UserRestrictionScreen(getVm(vmf), ::navigateUp, ::navigate)
     }
-    myEntry<Destination.UserRestrictionEditor>(
-        metadata = navParentKey<Destination.UserRestriction>()
-    ) {
-        UserRestrictionEditorScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.UserRestrictionEditor, Destination.UserRestriction> {
+        UserRestrictionEditorScreen(getVm(), ::navigateUp)
     }
-    myEntry<Destination.UserRestrictionOptions>(
-        metadata = navParentKey<Destination.UserRestriction>()
-    ) {
-        UserRestrictionOptionsScreen(it, viewModel(), ::navigateUp)
+    myEntry<Destination.UserRestrictionOptions, Destination.UserRestriction> {
+        UserRestrictionOptionsScreen(it, getVm(vmf), ::navigateUp)
     }
 
     myEntry<Destination.Users> {
-        UsersScreen(viewModel(factory = container.viewModelFactory), ::navigateUp, ::navigate)
+        UsersScreen(getVm(vmf), ::navigateUp, ::navigate)
     }
-    myDialogEntry<Destination.Logout>(navParentKey<Destination.Users>()) {
-        LogoutDialog(viewModel(), ::navigateUp)
+    myDialogEntry<Destination.Logout, Destination.Users> {
+        LogoutDialog(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.UserInfo>(
-        metadata = navParentKey<Destination.Users>()
-    ) {
-        UserInfoScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.UserInfo, Destination.Users> {
+        UserInfoScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.UsersOptions>(
-        metadata = navParentKey<Destination.Users>()
-    ) {
-        UsersOptionsScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.UsersOptions, Destination.Users> {
+        UsersOptionsScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.UserOperation>(
-        metadata = navParentKey<Destination.Users>()
-    ) {
-        UserOperationScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.UserOperation, Destination.Users> {
+        UserOperationScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.CreateUser>(
-        metadata = navParentKey<Destination.Users>()
-    ) {
-        CreateUserScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.CreateUser, Destination.Users> {
+        CreateUserScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.ChangeUsername>(
-        metadata = navParentKey<Destination.Users>()
-    ) {
-        ChangeUsernameScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.ChangeUsername, Destination.Users> {
+        ChangeUsernameScreen(getVm(vmf), ::navigateUp)
     }
-    myDialogEntry<Destination.ChangeUserIcon>(navParentKey<Destination.Users>()) {
-        ChangeUserIconDialog(viewModel(), ::navigateUp)
+    myDialogEntry<Destination.ChangeUserIcon, Destination.Users> {
+        ChangeUserIconDialog(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.UserSessionMessage>(
-        metadata = navParentKey<Destination.Users>()
-    ) {
-        UserSessionMessageScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.UserSessionMessage, Destination.Users> {
+        UserSessionMessageScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.AffiliationId>(
-        metadata = navParentKey<Destination.Users>()
-    ) {
-        AffiliationIdScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.AffiliationId, Destination.Users> {
+        AffiliationIdScreen(getVm(vmf), ::navigateUp)
     }
 
     myEntry<Destination.Password> {
-        PasswordScreen(viewModel(factory = container.viewModelFactory), ::navigateUp, ::navigate)
+        PasswordScreen(getVm(vmf), ::navigateUp, ::navigate)
     }
-    myDialogEntry<Destination.PasswordConfig>(navParentKey<Destination.Password>()) {
-        PasswordConfigurationDialog(viewModel(), it.type, ::navigateUp)
+    myDialogEntry<Destination.PasswordConfig, Destination.Password> {
+        PasswordConfigurationDialog(getVm(vmf), it.type, ::navigateUp)
     }
-    myEntry<Destination.PasswordInfo>(
-        metadata = navParentKey<Destination.Password>()
-    ) {
-        PasswordInfoScreen(
-            viewModel(), ::navigateUp
-        )
+    myEntry<Destination.PasswordInfo, Destination.Password> {
+        PasswordInfoScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.ResetPasswordToken>(
-        metadata = navParentKey<Destination.Password>()
-    ) {
-        ResetPasswordTokenScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.ResetPasswordToken, Destination.Password> {
+        ResetPasswordTokenScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.ResetPassword>(
-        metadata = navParentKey<Destination.Password>()
-    ) {
-        ResetPasswordScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.ResetPassword, Destination.Password> {
+        ResetPasswordScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.RequiredPasswordComplexity>(
-        metadata = navParentKey<Destination.Password>()
-    ) {
-        RequiredPasswordComplexityScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.RequiredPasswordComplexity, Destination.Password> {
+        RequiredPasswordComplexityScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.KeyguardDisabledFeatures>(
-        metadata = navParentKey<Destination.Password>()
-    ) {
-        KeyguardDisabledFeaturesScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.KeyguardDisabledFeatures, Destination.Password> {
+        KeyguardDisabledFeaturesScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.RequiredPasswordQuality>(
-        metadata = navParentKey<Destination.Password>()
-    ) {
-        RequiredPasswordQualityScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.RequiredPasswordQuality, Destination.Password> {
+        RequiredPasswordQualityScreen(getVm(vmf), ::navigateUp)
     }
 
     myEntry<Destination.TimeBlocker> {
-        TimeBlockerScreen(viewModel(factory = container.viewModelFactory), ::navigate, ::navigateUp)
+        TimeBlockerScreen(getVm(vmf), ::navigate, ::navigateUp)
     }
-    myEntry<Destination.TimeBlockerEdit>(
-        metadata = navParentKey<Destination.TimeBlocker>()
-    ) { params ->
+    myEntry<Destination.TimeBlockerEdit, Destination.TimeBlocker> { params ->
         TimeBlockerEditScreen(
-            params.ruleId, viewModel(), container.chosenPackage, ::chooseSinglePackage, ::navigateUp
+            params.ruleId, getVm(), container.chosenPackage, ::chooseSinglePackage, ::navigateUp
         )
     }
 
     myEntry<Destination.Settings> {
-        SettingsScreen(viewModel(factory = container.viewModelFactory), ::navigate, ::navigateUp)
+        SettingsScreen(getVm(vmf), ::navigate, ::navigateUp)
     }
-    myEntry<Destination.SettingsOptions>(
-        metadata = navParentKey<Destination.Settings>()
-    ) {
-        SettingsOptionsScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.SettingsOptions, Destination.Settings> {
+        SettingsOptionsScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.AppearanceSettings>(
-        metadata = navParentKey<Destination.Settings>()
-    ) {
-        AppearanceScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.AppearanceSettings, Destination.Settings> {
+        AppearanceScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.ShortcutSettings>(
-        metadata = navParentKey<Destination.Settings>()
-    ) {
-        ShortcutSettingsScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.ShortcutSettings, Destination.Settings> {
+        ShortcutSettingsScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.AppLockSettings>(
-        metadata = navParentKey<Destination.Settings>()
-    ) {
-        AppLockSettingsScreen(viewModel(factory = container.viewModelFactory), ::navigateUp)
+    myEntry<Destination.AppLockSettings, Destination.Settings> {
+        AppLockSettingsScreen(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.SettingsSync>(
-        metadata = navParentKey<Destination.Settings>()
-    ) {
-        SettingsSyncScreen(viewModel(), ::navigate, ::navigateUp)
+    myEntry<Destination.SettingsSync, Destination.Settings> {
+        SettingsSyncScreen(getVm(vmf), ::navigate, ::navigateUp)
     }
-    myEntry<Destination.ApiSettings>(
-        metadata = navParentKey<Destination.Settings>()
-    ) {
-        ApiSettings(viewModel(), ::navigateUp)
+    myEntry<Destination.ApiSettings, Destination.Settings> {
+        ApiSettings(getVm(vmf), ::navigateUp)
     }
-    myEntry<Destination.ExportSettings>(
-        metadata = navParentKey<Destination.Settings>()
-    ) {
-        val vm = viewModel<SettingsViewModel>()
+    myEntry<Destination.ExportSettings, Destination.Settings> {
+        val vm = getVm<SettingsViewModel>(vmf)
         val qrBitmap by vm.syncQrBitmap.collectAsState()
         val exportSummary by vm.syncExportSummary.collectAsState()
         ExportSettingsScreen(qrBitmap, exportSummary, ::navigateUp)
     }
-    myEntry<Destination.ImportSettings>(
-        metadata = navParentKey<Destination.Settings>()
-    ) {
-        ImportSettingsScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.ImportSettings, Destination.Settings> {
+        ImportSettingsScreen(getVm(), ::navigateUp)
     }
-    myEntry<Destination.NotificationSettings>(
-        metadata = navParentKey<Destination.Settings>()
-    ) {
-        NotificationsScreen(viewModel(), ::navigateUp)
+    myEntry<Destination.NotificationSettings, Destination.Settings> {
+        NotificationsScreen(getVm(vmf), ::navigateUp)
     }
     myEntry<Destination.About> { AboutScreen(::navigateUp) }
 }

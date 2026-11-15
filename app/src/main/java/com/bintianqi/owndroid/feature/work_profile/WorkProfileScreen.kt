@@ -34,9 +34,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
+import com.bintianqi.owndroid.feature.WorkProfileFeatures
 import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.CheckBoxItem
-import com.bintianqi.owndroid.ui.FunctionItem
+import com.bintianqi.owndroid.ui.FeatureEntryItem
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.ui.SwitchItem
@@ -50,16 +51,8 @@ fun WorkProfileScreen(
 ) {
     val privilege by vm.privilegeState.collectAsStateWithLifecycle()
     MyScaffold(R.string.work_profile, onNavigateUp, 0.dp) {
-        if (privilege.org) {
-            FunctionItem(R.string.suspend_personal_app, icon = R.drawable.block_fill0) {
-                onNavigate(Destination.SuspendPersonalApp)
-            }
-        }
-        FunctionItem(R.string.intent_filter, icon = R.drawable.filter_alt_fill0) {
-            onNavigate(Destination.CrossProfileIntentFilter)
-        }
-        FunctionItem(R.string.delete_work_profile, icon = R.drawable.delete_forever_fill0) {
-            onNavigate(Destination.DeleteWorkProfile)
+        WorkProfileFeatures.forEach {
+            FeatureEntryItem(it, privilege, onNavigate)
         }
     }
 }
