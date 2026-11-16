@@ -285,11 +285,11 @@ fun myEntryProvider(
         }, ::navigate)
     }
     myEntry<Destination.DhizukuServerSettings> {
-        DhizukuServerSettingsScreen(getVm(), ::navigateUp)
+        DhizukuServerSettingsScreen(getVm(vmf), ::navigateUp)
     }
 
     myEntry<Destination.DelegatedAdmins> {
-        DelegatedAdminsScreen(getVm(), ::navigateUp, ::navigate)
+        DelegatedAdminsScreen(getVm(vmf), ::navigateUp, ::navigate)
     }
     myEntry<Destination.DelegatedAdminDetails, Destination.DelegatedAdmins> {
         AddDelegatedAdminScreen(

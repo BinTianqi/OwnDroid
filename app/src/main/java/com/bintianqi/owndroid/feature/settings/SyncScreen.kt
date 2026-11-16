@@ -105,7 +105,7 @@ fun ExportSettingsScreen(
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Spacer(Modifier.height(8.dp))
-                Text(
+                if (summary.totp) Text(
                     stringResource(R.string.sync_export_warning),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error

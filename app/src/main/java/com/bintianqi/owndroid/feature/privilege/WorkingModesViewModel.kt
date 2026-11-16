@@ -31,6 +31,7 @@ import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
 import com.topjohnwu.superuser.ipc.RootService
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
@@ -187,15 +188,23 @@ class WorkingModesViewModel(
         val connection = ActivationServiceConnection(callback, resultCallback) {
             Shizuku.unbindUserService(shizukuArgs, it, true)
         }
+        fun bindService() {
+            Shizuku.bindUserService(shizukuArgs, connection)
+            viewModelScope.launch {
+                delay(5000)
+                Shizuku.unbindUserService(shizukuArgs, connection, true)
+                resultCallback(false, application.getString(R.string.timeout))
+            }
+        }
         try {
             if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
-                Shizuku.bindUserService(shizukuArgs, connection)
+                bindService()
             } else if (Shizuku.shouldShowRequestPermissionRationale()) {
                 resultCallback(false, application.getString(R.string.permission_denied))
             } else {
                 fun requestPermissionResultListener(requestCode: Int, grantResult: Int) {
                     if (grantResult == PackageManager.PERMISSION_GRANTED) {
-                        Shizuku.bindUserService(shizukuArgs, connection)
+                        bindService()
                     } else {
                         resultCallback(false, application.getString(R.string.permission_denied))
                     }

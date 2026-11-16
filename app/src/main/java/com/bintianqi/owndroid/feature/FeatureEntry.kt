@@ -20,6 +20,24 @@ class FeatureEntry(
     val keywords: Set<Int> = emptySet()
 )
 
+val WorkingModeFeatures = listOf(
+    FeatureEntry(
+        Destination.TransferOwnership,
+        R.string.transfer_ownership, R.drawable.swap_horiz_fill0,
+        { version >= 28 && !dhizuku },
+        setOf(R.string.info_transfer_ownership)
+    ),
+    FeatureEntry(
+        Destination.DhizukuServerSettings,
+        R.string.dhizuku_server, R.drawable.m3_dhizuku_icon,
+        { !dhizuku }
+    ),
+    FeatureEntry(
+        Destination.DelegatedAdmins,
+        R.string.delegated_admins, R.drawable.admin_panel_settings_fill0,
+    ),
+)
+
 val SystemFeatures = listOf(
     FeatureEntry(
         Destination.SystemOptions,
@@ -96,7 +114,7 @@ val SystemFeatures = listOf(
     FeatureEntry(
         Destination.LockTaskMode,
         R.string.lock_task_mode, R.drawable.lock_fill0,
-        { version >= 28 || (device || (profile && affiliated) || (profile && mainUser)) },
+        { version >= 28 && (device || (profile && affiliated) || (profile && mainUser)) },
         setOf(
             R.string.info_start_lock_task_mode, R.string.info_lock_task_packages,
             R.string.features
@@ -527,4 +545,5 @@ val FeatureEntries = listOf(
     R.string.users to UserFeatures,
     R.string.password to PasswordFeatures,
     R.string.settings to SettingsFeatures,
+    R.string.other to WorkingModeFeatures,
 )
