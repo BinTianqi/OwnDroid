@@ -37,7 +37,7 @@ class MyApplication : Application() {
         // Move TOTP secret to settings.json
         try {
             val file = filesDir.resolve("time_blocker_unlock.json")
-            if (file.exists()) {
+            if (container.settingsRepo.data.appLock.totp && file.exists()) {
                 val json = Json.decodeFromString<JsonObject>(file.readText())
                 val secret = json["totpSecret"]!!.jsonPrimitive.content
                 container.settingsRepo.update { it.appLock.totpSecret = secret }

@@ -46,6 +46,15 @@ data class MySettings(
         var totpSecret: String = "",
         var biometrics: Boolean = false,
         var lockWhenLeaving: Boolean = false,
+        /**
+         * In v8.4.1 release, it stores TOTP secret in another file,
+         * and this value is used to determine whether TOTP is enabled.
+         * Later we moved the secret to here ([totpSecret]),
+         * and check whether it is empty to determine whether TOTP unlocking is enabled.
+         * This field will be checked when migrating.
+         */
+        @Deprecated("The value is never used now")
+        val totp: Boolean = false,
     ) {
         fun isActive(): Boolean {
             return passwordHash.isNotEmpty() || totpSecret.isNotEmpty()
