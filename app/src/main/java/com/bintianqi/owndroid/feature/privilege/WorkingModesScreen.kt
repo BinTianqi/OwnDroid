@@ -31,7 +31,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -55,6 +54,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.CircularProgressDialog
+import com.bintianqi.owndroid.ui.ConfirmInputField
 import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.NavIcon
 import com.bintianqi.owndroid.ui.navigation.Destination
@@ -350,13 +350,7 @@ fun WorkModesScreen(
                     else ""
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(R.string.info_deactivate) + noticeText)
-                    Text(stringResource(R.string.enter_confirm_to_deactivate))
-                    OutlinedTextField(
-                        confirmation, { confirmation = it },
-                        Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        textStyle = typography.bodyLarge
-                    )
+                    ConfirmInputField(confirmation) { confirmation = it }
                 }
             },
             confirmButton = {

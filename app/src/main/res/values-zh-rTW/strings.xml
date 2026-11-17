@@ -219,7 +219,7 @@
     <string name="wipe_euicc">清除 eUICC（eSIM）</string>
     <string name="wipe_silently">靜默清除</string>
     <string name="wipe_data_warning">裝置上的所有資料都將被清除</string>
-    <string name="wipe_work_profile_warning">您的工作設定檔及其所有相關資料都將被刪除。\n請輸入「DELETE」以繼續。</string>
+    <string name="wipe_work_profile_warning">您的工作設定檔及其所有相關資料都將被刪除。</string>
     <string name="encryption_status">加密狀態</string>
     <string name="frp_policy">FRP 政策</string>
     <string name="frp_not_supported">您的裝置不支援 FRP</string>
@@ -812,7 +812,7 @@
     <string name="sync_grant_camera">授予相機權限</string>
     <string name="sync_totp_included">已包含 TOTP 金鑰</string>
     <string name="sync_totp_not_included">不含 TOTP 金鑰</string>
-    <string name="enter_confirm_to_deactivate">請輸入「CONFIRM」以繼續。</string>
+    <string name="enter_confirm_to_continue">請輸入「CONFIRM」以繼續。</string>
     <string name="delete_app_group">刪除 App 群組</string>
     <string name="delete_app_group_confirmation">確定要刪除 App 群組 %1$s 嗎？此操作無法復原。</string>
 </resources>

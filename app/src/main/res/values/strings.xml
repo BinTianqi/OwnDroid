@@ -239,12 +239,13 @@
     <string name="security_logs_collected">Security logs collected</string>
     <string name="n_logs_in_total">%1$d logs in total</string>
     <string name="wipe_data">Wipe data</string>
+    <string name="wipe_device">Wipe device</string>
     <string name="wipe_external_storage">Wipe external storage</string>
     <string name="wipe_reset_protection_data">Wipe protected data</string>
     <string name="wipe_euicc">Wipe eUICC(eSIM)</string>
     <string name="wipe_silently">Wipe silently</string>
     <string name="wipe_data_warning">All data on your device will be ERASED</string>
-    <string name="wipe_work_profile_warning">Your work profile will be DELETED with all associated data.\nPlease enter \"DELETE\" to continue.</string>
+    <string name="wipe_work_profile_warning">Your work profile will be DELETED with all associated data.</string>
     <string name="encryption_status">Encryption status</string>
     <string name="frp_policy">FRP policy</string>
     <string name="frp_not_supported">Your device does not support FRP</string>
@@ -847,7 +848,7 @@
     <string name="sync_grant_camera">Grant camera permission</string>
     <string name="sync_totp_included">TOTP secret included</string>
     <string name="sync_totp_not_included">no TOTP secret</string>
-    <string name="enter_confirm_to_deactivate">Please enter "CONFIRM" to continue.</string>
+    <string name="enter_confirm_to_continue">Please enter "CONFIRM" to continue.</string>
     <string name="delete_app_group">Delete app group</string>
     <string name="delete_app_group_confirmation">Are you sure you want to delete the app group %1$s? This action cannot be undone.</string>
 </resources>

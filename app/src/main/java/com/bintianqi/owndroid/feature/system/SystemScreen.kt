@@ -62,6 +62,7 @@ import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.feature.SystemFeatures
 import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.ConfirmInputField
 import com.bintianqi.owndroid.ui.ConfirmTextButton
 import com.bintianqi.owndroid.ui.FeatureEntryItem
 import com.bintianqi.owndroid.ui.FullWidthCheckBoxItem
@@ -78,7 +79,6 @@ import com.bintianqi.owndroid.utils.BottomPadding
 import com.bintianqi.owndroid.utils.HorizontalPadding
 import com.bintianqi.owndroid.utils.yesOrNo
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import kotlinx.coroutines.delay
 
 @Composable
 fun SystemScreen(
@@ -662,7 +662,7 @@ fun WipeDataScreen(
                     containerColor = colorScheme.error, contentColor = colorScheme.onError
                 )
             ) {
-                Text("WipeData")
+                Text(stringResource(R.string.wipe_data))
             }
         }
         if (VERSION.SDK_INT >= 34 && privilege.device) {
@@ -678,43 +678,39 @@ fun WipeDataScreen(
                     containerColor = colorScheme.error, contentColor = colorScheme.onError
                 )
             ) {
-                Text("WipeDevice")
+                Text(stringResource(R.string.wipe_device))
             }
         }
     }
     if (dialog != 0) {
+        var confirmInput by remember { mutableStateOf("") }
         AlertDialog(
             title = {
                 Text(stringResource(R.string.warning), color = colorScheme.error)
             },
             text = {
-                Text(
-                    stringResource(
-                        if (userManager.isSystemUser) R.string.wipe_data_warning
-                        else R.string.info_wipe_data_in_managed_user
-                    ),
-                    color = colorScheme.error
-                )
+                Column {
+                    Text(
+                        stringResource(
+                            if (userManager.isSystemUser) R.string.wipe_data_warning
+                            else R.string.info_wipe_data_in_managed_user
+                        ),
+                        color = colorScheme.error
+                    )
+                    ConfirmInputField(confirmInput) { confirmInput = it }
+                }
             },
             onDismissRequest = { dialog = 0 },
             confirmButton = {
-                var timer by remember { mutableIntStateOf(5) }
-                LaunchedEffect(Unit) {
-                    while (timer > 0) {
-                        delay(1000)
-                        timer -= 1
-                    }
-                }
-                val timerText = if (timer > 0) "(${timer}s)" else ""
                 TextButton(
                     {
                         vm.wipeData(dialog == 2, flag, reason)
                     },
                     Modifier.animateContentSize(),
-                    timer == 0,
+                    confirmInput == "CONFIRM",
                     colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
                 ) {
-                    Text(stringResource(R.string.confirm) + timerText)
+                    Text(stringResource(R.string.confirm))
                 }
             },
             dismissButton = {

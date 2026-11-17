@@ -517,3 +517,14 @@ fun FeatureEntryItem(
         }
     }
 }
+
+@Composable
+fun ConfirmInputField(value: String, onValueChange: (String) -> Unit) {
+    Text(stringResource(R.string.enter_confirm_to_continue), Modifier.padding(vertical = 4.dp))
+    OutlinedTextField(
+        value, onValueChange,
+        Modifier.fillMaxWidth(),
+        textStyle = MaterialTheme.typography.bodyLarge,
+        singleLine = true
+    )
+}

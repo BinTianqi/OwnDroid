@@ -23,6 +23,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -32,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.ui.CancelTextButton
+import com.bintianqi.owndroid.ui.ConfirmInputField
 import com.bintianqi.owndroid.ui.MyLazyScaffold
 import com.bintianqi.owndroid.ui.Notes
 import com.bintianqi.owndroid.utils.HorizontalPadding
@@ -77,33 +79,40 @@ fun TransferOwnershipScreen(
             Notes(R.string.info_transfer_ownership, HorizontalPadding)
         }
     }
-    if (dialog) AlertDialog(
-        text = {
-            Text(
-                stringResource(
-                    R.string.transfer_ownership_warning,
-                    stringResource(
-                        if (privilege.device) R.string.device_owner else R.string.profile_owner
-                    ),
-                    receivers[selectedIndex].app.name
-                )
-            )
-        },
-        confirmButton = {
-            TextButton(
-                {
-                    vm.transferOwnership(receivers[selectedIndex].dar)
-                    dialog = false
-                    onTransferred()
-                },
-                colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
-            ) {
-                Text(stringResource(R.string.confirm))
-            }
-        },
-        dismissButton = {
-            CancelTextButton { dialog = false }
-        },
-        onDismissRequest = { dialog = false }
-    )
+    if (dialog) {
+        var confirmInput by remember { mutableStateOf("") }
+        AlertDialog(
+            text = {
+                Column {
+                    Text(
+                        stringResource(
+                            R.string.transfer_ownership_warning,
+                            stringResource(
+                                if (privilege.device) R.string.device_owner else R.string.profile_owner
+                            ),
+                            receivers[selectedIndex].app.name
+                        )
+                    )
+                    ConfirmInputField(confirmInput) { confirmInput = it }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    {
+                        vm.transferOwnership(receivers[selectedIndex].dar)
+                        dialog = false
+                        onTransferred()
+                    },
+                    enabled = confirmInput == "CONFIRM",
+                    colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
+                ) {
+                    Text(stringResource(R.string.confirm))
+                }
+            },
+            dismissButton = {
+                CancelTextButton { dialog = false }
+            },
+            onDismissRequest = { dialog = false }
+        )
+    }
 }

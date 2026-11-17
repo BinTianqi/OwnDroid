@@ -8,7 +8,6 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
@@ -37,6 +36,7 @@ import com.bintianqi.owndroid.R
 import com.bintianqi.owndroid.feature.WorkProfileFeatures
 import com.bintianqi.owndroid.ui.CancelTextButton
 import com.bintianqi.owndroid.ui.CheckBoxItem
+import com.bintianqi.owndroid.ui.ConfirmInputField
 import com.bintianqi.owndroid.ui.FeatureEntryItem
 import com.bintianqi.owndroid.ui.MyScaffold
 import com.bintianqi.owndroid.ui.Notes
@@ -161,13 +161,7 @@ fun DeleteWorkProfileScreen(
             text = {
                 Column {
                     Text(stringResource(R.string.wipe_work_profile_warning))
-                    Spacer(Modifier.height(6.dp))
-                    OutlinedTextField(
-                        confirmation,
-                        { confirmation = it },
-                        Modifier.fillMaxWidth(),
-                        textStyle = MaterialTheme.typography.bodyLarge
-                    )
+                    ConfirmInputField(confirmation) { confirmation = it }
                 }
             },
             onDismissRequest = { warning = false },
@@ -176,7 +170,7 @@ fun DeleteWorkProfileScreen(
                     {
                         vm.deleteProfile(flags, reason)
                     },
-                    enabled = confirmation == "DELETE",
+                    enabled = confirmation == "CONFIRM",
                     colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.error)
                 ) {
                     Text(stringResource(R.string.confirm))
