@@ -1,4 +1,4 @@
-[English](Readme.md) | [简体中文](Readme-zh_CN.md) | [日本語](Readme-ja.md)
+[English](Readme.md) | [简体中文](Readme-zh_CN.md) | [日本語](Readme-ja.md) | [Español](Readme-es.md)
 
 # OwnDroid
 
